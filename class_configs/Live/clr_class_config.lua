@@ -1065,7 +1065,7 @@ local _ClassConfig = {
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoHealOverTime') end,
                 cond = function(self, spell, target)
-                    return Casting.GroupBuffCheck(spell, target)
+                    return not Targeting.BigHealsNeeded(target) and Casting.GroupBuffCheck(spell, target)
                 end,
             },
             {
@@ -1079,7 +1079,7 @@ local _ClassConfig = {
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoHealOverTime') end,
                 cond = function(self, spell, target)
-                    return Casting.GroupBuffCheck(spell, target)
+                    return not Targeting.BigHealsNeeded(target) and Casting.GroupBuffCheck(spell, target)
                 end,
             },
             {

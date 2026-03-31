@@ -1267,7 +1267,7 @@ return {
 
     ["taka"] = { -- space intentional
         "Avatar of Dust ",
-        "The Desert Treant ",
+        "Petrified Desert Treant ",
         "Dunebreaker ",
         "Flowkeeper Berta ",
         "Gravitus Gargantua ",

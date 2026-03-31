@@ -555,9 +555,9 @@ local _ClassConfig = {
             {
                 name = "SingleHot",
                 type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoSingleHot') end,
                 cond = function(self, spell, target)
-                    if not Config:GetSetting('DoSingleHot') then return false end
-                    return Casting.GroupBuffCheck(spell, target)
+                    return not Targeting.BigHealsNeeded(target) and Casting.GroupBuffCheck(spell, target)
                 end,
             },
             {

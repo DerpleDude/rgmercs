@@ -466,9 +466,9 @@ local _ClassConfig = {
             {
                 name = "SingleElixir",
                 type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoSingleElixir') end,
                 cond = function(self, spell, target)
-                    if not Config:GetSetting('DoSingleElixir') then return false end
-                    return Casting.GroupBuffCheck(spell, target)
+                    return not Targeting.BigHealsNeeded(target) and Casting.GroupBuffCheck(spell, target)
                 end,
             },
             {

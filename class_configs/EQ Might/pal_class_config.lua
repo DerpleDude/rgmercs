@@ -338,7 +338,7 @@ return {
             name = "Default",
             -- cond = function(self) return true end, --Kept here for illustration, this line could be removed in this instance since we aren't using conditions.
             spells = {
-                { name = "TouchHeal",       cond = function(self) return Config:GetSetting('DoTouchHeal') < 3 end, },
+                { name = "TouchHeal",       cond = function(self) return Config:GetSetting('DoTouchHeal') end, },
                 { name = "LightHeal",       cond = function(self) return Config:GetSetting('DoLightHeal') < 3 end, },
                 { name = "LightHeal2",      cond = function(self) return Config:GetSetting('DoLightHeal') == 2 end, },
                 { name = "WaveHeal",        cond = function(self) return Config:GetSetting('DoWaveHeal') < 3 end, },
@@ -425,7 +425,6 @@ return {
             name = 'MainHeal',
             state = 1,
             steps = 1,
-            load_cond = function(self) return Config:GetSetting('DoCleansing') == 1 or Config:GetSetting("DoTouchHeal") == 2 or Config:GetSetting('WaveHealUse') == 2 end,
             cond = function(self, target)
                 return Targeting.MainHealsNeeded(target)
             end,
@@ -494,33 +493,20 @@ return {
                 type = "Spell",
             },
             {
-                name = "Mantle of the Wyrmguard",
+                name = "VampiricBlueBand",
                 type = "Item",
-                load_cond = function(self) return mq.TLO.FindItem("=Mantle of the Wyrmguard")() and Config:GetSetting('WaveHealUse') == 1 end,
+                load_cond = function(self) return Core.GetResolvedActionMapItem("VampiricBlueBand") and mq.TLO.Me.Level() >= 68 end,
                 cond = function(self, itemName, target)
                     return Targeting.GroupedWithTarget(target)
                 end,
             },
             {
-                name = "WaveHeal",
-                type = "Spell",
-                load_cond = function(self) return Config:GetSetting('DoWaveHeal') < 3 and Config:GetSetting('WaveHealUse') == 1 end,
-                cond = function(self, spell, target)
+                name = "BlueBand",
+                type = "Item",
+                load_cond = function(self) return Core.GetResolvedActionMapItem("BlueBand") and (mq.TLO.Me.Level() < 68 or not Core.GetResolvedActionMapItem("VampiricBlueBand")) end,
+                cond = function(self, itemName, target)
                     return Targeting.GroupedWithTarget(target)
                 end,
-            },
-            {
-                name = "WaveHeal2",
-                type = "Spell",
-                load_cond = function(self) return Config:GetSetting('DoWaveHeal') == 2 and Config:GetSetting('WaveHealUse') == 1 end,
-                cond = function(self, spell, target)
-                    return Targeting.GroupedWithTarget(target)
-                end,
-            },
-            {
-                name = "TouchHeal",
-                type = "Spell",
-                load_cond = function() return Config:GetSetting("DoTouchHeal") == 1 end,
             },
         },
         ["MainHeal"] = {
@@ -529,37 +515,22 @@ return {
                 type = "Spell",
                 load_cond = function() return Config:GetSetting('DoCleansing') == 1 end,
                 cond = function(self, spell, target)
-                    return Casting.GroupBuffCheck(spell, target)
+                    return not Targeting.BigHealsNeeded(target) and Casting.GroupBuffCheck(spell, target)
                 end,
             },
             {
-                name = "Mantle of the Wyrmguard",
-                type = "Item",
-                load_cond = function(self) return mq.TLO.FindItem("=Mantle of the Wyrmguard")() and Config:GetSetting('WaveHealUse') == 2 end,
-                cond = function(self, itemName, target)
-                    return Targeting.GroupedWithTarget(target)
-                end,
-            },
-            {
-                name = "WaveHeal",
+                name = "LightHeal",
                 type = "Spell",
-                load_cond = function(self) return Config:GetSetting('DoWaveHeal') < 3 and Config:GetSetting('WaveHealUse') == 2 end,
-                cond = function(self, spell, target)
-                    return Targeting.GroupedWithTarget(target)
-                end,
+                load_cond = function(self) return Config:GetSetting('DoLightHeal') < 3 end,
             },
             {
-                name = "WaveHeal2",
+                name = "LightHeal2",
                 type = "Spell",
-                load_cond = function(self) return Config:GetSetting('DoWaveHeal') == 2 and Config:GetSetting('WaveHealUse') == 2 end,
-                cond = function(self, spell, target)
-                    return Targeting.GroupedWithTarget(target)
-                end,
+                load_cond = function(self) return Config:GetSetting('DoLightHeal') == 2 end,
             },
             {
                 name = "TouchHeal",
                 type = "Spell",
-                load_cond = function() return Config:GetSetting("DoTouchHeal") == 2 end,
             },
         },
     },
@@ -1321,18 +1292,14 @@ return {
 
         --Heals/Cures
         ['DoTouchHeal']       = {
-            DisplayName = "Touch Heal Use:",
+            DisplayName = "Use Touch Heal",
             Group = "Abilities",
             Header = "Recovery",
             Category = "General Healing",
             Index = 101,
-            Tooltip = "Choose when the Paladin will use the single-target Touch-line healing spell.",
+            Tooltip = "Choose whether the Paladin will use the single-target Touch-line healing spell.",
             RequiresLoadoutChange = true,
-            Type = "Combo",
-            ComboOptions = { 'Emergency Use(BigHeal)', 'Standard Use(MainHeal)', 'Never', },
-            Default = 1,
-            Min = 1,
-            Max = 3,
+            Default = true,
             ConfigType = "Advanced",
         },
         ['DoLightHeal']       = {
@@ -1360,21 +1327,6 @@ return {
             RequiresLoadoutChange = true,
             Type = "Combo",
             ComboOptions = { 'Current Tier', 'Current Tier + Last Tier', 'Never', },
-            Default = 1,
-            Min = 1,
-            Max = 3,
-            ConfigType = "Advanced",
-        },
-        ['WaveHealUse']       = {
-            DisplayName = "Use Waves for ST:",
-            Group = "Abilities",
-            Header = "Recovery",
-            Category = "General Healing",
-            Index = 104,
-            Tooltip = "Use your Wave Heals as single-target heals as needed.",
-            RequiresLoadoutChange = true,
-            Type = "Combo",
-            ComboOptions = { 'Emergency Use(BigHeal)', 'Standard Use(MainHeal)', 'Never', },
             Default = 1,
             Min = 1,
             Max = 3,
