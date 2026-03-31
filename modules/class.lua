@@ -278,12 +278,13 @@ Module.CommandHandlers                       = {
             return true
         end,
     },
-    ['stopcast'] = {
+    stopcast = {
         usage = "/rgl stopcast",
         about =
         "Stops the current cast, removes all retry attempts, and prevents any other rotations or clickies from running until after queued actions have processed.\nMost useful in hotkeys before priority abilities, gate, throne, etc.",
         handler = function(config, value)
             Globals.StopCast = true
+            return true
         end,
     },
 }
