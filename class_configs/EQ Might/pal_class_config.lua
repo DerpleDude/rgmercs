@@ -322,6 +322,7 @@ return {
         },
         ['Protective'] = {
             "Protective Discipline",
+            "Protective Surge Discipline",
         },
         ['SelfHeal'] = { -- EQM Custom Zero-Casttime Self-heal
             "Blessed Mantle Heal",

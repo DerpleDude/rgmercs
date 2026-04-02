@@ -98,6 +98,7 @@ local _ClassConfig = {
         -- },
         ['Protective'] = {
             "Protective Discipline",
+            "Protective Surge Discipline",
         },
     },
     ['HelperFunctions'] = {

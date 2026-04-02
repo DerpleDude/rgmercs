@@ -246,6 +246,9 @@ local _ClassConfig = {
             "Verse of Vesagran",
             "Verse of Huell",
         },
+        ['Protective'] = {
+            "Protective Surge Discipline",
+        },
     },
     ['HelperFunctions'] = {
         DoRez = function(self, corpseId)
@@ -735,6 +738,13 @@ local _ClassConfig = {
                 type = "AA",
                 cond = function(self, aaName)
                     return mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart')
+                end,
+            },
+            {
+                name = "Protective",
+                type = "Disc",
+                cond = function(self, discSpell, target)
+                    return Casting.NoDiscActive()
                 end,
             },
         },

@@ -341,6 +341,7 @@ local _ClassConfig = {
         },
         ['Protective'] = {
             "Protective Discipline",
+            "Protective Surge Discipline",
         },
         ['ForPower'] = {
             "Challenge for Power",
