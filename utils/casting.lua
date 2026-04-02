@@ -2342,6 +2342,7 @@ end
 function Casting.AutoMed()
     local me = mq.TLO.Me
     if Config:GetSetting('DoMed') == 1 then return end
+    if Casting.IAmFeigning() then return end
 
     if me.Mount.ID() and not mq.TLO.Zone.Indoor() then
         Logger.log_verbose("Sit check returning early due to mount.")

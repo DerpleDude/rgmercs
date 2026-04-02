@@ -159,8 +159,6 @@ local _ClassConfig = {
         },
         ["LowLvlStrBuff"] = {
             -- Low Level Strength Buff -- Below 68 these are only worthwhile on non-live, defiant stat caps too easily. Even then arguable.
-            "Talisman of Might",  -- Level 70, Group
-            "Spirit of Might",    -- Level 68, Single Target
             "Talisman of the Diaku",
             "Infusion of Spirit", -- Level 49, Str/Dex/Sta, can use HP buff
             "Tumultuous Strength",
@@ -406,6 +404,11 @@ local _ClassConfig = {
             "Greater Minionskin",
             "Minionskin",
             "Lesser Minionskin",
+        },
+        ['MeleeBuff'] = {
+            "Ancient: Talisman of Might", -- Level 70, Group
+            "Talisman of Might",          -- Level 70, Group
+            "Spirit of Might",            -- Level 68, Single Target
         },
     },
     ['HelperFunctions']   = {
@@ -1074,8 +1077,15 @@ local _ClassConfig = {
                 load_cond = function(self) return mq.TLO.FindItem("=Artifact of the Champion")() and mq.TLO.Me.Level() >= 68 end,
                 cond = function(self, itemName, target)
                     return Casting.GroupBuffItemCheck(itemName, target)
-                        -- Don't try to overwrite Champion with Ferine Avatar
-                        and Casting.AddedBuffCheck(5417, target)
+                end,
+            },
+            {
+                name = "MeleeBuff",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoMeleeBuff') end,
+                active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
+                cond = function(self, spell, target)
+                    return Targeting.TargetIsAMelee(target) and Casting.GroupBuffCheck(spell, target)
                 end,
             },
             { --Fix this, some priests will want this, adjust options
@@ -1557,6 +1567,16 @@ local _ClassConfig = {
             Default = true,
             ConfigType = "Advanced",
         },
+        ['DoMeleeBuff']         = {
+            DisplayName = "Use Melee Skill Buff",
+            Group = "Abilities",
+            Header = "Buffs",
+            Category = "Group",
+            Index = 105,
+            Tooltip = "Use your 'All (melee) Skills Damage Modifier' line of buffs. May conflict with druid buffs.",
+            RequiresLoadoutChange = true,
+            Default = true,
+        },
 
         -- Debuffs
         ['DoSTMalo']            = {
@@ -1678,8 +1698,9 @@ local _ClassConfig = {
             Group = "Abilities",
             Header = "Buffs",
             Category = "Group",
-            Index = 105,
+            Index = 106,
             Tooltip = "Use Low Level (<= 70) HP Buffs",
+            RequiresLoadoutChange = true,
             Default = false,
             ConfigType = "Advanced",
         },
@@ -1688,8 +1709,9 @@ local _ClassConfig = {
             Group = "Abilities",
             Header = "Buffs",
             Category = "Group",
-            Index = 106,
+            Index = 107,
             Tooltip = "Use Low Level (<= 70) HP Buffs",
+            RequiresLoadoutChange = true,
             Default = false,
             ConfigType = "Advanced",
         },
@@ -1698,8 +1720,9 @@ local _ClassConfig = {
             Group = "Abilities",
             Header = "Buffs",
             Category = "Group",
-            Index = 107,
+            Index = 108,
             Tooltip = "Use Low Level (<= 70) HP Buffs",
+            RequiresLoadoutChange = true,
             Default = false,
             ConfigType = "Advanced",
         },
@@ -1708,8 +1731,9 @@ local _ClassConfig = {
             Group = "Abilities",
             Header = "Buffs",
             Category = "Group",
-            Index = 108,
+            Index = 109,
             Tooltip = "Use Low Level (<= 70) HP Buffs",
+            RequiresLoadoutChange = true,
             Default = false,
             ConfigType = "Advanced",
         },

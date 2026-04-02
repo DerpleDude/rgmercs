@@ -268,14 +268,10 @@ local _ClassConfig = {
             "Pack Regeneration",
             "Regeneration",
         },
-        ['AtkBuff'] = {        --Hit Damage/STR Buff
+        ['MeleeBuff'] = {      --Hit Damage/STR Buff
             "Mammoth's Strength",
             "Lion's Strength", -- 5% Hit Damage
             "Nature's Might",  -- STR Buff
-            "Girdle of Karana",
-            "Storm Strength",
-            "Strength of Stone",
-            "Strength of Earth",
         },
         ['GroupDmgShield'] = {
             "Legacy of Nettles",
@@ -812,8 +808,9 @@ local _ClassConfig = {
                 end,
             },
             {
-                name = "AtkBuff",
+                name = "MeleeBuff",
                 type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoMeleeBuff') end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell, target)
                     return Targeting.TargetIsAMelee(target) and Casting.GroupBuffCheck(spell, target)
@@ -1066,6 +1063,16 @@ local _ClassConfig = {
             FAQ = "Why do my druid and mage constantly both try to use the damage shield?",
             Answer =
             "The internal mechanisms used to check stacking for these DS buffs report cross-stacking and can lead to spamming. Disable using damage shields on one or the other.",
+        },
+        ['DoMeleeBuff']       = {
+            DisplayName = "Use Melee Skill Buff",
+            Group = "Abilities",
+            Header = "Buffs",
+            Category = "Group",
+            Index = 105,
+            Tooltip = "Use your 'All (melee) Skills Damage Modifier' line of buffs. May conflict with shaman buffs.",
+            RequiresLoadoutChange = true,
+            Default = false,
         },
         ['UseEpic']           = {
             DisplayName = "Epic Use:",
