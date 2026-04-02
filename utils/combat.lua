@@ -453,10 +453,8 @@ function Combat.FindBestAutoTarget(validateFn)
 
     -- Handle cases where our autotarget is no longer valid because it isn't a valid spawn or is dead.
     if Globals.AutoTargetID ~= 0 then
-        local autoSpawn = mq.TLO.Spawn(string.format("id %d", Globals.AutoTargetID))
-        if not autoSpawn or not autoSpawn() or Targeting.TargetIsType("corpse", autoSpawn) then
-            Logger.log_debug("\ayFindAutoTarget() : Clearing Target (%d/%s) because it is a corpse or no longer valid.", Globals.AutoTargetID,
-                autoSpawn and (autoSpawn.CleanName() or "Unknown") or "None")
+        if not Combat.ValidCombatTarget(Globals.AutoTargetID) then
+            Logger.log_debug("\ayFindAutoTarget() : Clearing Target (%d) because it is a corpse or no longer valid.", Globals.AutoTargetID)
             Targeting.ClearTarget()
         end
     end
@@ -529,10 +527,7 @@ function Combat.FindBestAutoTarget(validateFn)
                         Logger.log_verbose("MATargetScan returned %d -- Setting initial AutoTarget: %s",
                             Globals.AutoTargetID, mq.TLO.Spawn(Globals.AutoTargetID).CleanName() or "None")
                     end
-                end
-
-                -- rescan our auto target unless we are forced to stay on one
-                if not Config:GetSetting('StayOnTarget') then
+                elseif not Config:GetSetting('StayOnTarget') then -- rescan our auto target unless we are forced to stay on one
                     Globals.AutoTargetID = Combat.MATargetScan(Config:GetSetting('AssistRange'),
                         Config:GetSetting('MAScanZRange'))
                     local autoTarget = mq.TLO.Spawn(Globals.AutoTargetID)

@@ -233,30 +233,18 @@ local _ClassConfig = {
             {
                 name = "Heel",
                 type = "Disc",
-                cond = function(self, discSpell, target)
-                    return Casting.NoDiscActive()
-                end,
             },
             {
                 name = "Palm",
                 type = "Disc",
-                cond = function(self, discSpell, target)
-                    return Casting.NoDiscActive()
-                end,
             },
             {
                 name = "FistDisc",
                 type = "Disc",
-                cond = function(self, discSpell, target)
-                    return Casting.NoDiscActive()
-                end,
             },
             {
                 name = "Focus",
                 type = "Disc",
-                cond = function(self, discSpell, target)
-                    return Casting.NoDiscActive()
-                end,
             },
         },
         ['CombatBuff'] = {

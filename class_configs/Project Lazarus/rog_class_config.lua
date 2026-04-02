@@ -179,37 +179,22 @@ return {
             {
                 name = "Frenzied",
                 type = "Disc",
-                cond = function(self, discSpell, target)
-                    return Casting.NoDiscActive()
-                end,
             },
             {
                 name = "Duelist",
                 type = "Disc",
-                cond = function(self, discSpell, target)
-                    return Casting.NoDiscActive()
-                end,
             },
             {
                 name = "ChanceDisc",
                 type = "Disc",
-                cond = function(self, discSpell, target)
-                    return Casting.NoDiscActive()
-                end,
             },
             {
                 name = "Kinesthetics",
                 type = "Disc",
-                cond = function(self, discSpell, target)
-                    return Casting.NoDiscActive()
-                end,
             },
             {
                 name = "Precision",
                 type = "Disc",
-                cond = function(self, discSpell, target)
-                    return Casting.NoDiscActive()
-                end,
             },
         },
         ["Aggro Management"] = {

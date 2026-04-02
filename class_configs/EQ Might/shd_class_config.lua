@@ -909,6 +909,7 @@ local _ClassConfig = {
                 type = "Item",
                 tooltip = Tooltips.Epic,
                 cond = function(self, itemName, target)
+                    if Config:GetSettting('HoldEpicForNoDisc') and not Casting.NoDiscActive() then return false end
                     return self.ClassConfig.HelperFunctions.LeechCheck(self) or Globals.AutoTargetIsNamed
                 end,
             },
@@ -1188,7 +1189,7 @@ local _ClassConfig = {
     },
     ['DefaultConfig']   = {
         --Mode
-        ['Mode']            = {
+        ['Mode']              = {
             DisplayName = "Mode",
             Category = "Mode",
             Tooltip = "Select the active Combat Mode for this PC.",
@@ -1202,7 +1203,7 @@ local _ClassConfig = {
         },
 
         --Buffs and Debuffs
-        ['DoSnare']         = {
+        ['DoSnare']           = {
             DisplayName = "Use Snares",
             Group = "Abilities",
             Header = "Debuffs",
@@ -1212,7 +1213,7 @@ local _ClassConfig = {
             Default = false,
             RequiresLoadoutChange = true,
         },
-        ['SnareCount']      = {
+        ['SnareCount']        = {
             DisplayName = "Snare Max Mob Count",
             Group = "Abilities",
             Header = "Debuffs",
@@ -1223,7 +1224,7 @@ local _ClassConfig = {
             Min = 1,
             Max = 99,
         },
-        ['ProcChoice']      = {
+        ['ProcChoice']        = {
             DisplayName = "Proc Self-Buff Choice:",
             Group = "Abilities",
             Header = "Buffs",
@@ -1237,7 +1238,7 @@ local _ClassConfig = {
             Max = 3,
             RequiresLoadoutChange = true,
         },
-        ['DoCallBuff']      = {
+        ['DoCallBuff']        = {
             DisplayName = "Use Call of Darkness",
             Group = "Abilities",
             Header = "Buffs",
@@ -1247,7 +1248,7 @@ local _ClassConfig = {
             Default = false,
             RequiresLoadoutChange = true,
         },
-        ['DoVisage']        = {
+        ['DoVisage']          = {
             DisplayName = "Use Visage of Death",
             Group = "Abilities",
             Header = "Buffs",
@@ -1261,7 +1262,7 @@ local _ClassConfig = {
         },
 
         --Taps
-        ['StartLifeTap']    = {
+        ['StartLifeTap']      = {
             DisplayName = "HP % for LifeTaps",
             Group = "Abilities",
             Header = "Damage",
@@ -1272,7 +1273,7 @@ local _ClassConfig = {
             Min = 1,
             Max = 100,
         },
-        ['DoACTap']         = {
+        ['DoACTap']           = {
             DisplayName = "Use AC Tap",
             Group = "Abilities",
             Header = "Damage",
@@ -1283,7 +1284,7 @@ local _ClassConfig = {
             Default = true,
             ConfigType = "Advanced",
         },
-        ['DoAtkTap']        = {
+        ['DoAtkTap']          = {
             DisplayName = "Use Attack Tap",
             Group = "Abilities",
             Header = "Damage",
@@ -1294,7 +1295,7 @@ local _ClassConfig = {
             Default = true,
             ConfigType = "Advanced",
         },
-        ['DoLeechTouch']    = {
+        ['DoLeechTouch']      = {
             DisplayName = "Leech Touch Use:",
             Group = "Abilities",
             Header = "Damage",
@@ -1310,7 +1311,7 @@ local _ClassConfig = {
         },
 
         --DoT Spells
-        ['DoBondTap']       = {
+        ['DoBondTap']         = {
             DisplayName = "Use Bond Dot",
             Group = "Abilities",
             Header = "Damage",
@@ -1320,7 +1321,7 @@ local _ClassConfig = {
             RequiresLoadoutChange = true,
             Default = false,
         },
-        ['DoPoisonDot']     = {
+        ['DoPoisonDot']       = {
             DisplayName = "Use Poison Dot",
             Group = "Abilities",
             Header = "Damage",
@@ -1330,7 +1331,7 @@ local _ClassConfig = {
             RequiresLoadoutChange = false,
             Default = true,
         },
-        ['DoDireDot']       = {
+        ['DoDireDot']         = {
             DisplayName = "Use Dire Dot",
             Group = "Abilities",
             Header = "Damage",
@@ -1340,7 +1341,7 @@ local _ClassConfig = {
             RequiresLoadoutChange = true,
             Default = false,
         },
-        ['DotNamedOnly']    = {
+        ['DotNamedOnly']      = {
             DisplayName = "Only Dot Named",
             Group = "Abilities",
             Header = "Damage",
@@ -1351,7 +1352,7 @@ local _ClassConfig = {
         },
 
         -- AE Damage
-        ['BladeDiscUse']    = {
+        ['BladeDiscUse']      = {
             DisplayName = "Blade Disc Use:",
             Group = "Abilities",
             Header = "Damage",
@@ -1367,7 +1368,7 @@ local _ClassConfig = {
         },
 
         --Hate Tools
-        ['DoHateBuff']      = {
+        ['DoHateBuff']        = {
             DisplayName = "Use Hate Buff",
             Group = "Abilities",
             Header = "Buffs",
@@ -1379,7 +1380,7 @@ local _ClassConfig = {
             ConfigType = "Advanced",
             RequiresLoadoutChange = true,
         },
-        ['DoTerror']        = {
+        ['DoTerror']          = {
             DisplayName = "Use Terror Taunts",
             Group = "Abilities",
             Header = "Tanking",
@@ -1390,7 +1391,7 @@ local _ClassConfig = {
             ConfigType = "Advanced",
             RequiresLoadoutChange = true,
         },
-        ['AETauntAA']       = {
+        ['AETauntAA']         = {
             DisplayName = "Use AE Taunt AA",
             Group = "Abilities",
             Header = "Tanking",
@@ -1402,7 +1403,7 @@ local _ClassConfig = {
             FAQ = "Why do we treat the Explosions the same? One is targeted, one is PBAE",
             Answer = "There are currently no scripted conditions where Hatred would be used at long range, thus, for ease of use, we can treat them similarly.",
         },
-        ['AETauntSpell']    = {
+        ['AETauntSpell']      = {
             DisplayName = "Use AE Taunt Spell",
             Group = "Abilities",
             Header = "Tanking",
@@ -1414,7 +1415,7 @@ local _ClassConfig = {
         },
 
         --Defenses
-        ['DiscCount']       = {
+        ['DiscCount']         = {
             DisplayName = "Def. Disc. Count",
             Group = "Abilities",
             Header = "Tanking",
@@ -1426,7 +1427,7 @@ local _ClassConfig = {
             Max = 10,
             ConfigType = "Advanced",
         },
-        ['DefenseStart']    = {
+        ['DefenseStart']      = {
             DisplayName = "Defense HP",
             Group = "Abilities",
             Header = "Tanking",
@@ -1438,7 +1439,7 @@ local _ClassConfig = {
             Max = 100,
             ConfigType = "Advanced",
         },
-        ['EmergencyStart']  = {
+        ['EmergencyStart']    = {
             DisplayName = "Emergency Start",
             Group = "Abilities",
             Header = "Tanking",
@@ -1450,7 +1451,7 @@ local _ClassConfig = {
             Max = 100,
             ConfigType = "Advanced",
         },
-        ['HPCritical']      = {
+        ['HPCritical']        = {
             DisplayName = "HP Critical",
             Group = "Abilities",
             Header = "Tanking",
@@ -1463,9 +1464,18 @@ local _ClassConfig = {
             Max = 100,
             ConfigType = "Advanced",
         },
+        ['HoldEpicForNoDisc'] = {
+            DisplayName = "Epic",
+            Group = "Abilities",
+            Header = "Tanking",
+            Category = "Defenses",
+            Index = 105,
+            Tooltip = "Only use your epic if you have no defensive disc active.\nNote: Epic already has a check to not be used when other leech effects are active.",
+            Default = true,
+        },
 
         --Equipment
-        ['UseBandolier']    = {
+        ['UseBandolier']      = {
             DisplayName = "Dynamic Weapon Swap",
             Group = "Items",
             Header = "Bandolier",
@@ -1475,7 +1485,7 @@ local _ClassConfig = {
             Default = false,
             RequiresLoadoutChange = true,
         },
-        ['EquipShield']     = {
+        ['EquipShield']       = {
             DisplayName = "Equip Shield",
             Group = "Items",
             Header = "Bandolier",
@@ -1487,7 +1497,7 @@ local _ClassConfig = {
             Max = 100,
             ConfigType = "Advanced",
         },
-        ['Equip2Hand']      = {
+        ['Equip2Hand']        = {
             DisplayName = "Equip 2Hand",
             Group = "Items",
             Header = "Bandolier",
@@ -1499,7 +1509,7 @@ local _ClassConfig = {
             Max = 100,
             ConfigType = "Advanced",
         },
-        ['NamedShieldLock'] = {
+        ['NamedShieldLock']   = {
             DisplayName = "Shield on Named",
             Group = "Items",
             Header = "Bandolier",
