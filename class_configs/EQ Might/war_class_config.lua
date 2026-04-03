@@ -39,9 +39,14 @@ local _ClassConfig = {
     ['AbilitySets']     = {
         ['StandDisc'] = { -- Timer 1
             "Final Stand Discipline",
+            "Shelter Me Discipline",
             -- "Stonewall Discipline",
             "Defensive Discipline",
             "Evasive Discipline",
+        },
+        ['StanceDisc'] = {
+            "Myrmidon Stance Discipline",
+            "Warrior Stance Discipline",
         },
         ['Fortitude'] = { -- Timer 3
             "Fortitude Discipline",

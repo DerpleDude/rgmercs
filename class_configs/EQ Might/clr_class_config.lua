@@ -927,9 +927,17 @@ local _ClassConfig = {
                 end,
             },
             {
+                name = "Artifact of Aegis",
+                type = "Item",
+                load_cond = function() return Config:GetSetting('DoVieBuff') and mq.TLO.Me.Level() >= 69 and mq.TLO.FindItem("=Artifact of Aegis")() end,
+                cond = function(self, itemName, target)
+                    return Casting.GroupBuffItemCheck(itemName, target)
+                end,
+            },
+            {
                 name = "SingleVieBuff",
                 type = "Spell",
-                load_cond = function(self) return Config:GetSetting('DoVieBuff') end,
+                load_cond = function(self) return Config:GetSetting('DoVieBuff') and (mq.TLO.Me.Level() < 69 or not mq.TLO.FindItem("=Artifact of Aegis")()) end,
                 cond = function(self, spell, target)
                     if not Targeting.TargetIsATank(target) then return false end
                     return Casting.GroupBuffCheck(spell, target)

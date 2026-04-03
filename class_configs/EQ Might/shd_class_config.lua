@@ -132,6 +132,7 @@ local _ClassConfig = {
             "Soul Shield",
             "Soul Guard",
             "Ichor Guard", -- Level 56, Timer 5
+            "Squire Guard",
         },
         ['BlockDisc'] = {
             "Deflection Discipline",

@@ -309,6 +309,7 @@ return {
             "Guard of Righteousness",
             "Guard of Humility",
             "Guard of Piety",
+            "Squire Guard",
         },
         ['ACBuff'] = {
             "Bulwark of Piety",

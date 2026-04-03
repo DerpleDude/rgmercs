@@ -249,6 +249,9 @@ local _ClassConfig = {
         ['Protective'] = {
             "Protective Surge Discipline",
         },
+        ['Skals'] = {
+            "Skal's Stance Discipline",
+        },
     },
     ['HelperFunctions'] = {
         DoRez = function(self, corpseId)
@@ -742,6 +745,13 @@ local _ClassConfig = {
             },
             {
                 name = "Protective",
+                type = "Disc",
+                cond = function(self, discSpell, target)
+                    return Casting.NoDiscActive()
+                end,
+            },
+            {
+                name = "Skals",
                 type = "Disc",
                 cond = function(self, discSpell, target)
                     return Casting.NoDiscActive()

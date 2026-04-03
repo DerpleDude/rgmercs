@@ -231,6 +231,9 @@ return {
         ['KickDisc'] = { -- 2-hit kick attack
             "Jolting Kicks",
         },
+        ['Skals'] = {
+            "Skal's Stance Discipline",
+        },
         -- ['JoltProcBuff'] = {
         --     "Jolting Blades",
         -- },
@@ -516,6 +519,13 @@ return {
                 type = "Discipline",
                 cond = function(self, discName, target)
                     return Targeting.IHaveAggro(100) and not mq.TLO.Me.Song("Outrider's Evasion")
+                end,
+            },
+            {
+                name = "Skals",
+                type = "Disc",
+                cond = function(self, discSpell, target)
+                    return Casting.NoDiscActive()
                 end,
             },
         },

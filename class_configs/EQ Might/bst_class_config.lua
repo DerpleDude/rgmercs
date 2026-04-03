@@ -200,6 +200,7 @@ return {
         },
         ['ProtDisc'] = {
             "Protective Spirit Discipline",
+            "Skal's Stance Discipline",
         },
         -- ['VigorBuff'] = {
         --     "Feral Vigor",
@@ -462,6 +463,9 @@ return {
             {
                 name = "ProtDisc",
                 type = "Discipline",
+                cond = function(self, discSpell, target)
+                    return Casting.NoDiscActive()
+                end,
             },
         },
         ['PetHealing']     = {
