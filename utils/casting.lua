@@ -360,7 +360,7 @@ function Casting.TargetBuffCheck(spellId, target, bAllowTargetChange, bAllowDupl
 
     if not spellName then return false end
 
-    local buffSearch = bAllowDuplicates and string.format("id %d and caster %d", spellId, mq.TLO.Me.ID()) or string.format("id %d", spellId)
+    local buffSearch = bAllowDuplicates and string.format("id %d and caster =%s", spellId, mq.TLO.Me.DisplayName()) or string.format("id %d", spellId)
 
     if mq.TLO.Target.FindBuff(buffSearch)() then
         Logger.log_verbose("TargetBuffCheck: %s(ID:%d) found on %s(ID:%d), ending check.", spellName, spellId, targetName, targetId)
@@ -382,7 +382,7 @@ function Casting.TargetBuffCheck(spellId, target, bAllowTargetChange, bAllowDupl
 
             local triggerName = triggerSpell.Name()
             local triggerId = triggerSpell.ID()
-            local triggerSearch = bAllowDuplicates and string.format("id %d and caster %d", triggerId, mq.TLO.Me.ID()) or string.format("id %d", triggerId)
+            local triggerSearch = bAllowDuplicates and string.format("id %d and caster =%s", triggerId, mq.TLO.Me.DisplayName()) or string.format("id %d", triggerId)
 
             triggerCount = triggerCount + 1
 
