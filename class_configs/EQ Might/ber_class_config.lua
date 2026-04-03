@@ -165,13 +165,6 @@ return {
                     return Casting.SelfBuffCheck(discSpell)
                 end,
             },
-            {
-                name = "Decapitation",
-                type = "AA",
-                cond = function(self, aaName)
-                    return Casting.SelfBuffAACheck(aaName)
-                end,
-            },
         },
         ['Emergency'] = {
             {
