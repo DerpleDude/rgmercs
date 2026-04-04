@@ -11,7 +11,7 @@ LoaderUI.__index         = LoaderUI
 LoaderUI.Initialized     = false
 
 -- Animation constants
-LoaderUI.flyDuration     = 2.5
+LoaderUI.flyDuration     = 1.0
 LoaderUI.settleDuration  = 0.7
 LoaderUI.imgStartSize    = 220
 LoaderUI.imgEndSize      = 60

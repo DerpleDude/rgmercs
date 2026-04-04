@@ -750,6 +750,7 @@ local _ClassConfig = {
             "Regeneration", -- Level 22
         },
         ["ShrinkSpell"] = {
+            "Tiny Terror",
             "Shrink",
         },
     },
@@ -1525,12 +1526,10 @@ local _ClassConfig = {
                     return Casting.GroupBuffCheck(spell, target)
                 end,
             },
-            { --Shrink AA, will use first(best) available
-                name_func = function(self)
-                    return Casting.GetFirstAA({ "Group Shrink", "Shrink", })
-                end,
+            {
+                name = "Group Shrink",
                 type = "AA",
-                load_cond = function(self) return Config:GetSetting('DoGroupShrink') end,
+                load_cond = function(self) return Config:GetSetting('DoGroupShrink') and Casting.CanUseAA("Group Shrink") end,
                 active_cond = function(self) return mq.TLO.Me.Height() < 2 end,
                 cond = function(self, aaName, target)
                     return Targeting.GetTargetHeight(target) > 2.2
@@ -1539,7 +1538,7 @@ local _ClassConfig = {
             {
                 name = "ShrinkSpell",
                 type = "Spell",
-                load_cond = function(self) return Config:GetSetting('DoGroupShrink') and not (Casting.CanUseAA("Group Shrink") or Casting.CanUseAA("Shrink")) end,
+                load_cond = function(self) return Config:GetSetting('DoGroupShrink') and not Casting.CanUseAA("Group Shrink") end,
                 active_cond = function(self) return mq.TLO.Me.Height() < 2 end,
                 cond = function(self, spell, target)
                     return Targeting.GetTargetHeight(target) > 2.2
