@@ -139,7 +139,7 @@ return {
         "Timeless Assassin Z`Jrix",
         "Timeless Avatar of Abhorrence",
         "Timeless Dread Lord M`Noxin",
-        "Timeless Deathrot Knight",
+        "The Timeless Deathrot Knight",
         "Timeless Hand of the Maestro",
         "Timeless Innoruuk",
         "Timeless Mistress of Malevolence",
