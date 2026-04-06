@@ -124,6 +124,11 @@ Config.DefaultConfig                                     = {
         Type = "Custom",
         Default = false,
     },
+    ['ShowClassConfigEditor']      = {
+        DisplayName = "Show Class Config Editor",
+        Type = "Custom",
+        Default = false,
+    },
     ['MainWindowLocked']           = {
         DisplayName = "Main Window Locked",
         Default = false,

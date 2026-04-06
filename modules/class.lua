@@ -557,6 +557,12 @@ function Module:Render()
         end
         Ui.Tooltip("Places a copy of the currently loaded class config in the MQ config directory for customization.\nWill back up the existing custom configuration.")
 
+        ImGui.SameLine()
+        if ImGui.SmallButton(Icons.MD_EDIT .. " Config Editor") then
+            Config:SetSetting('ShowClassConfigEditor', not (Config:GetSetting('ShowClassConfigEditor') or false))
+        end
+        Ui.Tooltip("Open the class config editor to inspect and edit ability sets, rotations, and more.")
+
         ImGui.Separator()
 
         if ImGui.CollapsingHeader(string.format("Spell Loadout (%s)", self.LoadOutName)) then

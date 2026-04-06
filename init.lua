@@ -58,12 +58,13 @@ local initPctComplete = 0
 local initMsg         = "Initializing RGMercs..."
 
 -- UI --
-local SimpleUI        = require("ui.simple")
-local StandardUI      = require("ui.standard")
-local OptionsUI       = require("ui.options")
-local ConsoleUI       = require("ui.console")
-local LoaderUI        = require("ui.loader")
-local HudUI           = require("ui.hud")
+local SimpleUI           = require("ui.simple")
+local StandardUI         = require("ui.standard")
+local OptionsUI          = require("ui.options")
+local ConsoleUI          = require("ui.console")
+local LoaderUI           = require("ui.loader")
+local HudUI              = require("ui.hud")
+local ClassConfigEditorUI = require("ui.classconfig_editor")
 
 local function Alive()
     return mq.TLO.NearestSpawn('pc')() ~= nil
@@ -171,6 +172,18 @@ local function RGMercsGUI()
                 if not openConsole then
                     Config:SetSetting('PopOutConsole', false)
                     showConsole = false
+                end
+            end
+
+            if Config:GetSetting('ShowClassConfigEditor') then
+                ImGui.SetNextWindowSize(ImVec2(1100, 700), ImGuiCond.FirstUseEver)
+                local openCCE, showCCE = ImGui.Begin(Ui.GetWindowTitle("Class Config Editor"), true, flags)
+                if showCCE then
+                    ClassConfigEditorUI:Render()
+                end
+                ImGui.End()
+                if not openCCE then
+                    Config:SetSetting('ShowClassConfigEditor', false)
                 end
             end
 
