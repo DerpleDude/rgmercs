@@ -868,7 +868,7 @@ _ClassConfig    = {
                 type = "Spell",
                 cond = function(self, spell, target)
                     if Config:GetSetting('ElementChoice') ~= 1 then return false end
-                    return Targeting.MobHasLowHP(target)
+                    return Targeting.MobHasLowHP(target) or not Core.GetResolvedActionMapItem("BigFireDD")
                 end,
             },
             {
