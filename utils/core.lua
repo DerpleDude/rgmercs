@@ -465,8 +465,7 @@ function Core.OkayToNotHeal()
         Logger.log_verbose("OkayToNotHeal: We have a queued cure to process! Skipping.")
         return false
     end
-
-    return Core.GetMainAssistPctHPs() > Config:GetSetting('BigHealPoint') and (mq.TLO.Group.Injured(Config:GetSetting('BigHealPoint'))() or 0) < Config:GetSetting('GroupInjureCnt')
+    return (mq.TLO.Group.Injured(Config:GetSetting('BigHealPoint'))() or 0) == 0
 end
 
 --- Retrieves the resolved action map item for a given action.

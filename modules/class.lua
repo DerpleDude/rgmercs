@@ -1027,25 +1027,13 @@ function Module:HealById(id)
 end
 
 function Module:RunHealRotation()
-    Logger.log_verbose("\ao[Heals] Checking MA (HPs = %d)...", Core.GetMainAssistPctHPs())
-    if Core.GetMainAssistPctHPs() < Config:GetSetting('MaxHealPoint') then
-        self:HealById(Core.GetMainAssistId())
-        Logger.log_verbose("\ao[Heals] Checked MA...")
-    end
-
     Logger.log_verbose("\ao[Heals] Checking for injured friends...")
     self:HealById(Combat.FindWorstHurtGroupMember(Config:GetSetting('MaxHealPoint')))
 
-    if Config:GetSetting('HealOutside') then
+    if Config:GetSetting('UseHealList') then
+        self:HealById(Combat.FindWorstHurtHealList(Config:GetSetting('MaxHealPoint')))
+    else
         self:HealById(Combat.FindWorstHurtXT(Config:GetSetting('MaxHealPoint')))
-    end
-
-    if mq.TLO.Me.PctHPs() < Config:GetSetting('MaxHealPoint') then
-        self:HealById(mq.TLO.Me.ID())
-    end
-
-    if Config:GetSetting('DoPetHeals') and mq.TLO.Me.Pet.ID() > 0 and (mq.TLO.Me.Pet.PctHPs() or 101) < Config:GetSetting('PetHealPoint') then
-        self:HealById(mq.TLO.Me.Pet.ID())
     end
 end
 

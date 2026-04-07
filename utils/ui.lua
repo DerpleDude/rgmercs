@@ -244,31 +244,37 @@ function Ui.GetImGuiStyleId(e)
     return type(e) == 'string' and (Ui.ImGuiStyleVarIds[e] or ImGuiStyleVar[e] or 0) or e
 end
 
---- Renders the assist list._
---- This function is responsible for displaying the list of assist names
---- It does not take any parameters and does not return any values.
-function Ui.RenderAssistList()
-    if Config:GetSetting('UseAssistList') then
+--- Renders the indicated list.
+---@param listName string The list to render.
+function Ui.RenderList(listName, ordered)
+    if not listName then return end
+
+    local useKey = "Use" .. listName
+    local displayName = listName:gsub("List", " List")
+    local listData = Config:GetSetting(listName) or {}
+
+    if Config:GetSetting(useKey) then
         ImGui.PushStyleColor(ImGuiCol.Button, Globals.Constants.Colors.ConditionPassColor)
     else
         ImGui.PushStyleColor(ImGuiCol.Button, Globals.Constants.Colors.ConditionFailColor)
     end
     ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, ImVec2(20, 3))
 
-    if ImGui.SmallButton(Config:GetSetting('UseAssistList') and "Use Assist List: Enabled" or "Use Assist List: Disabled") then
-        Config:SetSetting('UseAssistList', not Config:GetSetting('UseAssistList'))
+    if ImGui.SmallButton(Config:GetSetting(useKey) and ("Use " .. displayName .. ": Enabled") or ("Use " .. displayName .. ": Disabled")) then
+        Config:SetSetting(useKey, not Config:GetSetting(useKey))
     end
     ImGui.PopStyleVar()
     ImGui.PopStyleColor()
     if mq.TLO.Target.ID() > 0 then
         ImGui.SameLine()
-        ImGui.PushID("##_small_btn_create_oa")
-        if ImGui.SmallButton("Add Target to Assist List") then
-            Config:AssistAdd(mq.TLO.Target.DisplayName())
+        ImGui.PushID("##_small_btn_create_" .. listName)
+        if ImGui.SmallButton("Add Target to " .. displayName) then
+            Config:ListAdd(mq.TLO.Target.DisplayName(), listName)
         end
         ImGui.PopID()
     end
-    if ImGui.BeginTable("AssistList Names", 5, bit32.bor(ImGuiTableFlags.Borders, ImGuiTableFlags.RowBg)) then
+    local tableId = listName .. " Names"
+    if ImGui.BeginTable(tableId, 5, bit32.bor(ImGuiTableFlags.Borders, ImGuiTableFlags.RowBg)) then
         ImGui.TableSetupColumn('ID', (ImGuiTableColumnFlags.WidthFixed), 20.0)
         ImGui.TableSetupColumn('Name', (ImGuiTableColumnFlags.WidthFixed), 140.0)
         ImGui.TableSetupColumn('Distance', (ImGuiTableColumnFlags.WidthFixed), 40.0)
@@ -276,10 +282,10 @@ function Ui.RenderAssistList()
         ImGui.TableSetupColumn('Controls', (ImGuiTableColumnFlags.WidthFixed), 80.0)
         ImGui.TableHeadersRow()
 
-        for idx, name in ipairs(Config:GetSetting('AssistList') or {}) do
+        for idx, name in ipairs(listData) do
             local spawn = mq.TLO.Spawn(string.format("PC =%s", name))
             ImGui.TableNextColumn()
-            if name == Globals.MainAssist then
+            if listName == "AssistList" and name == Globals.MainAssist then
                 ImGui.TableSetBgColor(ImGuiTableBgTarget.RowBg0, IM_COL32(255, 255, 0, 64))
             end
             Ui.RenderText(tostring(idx))
@@ -305,31 +311,36 @@ function Ui.RenderAssistList()
                 Ui.RenderText("0")
             end
             ImGui.TableNextColumn()
-            ImGui.PushID("##_small_btn_delete_oa_" .. tostring(idx))
+            local deleteId = "##_small_btn_delete_" .. listName .. "_" .. tostring(idx)
+            ImGui.PushID(deleteId)
             if ImGui.SmallButton(Icons.FA_TRASH) then
-                Config:AssistDelete(idx)
+                Config:ListDelete(idx, listName)
             end
             ImGui.PopID()
-            ImGui.SameLine()
-            ImGui.PushID("##_small_btn_up_oa_" .. tostring(idx))
-            if idx == 1 then
-                ImGui.InvisibleButton(Icons.FA_CHEVRON_UP, ImVec2(22, 1))
-            else
-                if ImGui.SmallButton(Icons.FA_CHEVRON_UP) then
-                    Config:AssistMoveUp(idx)
+            if ordered then
+                ImGui.SameLine()
+                local upId = "##_small_btn_up_" .. listName .. "_" .. tostring(idx)
+                ImGui.PushID(upId)
+                if idx == 1 then
+                    ImGui.InvisibleButton(Icons.FA_CHEVRON_UP, ImVec2(22, 1))
+                else
+                    if ImGui.SmallButton(Icons.FA_CHEVRON_UP) then
+                        Config:ListMoveUp(idx, listName)
+                    end
                 end
-            end
-            ImGui.PopID()
-            ImGui.SameLine()
-            ImGui.PushID("##_small_btn_dn_oa_" .. tostring(idx))
-            if idx == #Config:GetSetting('AssistList') then
-                ImGui.InvisibleButton(Icons.FA_CHEVRON_DOWN, ImVec2(22, 1))
-            else
-                if ImGui.SmallButton(Icons.FA_CHEVRON_DOWN) then
-                    Config:AssistMoveDown(idx)
+                ImGui.PopID()
+                ImGui.SameLine()
+                local downId = "##_small_btn_dn_" .. listName .. "_" .. tostring(idx)
+                ImGui.PushID(downId)
+                if idx == #listData then
+                    ImGui.InvisibleButton(Icons.FA_CHEVRON_DOWN, ImVec2(22, 1))
+                else
+                    if ImGui.SmallButton(Icons.FA_CHEVRON_DOWN) then
+                        Config:ListMoveDown(idx, listName)
+                    end
                 end
+                ImGui.PopID()
             end
-            ImGui.PopID()
         end
 
         ImGui.EndTable()

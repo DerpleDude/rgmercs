@@ -62,6 +62,33 @@ Module.FAQ             = {
 			"  In addition to being used as a list of potential assists, we will process group buff checks on valid members of the assist list, even if the list is not currently enabled.",
 		Settings_Used = "",
 	},
+	{
+		Question = "What is the Heal List? How do I use it?",
+		Answer = "The Heal List is designed to replace traditional XTarget healing, which is used to heal PCs that are not in the healer's group.\n\n" ..
+			"  To use the Heal List, find it in the UI on the Main tab, or familiarize yourself with related commands in the command list above.\n\n" ..
+			"  The HP of any PC on the list will be monitored. There is no priority based on position in this list, the worst hurt will be healed first.\n\n" ..
+			"  Placing groupmembers on this list is not necessary, the healer's groupmates will always be checked first... however, placing critical roles (tanks) on this list may 'double-tap' them (see 'healing overview' FAQ).\n\n" ..
+			"  Note that PCs HP value updates may involve some latency from the client/server, if they are not an RGMercs Peer (a character running RGMercs on the same local network).",
+		Settings_Used = "",
+	},
+	{
+		Question = "Will my healers heal a PC on my xtarget list?",
+		Answer =
+		"By default, healers will scan their xtarget list for XT PC's to heal. If you have instead opted to use the Heal List, xtargets will be ignored.\nSee the 'healing overview' FAQ for more details.s",
+		Settings_Used = "",
+	},
+	{
+		Question = "How do healers prioritize? Can I get a healing overview?",
+		Answer = "Heal Overview: Healers use the following process to prioritize healing actions:\n\n" ..
+			"  During every healing rotation, the group is scanned for anyone under the 'MaxHealPoint'. If anyone is found, the group checks will process as follows:\n\n" ..
+			"  During that check, if the healer has an NPC targeted, and the target of that NPC is a groupmember under the MainHealPoint, it will heal that PC without further checks.\n\n" ..
+			"  If that isn't the case, every group member's health is compared, and the lowest will be targeted for a heal.\n\n" ..
+			"  At this point, the heal rotations are processed. In a default config, we process Group Heals > Big Heals > Main Heals, based on the heal thresholds set in Abilities > Recovery.\n\n\n" ..
+			"  Once the group is checked (whether the PC used a heal or not), the PC will then check the Heal List (see 'Heal List' FAQ entry) if it is enabled, or the healer's xtarget list if not.\n\n" ..
+			"  Neither of these lists will short-circuit based on the target's target, we will simply compare HP values to find the worst hurt and process healing rotations on this character as above.\n\n" ..
+			"  Upon completion, the healer will then process standard rotations (group buffs, combat, etc). Many healers by default have check that will prevent some of those rotations from processing if a player in their group is low health (in big heal range).",
+		Settings_Used = "",
+	},
 }
 
 function Module:New()

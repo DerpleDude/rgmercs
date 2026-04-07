@@ -923,7 +923,7 @@ local _ClassConfig = {
                 name = "AESpiritualHeal",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    return Targeting.TargetIsMA(target)
+                    return Targeting.TargetIsATank(target)
                 end,
             },
             {

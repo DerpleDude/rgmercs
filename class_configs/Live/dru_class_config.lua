@@ -831,21 +831,21 @@ local _ClassConfig = {
                 name = "QuickGroupHeal",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    return Targeting.TargetIsMA(target)
+                    return Targeting.TargetIsATank(target)
                 end,
             },
             {
                 name = "Blessing of Tunare",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    return Targeting.TargetIsMA(target)
+                    return Targeting.TargetIsATank(target)
                 end,
             },
             {
                 name = "Wildtender's Survival",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    return Targeting.TargetIsMA(target)
+                    return Targeting.TargetIsATank(target)
                 end,
             },
             {
@@ -1225,7 +1225,7 @@ local _ClassConfig = {
                 name = "Swarm of Fireflies",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    return Targeting.TargetIsMA(target) and Casting.GroupBuffAACheck(aaName, target)
+                    return Targeting.TargetIsATank(target) and Casting.GroupBuffAACheck(aaName, target)
                 end,
             },
             {
@@ -1308,7 +1308,7 @@ local _ClassConfig = {
                 type = "AA",
                 active_cond = function(self, aaName) return true end,
                 cond = function(self, aaName, target)
-                    return Targeting.TargetIsMA(target) and Casting.GroupBuffAACheck(aaName, target)
+                    return Targeting.TargetIsATank(target) and Casting.GroupBuffAACheck(aaName, target)
                 end,
             },
         },

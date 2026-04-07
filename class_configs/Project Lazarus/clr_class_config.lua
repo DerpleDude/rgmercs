@@ -521,10 +521,7 @@ local _ClassConfig = {
             state = 1,
             steps = 1,
             load_cond = function() return Config:GetSetting('DoManaRestore') and (Casting.CanUseAA("Veturika's Perseverance") or Casting.CanUseAA("Quiet Miracle")) end,
-            targetId = function(self)
-                return { Combat.FindWorstHurtManaGroupMember(Config:GetSetting('ManaRestorePct')),
-                    Combat.FindWorstHurtManaXT(Config:GetSetting('ManaRestorePct')), }
-            end,
+            targetId = function(self) return { Combat.FindWorstHurtMana(Config:GetSetting('ManaRestorePct')), } end,
             cond = function(self, combat_state)
                 local downtime = combat_state == "Downtime" and Casting.OkayToBuff()
                 local combat = combat_state == "Combat"

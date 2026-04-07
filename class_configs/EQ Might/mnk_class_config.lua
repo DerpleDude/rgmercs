@@ -224,8 +224,8 @@ local _ClassConfig = {
                 name = "Five Point Palm",
                 type = "AA",
                 load_cond = function(self) return Config:GetSetting('DoFivePointPalm') end,
-                cond = function(self, aaName)
-                    return Core.GetMainAssistPctHPs() > 80 and mq.TLO.Me.PctHPs() > 80
+                cond = function(self, aaName, target)
+                    return Targeting.GetTargetPctHPs(target) < 90 and Core.GetMainAssistPctHPs() > 80 and mq.TLO.Me.PctHPs() > 80
                 end,
             },
         },

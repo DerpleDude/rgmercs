@@ -349,7 +349,13 @@ function StandardUI:RenderMainWindow(imgui_style, openGUI, flags)
 
                     if ImGui.CollapsingHeader("Assist List") then
                         ImGui.Indent()
-                        Ui.RenderAssistList()
+                        Ui.RenderList("AssistList", true)
+                        ImGui.Unindent()
+                    end
+
+                    if ImGui.CollapsingHeader("Heal List") then
+                        ImGui.Indent()
+                        Ui.RenderList("HealList", false)
                         ImGui.Unindent()
                     end
 

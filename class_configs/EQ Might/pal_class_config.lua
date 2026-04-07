@@ -960,7 +960,8 @@ return {
                 type = "Disc",
                 load_cond = function(self) return Core.IsTanking() end,
                 cond = function(self, discSpell, target)
-                    return Casting.NoDiscActive()
+                    local protReady = mq.TLO.Me.CombatAbilityReady(Core.GetResolvedActionMapItem('Protective') or "")()
+                    return Casting.NoDiscActive() and not protReady
                 end,
             },
             {

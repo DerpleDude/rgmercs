@@ -166,7 +166,7 @@ Binds.Handlers    = {
                 Logger.log_error("/rgl assistadd - no name given and no valid target exists!")
                 return
             end
-            Config:AssistAdd(name)
+            Config:ListAdd(name, "AssistList")
         end,
     },
     ['assistdelete'] = {
@@ -178,7 +178,7 @@ Binds.Handlers    = {
                 Logger.log_error("/rgl assistdelete - no name given and no valid target exists!")
                 return
             end
-            Config:AssistDelete(name)
+            Config:ListDelete(name, "AssistList")
         end,
     },
     ['assistup'] = {
@@ -190,7 +190,7 @@ Binds.Handlers    = {
                 Logger.log_error("/rgl assistup - no name given and no valid target exists!")
                 return
             end
-            Config:AssistMoveUp(name)
+            Config:ListMoveUp(name, "AssistList")
         end,
     },
     ['assistdown'] = {
@@ -202,14 +202,45 @@ Binds.Handlers    = {
                 Logger.log_error("/rgl assistdown - no name given and no valid target exists!")
                 return
             end
-            Config:AssistMoveDown(name)
+            Config:ListMoveDown(name, "AssistList")
         end,
     },
     ['assistclear'] = {
         usage = "/rgl assistclear",
         about = "Completely clears the Assist List.",
         handler = function()
-            Config:AssistClear()
+            Config:ListClear("AssistList")
+        end,
+    },
+    ['heallistadd'] = {
+        usage = "/rgl heallistadd <Name>",
+        about = "Adds <Name> to the Heal List. If no name is entered, your target's name is used.",
+        handler = function(name)
+            if not name then name = mq.TLO.Target.CleanName() end
+            if not name then
+                Logger.log_error("/rgl heallistadd - no name given and no valid target exists!")
+                return
+            end
+            Config:ListAdd(name, "HealList")
+        end,
+    },
+    ['heallistdelete'] = {
+        usage = "/rgl heallistdelete (<Name> or <List#>)",
+        about = "Deletes (<Name> or <List#>) from the Heal List. If no name is entered, your target's name is used.",
+        handler = function(name)
+            if not name then name = mq.TLO.Target.CleanName() end
+            if not name then
+                Logger.log_error("/rgl heallistdelete - no name given and no valid target exists!")
+                return
+            end
+            Config:ListDelete(name, "HealList")
+        end,
+    },
+    ['heallistclear'] = {
+        usage = "/rgl heallistclear",
+        about = "Completely clears the Heal List.",
+        handler = function()
+            Config:ListClear("HealList")
         end,
     },
     ['backoff'] = {

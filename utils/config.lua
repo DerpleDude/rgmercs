@@ -9,7 +9,7 @@ local Files                                              = require("utils.files"
 local Globals                                            = require("utils.globals")
 
 local Config                                             = {
-    _version = '2.0.0',
+    _version = '2.1.0',
     _subVersion = "Shattering of Ro",
     _name = "Config",
     _AppName = "RGMercs Lua Edition",
@@ -101,6 +101,16 @@ Config.DefaultConfig                                     = {
     },
     ['AssistList']                 = {
         DisplayName = "List of User-Defined Assists",
+        Type = "Custom",
+        Default = {},
+    },
+    ['UseHealList']                = {
+        DisplayName = "Heal Outside of Group",
+        Type = "Custom",
+        Default = false,
+    },
+    ['HealList']                   = {
+        DisplayName = "List of User-Defined Heal Targets",
         Type = "Custom",
         Default = {},
     },
@@ -1422,7 +1432,7 @@ Config.DefaultConfig                                     = {
         Header = "Recovery",
         Category = "General Healing",
         Index = 1,
-        Tooltip = "Allow pets to be targeted in PC healing rotations.\n" ..
+        Tooltip = "Allow pets of your groupmates to be targeted in PC healing rotations.\n" ..
             "Note that CLR/DRU/PAL/SHM will reserve \"Big Heal\" rotations for PCs.\n" ..
             "Further note that many abilities that heal the PC's own pet do not check this setting and are handled seperately.",
         Default = true,
@@ -1436,16 +1446,6 @@ Config.DefaultConfig                                     = {
         Index = 2,
         Tooltip = "Break invis to heal, cure and rez when out of combat (Does not affect combat actions).",
         Default = false,
-        ConfigType = "Advanced",
-    },
-    ['HealOutside']                = {
-        DisplayName = "Heal Outside",
-        Group = "Abilities",
-        Header = "Recovery",
-        Category = "General Healing",
-        Index = 3,
-        Tooltip = "Heal PCs that have been added to your xtarget list (and their pets, if pet healing is enabled).",
-        Default = true,
         ConfigType = "Advanced",
     },
     -- Recovery/Thresholds
@@ -3325,100 +3325,105 @@ function Config:GetPeerLastConfigReceivedTime(peer)
 end
 
 --- Adds the given name to the Assist List.
---- @param name string: The name of the assist to be added.
-function Config:AssistAdd(name)
-    local assistList = self:GetSetting('AssistList')
+--- @param name string: The name of the PC to be added.
+--- @param listName string: The list of PCs to add to.
+function Config:ListAdd(name, listName)
+    local addList = Config:GetSetting(listName)
 
-    for _, cur_name in ipairs(assistList or {}) do
+    for _, cur_name in ipairs(addList or {}) do
         if cur_name == name then
             return
         end
     end
 
-    table.insert(assistList, name)
-    self:SetSetting('AssistList', assistList)
-    Logger.log_info("\axAssist List: \ag%s\ax has been\ag added\ax to the list at position \at%d\ax!", name,
-        #self:GetSetting('AssistList'))
+    table.insert(addList, name)
+    self:SetSetting(listName, addList)
+    Logger.log_info("\ax%s: \ag%s\ax has been\ag added\ax to the list at position \at%d\ax!", listName, name,
+        #self:GetSetting(listName))
 end
 
-function Config:AssistDelete(arg1)
+function Config:ListDelete(arg1, listName)
     if not arg1 then
-        Logger.log_error("\arAssist Delete: this command requires a valid argument!")
+        Logger.log_error("\ar%s Delete: this command requires a valid argument!", listName or "")
         return
     end
 
-    local assistList = self:GetSetting('AssistList')
+    local list = self:GetSetting(listName)
 
     if type(arg1) == 'string' then
-        arg1 = self:ConvertAssistNameToID(arg1)
+        arg1 = self:ConvertListNameToID(arg1, listName)
     end
 
     if type(arg1) == 'number' and arg1 > 0 then
-        if arg1 <= #assistList then
-            Logger.log_info("\axAssist List: \ag%s\ax has been \ardeleted\ax from the list!", assistList[arg1])
-            table.remove(assistList, arg1)
-            self:SetSetting('AssistList', assistList)
+        if arg1 <= #list then
+            Logger.log_info("\ax%s: \ag%s\ax has been \ardeleted\ax from the list!", listName, list[arg1])
+            table.remove(list, arg1)
+            self:SetSetting(listName, list)
         else
-            Logger.log_error("\arAssist Delete: %d is not a valid assist list ID!", arg1)
+            Logger.log_error("\ar%s Delete: %d is not a valid assist list ID!", listName, arg1)
         end
         return
     end
-    Logger.log_error("\arAssist Delete: %s was not on the list or is not a valid argument!", arg1)
+    Logger.log_error("\ar%s Delete: %s was not on the list or is not a valid argument!", listName, arg1)
 end
 
-function Config:AssistClear()
-    Logger.log_info("Assist List: \ayThe Assist List has been cleared!")
-    Config:SetSetting('AssistList', {})
+function Config:ListClear(listName)
+    Logger.log_info("%s: \ayThe list has been cleared!", listName)
+    Config:SetSetting(listName, {})
 end
 
---- Moves the OA with the given ID up.
---- @param id number The ID of the OA to move up.
-function Config:AssistMoveUp(id)
+--- Moves the PC at the given index up.
+--- @param id number The index of the PC to move.
+--- @param listName string: The list to adjust.
+function Config:ListMoveUp(id, listName)
     if type(id) == 'string' then
-        id = self:ConvertAssistNameToID(id)
+        id = self:ConvertListNameToID(id, listName)
     end
 
     local newId = id - 1
 
     if newId < 1 then return end
-    local assistList = self:GetSetting('AssistList')
+    local list = self:GetSetting(listName)
 
-    if id > #assistList then return end
+    if id > #list then return end
 
-    assistList[newId], assistList[id] = assistList[id], assistList[newId]
-    Logger.log_info("\axAssist List: \ag%s\ax has been\ag moved up\ax to position \at%d", self:GetSetting('AssistList')[newId], newId)
-    self:SetSetting('AssistList', assistList)
+    list[newId], list[id] = list[id], list[newId]
+    Logger.log_info("\ax%s: \ag%s\ax has been\ag moved up\ax to position \at%d", listName, self:GetSetting(listName)[newId], newId)
+    self:SetSetting(listName, list)
 end
 
-function Config:AssistMoveDown(id)
+--- Moves the PC at the given index down.
+--- @param id number The index of the PC to move.
+--- @param listName string: The list to adjust.
+function Config:AssistMoveDown(id, listName)
     if not id then
-        Logger.log_error("\arAssist Move Down: this command requires a valid argument!")
+        Logger.log_error("\ar%s Move Down: this command requires a valid argument!", listName)
         return
     end
 
     if type(id) == 'string' then
-        id = self:ConvertAssistNameToID(id)
+        id = self:ConvertListNameToID(id, listName)
     end
 
     if id < 1 then return end
     local newId = id + 1
-    local assistList = self:GetSetting('AssistList')
+    local list = self:GetSetting(listName)
 
-    if newId > #assistList then return end
+    if newId > #list then return end
 
-    assistList[newId], assistList[id] = assistList[id], assistList[newId]
+    list[newId], list[id] = list[id], list[newId]
 
-    Logger.log_info("\axAssist List: \ag%s\ax has been\ar moved down\ax to position \at%d", self:GetSetting('AssistList')[newId], newId)
+    Logger.log_info("\ax%s: \ag%s\ax has been\ar moved down\ax to position \at%d", listName, self:GetSetting(listName)[newId], newId)
 
-    self:SetSetting('AssistList', assistList)
+    self:SetSetting(listName, list)
 end
 
-function Config:ConvertAssistNameToID(arg1)
+function Config:ConvertListNameToID(arg1, listName)
     if arg1:match("^%d$") then
         arg1 = tonumber(arg1)
         return arg1
     else
-        for idx, cur_name in ipairs(Config:GetSetting('AssistList') or {}) do
+        for idx, cur_name in ipairs(Config:GetSetting(listName) or {}) do
             if cur_name:lower() == arg1:lower() then
                 arg1 = tonumber(idx)
                 return arg1

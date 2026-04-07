@@ -898,17 +898,18 @@ end
 --- @return number The group member with the lowest mana percentage, or nil if no member meets the criteria.
 function Combat.FindWorstHurtManaGroupMember(minMana)
     local groupSize = mq.TLO.Group.Members()
-    local worstId = mq.TLO.Me.ID() --initializes with the BST's ID/Mana because it isn't checked below
-    local worstPct = mq.TLO.Me.PctMana()
+    local myMana = mq.TLO.Me.PctMana()
+    local worstId = myMana < minMana and mq.TLO.Me.ID() or 0
+    local worstPct = myMana < minMana and myMana or minMana
 
     Logger.log_verbose("\ayChecking for worst HurtMana Group Members. Group Count: %d", groupSize)
 
     for i = 1, groupSize do
         local healTarget = mq.TLO.Group.Member(i)
 
-        if healTarget and healTarget() and not healTarget.OtherZone() and not healTarget.Offline() then
+        if healTarget and healTarget() and (healTarget.Distance3D() or 999) <= 300 and not (healTarget.Dead() or healTarget.OtherZone() or healTarget.Offline()) then
             if Globals.Constants.RGCasters:contains(healTarget.Class.ShortName()) then
-                if not healTarget.Dead() and healTarget.PctMana() < worstPct then
+                if healTarget.PctMana() < worstPct then
                     Logger.log_verbose("\aySo far %s is the worst off.", healTarget.DisplayName())
                     worstPct = healTarget.PctMana()
                     worstId = healTarget.ID()
@@ -917,57 +918,76 @@ function Combat.FindWorstHurtManaGroupMember(minMana)
         end
     end
 
-    --Still possibly carrying the BST ID, but only reports BST if under 100%, which is when they will self-Paragon
-    if worstId > 0 and worstPct < 100 then
+    if worstId > 0 then
         Logger.log_verbose("\agWorst HurtMana group member id is %d", worstId)
-    else
-        Logger.log_verbose("\agNo one is HurtMana!")
+        return worstId
     end
 
-    return (worstPct < minMana and worstId or 0)
+    Logger.log_verbose("\agNo one is HurtMana!")
+    return 0
 end
 
---- Finds the group member with the lowest health percentage.
+--- Finds the group member with the lowest health percentage (including ourselves or group pets)
 --- @param minHPs number The minimum health percentage to consider.
---- @return number The group member with the lowest health percentage, or nil if no member meets the criteria.
+--- @return number The group member with the lowest health percentage, or 0 if no member meets the criteria.
 function Combat.FindWorstHurtGroupMember(minHPs)
     local groupSize = mq.TLO.Group.Members()
-    local worstId = mq.TLO.Me.PctHPs() < minHPs and mq.TLO.Me.ID() or 0
-    local worstPct = mq.TLO.Me.PctHPs() < minHPs and mq.TLO.Me.PctHPs() or minHPs
+    local myHP = mq.TLO.Me.PctHPs()
+    local worstId = myHP < minHPs and mq.TLO.Me.ID() or 0
+    local worstPct = myHP < minHPs and myHP or minHPs
+    local tankId = 0
+    local tankPct = Config:GetSetting('MainHealPoint')
 
     Logger.log_verbose("\ayChecking for worst Hurt Group Members. Group Count: %d", groupSize)
 
     for i = 1, groupSize do
         local healTarget = mq.TLO.Group.Member(i)
 
-        if healTarget and healTarget() and not healTarget.OtherZone() and not healTarget.Offline() then
-            if not healTarget.Dead() and (healTarget.PctHPs() or 101) < worstPct then
-                Logger.log_verbose("\aySo far %s is the worst off.", healTarget.DisplayName())
-                -- this looks weird but it guards against a possible yield between the if above and this line where the healtarget might have died.
-                worstPct = (healTarget.PctHPs() or worstPct)
-                worstId = (healTarget.PctHPs() and healTarget.ID() or worstId)
+        if healTarget and healTarget() and (healTarget.Distance3D() or 999) <= 300 and not (healTarget.Dead() or healTarget.OtherZone() or healTarget.Offline()) then
+            -- Heal the aggro holder if they are in our group and below the mainheal point, no other checks needed
+            if Targeting.TargetIsType("NPC", mq.TLO.Target) and mq.TLO.Me.TargetOfTarget.ID() == healTarget.ID() and Targeting.BigHealsNeeded(healTarget) then
+                Logger.log_verbose("\agSomeone with aggro is hurt, prioritizing id %d", healTarget.ID())
+                return healTarget.ID()
             end
 
-            if Config:GetSetting('DoPetHeals') and (healTarget.Pet.ID() or 0) > 0 then
-                local petHP = healTarget.Pet.PctHPs() or 101
-                if petHP < worstPct and petHP < Config:GetSetting('PetHealPoint') then
-                    Logger.log_verbose("\aySo far %s's pet %s is the worst off.", healTarget.DisplayName(),
-                        healTarget.Pet.DisplayName())
+            -- Prioritize any tanks in the group that are under mainhealpoint, otherwise, treat them as normal group members
+            if Targeting.TargetIsATank(healTarget) and (healTarget.PctHPs() or 101) < tankPct then
+                tankPct = (healTarget.PctHPs() or tankPct)
+                tankId = (healTarget.PctHPs() and healTarget.ID() or tankId)
+            else
+                if (healTarget.PctHPs() or 101) < worstPct then
+                    Logger.log_verbose("\aySo far %s is the worst off.", healTarget.DisplayName())
                     -- this looks weird but it guards against a possible yield between the if above and this line where the healtarget might have died.
-                    worstPct = (healTarget.Pet.PctHPs() or worstPct)
-                    worstId = (healTarget.Pet.PctHPs() and healTarget.Pet.ID() or worstId)
+                    worstPct = (healTarget.PctHPs() or worstPct)
+                    worstId = (healTarget.PctHPs() and healTarget.ID() or worstId)
+                end
+
+                if Config:GetSetting('DoPetHeals') and (healTarget.Pet.ID() or 0) > 0 then
+                    local petHP = healTarget.Pet.PctHPs() or 101
+                    if petHP < worstPct and petHP < Config:GetSetting('PetHealPoint') then
+                        Logger.log_verbose("\aySo far %s's pet %s is the worst off.", healTarget.DisplayName(),
+                            healTarget.Pet.DisplayName())
+                        -- this looks weird but it guards against a possible yield between the if above and this line where the healtarget might have died.
+                        worstPct = (healTarget.Pet.PctHPs() or worstPct)
+                        worstId = (healTarget.Pet.PctHPs() and healTarget.Pet.ID() or worstId)
+                    end
                 end
             end
         end
     end
 
-    if worstId > 0 then
-        Logger.log_verbose("\agWorst hurt group member id is %d", worstId)
-    else
-        Logger.log_verbose("\agNo one is hurt!")
+    if tankId > 0 then
+        Logger.log_verbose("\agTank is hurt, prioritizing tank id %d", tankId)
+        return tankId
     end
 
-    return (worstPct < minHPs and worstId or 0)
+    if worstId > 0 then
+        Logger.log_verbose("\agWorst hurt group member id is %d", worstId)
+        return worstId
+    end
+
+    Logger.log_verbose("\agNo one is hurt!")
+    return 0
 end
 
 --- Finds the entity with the worst hurt mana exceeding a minimum threshold.
@@ -983,9 +1003,9 @@ function Combat.FindWorstHurtManaXT(minMana)
     for i = 1, xtSize do
         local healTarget = mq.TLO.Me.XTarget(i)
 
-        if healTarget and healTarget() and Targeting.TargetIsType("pc", healTarget) then
+        if healTarget and healTarget() and Targeting.TargetIsType("pc", healTarget) and (healTarget.Distance3D() or 0) < 300 then
             if Globals.Constants.RGCasters:contains(healTarget.Class.ShortName()) then -- berzerkers have special handing
-                if not healTarget.Dead() and healTarget.PctMana() < worstPct then
+                if healTarget.PctMana() < worstPct then
                     Logger.log_verbose("\aySo far %s is the worst off.", healTarget.DisplayName())
                     worstPct = healTarget.PctMana() or worstPct
                     worstId = healTarget.PctMana() and healTarget.ID() or worstId
@@ -1016,22 +1036,12 @@ function Combat.FindWorstHurtXT(minHPs)
     for i = 1, xtSize do
         local healTarget = mq.TLO.Me.XTarget(i)
 
-        if healTarget and healTarget() and Targeting.TargetIsType("pc", healTarget) then
+        if healTarget and healTarget() and Targeting.TargetIsType("pc", healTarget) and (healTarget.Distance3D() or 0) < 300 then
             local playerHP = healTarget.PctHPs() or 101
             if not healTarget.Dead() and playerHP < worstPct then
                 Logger.log_verbose("\aySo far %s is the worst off.", healTarget.DisplayName() or "Error")
                 worstPct = playerHP
                 worstId = healTarget.ID()
-            end
-
-            if Config:GetSetting('DoPetHeals') and (healTarget.Pet.ID() or 0) > 0 then
-                local petHP = healTarget.Pet.PctHPs() or 101
-                if petHP < worstPct and petHP < Config:GetSetting('PetHealPoint') then
-                    Logger.log_verbose("\aySo far %s's pet %s is the worst off.", healTarget.DisplayName() or "Error",
-                        healTarget.Pet.DisplayName() or "Error")
-                    worstPct = petHP
-                    worstId = healTarget.Pet.ID()
-                end
             end
         end
     end
@@ -1043,6 +1053,93 @@ function Combat.FindWorstHurtXT(minHPs)
     end
 
     return worstId
+end
+
+--- Finds the entity with the worst health condition that meets the minimum HP requirement.
+--- @param minHPs number The minimum HP threshold to consider.
+--- @return number The spawn id with the worst health condition that meets the criteria.
+function Combat.FindWorstHurtHealList(minHPs)
+    local worstId = 0
+    local worstPct = minHPs
+    local hpPct = 101
+
+    Logger.log_verbose("\ayChecking for worst Hurt from Heal List.")
+    for _, name in ipairs(Config:GetSetting('HealList') or {}) do
+        local healTarget = mq.TLO.Spawn(string.format("PC =%s", name))
+        if healTarget and healTarget() and (healTarget.Distance3D() or 0) < 300 and not healTarget.Dead() then
+            local heartbeat = Comms.GetPeerHeartbeatByName(name)
+
+            if heartbeat and heartbeat.Data and heartbeat.Data.HPs then
+                hpPct = tonumber(heartbeat.Data.HPs) or 101
+            else
+                hpPct = healTarget.PctHPs() or 101
+            end
+
+            if hpPct < worstPct then
+                Logger.log_verbose("\aySo far %s is the worst off.", healTarget.DisplayName() or "Error")
+                worstId = healTarget.ID()
+                worstPct = hpPct
+            end
+        end
+    end
+
+    if worstId > 0 then
+        Logger.log_verbose("\agWorst hurt on heal list id is %d", worstId)
+    else
+        Logger.log_verbose("\agNo one is hurt!")
+    end
+
+    return worstId
+end
+
+--- Finds the entity with the worst mana condition that meets the minimum Mana requirement.
+--- @param minMana number The minimum Mana threshold to consider.
+--- @return number The spawn id with the worst mana condition that meets the criteria.
+function Combat.FindWorstHurtManaHealList(minMana)
+    local worstId = 0
+    local worstPct = minMana
+    local manaPct = 101
+
+    Logger.log_verbose("\ayChecking for worst Hurt Mana from Heal List.")
+    for _, name in ipairs(Config:GetSetting('HealList') or {}) do
+        local healTarget = mq.TLO.Spawn(string.format("PC =%s", name))
+        if healTarget and healTarget() and (healTarget.Distance3D() or 0) < 300 and not healTarget.Dead() then
+            local heartbeat = Comms.GetPeerHeartbeatByName(name)
+
+            if heartbeat and heartbeat.Data and heartbeat.Data.Mana then
+                manaPct = tonumber(heartbeat.Data.Mana) or 101
+            end
+
+            if manaPct < worstPct then
+                Logger.log_verbose("\aySo far %s is the worst off mana.", healTarget.DisplayName() or "Error")
+                worstId = healTarget.ID()
+                worstPct = manaPct
+            end
+        end
+    end
+
+    if worstId > 0 then
+        Logger.log_verbose("\agWorst hurt mana on heal list id is %d", worstId)
+    else
+        Logger.log_verbose("\agNo one is hurt mana!")
+    end
+
+    return worstId
+end
+
+--- Routing function to find the entity with the worst mana condition that meets the minimum Mana requirement.
+--- @param minMana number The minimum Mana threshold to consider.
+--- @return number The spawn id with the worst mana condition that meets the criteria.
+function Combat.FindWorstHurtMana(minMana)
+    local worstId = Combat.FindWorstHurtManaGroupMember(minMana)
+    if worstId == 0 then
+        if Config:GetSetting('UseHealList') then
+            worstId = Combat.FindWorstHurtManaHealList(minMana)
+        else
+            worstId = Combat.FindWorstHurtManaXT(minMana)
+        end
+    end
+    return worstId or 0
 end
 
 --function to determine if we should AE taunt and optionally, if it is safe to do so

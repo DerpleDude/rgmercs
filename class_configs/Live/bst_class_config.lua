@@ -722,10 +722,7 @@ return {
             state = 1,
             steps = 1,
             load_cond = function() return Config:GetSetting('DoParagon') and Casting.CanUseAA("Focused Paragon of Spirits") end,
-            targetId = function(self)
-                return { Combat.FindWorstHurtManaGroupMember(Config:GetSetting('FParaPct')),
-                    Combat.FindWorstHurtManaXT(Config:GetSetting('FParaPct')), }
-            end,
+            targetId = function(self) return { Combat.FindWorstHurtMana(Config:GetSetting('FParaPct')), } end,
             cond = function(self, combat_state)
                 local downtime = combat_state == "Downtime" and Config:GetSetting('DowntimeFP') and Casting.OkayToBuff()
                 local combat = combat_state == "Combat"
