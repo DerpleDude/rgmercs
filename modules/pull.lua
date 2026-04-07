@@ -328,7 +328,7 @@ Module.DefaultConfig                   = {
         Tooltip = "Number of mobs in chain pull mode on xtarg before we stop pulling",
         Default = 3,
         FAQ = "How do I pull using the Chain mode? What is the Chain Count?",
-        Answer = "   Chain mode is intended for a non-tank, non-assist puller to pull a stream of mobs back to a camp, one at a time.\n\n" ..
+        Answer = "Chain mode is intended for a non-tank, non-assist puller to pull a stream of mobs back to a camp, one at a time.\n\n" ..
             "   Once the puller no longer has aggro, it should leave the camp to pull again, until the number of haters on xtarget count matches or exceeds the Chain Count.",
         Min = 1,
         Max = 100,
