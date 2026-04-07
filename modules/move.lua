@@ -87,9 +87,8 @@ Module.FAQ             = {
         Question = "What is a camp in RGMercs? How do I use one?",
         Answer = "Camping is setting a tether to a particular location.\n\n" ..
             "  Rather than chasing/following another PC, you will continually return to the vicinity of the camp location you've set.\n\n" ..
-            "  This mode is mutually-exclusive with Chase, i.e, you cannot Chase and Camp at the same time.\n
-            "  Enabling one disables the other.\n" ..
-            "  Camp settings can be adjusted in the Following category (Movement Options).",
+            "  This mode is mutually-exclusive with Chase, i.e, you cannot Chase and Camp at the same time. Enabling one disables the other." ..
+            "Camp settings can be adjusted in the Following category (Movement Options).",
         Settings_Used = "",
     },
 }
@@ -101,7 +100,7 @@ Module.DefaultConfig   = {
         Type = "Custom",
         Default = false,
         FAQ = "How do I set a camp?",
-        Answer = " You can set a camp using a button on the Movement tab, or by using the campon command (see command list) .",
+        Answer = "You can set a camp using a button on the Movement tab, or by using the campon command (see command list) .",
         OnChange = function(self) Movement.UpdateMapRadii() end,
     },
     [string.format("%s_Popped", Module._name)] = {
