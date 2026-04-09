@@ -1617,7 +1617,8 @@ function Module:OnZone()
         mq.delay(addDelay)
         self:SetPetHold()
     end
-    Module.TempSettings.ImmuneTargets = {} -- clear list of slow/snare/stun immune mobs
+    Module.TempSettings.ImmuneTargets = {}   -- clear list of slow/snare/stun immune mobs
+    Module.TempSettings.QueuedAbilities = {} -- clear queued actions
 end
 
 function Module:DoGetState()
