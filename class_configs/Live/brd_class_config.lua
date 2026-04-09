@@ -100,448 +100,461 @@ local _ClassConfig = {
         ['RunBuffSong'] = {
             -- Selo's Accelerato not used so that we don't go back to a short duration
             -- Other songs omitted due to issues with constant reinvis, etc.
-            "Selo's Accelerating Chorus",
-            "Selo's Accelerando",
+            "Selo's Accelerating Chorus",       -- level 49, SoL
+            "Selo's Accelerando",               -- level 5, Base Game
         },
         ['EndBreathSong'] = {
-            "Tarew's Aquatic Ayre", --Level 16
+            "Tarew's Aquatic Ayre",                 -- level 16, Base Game
         },
         ['AriaSong'] = {
-            "Aria of Kenburk",
-            "Aria of Tenisbre", -- 125
-            "Aria of Pli Xin Liako",
-            "Aria of Margidor",
-            "Aria of Begalru",
-            "Aria of Maetanrus",
-            "Aria of Va'Ker",
-            "Aria of the Orator",
-            "Aria of the Composer",
-            "Aria of the Poet",
-            "Performer's Psalm of Pyrotechnics",
-            "Ancient: Call of Power",
-            "Aria of the Artist",
-            "Yelhun's Mystic Call",
-            "Ancient: Call of Power",
-            "Eriki's Psalm of Power",
-            "Echo of the Trusik",
-            "Rizlona's Call of Flame",   -- overhaste/spell damage, level 64
+            "Aria of Kenburk",                      -- level 126, SoR
+            "Aria of Tenisbre",                     -- level 121, LS
+            "Aria of Pli Xin Liako",                -- level 116, ToL
+            "Aria of Margidor",                     -- level 111, ToV
+            "Aria of Begalru",                      -- level 106, RoS
+            "Aria of Maetanrus",                    -- level 101, TDS
+            "Aria of Va'Ker",                       -- level 96, RoF
+            "Aria of the Orator",                   -- level 91, VoA
+            "Aria of the Composer",                 -- level 86, HoT
+            "Aria of the Poet",                     -- level 81, SoD
+            "Aria of the Artist",                   -- level 76, SoF
+            "Ancient: Call of Power",               -- level 70, OoW
+            "Eriki's Psalm of Power",               -- level 69, OoW
+            "Yelhun's Mystic Call",                 -- level 68, OoW
+            "Echo of the Trusik",                   -- level 65, GoD
+            "Rizlona's Call of Flame",              -- level 64, PoP (overhaste/spell damage)
         },
-        ['OverhasteSong'] = {            -- before effects are combined in aria
-            "Warsong of the Vah Shir",   -- overhaste only, level 60
-            "Battlecry of the Vah Shir", -- overhaste only, level 52
+        ['OverhasteSong'] = {                   -- before effects are combined in aria
+            "Warsong of the Vah Shir",          -- level 60, SoL (overhaste only)
+            "Battlecry of the Vah Shir",        -- level 52, SoL (overhaste only)
         },
         ['SpellDmgSong'] = {             -- before effects are combined in aria
-            "Rizlona's Fire",            -- spell damage only, level 53
-            "Rizlona's Embers",          -- spell damage only, level 45
+            "Rizlona's Fire",            -- level 53, LDoN (spell damage only)
+            "Rizlona's Embers",          -- level 45, LDoN (spell damage only)
         },
         ['SufferingSong'] = {
-            "Sorrowful Song of Suffering IX",
-            "Kanghammer's Song of Suffering", -- 125
-            "Shojralen's Song of Suffering",
-            "Omorden's Song of Suffering",
-            "Travenro's Song of Suffering",
-            "Fjilnauk's Song of Suffering",
-            "Kaficus' Song of Suffering",
-            "Hykast's Song of Suffering",
-            "Noira's Song of Suffering",
-            "Storm Blade",
-            "Song of the Storm",
+            "Sorrowful Song of Suffering IX",               -- level 130, SoR
+            "Kanghammer's Song of Suffering",               -- level 125, LS
+            "Shojralen's Song of Suffering",                -- level 119, ToL
+            "Omorden's Song of Suffering",                  -- level 114, ToV
+            "Travenro's Song of Suffering",                 -- level 109, RoS
+            "Fjilnauk's Song of Suffering",                 -- level 104, TDS
+            "Kaficus' Song of Suffering",                   -- level 99, RoF
+            "Hykast's Song of Suffering",                   -- level 94, VoA
+            "Noira's Song of Suffering",                    -- level 89. HoT
+            "Storm Blade",                                  -- level 69, DoN (not the same song line, but is a HP decrease proc)
+            "Song of the Storm",                            -- level 61, DoN (not the same song line, but is a HP decrease proc)
         },
         ['SprySonataSong'] = {
-            "Boberstler's Spry Sonata",
-            "Dhakka's Spry Sonata",
-            "Xetheg's Spry Sonata",
-            "Kellek's Spry Sonata",
-            "Kluzen's Spry Sonata",
-            "Doben's Spry Sonata",
-            "Terasal's Spry Sonata",
-            "Sionachie's Spry Sonata",
-            "Coldcrow's Spry Sonata",
+            "Boberstler's Spry Sonata",             -- level 128, SoR
+            "Dhakka's Spry Sonata",                 -- level 123, LS
+            "Xetheg's Spry Sonata",                 -- level 118, ToL
+            "Kellek's Spry Sonata",                 -- level 113, ToV
+            "Kluzen's Spry Sonata",                 -- level 108, RoS
+            "Doben's Spry Sonata",                  -- level 98, RoF
+            "Terasal's Spry Sonata",                -- level 93, VoA
+            "Sionachie's Spry Sonata",              -- level 88, HoT
+            "Dance of the Dragorn",                 -- level 83, SoD
+            "Coldcrow's Spry Sonata",               -- level 78, SoF
         },
         ['CrescendoSong'] = {
-            -- CrescendoSong - Level Range 75 - 114
-            "Alliana's Lively Crescendo",
-            "Regar's Lively Crescendo", -- 125
-            "Zelinstein's Lively Crescendo",
-            "Zburator's Lively Crescendo",
-            "Jembel's Lively Crescendo",
-            "Silisia's Lively Crescendo",
-            "Motlak's Lively Crescendo",
-            "Kolain's Lively Crescendo",
-            "Lyssa's Lively Crescendo",
-            "Gruber's Lively Crescendo",
-            "Kaerra's Spirited Crescendo",
-            "Veshma's Lively Crescendo",
+            "Alliana's Lively Crescendo",           -- level 129, SoR
+            "Regar's Lively Crescendo",             -- level 124. LS
+            "Zelinstein's Lively Crescendo",        -- level 119, ToL
+            "Zburator's Lively Crescendo",          -- level 114, ToV
+            "Jembel's Lively Crescendo",            -- level 109, RoS
+            "Silisia's Lively Crescendo",           -- level 104, TDS
+            "Motlak's Lively Crescendo",            -- level 100, RoF
+            "Kolain's Lively Crescendo",            -- level 95, VoA
+            "Lyssa's Lively Crescendo",             -- level 90, HoT
+            "Gruber's Lively Crescendo",            -- level 85, SoD
+            "Kaerra's Spirited Crescendo",          -- level 80, SoF
+            "Veshma's Lively Crescendo",            -- level 75, TSS
         },
         ['ArcaneSong'] = {
-            "Arcane Aria XII",
-            "Arcane Rhythm", -- 125
-            "Arcane Harmony",
-            "Arcane Symphony",
-            "Arcane Ballad",
-            "Arcane Melody",
-            "Arcane Hymn",
-            "Arcane Address",
-            "Arcane Chorus",
-            "Arcane Arietta",
-            "Arcane Anthem",
-            "Arcane Aria",
+            "Arcane Aria XII",          -- level 129, SoR
+            "Arcane Rhythm",            -- level 124, LS
+            "Arcane Harmony",           -- level 120, ToL
+            "Arcane Symphony",          -- level 115, ToV
+            "Arcane Ballad",            -- level 110, RoS
+            "Arcane Melody",            -- level 105, TDS
+            "Arcane Hymn",              -- level 100, RoF
+            "Arcane Address",           -- level 95, VoA
+            "Arcane Chorus",            -- level 90, HoT
+            "Arcane Arietta",           -- level 85, SoD
+            "Arcane Anthem",            -- level 80, SoF (only spell proc)
+            "Arcane Aria",              -- level 70, PoR (only spell proc)
         },
         ['InsultSong'] = {
             --Bard Timers alternate between 6 and 3 every expansion. (Update: TOB has thrown this on its head)
             --We have to manage selection so we don't have insultsong2 using the same timer.
-            --"Cutting Insult X", -- 127 push, timer 6
-            "Yaran's Disdain",  -- 123 nopush, timer 3,
-            -- "Eoreg's Insult",   -- 122 push, timer 3, LS
-            "Nord's Disdain",   -- 118 nopush, timer 6, NoS
-            -- "Sogran's Insult",  -- 117 push, timer 6, ToL
-            "Yelinak's Insult", -- 115 nopush, timer 3
-            --"Omorden's Insult",     -- 112 push, timer 3
-            "Sathir's Insult",  -- 110 nopush, timer 6
-            --"Travenro's Insult",    -- 107 push, timer 6
-            "Tsaph's Insult",   -- 105 nopush, timer 3
-            --"Fjilnauk's Insult",    -- 102 push, timer 3
-            --"Kaficus' Insult",      -- 100 push, timer 6 --Note push/nopush levels reversed this expansion compared to later
-            "Garath's Insult",  -- 97 nopush, timer 6
-            "Hykast's Insult",  -- 95 nopush, timer 3
-            "Lyrin's Insult",   -- 90 nopush, timer 6
-            "Venimor's Insult", -- 85, nopush, timer 3
+            -- "Cutting Insult X",      -- level 127, SoR (push, timer 6)
+            "Yaran's Disdain",      -- level 123, TOB (nopush, timer 3)
+            -- "Eoreg's Insult",        -- level 122, LS (push, timer 3)
+            "Nord's Disdain",       -- level 118, NoS (nopush, timer 6)
+            -- "Sogran's Insult",       -- level 117, ToL (push, timer 6)
+            "Yelinak's Insult",     -- level 115, CoV (nopush, timer 3)
+            --"Omorden's Insult",       -- level 112, ToV (push, timer 3)
+            "Sathir's Insult",      -- level 110, RoS (nopush, timer 6)
+            --"Travenro's Insult",      -- level 107, RoS (push, timer 6)
+            "Tsaph's Insult",       -- level 105, Eok (nopush, timer 3)
+            -- "Fjilnauk's Insult",      -- level 102, TDS (push, timer 3)
+            "Kaficus' Insult",        -- level 100, RoF (push, timer 6) --Note push/nopush levels reversed this expansion compared to later
+            -- "Garath's Insult",      -- level 97, CoTH (nopush, timer 6)
+            "Hykast's Insult",      -- level 95, VoA (push, timer 3)
+            -- "Lyrin's Insult",       -- level 90, HoT (push, timer 6)
+            "Venimor's Insult",     -- level 85, UF (push, timer 3)
             -- Below Level 85 This line turns into "bellow" instead of "Insult" and I don't know of anyone who uses them, but keeping for posterity
-            -- "Bellow of Chaos", --66, interrupt
-            -- "Brusco's Bombastic Bellow", --55, stun
-            -- "Brusco's Boastful Bellow", --12,
+            -- "Bellow of Chaos",               -- level 66, OoW (interrupt)
+            -- "Brusco's Bombastic Bellow",     -- level 55, RoK (stun)
+            -- "Brusco's Boastful Bellow",      -- level 12, Base Game
         },
         ['InsultSong2'] = {
-            -- "Cutting Insult X", -- 127 push, timer 6
-            "Yaran's Disdain",  -- 123 nopush, timer 3,
-            -- "Eoreg's Insult",   -- 122 push, timer 3, LS
-            "Nord's Disdain",   -- 118 nopush, timer 6, NoS
-            -- "Sogran's Insult",  -- 117 push, timer 6, ToL
-            "Yelinak's Insult", -- 115 nopush, timer 3
-            --"Omorden's Insult",     -- 112 push, timer 3
-            "Sathir's Insult",  -- 110 nopush, timer 6
-            --"Travenro's Insult",    -- 107 push, timer 6
-            "Tsaph's Insult",   -- 105 nopush, timer 3
-            --"Fjilnauk's Insult",    -- 102 push, timer 3
-            --"Kaficus' Insult",      -- 100 push, timer 6 --Note push/nopush levels reversed this expansion compared to later
-            "Garath's Insult",  -- 97 nopush, timer 6
-            "Hykast's Insult",  -- 95 nopush, timer 3
-            "Lyrin's Insult",   -- 90 nopush, timer 6
-            "Venimor's Insult", -- 85, nopush, timer 3
+            --Bard Timers alternate between 6 and 3 every expansion. (Update: TOB has thrown this on its head)
+            --We have to manage selection so we don't have insultsong2 using the same timer.
+            "Cutting Insult X",       -- level 127, SoR (push, timer 6)
+            -- "Yaran's Disdain",      -- level 123, TOB (nopush, timer 3)
+            "Eoreg's Insult",        -- level 122, LS (push, timer 3)
+            -- "Nord's Disdain",       -- level 118, NoS (nopush, timer 6)
+            "Sogran's Insult",       -- level 117, ToL (push, timer 6)
+            -- "Yelinak's Insult",     -- level 115, CoV (nopush, timer 3)
+            "Omorden's Insult",       -- level 112, ToV (push, timer 3)
+            -- "Sathir's Insult",      -- level 110, RoS (nopush, timer 6)
+            "Travenro's Insult",      -- level 107, RoS (push, timer 6)
+            -- "Tsaph's Insult",       -- level 105, Eok (nopush, timer 3)
+            "Fjilnauk's Insult",      -- level 102, TDS (push, timer 3)
+            -- "Kaficus' Insult",        -- level 100, RoF (push, timer 6) --Note push/nopush levels reversed this expansion compared to later
+            "Garath's Insult",      -- level 97, CoTH (nopush, timer 6)
+            -- "Hykast's Insult",      -- level 95, VoA (push, timer 3)
+            "Lyrin's Insult",       -- level 90, HoT (push, timer 6)
+            -- "Venimor's Insult",     -- level 85, UF (push, timer 3)
+            -- Below Level 85 This line turns into "bellow" instead of "Insult" and I don't know of anyone who uses them, but keeping for posterity
+            -- "Bellow of Chaos",               -- level 66, OoW (interrupt)
+            -- "Brusco's Bombastic Bellow",     -- level 55, RoK (stun)
+            -- "Brusco's Boastful Bellow",      -- level 12, Base Game
         },
         ['LLInsultSong'] = {
-            "Venimor's Insult", -- 85, nopush, timer 3
+            "Venimor's Insult", -- 85, push, timer 3
         },
         ['LLInsultSong2'] = {
-            "Lyrin's Insult", -- 90 nopush, timer 6
+            "Lyrin's Insult", -- 90 push, timer 6
         },
         ['DichoSong'] = {
             -- DichoSong Level Range - 101+
-            "Reciprocal Psalm",
-            "Ecliptic Psalm",
-            "Composite Psalm",
-            "Dissident Psalm",
-            "Dichotomic Psalm",
+            "Reciprocal Psalm",         -- level 121, ToB
+            "Ecliptic Psalm",           -- level 116, NoS
+            "Composite Psalm",          -- level 111, CoV
+            "Dissident Psalm",          -- level 106, TBL
+            "Dichotomic Psalm",         -- level 101, TBM
         },
         ['BardDPSAura'] = {
-            "Aura of Kenburk",
-            "Aura of Tenisbre", -- 125
-            "Aura of Pli Xin Liako",
-            "Aura of Margidor",
-            "Aura of Begalru",
-            "Aura of Maetanrus",
-            "Aura of Va'Ker",
-            "Aura of the Orator",
-            "Aura of the Composer",
-            "Aura of the Poet",
-            "Aura of the Artist",
-            "Aura of the Muse",
-            "Aura of Insight",
+            "Aura of Kenburk",              -- level 130, SoR
+            "Aura of Tenisbre",             -- level 125, LS
+            "Aura of Pli Xin Liako",        -- level 120, ToL
+            "Aura of Margidor",             -- level 115, ToV
+            "Aura of Begalru",              -- level 110, RoS
+            "Aura of Maetanrus",            -- level 105, TDS
+            "Aura of Va'Ker",               -- level 100, RoF
+            "Aura of the Orator",           -- level 95, VoA
+            "Aura of the Composer",         -- level 90, HoT
+            "Aura of the Poet",             -- level 85, SoD
+            "Aura of the Artist",           -- level 80, SoF
+            "Aura of the Muse",             -- level 70, PoR
+            "Aura of Insight",              -- level 55, PoR
         },
         ['BardRegenAura'] = {
-            "Aura of Quellious",
-            "Aura of Shalowain",
-            "Aura of Shei Vinitras",
-            "Aura of Vhal`Sera",
-            "Aura of Xigam",
-            "Aura of Sionachie",
-            "Aura of Salarra",
-            "Aura of Lunanyn",
-            "Aura of Renewal",
-            "Aura of Rodcet",
+            "Aura of Quellious",            -- level 127, SoR
+            "Aura of Shalowain",            -- level 122, LS
+            "Aura of Shei Vinitras",        -- level 117, ToL
+            "Aura of Vhal`Sera",            -- level 112, ToV
+            "Aura of Xigam",                -- level 107, RoS
+            "Aura of Sionachie",            -- level 102, TDS
+            "Aura of Salarra",              -- level 97, RoF
+            "Aura of Lunanyn",              -- level 92, VoA
+            "Aura of Renewal",              -- level 87, HoT
+            "Aura of Rodcet",               -- level 82, SoD
         },
         ['GroupRegenSong'] = {
             --Note level 77 pulse only offers a heal% buff and is not included here.
-            "Pulse of Quellious",
-            "Pulse of August", -- 125
-            "Pulse of Nikolas",
-            "Pulse of Vhal`Sera",
-            "Pulse of Xigam",
-            "Pulse of Sionachie",
-            "Pulse of Salarra",
-            "Pulse of Lunanyn",
-            "Pulse of Renewal",              -- 86 start hp/mana/endurance
-            "Cantata of Rodcet",             -- 81
-            "Cantata of Restoration",        -- 76
-            "Erollisi's Cantata",            -- 71
-            "Cantata of Life",               -- 67
-            "Wind of Marr",                  -- 62
-            "Cantata of Replenishment",      -- 55
-            "Cantata of Soothing",           -- 34 start hp/mana. Slightly less mana. They can custom if it they want the 2 mana/tick
-            "Cassindra's Chorus of Clarity", -- 32, mana only
-            "Cassindra's Chant of Clarity",  -- 20, mana only
-            "Hymn of Restoration",           -- 7, hp only
+            "Pulse of Quellious",               -- level 126, SoR
+            "Pulse of August",                  -- level 121, LS
+            "Pulse of Nikolas",                 -- level 116, ToL
+            "Pulse of Vhal`Sera",               -- level 111, ToV
+            "Pulse of Xigam",                   -- level 106, RoS
+            "Pulse of Sionachie",               -- level 101, TDS
+            "Pulse of Salarra",                 -- level 96, RoF
+            "Pulse of Lunanyn",                 -- level 91, VoA
+            "Pulse of Renewal",                 -- levle 86 (start hp/mana/endurance/increased healing)
+            "Cantata of Rodcet",                -- level 81, SoD
+            "Cantata of Restoration",           -- level 76, SoF
+            "Erollisi's Cantata",               -- level 71, TSS
+            "Cantata of Life",                  -- level 67, OoW
+            "Wind of Marr",                     -- level 62, PoP
+            "Cantata of Replenishment",         -- level 55, RoK
+            "Cantata of Soothing",              -- level 34, SoV (start hp/mana. Slightly less mana. They can custom if it they want the 2 mana/tick)
+            "Cassindra's Chorus of Clarity",    -- level 32, Base Game (mana only)
+            "Cassindra's Chant of Clarity",     -- level 20, SoL (mana only)
+            "Hymn of Restoration",              -- level 6, Base Game (hp only)
         },
         ['AreaRegenSong'] = {
-            "Chorus of Quellious",
-            "Chorus of Shalowain",     -- 123
-            "Chorus of Shei Vinitras", -- 118
-            "Chorus of Vhal`Sera",     -- 113
-            "Chorus of Xigam",         -- 108
-            "Chorus of Sionachie",     -- 103
-            "Chorus of Salarra",       -- 98
-            "Chorus of Lunanyn",       -- 93
-            "Chorus of Renewal",       -- 88
-            "Chorus of Rodcet",        -- 83
-            "Chorus of Restoration",   -- 78
-            "Erollisi's Chorus",       -- 73
-            "Chorus of Life",          -- 69
-            "Chorus of Marr",          -- 64
-            "Ancient: Lcea's Lament",  -- 60
-            "Chorus of Replenishment", -- 58
+            "Chorus of Quellious",          -- level 125, SoR
+            "Chorus of Shalowain",          -- level 123, LS
+            "Chorus of Shei Vinitras",      -- level 118, ToL
+            "Chorus of Vhal`Sera",          -- level 113, ToV
+            "Chorus of Xigam",              -- level 108, RoS
+            "Chorus of Sionachie",          -- level 103, TDS
+            "Chorus of Salarra",            -- level 98, RoF
+            "Chorus of Lunanyn",            -- level 93, VoA
+            "Chorus of Renewal",            -- level 88, HoT
+            "Chorus of Rodcet",             -- level 83, SoD
+            "Chorus of Restoration",        -- level 78, SoF
+            "Erollisi's Chorus",            -- level 73, TSS
+            "Chorus of Life",               -- level 69, OoW
+            "Chorus of Marr",               -- level 64, PoP
+            "Ancient: Lcea's Lament",       -- level 60, SoL
+            "Chorus of Replenishment",      -- level 58, SoL
         },
         ['WarMarchSong'] = {
-            "War March of the Burning Host",
-            "War March of Nokk", -- 125
-            "War March of Centien Xi Va Xakra",
-            "War March of Radiwol",
-            "War March of Dekloaz",
-            "War March of Jocelyn",
-            "War March of Protan",
-            "War March of Illdaera",
-            "War March of Dagda",
-            "War March of Brekt",
-            "War March of Meldrath",
-            "War March of Muram",
-            "War March of the Mastruq",
-            "Warsong of Zek",
-            "McVaxius' Rousing Rondo",
-            "Vilia's Chorus of Celerity",
-            "Verses of Victory",
-            "McVaxius' Berserker Crescendo",
-            "Vilia's Verses of Celerity",
-            "Anthem de Arms",
+            "War March of the Burning Host",        -- level 129, SoR 
+            "War March of Nokk",                    -- level 124, LS
+            "War March of Centien Xi Va Xakra",     -- level 119, ToL
+            "War March of Radiwol",                 -- level 114, ToV
+            "War March of Dekloaz",                 -- level 109, RoS
+            "War March of Jocelyn",                 -- level 104, TDS
+            "War March of Protan",                  -- level 99, RoF
+            "War March of Illdaera",                -- level 94, VoA
+            "War March of Dagda",                   -- level 89, HoT
+            "War March of Brekt",                   -- level 84, SoD
+            "War March of Meldrath",                -- level 79, SoF
+            "War March of Muram",                   -- level 68, OoW
+            "War March of the Mastruq",             -- level 65, GoD
+            "Warsong of Zek",                       -- level 62, PoP
+            "McVaxius' Rousing Rondo",              -- level 57, RoK
+            "Vilia's Chorus of Celerity",           -- level 54, RoK (melee haste only, 45%)
+            "Verses of Victory",                    -- level 50, Base Game
+            "McVaxius' Berserker Crescendo",        -- level 42, Base Game
+            "Vilia's Verses of Celerity",           -- level 36, Base Game
+            "Anthem de Arms",                       -- level 10, Base Game
         },
         ['FireBuffSong'] = {
             -- CasterAriaSong - Level Range 72+
-            "Severyn's Aria",
-            "Flariton's Aria", -- 125
-            "Constance's Aria",
-            "Sontalak's Aria",
-            "Qunard's Aria",
-            "Nilsara's Aria",
-            "Gosik's Aria",
-            "Daevan's Aria",
-            "Sotor's Aria",
-            "Talendor's Aria",
-            "Performer's Explosive Aria",
+            "Severyn's Aria",                       -- level 127, SoR
+            "Flariton's Aria",                      -- level 122, LS
+            "Constance's Aria",                     -- level 118, ToL
+            "Sontalak's Aria",                      -- level 113, ToV
+            "Qunard's Aria",                        -- level 108, RoS
+            "Nilsara's Aria",                       -- level 103, TDS
+            "Gosik's Aria",                         -- level 98, RoF
+            "Daevan's Aria",                        -- level 93, VoA
+            "Sotor's Aria",                         -- level 88, HoT
+            "Talendor's Aria",                      -- level 83, SoD
+            "Performer's Explosive Aria",           -- level 78, SoF
+            "Performer's Psalm of Pyrotechnics",    -- level 73, TSS
         },
         ['SlowSong'] = {
-            "Requiem of Time",
-            "Angstlich's Assonance",    --snare/slow
-            "Largo's Assonant Binding", --snare/slow
-            "Selo's Consonant Chain",   --snare/slow
+            "Requiem of Time",              -- level 64, PoP (slow only, best slow at 54%)
+            "Angstlich's Assonance",        -- level 60, RoK, 40% slow (slow/HP DoT)
+            "Largo's Assonant Binding",     -- level 51, RoK, (35% slow, 131% snare)
+            "Selo's Consonant Chain",       -- level 23, Base Game (40 % slow, 160% snare)
         },
         ['AESlowSong'] = {
             -- AESlowSong - Level Range 20 - 114 (Single target works better)
-            "Zinnia's Melodic Binding", -- 125
-            "Radiwol's Melodic Binding",
-            "Dekloaz's Melodic Binding",
-            "Protan's Melodic Binding",
-            "Selo's Assonant Strain",
-            "Largo's Melodic Binding",
+            "Zinnia's Melodic Binding",         -- level 124, LS 
+            "Radiwol's Melodic Binding",        -- level 114, ToV
+            "Dekloaz's Melodic Binding",        -- level 109, RoS
+            "Protan's Melodic Binding",         -- level 99, RoF
+            "Zuriki's Song of Shenanigans",     -- level 67, OoW
+            "Melody of Mischief",               -- level 62, PoP
+            "Selo's Assonant Strain",           -- level 54, RoK
+            "Selo's Chords of Cessation",       -- level 48, Base Game
+            "Largo's Melodic Binding",          -- level 20, Base Game
         },
         ['AccelerandoSong'] = {
-            "Alleviating Accelerando VIII",
-            "Appeasing Accelerando", -- 125
-            "Satisfying Accelerando",
-            "Placating Accelerando",
-            "Atoning Accelerando",
-            "Allaying Accelerando",
-            "Ameliorating Accelerando",
-            "Assuaging Accelerando",
-            "Alleviating Accelerando",
+            "Alleviating Accelerando VIII",     -- level 128, SoR
+            "Appeasing Accelerando",            -- level 123, LS
+            "Satisfying Accelerando",           -- level 118 ToL
+            "Placating Accelerando",            -- level 113, ToV
+            "Atoning Accelerando",              -- level 108, RoS
+            "Allaying Accelerando",             -- level 103, TDS
+            "Ameliorating Accelerando",         -- level 98, RoF
+            "Assuaging Accelerando",            -- level 93, VoA
+            "Alleviating Accelerando",          -- level 88, HoT
         },
         ['SpitefulSong'] = {
             -- SpitefulSong - Level Range 90 -
-            "Matriarch's Spiteful Lyric",
-            "Tatalros' Spiteful Lyric", -- 125
-            "Von Deek's Spiteful Lyric",
-            "Omorden's Spiteful Lyric",
-            "Travenro's Spiteful Lyric",
-            "Fjilnauk's Spiteful Lyric",
-            "Kaficus' Spiteful Lyric",
-            "Hykast's Spiteful Lyric",
-            "Lyrin's Spiteful Lyric",
+            "Matriarch's Spiteful Lyric",       -- level 130, SoR
+            "Tatalros' Spiteful Lyric",         -- level 125, LS
+            "Von Deek's Spiteful Lyric",        -- level 120, ToL
+            "Omorden's Spiteful Lyric",         -- level 115, ToV
+            "Travenro's Spiteful Lyric",        -- level 110, RoS
+            "Fjilnauk's Spiteful Lyric",        -- level 105, TDS
+            "Kaficus' Spiteful Lyric",          -- level 100, RoF
+            "Hykast's Spiteful Lyric",          -- level 95, VoA
+            "Lyrin's Spiteful Lyric",           -- level 90, HoT
         },
         ['RecklessSong'] = {
-            "Onkrin's Reckless Renewal",
-            "Grayleaf's Reckless Renewal", -- 125
-            "Kai's Reckless Renewal",
-            "Reivaj's Reckless Renewal",
-            "Rigelon's Reckless Renewal",
-            "Rytan's Reckless Renewal",
-            "Ruaabri's Reckless Renewal",
-            "Ryken's Reckless Renewal",
+            "Onkrin's Reckless Renewal",        -- level 128, SoR
+            "Grayleaf's Reckless Renewal",      -- level 125, LS
+            "Kai's Reckless Renewal",           -- level 118, ToL
+            "Reivaj's Reckless Renewal",        -- level 113, ToV
+            "Rigelon's Reckless Renewal",       -- level 108, RoS
+            "Rytan's Reckless Renewal",         -- level 103, TDS
+            "Ruaabri's Reckless Renewal",       -- level 98, RoF
+            "Ryken's Reckless Renewal",         -- level 93 VoA
         },
         ['ColdBuffSong'] = {
             -- ColdBuffSong - Level Range 72 - 112 **
-            "Fatesong of the Polar Vortex",
-            "Fatesong of Zoraxmen", -- 125
-            "Fatesong of Lucca",
-            "Fatesong of Radiwol",
-            "Fatesong of Dekloaz",
-            "Fatesong of Jocelyn",
-            "Fatesong of Protan",
-            "Fatesong of Illdaera",
-            "Fatesong of Fergar",
-            "Fatesong of the Gelidran",
-            "Garadell's Fatesong",
-            "Weshlu's Chillsong Aria",
+            "Fatesong of the Polar Vortex",     -- level 127, SoR
+            "Fatesong of Zoraxmen",             -- level 122, LS
+            "Fatesong of Lucca",                -- level 117, ToL
+            "Fatesong of Radiwol",              -- level 112, ToV
+            "Fatesong of Dekloaz",              -- level 107, RoS
+            "Fatesong of Jocelyn",              -- level 102, TDS
+            "Fatesong of Protan",               -- level 97, RoF
+            "Fatesong of Illdaera",             -- level 92, VoA
+            "Fatesong of Fergar",               -- level 87, HoT
+            "Fatesong of the Gelidran",         -- level 82, SoD
+            "Garadell's Fatesong",              -- level 77, SoF
+            "Weshlu's Chillsong Aria",          -- level 72, TSS
         },
         ['DotBuffSong'] = {
             -- Fire & Magic Dots song
-            "Danfol's Psalm of Potency",
-            "Tatalros' Psalm of Potency", -- 125
-            "Fyrthek Fior's Psalm of Potency",
-            "Velketor's Psalm of Potency",
-            "Akett's Psalm of Potency",
-            "Horthin's Psalm of Potency",
-            "Siavonn's Psalm of Potency",
-            "Wasinai's Psalm of Potency",
-            "Lyrin's Psalm of Potency",
-            "Druzzil's Psalm of Potency",
-            "Erradien's Psalm of Potency",
+            "Danfol's Psalm of Potency",            -- level 128, SoR
+            "Tatalros' Psalm of Potency",           -- level 123, LS 
+            "Fyrthek Fior's Psalm of Potency",      -- level 118, ToL
+            "Velketor's Psalm of Potency",          -- level 113, ToV
+            "Akett's Psalm of Potency",             -- level 108, RoS
+            "Horthin's Psalm of Potency",           -- level 103, TDS
+            "Siavonn's Psalm of Potency",           -- level 98, RoF
+            "Wasinai's Psalm of Potency",           -- level 93, VoA
+            "Lyrin's Psalm of Potency",             -- level 88, HoT
+            "Druzzil's Psalm of Potency",           -- level 83, SoD
+            "Erradien's Psalm of Potency",          -- level 78, SoF
         },
         ['FireDotSong'] = {
-            "Severyn's Chant of Flame",
-            "Kindleheart's Chant of Flame", -- 125
-            "Shak Dathor's Chant of Flame",
-            "Sontalak's Chant of Flame",
-            "Qunard's Chant of Flame",
-            "Nilsara's Chant of Flame",
-            "Gosik's Chant of Flame",
-            "Daevan's Chant of Flame",
-            "Sotor's Chant of Flame",
-            "Talendor's Chant of Flame",
-            "Tjudawos' Chant of Flame",
-            "Vulka's Chant of Flame",
-            "Tuyen's Chant of Fire",
-            "Tuyen's Chant of Flame",
+            "Severyn's Chant of Flame",             -- level 130, SoR
+            "Kindleheart's Chant of Flame",         -- level 125, LS
+            "Shak Dathor's Chant of Flame",         -- level 120, ToL
+            "Sontalak's Chant of Flame",            -- level 115, ToV
+            "Qunard's Chant of Flame",              -- level 110, RoS
+            "Nilsara's Chant of Flame",             -- level 105, TDS
+            "Gosik's Chant of Flame",               -- level 100, RoF
+            "Daevan's Chant of Flame",              -- level 95, VoA
+            "Sotor's Chant of Flame",               -- level 90, HoT
+            "Talendor's Chant of Flame",            -- level 85, SoD
+            "Tjudawos' Chant of Flame",             -- level 80 SoF
+            "Vulka's Chant of Flame",               -- level 70, OoW
+            "Tuyen's Chant of Fire",                -- level 65, PoP
+            "Tuyen's Chant of Flame",               -- level 38, Base Game
             -- Misc Dot -- Or Minsc Dot (HEY HEY BOO BOO!)
-            "Ancient: Chaos Chant",
-            "Angstlich's Assonance",
-            "Fufil's Diminishing Dirge",
-            "Fufil's Curtailing Chant",
+            "Ancient: Chaos Chant",                 -- level 65, GoD
+            "Angstlich's Assonance",                -- level 60, RoK (also decrease melee slow 40%)
+            "Fufil's Diminishing Dirge",            -- level 60, LDoN (also decrease magic resist 34)
+            "Fufil's Curtailing Chant",             -- level 30, Base Game
         },
         ['IceDotSong'] = {
-            "Tsikut's Chant of Frost",
-            "Swarn's Chant of Frost",
-            "Sylra Fris' Chant of Frost",
-            "Yelinak's Chant of Frost",
-            "Ekron's Chant of Frost",
-            "Kirchen's Chant of Frost",
-            "Edoth's Chant of Frost",
-            "Kalbrok's Chant of Frost",
-            "Fergar's Chant of Frost",
-            "Gorenaire's Chant of Frost",
-            "Zeixshi-Kar's Chant of Frost",
-            "Vulka's Chant of Frost",
-            "Tuyen's Chant of Ice",
-            "Tuyen's Chant of Frost",
+            "Tsikut's Chant of Frost",              -- level 127, SoR
+            "Swarn's Chant of Frost",               -- level 122, LS
+            "Sylra Fris' Chant of Frost",           -- level 117, ToL
+            "Yelinak's Chant of Frost",             -- level 112, ToV
+            "Ekron's Chant of Frost",               -- level 107, RoS
+            "Kirchen's Chant of Frost",             -- level 102 TDS
+            "Edoth's Chant of Frost",               -- level 97, RoF
+            "Kalbrok's Chant of Frost",             -- level 92, VoA
+            "Fergar's Chant of Frost",              -- level 87, HoT
+            "Gorenaire's Chant of Frost",           -- level 82, SoD
+            "Zeixshi-Kar's Chant of Frost",         -- level 77, SoF
+            "Vulka's Chant of Frost",               -- Level 67, OW
+            "Tuyen's Chant of Ice",                 -- level 63, PoP
+            "Tuyen's Chant of Frost",               -- level 46, Base Game
             -- Misc Dot -- Or Minsc Dot (HEY HEY BOO BOO!)
-            "Ancient: Chaos Chant",
-            "Angstlich's Assonance",
-            "Fufil's Diminishing Dirge",
-            "Fufil's Curtailing Chant",
+            "Ancient: Chaos Chant",                 -- level 65, GoD
+            "Angstlich's Assonance",                -- level 60, RoK (also decrease melee slow 40%)
+            "Fufil's Diminishing Dirge",            -- level 60, LDoN (also decrease magic resist 34)
+            "Fufil's Curtailing Chant",             -- level 30, Base Game
         },
         ['PoisonDotSong'] = {
-            "Khrosik's Chant of Poison",
-            "Marsin's Chant of Poison",
-            "Cruor's Chant of Poison",
-            "Malvus's Chant of Poison",
-            "Nexona's Chant of Poison",
-            "Serisaria's Chant of Poison",
-            "Slaunk's Chant of Poison",
-            "Hiqork's Chant of Poison",
-            "Spinechiller's Chant of Poison",
-            "Severilous' Chant of Poison",
-            "Kildrukaun's Chant of Poison",
-            "Vulka's Chant of Poison",
-            "Tuyen's Chant of Venom",
-            "Tuyen's Chant of Poison",
+            "Khrosik's Chant of Poison",            -- level 128, SoR
+            "Marsin's Chant of Poison",             -- level 123, LS
+            "Cruor's Chant of Poison",              -- level 118, ToL
+            "Malvus's Chant of Poison",             -- level 113, ToV
+            "Nexona's Chant of Poison",             -- level 108, RoS
+            "Serisaria's Chant of Poison",          -- level 103, TDS
+            "Slaunk's Chant of Poison",             -- level 98, RoF
+            "Hiqork's Chant of Poison",             -- level 93, VoA
+            "Spinechiller's Chant of Poison",       -- level 88, HoT
+            "Severilous' Chant of Poison",          -- level 83 SoD
+            "Kildrukaun's Chant of Poison",         -- level 78, SoF
+            "Vulka's Chant of Poison",              -- level 68, OoW
+            "Tuyen's Chant of Venom",               -- level 63, PoP
+            "Tuyen's Chant of Poison",              -- level 50, PoP
             -- Misc Dot -- Or Minsc Dot (HEY HEY BOO BOO!)
-            "Ancient: Chaos Chant",
-            "Angstlich's Assonance",
-            "Fufil's Diminishing Dirge",
-            "Fufil's Curtailing Chant",
+            "Ancient: Chaos Chant",                 -- level 65, GoD
+            "Angstlich's Assonance",                -- level 60, RoK (also decrease melee slow 40%)
+            "Fufil's Diminishing Dirge",            -- level 60, LDoN (also decrease magic resist 34)
+            "Fufil's Curtailing Chant",             -- level 30, Base Game
         },
         ['DiseaseDotSong'] = {
-            "Pustim's Chant of Disease",
-            "Goremand's Chant of Disease", -- 125
-            "Coagulus' Chant of Disease",
-            "Zlexak's Chant of Disease",
-            "Hoshkar's Chant of Disease",
-            "Horthin's Chant of Disease",
-            "Siavonn's Chant of Disease",
-            "Wasinai's Chant of Disease",
-            "Shiverback's Chant of Disease",
-            "Trakanon's Chant of Disease",
-            "Vyskudra's Chant of Disease",
-            "Vulka's Chant of Disease",
-            "Tuyen's Chant of the Plague",
-            "Tuyen's Chant of Disease",
+            "Pustim's Chant of Disease",            -- level 126, SoR
+            "Goremand's Chant of Disease",          -- level 121, LS
+            "Coagulus' Chant of Disease",           -- level 116. ToL
+            "Zlexak's Chant of Disease",            -- level 111, ToV
+            "Hoshkar's Chant of Disease",           -- level 106, RoS
+            "Horthin's Chant of Disease",           -- level 101, TDS
+            "Siavonn's Chant of Disease",           -- level 96, RoF
+            "Wasinai's Chant of Disease",           -- level 91, VoA
+            "Shiverback's Chant of Disease",        -- level 86, HoT
+            "Trakanon's Chant of Disease",          -- level 81, SoD
+            "Vyskudra's Chant of Disease",          -- level 76, SoF
+            "Vulka's Chant of Disease",             -- level 66, OoW 
+            "Tuyen's Chant of the Plague",          -- level 61, PoP
+            "Tuyen's Chant of Disease",             -- level 42, PoP
             -- Misc Dot -- Or Minsc Dot (HEY HEY BOO BOO!)
-            "Ancient: Chaos Chant",
-            "Angstlich's Assonance",
-            "Fufil's Diminishing Dirge",
-            "Fufil's Curtailing Chant",
+            "Ancient: Chaos Chant",                 -- level 65, GoD
+            "Angstlich's Assonance",                -- level 60, RoK (also decrease melee slow 40%)
+            "Fufil's Diminishing Dirge",            -- level 60, LDoN (also decrease magic resist 34)
+            "Fufil's Curtailing Chant",             -- level 30, Base Game
         },
         ['CureSong'] = {
-            "Aria of Absolution",
-            "Aria of Impeccability",
-            "Aria of Amelioration",
-            --"Aria of Innocence", --curse only
-            "Aria of Asceticism", --poison/disease Only
+            "Mastery: Aria of Absolution",          -- level 126, SoR
+            "Aria of Absolution",                   -- level 96, RoF
+            "Aria of Impeccability",                -- level 91, VoA
+            "Aria of Amelioration",                 -- level 86, HoT
+            --"Firion's Blessed Clarinet",          -- level 84, SoD (corruption only)
+            --"Kirathas' Cleansing Clarinet",       -- level 79, SoF (corruption only)
+            --"Aria of Innocence",                  -- level 52, LoY (curse only)
+            "Aria of Asceticism",                   -- level 45, LoY (poison/disease only)
         },
         ['AllianceSong'] = {
-            "Covariance of Sticks and Stones",
-            "Conjunction of Sticks and Stones",
-            "Alliance of Sticks and Stones",
-            "Covenant of Sticks and Stones",
-            "Coalition of Sticks and Stones",
+            "Covariance of Sticks and Stones",      -- level 125, ToB
+            "Conjunction of Sticks and Stones",     -- level 120, NoS
+            "Coalition of Sticks and Stones",       -- level 115, CoV
+            "Covenant of Sticks and Stones",        -- level 110, TBL
+            "Alliance of Sticks and Stones",        -- level 102, EoK
         },
         ['CharmSong'] = {
-            "Voice of Keftlik",
-            "Voice of Suja", -- 125
-            "Voice of the Diabo",
-            "Omiyad's Demand",
-            "Voice of Zburator",
-            "Desirae's Demand",
-            "Voice of Jembel",
-            "Dawnbreeze's Demand",
-            "Voice of Silisia",
-            "Silisia's Demand",
-            "Voice of Motlak",
-            "Voice of Kolain",
-            "Voice of Sionachie",
-            "Voice of the Mindshear",
-            "Yowl of the Bloodmoon",
-            "Beckon of the Tuffein",
-            "Voice of the Vampire",
-            "Call of the Banshee",        -- 65
-            "Solon's Bewitching Bravura", -- 39
-            "Solon's Song of the Sirens", -- 27
+            -- Demand line has memblur chance, but costs significantly more mana
+            "Voice of Keftlik",                 -- level 129, SoR (up to 128)
+            -- "Yaran's Demand",                   -- level 124, ToB (up to 123, 40% memblur)
+            "Voice of Suja",                    -- level 124, LS (up to 123)
+            -- "Omiyad's Demand",                   -- level 119, NoS (up to 118, 40% memblur)
+            "Voice of the Diabo",               -- level 119, ToL (up to 118)
+            -- "Desirae's Demand",                  -- level 114. CoV (up to 113, 40% memblur)
+            "Voice of Zburator",                -- level 114, ToV (up to 113)
+            -- "Dawnbreeze's Demand",               -- level 109, TBL (up to 108, 40% memblur)
+            "Voice of Jembel",                  -- level 109, RoS (up to 108)
+            -- "Silisia's Demand",                  -- level 102, EoK (up to 103, 40% memblur)
+            "Voice of Silisia",                 -- level 104, TDS (up to 103)
+            "Voice of Motlak",                  -- level 99, RoF (up to 98)
+            "Voice of Kolain",                  -- level 94, VoA (up to 94)
+            "Voice of Sionachie",               -- level 89, HoT (up to 88)
+            "Voice of the Mindshear",           -- level 84, SoD (up to SoD)
+            "Yowl of the Bloodmoon",            -- level 79, SoF (up to 78)
+            "Beckon of the Tuffein",            -- level 73, TSS (up to 73)
+            "Voice of the Vampire",             -- level 70, OoW (up to 68)
+            "Call of the Banshee",              -- level 64, PoP (up to 57)
+            "Solon's Bewitching Bravura",       -- level 39, Base Game (up to 51)
+            "Solon's Song of the Sirens",       -- level 27, Base Game (up to 37)
         },
         ['ReflexStrike'] = {
             -- Bard ReflexStrike - Restores mana to group
@@ -550,100 +563,107 @@ local _ClassConfig = {
             "Reflexive Rebuttal",
         },
         ['ChordsAE'] = {
-            "Chords of Dissonance",
+            -- ChordsAE only work if target is not moving on Live
+            "Selo's Chords of Cessation",           -- level 48, Base Game
+            "Chords of Dissonance",                 -- level 2, Base Game
         },
         ['AmpSong'] = {
-            "Amplification",
+            "Amplification",        -- level 30, SoL
         },
         ['DispelSong'] = {
             -- Dispel Song - For pulling to avoid Summons
-            "Syvelian's Anti-Magic Aria",
-            "Druzzil's Disillusionment",
+            "Druzzil's Disillusionment",        -- level 62, PoP (dispel 9)
+            -- "Song of Highsun",                  -- level 56, RoK (dispel 9, also ports NPC to spawn point)
+            "Syvelian's Anti-Magic Aria",       -- level 40, Base Game (dispel 4)
         },
         ['ResistSong'] = {
             -- Resists Song
-            "Psalm of Veeshan VII",
-            "Psalm of Cooling",
-            "Psalm of Purity",
-            "Psalm of Warmth",
-            "Psalm of Vitality",
-            "Psalm of Veeshan",
-            "Psalm of the Forsaken",
-            "Second Psalm of Veeshan",
-            "Psalm of the Restless",
-            "Psalm of the Pious",
+            "Psalm of Veeshan VII",             -- level 128, SoR
+            "Psalm of the Nomad",               -- level 123, LS
+            "Psalm of the Pious",               -- level 118, ToL
+            "Psalm of the Restless",            -- level 113, ToV
+            "Second Psalm of Veeshan",          -- level 108, RoS
+            "Psalm of the Forsaken",            -- level 98, CoTF
+            "Psalm of Veeshan",                 -- level 63, PoP
+            "Psalm of Purity",                  -- level 37, Base Game (poison only)            
+            "Psalm of Cooling",                 -- level 33, Base Game (fire onyl)
+            "Psalm of Vitality",                -- level 29, Base Game (disease only)
+            "Psalm of Warmth",                  -- level 25, Base Game (cold only)
         },
         ['MezSong'] = {
-            "Slumber of Keftlik	",
-            "Slumber of Suja", -- 125
-            "Slumber of the Diabo",
-            -- [] = "Lullaby of Nightfall",
-            -- [] = "Lullaby of Zburator",
-            "Slumber of Zburator",
-            "Slumber of Jembel",
-            -- [] = "Lullaby of Jembel",
-            "Slumber of Silisia",
-            -- [] = "Lullaby of Silisia",
-            "Slumber of Motlak",
-            -- [] = "Lullaby of the Forsaken",
-            "Slumber of Kolain",
-            -- [] = "Lullaby of the Forlorn",
-            "Slumber of Sionachie",
-            -- [] = "Lullaby of the Lost",
-            "Slumber of the Mindshear",
-            "Serenity of Oceangreen",
-            "Amber's Last Lullaby",
-            "Queen Eletyl's Screech",
-            "Command of Queen Veneneu",
-            "Aelfric's Last Lullaby",
-            "Vulka's Lullaby",
-            "Creeping Dreams",
-            "Luvwen's Lullaby",
-            "Lullaby of Morell",
-            "Dreams of Terris",
-            "Dreams of Thule",
-            "Dreams of Ayonae",
-            "Song of Twilight",
-            "Sionachie's Dreams",
-            "Crission's Pixie Strike",
-            "Kelin's Lucid Lullaby",
+            -- Lullaby line has lower max level and has pushback, but you get them earlier.
+            "Slumber of Keftlik	",              -- level 129, SoR (up to 133)
+            -- "Lullaby of the Sundered",            -- level 126, SoR (up to 130)
+            "Slumber of Suja",                  -- level 124, LS (up to 128,)
+            -- "Lullaby of the Forgotten",           -- level 121, LS (up to 125)
+            "Slumber of the Diabo",             -- level 119, ToL (up to 123)
+            -- "Lullaby of Nightfall",              -- level 116, ToL (up to 120)
+            "Slumber of Zburator",              -- level 114, ToV (up to 118)
+            -- "Lullaby of Zburator",               -- level 111, ToV (up to 115)
+            "Slumber of Jembel",                -- level 109, RoS (up to 113)
+            -- "Lullaby of Jembel",                 -- level 106, RoS (up to 110)
+            "Slumber of Silisia",               -- level 104, TDS (up to 108)
+            -- "Lullaby of Silisia",                -- level 101, TDS (up to 105)
+            "Slumber of Motlak",                -- level 99, RoF (up to 103)
+            -- "Lullaby of the Forsaken",           -- level 96, RoF (up to 100)
+            "Slumber of Kolain",                -- level 94, VoA (up to 98)
+            -- "Lullaby of the Forlorn",            -- level 91, VoA (up to 95)
+            "Slumber of Sionachie",             -- level 89, HoT (up to 93)
+            -- "Lullaby of the Lost",               -- level 86, HoT (up to 90)
+            "Slumber of the Mindshear",         -- level 84, SoD (up to 88)
+            -- "Serenity of Oceangreen",            -- level 81, SoD (up to 85)
+            "Command of Queen Veneneu",         -- level 79, SoF (up to 83)
+            -- "Amber's Last Lullaby",              -- level 76, SoF (up to 80)
+            "Queen Eletyl's Screech",           -- level 74, TSS (up to 79)
+            -- "Aelfric's Last Lullaby",            -- level 71, TSS (up to 75)
+            "Vulka's Lullaby",                  -- level 70, OoW (up to 73)
+            "Creeping Dreams",                  -- level 68, DoD (up to 73)
+            "Luvwen's Lullaby",                 -- level 67, OoW (up to 70)
+            "Lullaby of Morell",                -- level 65, PoP (up to 68)
+            "Dreams of Terris",                 -- level 64, PoP (up to 65)
+            "Dreams of Thule",                  -- level 62, PoP (up to 62)
+            "Dreams of Ayonae",                 -- level 58, SoL (up to 57)
+            "Song of Twilight",                 -- level 53, RoK (up to 55)
+            "Sionachie's Dreams",               -- level 40, SoL (up to 53)
+            "Crission's Pixie Strike",          -- level 28, Base Game (up to 45)
+            "Kelin's Lucid Lullaby",            -- level 15, Base Game (up to 30)
         },
         ['MezAESong'] = {
             -- MezAESong - Level Range 85 - 115 **
-            "Wave of Slumber X",
-            "Wave of Stupor", -- 125
-            "Wave of Nocturn",
-            "Wave of Sleep",
-            "Wave of Somnolence",
-            "Wave of Torpor",
-            "Wave of Quietude",
-            "Wave of the Conductor",
-            "Wave of Dreams",
-            "Wave of Slumber",
+            "Wave of Slumber X",            -- level 130, SoR (up to 133)
+            "Wave of Stupor",               -- level 125, LS (up to 128)
+            "Wave of Nocturn",              -- level 120, ToL (up to 123)
+            "Wave of Sleep",                -- level 115, ToV (up to 118)
+            "Wave of Somnolence",           -- level 110, RoS (up to 113)
+            "Wave of Torpor",               -- level 105, TDS (up to 108)
+            "Wave of Quietude",             -- level 100, RoF (up to 103)
+            "Wave of the Conductor",        -- level 95, VoA (up to 98)
+            "Wave of Dreams",               -- level 90, HoT (up to 93)
+            "Wave of Slumber",              -- level 85. UF (up to 88)
         },
         ['Jonthan'] = {
-            "Jonthan's Mightful Caretaker",
-            "Jonthan's Inspiration",
-            "Jonthan's Provocation",
-            "Jonthan's Whistling Warsong",
+            "Jonthan's Mightful Caretaker",     -- level 71,. TBS
+            "Jonthan's Inspiration",            -- level 58, RoK
+            "Jonthan's Provocation",            -- level 45, Base Game
+            "Jonthan's Whistling Warsong",      -- level 7, Base Game
         },
         ['CalmSong'] = {
             -- CalmSong - Level Range 8+ --Included for manual use with /rgl usemap
-            "Silence of the Vortex",     -- Level 126
-            "Kelin's Lugubrious Lament", -- Level 8 (Max Mob Level of 60)
-            "Silent Song of Quellious",  -- Level 61
-            "Luvwen's Aria of Serenity", -- Level 66
-            "Whispersong of Veshma",     -- Level 71
-            "Elddar's Dawnsong",         -- Level 76
-            "Silence of the Void",       -- Level 81
-            "Silence of the Dreamer",    -- Level 86
-            "Silence of the Windsong",   -- Level 91
-            "Silence of the Forsaken",   -- Level 96
-            "Silence of the Silisia",    -- Level 101
-            "Silence of Jembel",         -- Level 106
-            "Silence of Zburator",       -- Level 111
-            "Silence of Quietus",        -- Level 116
-            "Silence of the Forgotten",  -- Level 121
+            "Silence of the Vortex",        -- Level 126, SoR (up to 130)
+            "Silence of the Forgotten",     -- Level 121, LS (up to 125)
+            "Silence of Quietus",           -- Level 116, TOL (up to 120)
+            "Silence of Zburator",          -- Level 111, ToV (up to 115)
+            "Silence of Jembel",            -- Level 106, RoS (up to 110)
+            "Silence of the Silisia",       -- Level 101, TDS (up to 105)
+            "Silence of the Forsaken",      -- Level 96, RoF (up to 100)
+            "Silence of the Windsong",      -- Level 91, VoA (up to 95)
+            "Silence of the Dreamer",       -- Level 86, HoT (up to 90)
+            "Silence of the Void",          -- Level 81, SoD (up to 85)
+            "Elddar's Dawnsong",            -- Level 76, SoF (up to 80)
+            "Whispersong of Veshma",        -- Level 71, TSS (up to 75)
+            "Luvwen's Aria of Serenity",    -- Level 66, OoW (up to 70)
+            "Silent Song of Quellious",     -- Level 61, PoP (up to 65)
+            "Kelin's Lugubrious Lament",    -- Level 8, Base Game, (up to 60)
         },
         ['ThousandBlades'] = {
             "Thousand Blades",
