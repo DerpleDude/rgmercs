@@ -18,5 +18,6 @@ return {
         "Fargrim",
         "gennro",
         "Nunno",
+        "No_Songs_For_You",
     },
 }
