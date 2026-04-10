@@ -75,7 +75,8 @@ function DB.new(path, onUpdate)
         -- previous totals for delta calculation
         prev         = { selects = 0, inserts = 0, deletes = 0, cacheHits = 0, cacheMisses = 0, },
     }
-    local self = setmetatable({ _db = db, _onUpdate = onUpdate, _writeQueue = {}, _cache = {}, _dataVersion = 0, _externalVersion = -1, _telemetry = telemetry, _collectStats = false, }, DB)
+    local self = setmetatable(
+    { _db = db, _onUpdate = onUpdate, _writeQueue = {}, _cache = {}, _dataVersion = 0, _externalVersion = -1, _telemetry = telemetry, _collectStats = false, }, DB)
     self:_exec(SCHEMA)
     self._externalVersion = self:_getDataVersion()
 
