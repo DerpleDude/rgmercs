@@ -191,13 +191,13 @@ local function luaToString(v, depth)
         if #parts == 0 then return "{}" end
         return "{\n" .. table.concat(parts, ",\n") .. "\n" .. closeIndent .. "}"
     else
-        printf("\arCannot serialise value of type %s, returning nil", t)
+        printf("\arCannot serialize value of type %s, returning nil", t)
         return "nil"
     end
 end
 
--- Serialise a Lua value to its text representation for storage.
-local function serialise(v, vtype)
+-- Serialize a Lua value to its text representation for storage.
+local function serialize(v, vtype)
     if vtype == "bool" then
         return v and "true" or "false"
     elseif vtype == "number" then
@@ -209,8 +209,8 @@ local function serialise(v, vtype)
     end
 end
 
--- Deserialise a stored text value back to a Lua value.
-local function deserialise(text, vtype)
+-- Deserialize a stored text value back to a Lua value.
+local function deserialize(text, vtype)
     if text == nil then return nil end
     if vtype == "bool" then
         return text == "true" or text == "1"
@@ -219,7 +219,7 @@ local function deserialise(text, vtype)
     elseif vtype == "lua" then
         local fn, err = load("return " .. text)
         if fn then return fn() end
-        Logger.log_error("\arDB: failed to deserialise lua value: %s", err)
+        Logger.log_error("\arDB: failed to deserialize lua value: %s", err)
         return nil
     else
         return text
@@ -352,7 +352,7 @@ function DB:setValue(serverName, charName, charClass, module, key, value, vtype)
     local charId = self:upsertCharacter(serverName, charName)
     if not charId then return false end
     vtype = vtype or inferType(value)
-    local text = serialise(value, vtype)
+    local text = serialize(value, vtype)
     local stmt = self:_prepare([[
         INSERT INTO config_value(character_id, module, class, key, value_type, value)
         VALUES(?,?,?,?,?,?)
@@ -405,7 +405,7 @@ function DB:setAll(serverName, charName, charClass, module, settings)
         stmt:bind(3, charClass)
         stmt:bind(4, key)
         stmt:bind(5, vtype)
-        stmt:bind(6, serialise(value, vtype))
+        stmt:bind(6, serialize(value, vtype))
         if not self:_step(stmt) then
             stmt:finalize()
             self:_exec("ROLLBACK;")
@@ -564,7 +564,7 @@ function DB:_fetchValue(serverName, charName, charClass, module, key)
     stmt:bind(5, key)
     local rows = collectRows(stmt)
     if not rows[1] then return nil end
-    local value = deserialise(rows[1].value, rows[1].value_type)
+    local value = deserialize(rows[1].value, rows[1].value_type)
     self:_cacheSet(serverName, charName, charClass, module, key, value)
     return value
 end
@@ -582,7 +582,7 @@ function DB:_fetchModule(serverName, charName, charClass, module)
     stmt:bind(3, charClass)
     stmt:bind(4, module)
     for row in stmt:nrows() do
-        self:_cacheSet(serverName, charName, charClass, module, row.key, deserialise(row.value, row.value_type))
+        self:_cacheSet(serverName, charName, charClass, module, row.key, deserialize(row.value, row.value_type))
     end
     stmt:finalize()
 end
@@ -619,7 +619,7 @@ function DB:flushQueue()
         end
     end
     if #remaining > 0 then
-        Logger.log_warn("\ayDB: %d write(s) still pending due to lock contention, will retry next tick.", #remaining)
+        Logger.log_debug("\ayDB: %d write(s) still pending due to lock contention, will retry next tick.", #remaining)
     end
     self._writeQueue = remaining
 end
