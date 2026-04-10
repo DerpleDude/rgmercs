@@ -267,6 +267,20 @@ local function RGInit(...)
     Modules:ExecAll("Init")
     Globals.SubmodulesLoaded = true
 
+    if not Config:GetSetting('HasConvertedToDB') then
+        initPctComplete = 25
+        initMsg = "Converting settings to new database format..."
+        Config:ConvertToDb()
+
+        while Config:DbWritesPending() do
+            Logger.log_debug("Waiting for DB writes to complete before proceeding with initialization...")
+            Config:FlushDB()
+            mq.delay(100)
+        end
+
+        Config:SetSetting('HasConvertedToDB', true)
+    end
+
     initPctComplete = 30
     initMsg = "Updating Command Handlers..."
     Config:UpdateCommandHandlers()
@@ -334,14 +348,24 @@ local function RGInit(...)
     initMsg = "Storing Initial Positioning Data..."
     Movement:StoreLastMove()
 
-    initMsg = "Done!"
+    initPctComplete = 99
+    initMsg = "Doing DB Consistency Checks..."
+    if not Config:DbConsistencyCheck() then
+        Logger.log_error("Database consistency check failed. Please check the logs for more details.")
+    end
+
     initPctComplete = 100
+    initMsg = "Done!"
 
     HudUI:LoadAllOptions()
 end
 
 local function Main()
     Logger.log_verbose("Starting Main loop.")
+
+    -- always do this and do it first
+    Config:FlushDB()
+
     if mq.TLO.Zone.ID() ~= Globals.CurZoneId or mq.TLO.Me.Instance() ~= Globals.CurInstance then
         if notifyZoning then
             Modules:ExecAll("OnZone")
@@ -608,3 +632,4 @@ end
 Core.CheckPlugins(unloadedPlugins, true)
 
 Modules:ExecAll("Shutdown")
+Config.Shutdown()

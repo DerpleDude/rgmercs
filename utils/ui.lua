@@ -3021,19 +3021,23 @@ function Ui.RenderThemeConfig(searchFilter)
     ImGui.SeparatorText("Theme Customization")
 
     if ImGui.SmallButton("Add New Color") then
-        Config:SetSetting('UserTheme', table.insert(Config:GetSetting('UserTheme') or {}, {
+        local userTheme = Config:GetSetting('UserTheme') or {}
+        table.insert(userTheme, {
             element = "Text",
             color = { x = 1, y = 1, z = 1, w = 1, },
-        }))
+        })
+        Config:SetSetting('UserTheme', userTheme)
     end
 
     ImGui.SameLine()
 
     if ImGui.SmallButton("Add New Style") then
-        Config:SetSetting('UserTheme', table.insert(Config:GetSetting('UserTheme') or {}, {
+        local userTheme = Config:GetSetting('UserTheme') or {}
+        table.insert(userTheme, {
             element = 'WindowPadding',
             value = Tables.ImVec2ToTable(ImGui.GetStyle().WindowPadding),
-        }))
+        })
+        Config:SetSetting('UserTheme', userTheme)
     end
 
     local userTheme = Tables.DeepCopy(Config:GetSetting('UserTheme') or {})

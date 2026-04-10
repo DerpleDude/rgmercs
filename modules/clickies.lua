@@ -104,6 +104,7 @@ Module.CommandHandlers                  = {
 
 Module.TempSettings                     = {}
 Module.TempSettings.ClickyState         = {}
+Module.TempSettings.ConditionsCache     = {}
 Module.TempSettings.CombatClickiesTimer = 0
 
 Module.DefaultServerClickies            = {
@@ -1375,9 +1376,9 @@ function Module:RenderClickiesWithConditions(type, clickies)
                             self:RenderConditionControls(clickyIdx, condIdx, clicky.conditions)
                             ImGui.EndDisabled()
 
-                            if clicky.conditionsCache and clicky.conditionsCache[condIdx] == true then
+                            if self.TempSettings.ConditionsCache[clickyIdx] and self.TempSettings.ConditionsCache[clickyIdx][condIdx] == true then
                                 ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.ConditionPassColor)
-                            elseif clicky.conditionsCache and clicky.conditionsCache[condIdx] == false then
+                            elseif self.TempSettings.ConditionsCache[clickyIdx] and self.TempSettings.ConditionsCache[clickyIdx][condIdx] == false then
                                 ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.ConditionFailColor)
                             else
                                 ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.ConditionMidColor)
@@ -1579,7 +1580,8 @@ function Module:GiveTime()
                     if clicky.combat_state == "Any" or clicky.combat_state == combat_state then
                         local target = mq.TLO.Me
                         local allConditionsMet = true
-                        local conditionsCache = {}
+                        -- store this by index incase the same name appears twice.
+                        self.TempSettings.ConditionsCache[clickyIdx] = {}
                         for _, cond in ipairs(clicky.conditions or {}) do
                             local condBlock = self:GetLogicBlockByType(cond.type)
                             if condBlock then
@@ -1603,16 +1605,14 @@ function Module:GiveTime()
                                 if not Core.SafeCallFunc("Test clicky Condition", self:GetLogicBlockByType(cond.type).cond, self, target, unpack(cond.args or {})) then
                                     Logger.log_super_verbose("\ayClicky: \aw\t|->\aw \arFailed!")
                                     allConditionsMet = false
-                                    table.insert(conditionsCache, false)
+                                    table.insert(self.TempSettings.ConditionsCache[clickyIdx], false)
                                     break
                                 else
                                     Logger.log_super_verbose("\ayClicky: \aw\t|->\aw \agSuccess!")
-                                    table.insert(conditionsCache, true)
+                                    table.insert(self.TempSettings.ConditionsCache[clickyIdx], true)
                                 end
                             end
                         end
-
-                        clicky.conditionsCache = conditionsCache
 
                         if allConditionsMet then
                             target = mq.TLO.Me

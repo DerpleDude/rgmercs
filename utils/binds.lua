@@ -482,6 +482,24 @@ Binds.Handlers    = {
             Logger.log_info("\agOptions Window position will be reset on next open.")
         end,
     },
+    ['dbconvert'] = {
+        usage = "/rgl dbconvert",
+        about = "Converts your config to the new DB format. Only needed for versions prior to 2.1.0.",
+        handler = function()
+            Logger.log_info("Converting config to DB format...")
+            Config:ConvertToDb()
+            Logger.log_info("Config conversion complete!")
+        end,
+    },
+    ['dbcheck'] = {
+        usage = "/rgl dbcheck",
+        about = "Checks the integrity of your config DB. Only needed for versions prior to 2.1.0.",
+        handler = function()
+            Logger.log_info("Checking config DB integrity...")
+            Config:DbConsistencyCheck()
+            Logger.log_info("Config DB integrity check complete!")
+        end,
+    },
 }
 
 return Binds

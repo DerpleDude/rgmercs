@@ -7,6 +7,7 @@ local Comms                                              = require("utils.comms"
 local Set                                                = require("mq.Set")
 local Files                                              = require("utils.files")
 local Globals                                            = require("utils.globals")
+local Db                                                 = require("utils.db").new(mq.configDir .. '/rgmercs/rgmercs_config.db')
 
 local Config                                             = {
     _version = '2.1.0',
@@ -26,6 +27,7 @@ Config.peerModuleDefaultSettings                         = {}
 Config.peerModuleSettingCategories                       = {}
 Config.FAQ                                               = {}
 Config.SettingsLoadComplete                              = false
+Config.DbConsistencyCheckPass                            = true
 
 Config.TempSettings                                      = {}
 Config.TempSettings.lastModuleRegisteredTime             = 0
@@ -2411,6 +2413,13 @@ Config.DefaultConfig                                     = {
         end,
     },
 
+    ['HasConvertedToDB']                 = {
+        DisplayName = "Has Converted To DB",
+        Category = "Internals",
+        Type = "Custom",
+        Default = false,
+    },
+
     --Tanking
     ['AETauntCnt']                       = {
         DisplayName = "AE Taunt Count",
@@ -2543,6 +2552,7 @@ function Config:SaveSettings()
 end
 
 function Config:LoadSettings()
+    Db:setUpdateHook(Config.OnConfigValueChanged)
     local configFile = Config.GetConfigFileName("RGMercs")
 
     if not Files.file_exists(configFile) then
@@ -2852,7 +2862,22 @@ function Config:GetSetting(setting, failOk)
         end
         return nil
     end
-    return self:GetModuleSettings(Config.TempSettings.SettingToModuleCache[setting])[setting]
+    local value = self:GetModuleSettings(Config.TempSettings.SettingToModuleCache[setting])[setting]
+    local dbValue = Db:getValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, Config.TempSettings.SettingToModuleCache[setting], setting)
+
+    if type(dbValue) == "table" and type(value) == "table" then
+        if not Tables.AreTablesEqual(dbValue, value) then
+            Logger.log_error("\arInconsistency found for %s \aw- \atDB Value\aw: \ag%s\aw, \atIn-Memory Value: \ag%s\aw",
+                setting, Strings.TableToString(dbValue), Strings.TableToString(value))
+            Config.DbConsistencyCheckPass = false
+        end
+    elseif dbValue ~= value then
+        Logger.log_error("\arInconsistency found for %s \aw- \atDB Value\aw: \ag%s\aw, \atIn-Memory Value: \ag%s\aw",
+            setting, tostring(dbValue), tostring(value))
+        Config.DbConsistencyCheckPass = false
+    end
+
+    return value
 end
 
 --- Retrieves a specified setting default info.
@@ -2983,7 +3008,10 @@ function Config:SetSetting(setting, value, tempOnly)
             self.moduleSettings[settingModuleName][setting] = Tables.DeepCopy(cleanValue)
             self.moduleTempSettings[settingModuleName][setting] = cleanValue
             self:SaveModuleSettings(settingModuleName, self.moduleSettings[settingModuleName])
+            Db:setValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, settingModuleName, setting, cleanValue)
         end
+    else
+        Logger.log_info("\ayFailed to update setting %s, invalid value supplied.", setting)
     end
 
     if defaultConfig[setting].RequiresLoadoutChange then
@@ -2992,7 +3020,6 @@ function Config:SetSetting(setting, value, tempOnly)
 
     local _, afterUpdate = Config:GetUsageText(setting, false, defaultConfig)
     Logger.log_debug("(%s) \ag%s\aw is now:\ax %-5s \ay[Previous:\ax %s\ay]", settingModuleName, setting, afterUpdate, beforeUpdate)
-
 
     if defaultConfig[setting].OnChange and oldValue ~= cleanValue then
         defaultConfig[setting].OnChange(oldValue, cleanValue)
@@ -3637,6 +3664,66 @@ function Config.CacheCustomColors()
     for i, v in ipairs(Globals.Constants.ConColors) do
         Globals.Constants.ConColorsNameToVec4[v:upper()] = Globals.Constants.Colors[Globals.Constants.ConColors[i]:gsub(" ", "")] or Globals.Constants.Colors.White
     end
+end
+
+function Config.OnConfigValueChanged(operation, dbName, tableName, rowId)
+    Logger.log_verbose(
+        "\ayOnConfigValueChanged(): \amConfig detected a change in the database. \ayOperation\aw: \ag%s\aw, \ayDB\aw: \ag%s\aw, \ayTable\aw: \ag%s\aw, \ayRowId\aw: \ag%s\aw",
+        Db.opName(operation), tostring(dbName) or "?", tostring(tableName) or "?", tostring(rowId) or "?")
+end
+
+function Config:ConvertToDb()
+    -- iterate all settings and resave them with their current value.
+    local settingCount = 0
+    local moduleCount = 0
+    for module, settings in pairs(self.moduleSettings) do
+        moduleCount = moduleCount + 1
+        for setting, value in pairs(settings) do
+            Db:setValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, module, setting, value)
+            settingCount = settingCount + 1
+        end
+    end
+    Logger.log_info("\agConverted \ay%d \agsettings across \ay%d \agmodules to the new database format.", settingCount, moduleCount)
+end
+
+function Config:DbConsistencyCheck()
+    local settingCount = 0
+    local moduleCount = 0
+    Config.DbConsistencyCheckPass = true
+
+    for module, settings in pairs(self.moduleSettings) do
+        moduleCount = moduleCount + 1
+        for setting, value in pairs(settings) do
+            local dbValue = Db:getValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, module, setting)
+            if type(dbValue) == "table" and type(value) == "table" then
+                if not Tables.AreTablesEqual(dbValue, value) then
+                    Logger.log_error("\arInconsistency found for %s \aw- \atDB Value\aw: \ag%s\aw, \atIn-Memory Value: \ag%s\aw",
+                        setting, Strings.TableToString(dbValue), Strings.TableToString(value))
+                    Config.DbConsistencyCheckPass = false
+                end
+            elseif dbValue ~= value then
+                Logger.log_error("\arInconsistency found for %s \aw- \atDB Value\aw: \ag%s\aw, \atIn-Memory Value: \ag%s\aw",
+                    setting, tostring(dbValue), tostring(value))
+                Config.DbConsistencyCheckPass = false
+            end
+            settingCount = settingCount + 1
+        end
+    end
+    Logger.log_info("\agDatabase consistency check complete. Found \ay%d \agsettings in the database for this character.", settingCount)
+
+    return Config.DbConsistencyCheckPass
+end
+
+function Config:DbWritesPending()
+    return Db:pendingWrites() > 0
+end
+
+function Config:FlushDB()
+    Db:flushQueue()
+end
+
+function Config.Shutdown()
+    Db:close()
 end
 
 return Config

@@ -79,4 +79,102 @@ function Tables.DeepCopy(orig, copies)
     return setmetatable(copy, getmetatable(orig))
 end
 
+function Tables._compareValues(v1, v2)
+    if type(v1) ~= type(v2) then
+        printf("\arType mismatch: %s (type %s) ~= %s (type %s)", tostring(v1), type(v1), tostring(v2), type(v2))
+        return false
+    end
+    if type(v1) == "table" then
+        return Tables._compareTables(v1, v2, {})
+    else
+        if type(v1) == 'number' then
+            if math.abs(v1 - v2) >= 1e-9 then
+                printf("\arValue mismatch: %s (type %s) ~= %s (type %s)", tostring(v1), type(v1), tostring(v2), type(v2))
+            end
+            return math.abs(v1 - v2) < 1e-9
+        end
+
+        if v1 ~= v2 then
+            printf("\arValue mismatch: %s (type %s) ~= %s (type %s)", tostring(v1), type(v1), tostring(v2), type(v2))
+        end
+        return v1 == v2
+    end
+end
+
+function Tables._compareTables(a, b, visited)
+    if visited[a] and visited[a] == b then
+        return true -- already compared these tables
+    end
+    visited[a] = b
+
+    for k in pairs(a) do
+        if not Tables._compareValues(a[k], b[k]) then
+            printf("\arTable A mismatch at key: %s", tostring(k))
+            printf(Tables.TableToString(a))
+            printf(Tables.TableToString(b))
+            return false
+        end
+    end
+    for k in pairs(b) do
+        if not Tables._compareValues(a[k], b[k]) then
+            printf("\arTable B mismatch at key: %s", tostring(k))
+            printf(Tables.TableToString(a))
+            printf(Tables.TableToString(b))
+            return false
+        end
+    end
+    return true
+end
+
+function Tables.AreTablesEqual(t1, t2)
+    if t1 == t2 then return true end
+    if type(t1) ~= "table" or type(t2) ~= "table" then return false end
+
+    return Tables._compareTables(t1, t2, {})
+end
+
+local function dumpTable(o, depth, accLen, maxLen)
+    accLen = accLen or 0
+    if not depth then depth = 0 end
+    if type(o) == 'table' then
+        local s = '{'
+        accLen = accLen + #s
+        for k, v in pairs(o) do
+            if type(k) ~= 'number' then k = '"' .. k .. '"' end
+            local entry = string.rep(" ", depth) .. ' [' .. k .. '] = '
+            local valueStr = dumpTable(v, depth + 1, accLen + #entry, maxLen)
+            entry = entry .. valueStr .. ', '
+            s = s .. entry
+            accLen = accLen + #entry
+            if accLen >= maxLen then
+                return s .. '...}'
+            end
+        end
+        return s .. string.rep(" ", depth) .. '}'
+    else
+        local str = tostring(o)
+        accLen = accLen + #str
+        if accLen >= maxLen then
+            return str:sub(1, maxLen - (accLen - #str)) .. '...'
+        end
+        return str
+    end
+end
+
+--- Converts a table value to its string representation.
+--- @param t table: The boolean value to convert.
+--- @param maxLen number?: The maximum length of the resulting string. Defaults to 60 if not provided.
+--- @return string: "true" if the boolean is true, "false" otherwise.
+function Tables.TableToString(t, maxLen)
+    if maxLen == nil then
+        maxLen = 60
+    end
+
+    if type(t) ~= "table" then
+        return "{}"
+    end
+
+    return dumpTable(t, 0, 0, maxLen)
+end
+
 return Tables

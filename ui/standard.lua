@@ -141,6 +141,10 @@ function StandardUI:RenderTarget()
         warningMessage = 'AFOLLOW ("FOLLOW ME") ENGAGED - THIS MAY INTERFERE WITH RGMERCS!'
     end
 
+    if not Config.DbConsistencyCheckPass then
+        warningMessage = warningMessage and warningMessage .. "\n" or "" .. "Database Consistency Check Failed! Please check logs and report to Derple and Algar!"
+    end
+
     if warningMessage then
         ImGui.TextColored(Globals.GetAlternatingColor(), warningMessage)
     end
