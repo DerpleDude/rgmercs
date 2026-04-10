@@ -156,6 +156,7 @@ local _ClassConfig = {
             "Sionachie's Spry Sonata",  -- level 88, HoT
             "Dance of the Dragorn",     -- level 83, SoD
             "Coldcrow's Spry Sonata",   -- level 78, SoF
+            "Aviak's Wondrous Warble",  -- Level 73, TBS
         },
         ['CrescendoSong'] = {
             "Alliana's Lively Crescendo",    -- level 129, SoR
