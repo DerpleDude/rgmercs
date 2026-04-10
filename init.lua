@@ -267,6 +267,20 @@ local function RGInit(...)
     Modules:ExecAll("Init")
     Globals.SubmodulesLoaded = true
 
+    if not Config:GetSetting('HasConvertedToDB') then
+        initPctComplete = 25
+        initMsg = "Converting settings to new database format..."
+        Config:ConvertToDb()
+
+        while Config:DbWritesPending() do
+            Logger.log_debug("Waiting for DB writes to complete before proceeding with initialization...")
+            Config:FlushDB()
+            mq.delay(100)
+        end
+
+        Config:SetSetting('HasConvertedToDB', true)
+    end
+
     initPctComplete = 30
     initMsg = "Updating Command Handlers..."
     Config:UpdateCommandHandlers()
