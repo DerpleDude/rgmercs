@@ -2876,7 +2876,7 @@ function Config:GetSetting(setting, failOk)
         self.DbConsistencyCheckPass = false
     end
 
-    return dbValue
+    return value
 end
 
 --- Retrieves a specified setting default info.
