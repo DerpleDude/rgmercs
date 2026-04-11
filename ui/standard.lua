@@ -124,11 +124,15 @@ function StandardUI:RenderAutoTargetInfo(assistSpawn)
 end
 
 function StandardUI:RenderForceBurnButton()
+    local assistSpawn = Targeting.GetAutoTarget()
+    if not assistSpawn() or assistSpawn.ID() == 0 then
+        ImGui.InvisibleButton("###fakeburn", ImVec2(0, ImGui.GetTextLineHeight()))
+        return
+    end
     ImGui.PushStyleColor(ImGuiCol.Button, Globals.Constants.Colors.BurnFlashColorOne)
     ImGui.PushStyleColor(ImGuiCol.ButtonHovered, Globals.Constants.Colors.BurnFlashColorTwo)
     local burnLabel = (Targeting.ForceBurnTargetID > 0 and Targeting.ForceBurnTargetID == mq.TLO.Target.ID()) and " FORCE BURN ACTIVATED " or " FORCE BURN THIS TARGET! "
     if ImGui.SmallButton(Icons.FA_FIRE .. burnLabel .. Icons.FA_FIRE) then
-        local assistSpawn = Targeting.GetAutoTarget()
         Comms.SendAllPeersDoCmd(true, true, "/squelch /rgl burnnow %d", assistSpawn.ID())
     end
     ImGui.PopStyleColor(2)
