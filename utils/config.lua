@@ -2865,7 +2865,7 @@ function Config:GetSetting(setting, failOk)
         value = self.Db:getValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, Config.TempSettings.SettingToModuleCache[setting], setting)
     end
 
-    return dbValue
+    return value
 end
 
 --- Retrieves a specified setting default info.
