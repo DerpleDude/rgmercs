@@ -21,7 +21,6 @@ Module.MaxFrameStep       = 5.0
 Module.GoalMaxFrameTime   = 0
 Module.CurMaxMaxFrameTime = 0
 Module.xAxes              = {}
-Module.SettingsLoaded     = false
 Module.FrameTimingData    = {}
 Module.MaxFrameTime       = 0
 Module.LastExtentsCheck   = Globals.GetTimeSeconds()
@@ -46,6 +45,9 @@ Module.DefaultConfig = {
         Category    = "Misc",
         Tooltip     = "Enable the Performance Module for advanced testing.",
         Default     = false,
+        OnChange    = function(_, newValue)
+            Config.Db:setCollectStats(newValue)
+        end,
     },
     ['PlotFillLines']                          = {
         DisplayName = "Enable Fill Lines",
@@ -66,6 +68,11 @@ function Module:New()
     return Base.New(self)
 end
 
+function Module:Init()
+    Base.Init(self)
+    Config.Db:setCollectStats(Config:GetSetting('EnablePerfMonitoring'))
+end
+
 function Module:ShouldRender()
     return Config:GetSetting('EnablePerfMonitoring', true)
 end
@@ -73,7 +80,7 @@ end
 function Module:Render()
     Base.Render(self)
 
-    if not self.SettingsLoaded then return end
+    if not self.ModuleLoaded then return end
 
     if Globals.GetTimeSeconds() - self.LastExtentsCheck > 0.01 then
         self.GoalMaxFrameTime = 0
@@ -90,30 +97,41 @@ function Module:Render()
         end
     end
 
-    -- converge on new max recalc min and maxes
-    if self.CurMaxMaxFrameTime < self.GoalMaxFrameTime then self.CurMaxMaxFrameTime = self.CurMaxMaxFrameTime + 1 end
-    if self.CurMaxMaxFrameTime > self.GoalMaxFrameTime then self.CurMaxMaxFrameTime = self.CurMaxMaxFrameTime - 1 end
+    if ImGui.CollapsingHeader("Database Stats") then
+        Config.Db:renderTelemetryGraph()
+        Config.Db:renderTelemetry()
+    end
 
-    if ImPlot.BeginPlot("Frame Times for RGMercs Modules") then
-        ImPlot.SetupAxes("Time (s)", "Frame Time (ms)")
-        ImPlot.SetupAxisLimits(ImAxis.X1, Globals.GetTimeSeconds() - Config:GetSetting('SecondsToStore'), Globals.GetTimeSeconds(), ImGuiCond.Always)
-        ImPlot.SetupAxisLimits(ImAxis.Y1, 1, self.CurMaxMaxFrameTime, ImGuiCond.Always)
+    if ImGui.CollapsingHeader("Frame Times") then
+        -- converge on new max recalc min and maxes
+        if self.CurMaxMaxFrameTime < self.GoalMaxFrameTime then self.CurMaxMaxFrameTime = self.CurMaxMaxFrameTime + 1 end
+        if self.CurMaxMaxFrameTime > self.GoalMaxFrameTime then self.CurMaxMaxFrameTime = self.CurMaxMaxFrameTime - 1 end
 
-        for _, module in pairs(Modules:GetModuleOrderedNames()) do
-            if self.FrameTimingData[module] and not self.FrameTimingData[module].mutexLock then
-                local framData = self.FrameTimingData[module]
+        if ImPlot.BeginPlot("Frame Times for RGMercs Modules") then
+            ImPlot.SetupAxes("Time (s)", "Frame Time (ms)")
+            ImPlot.SetupAxisLimits(ImAxis.X1, Globals.GetTimeSeconds() - Config:GetSetting('SecondsToStore'), Globals.GetTimeSeconds(), ImGuiCond.Always)
+            ImPlot.SetupAxisLimits(ImAxis.Y1, 1, self.CurMaxMaxFrameTime, ImGuiCond.Always)
 
-                if framData then
-                    ImPlot.PlotLine(module, framData.frameTimes.DataX, framData.frameTimes.DataY,
-                        #framData.frameTimes.DataX,
-                        Config:GetSetting('PlotFillLines') and ImPlotLineFlags.Shaded or ImPlotLineFlags.None,
-                        framData.frameTimes.Offset - 1)
+            for _, module in pairs(Modules:GetModuleOrderedNames()) do
+                if self.FrameTimingData[module] and not self.FrameTimingData[module].mutexLock then
+                    local framData = self.FrameTimingData[module]
+
+                    if framData then
+                        ImPlot.PlotLine(module, framData.frameTimes.DataX, framData.frameTimes.DataY,
+                            #framData.frameTimes.DataX,
+                            Config:GetSetting('PlotFillLines') and ImPlotLineFlags.Shaded or ImPlotLineFlags.None,
+                            framData.frameTimes.Offset - 1)
+                    end
                 end
             end
-        end
 
-        ImPlot.EndPlot()
+            ImPlot.EndPlot()
+        end
     end
+end
+
+function Module:GiveTime()
+    Config:UpdateDbTelemetry()
 end
 
 function Module:OnFrameExec(module, frameTime)

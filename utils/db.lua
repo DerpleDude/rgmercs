@@ -1,10 +1,14 @@
-local sqlite = require('lsqlite3')
-local Logger = require('utils.logger')
+local mq                  = require('mq')
+local ImGui               = require('ImGui')
+local ImPlot              = require('ImPlot')
+local sqlite              = require('lsqlite3')
+local Logger              = require('utils.logger')
+local ScrollingPlotBuffer = require('utils.scrolling_plot_buffer')
 
-local DB     = { _version = '1.0', _name = "DB", _author = 'Derple', }
-DB.__index   = DB
+local DB                  = { _version = '1.0', _name = "DB", _author = 'Derple', }
+DB.__index                = DB
 
-local SCHEMA = [[
+local SCHEMA              = [[
     PRAGMA journal_mode=WAL;
     PRAGMA foreign_keys=ON;
 
@@ -47,9 +51,33 @@ function DB.new(path, onUpdate)
     end
 
     db:busy_timeout(0)
-    local self = setmetatable({ _db = db, _onUpdate = onUpdate, _writeQueue = {}, _cache = {}, _dataVersion = -1, }, DB)
+    local telemetry = {
+        selects      = 0,
+        inserts      = 0,
+        updates      = 0,
+        deletes      = 0,
+        cacheHits    = 0,
+        cacheMisses  = 0,
+        cacheReloads = 0,
+        queuedWrites = 0,
+        busyRetries  = 0,
+        errors       = 0,
+        startTime    = mq.gettime(),
+        -- per-tick snapshots for graphing (delta counts)
+        graphs       = {
+            selects     = ScrollingPlotBuffer:new(500),
+            inserts     = ScrollingPlotBuffer:new(500),
+            deletes     = ScrollingPlotBuffer:new(500),
+            cacheHits   = ScrollingPlotBuffer:new(500),
+            cacheMisses = ScrollingPlotBuffer:new(500),
+            queueDepth  = ScrollingPlotBuffer:new(500),
+        },
+        -- previous totals for delta calculation
+        prev         = { selects = 0, inserts = 0, deletes = 0, cacheHits = 0, cacheMisses = 0, },
+    }
+    local self = setmetatable({ _db = db, _onUpdate = onUpdate, _writeQueue = {}, _cache = {}, _dataVersion = 0, _externalVersion = -1, _telemetry = telemetry, _collectStats = false, }, DB)
     self:_exec(SCHEMA)
-    self._dataVersion = self:_getDataVersion()
+    self._externalVersion = self:_getDataVersion()
 
     if onUpdate then
         db:update_hook(function(ud, operation, dbName, tableName, rowId)
@@ -84,6 +112,12 @@ function DB:setUpdateHook(onUpdate)
     end)
 end
 
+---@param enabled boolean
+---@return nil
+function DB:setCollectStats(enabled)
+    self._collectStats = enabled
+end
+
 ---@return nil
 function DB:close()
     if self._db then
@@ -96,14 +130,23 @@ function DB:_exec(sql)
     local res = self._db:exec(sql)
     if res ~= sqlite.OK and res ~= sqlite.BUSY then
         Logger.log_error("\arDB exec error (%d): %s", res, self._db:errmsg())
+        if self._collectStats then
+            self._telemetry.errors = self._telemetry.errors + 1
+        end
     end
     return res == sqlite.OK
 end
 
 function DB:_prepare(sql)
+    if self._collectStats then
+        self._telemetry.lastQuery = sql:match("^%s*(.-)%s*$") -- trim whitespace
+    end
     local stmt, err = self._db:prepare(sql)
     if not stmt then
         Logger.log_error("\arDB prepare error: %s\n  SQL: %s", self._db:errmsg(), sql)
+        if self._collectStats then
+            self._telemetry.errors = self._telemetry.errors + 1
+        end
     end
     return stmt
 end
@@ -113,6 +156,11 @@ function DB:_step(stmt)
     if res ~= sqlite.DONE and res ~= sqlite.ROW then
         if res ~= sqlite.BUSY then
             Logger.log_error("\arDB step error (%d): %s", res, self._db:errmsg())
+            if self._collectStats then
+                self._telemetry.errors = self._telemetry.errors + 1
+            end
+        elseif self._collectStats then
+            self._telemetry.busyRetries = self._telemetry.busyRetries + 1
         end
         return false
     end
@@ -304,7 +352,13 @@ function DB:getValue(serverName, charName, charClass, module, key)
         self._cache[serverName][charName][charClass] and self._cache[serverName][charName][charClass][module]
     local entry = moduleCache and moduleCache[key]
     if entry == nil or entry.version < self._dataVersion then
+        if self._collectStats then
+            self._telemetry.cacheMisses = self._telemetry.cacheMisses + 1
+        end
         return self:_fetchValue(serverName, charName, charClass, module, key)
+    end
+    if self._collectStats then
+        self._telemetry.cacheHits = self._telemetry.cacheHits + 1
     end
     return entry.value
 end
@@ -319,14 +373,26 @@ function DB:getAll(serverName, charName, charClass, module)
         self._cache[serverName][charName][charClass] and self._cache[serverName][charName][charClass][module]
     -- if any entry in the module is stale, re-fetch the whole module at once
     if moduleCache then
+        local stale = false
         for _, entry in pairs(moduleCache) do
             if entry.version < self._dataVersion then
-                self:_fetchModule(serverName, charName, charClass, module)
-                moduleCache = self._cache[serverName][charName][charClass][module]
+                stale = true
                 break
             end
         end
+        if stale then
+            if self._collectStats then
+                self._telemetry.cacheMisses = self._telemetry.cacheMisses + 1
+            end
+            self:_fetchModule(serverName, charName, charClass, module)
+            moduleCache = self._cache[serverName][charName][charClass][module]
+        elseif self._collectStats then
+            self._telemetry.cacheHits = self._telemetry.cacheHits + 1
+        end
     else
+        if self._collectStats then
+            self._telemetry.cacheMisses = self._telemetry.cacheMisses + 1
+        end
         self:_fetchModule(serverName, charName, charClass, module)
         moduleCache = self._cache[serverName] and self._cache[serverName][charName] and
             self._cache[serverName][charName][charClass] and self._cache[serverName][charName][charClass][module]
@@ -348,7 +414,6 @@ end
 ---@param vtype      string|nil  Inferred if omitted
 ---@return boolean  true on success, false if busy (write queued for retry)
 function DB:setValue(serverName, charName, charClass, module, key, value, vtype)
-    self:_cacheSet(serverName, charName, charClass, module, key, value)
     local charId = self:upsertCharacter(serverName, charName)
     if not charId then return false end
     vtype = vtype or inferType(value)
@@ -368,7 +433,17 @@ function DB:setValue(serverName, charName, charClass, module, key, value, vtype)
     stmt:bind(6, text)
     local ok = self:_step(stmt)
     stmt:finalize()
-    if not ok then self:_enqueueWrite("setValue", serverName, charName, charClass, module, key, value, vtype) end
+    if self._collectStats then
+        if ok then
+            self._telemetry.inserts = self._telemetry.inserts + 1
+        else
+            self._telemetry.queuedWrites = self._telemetry.queuedWrites + 1
+        end
+    end
+    if not ok then
+        self:_enqueueWrite("setValue", serverName, charName, charClass, module, key, value, vtype)
+    end
+    self:_cacheSet(serverName, charName, charClass, module, key, value)
     return ok
 end
 
@@ -379,9 +454,6 @@ end
 ---@param settings   table  { key -> value }
 ---@return boolean  true on success, false if busy (write queued for retry)
 function DB:setAll(serverName, charName, charClass, module, settings)
-    for key, value in pairs(settings) do
-        self:_cacheSet(serverName, charName, charClass, module, key, value)
-    end
     local charId = self:upsertCharacter(serverName, charName)
     if not charId then return false end
 
@@ -409,13 +481,22 @@ function DB:setAll(serverName, charName, charClass, module, settings)
         if not self:_step(stmt) then
             stmt:finalize()
             self:_exec("ROLLBACK;")
+            if self._collectStats then
+                self._telemetry.queuedWrites = self._telemetry.queuedWrites + 1
+            end
             self:_enqueueWrite("setAll", serverName, charName, charClass, module, settings)
             return false
+        end
+        if self._collectStats then
+            self._telemetry.inserts = self._telemetry.inserts + 1
         end
         stmt:reset()
     end
     stmt:finalize()
     self:_exec("COMMIT;")
+    for key, value in pairs(settings) do
+        self:_cacheSet(serverName, charName, charClass, module, key, value)
+    end
     return true
 end
 
@@ -444,7 +525,16 @@ function DB:deleteValue(serverName, charName, charClass, module, key)
     stmt:bind(5, key)
     local ok = self:_step(stmt)
     stmt:finalize()
-    if not ok then self:_enqueueWrite("deleteValue", serverName, charName, charClass, module, key) end
+    if self._collectStats then
+        if ok then
+            self._telemetry.deletes = self._telemetry.deletes + 1
+        else
+            self._telemetry.queuedWrites = self._telemetry.queuedWrites + 1
+        end
+    end
+    if not ok then
+        self:_enqueueWrite("deleteValue", serverName, charName, charClass, module, key)
+    end
     return ok
 end
 
@@ -471,7 +561,16 @@ function DB:deleteModule(serverName, charName, charClass, module)
     stmt:bind(4, module)
     local ok = self:_step(stmt)
     stmt:finalize()
-    if not ok then self:_enqueueWrite("deleteModule", serverName, charName, charClass, module) end
+    if self._collectStats then
+        if ok then
+            self._telemetry.deletes = self._telemetry.deletes + 1
+        else
+            self._telemetry.queuedWrites = self._telemetry.queuedWrites + 1
+        end
+    end
+    if not ok then
+        self:_enqueueWrite("deleteModule", serverName, charName, charClass, module)
+    end
     return ok
 end
 
@@ -492,7 +591,16 @@ function DB:deleteCharacter(serverName, charName)
     stmt:bind(2, charName)
     local ok = self:_step(stmt)
     stmt:finalize()
-    if not ok then self:_enqueueWrite("deleteCharacter", serverName, charName) end
+    if self._collectStats then
+        if ok then
+            self._telemetry.deletes = self._telemetry.deletes + 1
+        else
+            self._telemetry.queuedWrites = self._telemetry.queuedWrites + 1
+        end
+    end
+    if not ok then
+        self:_enqueueWrite("deleteCharacter", serverName, charName)
+    end
     return ok
 end
 
@@ -509,25 +617,25 @@ function DB:_getDataVersion()
 end
 
 function DB:_cacheSet(serverName, charName, charClass, module, key, value)
-    local sv = self._cache[serverName]
-    if not sv then
-        sv = {}
-        self._cache[serverName] = sv
+    local serverCache = self._cache[serverName]
+    if not serverCache then
+        serverCache = {}
+        self._cache[serverName] = serverCache
     end
-    local ch = sv[charName]
-    if not ch then
-        ch = {}
-        sv[charName] = ch
+    local charCache = serverCache[charName]
+    if not charCache then
+        charCache = {}
+        serverCache[charName] = charCache
     end
-    local cl = ch[charClass]
-    if not cl then
-        cl = {}
-        ch[charClass] = cl
+    local classCache = charCache[charClass]
+    if not classCache then
+        classCache = {}
+        charCache[charClass] = classCache
     end
-    local moduleCache = cl[module]
+    local moduleCache = classCache[module]
     if not moduleCache then
         moduleCache = {}
-        cl[module] = moduleCache
+        classCache[module] = moduleCache
     end
     moduleCache[key] = { value = value, version = self._dataVersion, }
 end
@@ -539,17 +647,20 @@ function DB:_cacheDel(serverName, charName, charClass, module, key)
 end
 
 function DB:_cacheDelModule(serverName, charName, charClass, module)
-    local cl = self._cache[serverName] and self._cache[serverName][charName] and
+    local classCache = self._cache[serverName] and self._cache[serverName][charName] and
         self._cache[serverName][charName][charClass]
-    if cl then cl[module] = nil end
+    if classCache then classCache[module] = nil end
 end
 
 function DB:_cacheDelChar(serverName, charName)
-    local sv = self._cache[serverName]
-    if sv then sv[charName] = nil end
+    local serverCache = self._cache[serverName]
+    if serverCache then serverCache[charName] = nil end
 end
 
 function DB:_fetchValue(serverName, charName, charClass, module, key)
+    if self._collectStats then
+        self._telemetry.selects = self._telemetry.selects + 1
+    end
     local stmt = self:_prepare([[
         SELECT cv.value, cv.value_type FROM config_value cv
         JOIN character c ON c.id = cv.character_id
@@ -570,6 +681,9 @@ function DB:_fetchValue(serverName, charName, charClass, module, key)
 end
 
 function DB:_fetchModule(serverName, charName, charClass, module)
+    if self._collectStats then
+        self._telemetry.selects = self._telemetry.selects + 1
+    end
     local stmt = self:_prepare([[
         SELECT cv.key, cv.value, cv.value_type FROM config_value cv
         JOIN character c ON c.id = cv.character_id
@@ -590,9 +704,13 @@ end
 ---Poll data_version. Call from your main loop tick alongside flushQueue().
 ---@return boolean  true if version changed (some client wrote since last tick)
 function DB:checkCache()
-    local v = self:_getDataVersion()
-    if v ~= self._dataVersion then
-        self._dataVersion = v
+    local externalVersion = self:_getDataVersion()
+    if externalVersion ~= self._externalVersion then
+        self._externalVersion = externalVersion
+        self._dataVersion = self._dataVersion + 1
+        if self._collectStats then
+            self._telemetry.cacheReloads = self._telemetry.cacheReloads + 1
+        end
         return true
     end
     return false
@@ -622,6 +740,120 @@ function DB:flushQueue()
         Logger.log_debug("\ayDB: %d write(s) still pending due to lock contention, will retry next tick.", #remaining)
     end
     self._writeQueue = remaining
+end
+
+-- ── Telemetry ─────────────────────────────────────────────────
+
+---Sample current counters into graph buffers. Call once per tick from your main loop.
+---@return nil
+function DB:updateTelemetryGraphs()
+    if not self._collectStats then return end
+    local telemetry  = self._telemetry
+    local now        = (mq.gettime() - telemetry.startTime) / 1000
+    local prevCounts = telemetry.prev
+    telemetry.graphs.selects:AddPoint(now, telemetry.selects - prevCounts.selects)
+    telemetry.graphs.inserts:AddPoint(now, telemetry.inserts - prevCounts.inserts)
+    telemetry.graphs.deletes:AddPoint(now, telemetry.deletes - prevCounts.deletes)
+    telemetry.graphs.cacheHits:AddPoint(now, telemetry.cacheHits - prevCounts.cacheHits)
+    telemetry.graphs.cacheMisses:AddPoint(now, telemetry.cacheMisses - prevCounts.cacheMisses)
+    telemetry.graphs.queueDepth:AddPoint(now, #self._writeQueue)
+    prevCounts.selects     = telemetry.selects
+    prevCounts.inserts     = telemetry.inserts
+    prevCounts.deletes     = telemetry.deletes
+    prevCounts.cacheHits   = telemetry.cacheHits
+    prevCounts.cacheMisses = telemetry.cacheMisses
+end
+
+---Render telemetry graphs using ImPlot. Call inside an ImGui window.
+---@param historySeconds? number  seconds of history to show (default 60)
+---@return nil
+function DB:renderTelemetryGraph(historySeconds)
+    historySeconds  = historySeconds or 60
+    local telemetry = self._telemetry
+    local now       = (mq.gettime() - telemetry.startTime) / 1000
+    local graphs    = telemetry.graphs
+
+    if ImPlot.BeginPlot("DB Operations / Tick") then
+        ImPlot.SetupAxes("Time (s)", "Count / Tick", ImPlotAxisFlags.None, ImPlotAxisFlags.AutoFit)
+        ImPlot.SetupAxisLimits(ImAxis.X1, now - historySeconds, now, ImGuiCond.Always)
+        ImPlot.SetupAxisLimitsConstraints(ImAxis.Y1, 0, math.huge)
+        ImPlot.PlotLine("Selects", graphs.selects.DataX, graphs.selects.DataY, #graphs.selects.DataX, ImPlotLineFlags.None, graphs.selects.Offset - 1)
+        ImPlot.PlotLine("Inserts", graphs.inserts.DataX, graphs.inserts.DataY, #graphs.inserts.DataX, ImPlotLineFlags.None, graphs.inserts.Offset - 1)
+        ImPlot.PlotLine("Deletes", graphs.deletes.DataX, graphs.deletes.DataY, #graphs.deletes.DataX, ImPlotLineFlags.None, graphs.deletes.Offset - 1)
+        ImPlot.EndPlot()
+    end
+
+    if ImPlot.BeginPlot("DB Cache / Tick") then
+        ImPlot.SetupAxes("Time (s)", "Count / Tick", ImPlotAxisFlags.None, ImPlotAxisFlags.AutoFit)
+        ImPlot.SetupAxisLimits(ImAxis.X1, now - historySeconds, now, ImGuiCond.Always)
+        ImPlot.SetupAxisLimitsConstraints(ImAxis.Y1, 0, math.huge)
+        ImPlot.PlotLine("Hits", graphs.cacheHits.DataX, graphs.cacheHits.DataY, #graphs.cacheHits.DataX, ImPlotLineFlags.Shaded, graphs.cacheHits.Offset - 1)
+        ImPlot.PlotLine("Misses", graphs.cacheMisses.DataX, graphs.cacheMisses.DataY, #graphs.cacheMisses.DataX, ImPlotLineFlags.Shaded, graphs.cacheMisses.Offset - 1)
+        ImPlot.PlotLine("Queue Depth", graphs.queueDepth.DataX, graphs.queueDepth.DataY, #graphs.queueDepth.DataX, ImPlotLineFlags.None, graphs.queueDepth.Offset - 1)
+        ImPlot.EndPlot()
+    end
+end
+
+---@return table  copy of current telemetry counters
+function DB:getTelemetry()
+    local telemetry  = self._telemetry
+    local uptime     = (mq.gettime() - telemetry.startTime) / 1000
+    local totalReads = telemetry.cacheHits + telemetry.cacheMisses
+    return {
+        selects      = telemetry.selects,
+        inserts      = telemetry.inserts,
+        updates      = telemetry.updates,
+        deletes      = telemetry.deletes,
+        cacheHits    = telemetry.cacheHits,
+        cacheMisses  = telemetry.cacheMisses,
+        cacheReloads = telemetry.cacheReloads,
+        hitRate      = totalReads > 0 and (telemetry.cacheHits / totalReads * 100) or 0,
+        queuedWrites = telemetry.queuedWrites,
+        busyRetries  = telemetry.busyRetries,
+        pendingQueue = #self._writeQueue,
+        errors       = telemetry.errors,
+        dataVersion  = self._dataVersion,
+        uptime       = uptime,
+        lastQuery    = telemetry.lastQuery or "",
+    }
+end
+
+---Render telemetry as an ImGui table. Call inside an ImGui window.
+---@return nil
+function DB:renderTelemetry()
+    local stats = self:getTelemetry()
+    ImGui.Text(string.format("Uptime: %.1fs   Data Version: %d", stats.uptime, stats.dataVersion))
+    ImGui.Separator()
+    if ImGui.BeginTable("db_telemetry", 2, ImGuiTableFlags.Borders + ImGuiTableFlags.RowBg + ImGuiTableFlags.SizingFixedFit) then
+        local function row(label, value)
+            ImGui.TableNextRow()
+            ImGui.TableSetColumnIndex(0)
+            ImGui.Text(label)
+            ImGui.TableSetColumnIndex(1)
+            ImGui.Text(tostring(value))
+        end
+        ImGui.TableSetupColumn("Metric")
+        ImGui.TableSetupColumn("Value")
+        ImGui.TableHeadersRow()
+        row("Selects", stats.selects)
+        row("Inserts", stats.inserts)
+        row("Updates", stats.updates)
+        row("Deletes", stats.deletes)
+        ImGui.TableNextRow()
+        row("Cache Hits", stats.cacheHits)
+        row("Cache Misses", stats.cacheMisses)
+        row("Hit Rate", string.format("%.1f%%", stats.hitRate))
+        row("Cache Reloads", stats.cacheReloads)
+        ImGui.TableNextRow()
+        row("Queued Writes", stats.queuedWrites)
+        row("Busy Retries", stats.busyRetries)
+        row("Queue Pending", stats.pendingQueue)
+        row("Errors", stats.errors)
+        ImGui.EndTable()
+    end
+    ImGui.Separator()
+    ImGui.Text("Last Query:")
+    ImGui.TextWrapped(stats.lastQuery)
 end
 
 return DB

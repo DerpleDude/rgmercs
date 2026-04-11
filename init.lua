@@ -632,4 +632,4 @@ end
 Core.CheckPlugins(unloadedPlugins, true)
 
 Modules:ExecAll("Shutdown")
-Config.Shutdown()
+Config:Shutdown()
