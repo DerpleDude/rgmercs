@@ -7,7 +7,6 @@ local Comms                                              = require("utils.comms"
 local Set                                                = require("mq.Set")
 local Files                                              = require("utils.files")
 local Globals                                            = require("utils.globals")
-local Db                                                 = require("utils.db").new(mq.configDir .. '/rgmercs/rgmercs_config.db')
 
 local Config                                             = {
     _version = '2.1.0',
