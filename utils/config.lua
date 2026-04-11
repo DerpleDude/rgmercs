@@ -7,7 +7,6 @@ local Comms                                              = require("utils.comms"
 local Set                                                = require("mq.Set")
 local Files                                              = require("utils.files")
 local Globals                                            = require("utils.globals")
-local Db                                                 = require("utils.db").new(mq.configDir .. '/rgmercs/rgmercs_config.db')
 
 local Config                                             = {
     _version = '2.1.0',
@@ -2553,7 +2552,6 @@ function Config:SaveSettings()
 end
 
 function Config:LoadSettings()
-    Db:setUpdateHook(Config.OnConfigValueChanged)
     local configFile = Config.GetConfigFileName("RGMercs")
 
     if not Files.file_exists(configFile) then
@@ -3010,7 +3008,6 @@ function Config:SetSetting(setting, value, tempOnly)
             self.moduleSettings[settingModuleName][setting] = Tables.DeepCopy(cleanValue)
             self.moduleTempSettings[settingModuleName][setting] = cleanValue
             self:SaveModuleSettings(settingModuleName, self.moduleSettings[settingModuleName])
-            Db:setValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, settingModuleName, setting, cleanValue)
         end
     else
         Logger.log_info("\ayFailed to update setting %s, invalid value supplied.", setting)
