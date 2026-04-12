@@ -672,8 +672,6 @@ function Module:DoCombatCampCheck()
 end
 
 function Module:GiveTime()
-    local combat_state = Combat.GetCachedCombatState()
-
     if mq.TLO.Me.Hovering() and Config:GetSetting('ChaseOn') then
         if Config:GetSetting('BreakOnDeath') then
             Logger.log_warn("\awNOTICE:\ax You're dead. I'm not chasing \am%s\ax anymore.",
@@ -684,11 +682,17 @@ function Module:GiveTime()
         return
     end
 
+    if Globals.PauseMain and not Config:GetSetting('RunMovePaused') then
+        return
+    end
+
     self:CheckStuck()
 
     if not self:InCampZone() and Config:GetSetting("ReturnToCamp") then
         Config:SetSetting("ReturnToCamp", false)
     end
+
+    local combat_state = Combat.GetCachedCombatState()
 
     if combat_state == "Downtime" then
         if Casting.ShouldShrink() then
