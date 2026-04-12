@@ -885,7 +885,7 @@ return {
                 type = "AA",
             },
             {
-                name = "Inquisitor's Judgment",
+                name = "Inquisitor's Judgement",
                 type = "AA",
             },
             {
