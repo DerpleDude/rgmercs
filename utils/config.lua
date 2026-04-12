@@ -3315,7 +3315,6 @@ function Config:UpdatePeerSettings(data)
     local peer   = data.peer
     local module = data.module
 
-    printf("Received UpdatePeerSettings from %s :: %s for module %s", peer, self.currentPeer, module)
     if self.currentPeer ~= peer then
         return
     end
