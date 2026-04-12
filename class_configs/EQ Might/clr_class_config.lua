@@ -889,9 +889,13 @@ local _ClassConfig = {
                 end,
             },
             {
-                name = "Legendary Armband of Mithaniel",
+                name_func = function(self)
+                    if mq.TLO.FindItem("=Mythical Armband of Elushar")() then return "Mythical Armband of Elushar" end
+                    if mq.TLO.FindItem("=Legendary Armband of Mithaniel")() then return "Legendary Armband of Mithaniel" end
+                    return "Symbol Buff Clicky"
+                end,
                 type = "Item",
-                load_cond = function() return mq.TLO.Me.Level() >= 68 and mq.TLO.FindItem("=Legendary Armband of Mithaniel")() end,
+                load_cond = function() return mq.TLO.Me.Level() >= 68 and (mq.TLO.FindItem("=Mythical Armband of Elushar")() or mq.TLO.FindItem("=Legendary Armband of Mithaniel")()) end,
                 cond = function(self, itemName, target)
                     if Config:GetSetting('AegoSymbol') == (1 or 4) then return false end
                     return Casting.GroupBuffItemCheck(itemName, target)
