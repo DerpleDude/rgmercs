@@ -106,6 +106,8 @@ Module.TempSettings                     = {}
 Module.TempSettings.ClickyState         = {}
 Module.TempSettings.ConditionsCache     = {}
 Module.TempSettings.CombatClickiesTimer = 0
+Module.TempSettings.ClickyDropFrame     = {}
+Module.TempSettings.ClickyHeaderOpen    = {}
 
 Module.DefaultServerClickies            = {
     ['Project Lazarus'] = {
@@ -1270,30 +1272,54 @@ function Module:RenderClickyHeaderIcon(clicky, headerPos)
     draw_list:AddTextureAnimation(animItems, ImVec2(headerPos.x + offset, headerPos.y), ImVec2(20, 20))
 end
 
-function Module:RenderCondition(clickyIdx, condIdx, cond)
+function Module:RenderCondition(clickyIdx, condIdx, cond, conditionsTable)
     if condIdx == 0 then
         ImGui.SetNextItemOpen(false, ImGuiCond.Always);
         ImGui.TreeNodeEx(cond.render_header_text(self, cond) .. "###clicky_cond_tree_" .. clickyIdx .. "_" .. condIdx, ImGuiTreeNodeFlags.NoTreePushOnOpen)
-    elseif ImGui.TreeNode(self:GetLogicBlockByType(cond.type).render_header_text(self, cond) .. "###clicky_cond_tree_" .. clickyIdx .. "_" .. condIdx) then
-        ImGui.PopStyleColor(1)
-        Ui.Tooltip(self:GetLogicBlockByType(cond.type).tooltip or "No Tooltip Available.")
-
-        self:RenderConditionTypesCombo(cond, condIdx)
-
-        ImGui.Indent()
-        ImGui.PushStyleVar(ImGuiStyleVar.ChildRounding, 5.0)
-        ImGui.BeginChild("##clicky_cond_child_" .. clickyIdx .. "_" .. condIdx, ImVec2(0, 0),
-            bit32.bor(ImGuiChildFlags.AlwaysAutoResize, ImGuiChildFlags.Borders, ImGuiChildFlags.AutoResizeY),
-            bit32.bor(ImGuiWindowFlags.NoMove, ImGuiWindowFlags.NoTitleBar))
-        self:RenderConditionTargetCombo(cond, condIdx)
-        self:RenderConditionArgs(cond, condIdx, clickyIdx)
-        ImGui.EndChild()
-        ImGui.PopStyleVar(1)
-        ImGui.Unindent()
-        ImGui.TreePop()
     else
-        ImGui.PopStyleColor(1)
-        Ui.Tooltip(self:GetLogicBlockByType(cond.type).tooltip or "No Tooltip Available.")
+        local nodeOpen = ImGui.TreeNode(self:GetLogicBlockByType(cond.type).render_header_text(self, cond) .. "###clicky_cond_tree_" .. clickyIdx .. "_" .. condIdx)
+
+        if conditionsTable then
+            local payloadType = "CLICKY_COND_REORDER_" .. clickyIdx
+            if ImGui.BeginDragDropSource() then
+                ImGui.SetDragDropPayload(payloadType, condIdx)
+                ImGui.Text(self:GetLogicBlockByType(cond.type).render_header_text(self, cond))
+                ImGui.EndDragDropSource()
+            end
+            if ImGui.BeginDragDropTarget() then
+                local payload = ImGui.AcceptDragDropPayload(payloadType)
+                if payload then
+                    local src = payload.Data
+                    local dst = condIdx
+                    local item = table.remove(conditionsTable, src)
+                    table.insert(conditionsTable, dst, item)
+                    Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
+                end
+                ImGui.EndDragDropTarget()
+            end
+        end
+
+        if nodeOpen then
+            ImGui.PopStyleColor(1)
+            Ui.Tooltip(self:GetLogicBlockByType(cond.type).tooltip or "No Tooltip Available.")
+
+            self:RenderConditionTypesCombo(cond, condIdx)
+
+            ImGui.Indent()
+            ImGui.PushStyleVar(ImGuiStyleVar.ChildRounding, 5.0)
+            ImGui.BeginChild("##clicky_cond_child_" .. clickyIdx .. "_" .. condIdx, ImVec2(0, 0),
+                bit32.bor(ImGuiChildFlags.AlwaysAutoResize, ImGuiChildFlags.Borders, ImGuiChildFlags.AutoResizeY),
+                bit32.bor(ImGuiWindowFlags.NoMove, ImGuiWindowFlags.NoTitleBar))
+            self:RenderConditionTargetCombo(cond, condIdx)
+            self:RenderConditionArgs(cond, condIdx, clickyIdx)
+            ImGui.EndChild()
+            ImGui.PopStyleVar(1)
+            ImGui.Unindent()
+            ImGui.TreePop()
+        else
+            ImGui.PopStyleColor(1)
+            Ui.Tooltip(self:GetLogicBlockByType(cond.type).tooltip or "No Tooltip Available.")
+        end
     end
 end
 
@@ -1341,7 +1367,37 @@ function Module:RenderClickiesWithConditions(type, clickies)
                 ImGui.EndDisabled()
 
                 ImGui.PushID("##clicky_header_" .. clickyIdx)
-                if ImGui.CollapsingHeader("             " .. clicky.itemName) then
+
+                -- if a drop landed on this header this frame, pin the open state to what it
+                -- was last frame so the mouse-release that completed the drop doesn't toggle it
+                if self.TempSettings.ClickyDropFrame[clickyIdx] == ImGui.GetFrameCount() then
+                    ImGui.SetNextItemOpen(self.TempSettings.ClickyHeaderOpen[clickyIdx] or false, ImGuiCond.Always)
+                end
+
+                local headerOpen = ImGui.CollapsingHeader("             " .. clicky.itemName)
+                self.TempSettings.ClickyHeaderOpen[clickyIdx] = headerOpen
+
+                if not filterApplied then
+                    if ImGui.BeginDragDropSource() then
+                        ImGui.SetDragDropPayload("CLICKY_REORDER", clickyIdx)
+                        ImGui.Text(clicky.itemName)
+                        ImGui.EndDragDropSource()
+                    end
+                    if ImGui.BeginDragDropTarget() then
+                        local payload = ImGui.AcceptDragDropPayload("CLICKY_REORDER")
+                        if payload then
+                            local src = payload.Data
+                            local dst = clickyIdx
+                            self.TempSettings.ClickyDropFrame[dst] = ImGui.GetFrameCount()
+                            local item = table.remove(clickies, src)
+                            table.insert(clickies, dst, item)
+                            Config:SetSetting('Clickies', clickies)
+                        end
+                        ImGui.EndDragDropTarget()
+                    end
+                end
+
+                if headerOpen then
                     ImGui.BeginDisabled(clicky.enabled == false)
 
                     ImGui.Indent()
@@ -1383,7 +1439,7 @@ function Module:RenderClickiesWithConditions(type, clickies)
                             else
                                 ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.ConditionMidColor)
                             end
-                            self:RenderCondition(clickyIdx, condIdx, cond)
+                            self:RenderCondition(clickyIdx, condIdx, cond, not filterApplied and clicky.conditions or nil)
                         end
                     end
 
