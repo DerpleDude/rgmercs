@@ -10,7 +10,6 @@ local Ui        = require("utils.ui")
 local Comms     = require("utils.comms")
 local Tables    = require("utils.tables")
 local Strings   = require("utils.strings")
-local Files     = require("utils.files")
 local Logger    = require("utils.logger")
 local Modules   = require("utils.modules")
 local Events    = require("utils.events")
@@ -23,16 +22,17 @@ local Module   = { _version = '0.1a', _name = "Charm", _author = 'Grimmier', }
 Module.__index = Module
 Module.__index = Module
 setmetatable(Module, { __index = Base, })
-Module.FAQ                       = {}
-Module.CommandHandlers           = {}
+Module.FAQ                           = {}
+Module.CommandHandlers               = {}
 
-Module.CombatState               = "None"
-Module.TempSettings              = {}
-Module.TempSettings.CharmImmune  = {}
-Module.TempSettings.CharmTracker = {}
-Module.ImmuneTable               = {}
+Module.CombatState                   = "None"
+Module.TempSettings                  = {}
+Module.TempSettings.CharmImmune      = {}
+Module.TempSettings.CharmTracker     = {}
+Module.TempSettings.ImmuneModuleName = "Charm.Immune"
+Module.ImmuneTable                   = {}
 
-Module.DefaultConfig             = {
+Module.DefaultConfig                 = {
 	-- General
 	['CharmOn']                                = {
 		DisplayName           = "Charm On",
@@ -151,22 +151,23 @@ function Module:New()
 	return Base.New(self)
 end
 
-local function getImmuneFileName()
-	return Config.GetConfigFileName(Module._name .. "_Immune")
-end
-
 function Module:LoadSettings()
 	Base.LoadSettings(self)
 
-	local immune_pickle_path = getImmuneFileName()
-	local immuneConfig, immuneErr = loadfile(immune_pickle_path)
-	if immuneErr or not immuneConfig then
-		Logger.log_error("\ay[%s]: Unable to load Immune settings file(%s), creating a new one!",
-			Globals.CurLoadedClass, immune_pickle_path)
-		self.ImmuneTable = {}
-		mq.pickle(immune_pickle_path, self.ImmuneTable)
+	local existing = Config.Db:getValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, self.TempSettings.ImmuneModuleName, "ImmuneTable")
+	if existing ~= nil then
+		self.ImmuneTable = existing
 	else
-		self.ImmuneTable = immuneConfig()
+		-- one-time migration from legacy file
+		local legacyFile = Config.GetConfigFileName(Module._name .. "_Immune")
+		local loaded, err = loadfile(legacyFile)
+		if loaded and not err then
+			self.ImmuneTable = loaded() or {}
+			Logger.log_info("\agCharm: migrated ImmuneTable from file to db.")
+		else
+			self.ImmuneTable = {}
+		end
+		Config.Db:setValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, self.TempSettings.ImmuneModuleName, "ImmuneTable", self.ImmuneTable)
 	end
 end
 
@@ -246,7 +247,8 @@ function Module:Render()
 								Logger.log_debug(
 									"\ayUpdateCharmList: Removing Spawn from our Immune List, \aw(\aoZone \at%s \aoMob \at%s \aoLvl \at%s \ao Body \at%s\aw.)",
 									mq.TLO.Zone.ShortName(), name, lvl, bodyType)
-								mq.pickle(getImmuneFileName(), self.ImmuneTable)
+								Config.Db:setValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, self.TempSettings.ImmuneModuleName, "ImmuneTable",
+									self.ImmuneTable)
 							end
 							ImGui.TableNextColumn()
 							ImGui.Text(name)
@@ -286,7 +288,7 @@ function Module:AddImmuneTarget(mobId, mobData)
 			Logger.log_debug(
 				"\ayUpdateCharmList: Adding Spawn to our Immune List, \aw(\aoZone \at%s \aoMob \at%s \aoLvl \at%s \ao Body \at%s\aw.)",
 				zone, mobData.name, mobData.lvl, mobData.body)
-			mq.pickle(getImmuneFileName(), self.ImmuneTable)
+			Config.Db:setValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, self.TempSettings.ImmuneModuleName, "ImmuneTable", self.ImmuneTable)
 			self:RemoveCCTarget(mobId)
 		end
 	end

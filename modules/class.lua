@@ -152,7 +152,7 @@ Module.CommandHandlers                       = {
         handler = function(self, name)
             local enabledRotationEntries = Config:GetSetting('EnabledRotationEntries') or {}
             enabledRotationEntries[name] = true
-            self:SaveSettings(false)
+            Config:SetSetting('EnabledRotationEntries', enabledRotationEntries)
             return true
         end,
     },
@@ -162,7 +162,7 @@ Module.CommandHandlers                       = {
         handler = function(self, name)
             local enabledRotationEntries = Config:GetSetting('EnabledRotationEntries') or {}
             enabledRotationEntries[name] = false
-            self:SaveSettings(false)
+            Config:SetSetting('EnabledRotationEntries', enabledRotationEntries)
             return true
         end,
     },
@@ -172,7 +172,7 @@ Module.CommandHandlers                       = {
         handler = function(self, name)
             local enabledRotations = Config:GetSetting('EnabledRotations') or {}
             enabledRotations[name] = true
-            self:SaveSettings(false)
+            Config:SetSetting('EnabledRotations', enabledRotations)
             return true
         end,
     },
@@ -182,7 +182,7 @@ Module.CommandHandlers                       = {
         handler = function(self, name)
             local enabledRotations = Config:GetSetting('EnabledRotations') or {}
             enabledRotations[name] = false
-            self:SaveSettings(false)
+            Config:SetSetting('EnabledRotations', enabledRotations)
             return true
         end,
     },
@@ -292,14 +292,6 @@ Module.CommandHandlers                       = {
 
 function Module:New()
     return Base.New(self)
-end
-
-function Module:WriteSettings()
-    if not self.SaveRequested then return end
-    Base.WriteSettings(self)
-
-    -- set dynamic names.
-    self:SetDynamicNames()
 end
 
 function Module:LoadSettings()
@@ -463,7 +455,7 @@ function Module:RenderRotationWithToggle(r, rotationTable)
     ImGui.SetCursorPos(ImGui.GetWindowWidth() - toggleOffset, cursorScreenPos.y)
     if ImGui.InvisibleButton("##Enable" .. rotationName, ImVec2(20, 20)) then
         enabledRotations[r.name] = not enabledRotations[r.name]
-        Config:SaveModuleSettings(self._name, Config:GetModuleSettings(self._name))
+        Config:SetSetting('EnabledRotations', enabledRotations)
     end
 
     -- Reset the cursor position to where we started
@@ -475,7 +467,7 @@ function Module:RenderRotationWithToggle(r, rotationTable)
                 rotationTable[r.name],
                 self.ResolvedActionMap, r.state or 0, self.TempSettings.ShowFailedSpells, enabledRotationEntries)
 
-            if enabledRotationEntriesChanged then Config:SaveModuleSettings(self._name, Config:GetModuleSettings(self._name)) end
+            if enabledRotationEntriesChanged then Config:SetSetting('EnabledRotationEntries', enabledRotationEntries) end
             ImGui.Unindent()
         end
     end

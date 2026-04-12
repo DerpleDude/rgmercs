@@ -364,7 +364,6 @@ function Ui.RenderConfigSelector()
             #Globals.ClassConfigDirs)
         if changed then
             Config:SetSetting('ClassConfigDir', Globals.ClassConfigDirs[newConfigDir])
-            Config:SaveSettings()
             ClassLoader.reloadConfig()
         end
         Ui.Tooltip(

@@ -32,7 +32,6 @@ function ClassLoader.getClassConfigFileName(class)
         Logger.log_error("Class Config not found or deprecated: \ay%s\aw. Returning to Default!", classConfigDir)
         local folder = ClassLoader.getFallbackClassConfigFolder()
         Config:SetSetting('ClassConfigDir', folder)
-        Config:SaveSettings()
         configFile = string.format("%s/%s/%s_class_config.lua", baseConfigDir, folder, class:lower())
     end
 

@@ -975,7 +975,6 @@ function Module:Render()
                 if ImGui.Button(Config:GetSetting('DoPull') and "Stop Pulls" or "Start Pulls", -1, 25) then
                     Config:SetSetting('DoPull', not Config:GetSetting('DoPull'))
                     Module:SetRoles()
-                    self:SaveSettings(false)
                 end
                 ImGui.PopStyleColor()
                 ImGui.TableNextColumn()
@@ -2626,14 +2625,12 @@ function Module:StartPuller()
     if Config:GetSetting('DoPull') == true then return end
     Config:SetSetting('DoPull', true)
     Module:SetRoles()
-    self:SaveSettings(false)
 end
 
 function Module:StopPuller()
     if Config:GetSetting('DoPull') == false then return end
     Config:SetSetting('DoPull', false)
     Module:SetRoles()
-    self:SaveSettings(false)
 end
 
 function Module:SetRoles()

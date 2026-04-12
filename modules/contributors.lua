@@ -17,18 +17,6 @@ function Module:New()
     return Base.New(self)
 end
 
-function Module:SaveSettings(doBroadcast)
-end
-
-function Module:IsSaveRequested()
-end
-
-function Module:WriteSettings()
-end
-
-function Module:LoadSettings(preLoadFn, postLoadFn)
-end
-
 function Module:ShouldRender()
     return false
 end

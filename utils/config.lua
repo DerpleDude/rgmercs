@@ -17,7 +17,6 @@ local Config                                             = {
 }
 Config.__index                                           = Config
 Config.Db                                                = require("utils.db").new(mq.configDir .. '/rgmercs/rgmercs_config.db')
-Config.moduleSettings                                    = {}
 Config.moduleDefaultSettings                             = {}
 Config.moduleTempSettings                                = {}
 Config.moduleSettingCategories                           = {}
@@ -2413,13 +2412,6 @@ Config.DefaultConfig                                     = {
         end,
     },
 
-    ['HasConvertedToDB']                 = {
-        DisplayName = "Has Converted To DB",
-        Category = "Internals",
-        Type = "Custom",
-        Default = false,
-    },
-
     --Tanking
     ['AETauntCnt']                       = {
         DisplayName = "AE Taunt Count",
@@ -2543,45 +2535,37 @@ function Config.GetConfigFileName(moduleName, returnExisting)
     return latest
 end
 
-function Config:SaveSettings()
-    local configFile = Config.GetConfigFileName("RGMercs")
-    mq.pickle(configFile, self:GetModuleSettings("Core"))
-    Logger.log_debug("\agRGMercs settings saved to %s", configFile)
-    Logger.set_log_level(Config:GetSetting('LogLevel'))
-    Logger.set_log_to_file(Config:GetSetting('LogToFile'))
-end
-
 function Config:LoadSettings()
-    local configFile = Config.GetConfigFileName("RGMercs")
+    -- handle update to db before anything else.
+    if not self:CharacterExistsInDb() then
+        Logger.log_info("\ayCharacter not found in DB, converting settings to DB...")
+        Config:ConvertToDb()
 
-    if not Files.file_exists(configFile) then
-        local oldConfigFile = Config.GetConfigFileName("RGMerc", true)
-        Logger.log_info("\ayOld config file found for RGMercs, upgrading to new config file name.")
-        Files.copy_file(oldConfigFile, configFile)
-        Files.delete_file(oldConfigFile)
+        while Config:DbWritesPending() do
+            Logger.log_debug("Waiting for DB writes to complete before proceeding with initialization...")
+            Config:FlushDB()
+            mq.delay(100)
+        end
+
+        Logger.log_info("\agCharacter DB migration complete!")
     end
 
-    Globals.CurLoadedChar       = mq.TLO.Me.DisplayName()
-    Globals.CurLoadedClass      = mq.TLO.Me.Class.ShortName()
-    Globals.CurServer           = mq.TLO.EverQuest.Server()
-    Globals.CurServerNormalized = mq.TLO.EverQuest.Server():gsub(" ", "")
     Logger.log_info(
         "\ayLoading Main Settings for %s!",
         Globals.CurLoadedChar)
 
-    local settings = {}
     local firstSaveRequired = false
-
-    local config, err = loadfile(configFile)
-    if err or not config then
-        Logger.log_error("\ayUnable to load global settings file(%s), creating a new one!",
-            configFile)
+    local coreModuleName = "Core"
+    local settings = Config:GetAllModuleSettingsFromDb(coreModuleName)
+    local settingsCount = Tables.GetTableSize(settings)
+    if settingsCount == 0 then
+        Logger.log_info("\ayNo settings found in DB for %s, loading defaults.", coreModuleName)
         firstSaveRequired = true
     else
-        settings = config()
+        Logger.log_info("\agSettings loaded \at%d\ag settings from DB for \ay%s\aw,\ag loading into module.", settingsCount, coreModuleName)
     end
 
-    Config:RegisterModuleSettings("Core", settings, Config.DefaultConfig, Config.FAQ, firstSaveRequired)
+    Config:RegisterModuleSettings(coreModuleName, settings, Config.DefaultConfig, Config.FAQ, firstSaveRequired)
 
     -- setup our script path for later usage since getting it kind of sucks, but only on the first run (personas)
     if Globals.ScriptDir == "" then
@@ -2602,7 +2586,7 @@ function Config:UpdateCommandHandlers()
     local startTime = Globals.GetTimeSeconds()
     local submoduleDefaults = self:GetAllModuleDefaultSettings()
 
-    for moduleName, moduleSettings in pairs(Config.moduleSettings) do
+    for moduleName, moduleSettings in pairs(Config.moduleDefaultSettings) do
         local modstartTime = Globals.GetTimeSeconds()
         for setting, _ in pairs(moduleSettings or {}) do
             local setstartTime = Globals.GetTimeSeconds()
@@ -2627,7 +2611,7 @@ function Config:UpdateCommandHandlers()
 
     local endTime = Globals.GetTimeSeconds()
 
-    Logger.log_debug("\ag[Config] \ayUpdateCommandHandlers() took %.3f seconds to execute for %d modules.", (endTime - startTime) / 1000, #Config.moduleSettings)
+    Logger.log_debug("\ag[Config] \ayUpdateCommandHandlers() took %.3f seconds to execute for %d modules.", (endTime - startTime) / 1000, #Config.moduleDefaultSettings)
 end
 
 ---@param config string
@@ -2691,21 +2675,11 @@ function Config:GetUsageText(config, showUsageText, defaults, valueOnly)
     return handledType, usageString
 end
 
-function Config:GetModuleSettings(module)
-    return self.moduleTempSettings[module] or {}
-end
-
-function Config:PeerGetModuleSettings(peer, module)
-    if peer == nil or peer == Comms.GetPeerName() then
-        return self:GetModuleSettings(module)
-    end
-
-    if self.currentPeer ~= peer then
-        Logger.log_error("PeerGetModuleSettings called for %s but current peer is %s", peer, self.currentPeer or "nil")
-        return {}
-    end
-
-    return self.peerModuleSettings[module] or {}
+function Config:GetTempSetting(setting)
+    local module = Config.TempSettings.SettingToModuleCache[setting]
+    if not module then return nil end
+    local tempValue = self.moduleTempSettings[module] and self.moduleTempSettings[module][setting]
+    return tempValue
 end
 
 function Config:GetModuleDefaultSettings(module)
@@ -2742,8 +2716,25 @@ function Config:PeerGetModuleSettingCategories(peer, module)
     return self.peerModuleSettingCategories[module] or {}
 end
 
+--- Returns the full effective settings table for a module (db values + temp overrides).
+--- @param module string
+--- @return table
+function Config:GetModuleSettings(module)
+    local defaults = self.moduleDefaultSettings[module]
+    if not defaults then return {} end
+    local result = {}
+    for setting, _ in pairs(defaults) do
+        result[setting] = self:GetSetting(setting)
+    end
+    return result
+end
+
 function Config:GetAllModuleSettings()
-    return self.moduleTempSettings or {}
+    local result = {}
+    for module, _ in pairs(self.moduleDefaultSettings) do
+        result[module] = self:GetModuleSettings(module)
+    end
+    return result
 end
 
 function Config:GetAllModuleDefaultSettings()
@@ -2847,7 +2838,7 @@ function Config:PeerGetSetting(peer, setting, failOk)
         return nil
     end
 
-    return self:PeerGetModuleSettings(peer, Config.TempSettings.PeerSettingToModuleCache[setting])[setting]
+    return self.peerModuleSettings[Config.TempSettings.PeerSettingToModuleCache[setting]][setting]
 end
 
 --- Retrieves a specified setting.
@@ -2861,19 +2852,10 @@ function Config:GetSetting(setting, failOk)
         end
         return nil
     end
-    local value = self:GetModuleSettings(Config.TempSettings.SettingToModuleCache[setting])[setting]
-    local dbValue = self.Db:getValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, Config.TempSettings.SettingToModuleCache[setting], setting)
 
-    if type(dbValue) == "table" and type(value) == "table" then
-        if not Tables.AreTablesEqual(dbValue, value) then
-            Logger.log_error("\arInconsistency found for %s \aw- \atDB Value\aw: \ag%s\aw, \atIn-Memory Value: \ag%s\aw",
-                setting, Strings.TableToString(dbValue), Strings.TableToString(value))
-            self.DbConsistencyCheckPass = false
-        end
-    elseif dbValue ~= value then
-        Logger.log_error("\arInconsistency found for %s \aw- \atDB Value\aw: \ag%s\aw, \atIn-Memory Value: \ag%s\aw",
-            setting, tostring(dbValue), tostring(value))
-        self.DbConsistencyCheckPass = false
+    local value = self:GetTempSetting(setting)
+    if value == nil then
+        value = self.Db:getValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, Config.TempSettings.SettingToModuleCache[setting], setting)
     end
 
     return value
@@ -3005,9 +2987,7 @@ function Config:SetSetting(setting, value, tempOnly)
             self.moduleTempSettings[settingModuleName][setting] = cleanValue
         else
             self.Db:setValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, settingModuleName, setting, cleanValue)
-            self.moduleSettings[settingModuleName][setting] = Tables.DeepCopy(cleanValue)
-            self.moduleTempSettings[settingModuleName][setting] = cleanValue
-            self:SaveModuleSettings(settingModuleName, self.moduleSettings[settingModuleName])
+            self.moduleTempSettings[settingModuleName][setting] = nil
         end
     else
         Logger.log_info("\ayFailed to update setting %s, invalid value supplied.", setting)
@@ -3023,6 +3003,10 @@ function Config:SetSetting(setting, value, tempOnly)
     if defaultConfig[setting].OnChange and oldValue ~= cleanValue then
         defaultConfig[setting].OnChange(oldValue, cleanValue)
     end
+
+    -- broadcast the change to any listeners.
+    Comms.BroadcastMessage(self._name, "UpdatePeerSetSetting",
+        { peer = Comms.GetPeerName(), module = settingModuleName, setting = setting, value = cleanValue, })
 end
 
 --- Temporarily sets a setting
@@ -3035,21 +3019,23 @@ end
 --- Clears a Temporarily sets a setting
 --- @param setting string: The name of the setting to be updated.
 function Config:ClearTempSetting(setting)
-    local settingModuleName = "Core"
-
-    settingModuleName, setting = self:MakeValidSettingName(setting)
+    local settingModuleName, cleanSetting = self:MakeValidSettingName(setting)
 
     if settingModuleName == "None" then
         Logger.log_error("Setting %s was not found!", setting)
         return
     end
 
-    self:SetSetting(setting, self.moduleSettings[settingModuleName][setting], true)
+    if self.moduleTempSettings[settingModuleName] then
+        self.moduleTempSettings[settingModuleName][cleanSetting] = nil
+    end
 end
 
 --- Clears Temporarily set settings
 function Config:ClearAllTempSettings()
-    self.moduleTempSettings = Tables.DeepCopy(self.moduleSettings) -- make sure nothing is a reference.
+    for module, _ in pairs(self.moduleTempSettings) do
+        self.moduleTempSettings[module] = {}
+    end
 end
 
 --- Resolves the default values for a given settings table.
@@ -3059,7 +3045,7 @@ end
 --- @param defaults table The table containing default values.
 --- @param settings table The table containing user-defined settings.
 --- @return table, boolean The settings table with defaults applied where necessary. A bool if the table changed and requires saving.
-function Config.ResolveDefaults(defaults, settings)
+function Config.ResolveDefaults(defaults, settings, module)
     -- Setup Defaults
     local changed = false
     if settings == nil then
@@ -3091,6 +3077,9 @@ function Config.ResolveDefaults(defaults, settings)
         if not defaults[k] then
             settings[k] = nil
             Logger.log_info("\aySetting [\am%s\ay] has been deprecated -- removing from your config.", k)
+            if module then
+                Config.Db:deleteValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, module, k)
+            end
             changed = true
         end
     end
@@ -3123,7 +3112,7 @@ function Config:PeerRegisterCategoryToSettingMapping(peer, setting)
 end
 
 function Config:RegisterModuleSettings(module, settings, defaultSettings, faq, firstSaveRequired)
-    if self.moduleSettings[module] then
+    if self.moduleDefaultSettings[module] then
         Logger.log_error("\arModule %s has already registered settings!", module)
         return
     end
@@ -3139,15 +3128,16 @@ function Config:RegisterModuleSettings(module, settings, defaultSettings, faq, f
         faq[k] = { Question = v.FAQ, Answer = v.Answer, Settings_Used = k, }
     end
 
-    -- Setup Defaults
-    settings, settingsChanged = Config.ResolveDefaults(defaultSettings, settings)
-    self.moduleSettings[module] = Tables.DeepCopy(settings) -- make sure nothing is a reference.
-    self.moduleTempSettings[module] = settings
+    -- ResolveDefaults only to detect missing/changed keys that need a db write
+    local resolvedSettings
+    resolvedSettings, settingsChanged = Config.ResolveDefaults(defaultSettings, settings, module)
+
+    self.moduleTempSettings[module] = {}
     self.moduleDefaultSettings[module] = defaultSettings
     self.moduleSettingCategories[module] = settingCategories
 
-    for setting, _ in pairs(settings) do
-        if not self.moduleDefaultSettings[module][setting].Category or self.moduleDefaultSettings[module][setting].Category:len() == 0 then
+    for setting, v in pairs(defaultSettings) do
+        if not v.Category or v.Category:len() == 0 then
             self.moduleDefaultSettings[module][setting].Category = "Uncategorized"
             self.moduleSettingCategories[module]:add("Uncategorized")
         end
@@ -3166,7 +3156,7 @@ function Config:RegisterModuleSettings(module, settings, defaultSettings, faq, f
     end
 
     if firstSaveRequired or settingsChanged then
-        self:SaveModuleSettings(module, settings)
+        self:SaveModuleSettings(module, resolvedSettings)
     end
 
     self.TempSettings.lastModuleRegisteredTime = Globals.GetTimeSeconds()
@@ -3175,19 +3165,17 @@ function Config:RegisterModuleSettings(module, settings, defaultSettings, faq, f
 end
 
 function Config:ClearModuleSettings(module)
-    if not self.moduleSettings[module] then
+    if not self.moduleDefaultSettings[module] then
         Logger.log_error("\arModule %s is not registered!", module)
         return
     end
 
-    local settings = self.moduleSettings[module]
-    for setting, _ in pairs(settings) do
+    for setting, _ in pairs(self.moduleDefaultSettings[module]) do
         self:UnRegisterCategoryToSettingMapping(setting)
         Config.TempSettings.SettingsLowerToNameCache[setting:lower()] = nil
         Config.TempSettings.SettingToModuleCache[setting] = nil
     end
 
-    self.moduleSettings[module] = nil
     self.moduleTempSettings[module] = nil
     self.moduleDefaultSettings[module] = nil
     self.moduleSettingCategories[module] = nil
@@ -3218,7 +3206,7 @@ function Config:SendConfigs(data)
     end
 
     for _, name in ipairs(modules) do
-        if Config.moduleSettings[name] ~= nil then
+        if Config.moduleDefaultSettings[name] ~= nil then
             Comms.SendMessage(data.from, self._name, "UpdatePeerSettings", self:PackageConfig(name))
         end
     end
@@ -3232,7 +3220,7 @@ function Config:BroadcastConfigs()
     end
 
     for _, name in ipairs(modules) do
-        if Config.moduleSettings[name] ~= nil then
+        if Config.moduleDefaultSettings[name] ~= nil then
             Comms.BroadcastMessage(self._name, "UpdatePeerSettings", self:PackageConfig(name))
         end
     end
@@ -3247,7 +3235,6 @@ function Config:GetLastModuleRegisteredTime()
 end
 
 function Config:ClearAllModuleSettings()
-    self.moduleSettings = {}
     self.moduleTempSettings = {}
     self.moduleDefaultSettings = {}
     self.moduleSettingCategories = {}
@@ -3258,14 +3245,11 @@ function Config:ClearAllModuleSettings()
 end
 
 function Config:SaveModuleSettings(module, settings)
-    self.moduleSettings[module] = settings
-    local defaultSettings = self:GetModuleDefaultSettings(module)
+    local defaultSettings    = self:GetModuleDefaultSettings(module)
     local settingsCategories = self:GetModuleSettingCategories(module):toList() or {}
 
-    if module == "Core" then
-        self:SaveSettings()
-    else
-        Modules:ExecModule(module, "SaveSettings", false)
+    for setting, value in pairs(settings) do
+        self.Db:setValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, module, setting, value)
     end
     Logger.log_debug("\agModule %s - save settings requested!", module)
 
@@ -3303,10 +3287,35 @@ function Config:SetRemotePeer(peer)
     end
 end
 
+function Config:UpdatePeerSetSetting(data)
+    local peer    = data.peer
+    local module  = data.module
+    local setting = data.setting
+    local value   = data.value
+
+    Logger.log_debug("Received UpdatePeerSetSetting from %s :: %s for module %s, setting %s", peer, self.currentPeer, module, setting)
+    if self.currentPeer ~= peer then
+        return
+    end
+
+    if self.peerModuleSettings[module] == nil then
+        Logger.log_error("Received UpdatePeerSetSetting for module %s but we don't have any settings for that module!", tostring(module))
+        return
+    end
+
+    if self.peerModuleSettings[module][setting] == nil then
+        Logger.log_error("Received UpdatePeerSetSetting for setting %s but we don't have that setting for module %s!", tostring(setting), tostring(module))
+        return
+    end
+
+    self.peerModuleSettings[module][setting] = value
+end
+
 function Config:UpdatePeerSettings(data)
     local peer   = data.peer
     local module = data.module
 
+    printf("Received UpdatePeerSettings from %s :: %s for module %s", peer, self.currentPeer, module)
     if self.currentPeer ~= peer then
         return
     end
@@ -3334,6 +3343,7 @@ function Config:UpdatePeerSettings(data)
     self.peerModuleSettingCategories[module] = Set.new(settingsCategories or {})
 
     for setting, _ in pairs(settings) do
+        printf("Updating caches for setting %s => %s", setting, tostring(settings[setting]))
         self.TempSettings.PeerSettingToModuleCache[setting] = module
         self.TempSettings.PeerModuleSettingsLowerToNameCache[setting:lower()] = setting
         self:PeerRegisterCategoryToSettingMapping(peer, setting)
@@ -3509,9 +3519,7 @@ function Config:HandleBind(config, value)
         self:UpdateCommandHandlers()
 
         local allModules = {}
-        local submoduleSettings = self.moduleSettings or {}
-
-        for name, _ in pairs(submoduleSettings) do
+        for name, _ in pairs(self.moduleDefaultSettings) do
             if name ~= "Core" then
                 table.insert(allModules, name)
             end
@@ -3666,17 +3674,41 @@ function Config.CacheCustomColors()
 end
 
 function Config:ConvertToDb()
-    -- iterate all settings and resave them with their current value.
+    -- build the ordered module list from ModuleOrder, appending Core first and both loot modules
+    local moduleNames = { "Core", }
+    for _, name in ipairs(Modules.ModuleOrder) do
+        table.insert(moduleNames, name)
+    end
+    table.insert(moduleNames, "LootNScoot")
+    table.insert(moduleNames, "SmartLoot")
+
     local settingCount = 0
-    local moduleCount = 0
-    for module, settings in pairs(self.moduleSettings) do
-        moduleCount = moduleCount + 1
-        for setting, value in pairs(settings) do
-            self.Db:setValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, module, setting, value)
-            settingCount = settingCount + 1
+
+    for _, name in ipairs(moduleNames) do
+        local fileName   = name == "Core" and "RGMercs" or name
+        local configFile = Config.GetConfigFileName(fileName)
+
+        if not Files.file_exists(configFile) then
+            Logger.log_info("\ayConvertToDb: no config file found for module \ay%s\ay, skipping.", name)
+        else
+            local loaded, err = loadfile(configFile)
+            if not loaded or err then
+                Logger.log_warn("\ayConvertToDb: could not parse file %s: %s", configFile, tostring(err))
+            else
+                local fileSettings = loaded() or {}
+                Logger.log_info("\agConvertToDb: loaded file \at%s\ag for module \ay%s", configFile, name)
+                for setting, value in pairs(fileSettings) do
+                    local existing = self.Db:getValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, name, setting)
+                    if existing == nil then
+                        self.Db:setValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, name, setting, value)
+                        settingCount = settingCount + 1
+                    end
+                end
+            end
         end
     end
-    Logger.log_info("\agConverted \ay%d \agsettings across \ay%d \agmodules to the new database format.", settingCount, moduleCount)
+
+    Logger.log_info("\agConverted \ay%d \agsettings across \ay%d \agmodules from files to the database.", settingCount, #moduleNames)
 end
 
 function Config:DbConsistencyCheck()
@@ -3684,9 +3716,10 @@ function Config:DbConsistencyCheck()
     local moduleCount = 0
     self.DbConsistencyCheckPass = true
 
-    for module, settings in pairs(self.moduleSettings) do
+    for module, defaults in pairs(self.moduleDefaultSettings) do
         moduleCount = moduleCount + 1
-        for setting, value in pairs(settings) do
+        for setting, _ in pairs(defaults) do
+            local value   = self:GetSetting(setting)
             local dbValue = Config.Db:getValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, module, setting)
             if type(dbValue) == "table" and type(value) == "table" then
                 if not Tables.AreTablesEqual(dbValue, value) then
@@ -3705,6 +3738,14 @@ function Config:DbConsistencyCheck()
     Logger.log_info("\agDatabase consistency check complete. Found \ay%d \agsettings in the database for this character.", settingCount)
 
     return Config.DbConsistencyCheckPass
+end
+
+function Config:GetAllModuleSettingsFromDb(module)
+    return self.Db:getAll(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, module) or {}
+end
+
+function Config:CharacterExistsInDb()
+    return self.Db:getCharacterId(Globals.CurServer, Globals.CurLoadedChar) ~= nil
 end
 
 function Config:DbWritesPending()

@@ -19,56 +19,31 @@ function Base:New()
     return newBase
 end
 
-function Base:SaveSettings(doBroadcast)
-    self.SaveRequested = { time = Globals.GetTimeSeconds(), broadcast = doBroadcast or false, }
-end
-
-function Base:IsSaveRequested()
-    return self.SaveRequested ~= nil
-end
-
-function Base:WriteSettings()
-    if not self.SaveRequested then return end
-
-    local configFile = Config.GetConfigFileName(self._name)
-
-    mq.pickle(configFile, Config:GetModuleSettings(self._name))
-
-    if self.SaveRequested.doBroadcast == true then
-        Comms.BroadcastMessage(self._name, "LoadSettings")
-    end
-
-    Logger.log_debug("\ag%s Base settings saved to %s, requested %s ago.", self._name, configFile,
-        Strings.FormatTime(Globals.GetTimeSeconds() - self.SaveRequested.time))
-
-    self.SaveRequested = nil
-end
-
 function Base:LoadSettings(preLoadFn, postLoadFn)
     local configFile = Config.GetConfigFileName(self._name)
 
     Logger.log_info("\aw[\atLoading Settings\aw] Character: \am%s \awModule: \ay%s \awFile: \at%s", Globals.CurLoadedChar, self._name, configFile)
-    local settings = {}
     local firstSaveRequired = false
 
     if preLoadFn then
         preLoadFn()
     end
 
-    local config, err = loadfile(configFile)
-    if err or not config then
-        Logger.log_error("\aw[\atLoading Settings\aw] \arUnable to load global settings file(%s), creating a new one!",
-            configFile)
+    -- load all module settings from db.
+    local settings = Config:GetAllModuleSettingsFromDb(self._name)
+    local settingsCount = Tables.GetTableSize(settings)
+    if settingsCount == 0 then
+        Logger.log_info("\ayNo settings found in DB for %s, loading defaults.", self._name)
         firstSaveRequired = true
     else
-        settings = config()
-    end
-
-    if postLoadFn then
-        postLoadFn(settings)
+        Logger.log_info("\agLoaded \at%d\ag settings from DB for \ay%s\aw", settingsCount, self._name)
     end
 
     Config:RegisterModuleSettings(self._name, settings, self.ClassConfig and self.ClassConfig.DefaultConfig or self.DefaultConfig, self.FAQ, firstSaveRequired)
+
+    if postLoadFn then
+        postLoadFn(settings, firstSaveRequired)
+    end
 end
 
 function Base:Init()

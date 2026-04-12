@@ -365,7 +365,6 @@ function Module:ChaseOff()
     Config:SetSetting('ChaseOn', false)
     Config:SetSetting('ChaseTarget', "")
     Movement:DoNav(true, "stop")
-    self:SaveSettings(false)
 end
 
 function Module:CampOn()
@@ -390,7 +389,6 @@ end
 
 function Module:CampOff()
     Config:SetSetting('ReturnToCamp', false)
-    self:SaveSettings(false)
 end
 
 function Module:DestoryCampfire()
@@ -438,7 +436,6 @@ function Module:Campfire(camptype)
     if Config:GetSetting('MaintainCampfire') > 2 then
         if mq.TLO.FindItemCount("Fellowship Campfire Materials")() == 0 then
             Config:SetSetting('MaintainCampfire', 36) -- Regular Fellowship
-            self:SaveSettings(false)
             Logger.log_info("Fellowship Campfire Materials Not Found. Setting to Regular Fellowship.")
         end
     end
@@ -677,7 +674,6 @@ function Module:GiveTime()
             Logger.log_warn("\awNOTICE:\ax You're dead. I'm not chasing \am%s\ax anymore.",
                 Config:GetSetting('ChaseTarget'))
             Config:SetSetting('ChaseOn', false)
-            self:SaveSettings()
         end
         return
     end
