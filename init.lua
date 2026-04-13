@@ -348,12 +348,6 @@ local function RGInit(...)
     initMsg = "Storing Initial Positioning Data..."
     Movement:StoreLastMove()
 
-    initPctComplete = 99
-    initMsg = "Doing DB Consistency Checks..."
-    if not Config:DbConsistencyCheck() then
-        Logger.log_error("Database consistency check failed. Please check the logs for more details.")
-    end
-
     initPctComplete = 100
     initMsg = "Done!"
 
