@@ -1160,6 +1160,15 @@ local _ClassConfig = {
                 return combat_state == "Combat" and (not Core.IsModeActive('Heal') or Core.OkayToNotHeal())
             end,
         },
+        {
+            name = 'Combat Buffs',
+            state = 1,
+            steps = 1,
+            targetId = function(self) return Casting.GetBuffableIDs() end,
+            cond = function(self, combat_state)
+                return combat_state == "Combat" and Core.OkayToNotHeal()
+            end,
+        },
     },
     ['Rotations']         = {
         ['ManaRestore'] = {
@@ -1250,6 +1259,17 @@ local _ClassConfig = {
             {
                 name = "Exquisite Benediction",
                 type = "AA",
+            },
+        },
+        ['Combat Buffs'] = {
+            {
+                name = "DivineBuff",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoDivineBuff') end,
+                cond = function(self, spell, target)
+                    if not Targeting.TargetIsATank(target) then return false end
+                    return Casting.CastReady(spell) and Casting.GroupBuffCheck(spell, target)
+                end,
             },
         },
         ['DPS'] = {
