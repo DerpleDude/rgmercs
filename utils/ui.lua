@@ -2570,7 +2570,8 @@ function Ui.SearchableCombo(id, curIdx, options, hideText)
 
         -- List
         for i, item in ipairs(options) do
-            if hideText == nil or (item:find(hideText) == nil and (Ui.ComboFilterText == "" or item:lower():find(Ui.ComboFilterText:lower(), 1, true))) then
+            local filterMatch = (Ui.ComboFilterText == "" or (item:lower():find(Ui.ComboFilterText:lower(), 1, true)) ~= nil)
+            if (hideText == nil or (item:find(hideText) == nil)) and filterMatch then
                 if ImGui.Selectable(i .. ": " .. item, i == curIdx) then
                     if curIdx ~= i then
                         curIdx = i

@@ -63,6 +63,16 @@ function Tables.TableToImVec2(t)
     return ImVec2(t.x, t.y)
 end
 
+function Tables.ConcatTables(...)
+    local result = {}
+    for _, t in ipairs({ ..., }) do
+        for _, v in ipairs(t) do
+            result[#result + 1] = v
+        end
+    end
+    return result
+end
+
 function Tables.DeepCopy(orig, copies)
     copies = copies or {} -- to handle cycles
     if type(orig) ~= "table" then

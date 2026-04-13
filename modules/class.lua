@@ -627,6 +627,26 @@ function Module:ResetRotation()
     end
 end
 
+function Module:GetRotationNames()
+    local names = {}
+    for _, rotation in ipairs(self.ClassConfig and self.ClassConfig.RotationOrder or {}) do
+        table.insert(names, rotation.name)
+    end
+    return names
+end
+
+function Module:GetHealRotationNames()
+    local names = {}
+    for _, rotation in ipairs(self.ClassConfig and self.ClassConfig.HealRotationOrder or {}) do
+        table.insert(names, rotation.name)
+    end
+    return names
+end
+
+function Module:GetAllRotationNames()
+    return Tables.ConcatTables(self:GetRotationNames(), self:GetHealRotationNames())
+end
+
 function Module:GetRotationTable(mode)
     return self.ClassConfig and self.TempSettings.RotationTable[mode] or {}
 end
@@ -763,6 +783,8 @@ function Module:GetRotations()
                     table.insert(self.TempSettings.RotationTable[rname], entry)
                 end
             end
+            self.TempSettings.RotationTable[rname] = Tables.ConcatTables(self.TempSettings.RotationTable[rname],
+                Modules:ExecModule("Clickies", "GetClickiesForRotation", rname) or {})
         end
     end
 
@@ -784,6 +806,8 @@ function Module:GetRotations()
                     table.insert(self.TempSettings.HealRotationTable[rname], entry)
                 end
             end
+            self.TempSettings.HealRotationTable[rname] = Tables.ConcatTables(self.TempSettings.HealRotationTable[rname],
+                Modules:ExecModule("Clickies", "GetClickiesForHealRotation", rname) or {})
         end
     end
 end
@@ -1761,7 +1785,7 @@ function Module:SetRotationClickies()
     -- Check rotations for clickies, either by checking items that were resolved from the maps, or checking strings for item entries without a map
     for _, rotation in pairs(self.TempSettings.RotationTable) do
         for _, entry in ipairs(rotation) do
-            if entry.type:lower() == "item" then
+            if entry.type:lower() == "item" and not entry.from_clicky then
                 local resolvedMap = self.ResolvedActionMap[entry.name]
                 if resolvedMap and mq.TLO.FindItem(string.format("=%s", resolvedMap))() then
                     self.TempSettings.RotationClickies:add(resolvedMap)
@@ -1775,7 +1799,7 @@ function Module:SetRotationClickies()
     -- do it again for heal rotation
     for _, rotation in pairs(self.TempSettings.HealRotationTable or {}) do
         for _, entry in ipairs(rotation) do
-            if entry.type:lower() == "item" then
+            if entry.type:lower() == "item" and not entry.from_clicky then
                 local resolvedMap = self.ResolvedActionMap[entry.name]
                 if resolvedMap and mq.TLO.FindItem(string.format("=%s", resolvedMap))() then
                     self.TempSettings.RotationClickies:add(resolvedMap)

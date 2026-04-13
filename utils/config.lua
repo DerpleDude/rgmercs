@@ -3009,9 +3009,19 @@ function Config:SetSetting(setting, value, tempOnly)
     end
 
     local _, afterUpdate = Config:GetUsageText(setting, false, defaultConfig)
-    Logger.log_debug("(%s) \ag%s\aw is now:\ax %-5s \ay[Previous:\ax %s\ay]", settingModuleName, setting, afterUpdate, beforeUpdate)
-    if defaultConfig[setting].OnChange and oldValue ~= cleanValue then
-        defaultConfig[setting].OnChange(oldValue, cleanValue)
+
+    local valueChanged = oldValue ~= cleanValue
+    if type(cleanValue) == "table" and type(oldValue) == "table" then
+        -- since tables are ref types we just have to assume they changed.
+        valueChanged = true
+    end
+
+    if valueChanged then
+        Logger.log_debug("(%s) \ag%s\aw is now:\ax %-5s \ay[Previous:\ax %s\ay]", settingModuleName, setting, afterUpdate, beforeUpdate)
+
+        if defaultConfig[setting].OnChange then
+            defaultConfig[setting].OnChange(oldValue, cleanValue)
+        end
     end
 
     -- broadcast the change to any listeners.

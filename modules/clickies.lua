@@ -11,6 +11,7 @@ local Logger    = require("utils.logger")
 local Targeting = require("utils.targeting")
 local Tables    = require("utils.tables")
 local Modules   = require("utils.modules")
+local Set       = require('mq.set')
 local Icons     = require('mq.ICONS')
 local Base      = require("modules.base")
 local animItems = mq.FindTextureAnimation("A_DragItem")
@@ -19,7 +20,7 @@ local Module    = { _version = '0.1a', _name = "Clickies", _author = 'Derple', }
 Module.__index  = Module
 setmetatable(Module, { __index = Base, })
 
-Module.FAQ                              = {
+Module.FAQ                                 = {
     {
         Question = "How do I set RGmercs up to use a clicky item?",
         Answer = "  Using the GUI on the Clickies tab, you can add, remove and organize clickies you would like your PCs to use, under customizable conditions.\n\n" ..
@@ -31,9 +32,9 @@ Module.FAQ                              = {
     },
 }
 
-Module.ClickyRotationIndex              = 1
+Module.ClickyRotationIndex                 = 1
 
-Module.CommandHandlers                  = {
+Module.CommandHandlers                     = {
     enableclicky = {
         usage = "/rgl enableclicky <clicky name|idx>",
         about = "Enables the clicky item with the specified name or index.",
@@ -102,14 +103,19 @@ Module.CommandHandlers                  = {
     },
 }
 
-Module.TempSettings                     = {}
-Module.TempSettings.ClickyState         = {}
-Module.TempSettings.ConditionsCache     = {}
-Module.TempSettings.CombatClickiesTimer = 0
-Module.TempSettings.ClickyDropFrame     = {}
-Module.TempSettings.ClickyHeaderOpen    = {}
+Module.TempSettings                        = {}
+Module.TempSettings.ClickyState            = {}
+Module.TempSettings.ConditionsCache        = {}
+Module.TempSettings.CombatClickiesTimer    = 0
+Module.TempSettings.ClickyDropFrame        = {}
+Module.TempSettings.ClickyHeaderOpen       = {}
+Module.TempSettings.RotationComboIdx       = {}
+Module.TempSettings.RotationNamesCache     = nil
+Module.TempSettings.RotationNameSet        = nil
+Module.TempSettings.HealRotationNamesCache = nil
+Module.TempSettings.HealRotationNameSet    = nil
 
-Module.DefaultServerClickies            = {
+Module.DefaultServerClickies               = {
     ['Project Lazarus'] = {
         [1] = {
             ['conditions'] = {
@@ -208,7 +214,7 @@ Module.DefaultServerClickies            = {
     },
 }
 
-Module.DefaultConfig                    = {
+Module.DefaultConfig                       = {
     ['MaxClickiesPerFrame']                    = {
         DisplayName = "Max Clickies Per Frame",
         Group = "Items",
@@ -229,6 +235,9 @@ Module.DefaultConfig                    = {
         Type        = "Custom",
         Default     = {},
         ConfigType  = "Normal",
+        OnChange    = function()
+            Modules:ExecModule("Class", "GetRotations")
+        end,
     },
     [string.format("%s_Popped", Module._name)] = {
         DisplayName = Module._name .. " Popped",
@@ -237,17 +246,18 @@ Module.DefaultConfig                    = {
     },
 }
 
-Module.CombatTargetTypes                = { 'Self', 'Pet', 'Main Assist', 'Auto Target', }
-Module.NonCombatTargetTypes             = { 'Self', 'Pet', 'Main Assist', }
-Module.CombatStates                     = { 'Downtime', 'Combat', 'Any', }
-Module.ImpliedCondition                 = {
+Module.CombatTargetTypes                   = { 'Self', 'Pet', 'Main Assist', 'Auto Target', }
+Module.NonCombatTargetTypes                = { 'Self', 'Pet', 'Main Assist', }
+Module.RotationTargetTypes                 = { 'Rotation Target', }
+Module.CombatStates                        = { 'Downtime', 'Combat', 'Any', 'During Rotation', 'During Heal Rotation', }
+Module.ImpliedCondition                    = {
     render_header_text = function(_, _)
         return "Not already active and will stack on the target"
     end,
 }
 
 -- each of these becomes a condition you can set per clickie
-Module.LogicBlocks                      = {
+Module.LogicBlocks                         = {
     {
         name = "None",
         cond = function(self, target) return true end,
@@ -828,7 +838,7 @@ Module.LogicBlocks                      = {
     },
 }
 
-Module.LogicBlockTypeIDs                = {}
+Module.LogicBlockTypeIDs                   = {}
 
 for id, block in ipairs(Module.LogicBlocks) do
     Module.LogicBlockTypeIDs[block.name] = id
@@ -848,6 +858,10 @@ Module.NonCombatTargetTypeIDs = {}
 for k, v in pairs(Module.NonCombatTargetTypes) do
     Module.NonCombatTargetTypeIDs[v] = k
 end
+Module.RotationTargetTypeIDs = {}
+for k, v in pairs(Module.RotationTargetTypes) do
+    Module.RotationTargetTypeIDs[v] = k
+end
 Module.CombatStateIDs = {}
 for k, v in pairs(Module.CombatStates) do
     Module.CombatStateIDs[v] = k
@@ -855,6 +869,46 @@ end
 
 function Module:New()
     return Base.New(self)
+end
+
+function Module:RebuildRotationCache()
+    local names = { "None", }
+    for _, name in ipairs(Modules:ExecModule("Class", "GetRotationNames") or {}) do
+        table.insert(names, name)
+    end
+    self.TempSettings.RotationNamesCache = names
+    self.TempSettings.RotationNameSet    = Set.new(names)
+
+    local healNames                      = { "None", }
+    for _, name in ipairs(Modules:ExecModule("Class", "GetHealRotationNames") or {}) do
+        table.insert(healNames, name)
+    end
+    self.TempSettings.HealRotationNamesCache = healNames
+    self.TempSettings.HealRotationNameSet    = Set.new(healNames)
+end
+
+function Module:GetValidRotationNames()
+    if not self.TempSettings.RotationNamesCache then
+        self:RebuildRotationCache()
+    end
+    return self.TempSettings.RotationNamesCache
+end
+
+function Module:GetValidHealRotationNames()
+    if not self.TempSettings.HealRotationNamesCache then
+        self:RebuildRotationCache()
+    end
+    return self.TempSettings.HealRotationNamesCache
+end
+
+function Module:ValidateRotationName(rotationName, isHeal)
+    if not rotationName or rotationName == "None" then return true end
+    if isHeal then
+        if not self.TempSettings.HealRotationNameSet then self:RebuildRotationCache() end
+        return self.TempSettings.HealRotationNameSet:contains(rotationName)
+    end
+    if not self.TempSettings.RotationNameSet then self:RebuildRotationCache() end
+    return self.TempSettings.RotationNameSet:contains(rotationName)
 end
 
 function Module:LoadSettings()
@@ -869,7 +923,7 @@ function Module:LoadSettings()
             Config:SetSetting('Clickies', defaultClickyList or {})
         end
 
-        -- validate condition targets.
+        -- validate condition targets and rotation names.
         local tempClickies = Tables.DeepCopy(settings.Clickies or {})
         for _, clicky in ipairs(tempClickies) do
             for _, cond in ipairs(clicky.conditions or {}) do
@@ -889,6 +943,7 @@ function Module:LoadSettings()
                 clicky.no_target_change = false
                 settingsChanged = true
             end
+            settingsChanged = self:ValidateClickyRotationSettings(clicky) or settingsChanged
         end
 
         if settingsChanged then
@@ -1047,7 +1102,7 @@ function Module:RenderConditionTypesCombo(cond, condIdx)
     end
 end
 
-function Module:RenderConditionTargetCombo(cond, condIdx)
+function Module:RenderConditionTargetCombo(cond, condIdx, combatState)
     local condBlock = self:GetLogicBlockByType(cond.type)
     if not condBlock or not condBlock.cond_targets then
         return
@@ -1058,11 +1113,20 @@ function Module:RenderConditionTargetCombo(cond, condIdx)
         ImGui.TableNextColumn()
         Ui.RenderText("Target")
         ImGui.TableNextColumn()
-        local selectedNum, changed = ImGui.Combo("##clicky_cond_target_" .. "_" .. condIdx, tonumber(condBlock.cond_targetIDs[cond.target or "Self"]) or 1, condBlock.cond_targets,
-            #condBlock.cond_targets)
-        if changed then
-            cond.target = condBlock.cond_targets[selectedNum] or "Self"
-            Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
+        if combatState == "During Rotation" or combatState == "During Heal Rotation" then
+            ImGui.TextDisabled("Rotation Target")
+            if cond.target ~= "Rotation Target" then
+                cond.target = "Rotation Target"
+                Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
+            end
+        else
+            local selectedNum, changed = ImGui.Combo("##clicky_cond_target_" .. "_" .. condIdx, tonumber(condBlock.cond_targetIDs[cond.target or "Self"]) or 1,
+                condBlock.cond_targets,
+                #condBlock.cond_targets)
+            if changed then
+                cond.target = condBlock.cond_targets[selectedNum] or "Self"
+                Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
+            end
         end
         ImGui.EndTable()
         Ui.Tooltip("Target Types\nSelf - This PC\nPet - This PC's pet\nMain Assist - The current RGMercs Main Assist\nAuto Target - The current RGMercs Combat Auto Target")
@@ -1076,23 +1140,35 @@ function Module:RenderClickyTargetCombo(clicky, clickyIdx)
         ImGui.TableNextColumn()
         Ui.RenderText("Target")
         ImGui.TableNextColumn()
-        local targetTypeIDs = self.CombatTargetTypeIDs
-        local targetTypes = self.CombatTargetTypes
 
-        if clicky.combat_state == "Downtime" then
-            targetTypeIDs = self.NonCombatTargetTypeIDs
-            targetTypes = self.NonCombatTargetTypes
-        end
+        if clicky.combat_state == "During Rotation" or clicky.combat_state == "During Heal Rotation" then
+            ImGui.TextDisabled("Rotation Target")
+            if clicky.target ~= "Rotation Target" then
+                clicky.target = "Rotation Target"
+                Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
+            end
+        else
+            local targetTypeIDs, targetTypes, defaultTarget
+            if clicky.combat_state == "Downtime" then
+                targetTypeIDs = self.NonCombatTargetTypeIDs
+                targetTypes   = self.NonCombatTargetTypes
+                defaultTarget = "Self"
+            else
+                targetTypeIDs = self.CombatTargetTypeIDs
+                targetTypes   = self.CombatTargetTypes
+                defaultTarget = "Self"
+            end
 
-        local selectedNum, changed = ImGui.Combo("##clicky_cond_target_" .. "_" .. clickyIdx, tonumber(targetTypeIDs[clicky.target or "Self"]) or 1,
-            targetTypes,
-            #targetTypes)
-        if changed then
-            clicky.target = targetTypes[selectedNum] or "Self"
-            Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
+            local selectedNum, changed = ImGui.Combo("##clicky_cond_target_" .. "_" .. clickyIdx, tonumber(targetTypeIDs[clicky.target or defaultTarget]) or 1,
+                targetTypes, #targetTypes)
+            if changed then
+                clicky.target = targetTypes[selectedNum] or defaultTarget
+                Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
+            end
         end
         ImGui.EndTable()
-        Ui.Tooltip("Target Types\nSelf - This PC\nPet - This PC's pet\nMain Assist - The current RGMercs Main Assist\nAuto Target - The current RGMercs Combat Auto Target")
+        Ui.Tooltip(
+            "Target Types\nSelf - This PC\nPet - This PC's pet\nMain Assist - The current RGMercs Main Assist\nAuto Target - The current RGMercs Combat Auto Target\nRotation Target - The target passed in by the active rotation")
     end
 end
 
@@ -1127,6 +1203,48 @@ function Module:RenderClickyCombatStateCombo(clicky, clickyIdx)
             #self.CombatStates)
         if changed then
             clicky.combat_state = self.CombatStates[selectedNum] or "Any"
+            if clicky.combat_state == "During Rotation" or clicky.combat_state == "During Heal Rotation" then
+                clicky.rotation_name = "None"
+                clicky.target        = "Rotation Target"
+            else
+                clicky.rotation_name = nil
+                clicky.target        = "Self"
+            end
+            Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
+        end
+        ImGui.EndTable()
+    end
+
+    if clicky.combat_state == "During Rotation" or clicky.combat_state == "During Heal Rotation" then
+        self:RenderClickyRotationCombo(clicky, clickyIdx)
+    end
+end
+
+function Module:RenderClickyRotationCombo(clicky, clickyIdx)
+    local rotationNames = clicky.combat_state == "During Heal Rotation" and self:GetValidHealRotationNames() or self:GetValidRotationNames()
+    local currentName   = clicky.rotation_name or "None"
+    local cachedIdx     = self.TempSettings.RotationComboIdx[clickyIdx]
+
+    if cachedIdx == nil or rotationNames[cachedIdx] ~= currentName then
+        cachedIdx = 1
+        for i, name in ipairs(rotationNames) do
+            if name == currentName then
+                cachedIdx = i; break
+            end
+        end
+        self.TempSettings.RotationComboIdx[clickyIdx] = cachedIdx
+    end
+
+    if ImGui.BeginTable("##clicky_rotation_table_" .. clickyIdx, 2, bit32.bor(ImGuiTableFlags.None)) then
+        ImGui.TableSetupColumn("Key", ImGuiTableColumnFlags.WidthFixed, 140)
+        ImGui.TableSetupColumn("Value", ImGuiTableColumnFlags.WidthStretch, 0)
+        ImGui.TableNextColumn()
+        Ui.RenderText("Rotation")
+        ImGui.TableNextColumn()
+        local selectedIdx, changed = Ui.SearchableCombo("clicky_rotation_" .. clickyIdx, cachedIdx, rotationNames)
+        if changed then
+            clicky.rotation_name = rotationNames[selectedIdx] or "None"
+            self.TempSettings.RotationComboIdx[clickyIdx] = selectedIdx
             Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
         end
         ImGui.EndTable()
@@ -1231,7 +1349,7 @@ function Module:RenderClickyHeaderIcon(clicky, headerPos)
     draw_list:AddTextureAnimation(animItems, ImVec2(headerPos.x + offset, headerPos.y), ImVec2(20, 20))
 end
 
-function Module:RenderCondition(clickyIdx, condIdx, cond, conditionsTable)
+function Module:RenderCondition(clickyIdx, condIdx, cond, conditionsTable, combatState)
     if condIdx == 0 then
         ImGui.SetNextItemOpen(false, ImGuiCond.Always);
         ImGui.TreeNodeEx(cond.render_header_text(self, cond) .. "###clicky_cond_tree_" .. clickyIdx .. "_" .. condIdx, ImGuiTreeNodeFlags.NoTreePushOnOpen)
@@ -1269,7 +1387,7 @@ function Module:RenderCondition(clickyIdx, condIdx, cond, conditionsTable)
             ImGui.BeginChild("##clicky_cond_child_" .. clickyIdx .. "_" .. condIdx, ImVec2(0, 0),
                 bit32.bor(ImGuiChildFlags.AlwaysAutoResize, ImGuiChildFlags.Borders, ImGuiChildFlags.AutoResizeY),
                 bit32.bor(ImGuiWindowFlags.NoMove, ImGuiWindowFlags.NoTitleBar))
-            self:RenderConditionTargetCombo(cond, condIdx)
+            self:RenderConditionTargetCombo(cond, condIdx, combatState)
             self:RenderConditionArgs(cond, condIdx, clickyIdx)
             ImGui.EndChild()
             ImGui.PopStyleVar(1)
@@ -1381,7 +1499,7 @@ function Module:RenderClickiesWithConditions(type, clickies)
                         bit32.bor(ImGuiChildFlags.AlwaysAutoResize, ImGuiChildFlags.Borders, ImGuiChildFlags.AutoResizeY),
                         bit32.bor(ImGuiWindowFlags.NoMove, ImGuiWindowFlags.NoTitleBar))
 
-                    self:RenderCondition(clickyIdx, 0, self.ImpliedCondition)
+                    self:RenderCondition(clickyIdx, 0, self.ImpliedCondition, nil, clicky.combat_state)
 
                     for condIdx, cond in ipairs(clicky.conditions or {}) do
                         if self:GetLogicBlockByType(cond.type) then
@@ -1397,7 +1515,7 @@ function Module:RenderClickiesWithConditions(type, clickies)
                             else
                                 ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.ConditionMidColor)
                             end
-                            self:RenderCondition(clickyIdx, condIdx, cond, not filterApplied and clicky.conditions or nil)
+                            self:RenderCondition(clickyIdx, condIdx, cond, not filterApplied and clicky.conditions or nil, clicky.combat_state)
                         end
                     end
 
@@ -1683,6 +1801,140 @@ function Module:GiveTime()
                 end
             end
         end
+    end
+end
+
+function Module:GetClickiesForRotation(rotationName)
+    local result   = {}
+    local clickies = Config:GetSetting('Clickies') or {}
+
+    for _, clicky in ipairs(clickies) do
+        if clicky.combat_state == "During Rotation"
+            and clicky.rotation_name == rotationName
+            and clicky.itemName:len() > 0
+            and (clicky.enabled == nil or clicky.enabled == true)
+        then
+            local itemName   = clicky.itemName
+            local conditions = clicky.conditions or {}
+
+            table.insert(result, {
+                name = itemName,
+                type = "Item",
+                from_clicky = true,
+                cond = function(caller, itemName, targetSpawn)
+                    if not Casting.ItemReady(itemName) then return false end
+                    local buffCheckPassed = true
+
+                    if targetSpawn.ID() == mq.TLO.Me.ID() then
+                        buffCheckPassed = Casting.SelfBuffItemCheck(clicky.itemName)
+                    elseif targetSpawn.ID() == mq.TLO.Me.Pet.ID() then
+                        ---@diagnostic disable-next-line: cast-local-type
+                        buffCheckPassed = mq.TLO.Me.Pet.ID() > 0 and Casting.PetBuffItemCheck(clicky.itemName)
+                    elseif targetSpawn.Type() == "PC" then
+                        ---@diagnostic disable-next-line: cast-local-type
+                        buffCheckPassed = Casting.GroupBuffItemCheck(clicky.itemName, targetSpawn)
+                    else ---@diagnostic disable-next-line: cast-local-type
+                        buffCheckPassed = Casting.DetItemCheck(clicky.itemName, targetSpawn)
+                    end
+
+                    if not buffCheckPassed then return false end
+
+                    for _, cond in ipairs(conditions) do
+                        local condBlock = self:GetLogicBlockByType(cond.type)
+                        if condBlock then
+                            ---@diagnostic disable-next-line: deprecated
+                            if not Core.SafeCallFunc("Rotation Clicky :: Test clicky Condition", condBlock.cond, caller, targetSpawn, unpack(cond.args or {})) then
+                                return false
+                            end
+                        end
+                    end
+                    return true
+                end,
+            })
+        end
+    end
+
+    return result
+end
+
+function Module:GetClickiesForHealRotation(rotationName)
+    local result   = {}
+    local clickies = Config:GetSetting('Clickies') or {}
+
+    for _, clicky in ipairs(clickies) do
+        if clicky.combat_state == "During Heal Rotation"
+            and clicky.rotation_name == rotationName
+            and clicky.itemName:len() > 0
+            and (clicky.enabled == nil or clicky.enabled == true)
+        then
+            local itemName   = clicky.itemName
+            local conditions = clicky.conditions or {}
+
+            table.insert(result, {
+                name = itemName,
+                type = "Item",
+                from_clicky = true,
+                cond = function(caller, itemName, targetSpawn)
+                    if not Casting.ItemReady(itemName) then return false end
+                    local buffCheckPassed = true
+
+                    if targetSpawn.ID() == mq.TLO.Me.ID() then
+                        buffCheckPassed = Casting.SelfBuffItemCheck(clicky.itemName)
+                    elseif targetSpawn.ID() == mq.TLO.Me.Pet.ID() then
+                        ---@diagnostic disable-next-line: cast-local-type
+                        buffCheckPassed = mq.TLO.Me.Pet.ID() > 0 and Casting.PetBuffItemCheck(clicky.itemName)
+                    elseif targetSpawn.Type() == "PC" then
+                        ---@diagnostic disable-next-line: cast-local-type
+                        buffCheckPassed = Casting.GroupBuffItemCheck(clicky.itemName, targetSpawn)
+                    else ---@diagnostic disable-next-line: cast-local-type
+                        buffCheckPassed = Casting.DetItemCheck(clicky.itemName, targetSpawn)
+                    end
+
+                    if not buffCheckPassed then return false end
+
+                    for _, cond in ipairs(conditions) do
+                        local condBlock = self:GetLogicBlockByType(cond.type)
+                        if condBlock then
+                            ---@diagnostic disable-next-line: deprecated
+                            if not Core.SafeCallFunc("Rotation Clicky :: Test clicky Condition", condBlock.cond, caller, targetSpawn, unpack(cond.args or {})) then
+                                return false
+                            end
+                        end
+                    end
+                    return true
+                end,
+            })
+        end
+    end
+
+    return result
+end
+
+function Module:ValidateClickyRotationSettings(clicky)
+    local isHeal = clicky.combat_state == "During Heal Rotation"
+    if clicky.combat_state ~= "During Rotation" and not isHeal then return false end
+    local changed = false
+    if not self:ValidateRotationName(clicky.rotation_name, isHeal) then
+        Logger.log_warn("\ayClicky Module: rotation '%s' is no longer valid, resetting to None.", tostring(clicky.rotation_name))
+        clicky.rotation_name = "None"
+        changed = true
+    end
+    if clicky.target ~= "Rotation Target" then
+        clicky.target = "Rotation Target"
+        changed = true
+    end
+    return changed
+end
+
+function Module:OnCombatModeChanged()
+    self:RebuildRotationCache()
+    local clickies = Config:GetSetting('Clickies')
+    local changed = false
+    for _, clicky in ipairs(clickies) do
+        changed = self:ValidateClickyRotationSettings(clicky) or changed
+    end
+    if changed then
+        Config:SetSetting('Clickies', clickies)
     end
 end
 
