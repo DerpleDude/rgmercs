@@ -349,6 +349,9 @@ function Rotation.Run(caller, rotationTable, targetTable, resolvedActionMap, ste
                             local res, isGroup = Rotation.ExecEntry(caller, entry, targetId, resolvedActionMap, bAllowMem)
                             local rStop = string.format("%.03f", Globals.GetTimeMS())
                             entry.lastExecTimeSpent = entry.lastExecTimeSpent + (rStop - rStart)
+                            if entry.from_clicky then
+                                Modules:ExecModule("Clickies", "SetUsed", entry.name)
+                            end
 
                             Logger.log_verbose("\aoDoing RunRotation(start(%d), step(%d), cur(%d)) :: ExecEntry(target(%d)) => %s",
                                 start_step, steps, idx, targetId, Strings.BoolToColorString(res))

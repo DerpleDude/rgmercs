@@ -1597,6 +1597,12 @@ function Module:RenderClickiesWithConditions(type, clickies)
     end
 end
 
+function Module:SetUsed(clickyName)
+    if self.TempSettings.ClickyState[clickyName] then
+        self.TempSettings.ClickyState[clickyName].lastUsed = Globals.GetTimeSeconds()
+    end
+end
+
 function Module:RenderClickyData(clicky, clickyIdx)
     if ImGui.BeginTable("##clickies_table_" .. clicky.itemName .. tostring(clickyIdx), 3, bit32.bor(ImGuiTableFlags.Resizable, ImGuiTableFlags.Borders)) then
         ImGui.TableSetupColumn('Last Used', (ImGuiTableColumnFlags.WidthFixed), 100.0)
@@ -1610,7 +1616,7 @@ function Module:RenderClickyData(clicky, clickyIdx)
             local lastUsed = clickyState.lastUsed or 0
 
             ImGui.TableNextColumn()
-            Ui.RenderText(lastUsed > 0 and Strings.FormatTime((os.clock() - lastUsed)) or "Never")
+            Ui.RenderText(lastUsed > 0 and Strings.FormatTime((Globals.GetTimeSeconds() - lastUsed)) or "Never")
             ImGui.TableNextColumn()
             Ui.RenderText(clicky.itemName)
             ImGui.TableNextColumn()
@@ -1854,7 +1860,7 @@ function Module:GiveTime()
                                         maxClickiesPerFrame, self.ClickyRotationIndex)
                                     break
                                 end
-                                self.TempSettings.ClickyState[clicky.itemName].lastUsed = os.clock()
+                                self.TempSettings.ClickyState[clicky.itemName].lastUsed = Globals.GetTimeSeconds()
                                 break --ensure we stop after we process a single clicky to allow rotations to continue
                             else
                                 if not buffCheckPassed then
