@@ -1407,12 +1407,14 @@ function Module:RenderClickiesWithConditions(type, clickies)
 
     if ImGui.SmallButton(mq.TLO.Cursor.Name() and string.format("%s Add %s to %s", Icons.FA_PLUS, mq.TLO.Cursor.Name() or "N/A", type) or "Pickup an Item To Add") then
         if mq.TLO.Cursor() then
+            local spell = mq.TLO.Cursor.Clicky.Spell
+            local targetType = spell and spell() and spell.TargetType() or "Unknown"
             table.insert(clickies, {
                 itemName = mq.TLO.Cursor.Name(),
                 target = 'Self',
                 iconId = tonumber((mq.TLO.Cursor.Icon() or 500) - 500) or 0,
                 combat_state = 'Any',
-                no_target_change = false,
+                no_target_change = targetType == "Self" or targetType == "Group v1",
                 conditions = {},
             })
             Config:SetSetting('Clickies', clickies)
@@ -1435,7 +1437,7 @@ function Module:RenderClickiesWithConditions(type, clickies)
     ImGui.Separator()
     if #clickies > 0 then
         for clickyIdx, clicky in ipairs(clickies) do
-            if clicky.itemName:len() > 0 then
+            if clicky.itemName:len() > 0 and clickies[clickyIdx].Delete ~= true then
                 local headerScreenPos = ImGui.GetCursorScreenPosVec()
                 local headerCursorPos = ImGui.GetCursorPosVec()
 
@@ -1502,7 +1504,7 @@ function Module:RenderClickiesWithConditions(type, clickies)
                     self:RenderCondition(clickyIdx, 0, self.ImpliedCondition, nil, clicky.combat_state)
 
                     for condIdx, cond in ipairs(clicky.conditions or {}) do
-                        if self:GetLogicBlockByType(cond.type) then
+                        if self:GetLogicBlockByType(cond.type) and cond.Delete ~= true then
                             -- only render configs if we are not filtered
                             ImGui.BeginDisabled(filterApplied)
                             self:RenderConditionControls(clickyIdx, condIdx, clicky.conditions)
