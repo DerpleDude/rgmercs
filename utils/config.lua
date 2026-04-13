@@ -2325,6 +2325,9 @@ Config.DefaultConfig                                     = {
         Default = 3,
         Min = 1,
         Max = #Globals.Constants.LogLevels,
+        OnChange = function(_, newValue)
+            Logger.set_log_level(newValue)
+        end,
     },
     ['LogFilter']                        = {
         DisplayName = "Log Filter",
@@ -3007,7 +3010,6 @@ function Config:SetSetting(setting, value, tempOnly)
 
     local _, afterUpdate = Config:GetUsageText(setting, false, defaultConfig)
     Logger.log_debug("(%s) \ag%s\aw is now:\ax %-5s \ay[Previous:\ax %s\ay]", settingModuleName, setting, afterUpdate, beforeUpdate)
-
     if defaultConfig[setting].OnChange and oldValue ~= cleanValue then
         defaultConfig[setting].OnChange(oldValue, cleanValue)
     end
@@ -3723,6 +3725,7 @@ function Config:DbConsistencyCheck()
     local moduleCount = 0
     self.DbConsistencyCheckPass = true
 
+    -- Check 1: db vs in-memory values
     for module, defaults in pairs(self.moduleDefaultSettings) do
         moduleCount = moduleCount + 1
         for setting, _ in pairs(defaults) do
@@ -3742,6 +3745,41 @@ function Config:DbConsistencyCheck()
             settingCount = settingCount + 1
         end
     end
+
+    -- Check 2: db vs legacy config files (same module list as ConvertToDb)
+    local moduleNames = { "Core", }
+    for _, name in ipairs(Modules.ModuleOrder) do
+        table.insert(moduleNames, name)
+    end
+    table.insert(moduleNames, "LootNScoot")
+    table.insert(moduleNames, "SmartLoot")
+
+    for _, name in ipairs(moduleNames) do
+        local fileName    = name == "Core" and "RGMercs" or name
+        local configFile  = Config.GetConfigFileName(fileName)
+        local loaded, err = loadfile(configFile)
+        if loaded and not err then
+            local fileSettings = loaded() or {}
+            for setting, fileValue in pairs(fileSettings) do
+                local dbValue = Config.Db:getValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, name, setting)
+                if dbValue == nil then
+                    Logger.log_error("\arFile vs DB: module \ay%s\ar setting \ay%s\ar exists in file but is missing from db.", name, setting)
+                    Config.DbConsistencyCheckPass = false
+                elseif type(fileValue) == "table" and type(dbValue) == "table" then
+                    if not Tables.AreTablesEqual(fileValue, dbValue) then
+                        Logger.log_error("\arFile vs DB: module \ay%s\ar setting \ay%s\ar value mismatch.\aw File: \ag%s\aw DB: \ag%s",
+                            name, setting, Strings.TableToString(fileValue), Strings.TableToString(dbValue))
+                        Config.DbConsistencyCheckPass = false
+                    end
+                elseif fileValue ~= dbValue then
+                    Logger.log_error("\arFile vs DB: module \ay%s\ar setting \ay%s\ar value mismatch.\aw File: \ag%s\aw DB: \ag%s",
+                        name, setting, tostring(fileValue), tostring(dbValue))
+                    Config.DbConsistencyCheckPass = false
+                end
+            end
+        end
+    end
+
     Logger.log_info("\agDatabase consistency check complete. Found \ay%d \agsettings in the database for this character.", settingCount)
 
     return Config.DbConsistencyCheckPass

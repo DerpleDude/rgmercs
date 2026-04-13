@@ -109,17 +109,15 @@ function Tables._compareTables(a, b, visited)
 
     for k in pairs(a) do
         if not Tables._compareValues(a[k], b[k]) then
-            printf("\arTable A mismatch at key: %s", tostring(k))
-            printf(Tables.TableToString(a))
-            printf(Tables.TableToString(b))
+            --printf("\arTable A mismatch at key: %s", tostring(k))
+            Tables.PrintTableDiff(a, b, "Mismatch at key: " .. tostring(k))
             return false
         end
     end
     for k in pairs(b) do
         if not Tables._compareValues(a[k], b[k]) then
-            printf("\arTable B mismatch at key: %s", tostring(k))
-            printf(Tables.TableToString(a))
-            printf(Tables.TableToString(b))
+            --printf("\arTable B mismatch at key: %s", tostring(k))
+            Tables.PrintTableDiff(a, b, "Mismatch at key: " .. tostring(k))
             return false
         end
     end
@@ -161,6 +159,26 @@ local function dumpTable(o, depth, accLen, maxLen)
     end
 end
 
+local function printTable(o, depth)
+    depth = depth or 0
+    local indent = string.rep("  ", depth)
+    if type(o) == 'table' then
+        printf("%s{", indent)
+        for k, v in pairs(o) do
+            local key = type(k) == 'number' and ('[' .. k .. ']') or ('[' .. '"' .. k .. '"' .. ']')
+            if type(v) == 'table' then
+                printf("%s  %s =", indent, key)
+                printTable(v, depth + 1)
+            else
+                printf("%s  %s = %s", indent, key, tostring(v))
+            end
+        end
+        printf("%s}", indent)
+    else
+        printf("%s%s", indent, tostring(o))
+    end
+end
+
 --- Converts a table value to its string representation.
 --- @param t table: The boolean value to convert.
 --- @param maxLen number?: The maximum length of the resulting string. Defaults to 60 if not provided.
@@ -175,6 +193,102 @@ function Tables.TableToString(t, maxLen)
     end
 
     return dumpTable(t, 0, 0, maxLen)
+end
+
+--- Converts a table value to its string representation.
+--- @param t table: The boolean value to convert.
+function Tables.PrintTable(t)
+    if type(t) ~= "table" then
+        print("{}")
+    end
+
+    printTable(t, 0)
+end
+
+local function valuesEqual(a, b)
+    if type(a) ~= type(b) then return false end
+    if type(a) == "table" then return Tables.AreTablesEqual(a, b) end
+    return a == b
+end
+
+local function diffTables(a, b, depth, context, lines)
+    depth         = depth or 0
+    context       = context or 2
+    lines         = lines or {}
+
+    local indent  = string.rep("  ", depth)
+    local allKeys = {}
+    local seen    = {}
+    for k in pairs(a) do
+        allKeys[#allKeys + 1] = k; seen[k] = true
+    end
+    for k in pairs(b) do if not seen[k] then allKeys[#allKeys + 1] = k end end
+    table.sort(allKeys, function(x, y) return tostring(x) < tostring(y) end)
+
+    -- build a flat list of annotated entries: { color, text, changed }
+    local entries = {}
+    for _, k in ipairs(allKeys) do
+        local av, bv = a[k], b[k]
+        local key = type(k) == 'number' and ('[' .. k .. ']') or ('["' .. k .. '"]')
+        if av == nil then
+            entries[#entries + 1] = { color = "\ag", text = indent .. "  + " .. key .. " = " .. tostring(bv), changed = true, }
+        elseif bv == nil then
+            entries[#entries + 1] = { color = "\ar", text = indent .. "  - " .. key .. " = " .. tostring(av), changed = true, }
+        elseif type(av) == "table" and type(bv) == "table" then
+            local subLines = {}
+            diffTables(av, bv, depth + 1, context, subLines)
+            if #subLines > 0 then
+                entries[#entries + 1] = { color = "\aw", text = indent .. "  " .. key .. " = {", changed = true, }
+                for _, sl in ipairs(subLines) do entries[#entries + 1] = sl end
+                entries[#entries + 1] = { color = "\aw", text = indent .. "  }", changed = true, }
+            end
+        elseif not valuesEqual(av, bv) then
+            entries[#entries + 1] = { color = "\ar", text = indent .. "  ~ " .. key .. " : " .. tostring(av) .. " -> " .. tostring(bv), changed = true, }
+        else
+            entries[#entries + 1] = { color = "\ag", text = indent .. "    " .. key .. " = " .. tostring(av), changed = false, }
+        end
+    end
+
+    -- emit with context: show `context` unchanged lines around each changed line, skip the rest
+    local emit = {}
+    for i = 1, #entries do
+        if entries[i].changed then
+            for j = math.max(1, i - context), math.min(#entries, i + context) do
+                emit[j] = true
+            end
+        end
+    end
+
+    local skipping = false
+    for i = 1, #entries do
+        if emit[i] then
+            skipping = false
+            lines[#lines + 1] = { color = entries[i].color, text = entries[i].text, }
+        else
+            if not skipping then
+                lines[#lines + 1] = { color = "\aw", text = indent .. "  ...", }
+                skipping = true
+            end
+        end
+    end
+
+    return lines
+end
+
+function Tables.PrintTableDiff(a, b, label)
+    if type(a) ~= "table" or type(b) ~= "table" then
+        printf("\awPrintTableDiff: both arguments must be tables")
+        return
+    end
+    if label then printf("\awDiff: %s", label) end
+    local lines = diffTables(a, b, 0, 2)
+    if #lines == 0 then
+        printf("\agNo differences found.")
+    else
+        for _, line in ipairs(lines) do
+            printf("%s%s", line.color, line.text)
+        end
+    end
 end
 
 return Tables
