@@ -1222,16 +1222,24 @@ function Module:RenderClickyTargetCombo(clicky, clickyIdx)
 end
 
 function Module:RenderClickyNoTargetChangeToggle(clicky, clickyIdx)
+    local isRotation = clicky.combat_state == "During Rotation" or clicky.combat_state == "During Heal Rotation"
     if ImGui.BeginTable("##clicky_target_no_change_table_" .. clickyIdx, 2, bit32.bor(ImGuiTableFlags.None)) then
         ImGui.TableSetupColumn("Key", ImGuiTableColumnFlags.WidthFixed, 140)
         ImGui.TableSetupColumn("Value", ImGuiTableColumnFlags.WidthStretch, 0)
         ImGui.TableNextColumn()
         Ui.RenderText("Don't Change Target")
         ImGui.TableNextColumn()
+        ImGui.BeginDisabled(isRotation)
         local new_no_target_change, clicked = Ui.RenderOptionToggle("##clicky_no_target_change_" .. clickyIdx, "",
             clicky.no_target_change)
+        ImGui.EndDisabled()
 
-        if clicked then
+        if isRotation and clicky.no_target_change then
+            clicky.no_target_change = false
+            Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
+        end
+
+        if not isRotation and clicked then
             clicky.no_target_change = new_no_target_change
             Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
         end
