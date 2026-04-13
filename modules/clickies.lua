@@ -1414,7 +1414,7 @@ function Module:RenderClickiesWithConditions(type, clickies)
                 target = 'Self',
                 iconId = tonumber((mq.TLO.Cursor.Icon() or 500) - 500) or 0,
                 combat_state = 'Any',
-                no_target_change = targetType == "Self" or targetType == "Group v1",
+                no_target_change = targetType == "Self" or targetType == "Group v1" or targetType == "AE v1",
                 conditions = {},
             })
             Config:SetSetting('Clickies', clickies)
