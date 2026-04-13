@@ -20,9 +20,7 @@ function Base:New()
 end
 
 function Base:LoadSettings(preLoadFn, postLoadFn)
-    local configFile = Config.GetConfigFileName(self._name)
-
-    Logger.log_info("\aw[\atLoading Settings\aw] Character: \am%s \awModule: \ay%s \awFile: \at%s", Globals.CurLoadedChar, self._name, configFile)
+    Logger.log_info("\aw[\atLoading Settings\aw] Character: \am%s \awModule: \ay%s", Globals.CurLoadedChar, self._name)
     local firstSaveRequired = false
 
     if preLoadFn then

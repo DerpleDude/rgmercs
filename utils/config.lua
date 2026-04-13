@@ -16,7 +16,7 @@ local Config                                             = {
     _author = 'Lead Devs: Derple, Algar',
 }
 Config.__index                                           = Config
-Config.Db                                                = require("utils.db").new(mq.configDir .. '/rgmercs/rgmercs_config.db')
+Config.Db                                                = require("utils.config_db").new(mq.configDir .. '/rgmercs/rgmercs_config.db')
 Config.moduleDefaultSettings                             = {}
 Config.moduleTempSettings                                = {}
 Config.moduleSettingCategories                           = {}
@@ -2590,15 +2590,15 @@ end
 
 function Config:UpdateCommandHandlers()
     self.CommandHandlers = {}
-    local startTime = Globals.GetTimeSeconds()
+    local startTime = Globals.GetTimeMS()
     local submoduleDefaults = self:GetAllModuleDefaultSettings()
 
     for moduleName, moduleSettings in pairs(Config.moduleDefaultSettings) do
-        local modstartTime = Globals.GetTimeSeconds()
+        local modstartTime = Globals.GetTimeMS()
         for setting, _ in pairs(moduleSettings or {}) do
-            local setstartTime = Globals.GetTimeSeconds()
+            local setstartTime = Globals.GetTimeMS()
             local handled, usageString = self:GetUsageText(setting or "", true, submoduleDefaults[moduleName] or {})
-            local setendTime = Globals.GetTimeSeconds()
+            local setendTime = Globals.GetTimeMS()
             Logger.log_super_verbose("\ag[Config] \ayGetUsageText() took %.3f seconds for %s.%s", (setendTime - setstartTime) / 1000, moduleName, setting)
 
             if handled then
@@ -2612,13 +2612,14 @@ function Config:UpdateCommandHandlers()
                 }
             end
         end
-        local modendTime = Globals.GetTimeSeconds()
+        local modendTime = Globals.GetTimeMS()
         Logger.log_debug("\ag[Config] \ayGeting all Settings took %.3f seconds to process module %s.", (modendTime - modstartTime) / 1000, moduleName)
     end
 
-    local endTime = Globals.GetTimeSeconds()
+    local endTime = Globals.GetTimeMS()
 
-    Logger.log_debug("\ag[Config] \ayUpdateCommandHandlers() took %.3f seconds to execute for %d modules.", (endTime - startTime) / 1000, #Config.moduleDefaultSettings)
+    Logger.log_debug("\ag[Config] \ayUpdateCommandHandlers() took %.3f seconds to execute for %d modules.", (endTime - startTime) / 1000,
+        Tables.GetTableSize(Config.moduleDefaultSettings))
 end
 
 ---@param config string
