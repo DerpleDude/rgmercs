@@ -1368,7 +1368,7 @@ function Module:RenderClickyTargetCombo(clicky, clickyIdx)
         end
         ImGui.EndTable()
         Ui.Tooltip(
-            "Target Types\nSelf - This PC\nPet - This PC's pet\nMain Assist - The current RGMercs Main Assist\nAuto Target - The current RGMercs Combat Auto Target\nRotation Target - The target passed in by the active rotation")
+            "Target Types\nSelf - This PC\nPet - This PC's pet\nMain Assist - The current RGMercs Main Assist\nAuto Target - The current RGMercs Combat Auto Target\nMercs Peer - A character running RGMercs on the same network\nRotation Target - The target passed in by the active rotation")
     end
 
     if clicky.target == "Mercs Peer" then
