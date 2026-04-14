@@ -56,7 +56,7 @@ function Targeting.ClearTarget()
         Globals.ForceCombatID = 0
         if mq.TLO.Stick.Status():lower() == "on" then Movement:DoStickCmd("off") end
         if mq.TLO.Me.Combat() then Core.DoCmd("/attack off") end
-        Core.DoCmd("/target clear")
+        Core.DoCmd("/squelch /target clear")
         if mq.TLO.Me.XTarget(1).TargetType() ~= "Auto Hater" then Targeting.ResetXTSlot(1) end
     end
 end
