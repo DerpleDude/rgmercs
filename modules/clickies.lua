@@ -712,6 +712,115 @@ Module.LogicBlocks                         = {
     },
 
     {
+        name = "No Disc is Active",
+        cond = function(self, target, peerData, negate)
+            if negate then
+                return not Casting.NoDiscActive()
+            else
+                return Casting.NoDiscActive()
+            end
+        end,
+        tooltip = "Only use when there is no/(any) active Disc. (Optional Negate)",
+        render_header_text = function(self, cond)
+            return string.format("%s disc is active.", cond.args[1] and "Any" or "No")
+        end,
+        args = {
+            { name = "Negate", type = "boolean", default = false, },
+        },
+    },
+
+    {
+        name = "Target Has (High/Low) HP",
+        cond = function(self, target, peerData, negate)
+            if negate then
+                return Targeting.MobHasLowHP(target)
+            else
+                return Targeting.MobNotLowHP(target)
+            end
+        end,
+        cond_targets = { "Auto Target", },
+        tooltip = "Only use when RGMercs auto target has health above(below) the Low HP setting. Detects Named to use the correct value. (Optional Negate)",
+        render_header_text = function(self, cond)
+            return string.format("Target has %s HP.", cond.args[1] and "low" or "high")
+        end,
+        args = {
+            { name = "Negate", type = "boolean", default = false, },
+        },
+    },
+
+    {
+        name = "Target Is Not Immune To ...",
+        cond = function(self, target, peerData, checkSlow, checkSnare, checkStun)
+            return (checkSlow and not Casting.SlowImmuneTarget(target)) or
+                (checkSnare and not Casting.SnareImmuneTarget(target)) or
+                (checkStun and not Casting.StunImmuneTarget(target))
+        end,
+        tooltip = "Only use when the target is not immune to an effect.",
+        render_header_text = function(self, cond)
+            local header = "Target is not immune to ("
+            local anyChecked = false
+            if cond.args[1] then
+                header = header .. "Slow or "
+                anyChecked = true
+            end
+            if cond.args[2] then
+                header = header .. "Snare or "
+                anyChecked = true
+            end
+            if cond.args[3] then
+                header = header .. "Stun or "
+                anyChecked = true
+            end
+            if anyChecked then
+                header = header:sub(0, -5) -- remove the last " or "
+            else
+                header = header .. "None"
+            end
+            header = header .. ")"
+            return header
+        end,
+        cond_targets = { "Auto Target", },
+        args = {
+            { name = "Slow",  type = "boolean", default = true, },
+            { name = "Snare", type = "boolean", default = true, },
+            { name = "Stun",  type = "boolean", default = true, },
+        },
+    },
+
+    {
+        name = "Target Body Type Is ...",
+        cond = function(self, target, peerData, checkUndead, checkSummoned)
+            return (checkUndead and Targeting.TargetBodyIs(target, "Undead")) or
+                (checkSummoned and Targeting.TargetBodyIs(target, "Undead Pet"))
+        end,
+        tooltip = "Only use when the target body type matches this criteria.",
+        render_header_text = function(self, cond)
+            local header = "Target body type is ("
+            local anyChecked = false
+            if cond.args[1] then
+                header = header .. "Undead or "
+                anyChecked = true
+            end
+            if cond.args[2] then
+                header = header .. "Summoned or "
+                anyChecked = true
+            end
+            if anyChecked then
+                header = header:sub(0, -5) -- remove the last " or "
+            else
+                header = header .. "None"
+            end
+            header = header .. ")"
+            return header
+        end,
+        cond_targets = { "Auto Target", },
+        args = {
+            { name = "Undead",   type = "boolean", default = true, },
+            { name = "Summoned", type = "boolean", default = true, },
+        },
+    },
+
+    {
         name = "The RGMercs Auto Target Is Named",
         cond = function(self, target, peerData, negate)
             local isNamed = Globals.AutoTargetIsNamed
@@ -756,6 +865,64 @@ Module.LogicBlocks                         = {
         render_header_text = function(self, cond)
             return string.format("RGMercs Auto Target has a beneficial effect.")
         end,
+    },
+
+    {
+        name = "Rotation Target Is A... (ClassType)",
+        cond = function(self, target, peerData, checkCaster, checkMelee, checkTank)
+            return (checkCaster and Targeting.TargetIsACaster(target)) or
+                (checkMelee and Targeting.TargetIsAMelee(target)) or
+                (checkTank and Targeting.TargetIsATank(target))
+        end,
+        tooltip = "Only use when the rotation target class type matches this criteria.",
+        render_header_text = function(self, cond)
+            local header = "Target class type is ("
+            local anyChecked = false
+            if cond.args[1] then
+                header = header .. "Caster or "
+                anyChecked = true
+            end
+            if cond.args[2] then
+                header = header .. "Melee or "
+                anyChecked = true
+            end
+            if cond.args[3] then
+                header = header .. "Tank or "
+                anyChecked = true
+            end
+            if anyChecked then
+                header = header:sub(0, -5) -- remove the last " or "
+            else
+                header = header .. "None"
+            end
+            header = header .. ")"
+            return header
+        end,
+        cond_targets = Module.RotationTargetTypes,
+        args = {
+            { name = "Caster", type = "boolean", default = true, },
+            { name = "Melee",  type = "boolean", default = true, },
+            { name = "Tank",   type = "boolean", default = true, },
+        },
+    },
+
+    {
+        name = "Rotation Target Is Myself",
+        cond = function(self, target, peerData, negate)
+            if negate then
+                return not Targeting.TargetIsMyself(target)
+            else
+                return Targeting.TargetIsMyself(target)
+            end
+        end,
+        tooltip = "Only use when the rotation target is (not) myself. (Optional Negate)",
+        render_header_text = function(self, cond)
+            return string.format("Rotation Target is %s", cond.args[1] and "not Myself" or "Myself")
+        end,
+        cond_targets = Module.RotationTargetTypes,
+        args = {
+            { name = "Negate", type = "boolean", default = false, },
+        },
     },
 
     {
