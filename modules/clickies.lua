@@ -1841,7 +1841,7 @@ function Module:GiveTime()
                                 Logger.log_verbose("\ayClicky: \awChecking Mercs Peer Target: \am%s\aw found: %s", clicky.mercs_peer_name or "",
                                     Strings.BoolToColorString(peerData and peerData.Data and peerData.Data.ID ~= nil))
                                 buffCheckPassed = peerData and peerData.Data and peerData.Data.ID ~= nil and
-                                    Casting.PeerBuffCheck(item.Clicky.Spell.RankName.ID(), mq.TLO.Spawn(peerData.Data.ID))
+                                    Casting.ActorBuffCheck(item.Clicky.Spell.RankName.ID(), mq.TLO.Spawn(peerData.Data.ID))
                             end
 
                             if not clicky.no_target_change then
