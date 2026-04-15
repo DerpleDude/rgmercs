@@ -44,13 +44,13 @@ local SCHEMA              = [[
 ---                                 operation is sqlite.INSERT, sqlite.UPDATE, or sqlite.DELETE
 ---@return any|nil  DB instance or nil on failure
 function DB.new(path, onUpdate)
-    local db = sqlite.open(path)
+    local db = sqlite.open(path, bit32.bor(sqlite.OPEN_READWRITE, sqlite.OPEN_CREATE, sqlite.OPEN_NOMUTEX))
     if not db then
         Logger.log_error("\arDB: failed to open database at %s", path)
         return nil
     end
 
-    db:busy_timeout(0)
+    db:busy_timeout(500)
     local telemetry = {
         selects      = 0,
         inserts      = 0,
