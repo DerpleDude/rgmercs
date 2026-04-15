@@ -1,7 +1,23 @@
 local mq                  = require('mq')
 local ImGui               = require('ImGui')
 local ImPlot              = require('ImPlot')
-local sqlite              = require('lsqlite3')
+local sqlite              = nil
+do
+    local deadline = mq.gettime() + 5000
+    local err
+    while not sqlite and mq.gettime() < deadline do
+        local ok, result = pcall(require, 'lsqlite3')
+        if ok then
+            sqlite = result
+        else
+            err = result
+            mq.delay(50)
+        end
+    end
+    if not sqlite then
+        error(string.format("DB: failed to load lsqlite3 after retries: %s", tostring(err)))
+    end
+end
 local Logger              = require('utils.logger')
 local ScrollingPlotBuffer = require('utils.scrolling_plot_buffer')
 
@@ -44,9 +60,17 @@ local SCHEMA              = [[
 ---                                 operation is sqlite.INSERT, sqlite.UPDATE, or sqlite.DELETE
 ---@return any|nil  DB instance or nil on failure
 function DB.new(path, onUpdate)
-    local db = sqlite.open(path, bit32.bor(sqlite.OPEN_READWRITE, sqlite.OPEN_CREATE, sqlite.OPEN_NOMUTEX))
+    local db = nil
+    local deadline = mq.gettime() + 5000
+    while not db and mq.gettime() < deadline do
+        db = sqlite.open(path, bit32.bor(sqlite.OPEN_READWRITE, sqlite.OPEN_CREATE, sqlite.OPEN_NOMUTEX))
+        if not db then
+            Logger.log_warn("\ayDB: database locked on open, retrying... (%s)", path)
+            mq.delay(50)
+        end
+    end
     if not db then
-        Logger.log_error("\arDB: failed to open database at %s", path)
+        Logger.log_error("\arDB: failed to open database at %s after retries", path)
         return nil
     end
 
