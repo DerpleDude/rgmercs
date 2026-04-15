@@ -952,7 +952,7 @@ local _ClassConfig = {
                 type = "Item",
                 load_cond = function() return Config:GetSetting('DoVieBuff') and mq.TLO.Me.Level() >= 69 and mq.TLO.FindItem("=Artifact of Aegis")() end,
                 cond = function(self, itemName, target)
-                    return Casting.GroupBuffItemCheck(itemName, target)
+                    return Casting.GroupBuffItemCheck(itemName, target) and Casting.AddedBuffCheck("43037", target) -- Bulwark of the Pegasus
                 end,
             },
             {
@@ -961,7 +961,7 @@ local _ClassConfig = {
                 load_cond = function(self) return Config:GetSetting('DoVieBuff') and (mq.TLO.Me.Level() < 69 or not mq.TLO.FindItem("=Artifact of Aegis")()) end,
                 cond = function(self, spell, target)
                     if not Targeting.TargetIsATank(target) then return false end
-                    return Casting.GroupBuffCheck(spell, target)
+                    return Casting.GroupBuffCheck(spell, target) and Casting.AddedBuffCheck("43037", target) -- Bulwark of the Pegasus
                 end,
             },
             {
