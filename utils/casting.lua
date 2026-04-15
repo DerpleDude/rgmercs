@@ -2227,8 +2227,8 @@ function Casting.WaitCastFinish(targetId, bAllowDead, spellRange) --I am not ves
         end
         if currentWait % 500 == 0 then
             local notValidTarget = not Combat.ValidCombatTarget(Globals.AutoTargetID)
-            local isForcedTarget = Globals.ForceTargetID == 0 or Globals.ForceTargetID == Globals.AutoTargetID
-            if Core.IAmMA() and not Globals.BackOffFlag and (notValidTarget or not isForcedTarget) then
+            local notForcedTarget = Globals.ForceTargetID > 0 and Globals.ForceTargetID ~= Globals.AutoTargetID
+            if Core.IAmMA() and not Globals.BackOffFlag and (notValidTarget or notForcedTarget) then
                 -- This will find a valid target and set it to : Globals.AutoTargetID
                 Combat.FindBestAutoTarget(Combat.OkToEngagePreValidateId)
                 -- finds the AggroTarget for a tank mode character
