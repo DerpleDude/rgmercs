@@ -821,6 +821,64 @@ Module.LogicBlocks                         = {
     },
 
     {
+        name = "Target Is A... (ClassType)",
+        cond = function(self, target, peerData, checkCaster, checkMelee, checkTank)
+            return (checkCaster and Targeting.TargetIsACaster(target)) or
+                (checkMelee and Targeting.TargetIsAMelee(target)) or
+                (checkTank and Targeting.TargetIsATank(target))
+        end,
+        tooltip = "Only use when the target class type matches this criteria.",
+        render_header_text = function(self, cond)
+            local header = "Target class type is ("
+            local anyChecked = false
+            if cond.args[1] then
+                header = header .. "Caster or "
+                anyChecked = true
+            end
+            if cond.args[2] then
+                header = header .. "Melee or "
+                anyChecked = true
+            end
+            if cond.args[3] then
+                header = header .. "Tank or "
+                anyChecked = true
+            end
+            if anyChecked then
+                header = header:sub(0, -5) -- remove the last " or "
+            else
+                header = header .. "None"
+            end
+            header = header .. ")"
+            return header
+        end,
+        cond_targets = Module.NonCombatTargetTypeIDs,
+        args = {
+            { name = "Caster", type = "boolean", default = true, },
+            { name = "Melee",  type = "boolean", default = true, },
+            { name = "Tank",   type = "boolean", default = true, },
+        },
+    },
+
+    {
+        name = "Target Is Myself",
+        cond = function(self, target, peerData, negate)
+            if negate then
+                return not Targeting.TargetIsMyself(target)
+            else
+                return Targeting.TargetIsMyself(target)
+            end
+        end,
+        tooltip = "Only use when the target is (not) myself. (Optional Negate)",
+        render_header_text = function(self, cond)
+            return string.format("Target is %s", cond.args[1] and "not Myself" or "Myself")
+        end,
+        cond_targets = Module.NonCombatTargetTypeIDs,
+        args = {
+            { name = "Negate", type = "boolean", default = false, },
+        },
+    },
+
+    {
         name = "The RGMercs Auto Target Is Named",
         cond = function(self, target, peerData, negate)
             local isNamed = Globals.AutoTargetIsNamed
@@ -865,64 +923,6 @@ Module.LogicBlocks                         = {
         render_header_text = function(self, cond)
             return string.format("RGMercs Auto Target has a beneficial effect.")
         end,
-    },
-
-    {
-        name = "Rotation Target Is A... (ClassType)",
-        cond = function(self, target, peerData, checkCaster, checkMelee, checkTank)
-            return (checkCaster and Targeting.TargetIsACaster(target)) or
-                (checkMelee and Targeting.TargetIsAMelee(target)) or
-                (checkTank and Targeting.TargetIsATank(target))
-        end,
-        tooltip = "Only use when the rotation target class type matches this criteria.",
-        render_header_text = function(self, cond)
-            local header = "Target class type is ("
-            local anyChecked = false
-            if cond.args[1] then
-                header = header .. "Caster or "
-                anyChecked = true
-            end
-            if cond.args[2] then
-                header = header .. "Melee or "
-                anyChecked = true
-            end
-            if cond.args[3] then
-                header = header .. "Tank or "
-                anyChecked = true
-            end
-            if anyChecked then
-                header = header:sub(0, -5) -- remove the last " or "
-            else
-                header = header .. "None"
-            end
-            header = header .. ")"
-            return header
-        end,
-        cond_targets = Module.RotationTargetTypes,
-        args = {
-            { name = "Caster", type = "boolean", default = true, },
-            { name = "Melee",  type = "boolean", default = true, },
-            { name = "Tank",   type = "boolean", default = true, },
-        },
-    },
-
-    {
-        name = "Rotation Target Is Myself",
-        cond = function(self, target, peerData, negate)
-            if negate then
-                return not Targeting.TargetIsMyself(target)
-            else
-                return Targeting.TargetIsMyself(target)
-            end
-        end,
-        tooltip = "Only use when the rotation target is (not) myself. (Optional Negate)",
-        render_header_text = function(self, cond)
-            return string.format("Rotation Target is %s", cond.args[1] and "not Myself" or "Myself")
-        end,
-        cond_targets = Module.RotationTargetTypes,
-        args = {
-            { name = "Negate", type = "boolean", default = false, },
-        },
     },
 
     {
