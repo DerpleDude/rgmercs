@@ -94,7 +94,7 @@ function UnitTests.RunAll()
         local kill   = { hp = 0, id = 0, }
         local named  = { hp = 101, id = 0, name = "None", }
         -- radius large enough spawn is within; PctAggro=100 bypasses aggro scan
-        local result = Combat.ProcessXTarget(spawnA, 100, noNamePref, noHpPref, true, kill, named)
+        local result = Combat.ProcessXTarget(spawnA, 100, noNamePref, noHpPref, true, kill, named, false, 0)
         assertEq("ProcessXTarget noNamePref noHpPref: immediate return", result, 1)
     end
 
@@ -102,10 +102,10 @@ function UnitTests.RunAll()
     do
         local kill   = { hp = 101, id = 0, }
         local named  = { hp = 101, id = 0, name = "None", }
-        local result = Combat.ProcessXTarget(spawnA, 100, noNamePref, lowHpPref, false, kill, named)
+        local result = Combat.ProcessXTarget(spawnA, 100, noNamePref, lowHpPref, false, kill, named, false, 0)
         assertEq("ProcessXTarget lowHpPref: no immediate return", result, nil)
         assertEq("ProcessXTarget lowHpPref: kill bucket updated", kill.id, 1)
-        result = Combat.ProcessXTarget(spawnB, 100, noNamePref, lowHpPref, false, kill, named)
+        result = Combat.ProcessXTarget(spawnB, 100, noNamePref, lowHpPref, false, kill, named, false, 0)
         assertEq("ProcessXTarget lowHpPref: lower hp wins", kill.id, 2)
     end
 
@@ -113,7 +113,7 @@ function UnitTests.RunAll()
     do
         local kill   = { hp = 101, id = 99, }
         local named  = { hp = 101, id = 0, name = "None", }
-        local result = Combat.ProcessXTarget(spawnA, 100, prefNamed, lowHpPref, false, kill, named)
+        local result = Combat.ProcessXTarget(spawnA, 100, prefNamed, lowHpPref, false, kill, named, false, 0)
         assertEq("ProcessXTarget prefNamed+trash: skipped", kill.id, 99)
         assertEq("ProcessXTarget prefNamed+trash: no immediate", result, nil)
     end
@@ -122,7 +122,7 @@ function UnitTests.RunAll()
     do
         local kill   = { hp = 0, id = 0, }
         local named  = { hp = 101, id = 0, name = "None", }
-        local result = Combat.ProcessXTarget(spawnC, 100, prefNamed, noHpPref, true, kill, named)
+        local result = Combat.ProcessXTarget(spawnC, 100, prefNamed, noHpPref, true, kill, named, false, 0)
         assertEq("ProcessXTarget prefNamed+named+immediate: return named", result, 3)
     end
 
@@ -130,7 +130,7 @@ function UnitTests.RunAll()
     do
         local kill   = { hp = 101, id = 0, }
         local named  = { hp = 101, id = 0, name = "None", }
-        local result = Combat.ProcessXTarget(spawnC, 100, prefNamed, lowHpPref, false, kill, named)
+        local result = Combat.ProcessXTarget(spawnC, 100, prefNamed, lowHpPref, false, kill, named, false, 0)
         assertEq("ProcessXTarget prefNamed+named+prefLow: no immediate", result, nil)
         assertEq("ProcessXTarget prefNamed+named+prefLow: kill updated", kill.id, 3)
     end
@@ -139,7 +139,7 @@ function UnitTests.RunAll()
     do
         local kill   = { hp = 0, id = 0, }
         local named  = { hp = 101, id = 0, name = "None", }
-        local result = Combat.ProcessXTarget(spawnA, 100, prefTrash, noHpPref, true, kill, named)
+        local result = Combat.ProcessXTarget(spawnA, 100, prefTrash, noHpPref, true, kill, named, false, 0)
         assertEq("ProcessXTarget prefTrash+trash+immediate: return trash", result, 1)
     end
 
@@ -147,7 +147,7 @@ function UnitTests.RunAll()
     do
         local kill   = { hp = 0, id = 0, }
         local named  = { hp = 101, id = 0, name = "None", }
-        local result = Combat.ProcessXTarget(spawnC, 100, prefTrash, noHpPref, true, kill, named)
+        local result = Combat.ProcessXTarget(spawnC, 100, prefTrash, noHpPref, true, kill, named, false, 0)
         assertEq("ProcessXTarget prefTrash+named: no immediate", result, nil)
         assertEq("ProcessXTarget prefTrash+named: kill untouched", kill.id, 0)
         assertEq("ProcessXTarget prefTrash+named: named bucket set", named.id, 3)
@@ -159,9 +159,9 @@ function UnitTests.RunAll()
         local spawnD = mockSpawn(4, "Named2", 30, true)
         local kill   = { hp = 0, id = 0, }
         local named  = { hp = 101, id = 0, name = "None", }
-        Combat.ProcessXTarget(spawnC, 100, prefTrash, lowHpPref, false, kill, named)
+        Combat.ProcessXTarget(spawnC, 100, prefTrash, lowHpPref, false, kill, named, false, 0)
         assertEq("ProcessXTarget prefTrash+named+prefLow: first named", named.id, 3)
-        Combat.ProcessXTarget(spawnD, 100, prefTrash, lowHpPref, false, kill, named)
+        Combat.ProcessXTarget(spawnD, 100, prefTrash, lowHpPref, false, kill, named, false, 0)
         assertEq("ProcessXTarget prefTrash+named+prefLow: lower hp named wins", named.id, 4)
     end
 

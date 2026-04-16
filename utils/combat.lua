@@ -322,8 +322,10 @@ end
 --- @param immediate    boolean                              If true, return the first valid spawn id without bucketing.
 --- @param kill         {hp:number,id:number}                Kill bucket, mutated in place.
 --- @param named        {hp:number,id:number,name:string}    Named fallback bucket, mutated in place.
+--- @param aggroScan    boolean                              Cached value of the MAAggroScan setting.
+--- @param myLevel      number                               Cached value of Me.Level().
 --- @return number|nil                                       Spawn id to target immediately, or nil to continue scanning.
-function Combat.ProcessXTarget(xtSpawn, radius, namedPref, hpPref, immediate, kill, named)
+function Combat.ProcessXTarget(xtSpawn, radius, namedPref, hpPref, immediate, kill, named, aggroScan, myLevel)
     if not xtSpawn or not xtSpawn() then return nil end
     if not Combat.ValidMAXTarget(xtSpawn) then
         Logger.log_verbose("MATargetScan XTarget %s [%d] is not a valid target, skipping.", xtSpawn.CleanName() or "Error", xtSpawn.ID() or 0)
@@ -347,7 +349,7 @@ function Combat.ProcessXTarget(xtSpawn, radius, namedPref, hpPref, immediate, ki
     -- Check for lack of aggro and make sure we get the ones we haven't aggro'd. We can only get aggro data from xtargs
     -- Added move check to prevent false positives on the pull from things like bard song aggro. Testing. Algar 3/5/25
     -- Coarse check to determine if a mob is _not_ mezzed. No point in waking a mezzed mob if we don't need to.
-    if Config:GetSetting("MAAggroScan") and mq.TLO.Me.Level() >= 20
+    if aggroScan and myLevel >= 20
         and xtSpawn.PctAggro() < 100 and not xtSpawn.Moving() and Core.IsTanking()
         and Globals.Constants.RGNotMezzedAnims:contains(xtSpawn.Animation())
     then
@@ -389,10 +391,12 @@ function Combat.MATargetScan(radius, zradius)
     local initHp         = hpPref.prefLow and 101 or 0
     local kill           = { hp = initHp, id = Globals.AutoTargetID or 0, }
     local named          = { hp = initHp, id = 0, name = "None", } -- fallback when preferTrash but only named remain
+    local aggroScan      = Config:GetSetting("MAAggroScan")
+    local myLevel        = mq.TLO.Me.Level() or 0
     local xtCount        = mq.TLO.Me.XTarget()
 
     for i = 1, xtCount do
-        local result = Combat.ProcessXTarget(mq.TLO.Me.XTarget(i), radius, namedPref, hpPref, immediate, kill, named)
+        local result = Combat.ProcessXTarget(mq.TLO.Me.XTarget(i), radius, namedPref, hpPref, immediate, kill, named, aggroScan, myLevel)
         if result then return result end
     end
 
