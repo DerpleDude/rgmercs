@@ -221,7 +221,7 @@ function Combat.DoCombatActions()
 end
 
 --- Returns true if the spawn is a valid candidate for MA targeting.
---- @param target MQSpawn The XTarget spawn to validate.
+--- @param target xtarget The XTarget spawn to validate.
 --- @return boolean
 function Combat.ValidMAXTarget(target)
     local spawnId = target.ID() or 0
@@ -383,8 +383,8 @@ function Combat.MATargetScan(radius, zradius)
     local aggroSearchPet = string.format("npcpet radius %d zradius %d targetable playerstate 4", radius, zradius)
     local namedPriority  = Globals.Constants.ScanNamedPriority[Config:GetSetting('ScanNamedPriority')]
     local hpPriority     = Globals.Constants.ScanHPPriority[Config:GetSetting('ScanHPPriority')]
-    local namedPref      = { prefNamed = namedPriority == "Named",      prefTrash = namedPriority == "Non-Named", }
-    local hpPref         = { prefHigh  = hpPriority == "Highest HP%",   prefLow   = hpPriority == "Lowest HP%",  }
+    local namedPref      = { prefNamed = namedPriority == "Named", prefTrash = namedPriority == "Non-Named", }
+    local hpPref         = { prefHigh = hpPriority == "Highest HP%", prefLow = hpPriority == "Lowest HP%", }
     local immediate      = not hpPref.prefLow and not hpPref.prefHigh
     local initHp         = hpPref.prefLow and 101 or 0
     local kill           = { hp = initHp, id = Globals.AutoTargetID or 0, }
@@ -1169,7 +1169,7 @@ function Combat.AETauntCheck(printDebug)
 end
 
 --- Returns true if AE damage conditions are met (enough haters in range, optionally all mobs are haters).
---- @param printDebug boolean  If true, logs verbose information when blocked by SafeAEDamage.
+--- @param printDebug boolean?  If true, logs verbose information when blocked by SafeAEDamage.
 --- @param minCount   number?  Minimum hater count required; defaults to the AETargetCnt setting.
 --- @return boolean
 function Combat.AETargetCheck(printDebug, minCount)

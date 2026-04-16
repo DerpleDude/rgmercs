@@ -1,16 +1,19 @@
+---@diagnostic disable: duplicate-set-field
 local Logger    = require("utils.logger")
 local Combat    = require("utils.combat")
 local Targeting = require("utils.targeting")
+local Globals   = require("utils.globals")
 
 local UnitTests = {}
 
 local function mockSpawn(id, name, pctHp, isNamed, distance)
     local t = {
-        _id      = id,
-        _name    = name,
-        _pctHp   = pctHp,
-        _isNamed = isNamed,
-        _dist    = distance or 50,
+        _id        = id,
+        _name      = name,
+        _pctHp     = pctHp,
+        _isNamed   = isNamed,
+        _dist      = distance or 50,
+        _isTempPet = false,
     }
     setmetatable(t, { __call = function() return true end, })
     t.ID         = function() return t._id end
@@ -161,6 +164,63 @@ function UnitTests.RunAll()
     end
 
     Targeting.IsNamed = origIsNamed
+
+    -- ValidMAXTarget tests
+    do
+        local origIsTempPet = Targeting.IsTempPet
+        Targeting.IsTempPet = function(spawn) return spawn and spawn._isTempPet or false end
+
+        local function validSpawn(id)
+            local s = mockSpawn(id, "Mob", 80, false)
+            s._isTempPet = false
+            return s
+        end
+
+        -- valid spawn passes all checks
+        assertEq("ValidMAXTarget: valid spawn", Combat.ValidMAXTarget(validSpawn(1)), true)
+
+        -- id == 0 rejected
+        local zeroId = validSpawn(0)
+        assertEq("ValidMAXTarget: id 0 rejected", Combat.ValidMAXTarget(zeroId), false)
+
+        -- dead spawn rejected
+        local dead = validSpawn(2)
+        dead._pctHp = 0
+        assertEq("ValidMAXTarget: dead rejected", Combat.ValidMAXTarget(dead), false)
+
+        -- non-aggressive, non-auto-hater, not forced rejected
+        local passive = validSpawn(3)
+        passive.Aggressive = function() return false end
+        passive.TargetType = function() return "something else" end
+        assertEq("ValidMAXTarget: passive rejected", Combat.ValidMAXTarget(passive), false)
+
+        -- non-aggressive but TargetType == "auto hater" passes
+        local autoHater = validSpawn(4)
+        autoHater.Aggressive = function() return false end
+        autoHater.TargetType = function() return "Auto Hater" end
+        assertEq("ValidMAXTarget: auto hater accepted", Combat.ValidMAXTarget(autoHater), true)
+
+        -- non-aggressive but is the ForceTargetID passes
+        local forced = validSpawn(5)
+        forced.Aggressive = function() return false end
+        forced.TargetType = function() return "something else" end
+        Globals.ForceTargetID = 5
+        assertEq("ValidMAXTarget: forced target accepted", Combat.ValidMAXTarget(forced), true)
+        Globals.ForceTargetID = 0
+
+        -- temp pet rejected
+        local tempPet = validSpawn(6)
+        tempPet._isTempPet = true
+        assertEq("ValidMAXTarget: temp pet rejected", Combat.ValidMAXTarget(tempPet), false)
+
+        -- in ignored list rejected
+        local ignored = validSpawn(7)
+        Globals.IgnoredTargetIDs:add(7)
+        assertEq("ValidMAXTarget: ignored id rejected", Combat.ValidMAXTarget(ignored), false)
+        Globals.IgnoredTargetIDs:remove(7)
+
+        Targeting.IsTempPet = origIsTempPet
+    end
 
     Logger.log_info("UnitTests: Self tests complete.")
 end
