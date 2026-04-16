@@ -262,8 +262,8 @@ function UnitTests.RunAll()
             return s
         end
 
-        local nearSpawn = mockSpawn(20, "Near", 80, false, 10)  -- distance 10
-        local farSpawn  = mockSpawn(21, "Far", 80, false, 200)  -- distance 200
+        local nearSpawn = mockSpawn(20, "Near", 80, false, 10) -- distance 10
+        local farSpawn  = mockSpawn(21, "Far", 80, false, 200) -- distance 200
 
         -- MyRange used when > 0
         assertEq("InSpellRange: MyRange in range", Targeting.InSpellRange(mockSpell(50, 0), nearSpawn), true)
@@ -278,6 +278,7 @@ function UnitTests.RunAll()
         assertEq("InSpellRange: fallback 250 out of range", Targeting.InSpellRange(mockSpell(0, 0), farSpawn), true) -- 200 < 250
 
         -- nil spell returns false
+        ---@diagnostic disable-next-line: param-type-mismatch
         assertEq("InSpellRange: nil spell", Targeting.InSpellRange(nil, nearSpawn), false)
     end
 
