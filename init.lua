@@ -261,6 +261,12 @@ local function RGInit(...)
     initMsg = "Scanning for Configurations..."
     Core.ScanConfigDirs()
 
+    if Config:GetSetting("RunSelfTestsOnStartup") then
+        initPctComplete = 15
+        initMsg = "Running Self Tests..."
+        require('utils.unit_tests').RunAll()
+    end
+
     initPctComplete = 20
     initMsg = "Initializing Modules..."
     -- complex objects are passed by reference so we can just use these without having to pass them back in for saving.

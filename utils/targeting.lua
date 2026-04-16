@@ -470,7 +470,7 @@ function Targeting.IsSpawnFightingStranger(spawn, radius)
 
             if cur_spawn() and not Targeting.SafeTargetCache[cur_spawn.ID()] then
                 if (cur_spawn.AssistName() or ""):len() > 0 then
-                    Logger.log_verbose("My Interest: %s =? Their Interest: %s", spawn.Name(),
+                    Logger.log_verbose("My Interest: %s =? Their Interest: %s", spawn.CleanName(),
                         cur_spawn.AssistName())
                     if cur_spawn.AssistName() == spawn.Name() then
                         Logger.log_verbose("[%s] Fighting same mob as: %s Theirs: %s Ours: %s", t,
