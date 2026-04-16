@@ -21,6 +21,7 @@ local function mockSpawn(id, name, pctHp, isNamed, distance)
     t.Name       = function() return t._name end
     t.PctHPs     = function() return t._pctHp end
     t.Distance   = function() return t._dist end
+    t.Distance3D = function() return t._dist end
     t.PctAggro   = function() return 100 end
     t.Moving     = function() return false end
     t.Animation  = function() return 0 end
@@ -44,6 +45,7 @@ function UnitTests.RunAll()
 
     -- Patch Targeting.IsNamed to use mock's _isNamed field
     local origIsNamed = Targeting.IsNamed
+    ---@diagnostic disable-next-line: undefined-field
     Targeting.IsNamed = function(spawn) return spawn and spawn._isNamed or false end
 
     local noHpPref    = { prefLow = false, prefHigh = false, }
@@ -168,6 +170,7 @@ function UnitTests.RunAll()
     -- ValidMAXTarget tests
     do
         local origIsTempPet = Targeting.IsTempPet
+        ---@diagnostic disable-next-line: undefined-field
         Targeting.IsTempPet = function(spawn) return spawn and spawn._isTempPet or false end
 
         local function validSpawn(id)
@@ -220,6 +223,62 @@ function UnitTests.RunAll()
         Globals.IgnoredTargetIDs:remove(7)
 
         Targeting.IsTempPet = origIsTempPet
+    end
+
+    -- IsTempPet tests
+    do
+        local function petSpawn(surname)
+            local s = mockSpawn(10, "Test", 80, false)
+            s.Surname = function() return surname end
+            return s
+        end
+
+        assertEq("IsTempPet: apostrophe s Pet", Targeting.IsTempPet(petSpawn("Derple's Pet")), true)
+        assertEq("IsTempPet: backtick s Pet", Targeting.IsTempPet(petSpawn("Derple`s Pet")), true)
+        assertEq("IsTempPet: Doppelganger", Targeting.IsTempPet(petSpawn("Doppelganger")), true)
+        assertEq("IsTempPet: normal mob", Targeting.IsTempPet(petSpawn("Gnoll")), false)
+        assertEq("IsTempPet: nil surname", Targeting.IsTempPet(petSpawn(nil)), false)
+    end
+
+    -- CheckForAggroTargetID tests
+    do
+        Globals.AggroTargetID = 0
+        assertEq("CheckForAggroTargetID: zero returns empty", #Targeting.CheckForAggroTargetID(), 0)
+
+        Globals.AggroTargetID = 42
+        local result = Targeting.CheckForAggroTargetID()
+        assertEq("CheckForAggroTargetID: set returns list", #result, 1)
+        assertEq("CheckForAggroTargetID: set returns correct id", result[1], 42)
+        Globals.AggroTargetID = 0
+    end
+
+    -- InSpellRange tests
+    do
+        local function mockSpell(myRange, aeRange)
+            local s = {}
+            setmetatable(s, { __call = function() return true end, })
+            s.MyRange = function() return myRange end
+            s.AERange = function() return aeRange end
+            return s
+        end
+
+        local nearSpawn = mockSpawn(20, "Near", 80, false, 10)  -- distance 10
+        local farSpawn  = mockSpawn(21, "Far", 80, false, 200)  -- distance 200
+
+        -- MyRange used when > 0
+        assertEq("InSpellRange: MyRange in range", Targeting.InSpellRange(mockSpell(50, 0), nearSpawn), true)
+        assertEq("InSpellRange: MyRange out of range", Targeting.InSpellRange(mockSpell(50, 0), farSpawn), false)
+
+        -- AERange used when MyRange == 0
+        assertEq("InSpellRange: AERange in range", Targeting.InSpellRange(mockSpell(0, 50), nearSpawn), true)
+        assertEq("InSpellRange: AERange out of range", Targeting.InSpellRange(mockSpell(0, 50), farSpawn), false)
+
+        -- both zero => falls back to 250
+        assertEq("InSpellRange: fallback 250 in range", Targeting.InSpellRange(mockSpell(0, 0), nearSpawn), true)
+        assertEq("InSpellRange: fallback 250 out of range", Targeting.InSpellRange(mockSpell(0, 0), farSpawn), true) -- 200 < 250
+
+        -- nil spell returns false
+        assertEq("InSpellRange: nil spell", Targeting.InSpellRange(nil, nearSpawn), false)
     end
 
     Logger.log_info("UnitTests: Self tests complete.")

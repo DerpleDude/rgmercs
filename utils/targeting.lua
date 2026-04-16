@@ -15,6 +15,9 @@ Targeting.ForceNamed        = false
 Targeting.ForceBurnTargetID = 0
 Targeting.SafeTargetCache   = {}
 
+--- Returns true if the spawn is considered a named mob by the Named module.
+--- @param spawn MQSpawn The spawn to check.
+--- @return boolean
 function Targeting.IsNamed(spawn)
     if not spawn or not spawn() then return false end
     if (spawn.Level() or 0) < Config:GetSetting("NamedMinLevel") then return false end
@@ -29,23 +32,19 @@ function Targeting.SetTarget(targetId, ignoreBuffPopulation)
     return Core.SetTarget(targetId, ignoreBuffPopulation)
 end
 
---- Retrieves the current auto-target.
----
---- @return MQSpawn The current auto-target.
+--- Returns the current auto target spawn.
+--- @return MQSpawn The spawn with id Globals.AutoTargetID.
 function Targeting.GetAutoTarget()
     return mq.TLO.Spawn(string.format("id %d", Globals.AutoTargetID))
 end
 
---- Retrieves the current auto-target.
----
---- @return MQSpawn The current auto-target.
+--- Returns the current aggro target spawn.
+--- @return MQSpawn The spawn with id Globals.AggroTargetID.
 function Targeting.GetAggroTarget()
     return mq.TLO.Spawn(string.format("id %d", Globals.AggroTargetID))
 end
 
---- Clears the current target.
----
---- This function is used to clear any selected target in the game.
+--- Clears the auto target, resets aggro/force/combat IDs, stops stick, and clears the in-game target.
 function Targeting.ClearTarget()
     if Config:GetSetting('DoAutoTarget') then
         Logger.log_debug("Clearing Target")
@@ -103,7 +102,7 @@ function Targeting.GetTargetLevel(target)
 end
 
 --- Calculates the distance to the specified target.
---- @param target MQTarget|MQSpawn? The target entity whose distance is to be calculated.
+--- @param target MQSpawn|MQTarget|string|nil? The target entity whose distance is to be calculated.
 --- @return number The distance to the target.
 function Targeting.GetTargetDistance(target)
     return (target and target.Distance3D() or (mq.TLO.Target.Distance3D() or 9999))
@@ -141,18 +140,16 @@ function Targeting.GetTargetHeight(target)
     return (target and target.Height() or (mq.TLO.Target.Height() or 0))
 end
 
---- Retrieves the percentage of HPs for auto-targeting.
----
---- @return number The percentage of HPs for auto-targeting.
+--- Returns the HP percentage of the current auto target, or 0 if none.
+--- @return number
 function Targeting.GetAutoTargetPctHPs()
     local autoTarget = Targeting.GetAutoTarget()
     if not autoTarget or not autoTarget() then return 0 end
     return autoTarget.PctHPs() or 0
 end
 
---- Retrieves the level of the autotarget spawn.
----
---- @return number The level of the autotarget spawn
+--- Returns the level of the current auto target, or 0 if none.
+--- @return number
 function Targeting.GetAutoTargetLevel()
     local autoTarget = Targeting.GetAutoTarget()
     if not autoTarget or not autoTarget() then return 0 end
@@ -277,9 +274,8 @@ function Targeting.FacingTarget()
     return math.abs((mq.TLO.Target.HeadingTo.DegreesCCW() or mq.TLO.Me.Heading.DegreesCCW()) - mq.TLO.Me.Heading.DegreesCCW()) <= 20
 end
 
---- Retrieves the highest aggro percentage among all players.
----
---- @return number The highest aggro percentage.
+--- Returns the highest aggro percentage across the current target and all XTargets.
+--- @return number
 function Targeting.GetHighestAggroPct()
     local target     = mq.TLO.Target
     local me         = mq.TLO.Me
@@ -321,9 +317,9 @@ function Targeting.IHaveAggro(pct)
     return false
 end
 
---- Retrieves the IDs of the top haters.
---- @param printDebug boolean?: If true, debug information will be printed.
---- @return table: A table containing the IDs of the top haters.
+--- Returns a Set of spawn ids that are currently hating us on XTarget.
+--- @param printDebug boolean? If true, logs each counted hater.
+--- @return table
 function Targeting.GetXTHaterIDsSet(printDebug)
     local xtCount = mq.TLO.Me.XTarget() or 0
     local uniqHaters = Set.new({})
@@ -341,25 +337,24 @@ function Targeting.GetXTHaterIDsSet(printDebug)
     return uniqHaters
 end
 
---- Retrieves the IDs of the top haters.
---- @param printDebug boolean?: If true, debug information will be printed.
---- @return table: A table containing the IDs of the top haters.
+--- Returns a list of spawn ids that are currently hating us on XTarget.
+--- @param printDebug boolean? If true, logs each counted hater.
+--- @return number[]
 function Targeting.GetXTHaterIDs(printDebug)
     return Targeting.GetXTHaterIDsSet(printDebug):toList()
 end
 
---- Gets the count of XTHaters.
---- @param printDebug boolean?: If true, debug information will be printed.
---- @return number: The count of XTHaters.
+--- Returns the count of spawns currently hating us on XTarget.
+--- @param printDebug boolean? If true, logs each counted hater.
+--- @return number
 function Targeting.GetXTHaterCount(printDebug)
     return #Targeting.GetXTHaterIDs(printDebug)
 end
 
---- Computes the difference in Hater IDs.
----
---- @param t table The table containing Hater IDs.
---- @param printDebug boolean? Whether to print debug information.
---- @return boolean True if there is a difference, false otherwise
+--- Returns true if the current XTarget hater list contains any id not in t (new hater appeared).
+--- @param t          number[] Previously known hater id list.
+--- @param printDebug boolean?  If true, logs each checked hater.
+--- @return boolean
 function Targeting.DiffXTHaterIDs(t, printDebug)
     local oldHaterSet = Set.new(t)
     local curHaters   = Targeting.GetXTHaterIDs(printDebug)
@@ -372,11 +367,10 @@ function Targeting.DiffXTHaterIDs(t, printDebug)
     return false
 end
 
---- Computes the difference in Hater IDs.
----
---- @param t table The table containing Hater IDs.
---- @param printDebug boolean? Whether to print debug information.
---- @return boolean True if there is a difference, false otherwise
+--- Returns true if either list has an id the other does not (any hater gained or lost).
+--- @param t          number[] Previously known hater id list.
+--- @param printDebug boolean?  If true, logs each checked hater.
+--- @return boolean
 function Targeting.CrossDiffXTHaterIDs(t, printDebug)
     local oldHaterSet  = Set.new(t)
     local curHatersSet = Targeting.GetXTHaterIDsSet(printDebug)
@@ -536,17 +530,21 @@ function Targeting.IsSafeName(spawnType, name)
     return false
 end
 
---- Clears the Safe Target Cache after combat.
+--- Clears the safe target cache so IsSpawnFightingStranger re-evaluates all spawns.
 function Targeting.ClearSafeTargetCache()
     Targeting.SafeTargetCache = {}
 end
 
---- Checks if the target is in the same group.
+--- Returns true if the given spawn is a member of our group.
+--- @param target MQSpawn
+--- @return boolean
 function Targeting.GroupedWithTarget(target)
     local targetName = target.CleanName() or "None"
     return mq.TLO.Group.Member(targetName)() and true or false
 end
 
+--- Sets the force burn target to the given id (or current target if 0), and announces it.
+--- @param targetId number Spawn id to force burn on.
 function Targeting.SetForceBurn(targetId)
     if Targeting.ForceBurnTargetID == tonumber(targetId) then
         Logger.log_info("Force Burn already set to %d. Ignoring request.", Targeting.ForceBurnTargetID)
@@ -562,31 +560,49 @@ function Targeting.SetForceBurn(targetId)
         Config:GetSetting('AnnounceToRaidIfInRaid'))
 end
 
+--- Returns true if the spawn is the current main assist.
+--- @param target MQSpawn
+--- @return boolean
 function Targeting.TargetIsMA(target)
     if not (target and target()) then return false end
     return target.ID() == Core.GetMainAssistId()
 end
 
+--- Returns true if the spawn's class is in the RGCasters set.
+--- @param target MQSpawn
+--- @return boolean
 function Targeting.TargetIsACaster(target)
     if not (target and target()) then return false end
     return Config.Constants.RGCasters:contains(target.Class.ShortName())
 end
 
+--- Returns true if the spawn's class is in the RGMelee set.
+--- @param target MQSpawn
+--- @return boolean
 function Targeting.TargetIsAMelee(target)
     if not (target and target()) then return false end
     return Config.Constants.RGMelee:contains(target.Class.ShortName())
 end
 
+--- Returns true if the spawn's class is in the RGTank set.
+--- @param target MQSpawn
+--- @return boolean
 function Targeting.TargetIsATank(target)
     if not (target and target()) then return false end
     return Config.Constants.RGTank:contains(target.Class.ShortName())
 end
 
+--- Returns true if the spawn is ourselves.
+--- @param target MQSpawn
+--- @return boolean
 function Targeting.TargetIsMyself(target)
     if not (target and target()) then return false end
     return target.ID() == mq.TLO.Me.ID()
 end
 
+--- Returns true if the target's HP% is at or above the low HP threshold (named or normal).
+--- @param target MQSpawn|MQTarget?
+--- @return boolean
 function Targeting.MobNotLowHP(target)
     if not target then target = Targeting.GetAutoTarget() or mq.TLO.Target end
     if not (target and target()) then return false end
@@ -595,6 +611,9 @@ function Targeting.MobNotLowHP(target)
     return Targeting.GetTargetPctHPs(target) >= threshold
 end
 
+--- Returns true if the target's HP% is below the low HP threshold (named or normal).
+--- @param target MQSpawn|MQTarget?
+--- @return boolean
 function Targeting.MobHasLowHP(target)
     if not target then target = Targeting.GetAutoTarget() or mq.TLO.Target end
     if not (target and target()) then return false end
@@ -603,34 +622,55 @@ function Targeting.MobHasLowHP(target)
     return threshold > Targeting.GetTargetPctHPs(target)
 end
 
+--- Returns true if the target's HP% is below the BigHealPoint setting.
+--- @param target MQSpawn|groupmember
+--- @return boolean
 function Targeting.BigHealsNeeded(target)
     return (target.PctHPs() or 999) < Config:GetSetting('BigHealPoint')
 end
 
+--- Returns true if the target's HP% is below the MainHealPoint setting.
+--- @param target MQSpawn|groupmember
+--- @return boolean
 function Targeting.MainHealsNeeded(target)
     return (target.PctHPs() or 999) < Config:GetSetting('MainHealPoint')
 end
 
+--- Returns true if the target's HP% is below the LightHealPoint setting.
+--- @param target MQSpawn|groupmember
+--- @return boolean
 function Targeting.LightHealsNeeded(target)
     return (target.PctHPs() or 999) < Config:GetSetting('LightHealPoint')
 end
 
+--- Returns true if enough group members are below GroupHealPoint to warrant a group heal.
+--- @return boolean
 function Targeting.GroupHealsNeeded()
     return (mq.TLO.Group.Injured(Config:GetSetting('GroupHealPoint'))() or 0) >= Config:GetSetting('GroupInjureCnt')
 end
 
+--- Returns true if enough group members are below BigHealPoint to warrant a big group heal.
+--- @return boolean
 function Targeting.BigGroupHealsNeeded()
     return (mq.TLO.Group.Injured(Config:GetSetting('BigHealPoint'))() or 0) >= Config:GetSetting('GroupInjureCnt')
 end
 
+--- Returns a single-element list with the AutoTargetID if it matches the current target, else empty.
+--- @return number[]
 function Targeting.CheckForAutoTargetID()
     return mq.TLO.Target.ID() == Globals.AutoTargetID and { Globals.AutoTargetID, } or {}
 end
 
+--- Returns a single-element list with AggroTargetID if it is set, else empty.
+--- @return number[]
 function Targeting.CheckForAggroTargetID()
     return (Globals.AggroTargetID or 0) > 0 and { Globals.AggroTargetID, } or {}
 end
 
+--- Returns true if the target is within the spell's range.
+--- @param spell  MQSpell               The spell to check range for.
+--- @param target MQSpawn|MQTarget|string|nil?     The target to measure distance to; defaults to current target.
+--- @return boolean
 function Targeting.InSpellRange(spell, target)
     if not spell or not spell() then return false end
     if not target then target = mq.TLO.Target() end
@@ -648,28 +688,39 @@ function Targeting.AggroCheckOkay()
     return (mq.TLO.Target.PctAggro() or 0) < Config:GetSetting('MobMaxAggro') or not Config:GetSetting('AggroThrottling')
 end
 
+--- Returns true if the auto target exists and is not stunned.
+--- @return boolean
 function Targeting.TargetNotStunned()
     local autoTarget = Targeting.GetAutoTarget()
     if not autoTarget or not autoTarget() then return false end
     return not autoTarget.Stunned()
 end
 
+--- Returns true if we have an auto target and our aggro on it is below 100%.
+--- @return boolean
 function Targeting.LostAutoTargetAggro()
     if Globals.AutoTargetID == 0 or mq.TLO.Target.ID() ~= Globals.AutoTargetID then return false end
     return mq.TLO.Me.PctAggro() < 100
 end
 
+--- Returns true if hate tools should be used: aggro below 100%, secondary aggro high, or target is named.
+--- @return boolean
 function Targeting.HateToolsNeeded()
     if Globals.AutoTargetID == 0 or mq.TLO.Target.ID() ~= Globals.AutoTargetID then return false end
     return mq.TLO.Me.PctAggro() < 100 or (mq.TLO.Target.SecondaryPctAggro() or 0) > 60 or Globals.AutoTargetIsNamed
 end
 
---- Checks spawn surname to check if it is a pet that has evaded other TLO checks.
+--- Returns true if the spawn's surname marks it as a temporary pet (e.g. "'s Pet", "Doppelganger").
 --- @param spawn MQSpawn The spawn to check.
+--- @return boolean
 function Targeting.IsTempPet(spawn)
     if not spawn() then return false end
     local surname = spawn.Surname()
-    return surname and (surname:find("'s Pet", 1, true) or surname:find("`s Pet", 1, true) or surname:find("Doppelganger", 1, true))
+    local isTempPet = false
+    if surname then
+        isTempPet = surname:find("'s Pet", 1, true) ~= nil or surname:find("`s Pet", 1, true) ~= nil or surname:find("Doppelganger", 1, true) ~= nil
+    end
+    return isTempPet
 end
 
 return Targeting
