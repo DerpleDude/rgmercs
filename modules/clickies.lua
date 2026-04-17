@@ -247,8 +247,8 @@ Module.DefaultConfig                       = {
     },
 }
 
-Module.CombatTargetTypes                   = { 'Self', 'Pet', 'Main Assist', 'Auto Target', 'Mercs Peer', }
-Module.NonCombatTargetTypes                = { 'Self', 'Pet', 'Main Assist', 'Mercs Peer', }
+Module.CombatTargetTypes                   = { 'Self', 'Pet', 'Main Assist', 'Auto Target', 'Mercs Peer', 'Rotation Target', }
+Module.NonCombatTargetTypes                = { 'Self', 'Pet', 'Main Assist', 'Mercs Peer', 'Rotation Target', }
 Module.RotationTargetTypes                 = { 'Rotation Target', }
 Module.MercPeerTargetTypes                 = { 'Mercs Peer', }
 Module.CombatStates                        = { 'Downtime', 'Combat', 'Any', 'During Rotation', 'During Heal Rotation', }
@@ -404,7 +404,7 @@ Module.LogicBlocks                         = {
             elseif peerData and peerData.ID then
                 pctEndurance = peerData.Endurance
                 pctMana = peerData.Mana
-                pctHPs = peerData.HP
+                pctHPs = peerData.HPs
             end
 
             if pctHPs >= aboveHP and pctHPs <= belowHP then
@@ -441,7 +441,7 @@ Module.LogicBlocks                         = {
 
     {
         name = "Group Injured Count",
-        cond = function(self, target, peerData, hp, cnt)
+        cond = function(self, target, peerData, cnt, hp)
             return (mq.TLO.Group.Injured(hp)() or 0) >= cnt
         end,
         tooltip = "Only use if [Count] group members are below [X] HP%.",
@@ -738,8 +738,8 @@ Module.LogicBlocks                         = {
                 return Targeting.MobNotLowHP(target)
             end
         end,
-        cond_targets = { "Auto Target", },
-        tooltip = "Only use when RGMercs auto target has health above(below) the Low HP setting. Detects Named to use the correct value. (Optional Negate)",
+        cond_targets = { "Auto Target", "Rotation Target", },
+        tooltip = "Only use when the target has health above(below) the Low HP setting. Detects Named to use the correct value. (Optional Negate)",
         render_header_text = function(self, cond)
             return string.format("Target has %s HP.", cond.args[1] and "low" or "high")
         end,
@@ -779,7 +779,7 @@ Module.LogicBlocks                         = {
             header = header .. ")"
             return header
         end,
-        cond_targets = { "Auto Target", },
+        cond_targets = { "Auto Target", "Rotation Target", },
         args = {
             { name = "Slow",  type = "boolean", default = true, },
             { name = "Snare", type = "boolean", default = true, },
@@ -813,7 +813,7 @@ Module.LogicBlocks                         = {
             header = header .. ")"
             return header
         end,
-        cond_targets = { "Auto Target", },
+        cond_targets = { "Auto Target", "Rotation Target", },
         args = {
             { name = "Undead",   type = "boolean", default = true, },
             { name = "Summoned", type = "boolean", default = true, },
@@ -851,7 +851,7 @@ Module.LogicBlocks                         = {
             header = header .. ")"
             return header
         end,
-        cond_targets = Module.NonCombatTargetTypeIDs,
+        cond_targets = { "Self", "Pet", "Main Assist", "Rotation Target", },
         args = {
             { name = "Caster", type = "boolean", default = true, },
             { name = "Melee",  type = "boolean", default = true, },
@@ -860,7 +860,7 @@ Module.LogicBlocks                         = {
     },
 
     {
-        name = "Target Is Myself",
+        name = "Rotation Target Is Myself",
         cond = function(self, target, peerData, negate)
             if negate then
                 return not Targeting.TargetIsMyself(target)
@@ -868,11 +868,11 @@ Module.LogicBlocks                         = {
                 return Targeting.TargetIsMyself(target)
             end
         end,
-        tooltip = "Only use when the target is (not) myself. (Optional Negate)",
+        tooltip = "Only use when the rotation target is (not) myself. (Optional Negate)",
         render_header_text = function(self, cond)
             return string.format("Target is %s", cond.args[1] and "not Myself" or "Myself")
         end,
-        cond_targets = Module.NonCombatTargetTypeIDs,
+        cond_targets = Module.RotationTargetTypes,
         args = {
             { name = "Negate", type = "boolean", default = false, },
         },
@@ -1313,23 +1313,33 @@ function Module:RenderConditionTargetCombo(cond, condIdx, combatState)
         ImGui.TableNextColumn()
         Ui.RenderText("Target")
         ImGui.TableNextColumn()
-        if combatState == "During Rotation" or combatState == "During Heal Rotation" then
-            ImGui.TextDisabled("Rotation Target")
-            if cond.target ~= "Rotation Target" then
-                cond.target = "Rotation Target"
-                Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
-            end
-        else
-            local selectedNum, changed = ImGui.Combo("##clicky_cond_target_" .. "_" .. condIdx, tonumber(condBlock.cond_targetIDs[cond.target or "Self"]) or 1,
-                condBlock.cond_targets,
-                #condBlock.cond_targets)
-            if changed then
-                cond.target = condBlock.cond_targets[selectedNum] or "Self"
-                Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
-            end
+        local selectedNum, changed = ImGui.Combo("##clicky_cond_target_" .. "_" .. condIdx, tonumber(condBlock.cond_targetIDs[cond.target or "Self"]) or 1,
+            condBlock.cond_targets,
+            #condBlock.cond_targets)
+        if changed then
+            cond.target = condBlock.cond_targets[selectedNum] or "Self"
+            Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
         end
         ImGui.EndTable()
-        Ui.Tooltip("Target Types\nSelf - This PC\nPet - This PC's pet\nMain Assist - The current RGMercs Main Assist\nAuto Target - The current RGMercs Combat Auto Target")
+        Ui.Tooltip(
+            "Target Types\nSelf - This PC\nPet - This PC's pet\nMain Assist - The current RGMercs Main Assist\nAuto Target - The current RGMercs Combat Auto Target\nMercs Peer - A character running RGMercs on the same network\nRotation Target - The target passed in by the active rotation")
+    end
+
+    if cond.target == "Mercs Peer" then
+        if ImGui.BeginTable("##clicky_cond_mercs_peer_name_table_" .. condIdx, 2, bit32.bor(ImGuiTableFlags.None)) then
+            ImGui.TableSetupColumn("Key", ImGuiTableColumnFlags.WidthFixed, 50)
+            ImGui.TableSetupColumn("Value", ImGuiTableColumnFlags.WidthStretch, 0)
+            ImGui.TableNextColumn()
+            Ui.RenderText("Peer")
+            ImGui.TableNextColumn()
+            local newName, changedName = ImGui.InputText("##clicky_cond_mercs_peer_name_" .. condIdx, cond.mercs_peer_name or "")
+            if changedName then
+                cond.mercs_peer_name = newName
+                Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
+            end
+            ImGui.EndTable()
+            Ui.Tooltip("The Mercs Peer this condition should test.\nCan be left blank if the same Mercs Peer is the clicky target.")
+        end
     end
 end
 
@@ -1389,24 +1399,24 @@ function Module:RenderClickyTargetCombo(clicky, clickyIdx)
 end
 
 function Module:RenderClickyNoTargetChangeToggle(clicky, clickyIdx)
-    local isRotation = clicky.combat_state == "During Rotation" or clicky.combat_state == "During Heal Rotation"
+    local isRotationTarget = clicky.target == "Rotation Target"
     if ImGui.BeginTable("##clicky_target_no_change_table_" .. clickyIdx, 2, bit32.bor(ImGuiTableFlags.None)) then
         ImGui.TableSetupColumn("Key", ImGuiTableColumnFlags.WidthFixed, 140)
         ImGui.TableSetupColumn("Value", ImGuiTableColumnFlags.WidthStretch, 0)
         ImGui.TableNextColumn()
         Ui.RenderText("Don't Change Target")
         ImGui.TableNextColumn()
-        ImGui.BeginDisabled(isRotation)
+        ImGui.BeginDisabled(isRotationTarget)
         local new_no_target_change, clicked = Ui.RenderOptionToggle("##clicky_no_target_change_" .. clickyIdx, "",
             clicky.no_target_change)
         ImGui.EndDisabled()
 
-        if isRotation and clicky.no_target_change then
+        if isRotationTarget and clicky.no_target_change then
             clicky.no_target_change = false
             Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
         end
 
-        if not isRotation and clicked then
+        if not isRotationTarget and clicked then
             clicky.no_target_change = new_no_target_change
             Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
         end
@@ -1949,18 +1959,7 @@ function Module:GiveTime()
                             local condBlock = self:GetLogicBlockByType(cond.type)
                             if condBlock then
                                 if condBlock.cond_targets then
-                                    if cond.target == "Self" then
-                                        condTarget = mq.TLO.Me
-                                    elseif cond.target == "Main Assist" then
-                                        condTarget = Core.GetMainAssistSpawn()
-                                    elseif cond.target == "Pet" then
-                                        condTarget = mq.TLO.Me.Pet
-                                    elseif cond.target == "Auto Target" then
-                                        condTarget = Targeting.GetAutoTarget()
-                                    elseif cond.target == "Mercs Peer" then
-                                        condTarget = nil
-                                        condPeer = Comms.GetPeerHeartbeatByName(clicky.mercs_peer_name or "")
-                                    end
+                                    condTarget, condPeer = Module.GetConditionTarget(cond, nil, clicky.mercs_peer_name)
                                 end
                                 Logger.log_super_verbose("\ayClicky: \awTesting Condition: \at%s\aw on target: \at%s (%s)", cond.type,
                                     condTarget and (condTarget.CleanName() or "None") or "None",
@@ -2052,6 +2051,18 @@ function Module:GiveTime()
     end
 end
 
+function Module.GetConditionTarget(cond, targetSpawn, clickyPeerName)
+    if cond.target == "Self" then return mq.TLO.Me end
+    if cond.target == "Main Assist" then return Core.GetMainAssistSpawn() end
+    if cond.target == "Pet" then return mq.TLO.Me.Pet end
+    if cond.target == "Auto Target" then return Targeting.GetAutoTarget() end
+    if cond.target == "Rotation Target" then return targetSpawn end
+    if cond.target == "Mercs Peer" then
+        return nil, Comms.GetPeerHeartbeatByName(cond.mercs_peer_name ~= "" and cond.mercs_peer_name or clickyPeerName or "")
+    end
+    return nil
+end
+
 function Module:GetClickiesForRotation(rotationName)
     local result   = {}
     local clickies = Config:GetSetting('Clickies') or {}
@@ -2087,11 +2098,16 @@ function Module:GetClickiesForRotation(rotationName)
 
                     if not buffCheckPassed then return false end
 
+                    local condTarget = nil
+                    local condPeer = nil
                     for _, cond in ipairs(conditions) do
                         local condBlock = self:GetLogicBlockByType(cond.type)
                         if condBlock then
+                            if condBlock.cond_targets then
+                                condTarget, condPeer = Module.GetConditionTarget(cond, targetSpawn, clicky.mercs_peer_name)
+                            end
                             ---@diagnostic disable-next-line: deprecated
-                            if not Core.SafeCallFunc("Rotation Clicky :: Test clicky Condition", condBlock.cond, caller, targetSpawn, nil, unpack(cond.args or {})) then
+                            if not Core.SafeCallFunc("Rotation Clicky :: Test clicky Condition", condBlock.cond, caller, condTarget, condPeer and condPeer.Data, unpack(cond.args or {})) then
                                 return false
                             end
                         end
@@ -2140,11 +2156,16 @@ function Module:GetClickiesForHealRotation(rotationName)
 
                     if not buffCheckPassed then return false end
 
+                    local condTarget = nil
+                    local condPeer = nil
                     for _, cond in ipairs(conditions) do
                         local condBlock = self:GetLogicBlockByType(cond.type)
                         if condBlock then
+                            if condBlock.cond_targets then
+                                condTarget, condPeer = Module.GetConditionTarget(cond, targetSpawn, clicky.mercs_peer_name)
+                            end
                             ---@diagnostic disable-next-line: deprecated
-                            if not Core.SafeCallFunc("Rotation Clicky :: Test clicky Condition", condBlock.cond, caller, targetSpawn, nil, unpack(cond.args or {})) then
+                            if not Core.SafeCallFunc("Rotation Clicky :: Test clicky Condition", condBlock.cond, caller, condTarget, condPeer and condPeer.Data, unpack(cond.args or {})) then
                                 return false
                             end
                         end
