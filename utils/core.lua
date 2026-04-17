@@ -498,14 +498,17 @@ function Core.UpdateBuffs()
 end
 
 function Core.GetBuffTable()
+    local buffCount = 0 --count buffs here because BuffCount member is cached, requires self target
     Globals.CurrentBuffs = {}
 
     for i = 1, mq.TLO.Me.MaxBuffSlots() do
         local buff = mq.TLO.Me.Buff(i)
         if buff() and (buff.Spell.ID() or 0) > 0 then
             table.insert(Globals.CurrentBuffs, buff.Spell.ID())
+            buffCount = buffCount + 1
         end
     end
+    Globals.CurrentBuffCount = buffCount
 end
 
 function Core.GetSongTable()

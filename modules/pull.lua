@@ -26,7 +26,6 @@ setmetatable(Module, { __index = Base, })
 Module.FAQ                                = {}
 
 Module.TempSettings                       = {}
-Module.TempSettings.BuffCount             = 0
 Module.TempSettings.LastPullOrCombatEnded = Globals.GetTimeSeconds()
 Module.TempSettings.TargetSpawnID         = 0
 Module.TempSettings.CurrentWP             = 1
@@ -1104,7 +1103,7 @@ function Module:Render()
             ImGui.TableNextColumn()
             Ui.RenderText("Buff Count")
             ImGui.TableNextColumn()
-            Ui.RenderText("%s", self.TempSettings.BuffCount)
+            Ui.RenderText("%s", Globals.CurrentBuffCount)
             ImGui.EndTable()
         end
 
@@ -1374,21 +1373,6 @@ function Module:DeleteWayPoint(idx)
     end
 end
 
--- because mq.TLO.Me.BuffCount() fails to update when gaining buffs without targeting yourself.
--- it does update when you lose buffs though.
----@return number -- # of buffs you have currently
-function Module:CountBuffs()
-    local count = 0
-    for i = 1, mq.TLO.Me.MaxBuffSlots() do
-        local buff = mq.TLO.Me.Buff(i)()
-        if buff ~= nil then
-            count = count + 1
-        end
-    end
-    self.TempSettings.BuffCount = count
-    return count
-end
-
 ---@param campData table
 ---@return boolean, string
 function Module:ShouldPull(campData)
@@ -1485,7 +1469,7 @@ function Module:ShouldPull(campData)
     end
 
     if Config:GetSetting('PullBuffCount') > 0 then
-        if self:CountBuffs() < Config:GetSetting('PullBuffCount') then
+        if Globals.CurrentBuffCount < Config:GetSetting('PullBuffCount') then
             Logger.log_verbose("\ay::PULL:: \arAborted!\ax Waiting for Buffs! BuffCount < %d", Config:GetSetting('PullBuffCount'))
             return false, string.format("BuffCount < %d", Config:GetSetting('PullBuffCount'))
         end

@@ -157,7 +157,7 @@ function Comms.SendHeartbeat(assist, chase, forceSend)
         Blocked       = Globals.CurrentBlocked,
         PetBuffs      = Globals.CurrentPetBuffs,
         PetBlocked    = Globals.CurrentPetBlocked,
-        OpenBuffSlots = mq.TLO.Me.MaxBuffSlots() - mq.TLO.Me.BuffCount(),
+        OpenBuffSlots = mq.TLO.Me.MaxBuffSlots() - Globals.CurrentBuffCount,
         MaxBuffSlots  = mq.TLO.Me.MaxBuffSlots(),
         Forced        = forceSend and true or false,
     }

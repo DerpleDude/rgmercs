@@ -538,14 +538,15 @@ function Casting.ActorBuffCheck(spellId, target, skipBlockCheck, skipTriggerChec
     end
 
     local blockedList = heartbeat.Data.Blocked
+    local openBuffs = heartbeat.Data.OpenBuffSlots
     local buffList = heartbeat.Data.Buffs
     local songList = heartbeat.Data.Songs
 
-    if not blockedList or not buffList or not songList then
+    if not blockedList or not openBuffs or not songList or not buffList then
         Logger.log_error(
-            "ActorBuffCheck: Tried to check a peer's buff, but data is not available! If this behavior continues, please report this. Spell:%s(ID:%d), Target:%s(ID:%d)", spellName,
-            spellId, targetName, targetId)
-        return false
+            "ActorBuffCheck: Tried to check a peer's buff, but data is not available! Fallng back on Dannet. If this behavior continues, please report this. Spell:%s(ID:%d), Target:%s(ID:%d)",
+            spellName, spellId, targetName, targetId)
+        return Casting.PeerBuffCheck(spellId, target, skipBlockCheck, skipTriggerCheck)
     end
 
     if not skipBlockCheck then
@@ -557,6 +558,11 @@ function Casting.ActorBuffCheck(spellId, target, skipBlockCheck, skipTriggerChec
         end
     else
         Logger.log_verbose("ActorBuffCheck: %s(ID:%d) block check skipped on %s(ID:%d).", spellName, spellId, targetName, targetId)
+    end
+
+    if openBuffs <= 0 then
+        Logger.log_verbose("ActorBuffCheck: No open buff slots for %s, falling back on DanNet to have the PC perform local checks for %s(ID: %d)", targetName, spellName, spellId)
+        return Casting.PeerBuffCheck(spellId, target, true, skipTriggerCheck) -- we already did the block check (if needed) here, skip it, saves a query
     end
 
     for _, buffId in ipairs(buffList) do

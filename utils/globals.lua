@@ -41,6 +41,7 @@ Globals.RezzedCorpses                 = {}
 Globals.SLPeerLooting                 = false
 Globals.LastBurnCheck                 = false
 Globals.CurrentBuffs                  = {}
+Globals.CurrentBuffCount              = 0
 Globals.CurrentSongs                  = {}
 Globals.CurrentBlocked                = {}
 Globals.CurrentPetBuffs               = nil
