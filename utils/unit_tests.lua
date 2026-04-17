@@ -32,15 +32,24 @@ local function mockSpawn(id, name, pctHp, isNamed, distance)
     return t
 end
 
+local passed = 0
+local failed = 0
+
 local function assertEq(label, got, expected)
     if got ~= expected then
         Logger.log_error("\arSELF TEST FAILED\ax [%s]: expected %s got %s", label, tostring(expected), tostring(got))
+        failed = failed + 1
     else
         Logger.log_debug("\agSELF TEST PASSED\ax [%s]", label)
+        passed = passed + 1
     end
 end
 
+--- Runs all unit tests and returns true if all passed.
+--- @return boolean
 function UnitTests.RunAll()
+    passed = 0
+    failed = 0
     Logger.log_info("UnitTests: Running self tests...")
 
     -- Patch Targeting.IsNamed to use mock's _isNamed field
@@ -92,90 +101,127 @@ function UnitTests.RunAll()
 
     -- ProcessXTarget: no namedPref, no hpPref => immediate return of first valid spawn
     do
-        local kill   = { hp = 0, id = 0, }
-        local named  = { hp = 101, id = 0, name = "None", }
+        local primaryTarget  = { hp = 0, id = 0, }
+        local fallbackTarget = { hp = 101, id = 0, name = "None", }
         -- radius large enough spawn is within; PctAggro=100 bypasses aggro scan
-        local result = Combat.ProcessXTarget(spawnA, 100, noNamePref, noHpPref, true, kill, named, false, 0)
+        local result = Combat.ProcessXTarget(spawnA, 100, noNamePref, noHpPref, true, primaryTarget, fallbackTarget, false, 0)
         assertEq("ProcessXTarget noNamePref noHpPref: immediate return", result, 1)
     end
 
-    -- ProcessXTarget: prefLow, no name pref => kill bucket updated, no immediate return
+    -- ProcessXTarget: prefLow, no name pref => primaryTarget bucket updated, no immediate return
     do
-        local kill   = { hp = 101, id = 0, }
-        local named  = { hp = 101, id = 0, name = "None", }
-        local result = Combat.ProcessXTarget(spawnA, 100, noNamePref, lowHpPref, false, kill, named, false, 0)
+        local primaryTarget  = { hp = 101, id = 0, }
+        local fallbackTarget = { hp = 101, id = 0, name = "None", }
+        local result = Combat.ProcessXTarget(spawnA, 100, noNamePref, lowHpPref, false, primaryTarget, fallbackTarget, false, 0)
         assertEq("ProcessXTarget lowHpPref: no immediate return", result, nil)
-        assertEq("ProcessXTarget lowHpPref: kill bucket updated", kill.id, 1)
-        result = Combat.ProcessXTarget(spawnB, 100, noNamePref, lowHpPref, false, kill, named, false, 0)
-        assertEq("ProcessXTarget lowHpPref: lower hp wins", kill.id, 2)
+        assertEq("ProcessXTarget lowHpPref: kill bucket updated", primaryTarget.id, 1)
+        result = Combat.ProcessXTarget(spawnB, 100, noNamePref, lowHpPref, false, primaryTarget, fallbackTarget, false, 0)
+        assertEq("ProcessXTarget lowHpPref: lower hp wins", primaryTarget.id, 2)
     end
 
-    -- ProcessXTarget: prefNamed, spawn is trash => skipped (kill bucket unchanged)
+    -- ProcessXTarget: prefNamed, spawn is trash => skipped (primaryTarget bucket unchanged)
     do
-        local kill   = { hp = 101, id = 99, }
-        local named  = { hp = 101, id = 0, name = "None", }
-        local result = Combat.ProcessXTarget(spawnA, 100, prefNamed, lowHpPref, false, kill, named, false, 0)
-        assertEq("ProcessXTarget prefNamed+trash: skipped", kill.id, 99)
+        local primaryTarget  = { hp = 101, id = 99, }
+        local fallbackTarget = { hp = 101, id = 0, name = "None", }
+        local result = Combat.ProcessXTarget(spawnA, 100, prefNamed, lowHpPref, false, primaryTarget, fallbackTarget, false, 0)
+        assertEq("ProcessXTarget prefNamed+trash: skipped", primaryTarget.id, 99)
         assertEq("ProcessXTarget prefNamed+trash: no immediate", result, nil)
     end
 
     -- ProcessXTarget: prefNamed, spawn is named, no hpPref => immediate return
     do
-        local kill   = { hp = 0, id = 0, }
-        local named  = { hp = 101, id = 0, name = "None", }
-        local result = Combat.ProcessXTarget(spawnC, 100, prefNamed, noHpPref, true, kill, named, false, 0)
+        local primaryTarget  = { hp = 0, id = 0, }
+        local fallbackTarget = { hp = 101, id = 0, name = "None", }
+        local result = Combat.ProcessXTarget(spawnC, 100, prefNamed, noHpPref, true, primaryTarget, fallbackTarget, false, 0)
         assertEq("ProcessXTarget prefNamed+named+immediate: return named", result, 3)
     end
 
-    -- ProcessXTarget: prefNamed, spawn is named, prefLow => kill bucket updated
+    -- ProcessXTarget: prefNamed, spawn is named, prefLow => primaryTarget bucket updated
     do
-        local kill   = { hp = 101, id = 0, }
-        local named  = { hp = 101, id = 0, name = "None", }
-        local result = Combat.ProcessXTarget(spawnC, 100, prefNamed, lowHpPref, false, kill, named, false, 0)
+        local primaryTarget  = { hp = 101, id = 0, }
+        local fallbackTarget = { hp = 101, id = 0, name = "None", }
+        local result = Combat.ProcessXTarget(spawnC, 100, prefNamed, lowHpPref, false, primaryTarget, fallbackTarget, false, 0)
         assertEq("ProcessXTarget prefNamed+named+prefLow: no immediate", result, nil)
-        assertEq("ProcessXTarget prefNamed+named+prefLow: kill updated", kill.id, 3)
+        assertEq("ProcessXTarget prefNamed+named+prefLow: kill updated", primaryTarget.id, 3)
     end
 
     -- ProcessXTarget: prefTrash, spawn is trash, no hpPref => immediate return
     do
-        local kill   = { hp = 0, id = 0, }
-        local named  = { hp = 101, id = 0, name = "None", }
-        local result = Combat.ProcessXTarget(spawnA, 100, prefTrash, noHpPref, true, kill, named, false, 0)
+        local primaryTarget  = { hp = 0, id = 0, }
+        local fallbackTarget = { hp = 101, id = 0, name = "None", }
+        local result = Combat.ProcessXTarget(spawnA, 100, prefTrash, noHpPref, true, primaryTarget, fallbackTarget, false, 0)
         assertEq("ProcessXTarget prefTrash+trash+immediate: return trash", result, 1)
     end
 
-    -- ProcessXTarget: prefTrash, spawn is named => goes into named fallback bucket
+    -- ProcessXTarget: prefTrash, spawn is named => goes into fallbackTarget bucket
     do
-        local kill   = { hp = 0, id = 0, }
-        local named  = { hp = 101, id = 0, name = "None", }
-        local result = Combat.ProcessXTarget(spawnC, 100, prefTrash, noHpPref, true, kill, named, false, 0)
+        local primaryTarget  = { hp = 0, id = 0, }
+        local fallbackTarget = { hp = 101, id = 0, name = "None", }
+        local result = Combat.ProcessXTarget(spawnC, 100, prefTrash, noHpPref, true, primaryTarget, fallbackTarget, false, 0)
         assertEq("ProcessXTarget prefTrash+named: no immediate", result, nil)
-        assertEq("ProcessXTarget prefTrash+named: kill untouched", kill.id, 0)
-        assertEq("ProcessXTarget prefTrash+named: named bucket set", named.id, 3)
-        assertEq("ProcessXTarget prefTrash+named: named name set", named.name, "Named")
+        assertEq("ProcessXTarget prefTrash+named: kill untouched", primaryTarget.id, 0)
+        assertEq("ProcessXTarget prefTrash+named: named bucket set", fallbackTarget.id, 3)
+        assertEq("ProcessXTarget prefTrash+named: named name set", fallbackTarget.name, "Named")
     end
 
-    -- ProcessXTarget: prefTrash, named spawn, prefLow => named bucket picks lowest
+    -- ProcessXTarget: prefTrash, named spawn, prefLow => fallbackTarget bucket picks lowest
     do
-        local spawnD = mockSpawn(4, "Named2", 30, true)
-        local kill   = { hp = 0, id = 0, }
-        local named  = { hp = 101, id = 0, name = "None", }
-        Combat.ProcessXTarget(spawnC, 100, prefTrash, lowHpPref, false, kill, named, false, 0)
-        assertEq("ProcessXTarget prefTrash+named+prefLow: first named", named.id, 3)
-        Combat.ProcessXTarget(spawnD, 100, prefTrash, lowHpPref, false, kill, named, false, 0)
-        assertEq("ProcessXTarget prefTrash+named+prefLow: lower hp named wins", named.id, 4)
+        local spawnD         = mockSpawn(4, "Named2", 30, true)
+        local primaryTarget  = { hp = 0, id = 0, }
+        local fallbackTarget = { hp = 101, id = 0, name = "None", }
+        Combat.ProcessXTarget(spawnC, 100, prefTrash, lowHpPref, false, primaryTarget, fallbackTarget, false, 0)
+        assertEq("ProcessXTarget prefTrash+named+prefLow: first named", fallbackTarget.id, 3)
+        Combat.ProcessXTarget(spawnD, 100, prefTrash, lowHpPref, false, primaryTarget, fallbackTarget, false, 0)
+        assertEq("ProcessXTarget prefTrash+named+prefLow: lower hp named wins", fallbackTarget.id, 4)
     end
 
-    -- ProcessXTarget: prefTrash, named spawn, prefHigh => named bucket picks highest (regression: kill.found)
+    -- ProcessXTarget: prefNamed, only trash on xtargets, prefHigh => trash goes to fallback, highest hp wins
     do
-        local spawnD = mockSpawn(4, "Named2", 30, true)
-        local kill   = { hp = 0, id = 0, found = false, }
-        local named  = { hp = 0, id = 0, name = "None", }
-        Combat.ProcessXTarget(spawnC, 100, prefTrash, highHpPref, false, kill, named, false, 0)
-        assertEq("ProcessXTarget prefTrash+named+prefHigh: first named", named.id, 3)
-        Combat.ProcessXTarget(spawnD, 100, prefTrash, highHpPref, false, kill, named, false, 0)
-        assertEq("ProcessXTarget prefTrash+named+prefHigh: higher hp named wins", named.id, 3) -- spawnC(60%) beats spawnD(30%)
-        assertEq("ProcessXTarget prefTrash+named+prefHigh: kill not marked found", kill.found, false)
+        local primaryTarget  = { hp = 0, id = 0, found = false, }
+        local fallbackTarget = { hp = 0, id = 0, name = "None", }
+        Combat.ProcessXTarget(spawnA, 100, prefNamed, highHpPref, false, primaryTarget, fallbackTarget, false, 0)
+        assertEq("ProcessXTarget prefNamed+trash only: first trash in fallback", fallbackTarget.id, 1)
+        Combat.ProcessXTarget(spawnB, 100, prefNamed, highHpPref, false, primaryTarget, fallbackTarget, false, 0)
+        assertEq("ProcessXTarget prefNamed+trash only: higher hp trash wins", fallbackTarget.id, 1) -- spawnA(80%) beats spawnB(40%)
+        assertEq("ProcessXTarget prefNamed+trash only: primary untouched", primaryTarget.found, false)
+        assertEq("ProcessXTarget prefNamed+trash only: primary id untouched", primaryTarget.id, 0)
+    end
+
+    -- ProcessXTarget: prefTrash, named spawn, prefHigh => fallbackTarget bucket picks highest (regression: primaryTarget.found)
+    do
+        local spawnD         = mockSpawn(4, "Named2", 30, true)
+        local primaryTarget  = { hp = 0, id = 0, found = false, }
+        local fallbackTarget = { hp = 0, id = 0, name = "None", }
+        Combat.ProcessXTarget(spawnC, 100, prefTrash, highHpPref, false, primaryTarget, fallbackTarget, false, 0)
+        assertEq("ProcessXTarget prefTrash+named+prefHigh: first named", fallbackTarget.id, 3)
+        Combat.ProcessXTarget(spawnD, 100, prefTrash, highHpPref, false, primaryTarget, fallbackTarget, false, 0)
+        assertEq("ProcessXTarget prefTrash+named+prefHigh: higher hp named wins", fallbackTarget.id, 3) -- spawnC(60%) beats spawnD(30%)
+        assertEq("ProcessXTarget prefTrash+named+prefHigh: kill not marked found", primaryTarget.found, false)
+    end
+
+    -- Fallback promotion: prefNamed+only trash+prefHigh => fallback promoted to primary id
+    do
+        local primaryTarget  = { hp = 0,   id = 0, found = false, }
+        local fallbackTarget = { hp = 0,   id = 0, name = "None", }
+        Combat.ProcessXTarget(spawnA, 100, prefNamed, highHpPref, false, primaryTarget, fallbackTarget, false, 0)
+        Combat.ProcessXTarget(spawnB, 100, prefNamed, highHpPref, false, primaryTarget, fallbackTarget, false, 0)
+        if not primaryTarget.found and fallbackTarget.id > 0 then
+            primaryTarget.id = fallbackTarget.id
+        end
+        assertEq("Fallback promotion prefNamed+trash+prefHigh: primary gets fallback id", primaryTarget.id, 1) -- spawnA(80%) is highest
+    end
+
+    -- Fallback promotion: prefTrash+only named+prefLow => fallback promoted to primary id
+    do
+        local spawnD         = mockSpawn(4, "Named2", 30, true)
+        local primaryTarget  = { hp = 101, id = 0, found = false, }
+        local fallbackTarget = { hp = 101, id = 0, name = "None", }
+        Combat.ProcessXTarget(spawnC, 100, prefTrash, lowHpPref, false, primaryTarget, fallbackTarget, false, 0)
+        Combat.ProcessXTarget(spawnD, 100, prefTrash, lowHpPref, false, primaryTarget, fallbackTarget, false, 0)
+        if not primaryTarget.found and fallbackTarget.id > 0 then
+            primaryTarget.id = fallbackTarget.id
+        end
+        assertEq("Fallback promotion prefTrash+named+prefLow: primary gets fallback id", primaryTarget.id, 4) -- spawnD(30%) is lowest
     end
 
     Targeting.IsNamed = origIsNamed
@@ -295,7 +341,8 @@ function UnitTests.RunAll()
         assertEq("InSpellRange: nil spell", Targeting.InSpellRange(nil, nearSpawn), false)
     end
 
-    Logger.log_info("UnitTests: Self tests complete.")
+    Logger.log_info("UnitTests: Self tests complete. Passed: %d, Failed: %d", passed, failed)
+    return failed == 0
 end
 
 return UnitTests

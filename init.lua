@@ -264,7 +264,7 @@ local function RGInit(...)
     if Config:GetSetting("RunSelfTestsOnStartup") then
         initPctComplete = 15
         initMsg = "Running Self Tests..."
-        require('utils.unit_tests').RunAll()
+        Config.UnitTestsPass = require('utils.unit_tests').RunAll()
     end
 
     initPctComplete = 20

@@ -27,6 +27,7 @@ Config.peerModuleSettingCategories                       = {}
 Config.FAQ                                               = {}
 Config.SettingsLoadComplete                              = false
 Config.DbConsistencyCheckPass                            = true
+Config.UnitTestsPass                                     = true
 
 Config.TempSettings                                      = {}
 Config.TempSettings.lastModuleRegisteredTime             = 0

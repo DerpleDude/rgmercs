@@ -149,6 +149,10 @@ function StandardUI:RenderTarget()
         warningMessage = warningMessage and warningMessage .. "\n" or "" .. "Database Consistency Check Failed! Please check logs and report to Derple and Algar!"
     end
 
+    if not Config.UnitTestsPass then
+        warningMessage = warningMessage and warningMessage .. "\n" or "" .. "Unit Tests Failed! Please check logs and report to Derple and Algar!"
+    end
+
     if warningMessage then
         ImGui.TextColored(Globals.GetAlternatingColor(), warningMessage)
     end

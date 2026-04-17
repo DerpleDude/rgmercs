@@ -267,7 +267,7 @@ end
 --- @param prefLow boolean               True to prefer lower HP%, false to prefer higher.
 function Combat.UpdateBucket(spawn, bucket, prefLow)
     local pct    = spawn.PctHPs() or (prefLow and 101 or 0)
-    local better = prefLow and pct < bucket.hp or pct > bucket.hp
+    local better = (prefLow and pct < bucket.hp) or (not prefLow and pct > bucket.hp)
     if better then
         Logger.log_verbose("MATargetScan \atFound Possible Target: %s :: %d -- Storing for %s HP Check", spawn.CleanName(), spawn.ID(), prefLow and "Lowest" or "Highest")
         bucket.hp = pct
@@ -287,45 +287,46 @@ function Combat.PickBestSpawn(hpPref, spawn, bucket)
     end
 end
 
-local function processFallbackSpawn(spawn, checkNamed, radius, namedPref, kill)
+local function processFallbackSpawn(spawn, checkNamed, radius, namedPref, hpPref, primaryTarget)
     if not spawn or not spawn() then return end
     if Targeting.IsTempPet(spawn) then return end
     if (spawn.CleanName() or ""):find("Guard") then return end
     if Config:GetSetting('SafeTargeting') and Targeting.IsSpawnFightingStranger(spawn, radius) then return end
-    if checkNamed and namedPref.prefNamed and Targeting.IsNamed(spawn) then
-        Logger.log_verbose("MATargetScan DEBUG Found Named: %s -- returning %d", spawn.CleanName(), spawn.ID())
-        kill.id = spawn.ID() or 0
-    else
-        Combat.UpdateBucket(spawn, kill, true)
-    end
+    local spawnIsNamed = checkNamed and Targeting.IsNamed(spawn) or false
+    if namedPref.prefNamed and not spawnIsNamed then return end -- want named, this is trash: skip
+    if namedPref.prefTrash and spawnIsNamed then return end     -- want trash, this is named: skip
+    Logger.log_verbose("MATargetScan FallbackScan Found: %s -- id %d", spawn.CleanName(), spawn.ID())
+    Combat.PickBestSpawn(hpPref, spawn, primaryTarget)
+    primaryTarget.found = true
 end
 
---- Scans nearby spawns matching search and updates the kill bucket as a fallback when XTargets yield nothing.
---- @param search     string                               Spawn search string passed to NearestSpawn.
---- @param checkNamed boolean                              If true, named spawns matching prefNamed are skipped.
---- @param radius     number                               Max distance to consider a spawn valid.
---- @param namedPref  {prefNamed:boolean,prefTrash:boolean} Named targeting preference flags.
---- @param kill       {hp:number,id:number,found:boolean}  Kill bucket, mutated in place.
-function Combat.FallbackScan(search, checkNamed, radius, namedPref, kill)
+--- Scans nearby spawns matching search and updates the primaryTarget bucket as a fallback when XTargets yield nothing.
+--- @param search        string                               Spawn search string passed to NearestSpawn.
+--- @param checkNamed    boolean                              If true, named status is evaluated for namedPref filtering.
+--- @param radius        number                               Max distance to consider a spawn valid.
+--- @param namedPref     {prefNamed:boolean,prefTrash:boolean} Named targeting preference flags.
+--- @param hpPref        {prefLow:boolean,prefHigh:boolean}   HP targeting preference flags.
+--- @param primaryTarget {hp:number,id:number,found:boolean}  Primary target bucket, mutated in place.
+function Combat.FallbackScan(search, checkNamed, radius, namedPref, hpPref, primaryTarget)
     local count = mq.TLO.SpawnCount(search)()
     Logger.log_verbose("MATargetScan FallbackScan: %s ===> %d", search, count)
     for i = 1, count do
-        processFallbackSpawn(mq.TLO.NearestSpawn(i, search), checkNamed, radius, namedPref, kill)
+        processFallbackSpawn(mq.TLO.NearestSpawn(i, search), checkNamed, radius, namedPref, hpPref, primaryTarget)
     end
 end
 
---- Evaluates a single XTarget candidate and updates kill/named buckets.
---- @param xtSpawn      xtarget                              The XTarget spawn to evaluate.
---- @param radius       number                               Max distance to consider the spawn valid.
---- @param namedPref    {prefNamed:boolean,prefTrash:boolean} Named targeting preference flags.
---- @param hpPref       {prefLow:boolean,prefHigh:boolean}   HP targeting preference flags.
---- @param immediate    boolean                              If true, return the first valid spawn id without bucketing.
---- @param kill         {hp:number,id:number,found:boolean}  Kill bucket, mutated in place.
---- @param named        {hp:number,id:number,name:string}    Named fallback bucket, mutated in place.
---- @param aggroScan    boolean                              Cached value of the MAAggroScan setting.
---- @param myLevel      number                               Cached value of Me.Level().
---- @return number|nil                                       Spawn id to target immediately, or nil to continue scanning.
-function Combat.ProcessXTarget(xtSpawn, radius, namedPref, hpPref, immediate, kill, named, aggroScan, myLevel)
+--- Evaluates a single XTarget candidate and updates primaryTarget/fallbackTarget buckets.
+--- @param xtSpawn         xtarget                              The XTarget spawn to evaluate.
+--- @param radius          number                               Max distance to consider the spawn valid.
+--- @param namedPref       {prefNamed:boolean,prefTrash:boolean} Named targeting preference flags.
+--- @param hpPref          {prefLow:boolean,prefHigh:boolean}   HP targeting preference flags.
+--- @param immediate       boolean                              If true, return the first valid spawn id without bucketing.
+--- @param primaryTarget   {hp:number,id:number,found:boolean}  Primary target bucket, mutated in place.
+--- @param fallbackTarget  {hp:number,id:number,name:string}    Named fallback bucket, mutated in place.
+--- @param aggroScan       boolean                              Cached value of the MAAggroScan setting.
+--- @param myLevel         number                               Cached value of Me.Level().
+--- @return number|nil                                          Spawn id to target immediately, or nil to continue scanning.
+function Combat.ProcessXTarget(xtSpawn, radius, namedPref, hpPref, immediate, primaryTarget, fallbackTarget, aggroScan, myLevel)
     if not xtSpawn or not xtSpawn() then return nil end
     if not Combat.ValidMAXTarget(xtSpawn) then
         Logger.log_verbose("MATargetScan XTarget %s [%d] is not a valid target, skipping.", xtSpawn.CleanName() or "Error", xtSpawn.ID() or 0)
@@ -358,21 +359,24 @@ function Combat.ProcessXTarget(xtSpawn, radius, namedPref, hpPref, immediate, ki
     end
 
     local spawnIsNamed = Targeting.IsNamed(xtSpawn)
-    if namedPref.prefTrash and spawnIsNamed then
-        -- named mob but we prefer trash: stash as fallback in case it's the only mob left
-        Logger.log_verbose("MATargetScan \agFound a named to kill last: %s (%d)", xtName, spawnId)
-        local prevId = named.id
-        Combat.PickBestSpawn(hpPref, xtSpawn, named)
-        if immediate then named.id = spawnId end
-        if named.id ~= prevId then named.name = xtName end
-    elseif not (namedPref.prefNamed and not spawnIsNamed) then
-        -- kill bucket: prefNamed+named, prefTrash+trash, or no preference — skip prefNamed+trash
-        if immediate then -- We don't care. Choose... THIS ONE!
+    local wantThisSpawn = (not namedPref.prefNamed and not namedPref.prefTrash)
+        or (namedPref.prefNamed and spawnIsNamed)
+        or (namedPref.prefTrash and not spawnIsNamed)
+
+    if wantThisSpawn then
+        if immediate then
             Logger.log_verbose("\agMATargetScan Returning: \at%d", spawnId)
             return spawnId
         end
-        Combat.PickBestSpawn(hpPref, xtSpawn, kill)
-        kill.found = true
+        Combat.PickBestSpawn(hpPref, xtSpawn, primaryTarget)
+        primaryTarget.found = true
+    else
+        -- preferred type not available: stash as fallback in case it's the only type left
+        Logger.log_verbose("MATargetScan \agFound fallback target: %s (%d)", xtName, spawnId)
+        local prevId = fallbackTarget.id
+        Combat.PickBestSpawn(hpPref, xtSpawn, fallbackTarget)
+        if immediate then fallbackTarget.id = spawnId end
+        if fallbackTarget.id ~= prevId then fallbackTarget.name = xtName end
     end
     return nil
 end
@@ -390,31 +394,31 @@ function Combat.MATargetScan(radius, zradius)
     local hpPref         = { prefHigh = hpPriority == "Highest HP%", prefLow = hpPriority == "Lowest HP%", }
     local immediate      = not hpPref.prefLow and not hpPref.prefHigh
     local initHp         = hpPref.prefLow and 101 or 0
-    local kill           = { hp = initHp, id = Globals.AutoTargetID or 0, found = false, }
-    local named          = { hp = initHp, id = 0, name = "None", } -- fallback when preferTrash but only named remain
+    local primaryTarget  = { hp = initHp, id = Globals.AutoTargetID or 0, found = false, }
+    local fallbackTarget = { hp = initHp, id = 0, name = "None", }
     local aggroScan      = Config:GetSetting("MAAggroScan")
     local myLevel        = mq.TLO.Me.Level() or 0
     local xtCount        = mq.TLO.Me.XTarget()
 
     for i = 1, xtCount do
-        local result = Combat.ProcessXTarget(mq.TLO.Me.XTarget(i), radius, namedPref, hpPref, immediate, kill, named, aggroScan, myLevel)
+        local result = Combat.ProcessXTarget(mq.TLO.Me.XTarget(i), radius, namedPref, hpPref, immediate, primaryTarget, fallbackTarget, aggroScan, myLevel)
         if result then return result end
     end
 
-    if not kill.found then
-        if named.id > 0 then
-            Logger.log_verbose("MATargetScan \ag%s is named, but we only have named left! -- returning %d", named.name, named.id)
-            kill.id = named.id
+    if not primaryTarget.found then
+        if fallbackTarget.id > 0 then
+            Logger.log_verbose("MATargetScan \agNo primary targets found, falling back to: %s -- returning %d", fallbackTarget.name, fallbackTarget.id)
+            primaryTarget.id = fallbackTarget.id
         elseif Config:GetSetting('AreaScanFallback') then
             -- We didn't find anything to kill yet so spawn search
             Logger.log_verbose("MATargetScan Falling back on Spawn Searching")
-            Combat.FallbackScan(aggroSearch, true, radius, namedPref, kill)
-            Combat.FallbackScan(aggroSearchPet, false, radius, namedPref, kill)
+            Combat.FallbackScan(aggroSearch, true, radius, namedPref, hpPref, primaryTarget)
+            Combat.FallbackScan(aggroSearchPet, false, radius, namedPref, hpPref, primaryTarget)
         end
     end
 
-    Logger.log_verbose("\agMATargetScan Returning: \at%d", kill.id)
-    return kill.id
+    Logger.log_verbose("\agMATargetScan Returning: \at%d", primaryTarget.id)
+    return primaryTarget.id
 end
 
 --- Scans XTargets for a mob that doesn't have full aggro on us and sets Globals.AggroTargetID.
