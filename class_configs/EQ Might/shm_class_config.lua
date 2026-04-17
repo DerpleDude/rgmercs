@@ -440,7 +440,9 @@ local _ClassConfig = {
         ProcBuffChoice = function()
             local buffSpell = Core.GetResolvedActionMapItem('MeleeProcBuff')
             local buffLevel = buffSpell and buffSpell.Level() or 0
-            if mq.TLO.FindItem("=Artifact of the Leopard")() and mq.TLO.Me.Level() >= 65 and buffLevel < 70 then
+            if mq.TLO.FindItem("=Legendary Armband of the Panther")() and mq.TLO.Me.Level() >= 68 and buffLevel < 70 then
+                return "PantherItem"
+            elseif mq.TLO.FindItem("=Artifact of the Leopard")() and mq.TLO.Me.Level() >= 65 and buffLevel < 70 then
                 return "LeopardItem"
             elseif mq.TLO.FindItem("=Artifact of the Jaguar")() and mq.TLO.Me.Level() >= 52 and buffLevel < 55 then
                 return "JaguarItem"
@@ -696,6 +698,15 @@ local _ClassConfig = {
     },
     ['Rotations']         = {
         ['MeleeProcBuff'] = {
+            {
+                name = "Legendary Armband of the Panther",
+                type = "Item",
+                load_cond = function(self) return self.ClassConfig.HelperFunctions.ProcBuffChoice() == "PantherItem" end,
+                cond = function(self, itemName, target)
+                    if (mq.TLO.Me.CombatState():lower() or "") ~= "combat" then return false end
+                    return Casting.GroupBuffItemCheck(itemName, target) and Casting.AddedBuffCheck(9975, target) --Panther Rk. II
+                end,
+            },
             {
                 name = "Artifact of the Leopard",
                 type = "Item",

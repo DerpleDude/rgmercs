@@ -1940,8 +1940,8 @@ function Module:GiveTime()
             if item and item.Clicky then
                 if not moving or (item.Clicky.CastTime() or -1) == 0 then
                     if clicky.combat_state == "Any" or clicky.combat_state == combat_state then
-                        local target = mq.TLO.Me
-                        local peerData = nil
+                        local condTarget = nil
+                        local condPeer = nil
                         local allConditionsMet = true
                         -- store this by index incase the same name appears twice.
                         self.TempSettings.ConditionsCache[clickyIdx] = {}
@@ -1949,27 +1949,25 @@ function Module:GiveTime()
                             local condBlock = self:GetLogicBlockByType(cond.type)
                             if condBlock then
                                 if condBlock.cond_targets then
-                                    if cond.target == "Main Assist" then
-                                        ---@diagnostic disable-next-line: cast-local-type
-                                        target = Core.GetMainAssistSpawn()
+                                    if cond.target == "Self" then
+                                        condTarget = mq.TLO.Me
+                                    elseif cond.target == "Main Assist" then
+                                        condTarget = Core.GetMainAssistSpawn()
                                     elseif cond.target == "Pet" then
-                                        ---@diagnostic disable-next-line: cast-local-type
-                                        target = mq.TLO.Me.Pet
+                                        condTarget = mq.TLO.Me.Pet
                                     elseif cond.target == "Auto Target" then
-                                        ---@diagnostic disable-next-line: cast-local-type
-                                        target = Targeting.GetAutoTarget()
+                                        condTarget = Targeting.GetAutoTarget()
                                     elseif cond.target == "Mercs Peer" then
-                                        ---@diagnostic disable-next-line: cast-local-type
-                                        target = nil
-                                        peerData = Comms.GetPeerHeartbeatByName(clicky.mercs_peer_name or "")
+                                        condTarget = nil
+                                        condPeer = Comms.GetPeerHeartbeatByName(clicky.mercs_peer_name or "")
                                     end
                                 end
                                 Logger.log_super_verbose("\ayClicky: \awTesting Condition: \at%s\aw on target: \at%s (%s)", cond.type,
-                                    target and (target.CleanName() or "None") or "None",
+                                    condTarget and (condTarget.CleanName() or "None") or "None",
                                     cond.target or "Self")
 
                                 ---@diagnostic disable-next-line: deprecated --LuaJIT is based off of 5.1
-                                if not Core.SafeCallFunc("Test clicky Condition", self:GetLogicBlockByType(cond.type).cond, self, target, peerData and peerData.Data, unpack(cond.args or {})) then
+                                if not Core.SafeCallFunc("Test clicky Condition", self:GetLogicBlockByType(cond.type).cond, self, condTarget, condPeer and condPeer.Data, unpack(cond.args or {})) then
                                     Logger.log_super_verbose("\ayClicky: \aw\t|->\aw \arFailed!")
                                     allConditionsMet = false
                                     table.insert(self.TempSettings.ConditionsCache[clickyIdx], false)
@@ -1982,52 +1980,50 @@ function Module:GiveTime()
                         end
 
                         if allConditionsMet then
-                            target = mq.TLO.Me
+                            local target = nil
                             local buffCheckPassed = true
                             local targetId = nil
-                            local peerData = nil
+                            local targetPeer = nil
 
                             if clicky.target == "Self" then
                                 target = mq.TLO.Me
                                 buffCheckPassed = Casting.SelfBuffItemCheck(clicky.itemName)
                             elseif clicky.target == "Pet" then
-                                ---@diagnostic disable-next-line: cast-local-type
                                 target = mq.TLO.Me.Pet
-                                buffCheckPassed = mq.TLO.Me.Pet.ID() > 0 and Casting.PetBuffItemCheck(clicky.itemName)
+                                buffCheckPassed = target and Casting.PetBuffItemCheck(clicky.itemName)
                             elseif clicky.target == "Main Assist" then
-                                ---@diagnostic disable-next-line: cast-local-type
                                 target = Core.GetMainAssistSpawn()
-                                buffCheckPassed = Casting.GroupBuffItemCheck(clicky.itemName, target)
+                                buffCheckPassed = target and Casting.GroupBuffItemCheck(clicky.itemName, target)
                             elseif clicky.target == "Auto Target" then
-                                ---@diagnostic disable-next-line: cast-local-type
                                 target = Targeting.GetAutoTarget()
-                                buffCheckPassed = Casting.DetItemCheck(clicky.itemName)
+                                buffCheckPassed = target and Casting.DetItemCheck(clicky.itemName, target)
                             elseif clicky.target == "Mercs Peer" then
-                                ---@diagnostic disable-next-line: cast-local-type
-                                peerData = Comms.GetPeerHeartbeatByName(clicky.mercs_peer_name or "")
+                                targetPeer = Comms.GetPeerHeartbeatByName(clicky.mercs_peer_name or "")
                                 Logger.log_verbose("\ayClicky: \awChecking Mercs Peer Target: \am%s\aw found: %s", clicky.mercs_peer_name or "",
-                                    Strings.BoolToColorString(peerData and peerData.Data and peerData.Data.ID ~= nil))
-                                buffCheckPassed = peerData and peerData.Data and peerData.Data.ID ~= nil and
-                                    Casting.ActorBuffCheck(item.Clicky.Spell.RankName.ID(), mq.TLO.Spawn(peerData.Data.ID))
+                                    Strings.BoolToColorString(targetPeer and targetPeer.Data and targetPeer.Data.ID ~= nil))
+                                if targetPeer and targetPeer.Data and targetPeer.Data.ID ~= nil then
+                                    target = mq.TLO.Spawn(targetPeer.Data.ID)
+                                    buffCheckPassed = target and Casting.ActorBuffCheck(item.Clicky.Spell.RankName.ID(), target)
+                                end
                             end
 
                             if not clicky.no_target_change then
-                                targetId = target.ID()
-                                if peerData and peerData.Data and peerData.Data.ID then
-                                    targetId = peerData.Data.ID
-                                end
+                                targetId = target and target.ID()
                             end
 
                             -- distance check
                             local distanceCheckPassed = true
-                            if target.ID() ~= mq.TLO.Target.ID() and (itemSpell.MyRange() or 0) > 0 then
-                                if target and target() and target.Distance() > (itemSpell.MyRange() or 100) then
+                            if targetId and targetId ~= mq.TLO.Me.ID() then
+                                local spellRange = itemSpell.MyRange() > 0 and itemSpell.MyRange() or (itemSpell.AERange() > 0 and itemSpell.AERange() or 200)
+                                if Targeting.GetTargetDistance(target) > spellRange then
                                     Logger.log_debug("\ayClicky: \arTried to use item on targetId %s they are too far away!!", target and target.DisplayName() or "None")
                                     distanceCheckPassed = false
                                 end
                             end
 
-                            if buffCheckPassed and distanceCheckPassed and Casting.ItemReady(item()) then
+                            local readyCheckPassed = Casting.ItemReady(item())
+
+                            if buffCheckPassed and distanceCheckPassed and readyCheckPassed then
                                 Logger.log_verbose("\ayClicky: \awItem \am%s\aw Clicky Spell: \at%s\ag!", item.Name(), item.Clicky.Spell.RankName.Name())
                                 Casting.UseItem(item.Name(), targetId)
                                 clickiesUsedThisFrame = clickiesUsedThisFrame + 1
@@ -2039,18 +2035,14 @@ function Module:GiveTime()
                                 self.TempSettings.ClickyState[clicky.itemName].lastUsed = Globals.GetTimeSeconds()
                                 break --ensure we stop after we process a single clicky to allow rotations to continue
                             else
-                                if not buffCheckPassed then
-                                    Logger.log_verbose("\ayClicky: \awItem \am%s\aw Clicky Spell: \at%s\ar already active or would not stack!", item.Name(),
-                                        item.Clicky.Spell.RankName.Name())
-                                else
-                                    Logger.log_verbose("\ayClicky: \awItem \am%s\aw Clicky: \at%s\ar Buff check failed, not using!", item.Name(), item.Clicky.Spell.RankName.Name())
-                                end
+                                Logger.log_verbose("\ayClicky: \awItem \am%s\aw Clicky: \at%s\ar checks failed, not using!\aw BuffCheck(%s), DistanceCheck(%s), ItemReady(%s)",
+                                    item.Name(), item.Clicky.Spell.RankName.Name(), Strings.BoolToColorString(buffCheckPassed), Strings.BoolToColorString(distanceCheckPassed),
+                                    Strings.BoolToColorString(readyCheckPassed))
                             end
                         end
                     else
                         Logger.log_super_verbose("\ayClicky: \arSkipping clicky entry: \am%s\ar due to Combat State mismatch (Clicky State: \at%s \arCurrent State: \at%s\ar)",
-                            clicky.itemName,
-                            clicky.combat_state, combat_state)
+                            clicky.itemName, clicky.combat_state, combat_state)
                     end
                 else
                     Logger.log_super_verbose("\ayClicky: \arSkipping clicky entry: \am%s\ar due to movement.", clicky.itemName)

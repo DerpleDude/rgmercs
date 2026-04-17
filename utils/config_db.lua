@@ -751,6 +751,7 @@ function DB:flushQueue()
     if #self._writeQueue == 0 then return end
     local remaining = {}
     for _, entry in ipairs(self._writeQueue) do
+        ---@diagnostic disable-next-line: deprecated --LuaJIT 5.1 used for mq2lua
         if not self[entry.method](self, unpack(entry.args)) then
             table.insert(remaining, entry)
         end
