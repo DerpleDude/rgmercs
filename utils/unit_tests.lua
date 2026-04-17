@@ -49,7 +49,8 @@ function UnitTests.RunAll()
     Targeting.IsNamed = function(spawn) return spawn and spawn._isNamed or false end
 
     local noHpPref    = { prefLow = false, prefHigh = false, }
-    local lowHpPref   = { prefLow = true, prefHigh = false, }
+    local lowHpPref   = { prefLow = true,  prefHigh = false, }
+    local highHpPref  = { prefLow = false, prefHigh = true,  }
     local prefNamed   = { prefNamed = true, prefTrash = false, }
     local prefTrash   = { prefNamed = false, prefTrash = true, }
     local noNamePref  = { prefNamed = false, prefTrash = false, }
@@ -163,6 +164,18 @@ function UnitTests.RunAll()
         assertEq("ProcessXTarget prefTrash+named+prefLow: first named", named.id, 3)
         Combat.ProcessXTarget(spawnD, 100, prefTrash, lowHpPref, false, kill, named, false, 0)
         assertEq("ProcessXTarget prefTrash+named+prefLow: lower hp named wins", named.id, 4)
+    end
+
+    -- ProcessXTarget: prefTrash, named spawn, prefHigh => named bucket picks highest (regression: kill.found)
+    do
+        local spawnD = mockSpawn(4, "Named2", 30, true)
+        local kill   = { hp = 0, id = 0, found = false, }
+        local named  = { hp = 0, id = 0, name = "None", }
+        Combat.ProcessXTarget(spawnC, 100, prefTrash, highHpPref, false, kill, named, false, 0)
+        assertEq("ProcessXTarget prefTrash+named+prefHigh: first named", named.id, 3)
+        Combat.ProcessXTarget(spawnD, 100, prefTrash, highHpPref, false, kill, named, false, 0)
+        assertEq("ProcessXTarget prefTrash+named+prefHigh: higher hp named wins", named.id, 3) -- spawnC(60%) beats spawnD(30%)
+        assertEq("ProcessXTarget prefTrash+named+prefHigh: kill not marked found", kill.found, false)
     end
 
     Targeting.IsNamed = origIsNamed

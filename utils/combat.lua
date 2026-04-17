@@ -305,7 +305,7 @@ end
 --- @param checkNamed boolean                              If true, named spawns matching prefNamed are skipped.
 --- @param radius     number                               Max distance to consider a spawn valid.
 --- @param namedPref  {prefNamed:boolean,prefTrash:boolean} Named targeting preference flags.
---- @param kill       {hp:number,id:number}                Kill bucket, mutated in place.
+--- @param kill       {hp:number,id:number,found:boolean}  Kill bucket, mutated in place.
 function Combat.FallbackScan(search, checkNamed, radius, namedPref, kill)
     local count = mq.TLO.SpawnCount(search)()
     Logger.log_verbose("MATargetScan FallbackScan: %s ===> %d", search, count)
@@ -320,7 +320,7 @@ end
 --- @param namedPref    {prefNamed:boolean,prefTrash:boolean} Named targeting preference flags.
 --- @param hpPref       {prefLow:boolean,prefHigh:boolean}   HP targeting preference flags.
 --- @param immediate    boolean                              If true, return the first valid spawn id without bucketing.
---- @param kill         {hp:number,id:number}                Kill bucket, mutated in place.
+--- @param kill         {hp:number,id:number,found:boolean}  Kill bucket, mutated in place.
 --- @param named        {hp:number,id:number,name:string}    Named fallback bucket, mutated in place.
 --- @param aggroScan    boolean                              Cached value of the MAAggroScan setting.
 --- @param myLevel      number                               Cached value of Me.Level().
@@ -372,6 +372,7 @@ function Combat.ProcessXTarget(xtSpawn, radius, namedPref, hpPref, immediate, ki
             return spawnId
         end
         Combat.PickBestSpawn(hpPref, xtSpawn, kill)
+        kill.found = true
     end
     return nil
 end
@@ -389,7 +390,7 @@ function Combat.MATargetScan(radius, zradius)
     local hpPref         = { prefHigh = hpPriority == "Highest HP%", prefLow = hpPriority == "Lowest HP%", }
     local immediate      = not hpPref.prefLow and not hpPref.prefHigh
     local initHp         = hpPref.prefLow and 101 or 0
-    local kill           = { hp = initHp, id = Globals.AutoTargetID or 0, }
+    local kill           = { hp = initHp, id = Globals.AutoTargetID or 0, found = false, }
     local named          = { hp = initHp, id = 0, name = "None", } -- fallback when preferTrash but only named remain
     local aggroScan      = Config:GetSetting("MAAggroScan")
     local myLevel        = mq.TLO.Me.Level() or 0
@@ -400,7 +401,7 @@ function Combat.MATargetScan(radius, zradius)
         if result then return result end
     end
 
-    if kill.id == 0 then
+    if not kill.found then
         if named.id > 0 then
             Logger.log_verbose("MATargetScan \ag%s is named, but we only have named left! -- returning %d", named.name, named.id)
             kill.id = named.id
