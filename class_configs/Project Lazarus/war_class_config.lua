@@ -10,16 +10,16 @@ local Set          = require('mq.set')
 local Combat       = require("utils.combat")
 
 local _ClassConfig = {
-    _version            = "3.0 - Project Lazarus",
-    _author             = "Algar, Derple",
-    ['ModeChecks']      = {
+    _version          = "3.0 - Project Lazarus",
+    _author           = "Algar, Derple",
+    ['ModeChecks']    = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
     },
-    ['Modes']           = {
+    ['Modes']         = {
         'Tank',
         'DPS',
     },
-    ['ItemSets']        = {
+    ['ItemSets']      = {
         ['Epic'] = {
             "Kreljnok's Sword of Eternal Power",
             "Champion's Sword of Eternal Power",
@@ -32,7 +32,7 @@ local _ClassConfig = {
             "Blood Drinker's Coating",
         },
     },
-    ['AbilitySets']     = {
+    ['AbilitySets']   = {
         ['StandDisc'] = {           -- Timer 2
             "Stonewall Discipline", -- no lost movement on laz, more mitigation than defensive
             "Defensive Discipline",
@@ -91,7 +91,7 @@ local _ClassConfig = {
             "Shocking Defense Discipline",
         },
     },
-    ['HelperFunctions'] = {
+    ['Helpers']       = {
         --function to make sure we don't have non-hostiles in range before we use AE damage or non-taunt AE hate abilities
 
         --function to determine if we have enough mobs in range to use a defensive disc
@@ -131,7 +131,7 @@ local _ClassConfig = {
             return true
         end,
     },
-    ['RotationOrder']   = {
+    ['RotationOrder'] = {
         { --Self Buffs
             name = 'Downtime',
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
@@ -209,7 +209,7 @@ local _ClassConfig = {
                     -- we are under our defense start HP
                     (mq.TLO.Me.PctHPs() <= Config:GetSetting('DefenseStart') or
                         -- we have met our defense count threshold
-                        self.ClassConfig.HelperFunctions.DefensiveDiscCheck(true) or
+                        self.Helpers.DefensiveDiscCheck(true) or
                         -- we are fighting a named and we are (presumably) tanking it
                         (Globals.AutoTargetIsNamed and Targeting.GetAutoTargetAggroPct() >= 100))
             end,
@@ -235,7 +235,7 @@ local _ClassConfig = {
             end,
         },
     },
-    ['Rotations']       = {
+    ['Rotations']     = {
         ['Downtime'] = {
             {
                 name = "AuraBuff",
@@ -420,21 +420,21 @@ local _ClassConfig = {
                 name = "StandDisc",
                 type = "Disc",
                 cond = function(self, discSpell)
-                    return self.ClassConfig.HelperFunctions.DefenseBuffCheck(self)
+                    return self.Helpers.DefenseBuffCheck(self)
                 end,
             },
             { --shares effect with StandDisc and Warlord's Bravery
                 name = "OoW_Chest",
                 type = "Item",
                 cond = function(self, itemName)
-                    return self.ClassConfig.HelperFunctions.DefenseBuffCheck(self)
+                    return self.Helpers.DefenseBuffCheck(self)
                 end,
             },
             { --shares effect with StandDisc and OoW_Chest
                 name = "Warlord's Bravery",
                 type = "AA",
                 cond = function(self, aaName)
-                    return self.ClassConfig.HelperFunctions.DefenseBuffCheck(self)
+                    return self.Helpers.DefenseBuffCheck(self)
                 end,
             },
             {
@@ -464,14 +464,14 @@ local _ClassConfig = {
                 name = "Onslaught",
                 type = "Disc",
                 cond = function(self, discSpell)
-                    return not Core.IsTanking() and self.ClassConfig.HelperFunctions.BurnDiscCheck(self)
+                    return not Core.IsTanking() and self.Helpers.BurnDiscCheck(self)
                 end,
             },
             {
                 name = "StrikeDisc",
                 type = "Disc",
                 cond = function(self, discSpell)
-                    return not Core.IsTanking() and self.ClassConfig.HelperFunctions.BurnDiscCheck(self)
+                    return not Core.IsTanking() and self.Helpers.BurnDiscCheck(self)
                 end,
             },
             {
@@ -597,7 +597,7 @@ local _ClassConfig = {
             },
         },
     },
-    ['DefaultConfig']   = {
+    ['DefaultConfig'] = {
         ['Mode']            = {
             DisplayName = "Mode",
             Category = "Combat",
@@ -789,7 +789,7 @@ local _ClassConfig = {
             Answer = "The Shield on Named option doesn't check levels, so feel free to disable this setting (or Bandolier swapping entirely) if you are farming fodder.",
         },
     },
-    ['ClassFAQ']        = {
+    ['ClassFAQ']      = {
         {
             Question = "What is the current status of this class config?",
             Answer = "This class config is a current release customized specifically for Project Lazarus server.\n\n" ..

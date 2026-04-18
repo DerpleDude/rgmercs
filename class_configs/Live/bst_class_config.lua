@@ -767,7 +767,7 @@ return {
             end,
         },
     },
-    ['HelperFunctions']   = {
+    ['Helpers']           = {
         FlurryActive = function(self)
             local fury = self.ResolvedActionMap['FuryDisc']
             local dicho = self.ResolvedActionMap['DichoSpell']
@@ -788,7 +788,7 @@ return {
                 name = "Group Bestial Alignment",
                 type = "AA",
                 cond = function(self, aaName)
-                    return not self.ClassConfig.HelperFunctions.DmgModActive(self)
+                    return not self.Helpers.DmgModActive(self)
                 end,
             },
             {
@@ -841,7 +841,7 @@ return {
                 name = "FuryDisc",
                 type = "Disc",
                 cond = function(self, discSpell, target)
-                    return not self.ClassConfig.HelperFunctions.FlurryActive(self)
+                    return not self.Helpers.FlurryActive(self)
                 end,
             },
             {
@@ -850,35 +850,35 @@ return {
                 load_cond = function(self) return Core.GetResolvedActionMapItem('DichoSpell') end,
                 cond = function(self, aaName)
                     local dichoSpell = Core.GetResolvedActionMapItem('DichoSpell')
-                    return not self.ClassConfig.HelperFunctions.FlurryActive(self) and (mq.TLO.Me.GemTimer(dichoSpell.RankName())() or -1) > 15
+                    return not self.Helpers.FlurryActive(self) and (mq.TLO.Me.GemTimer(dichoSpell.RankName())() or -1) > 15
                 end,
             },
             {
                 name = "DmgModDisc",
                 type = "Disc",
                 cond = function(self, discSpell)
-                    return not self.ClassConfig.HelperFunctions.DmgModActive(self)
+                    return not self.Helpers.DmgModActive(self)
                 end,
             },
             {
                 name = "Ferociousness",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    return not self.ClassConfig.HelperFunctions.DmgModActive(self)
+                    return not self.Helpers.DmgModActive(self)
                 end,
             },
             {
                 name = "Bestial Alignment",
                 type = "AA",
                 cond = function(self, aaName)
-                    return not self.ClassConfig.HelperFunctions.DmgModActive(self)
+                    return not self.Helpers.DmgModActive(self)
                 end,
             },
             {
                 name = "OoW_Chest",
                 type = "Item",
                 cond = function(self, itemName)
-                    return not self.ClassConfig.HelperFunctions.DmgModActive(self)
+                    return not self.Helpers.DmgModActive(self)
                 end,
             },
             {
@@ -984,7 +984,7 @@ return {
                 name = "DichoSpell",
                 type = "Spell",
                 cond = function(self, spell)
-                    return not self.ClassConfig.HelperFunctions.FlurryActive(self)
+                    return not self.Helpers.FlurryActive(self)
                 end,
             },
             {

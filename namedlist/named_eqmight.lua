@@ -566,7 +566,8 @@ return {
         "The Fabled Malerian Metamo",
         "The Fabled Rallius Rattican",
         "The Fabled Sengian Fly",
-        "The Fabled Skal`s Waking Nightmare", },
+        "The Fabled Skals Waking Nightmare",
+    },
 
     ["poeartha"] = {
         "An Earthen Undercon",

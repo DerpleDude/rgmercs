@@ -362,7 +362,7 @@ return {
             },
         },
     },
-    ['HelperFunctions']   = {
+    ['Helpers']           = {
         DoRez = function(self, corpseId)
             local rezAction = false
             local rezSpell = Core.GetResolvedActionMapItem('RezSpell')
@@ -635,7 +635,7 @@ return {
                     -- we are under our defense start HP
                     (mq.TLO.Me.PctHPs() <= Config:GetSetting('DefenseStart') or
                         -- we have met our defense count threshold
-                        self.ClassConfig.HelperFunctions.DefensiveDiscCheck(true) or
+                        self.Helpers.DefensiveDiscCheck(true) or
                         -- we are fighting a named and we are (presumably) tanking it
                         (Globals.AutoTargetIsNamed and Targeting.GetAutoTargetAggroPct() >= 100))
             end,
@@ -804,10 +804,7 @@ return {
                 name = "SancDisc",
                 type = "Disc",
                 cond = function(self, discSpell)
-                    local blockReady = mq.TLO.Me.CombatAbilityReady(Core.GetResolvedActionMapItem('BlockDisc') or "")()
-                    local guardReady = mq.TLO.Me.CombatAbilityReady(Core.GetResolvedActionMapItem('GuardDisc') or "")()
-                    local protReady = mq.TLO.Me.CombatAbilityReady(Core.GetResolvedActionMapItem('Protective') or "")()
-                    return Casting.NoDiscActive() and not blockReady and not guardReady and not protReady
+                    return Casting.NoDiscActive() and Casting.DiscOnCoolDown('BlockDisc') and Casting.DiscOnCoolDown('GuardDisc') and Casting.DiscOnCoolDown('Protective')
                 end,
             },
         },
@@ -960,8 +957,7 @@ return {
                 type = "Disc",
                 load_cond = function(self) return Core.IsTanking() end,
                 cond = function(self, discSpell, target)
-                    local protReady = mq.TLO.Me.CombatAbilityReady(Core.GetResolvedActionMapItem('Protective') or "")()
-                    return Casting.NoDiscActive() and not protReady
+                    return Casting.NoDiscActive() and Casting.DiscOnCoolDown('Protective')
                 end,
             },
             {

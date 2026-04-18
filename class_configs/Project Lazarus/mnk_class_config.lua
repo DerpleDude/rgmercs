@@ -8,12 +8,12 @@ local Core         = require("utils.core")
 local Combat       = require("utils.combat")
 
 local _ClassConfig = {
-    _version            = "2.1 - Project Lazarus",
-    _author             = "Algar, Derple",
-    ['Modes']           = {
+    _version          = "2.1 - Project Lazarus",
+    _author           = "Algar, Derple",
+    ['Modes']         = {
         'DPS',
     },
-    ['ItemSets']        = {
+    ['ItemSets']      = {
         ['Epic'] = {
             "Transcended Fistwraps of Immortality",
             "Fistwraps of Celestial Discipline",
@@ -24,7 +24,7 @@ local _ClassConfig = {
             "Stillmind Tunic",
         },
     },
-    ['AbilitySets']     = {
+    ['AbilitySets']   = {
         ['EndRegen'] = {
             "Third Wind Discipline",
             --"Second Wind",
@@ -70,11 +70,11 @@ local _ClassConfig = {
         --     "Resistant Discipline",
         -- },
     },
-    ['HelperFunctions'] = {
+    ['Helpers']       = {
         --function to make sure we don't have non-hostiles in range before we use AE damage
 
     },
-    ['RotationOrder']   = {
+    ['RotationOrder'] = {
         {
             name = 'Downtime',
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
@@ -131,7 +131,7 @@ local _ClassConfig = {
             end,
         },
     },
-    ['Rotations']       = {
+    ['Rotations']     = {
         ['Downtime'] = {
             {
                 name = "MonkAura",
@@ -313,7 +313,7 @@ local _ClassConfig = {
             },
         },
     },
-    ['PullAbilities']   = {
+    ['PullAbilities'] = {
         {
             id = 'Grappling Strike',
             Type = "AA",
@@ -325,7 +325,7 @@ local _ClassConfig = {
             end,
         },
     },
-    ['DefaultConfig']   = {
+    ['DefaultConfig'] = {
         ['Mode']            = {
             DisplayName = "Mode",
             Category = "Combat",
@@ -392,7 +392,7 @@ local _ClassConfig = {
             RequiresLoadoutChange = true,
         },
     },
-    ['ClassFAQ']        = {
+    ['ClassFAQ']      = {
         {
             Question = "What is the current status of this class config?",
             Answer = "This class config is a current release customized specifically for Project Lazarus server.\n\n" ..

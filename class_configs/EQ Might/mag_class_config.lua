@@ -10,16 +10,16 @@ local Logger    = require("utils.logger")
 local Combat    = require("utils.combat")
 
 _ClassConfig    = {
-    _version            = "1.3 - EQ Might",
-    _author             = "Derple, Morisato, Algar",
-    ['ModeChecks']      = {
+    _version          = "1.3 - EQ Might",
+    _author           = "Derple, Morisato, Algar",
+    ['ModeChecks']    = {
         IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
     },
-    ['Modes']           = {
+    ['Modes']         = {
         'DPS',
         'PBAE',
     },
-    ['ItemSets']        = {
+    ['ItemSets']      = {
         ['RezStaff'] = {
             "Legendary Fabled Staff of Forbidden Rites",
             "Fabled Staff of Forbidden Rites",
@@ -34,7 +34,7 @@ _ClassConfig    = {
             "Runemaster's Robe",
         },
     },
-    ['AbilitySets']     = {
+    ['AbilitySets']   = {
         --- Nukes
         ['SwarmPet'] = {
             "Raging Servant",
@@ -281,8 +281,8 @@ _ClassConfig    = {
             "Summon Orb",
         },
     },
-    ['RotationOrder']   = { -- TODO: Add emergency rotation, shared health, etc
-        {                   --Summon pet even when buffs are off on emu
+    ['RotationOrder'] = { -- TODO: Add emergency rotation, shared health, etc
+        {                 --Summon pet even when buffs are off on emu
             name = 'PetSummon',
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
@@ -416,7 +416,7 @@ _ClassConfig    = {
         },
     },
     -- Really the meat of this class.
-    ['HelperFunctions'] = {
+    ['Helpers']       = {
         DoRez = function(self, corpseId)
             local rezStaff = self.ResolvedActionMap['RezStaff']
             if mq.TLO.Me.ItemReady(rezStaff)() then
@@ -475,7 +475,7 @@ _ClassConfig    = {
 
             -- Low Level Check - In 2 cases You're too lowlevel to Know Suspend companion and have no pet or You've Turned off Usepocket pet.
             if mq.TLO.Me.Pet.ID() == 0 and (not Casting.CanUseAA("Suspended Minion") or not Config:GetSetting('DoPocketPet')) then
-                if not self.ClassConfig.HelperFunctions.summon_pet(self) then
+                if not self.Helpers.summon_pet(self) then
                     Logger.log_debug("\arPetManagement - Case 0 -> Summon Failed")
                     return false
                 end
@@ -492,7 +492,7 @@ _ClassConfig    = {
                 -- Case 1 - No pocket pet and no pet up
                 if not self.TempSettings.PocketPet and mq.TLO.Me.Pet.ID() == 0 and Targeting.GetXTHaterCount() == 0 then
                     Logger.log_debug("\ayPetManagement - Case 1 no Pocket Pet and no Pet")
-                    if not self.ClassConfig.HelperFunctions.summon_pet(self) then
+                    if not self.Helpers.summon_pet(self) then
                         Logger.log_debug("\arPetManagement - Case 1 -> Summon Failed")
                         return false
                     end
@@ -514,7 +514,7 @@ _ClassConfig    = {
                 Logger.log_debug("\ayPetManagement - Case 2 no Pocket Pet But Pet is up - pocketing")
                 Casting.UseAA("Suspended Minion", mq.TLO.Me.ID(), true)
                 if (mq.TLO.Me.Pet.ID() or 0) == 0 then
-                    if not self.ClassConfig.HelperFunctions.summon_pet(self) then
+                    if not self.Helpers.summon_pet(self) then
                         Logger.log_debug("\arPetManagement - Case 2 -> Summon Failed")
                         return false
                     end
@@ -527,7 +527,7 @@ _ClassConfig    = {
             -- Case 3 - Pocket Pet and no pet up
             if self.TempSettings.PocketPet and (mq.TLO.Me.Pet.ID() or 0) == 0 and Targeting.GetXTHaterCount() == 0 then
                 Logger.log_debug("\ayPetManagement - Case 3 Pocket Pet But No Pet is up")
-                if not self.ClassConfig.HelperFunctions.summon_pet(self) then
+                if not self.Helpers.summon_pet(self) then
                     Logger.log_debug("\arPetManagement - Case 3 -> Summon Failed")
                     return false
                 end
@@ -565,7 +565,7 @@ _ClassConfig    = {
             end
         end,
     },
-    ['Rotations']       = {
+    ['Rotations']     = {
         ['PetSummon'] = {
             {
                 name = "Artifact of Asterion",
@@ -603,7 +603,7 @@ _ClassConfig    = {
                     if success and mq.TLO.Me.Pet.ID() > 0 then
                         mq.delay(50)
                         self:SetPetHold()
-                        self.ClassConfig.HelperFunctions.DeleteEpicOrb(self)
+                        self.Helpers.DeleteEpicOrb(self)
                     end
                 end,
             },
@@ -621,7 +621,7 @@ _ClassConfig    = {
                     if self.TempSettings.PocketPet == nil then self.TempSettings.PocketPet = false end
                     return mq.TLO.Me.Pet.ID() == 0 and Config:GetSetting('DoPet')
                 end,
-                custom_func = function(self) return self.ClassConfig.HelperFunctions.summon_pet(self) end,
+                custom_func = function(self) return self.Helpers.summon_pet(self) end,
                 post_activate = function(self, _, success)
                     if success and mq.TLO.Me.Pet.ID() > 0 then
                         mq.delay(50) -- slight delay to prevent chat bug with command issue
@@ -639,7 +639,7 @@ _ClassConfig    = {
                     if self.TempSettings.PocketPet == nil then self.TempSettings.PocketPet = false end
                     return not self.TempSettings.PocketPet and Config:GetSetting('DoPocketPet')
                 end,
-                custom_func = function(self) return self.ClassConfig.HelperFunctions.pet_management(self) end,
+                custom_func = function(self) return self.Helpers.pet_management(self) end,
             },
         },
         ['PetHealing'] = {
@@ -960,7 +960,7 @@ _ClassConfig    = {
                 end,
                 post_activate = function(self, spell, success)
                     if success then
-                        Core.SafeCallFunc("Autoinventory", self.ClassConfig.HelperFunctions.HandleItemSummon, self, spell, "personal")
+                        Core.SafeCallFunc("Autoinventory", self.Helpers.HandleItemSummon, self, spell, "personal")
                     end
                 end,
             },
@@ -971,7 +971,7 @@ _ClassConfig    = {
                 cond = function(self)
                     return mq.TLO.FindItem("28034")() and (mq.TLO.FindItem("28034").Charges() or 999) == 0
                 end,
-                custom_func = function(self) return self.ClassConfig.HelperFunctions.DeleteEpicOrb(self) end,
+                custom_func = function(self) return self.Helpers.DeleteEpicOrb(self) end,
             },
             {
                 name = "FireOrbSummon",
@@ -981,7 +981,7 @@ _ClassConfig    = {
                 end,
                 post_activate = function(self, spell, success)
                     if success then
-                        Core.SafeCallFunc("Autoinventory", self.ClassConfig.HelperFunctions.HandleItemSummon, self, spell, "group")
+                        Core.SafeCallFunc("Autoinventory", self.Helpers.HandleItemSummon, self, spell, "group")
                     end
                 end,
             },
@@ -1008,7 +1008,7 @@ _ClassConfig    = {
                 end,
                 post_activate = function(self, aaName, success)
                     if success then
-                        Core.SafeCallFunc("Autoinventory", self.ClassConfig.HelperFunctions.HandleItemSummon, self, aaName, "group")
+                        Core.SafeCallFunc("Autoinventory", self.Helpers.HandleItemSummon, self, aaName, "group")
                     end
                 end,
             },
@@ -1024,13 +1024,13 @@ _ClassConfig    = {
                 end,
                 post_activate = function(self, spell, success)
                     if success then
-                        Core.SafeCallFunc("Autoinventory", self.ClassConfig.HelperFunctions.HandleItemSummon, self, spell, "group")
+                        Core.SafeCallFunc("Autoinventory", self.Helpers.HandleItemSummon, self, spell, "group")
                     end
                 end,
             },
         },
     },
-    ['SpellList']       = {
+    ['SpellList']     = {
         {
             name = "Default", --This name is abitrary, it is simply what shows up in the UI when this spell list is loaded.
             spells = {        -- Spells will be loaded in order (if the conditions are met), until all gem slots are full.
@@ -1052,7 +1052,7 @@ _ClassConfig    = {
             },
         },
     },
-    ['DefaultConfig']   = {
+    ['DefaultConfig'] = {
         ['Mode']           = {
             DisplayName = "Mode",
             Category = "Combat",
@@ -1295,7 +1295,7 @@ _ClassConfig    = {
         },
 
     },
-    ['ClassFAQ']        = {
+    ['ClassFAQ']      = {
         {
             Question = "What is the current status of this class config?",
             Answer = "This class config is currently a Work-In-Progress that was originally based off of the Project Lazarus config.\n\n" ..

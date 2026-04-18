@@ -727,7 +727,7 @@ local _ClassConfig = {
             "Complete Heal",
         },
     }, -- end AbilitySets
-    ['HelperFunctions']   = {
+    ['Helpers']           = {
         DoRez = function(self, corpseId)
             local rezAction = false
             local rezSpell = self.ResolvedActionMap['RezSpell']

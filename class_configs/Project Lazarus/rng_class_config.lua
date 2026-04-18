@@ -327,7 +327,7 @@ return {
             end,
         },
     },
-    ['HelperFunctions']   = {
+    ['Helpers']           = {
         combatNav = function(forceMove)
             if not Config:GetSetting('DoMelee') then
                 if not mq.TLO.Me.AutoFire() then
@@ -371,7 +371,7 @@ return {
                 name = "Ranged Mode",
                 type = "CustomFunc",
                 custom_func = function(self)
-                    Core.SafeCallFunc("Ranger Custom Nav", self.ClassConfig.HelperFunctions.combatNav, false)
+                    Core.SafeCallFunc("Ranger Custom Nav", self.Helpers.combatNav, false)
                 end,
             },
         },

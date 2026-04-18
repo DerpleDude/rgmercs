@@ -58,20 +58,20 @@ local Tooltips     = {
 }
 
 local _ClassConfig = {
-    _version            = "2.3 - Live",
-    _author             = "Algar, Derple, Grimmier, Tiddliestix, SonicZentropy",
-    ['Modes']           = {
+    _version          = "2.3 - Live",
+    _author           = "Algar, Derple, Grimmier, Tiddliestix, SonicZentropy",
+    ['Modes']         = {
         'General',
     },
 
-    ['ModeChecks']      = {
+    ['ModeChecks']    = {
         CanMez     = function() return true end,
         CanCharm   = function() return true end,
         IsMezzing  = function() return Config:GetSetting('MezOn') end,
         IsCuring   = function() return Config:GetSetting('UseCure') end,
         IsCharming = function() return Config:GetSetting('CharmOn') and mq.TLO.Pet.ID() == 0 end,
     },
-    ['Cures']           = {
+    ['Cures']         = {
         CureNow = function(self, type, targetId)
             local targetSpawn = mq.TLO.Spawn(targetId)
             if not targetSpawn and targetSpawn() then return false, false end
@@ -86,7 +86,7 @@ local _ClassConfig = {
             return false, false
         end,
     },
-    ['ItemSets']        = {
+    ['ItemSets']      = {
         ['Epic'] = {
             "Blade of Vesagran",
             "Prismatic Dragon Blade",
@@ -96,7 +96,7 @@ local _ClassConfig = {
             "Blood Drinker's Coating",
         },
     },
-    ['AbilitySets']     = {
+    ['AbilitySets']   = {
         ['RunBuffSong'] = {
             -- Selo's Accelerato not used so that we don't go back to a short duration
             -- Other songs omitted due to issues with constant reinvis, etc.
@@ -662,7 +662,7 @@ local _ClassConfig = {
             "Thousand Blades",
         },
     },
-    ['HelperFunctions'] = {
+    ['Helpers']       = {
         SwapInst = function(type)
             if not Config:GetSetting('SwapInstruments') then return end
             Logger.log_verbose("\ayBard SwapInst(): Swapping to Instrument Type: %s", type)
@@ -714,7 +714,7 @@ local _ClassConfig = {
         end,
 
     },
-    ['SpellList']       = { -- New style spell list, gemless, priority-based. Will use the first set whose conditions are met.
+    ['SpellList']     = { -- New style spell list, gemless, priority-based. Will use the first set whose conditions are met.
         {
             name = "Default Mode",
             -- cond = function(self) return true end, --Code kept here for illustration, if there is no condition to check, this line is not required
@@ -791,7 +791,7 @@ local _ClassConfig = {
             },
         },
     },
-    ['RotationOrder']   = {
+    ['RotationOrder'] = {
         {
             name = 'Enduring Breath',
             state = 1,
@@ -829,7 +829,7 @@ local _ClassConfig = {
             doFullRotation = true,
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
-                return Targeting.GetXTHaterCount() > 0 and (mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') or self.ClassConfig.HelperFunctions.UnwantedAggroCheck(self))
+                return Targeting.GetXTHaterCount() > 0 and (mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') or self.Helpers.UnwantedAggroCheck(self))
             end,
         },
         {
@@ -871,7 +871,7 @@ local _ClassConfig = {
             end,
         },
     },
-    ['Rotations']       = {
+    ['Rotations']     = {
         ['Burn'] = {
             {
                 name = "Quick Time",
@@ -1055,9 +1055,9 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return Config:GetSetting('UseFireDots') end,
                 cond = function(self, songSpell)
-                    return self.ClassConfig.HelperFunctions.DotSongCheck(songSpell) and
+                    return self.Helpers.DotSongCheck(songSpell) and
                         -- If dot is about to wear off, recast
-                        self.ClassConfig.HelperFunctions.GetDetSongDuration(songSpell) <= 3
+                        self.Helpers.GetDetSongDuration(songSpell) <= 3
                 end,
             },
             {
@@ -1065,9 +1065,9 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return Config:GetSetting('UseIceDots') end,
                 cond = function(self, songSpell)
-                    return self.ClassConfig.HelperFunctions.DotSongCheck(songSpell) and
+                    return self.Helpers.DotSongCheck(songSpell) and
                         -- If dot is about to wear off, recast
-                        self.ClassConfig.HelperFunctions.GetDetSongDuration(songSpell) <= 3
+                        self.Helpers.GetDetSongDuration(songSpell) <= 3
                 end,
             },
             {
@@ -1075,9 +1075,9 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return Config:GetSetting('UsePoisonDots') end,
                 cond = function(self, songSpell)
-                    return self.ClassConfig.HelperFunctions.DotSongCheck(songSpell) and
+                    return self.Helpers.DotSongCheck(songSpell) and
                         -- If dot is about to wear off, recast
-                        self.ClassConfig.HelperFunctions.GetDetSongDuration(songSpell) <= 3
+                        self.Helpers.GetDetSongDuration(songSpell) <= 3
                 end,
             },
             {
@@ -1085,9 +1085,9 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return Config:GetSetting('UseDiseaseDots') end,
                 cond = function(self, songSpell)
-                    return self.ClassConfig.HelperFunctions.DotSongCheck(songSpell) and
+                    return self.Helpers.DotSongCheck(songSpell) and
                         -- If dot is about to wear off, recast
-                        self.ClassConfig.HelperFunctions.GetDetSongDuration(songSpell) <= 3
+                        self.Helpers.GetDetSongDuration(songSpell) <= 3
                 end,
             },
             {
@@ -1139,7 +1139,7 @@ local _ClassConfig = {
                 name = "EndBreathSong",
                 type = "Song",
                 cond = function(self, songSpell)
-                    return self.ClassConfig.HelperFunctions.RefreshBuffSong(songSpell)
+                    return self.Helpers.RefreshBuffSong(songSpell)
                 end,
             },
         },
@@ -1149,7 +1149,7 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return Core.GetResolvedActionMapItem('AriaSong') and Config:GetSetting('UseAria') > 1 end,
                 cond = function(self, songSpell)
-                    return self.ClassConfig.HelperFunctions.CheckSongStateUse(self, "UseAria") and self.ClassConfig.HelperFunctions.RefreshBuffSong(songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseAria") and self.Helpers.RefreshBuffSong(songSpell)
                 end,
             },
             {
@@ -1157,7 +1157,7 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return not Core.GetResolvedActionMapItem('AriaSong') and Config:GetSetting('LLAria') == 2 and Config:GetSetting('UseAria') > 1 end,
                 cond = function(self, songSpell)
-                    return self.ClassConfig.HelperFunctions.CheckSongStateUse(self, "UseAria") and self.ClassConfig.HelperFunctions.RefreshBuffSong(songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseAria") and self.Helpers.RefreshBuffSong(songSpell)
                 end,
             },
             {
@@ -1165,7 +1165,7 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return not Core.GetResolvedActionMapItem('AriaSong') and Config:GetSetting('LLAria') == 3 and Config:GetSetting('UseAria') > 1 end,
                 cond = function(self, songSpell)
-                    return self.ClassConfig.HelperFunctions.CheckSongStateUse(self, "UseAria") and self.ClassConfig.HelperFunctions.RefreshBuffSong(songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseAria") and self.Helpers.RefreshBuffSong(songSpell)
                 end,
             },
             {
@@ -1173,7 +1173,7 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return Core.GetResolvedActionMapItem('WarMarchSong') and Config:GetSetting('UseMarch') > 1 end,
                 cond = function(self, songSpell)
-                    return self.ClassConfig.HelperFunctions.CheckSongStateUse(self, "UseMarch") and self.ClassConfig.HelperFunctions.RefreshBuffSong(songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseMarch") and self.Helpers.RefreshBuffSong(songSpell)
                 end,
             },
             {
@@ -1181,7 +1181,7 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return Core.GetResolvedActionMapItem('Jonthan') and Config:GetSetting('UseJonthan') > 1 end,
                 cond = function(self, songSpell)
-                    return self.ClassConfig.HelperFunctions.CheckSongStateUse(self, "UseJonthan") and self.ClassConfig.HelperFunctions.RefreshBuffSong(songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseJonthan") and self.Helpers.RefreshBuffSong(songSpell)
                 end,
             },
             {
@@ -1189,7 +1189,7 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return Core.GetResolvedActionMapItem('ArcaneSong') and Config:GetSetting('UseArcane') > 1 end,
                 cond = function(self, songSpell)
-                    return self.ClassConfig.HelperFunctions.CheckSongStateUse(self, "UseArcane") and self.ClassConfig.HelperFunctions.RefreshBuffSong(songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseArcane") and self.Helpers.RefreshBuffSong(songSpell)
                 end,
             },
             {
@@ -1208,9 +1208,9 @@ local _ClassConfig = {
                 load_cond = function(self) return Core.GetResolvedActionMapItem('GroupRegenSong') and Config:GetSetting('RegenSong') == 2 end,
                 cond = function(self, songSpell)
                     local pct = Config:GetSetting('GroupManaPct')
-                    return self.ClassConfig.HelperFunctions.RefreshBuffSong(songSpell) and
+                    return self.Helpers.RefreshBuffSong(songSpell) and
                         ((Config:GetSetting('UseRegen') == 1 and (mq.TLO.Group.LowMana(pct)() or 999) >= Config:GetSetting('GroupManaCt'))
-                            or (Config:GetSetting('UseRegen') > 1 and self.ClassConfig.HelperFunctions.CheckSongStateUse(self, "UseRegen")))
+                            or (Config:GetSetting('UseRegen') > 1 and self.Helpers.CheckSongStateUse(self, "UseRegen")))
                 end,
             },
             {
@@ -1219,9 +1219,9 @@ local _ClassConfig = {
                 load_cond = function(self) return Core.GetResolvedActionMapItem('AreaRegenSong') and Config:GetSetting('RegenSong') == 3 end,
                 cond = function(self, songSpell)
                     local pct = Config:GetSetting('GroupManaPct')
-                    return self.ClassConfig.HelperFunctions.RefreshBuffSong(songSpell) and
+                    return self.Helpers.RefreshBuffSong(songSpell) and
                         ((Config:GetSetting('UseRegen') == 1 and (mq.TLO.Group.LowMana(pct)() or 999) >= Config:GetSetting('GroupManaCt'))
-                            or (Config:GetSetting('UseRegen') > 1 and self.ClassConfig.HelperFunctions.CheckSongStateUse(self, "UseRegen")))
+                            or (Config:GetSetting('UseRegen') > 1 and self.Helpers.CheckSongStateUse(self, "UseRegen")))
                 end,
             },
             {
@@ -1229,7 +1229,7 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return Core.GetResolvedActionMapItem('AmpSong') and Config:GetSetting('UseAmp') > 1 end,
                 cond = function(self, songSpell)
-                    return self.ClassConfig.HelperFunctions.CheckSongStateUse(self, "UseAmp") and self.ClassConfig.HelperFunctions.RefreshBuffSong(songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseAmp") and self.Helpers.RefreshBuffSong(songSpell)
                 end,
             },
             {
@@ -1237,7 +1237,7 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return Core.GetResolvedActionMapItem('SufferingSong') and Config:GetSetting('UseSuffering') > 1 end,
                 cond = function(self, songSpell)
-                    return self.ClassConfig.HelperFunctions.CheckSongStateUse(self, "UseSuffering") and self.ClassConfig.HelperFunctions.RefreshBuffSong(songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseSuffering") and self.Helpers.RefreshBuffSong(songSpell)
                 end,
             },
             {
@@ -1245,7 +1245,7 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return Core.GetResolvedActionMapItem('SpitefulSong') and Config:GetSetting('UseSpiteful') > 1 end,
                 cond = function(self, songSpell)
-                    return self.ClassConfig.HelperFunctions.CheckSongStateUse(self, "UseSpiteful") and self.ClassConfig.HelperFunctions.RefreshBuffSong(songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseSpiteful") and self.Helpers.RefreshBuffSong(songSpell)
                 end,
             },
             {
@@ -1253,7 +1253,7 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return Core.GetResolvedActionMapItem('SprySonataSong') and Config:GetSetting('UseSpry') > 1 end,
                 cond = function(self, songSpell)
-                    return self.ClassConfig.HelperFunctions.CheckSongStateUse(self, "UseSpry") and self.ClassConfig.HelperFunctions.RefreshBuffSong(songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseSpry") and self.Helpers.RefreshBuffSong(songSpell)
                 end,
             },
             {
@@ -1261,7 +1261,7 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return Core.GetResolvedActionMapItem('ResistSong') and Config:GetSetting('UseResist') > 1 end,
                 cond = function(self, songSpell)
-                    return self.ClassConfig.HelperFunctions.CheckSongStateUse(self, "UseResist") and self.ClassConfig.HelperFunctions.RefreshBuffSong(songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseResist") and self.Helpers.RefreshBuffSong(songSpell)
                 end,
             },
             {
@@ -1269,7 +1269,7 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return Core.GetResolvedActionMapItem('RecklessSong') and Config:GetSetting('UseReckless') > 1 end,
                 cond = function(self, songSpell)
-                    return self.ClassConfig.HelperFunctions.CheckSongStateUse(self, "UseReckless") and self.ClassConfig.HelperFunctions.RefreshBuffSong(songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseReckless") and self.Helpers.RefreshBuffSong(songSpell)
                 end,
             },
             {
@@ -1277,7 +1277,7 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return Core.GetResolvedActionMapItem('AccelerandoSong') and Config:GetSetting('UseAccelerando') > 1 end,
                 cond = function(self, songSpell)
-                    return self.ClassConfig.HelperFunctions.CheckSongStateUse(self, "UseAccelerando") and self.ClassConfig.HelperFunctions.RefreshBuffSong(songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseAccelerando") and self.Helpers.RefreshBuffSong(songSpell)
                 end,
             },
             {
@@ -1285,7 +1285,7 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return Core.GetResolvedActionMapItem('FireBuffSong') and Config:GetSetting('UseFireBuff') > 1 end,
                 cond = function(self, songSpell)
-                    return self.ClassConfig.HelperFunctions.CheckSongStateUse(self, "UseFireBuff") and self.ClassConfig.HelperFunctions.RefreshBuffSong(songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseFireBuff") and self.Helpers.RefreshBuffSong(songSpell)
                 end,
             },
             {
@@ -1293,7 +1293,7 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return Core.GetResolvedActionMapItem('ColdBuffSong') and Config:GetSetting('UseColdBuff') > 1 end,
                 cond = function(self, songSpell)
-                    return self.ClassConfig.HelperFunctions.CheckSongStateUse(self, "UseColdBuff") and self.ClassConfig.HelperFunctions.RefreshBuffSong(songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseColdBuff") and self.Helpers.RefreshBuffSong(songSpell)
                 end,
             },
             {
@@ -1301,7 +1301,7 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return Core.GetResolvedActionMapItem('DotBuffSong') and Config:GetSetting('UseDotBuff') > 1 end,
                 cond = function(self, songSpell)
-                    return self.ClassConfig.HelperFunctions.CheckSongStateUse(self, "UseDotBuff") and self.ClassConfig.HelperFunctions.RefreshBuffSong(songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseDotBuff") and self.Helpers.RefreshBuffSong(songSpell)
                 end,
             },
         },
@@ -1324,7 +1324,7 @@ local _ClassConfig = {
                 load_cond = function(self) return Config:GetSetting('UseRunBuff') and not Casting.CanUseAA("Selo's Sonata") end,
                 cond = function(self, songSpell)
                     if Globals.InMedState then return false end
-                    return self.ClassConfig.HelperFunctions.RefreshBuffSong(songSpell)
+                    return self.Helpers.RefreshBuffSong(songSpell)
                 end,
             },
             {
@@ -1366,7 +1366,7 @@ local _ClassConfig = {
                 type = "AA",
                 load_cond = function(self) return Config:GetSetting('UseFading') and Casting.CanUseAA('Fading Memories') end,
                 cond = function(self, aaName)
-                    return self.ClassConfig.HelperFunctions.UnwantedAggroCheck(self)
+                    return self.Helpers.UnwantedAggroCheck(self)
                     --I wanted to use XTAggroCount here but it doesn't include your current target in the number it returns and I don't see a good workaround. For Loop it is.
                 end,
             },
@@ -1396,7 +1396,7 @@ local _ClassConfig = {
             },
         },
     },
-    ['PullAbilities']   = {
+    ['PullAbilities'] = {
         {
             id = 'Sonic Disturbance',
             Type = "AA",
@@ -1418,7 +1418,7 @@ local _ClassConfig = {
             end,
         },
     },
-    ['DefaultConfig']   = {
+    ['DefaultConfig'] = {
         ['Mode']            = {
             DisplayName = "Mode",
             Type = "Custom",
@@ -2144,7 +2144,7 @@ local _ClassConfig = {
             Answer = "Unfortunately, MQ currently reports the buff falling off early; we are examining possible fixes at this time.",
         },
     },
-    ['ClassFAQ']        = {
+    ['ClassFAQ']      = {
         {
             Question = "What is the current status of this class config?",
             Answer = "This class config is a current release aimed at official servers.\n\n" ..

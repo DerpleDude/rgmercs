@@ -78,16 +78,16 @@ local Tooltips     = {
 }
 
 local _ClassConfig = {
-    _version            = "2.5 - Project Lazarus",
-    _author             = "Algar, Derple",
-    ['ModeChecks']      = {
+    _version          = "2.5 - Project Lazarus",
+    _author           = "Algar, Derple",
+    ['ModeChecks']    = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
     },
-    ['Modes']           = {
+    ['Modes']         = {
         'Tank',
         'DPS',
     },
-    ['Themes']          = {
+    ['Themes']        = {
         ['Tank'] = {
             { element = ImGuiCol.TitleBgActive,    color = { r = 0.5, g = 0.05, b = 0.05, a = .8, }, },
             { element = ImGuiCol.TableHeaderBg,    color = { r = 0.5, g = 0.05, b = 0.05, a = .8, }, },
@@ -108,7 +108,7 @@ local _ClassConfig = {
             { element = ImGuiCol.FrameBgActive,    color = { r = 0.5, g = 0.05, b = 0.05, a = 1.0, }, },
         },
     },
-    ['ItemSets']        = {
+    ['ItemSets']      = {
         ['Epic'] = {
             "Innoruuk's Dark Blessing",
             "Innoruuk's Voice",
@@ -122,7 +122,7 @@ local _ClassConfig = {
             "Blood Drinker's Coating",
         },
     },
-    ['AbilitySets']     = {
+    ['AbilitySets']   = {
         --Laz spells to look into: Fickle Shadows
         ['Mantle'] = {
             "Soul Shield",
@@ -296,7 +296,7 @@ local _ClassConfig = {
             "Voice of Darkness", -- level 39, 2% hate
         },
     },
-    ['HelperFunctions'] = {
+    ['Helpers']       = {
         --function to determine if we have enough mobs in range to use a defensive disc
         DefensiveDiscCheck = function(printDebug)
             local xtCount = mq.TLO.Me.XTarget() or 0
@@ -324,7 +324,7 @@ local _ClassConfig = {
         end,
 
     },
-    ['RotationOrder']   = {
+    ['RotationOrder'] = {
         { --Self Buffs
             name = 'Downtime',
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
@@ -426,7 +426,7 @@ local _ClassConfig = {
                     -- we are under our defense start HP
                     (mq.TLO.Me.PctHPs() <= Config:GetSetting('DefenseStart') or
                         -- we have met our defense count threshold
-                        self.ClassConfig.HelperFunctions.DefensiveDiscCheck(true) or
+                        self.Helpers.DefensiveDiscCheck(true) or
                         -- we are fighting a named and we are (presumably) tanking it
                         (Globals.AutoTargetIsNamed and Targeting.GetAutoTargetAggroPct() >= 100))
             end,
@@ -463,7 +463,7 @@ local _ClassConfig = {
             end,
         },
     },
-    ['Rotations']       = {
+    ['Rotations']     = {
         ['Downtime'] = {
             {
                 name = "Touch of the Cursed",
@@ -859,7 +859,7 @@ local _ClassConfig = {
                 type = "Item",
                 tooltip = Tooltips.Epic,
                 cond = function(self, itemName, target)
-                    return self.ClassConfig.HelperFunctions.LeechCheck(self) or Globals.AutoTargetIsNamed
+                    return self.Helpers.LeechCheck(self) or Globals.AutoTargetIsNamed
                 end,
             },
             {
@@ -867,7 +867,7 @@ local _ClassConfig = {
                 type = "Item",
                 cond = function(self, itemName, target)
                     if not Config:GetSetting('DoCoating') then return false end
-                    return Casting.SelfBuffItemCheck(itemName) and self.ClassConfig.HelperFunctions.LeechCheck(self)
+                    return Casting.SelfBuffItemCheck(itemName) and self.Helpers.LeechCheck(self)
                 end,
             },
             {
@@ -1054,7 +1054,7 @@ local _ClassConfig = {
     -- The first list without conditions or whose conditions returns true will be loaded, all subsequent lists will be ignored.
     -- Spells will be loaded in order (if the conditions are met), until all gem slots are full.
     -- Loadout checks (such as scribing a spell or using the "Rescan Loadout" or "Reload Spells" buttons) will re-check these lists and may load a different set if things have changed.
-    ['SpellList']       = {
+    ['SpellList']     = {
         {
             name = "Default",
             -- cond = function(self) return true end, --Kept here for illustration, this line could be removed in this instance since we aren't using conditions.
@@ -1082,7 +1082,7 @@ local _ClassConfig = {
             },
         },
     },
-    ['PullAbilities']   = {
+    ['PullAbilities'] = {
         {
             id = 'SpearNuke',
             Type = "Spell",
@@ -1144,7 +1144,7 @@ local _ClassConfig = {
             end,
         },
     },
-    ['DefaultConfig']   = {
+    ['DefaultConfig'] = {
         --Mode
         ['Mode']            = {
             DisplayName = "Mode",
@@ -1499,7 +1499,7 @@ local _ClassConfig = {
             Answer = "The Shield on Named option doesn't check levels, so feel free to disable this setting (or Bandolier swapping entirely) if you are farming fodder.",
         },
     },
-    ['ClassFAQ']        = {
+    ['ClassFAQ']      = {
         {
             Question = "What is the current status of this class config?",
             Answer = "This class config is a current release customized specifically for Project Lazarus server.\n\n" ..

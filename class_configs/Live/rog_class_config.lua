@@ -10,12 +10,12 @@ local Logger    = require("utils.logger")
 local Combat    = require("utils.combat")
 
 return {
-    _version            = "2.0 - Live",
-    _author             = "Derple, Algar, mackal",
-    ['Modes']           = {
+    _version          = "2.0 - Live",
+    _author           = "Derple, Algar, mackal",
+    ['Modes']         = {
         'DPS',
     },
-    ['ItemSets']        = {
+    ['ItemSets']      = {
         ['Epic'] = {
             "Fatestealer",
             "Nightshade, Blade of Entropy",
@@ -25,7 +25,7 @@ return {
             "Blood Drinker's Coating",
         },
     },
-    ['AbilitySets']     = {
+    ['AbilitySets']   = {
         ["ConditionedReflexes"] = {
             "Conditioned Reflexes",
             "Practiced Reflexes",
@@ -251,7 +251,7 @@ return {
         },
 
     },
-    ['RotationOrder']   = {
+    ['RotationOrder'] = {
         {
             name = 'Downtime',
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
@@ -315,34 +315,34 @@ return {
             end,
         },
     },
-    ['Rotations']       = {
+    ['Rotations']     = {
         ['Burn'] = {
             {
                 name = "Frenzied",
                 type = "Disc",
                 cond = function(self, discSpell)
-                    return self.ClassConfig.HelperFunctions.BurnDiscCheck(self)
+                    return self.Helpers.BurnDiscCheck(self)
                 end,
             },
             {
                 name = "Twisted",
                 type = "Disc",
                 cond = function(self, discSpell)
-                    return self.ClassConfig.HelperFunctions.BurnDiscCheck(self)
+                    return self.Helpers.BurnDiscCheck(self)
                 end,
             },
             {
                 name = "Executioner",
                 type = "Disc",
                 cond = function(self, discSpell)
-                    return self.ClassConfig.HelperFunctions.BurnDiscCheck(self)
+                    return self.Helpers.BurnDiscCheck(self)
                 end,
             },
             {
                 name = "EdgeDisc",
                 type = "Disc",
                 cond = function(self, discSpell)
-                    return self.ClassConfig.HelperFunctions.BurnDiscCheck(self)
+                    return self.Helpers.BurnDiscCheck(self)
                 end,
             },
             {
@@ -667,7 +667,7 @@ return {
             },
         },
     },
-    ['HelperFunctions'] = {
+    ['Helpers']       = {
         PreEngage = function(target)
             if not target or not target() then return end
             local openerAbility = Core.GetResolvedActionMapItem('SneakAttack')
@@ -701,7 +701,7 @@ return {
             return Targeting.IHaveAggro(100)
         end,
     },
-    ['DefaultConfig']   = {
+    ['DefaultConfig'] = {
         ['Mode']            = {
             DisplayName = "Mode",
             Category = "Combat",
@@ -834,7 +834,7 @@ return {
             Default = false,
         },
     },
-    ['ClassFAQ']        = {
+    ['ClassFAQ']      = {
         {
             Question = "What is the current status of this class config?",
             Answer = "This class config is a current release aimed at official servers.\n\n" ..

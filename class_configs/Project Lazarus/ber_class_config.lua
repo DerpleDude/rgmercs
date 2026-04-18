@@ -7,12 +7,12 @@ local Logger    = require("utils.logger")
 local Combat    = require("utils.combat")
 
 return {
-    _version            = "2.0 - Project Lazarus",
-    _author             = "Algar, Derple",
-    ['Modes']           = {
+    _version          = "2.0 - Project Lazarus",
+    _author           = "Algar, Derple",
+    ['Modes']         = {
         'DPS',
     },
-    ['ItemSets']        = {
+    ['ItemSets']      = {
         ['Epic'] = {
             "Vengeful Taelosian Blood Axe",
             "Raging Taelosian Alloy Axe",
@@ -22,7 +22,7 @@ return {
             "Ragebound Chain Chestguard",
         },
     },
-    ['AbilitySets']     = {
+    ['AbilitySets']   = {
         ['EndRegen'] = {
             "Third Wind Discipline",
             --"Second Wind",
@@ -83,7 +83,7 @@ return {
             "Battle Focus Discipline",
         },
     },
-    ['RotationOrder']   = {
+    ['RotationOrder'] = {
         {
             name = 'Buffs',
             state = 1,
@@ -145,7 +145,7 @@ return {
             end,
         },
     },
-    ['Rotations']       = {
+    ['Rotations']     = {
         ['Buffs'] = {
             {
                 name = "EndRegen",
@@ -349,10 +349,10 @@ return {
             },
         },
     },
-    ['HelperFunctions'] = {
+    ['Helpers']       = {
 
     },
-    ['DefaultConfig']   = {
+    ['DefaultConfig'] = {
         ['Mode']           = {
             DisplayName = "Mode",
             Category = "Combat",
@@ -471,7 +471,7 @@ return {
             ConfigType = "Advanced",
         },
     },
-    ['ClassFAQ']        = {
+    ['ClassFAQ']      = {
         {
             Question = "What is the current status of this class config?",
             Answer = "This class config is a current release customized specifically for Project Lazarus server.\n\n" ..

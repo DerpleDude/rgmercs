@@ -475,6 +475,18 @@ function Core.GetResolvedActionMapItem(action)
     return Modules:ExecModule("Class", "GetResolvedActionMapItem", action)
 end
 
+function Core.GetHelpers()
+    return Modules:ExecModule("Class", "GetHelpers")
+end
+
+-- Safely invokes a class helper by name, wrapped in SafeCallFunc. No-op if the helper isn't defined.
+function Core.SafeCallClassHelper(logInfo, name, ...)
+    local helpers = Modules:ExecModule("Class", "GetHelpers")
+    if helpers and helpers[name] then
+        return Core.SafeCallFunc(logInfo, helpers[name], ...)
+    end
+end
+
 function Core.ProcessCureChecks()
     Modules:ExecModule("Class", "DoEvents")
 end

@@ -35,10 +35,10 @@ mq.event("CantSee", "You cannot see your target.", function()
         if Config:GetSetting('HandleCantSeeTarget') then
             local haterCount = Targeting.GetXTHaterCount()
             if Config:GetSetting('DoAutoEngage') and not mq.TLO.Me.Moving() or haterCount > 0 then
-                local classConfig = Modules:ExecModule("Class", "GetClassConfig")
-                if classConfig and classConfig.HelperFunctions and classConfig.HelperFunctions.combatNav then
+                local helpers = Core.GetHelpers()
+                if helpers and helpers.combatNav then
                     Logger.log_debug("CantSee: \ayWe are in COMBAT and Cannot see our target - using custom combatNav!")
-                    Core.SafeCallFunc("Ranger Custom Nav", classConfig.HelperFunctions.combatNav, true)
+                    Core.SafeCallFunc("Ranger Custom Nav", helpers.combatNav, true)
                 else
                     Logger.log_debug("CantSee: \ayWe are in COMBAT and Cannot see our target - using generic combatNav!")
                     if Combat.OkToEngage(target.ID() or 0) then
@@ -113,9 +113,9 @@ mq.event("TooClose", "Your target is too close to use a ranged weapon!", functio
             local haterCount = Targeting.GetXTHaterCount()
             if Config:GetSetting('DoAutoEngage') and not mq.TLO.Me.Moving() and haterCount > 0 then
                 Logger.log_debug("TooCloseHandler: Pull State not detected, using Combat Nav.")
-                local classConfig = Modules:ExecModule("Class", "GetClassConfig")
-                if classConfig and classConfig.HelperFunctions and classConfig.HelperFunctions.combatNav then
-                    Core.SafeCallFunc("Ranger Custom Nav", classConfig.HelperFunctions.combatNav, false)
+                local helpers = Core.GetHelpers()
+                if helpers and helpers.combatNav then
+                    Core.SafeCallFunc("Ranger Custom Nav", helpers.combatNav, false)
                 else
                     Logger.log_debug("TooClose event detected, but we don't have class-specific combat nav for ranged combat!")
                 end
@@ -155,11 +155,11 @@ local function tooFarHandler()
         Logger.log_debug("CantSee event detected, but we are pulling and currently returning to camp.")
     else
         if Config:GetSetting('HandleTooFar') then
-            local classConfig = Modules:ExecModule("Class", "GetClassConfig")
+            local helpers = Core.GetHelpers()
             local haterCount = Targeting.GetXTHaterCount()
             if Config:GetSetting('DoAutoEngage') and not mq.TLO.Me.Moving() and haterCount > 0 then
-                if classConfig and classConfig.HelperFunctions and classConfig.HelperFunctions.combatNav then
-                    Core.SafeCallFunc("Custom Nav", classConfig.HelperFunctions.combatNav)
+                if helpers and helpers.combatNav then
+                    Core.SafeCallFunc("Custom Nav", helpers.combatNav)
                 elseif Config:GetSetting('DoMelee') then
                     Logger.log_debug("TooFar: \ayWe are in COMBAT and too far from our target!")
                     if Config:GetSetting('DoAutoEngage') and Combat.OkToEngage(target.ID() or 0) then

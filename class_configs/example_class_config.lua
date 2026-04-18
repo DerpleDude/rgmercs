@@ -28,12 +28,12 @@ local Tooltips     = {
 
 -- The class config table itself, which is largely controlled by the class module. Version/Author can be as you'd like, this is what displays in the UI.
 local _ClassConfig = {
-    _version            = "3.0 - Live",
-    _author             = "Algar, Derple",
+    _version          = "3.0 - Live",
+    _author           = "Algar, Derple",
     -- Mode Checks: Functions to check under what conditions a PC will perform certain special checks or actions.
     -- For example, we won't run rez checks if your IsRezzing doesn't return true for that PC.
     -- SHD CAN'T DO ALL THIS STUFF! I stole them from other configs for illustrations. Generally, you can copy the checks from the default config for your class.
-    ['ModeChecks']      = {
+    ['ModeChecks']    = {
         IsTanking  = function() return Core.IsModeActive("Tank") end, -- This is the only check actually present in the SK config.
         CanMez     = function() return true end,
         CanCharm   = function() return true end,
@@ -48,13 +48,13 @@ local _ClassConfig = {
     -- Must also be added to the "Mode" setting at the bottom (omitted in this example file).
     -- 'Tank' and 'DPS' are abitary names. Some examples of other modes could be splitting DPS into raid and group modes, etc...
     -- ... We have modes for PBAE use, modes based on level, you can use your imagination!
-    ['Modes']           = {
+    ['Modes']         = {
         'Tank',
         'DPS',
     },
 
     -- Themes control the colors in the UI. Feel free to play with these! Derple would love PR's for other classes, as not many have them added!
-    ['Themes']          = {
+    ['Themes']        = {
         ['Tank'] = { -- Note: I did not omit anything from this table. This is everything you need!
             { element = ImGuiCol.TitleBgActive,    color = { r = 0.5, g = 0.05, b = 0.05, a = .8, }, },
             { element = ImGuiCol.TableHeaderBg,    color = { r = 0.5, g = 0.05, b = 0.05, a = .8, }, },
@@ -88,7 +88,7 @@ local _ClassConfig = {
     -- Note that AA do not use sets (AA are referred to directly by name in their entries).
     -- Note that single items (i.e, not in a set) do not require an entry here (Items can be referred to directly by name in their entries).
     -- Generally, if you aren't using a spell line at all, you could consider commenting the entire thing out to stop it from being processed on load. This way it is still there if you change your mind.
-    ['ItemSets']        = {
+    ['ItemSets']      = {
         ['Epic'] = {
             -- In this set, we will used the epic 2.0 if it is present (Dark Blessing), and use the epic 1.5 if we have it but not the 2.0.
             -- If we don't have either, the rotation UI will list "Epic" as the action, but not show either of these as the "Resolved Action"
@@ -103,7 +103,7 @@ local _ClassConfig = {
         -- further sets omitted
     },
     -- Please note that for brevity, I have removed most of the Ability Sets. This is not a functioning config.
-    ['AbilitySets']     = {
+    ['AbilitySets']   = {
         -- As noted above, even a single ability should be its own "set".
         ['Deflection'] = { 'Deflection Discipline', },
         ['LeechCurse'] = { 'Leechcurse Discipline', },
@@ -174,7 +174,7 @@ local _ClassConfig = {
     -- These functions are generally not used by every class. Occasionally, if they are copied to enough configs, we will elect to move them into the utils instead.
     -- Usage will (hopefully) become apparent from reading and seeing how each is called.
     -- I generally try to leave basic notes as to what does what for the next guy.
-    ['HelperFunctions'] = {
+    ['Helpers']       = {
         --determine whether we should overwrite DLU buffs with better single buffs
         SingleBuffCheck = function(self)
             if Casting.CanUseAA("Dark Lord's Unity (Azia)") and not Config:GetSetting('OverwriteDLUBuffs') then return false end
@@ -232,7 +232,7 @@ local _ClassConfig = {
     -- Even though it is not strictly required (by the particular spell), some abilities have the PC listed as a target for ease of conformity.
     -- Please refer to "Hate Tools" below for a rotation for a fully marked up example!
     -- Note: I have reordered and deleted rotations for illustration. The ones that remain are good examples or have comments!
-    ['RotationOrder']   = {
+    ['RotationOrder'] = {
         { --Actions that establish or maintain hatred
 
             -- Name:
@@ -326,7 +326,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 if mq.TLO.Me.PctHPs() <= Config:GetSetting('HPCritical') then return false end
-                return combat_state == "Combat" and self.ClassConfig.HelperFunctions.LeechCheck(self)
+                return combat_state == "Combat" and self.Helpers.LeechCheck(self)
             end,
         },
         -- The below are just examples of standard rotations you see in most configs.
@@ -361,7 +361,7 @@ local _ClassConfig = {
     -- ... If the entry conditions are not met, we will move on until we find an entry whose conditions are.
     -- ... In the absence of a condition being met, we will continue checking until we have checked every entry in the rotatation, and only then move on to the next.
     -- I have deleted or reordered rotations for illustrations sake, I'll break down a few examples below:
-    ['Rotations']       = {
+    ['Rotations']     = {
         ['Downtime'] = {
             {
                 -- Name: The name of the entry.
@@ -502,7 +502,7 @@ local _ClassConfig = {
     -- Note that many of the default config spell lists have grown to be convoluted in the face of so many options and possiblities.
     -- Below this table is the "new" style Spell List table, which is strictly prioritized.
     -- Never look at bard if you value your sanity. Eventually we will convert that to the new style and be done with the custom code. It was the pioneer!
-    ['Spells']          = {
+    ['Spells']        = {
         {
             gem = 1,
             spells = {
@@ -576,7 +576,7 @@ local _ClassConfig = {
     -- The first list without conditions or whose conditions returns true will be loaded, all subsequent lists will be ignored.
     -- Spells will be loaded in order (if the conditions are met), until all gem slots are full.
     -- Loadout checks (such as scribing a spell or using the "Rescan Loadout" or "Reload Spells" buttons) will re-check these lists and may load a different set if things have changed.
-    ['SpellList']       = {
+    ['SpellList']     = {
         {
             name = "Default",
             -- cond = function(self) return true end, --Kept here for illustration, this line could be removed in this instance since we aren't using conditions.

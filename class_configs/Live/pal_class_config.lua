@@ -741,7 +741,7 @@ local _ClassConfig = {
             'Reanimation',
         },
     },
-    ['HelperFunctions']   = {
+    ['Helpers']           = {
         DoRez = function(self, corpseId)
             local rezAction = false
             local rezSpell = Core.GetResolvedActionMapItem('RezSpell')
@@ -982,7 +982,7 @@ local _ClassConfig = {
                     -- we are under our defense start HP
                     (mq.TLO.Me.PctHPs() <= Config:GetSetting('DefenseStart') or
                         -- we have met our defense count threshold
-                        self.ClassConfig.HelperFunctions.DefensiveDiscCheck(true) or
+                        self.Helpers.DefensiveDiscCheck(true) or
                         -- we are fighting a named and we are (presumably) tanking it
                         (Globals.AutoTargetIsNamed and Targeting.GetAutoTargetAggroPct() >= 100))
             end,
@@ -1056,7 +1056,7 @@ local _ClassConfig = {
                 type = "Spell",
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
-                    return self.ClassConfig.HelperFunctions.SingleBuffCheck() and Casting.SelfBuffCheck(spell)
+                    return self.Helpers.SingleBuffCheck() and Casting.SelfBuffCheck(spell)
                 end,
             },
             {
@@ -1064,7 +1064,7 @@ local _ClassConfig = {
                 type = "Spell",
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
-                    return self.ClassConfig.HelperFunctions.SingleBuffCheck() and Casting.SelfBuffCheck(spell)
+                    return self.Helpers.SingleBuffCheck() and Casting.SelfBuffCheck(spell)
                 end,
             },
             {
@@ -1081,7 +1081,7 @@ local _ClassConfig = {
                 type = "Spell",
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
-                    return self.ClassConfig.HelperFunctions.SingleBuffCheck() and Casting.SelfBuffCheck(spell)
+                    return self.Helpers.SingleBuffCheck() and Casting.SelfBuffCheck(spell)
                 end,
             },
             {
@@ -1089,7 +1089,7 @@ local _ClassConfig = {
                 type = "Spell",
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
-                    return self.ClassConfig.HelperFunctions.SingleBuffCheck() and Casting.SelfBuffCheck(spell)
+                    return self.Helpers.SingleBuffCheck() and Casting.SelfBuffCheck(spell)
                 end,
             },
             --You'll notice my use of TotalSeconds, this is to keep as close to 100% uptime as possible on these buffs, rebuffing early to decrease the chance of them falling off in combat

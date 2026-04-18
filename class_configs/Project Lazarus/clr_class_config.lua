@@ -308,7 +308,7 @@ local _ClassConfig = {
             "The Silent Command",
         },
     }, -- end AbilitySets
-    ['HelperFunctions']   = {
+    ['Helpers']           = {
         DoRez = function(self, corpseId)
             local rezAction = false
             local rezSpell = self.ResolvedActionMap['RezSpell']

@@ -7,15 +7,15 @@ local Logger    = require("utils.logger")
 local Core      = require("utils.core")
 
 return {
-    _version            = "2.1 - EQ Might",
-    _author             = "Algar, Derple",
-    ['ModeChecks']      = {
+    _version          = "2.1 - EQ Might",
+    _author           = "Algar, Derple",
+    ['ModeChecks']    = {
         IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
     },
-    ['Modes']           = {
+    ['Modes']         = {
         'DPS',
     },
-    ['ItemSets']        = {
+    ['ItemSets']      = {
         ['RezStaff'] = {
             "Legendary Fabled Staff of Forbidden Rites",
             "Fabled Staff of Forbidden Rites",
@@ -30,7 +30,7 @@ return {
             "Ragebound Chain Chestguard",
         },
     },
-    ['AbilitySets']     = {
+    ['AbilitySets']   = {
         ['BerAura'] = {
             "Aura of Rage",
             "Bloodlust Aura",
@@ -79,6 +79,7 @@ return {
             "Unpredictable Rage Discipline",
         },
         ['HealingDisc'] = { --EQM Custom, 2m duration, 5m reuse, hp regen
+            "Lifebloom Will Discipline",
             "Rejuvenating Will Discipline",
             "Healing Determination Discipline",
             "Healing Will Discipline",
@@ -87,7 +88,7 @@ return {
             "Unsettling Scream",
         },
     },
-    ['RotationOrder']   = {
+    ['RotationOrder'] = {
         {
             name = 'Buffs',
             state = 1,
@@ -149,7 +150,7 @@ return {
             end,
         },
     },
-    ['Rotations']       = {
+    ['Rotations']     = {
         ['Buffs'] = {
             {
                 name = "BerAura",
@@ -304,7 +305,7 @@ return {
             },
         },
     },
-    ['HelperFunctions'] = {
+    ['Helpers']       = {
         DoRez = function(self, corpseId)
             local rezStaff = self.ResolvedActionMap['RezStaff']
 
@@ -318,7 +319,7 @@ return {
         end,
 
     },
-    ['DefaultConfig']   = {
+    ['DefaultConfig'] = {
         ['Mode']           = {
             DisplayName = "Mode",
             Category = "Combat",
@@ -412,7 +413,7 @@ return {
             ConfigType = "Advanced",
         },
     },
-    ['ClassFAQ']        = {
+    ['ClassFAQ']      = {
         {
             Question = "What is the current status of this class config?",
             Answer = "This class config is currently a Work-In-Progress that was originally based off of the Project Lazarus config.\n\n" ..

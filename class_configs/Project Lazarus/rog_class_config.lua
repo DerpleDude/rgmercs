@@ -9,12 +9,12 @@ local Strings   = require("utils.strings")
 local Logger    = require("utils.logger")
 
 return {
-    _version            = "2.1 - Project Lazarus",
-    _author             = "Derple, Algar, mackal",
-    ['Modes']           = {
+    _version          = "2.1 - Project Lazarus",
+    _author           = "Derple, Algar, mackal",
+    ['Modes']         = {
         'DPS',
     },
-    ['ItemSets']        = {
+    ['ItemSets']      = {
         ['OoW_Chest'] = {
             "Whisperer's Ascendant Tunic of Shadows",
             "Whispering Tunic of Shadows",
@@ -25,7 +25,7 @@ return {
             "Nightshade, Blade of Entropy",
         },
     },
-    ['AbilitySets']     = {
+    ['AbilitySets']   = {
         ["ThiefBuff"] = {
             "Brigand's Gaze", -- Level 70
             "Thief's Eyes",   -- Level 65
@@ -76,7 +76,7 @@ return {
         },
 
     },
-    ['RotationOrder']   = {
+    ['RotationOrder'] = {
         {
             name = 'Downtime',
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
@@ -141,7 +141,7 @@ return {
             end,
         },
     },
-    ['Rotations']       = {
+    ['Rotations']     = {
         ['Burn'] = {
             {
                 name = "OoW_Chest",
@@ -389,7 +389,7 @@ return {
             },
         },
     },
-    ['HelperFunctions'] = {
+    ['Helpers']       = {
         PreEngage = function(target)
             if not target or not target() then return end
             local openerAbility = Core.GetResolvedActionMapItem('SneakAttack')
@@ -414,7 +414,7 @@ return {
             return Targeting.IHaveAggro(100)
         end,
     },
-    ['DefaultConfig']   = {
+    ['DefaultConfig'] = {
         ['Mode']            = {
             DisplayName = "Mode",
             Category = "Combat",
@@ -534,7 +534,7 @@ return {
             Default = false,
         },
     },
-    ['ClassFAQ']        = {
+    ['ClassFAQ']      = {
         {
             Question = "What is the current status of this class config?",
             Answer = "This class config is a current release customized specifically for Project Lazarus server.\n\n" ..

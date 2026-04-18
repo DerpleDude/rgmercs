@@ -351,7 +351,7 @@ local _ClassConfig = {
             "Promised Renewal",
         },
     }, -- end AbilitySets
-    ['HelperFunctions']   = {
+    ['Helpers']           = {
         DoRez = function(self, corpseId)
             local rezAction = false
             local rezSpell = self.ResolvedActionMap['RezSpell']

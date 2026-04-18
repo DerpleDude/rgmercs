@@ -8,12 +8,12 @@ local Core         = require("utils.core")
 local Combat       = require("utils.combat")
 
 local _ClassConfig = {
-    _version            = "2.0 - Live",
-    _author             = "Algar, Derple",
-    ['Modes']           = {
+    _version          = "2.0 - Live",
+    _author           = "Algar, Derple",
+    ['Modes']         = {
         'DPS',
     },
-    ['ItemSets']        = {
+    ['ItemSets']      = {
         ['Epic'] = {
             "Transcended Fistwraps of Immortality",
             "Fistwraps of Celestial Discipline",
@@ -23,7 +23,7 @@ local _ClassConfig = {
             "Blood Drinker's Coating",
         },
     },
-    ['AbilitySets']     = {
+    ['AbilitySets']   = {
         ['EndRegen'] = {
             --Timer 13, can't be used in combat
             "Second Wind", -- Level 72
@@ -223,7 +223,7 @@ local _ClassConfig = {
             "Tiger's Symmetry",
         },
     },
-    ['HelperFunctions'] = {
+    ['Helpers']       = {
         BurnDiscCheck = function(self)
             if mq.TLO.Me.PctHPs() < Config:GetSetting('EmergencyStart') then return false end
             local burnDisc = { "Heel", "Speed", "FistDisc", "Palm", }
@@ -236,7 +236,7 @@ local _ClassConfig = {
         --function to make sure we don't have non-hostiles in range before we use AE damage
 
     },
-    ['RotationOrder']   = {
+    ['RotationOrder'] = {
         {
             name = 'Downtime',
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
@@ -293,7 +293,7 @@ local _ClassConfig = {
             end,
         },
     },
-    ['Rotations']       = {
+    ['Rotations']     = {
         ['Downtime'] = {
             {
                 name = "MonkAura",
@@ -401,28 +401,28 @@ local _ClassConfig = {
                 name = "Heel",
                 type = "Disc",
                 cond = function(self, discSpell)
-                    return self.ClassConfig.HelperFunctions.BurnDiscCheck(self)
+                    return self.Helpers.BurnDiscCheck(self)
                 end,
             },
             {
                 name = "Speed",
                 type = "Disc",
                 cond = function(self, discSpell)
-                    return self.ClassConfig.HelperFunctions.BurnDiscCheck(self)
+                    return self.Helpers.BurnDiscCheck(self)
                 end,
             },
             {
                 name = "FistDisc",
                 type = "Disc",
                 cond = function(self, discSpell)
-                    return self.ClassConfig.HelperFunctions.BurnDiscCheck(self)
+                    return self.Helpers.BurnDiscCheck(self)
                 end,
             },
             {
                 name = "Palm",
                 type = "Disc",
                 cond = function(self, discSpell)
-                    return self.ClassConfig.HelperFunctions.BurnDiscCheck(self)
+                    return self.Helpers.BurnDiscCheck(self)
                 end,
             },
             {
@@ -449,7 +449,7 @@ local _ClassConfig = {
                 name = "Poise",
                 type = "Disc",
                 cond = function(self, discSpell)
-                    return self.ClassConfig.HelperFunctions.BurnDiscCheck(self)
+                    return self.Helpers.BurnDiscCheck(self)
                 end,
             },
             { --pairs with Speed Focus Disc, AE, T2
@@ -621,7 +621,7 @@ local _ClassConfig = {
             },
         },
     },
-    ['PullAbilities']   = {
+    ['PullAbilities'] = {
         {
             id = 'Distant Strike',
             Type = "AA",
@@ -633,7 +633,7 @@ local _ClassConfig = {
             end,
         },
     },
-    ['DefaultConfig']   = {
+    ['DefaultConfig'] = {
         ['Mode']           = {
             DisplayName = "Mode",
             Category = "Combat",
@@ -698,7 +698,7 @@ local _ClassConfig = {
             Default = false,
         },
     },
-    ['ClassFAQ']        = {
+    ['ClassFAQ']      = {
         {
             Question = "What is the current status of this class config?",
             Answer = "This class config is a current release aimed at official servers.\n\n" ..

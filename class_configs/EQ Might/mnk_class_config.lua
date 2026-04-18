@@ -8,15 +8,15 @@ local Core         = require("utils.core")
 local Combat       = require("utils.combat")
 
 local _ClassConfig = {
-    _version            = "2.2 - EQ Might",
-    _author             = "Algar, Derple",
-    ['ModeChecks']      = {
+    _version          = "2.2 - EQ Might",
+    _author           = "Algar, Derple",
+    ['ModeChecks']    = {
         IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
     },
-    ['Modes']           = {
+    ['Modes']         = {
         'DPS',
     },
-    ['ItemSets']        = {
+    ['ItemSets']      = {
         ['RezStaff'] = {
             "Legendary Fabled Staff of Forbidden Rites",
             "Fabled Staff of Forbidden Rites",
@@ -27,7 +27,7 @@ local _ClassConfig = {
             "Fistwraps of Celestial Discipline",
         },
     },
-    ['AbilitySets']     = {
+    ['AbilitySets']   = {
         ['MonkAura'] = {
             "Master's Aura",
             "Disciple's Aura",
@@ -65,6 +65,7 @@ local _ClassConfig = {
         --     "Resistant Discipline",
         -- },
         ['HealingDisc'] = { --EQM Custom, 2m duration, 5m reuse, hp regen
+            "Lifebloom Will Discipline",
             "Rejuvenating Will Discipline",
             "Healing Determination Discipline",
             "Healing Will Discipline",
@@ -74,7 +75,7 @@ local _ClassConfig = {
             "Leopard Claw",
         },
     },
-    ['HelperFunctions'] = {
+    ['Helpers']       = {
         DoRez = function(self, corpseId)
             local rezStaff = self.ResolvedActionMap['RezStaff']
 
@@ -89,7 +90,7 @@ local _ClassConfig = {
         --function to make sure we don't have non-hostiles in range before we use AE damage
 
     },
-    ['RotationOrder']   = {
+    ['RotationOrder'] = {
         {
             name = 'Downtime',
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
@@ -146,7 +147,7 @@ local _ClassConfig = {
             end,
         },
     },
-    ['Rotations']       = {
+    ['Rotations']     = {
         ['Downtime'] = {
             {
                 name = "MonkAura",
@@ -282,7 +283,7 @@ local _ClassConfig = {
             },
         },
     },
-    ['PullAbilities']   = {
+    ['PullAbilities'] = {
         {
             id = 'Grappling Strike',
             Type = "AA",
@@ -294,7 +295,7 @@ local _ClassConfig = {
             end,
         },
     },
-    ['DefaultConfig']   = {
+    ['DefaultConfig'] = {
         ['Mode']            = {
             DisplayName = "Mode",
             Category = "Combat",
@@ -350,7 +351,7 @@ local _ClassConfig = {
             ConfigType = "Advanced",
         },
     },
-    ['ClassFAQ']        = {
+    ['ClassFAQ']      = {
         {
             Question = "What is the current status of this class config?",
             Answer = "This class config is currently a Work-In-Progress that was originally based off of the Project Lazarus config.\n\n" ..

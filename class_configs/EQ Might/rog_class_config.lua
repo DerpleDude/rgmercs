@@ -8,15 +8,15 @@ local Strings   = require("utils.strings")
 local Logger    = require("utils.logger")
 
 return {
-    _version            = "2.2 - EQ Might",
-    _author             = "Derple, Algar, mackal",
-    ['ModeChecks']      = {
+    _version          = "2.2 - EQ Might",
+    _author           = "Derple, Algar, mackal",
+    ['ModeChecks']    = {
         IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
     },
-    ['Modes']           = {
+    ['Modes']         = {
         'DPS',
     },
-    ['ItemSets']        = {
+    ['ItemSets']      = {
         ['RezStaff'] = {
             "Legendary Fabled Staff of Forbidden Rites",
             "Fabled Staff of Forbidden Rites",
@@ -31,7 +31,7 @@ return {
             "Nightshade, Blade of Entropy",
         },
     },
-    ['AbilitySets']     = {
+    ['AbilitySets']   = {
         ["ThiefBuff"] = {
             "Thief's Eyes", -- Level 65
         },
@@ -67,6 +67,7 @@ return {
             "Deadly Precision Discipline",
         },
         ['HealingDisc'] = { --EQM Custom, 2m duration, 5m reuse, hp regen
+            "Lifebloom Will Discipline",
             "Rejuvenating Will Discipline",
             "Healing Determination Discipline",
             "Healing Will Discipline",
@@ -75,7 +76,7 @@ return {
             "Guide of Toxicity",
         },
     },
-    ['RotationOrder']   = {
+    ['RotationOrder'] = {
         {
             name = 'Downtime',
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
@@ -133,7 +134,7 @@ return {
             end,
         },
     },
-    ['Rotations']       = {
+    ['Rotations']     = {
         ['Burn'] = {
             {
                 name = "Guide of Toxicity",
@@ -322,7 +323,7 @@ return {
             },
         },
     },
-    ['HelperFunctions'] = {
+    ['Helpers']       = {
         DoRez = function(self, corpseId)
             local rezStaff = self.ResolvedActionMap['RezStaff']
 
@@ -358,7 +359,7 @@ return {
             return Targeting.IHaveAggro(100)
         end,
     },
-    ['DefaultConfig']   = {
+    ['DefaultConfig'] = {
         ['Mode']            = {
             DisplayName = "Mode",
             Category = "Combat",
@@ -468,7 +469,7 @@ return {
             ConfigType = "Advanced",
         },
     },
-    ['ClassFAQ']        = {
+    ['ClassFAQ']      = {
         {
             Question = "What is the current status of this class config?",
             Answer = "This class config is currently a Work-In-Progress that was originally based off of the Project Lazarus config.\n\n" ..

@@ -45,7 +45,7 @@ local _ClassConfig = {
             handler =
                 function(self)
                     Config:SetSetting('DoLich', true)
-                    Core.SafeCallFunc("Start Necro Lich", self.ClassConfig.HelperFunctions.StartLich, self)
+                    Core.SafeCallFunc("Start Necro Lich", self.Helpers.StartLich, self)
 
                     return true
                 end,
@@ -55,7 +55,7 @@ local _ClassConfig = {
             about = "Stop your Lich Spell [Note: This will NOT disable DoLich].",
             handler =
                 function(self)
-                    Core.SafeCallFunc("Stop Necro Lich", self.ClassConfig.HelperFunctions.CancelLich, self)
+                    Core.SafeCallFunc("Stop Necro Lich", self.Helpers.CancelLich, self)
 
                     return true
                 end,
@@ -482,7 +482,7 @@ local _ClassConfig = {
                     return "No Scent Item Found"
                 end,
                 type = "item",
-                load_cond = function(self) return self.ClassConfig.HelperFunctions.GetScentItem ~= nil end,
+                load_cond = function(self) return self.Helpers.GetScentItem ~= nil end,
                 cond = function(self, itemName, target)
                     return Casting.DetItemCheck(itemName)
                 end,
@@ -490,7 +490,7 @@ local _ClassConfig = {
             {
                 name = "ScentDebuff",
                 type = "Spell",
-                load_cond = function(self) return not self.ClassConfig.HelperFunctions.GetScentItem end,
+                load_cond = function(self) return not self.Helpers.GetScentItem end,
                 cond = function(self, spell, target)
                     return Casting.DetSpellCheck(spell)
                 end,
@@ -560,7 +560,7 @@ local _ClassConfig = {
                         (mq.TLO.Me.PctHPs() <= Config:GetSetting('StopLichHP') or mq.TLO.Me.PctMana() >= Config:GetSetting('StopLichMana'))
                 end,
                 custom_func = function(self)
-                    Core.SafeCallFunc("Stop Necro Lich", self.ClassConfig.HelperFunctions.CancelLich, self)
+                    Core.SafeCallFunc("Stop Necro Lich", self.Helpers.CancelLich, self)
                 end,
             },
             {
@@ -795,7 +795,7 @@ local _ClassConfig = {
                         (mq.TLO.Me.PctHPs() <= Config:GetSetting('StopLichHP') or mq.TLO.Me.PctMana() >= Config:GetSetting('StopLichMana'))
                 end,
                 custom_func = function(self)
-                    Core.SafeCallFunc("Stop Necro Lich", self.ClassConfig.HelperFunctions.CancelLich, self)
+                    Core.SafeCallFunc("Stop Necro Lich", self.Helpers.CancelLich, self)
                 end,
             },
         },
@@ -857,7 +857,7 @@ local _ClassConfig = {
             },
         },
     },
-    ['HelperFunctions'] = {
+    ['Helpers']         = {
         DoRez = function(self, corpseId)
             local rezStaff = self.ResolvedActionMap['RezStaff']
 
@@ -901,7 +901,7 @@ local _ClassConfig = {
                 { name = "PetHealSpell", cond = function(self) return Config:GetSetting('DoPetHealSpell') end, },
                 { name = "CharmSpell",   cond = function(self) return Config:GetSetting('CharmOn') end, },
                 { name = "SnareDot",     cond = function(self) return Config:GetSetting('DoSnare') and not Casting.CanUseAA("Encroaching Darkness") end, },
-                { name = "ScentDebuff",  cond = function(self) return Config:GetSetting('ScentDebuffUse') == 2 and not self.ClassConfig.HelperFunctions.GetScentItem end, },
+                { name = "ScentDebuff",  cond = function(self) return Config:GetSetting('ScentDebuffUse') == 2 and not self.Helpers.GetScentItem end, },
                 { name = "ScentDebuff2", cond = function(self) return Config:GetSetting('ScentDebuffUse') == 3 end, },
                 { name = "PoisonNuke", },
                 { name = "FireDot", },

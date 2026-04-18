@@ -643,7 +643,7 @@ local _ClassConfig = {
                 name = "IceRain",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    if not self.ClassConfig.HelperFunctions.RainCheck(target) then return false end
+                    if not self.Helpers.RainCheck(target) then return false end
                     return Casting.HaveManaToNuke(true)
                 end,
             },
@@ -991,7 +991,7 @@ local _ClassConfig = {
             },
         },
     },
-    ['HelperFunctions']   = {
+    ['Helpers']           = {
         DoRez = function(self, corpseId, ownerName)
             local rezAction = false
             local rezSpell = Core.GetResolvedActionMapItem('RezSpell')

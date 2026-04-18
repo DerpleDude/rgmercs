@@ -111,10 +111,7 @@ function Combat.EngageTarget(autoTargetId)
     if target() and (target.ID() or 0) == autoTargetId and Targeting.GetTargetDistance() <= Config:GetSetting('AssistRange') then
         if (Targeting.GetTargetPctHPs() <= Config:GetSetting('AutoAssistAt') or Core.IAmMA()) and not Targeting.GetTargetDead(target) then
             if not mq.TLO.Me.Combat() then
-                local classConfig = Modules:ExecModule("Class", "GetClassConfig")
-                if classConfig and classConfig.HelperFunctions and classConfig.HelperFunctions.PreEngage then
-                    classConfig.HelperFunctions.PreEngage(target)
-                end
+                Core.SafeCallClassHelper("PreEngage", "PreEngage", target)
             end
 
             if Config:GetSetting('DoMelee') then

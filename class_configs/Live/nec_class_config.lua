@@ -56,7 +56,7 @@ local _ClassConfig = {
             handler =
                 function(self)
                     Config:SetSetting('DoLich', true)
-                    Core.SafeCallFunc("Start Necro Lich", self.ClassConfig.HelperFunctions.StartLich, self)
+                    Core.SafeCallFunc("Start Necro Lich", self.Helpers.StartLich, self)
 
                     return true
                 end,
@@ -66,7 +66,7 @@ local _ClassConfig = {
             about = "Stop your Lich Spell [Note: This will NOT disable DoLich].",
             handler =
                 function(self)
-                    Core.SafeCallFunc("Stop Necro Lich", self.ClassConfig.HelperFunctions.CancelLich, self)
+                    Core.SafeCallFunc("Stop Necro Lich", self.Helpers.CancelLich, self)
 
                     return true
                 end,
@@ -898,7 +898,7 @@ local _ClassConfig = {
                         (mq.TLO.Me.PctHPs() <= Config:GetSetting('StopLichHP') or mq.TLO.Me.PctMana() >= Config:GetSetting('StopLichMana'))
                 end,
                 custom_func = function(self)
-                    Core.SafeCallFunc("Stop Necro Lich", self.ClassConfig.HelperFunctions.CancelLich, self)
+                    Core.SafeCallFunc("Stop Necro Lich", self.Helpers.CancelLich, self)
                 end,
             },
             {
@@ -910,7 +910,7 @@ local _ClassConfig = {
                     return fleshSpell and fleshSpell() and Casting.IHaveBuff(fleshSpell) and mq.TLO.Me.PctHPs() <= Config:GetSetting('StopLichHP')
                 end,
                 custom_func = function(self)
-                    Core.SafeCallFunc("Stop Flesh Buff", self.ClassConfig.HelperFunctions.CancelFlesh, self)
+                    Core.SafeCallFunc("Stop Flesh Buff", self.Helpers.CancelFlesh, self)
                 end,
             },
         },
@@ -1379,7 +1379,7 @@ local _ClassConfig = {
             },
         },
     },
-    ['HelperFunctions'] = {
+    ['Helpers']         = {
         CancelLich = function(self)
             -- detspa means detremental spell affect
             -- spa is positive spell affect

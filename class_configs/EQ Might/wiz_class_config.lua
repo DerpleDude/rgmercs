@@ -13,19 +13,19 @@ local Logger    = require("utils.logger")
 local Combat    = require("utils.combat")
 
 return {
-    _version            = "2.2 - EQ Might",
-    _author             = "Derple, Algar",
-    ['ModeChecks']      = {
+    _version          = "2.2 - EQ Might",
+    _author           = "Derple, Algar",
+    ['ModeChecks']    = {
         IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
     },
-    ['Modes']           = {
+    ['Modes']         = {
         'DPS',
         'PBAE',
     },
-    ['OnModeChange']    = function(self, mode)
+    ['OnModeChange']  = function(self, mode)
         -- if this is enabled weaves will break.
     end,
-    ['ItemSets']        = {
+    ['ItemSets']      = {
         ['RezStaff'] = {
             "Legendary Fabled Staff of Forbidden Rites",
             "Fabled Staff of Forbidden Rites",
@@ -40,7 +40,7 @@ return {
             "Spelldeviser's Cloth Robe",
         },
     },
-    ['AbilitySets']     = {
+    ['AbilitySets']   = {
         -- ['IceClaw'] = {
         --     "Claw of Vox",
         --     "Claw of Frost",
@@ -243,7 +243,7 @@ return {
         --     "Defense of Calrena",
         -- },
     },
-    ['HelperFunctions'] = {
+    ['Helpers']       = {
         DoRez = function(self, corpseId)
             local rezStaff = self.ResolvedActionMap['RezStaff']
 
@@ -261,7 +261,7 @@ return {
             return Targeting.GetTargetDistance() >= Config:GetSetting('RainDistance') and Targeting.MobNotLowHP(target)
         end,
     },
-    ['RotationOrder']   = {
+    ['RotationOrder'] = {
         -- Downtime doesn't have state because we run the whole rotation at once.
         {
             name = 'Downtime',
@@ -390,7 +390,7 @@ return {
             end,
         },
     },
-    ['Rotations']       = {
+    ['Rotations']     = {
         ['Burn'] = {
             {
                 name = "Epic",
@@ -548,7 +548,7 @@ return {
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoRain') end,
                 cond = function(self, spell, target)
-                    if not self.ClassConfig.HelperFunctions.RainCheck(target) then return false end
+                    if not self.Helpers.RainCheck(target) then return false end
                     return Targeting.AggroCheckOkay()
                 end,
             },
@@ -581,7 +581,7 @@ return {
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoRain') end,
                 cond = function(self, spell, target)
-                    if not self.ClassConfig.HelperFunctions.RainCheck(target) then return false end
+                    if not self.Helpers.RainCheck(target) then return false end
                     return Targeting.AggroCheckOkay()
                 end,
             },
@@ -721,7 +721,7 @@ return {
             },
         },
     },
-    ['SpellList']       = { -- New style spell list, gemless, priority-based. Will use the first set whose conditions are met.
+    ['SpellList']     = { -- New style spell list, gemless, priority-based. Will use the first set whose conditions are met.
         {
             name = "Default Mode",
             -- cond = function(self) return true end, --Code kept here for illustration, if there is no condition to check, this line is not required
@@ -749,7 +749,7 @@ return {
             },
         },
     },
-    ['DefaultConfig']   = {
+    ['DefaultConfig'] = {
         ['Mode']                 = {
             DisplayName = "Mode",
             Category = "Combat",
@@ -949,7 +949,7 @@ return {
             RequiresLoadoutChange = true,
         },
     },
-    ['ClassFAQ']        = {
+    ['ClassFAQ']      = {
         {
             Question = "What is the current status of this class config?",
             Answer = "This class config is currently a Work-In-Progress that was originally based off of the Project Lazarus config.\n\n" ..

@@ -13,16 +13,16 @@ local Logger    = require("utils.logger")
 local Combat    = require("utils.combat")
 
 return {
-    _version            = "2.0 - Project Lazarus",
-    _author             = "Derple, Algar",
-    ['Modes']           = {
+    _version          = "2.0 - Project Lazarus",
+    _author           = "Derple, Algar",
+    ['Modes']         = {
         'DPS',
         'PBAE',
     },
-    ['OnModeChange']    = function(self, mode)
+    ['OnModeChange']  = function(self, mode)
         -- if this is enabled weaves will break.
     end,
-    ['ItemSets']        = {
+    ['ItemSets']      = {
         ['Epic'] = {
             "Staff of Phenomenal Power",
             "Staff of Prismatic Power",
@@ -33,7 +33,7 @@ return {
             "Spelldeviser's Cloth Robe",
         },
     },
-    ['AbilitySets']     = {
+    ['AbilitySets']   = {
         ['IceClaw'] = {
             "Claw of Vox",
             "Claw of Frost",
@@ -234,14 +234,14 @@ return {
             "Flaming Sword of Xuzl", --homework
         },
     },
-    ['HelperFunctions'] = {
+    ['Helpers']       = {
 
         RainCheck = function(target) -- I made a funny
             if not (Config:GetSetting('DoRain') and Config:GetSetting('DoAEDamage')) then return false end
             return Targeting.GetTargetDistance() >= Config:GetSetting('RainDistance') and Targeting.MobNotLowHP(target)
         end,
     },
-    ['RotationOrder']   = {
+    ['RotationOrder'] = {
         -- Downtime doesn't have state because we run the whole rotation at once.
         {
             name = 'Downtime',
@@ -381,7 +381,7 @@ return {
             end,
         },
     },
-    ['Rotations']       = {
+    ['Rotations']     = {
         ['Burn'] = {
             {
                 name = "Epic",
@@ -567,7 +567,7 @@ return {
                 name = "FireRain",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    if not self.ClassConfig.HelperFunctions.RainCheck(target) then return false end
+                    if not self.Helpers.RainCheck(target) then return false end
                     return Targeting.AggroCheckOkay()
                 end,
             },
@@ -591,7 +591,7 @@ return {
                 name = "IceRain",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    if not self.ClassConfig.HelperFunctions.RainCheck(target) then return false end
+                    if not self.Helpers.RainCheck(target) then return false end
                     return Targeting.AggroCheckOkay()
                 end,
             },
@@ -737,7 +737,7 @@ return {
             },
         },
     },
-    ['Spells']          = {
+    ['Spells']        = {
         {
             gem = 1,
             spells = {
@@ -892,7 +892,7 @@ return {
             },
         },
     },
-    ['DefaultConfig']   = {
+    ['DefaultConfig'] = {
         ['Mode']                 = {
             DisplayName = "Mode",
             Category = "Combat",
@@ -1037,7 +1037,7 @@ return {
             Default = true,
         },
     },
-    ['ClassFAQ']        = {
+    ['ClassFAQ']      = {
         {
             Question = "What is the current status of this class config?",
             Answer = "This class config is a current release customized specifically for Project Lazarus server.\n\n" ..

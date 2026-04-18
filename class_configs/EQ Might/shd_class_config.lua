@@ -77,17 +77,17 @@ local Tooltips     = {
 
 local _ClassConfig = {
     -- Added BladeDisc line for AE taunt, return spears to ST
-    _version            = "2.6 - EQ Might",
-    _author             = "Algar, Derple",
-    ['ModeChecks']      = {
+    _version          = "2.6 - EQ Might",
+    _author           = "Algar, Derple",
+    ['ModeChecks']    = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
         IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
     },
-    ['Modes']           = {
+    ['Modes']         = {
         'Tank',
         'DPS',
     },
-    ['Themes']          = {
+    ['Themes']        = {
         ['Tank'] = {
             { element = ImGuiCol.TitleBgActive,    color = { r = 0.5, g = 0.05, b = 0.05, a = .8, }, },
             { element = ImGuiCol.TableHeaderBg,    color = { r = 0.5, g = 0.05, b = 0.05, a = .8, }, },
@@ -108,7 +108,7 @@ local _ClassConfig = {
             { element = ImGuiCol.FrameBgActive,    color = { r = 0.5, g = 0.05, b = 0.05, a = 1.0, }, },
         },
     },
-    ['ItemSets']        = {
+    ['ItemSets']      = {
         ['RezStaff'] = {
             "Legendary Fabled Staff of Forbidden Rites",
             "Fabled Staff of Forbidden Rites",
@@ -124,7 +124,7 @@ local _ClassConfig = {
             "Duskbringer's Plate Chestguard of the Hateful",
         },
     },
-    ['AbilitySets']     = {
+    ['AbilitySets']   = {
         --Laz spells to look into: Fickle Shadows
         ['Mantle'] = {
             "Soul Carapace",
@@ -349,7 +349,7 @@ local _ClassConfig = {
         },
         -- pact of decay ... is this a lich? level 69
     },
-    ['HelperFunctions'] = {
+    ['Helpers']       = {
         DoRez = function(self, corpseId)
             local rezStaff = self.ResolvedActionMap['RezStaff']
 
@@ -388,7 +388,7 @@ local _ClassConfig = {
         end,
 
     },
-    ['RotationOrder']   = {
+    ['RotationOrder'] = {
         { --Self Buffs
             name = 'Downtime',
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
@@ -495,7 +495,7 @@ local _ClassConfig = {
                     -- we are under our defense start HP
                     (mq.TLO.Me.PctHPs() <= Config:GetSetting('DefenseStart') or
                         -- we have met our defense count threshold
-                        self.ClassConfig.HelperFunctions.DefensiveDiscCheck(true) or
+                        self.Helpers.DefensiveDiscCheck(true) or
                         -- we are fighting a named and we are (presumably) tanking it
                         (Globals.AutoTargetIsNamed and Targeting.GetAutoTargetAggroPct() >= 100))
             end,
@@ -532,7 +532,7 @@ local _ClassConfig = {
             end,
         },
     },
-    ['Rotations']       = {
+    ['Rotations']     = {
         ['Downtime'] = {
             {
                 name = "Horror",
@@ -901,8 +901,7 @@ local _ClassConfig = {
                 tooltip = Tooltips.Mantle,
                 cond = function(self, discSpell, target)
                     if not Core.IsTanking() then return false end
-                    local protReady = mq.TLO.Me.CombatAbilityReady(Core.GetResolvedActionMapItem('Protective') or "")()
-                    return Casting.NoDiscActive() and not protReady
+                    return Casting.NoDiscActive() and Casting.DiscOnCoolDown('Protective')
                 end,
             },
             {
@@ -911,7 +910,7 @@ local _ClassConfig = {
                 tooltip = Tooltips.Epic,
                 cond = function(self, itemName, target)
                     if Config:GetSetting('HoldEpicForNoDisc') and not Casting.NoDiscActive() then return false end
-                    return self.ClassConfig.HelperFunctions.LeechCheck(self) or Globals.AutoTargetIsNamed
+                    return self.Helpers.LeechCheck(self) or Globals.AutoTargetIsNamed
                 end,
             },
         },
@@ -1088,7 +1087,7 @@ local _ClassConfig = {
     -- The first list without conditions or whose conditions returns true will be loaded, all subsequent lists will be ignored.
     -- Spells will be loaded in order (if the conditions are met), until all gem slots are full.
     -- Loadout checks (such as scribing a spell or using the "Rescan Loadout" or "Reload Spells" buttons) will re-check these lists and may load a different set if things have changed.
-    ['SpellList']       = {
+    ['SpellList']     = {
         {
             name = "Default",
             -- cond = function(self) return true end, --Kept here for illustration, this line could be removed in this instance since we aren't using conditions.
@@ -1114,7 +1113,7 @@ local _ClassConfig = {
             },
         },
     },
-    ['PullAbilities']   = {
+    ['PullAbilities'] = {
         {
             id = 'SpearNuke',
             Type = "Spell",
@@ -1188,7 +1187,7 @@ local _ClassConfig = {
             end,
         },
     },
-    ['DefaultConfig']   = {
+    ['DefaultConfig'] = {
         --Mode
         ['Mode']              = {
             DisplayName = "Mode",
@@ -1522,7 +1521,7 @@ local _ClassConfig = {
             Answer = "The Shield on Named option doesn't check levels, so feel free to disable this setting (or Bandolier swapping entirely) if you are farming fodder.",
         },
     },
-    ['ClassFAQ']        = {
+    ['ClassFAQ']      = {
         {
             Question = "What is the current status of this class config?",
             Answer = "This class config is currently a Work-In-Progress that was originally based off of the Project Lazarus config.\n\n" ..

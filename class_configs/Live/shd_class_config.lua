@@ -77,16 +77,16 @@ local Tooltips     = {
 }
 
 local _ClassConfig = {
-    _version            = "3.0 - Live",
-    _author             = "Algar, Derple",
-    ['ModeChecks']      = {
+    _version          = "3.0 - Live",
+    _author           = "Algar, Derple",
+    ['ModeChecks']    = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
     },
-    ['Modes']           = {
+    ['Modes']         = {
         'Tank',
         'DPS',
     },
-    ['Themes']          = {
+    ['Themes']        = {
         ['Tank'] = {
             { element = ImGuiCol.TitleBgActive,    color = { r = 0.5, g = 0.05, b = 0.05, a = .8, }, },
             { element = ImGuiCol.TableHeaderBg,    color = { r = 0.5, g = 0.05, b = 0.05, a = .8, }, },
@@ -107,7 +107,7 @@ local _ClassConfig = {
             { element = ImGuiCol.FrameBgActive,    color = { r = 0.5, g = 0.05, b = 0.05, a = 1.0, }, },
         },
     },
-    ['ItemSets']        = {
+    ['ItemSets']      = {
         ['Epic'] = {
             "Innoruuk's Dark Blessing",
             "Innoruuk's Voice",
@@ -121,7 +121,7 @@ local _ClassConfig = {
             "Blood Drinker's Coating",
         },
     },
-    ['AbilitySets']     = {
+    ['AbilitySets']   = {
         ['Mantle'] = {
             "Waxwork Mantle",
             "Ichor Guard", -- Level 56, Timer 5
@@ -730,7 +730,7 @@ local _ClassConfig = {
             "Voice of Darkness", -- level 39, 2% hate
         },
     },
-    ['HelperFunctions'] = {
+    ['Helpers']       = {
         --determine whether we should overwrite DLU buffs with better single buffs
         SingleBuffCheck = function(self)
             if Casting.CanUseAA("Dark Lord's Unity (Azia)") and not Config:GetSetting('OverwriteDLUBuffs') then return false end
@@ -764,7 +764,7 @@ local _ClassConfig = {
         --function to make sure we don't have non-hostiles in range before we use AE damage or non-taunt AE hate abilities
 
     },
-    ['RotationOrder']   = {
+    ['RotationOrder'] = {
         { --Self Buffs
             name = 'Downtime',
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
@@ -864,7 +864,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and (mq.TLO.Me.PctHPs() <= Config:GetSetting('DefenseStart') or Globals.AutoTargetIsNamed or
-                    self.ClassConfig.HelperFunctions.DefensiveDiscCheck(true))
+                    self.Helpers.DefensiveDiscCheck(true))
             end,
         },
         { -- Leech Effect (Epic, OoW BP, Coating) maintenance
@@ -874,7 +874,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 if mq.TLO.Me.PctHPs() <= Config:GetSetting('HPCritical') then return false end
-                return combat_state == "Combat" and self.ClassConfig.HelperFunctions.LeechCheck(self)
+                return combat_state == "Combat" and self.Helpers.LeechCheck(self)
             end,
         },
         { --Keep things from running
@@ -919,7 +919,7 @@ local _ClassConfig = {
             end,
         },
     },
-    ['Rotations']       = {
+    ['Rotations']     = {
         ['Downtime'] = {
             {
                 name = "EndRegen",
@@ -962,7 +962,7 @@ local _ClassConfig = {
                 tooltip = Tooltips.Shroud,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
-                    return self.ClassConfig.HelperFunctions.SingleBuffCheck() and Casting.SelfBuffCheck(spell)
+                    return self.Helpers.SingleBuffCheck() and Casting.SelfBuffCheck(spell)
                 end,
             },
             {
@@ -972,7 +972,7 @@ local _ClassConfig = {
                 load_cond = function(self) return Config:GetSetting('ProcChoice') == 1 end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
-                    return self.ClassConfig.HelperFunctions.SingleBuffCheck() and Casting.SelfBuffCheck(spell)
+                    return self.Helpers.SingleBuffCheck() and Casting.SelfBuffCheck(spell)
                 end,
             },
             {
@@ -982,7 +982,7 @@ local _ClassConfig = {
                 load_cond = function(self) return Config:GetSetting('ProcChoice') == 2 end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
-                    return self.ClassConfig.HelperFunctions.SingleBuffCheck() and Casting.SelfBuffCheck(spell)
+                    return self.Helpers.SingleBuffCheck() and Casting.SelfBuffCheck(spell)
                 end,
             },
             {
@@ -991,7 +991,7 @@ local _ClassConfig = {
                 tooltip = Tooltips.Demeanor,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
-                    return self.ClassConfig.HelperFunctions.SingleBuffCheck() and Casting.SelfBuffCheck(spell)
+                    return self.Helpers.SingleBuffCheck() and Casting.SelfBuffCheck(spell)
                 end,
             },
             {
@@ -1000,7 +1000,7 @@ local _ClassConfig = {
                 tooltip = Tooltips.CloakHP,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
-                    return self.ClassConfig.HelperFunctions.SingleBuffCheck() and Casting.SelfBuffCheck(spell)
+                    return self.Helpers.SingleBuffCheck() and Casting.SelfBuffCheck(spell)
                 end,
             },
             {
@@ -1009,7 +1009,7 @@ local _ClassConfig = {
                 tooltip = Tooltips.SelfDS,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
-                    return self.ClassConfig.HelperFunctions.SingleBuffCheck() and Casting.SelfBuffCheck(spell) and Casting.ReagentCheck(spell)
+                    return self.Helpers.SingleBuffCheck() and Casting.SelfBuffCheck(spell) and Casting.ReagentCheck(spell)
                 end,
             },
             {
@@ -1018,7 +1018,7 @@ local _ClassConfig = {
                 tooltip = Tooltips.Covenant,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
-                    return self.ClassConfig.HelperFunctions.SingleBuffCheck() and Casting.SelfBuffCheck(spell)
+                    return self.Helpers.SingleBuffCheck() and Casting.SelfBuffCheck(spell)
                 end,
             },
             {
@@ -1027,7 +1027,7 @@ local _ClassConfig = {
                 tooltip = Tooltips.CallAtk,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
-                    return self.ClassConfig.HelperFunctions.SingleBuffCheck() and Casting.SelfBuffCheck(spell)
+                    return self.Helpers.SingleBuffCheck() and Casting.SelfBuffCheck(spell)
                 end,
             },
             --You'll notice my use of TotalSeconds, this is to keep as close to 100% uptime as possible on these buffs, rebuffing early to decrease the chance of them falling off in combat
@@ -1740,7 +1740,7 @@ local _ClassConfig = {
             },
         },
     },
-    ['Spells']          = { --I am not trying to find a combination that works when we have 20 options that change based on level, so I've just made a repeating priority list. May adjust this later.
+    ['Spells']        = { --I am not trying to find a combination that works when we have 20 options that change based on level, so I've just made a repeating priority list. May adjust this later.
         {
             gem = 1,
             spells = {
@@ -2157,7 +2157,7 @@ local _ClassConfig = {
             },
         },
     },
-    ['PullAbilities']   = {
+    ['PullAbilities'] = {
         {
             id = 'SpearNuke',
             Type = "Spell",
@@ -2231,7 +2231,7 @@ local _ClassConfig = {
             end,
         },
     },
-    ['DefaultConfig']   = {
+    ['DefaultConfig'] = {
         --Mode
         ['Mode']              = {
             DisplayName = "Mode",
@@ -2685,7 +2685,7 @@ local _ClassConfig = {
             Answer = "The Shield on Named option doesn't check levels, so feel free to disable this setting (or Bandolier swapping entirely) if you are farming fodder.",
         },
     },
-    ['ClassFAQ']        = {
+    ['ClassFAQ']      = {
         {
             Question = "What is the current status of this class config?",
             Answer = "This class config is a current release aimed at official servers.\n\n" ..

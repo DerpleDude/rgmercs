@@ -389,7 +389,7 @@ local _ClassConfig = {
             "Putrid Decay",
         },
     },
-    ['HelperFunctions']   = {
+    ['Helpers']           = {
         DoRez = function(self, corpseId, ownerName)
             local rezAction = false
             local rezSpell = Core.GetResolvedActionMapItem('RezSpell')

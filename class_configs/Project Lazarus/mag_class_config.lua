@@ -766,7 +766,7 @@ _ClassConfig    = {
         },
     },
     -- Really the meat of this class.
-    ['HelperFunctions']   = {
+    ['Helpers']           = {
         user_tu_spell = function(self, aaName)
             local shroudSpell = self.ResolvedActionMap['ShroudSpell']
             local aaSpell = Casting.GetAASpell(aaName)
@@ -798,7 +798,7 @@ _ClassConfig    = {
 
             -- Low Level Check - In 2 cases You're too lowlevel to Know Suspend companion and have no pet or You've Turned off Usepocket pet.
             if mq.TLO.Me.Pet.ID() == 0 and (not Casting.CanUseAA("Suspended Minion") or not Config:GetSetting('DoPocketPet')) then
-                if not self.ClassConfig.HelperFunctions.summon_pet(self) then
+                if not self.Helpers.summon_pet(self) then
                     Logger.log_debug("\arPetManagement - Case 0 -> Summon Failed")
                     return false
                 end
@@ -815,7 +815,7 @@ _ClassConfig    = {
                 -- Case 1 - No pocket pet and no pet up
                 if not self.TempSettings.PocketPet and mq.TLO.Me.Pet.ID() == 0 and Targeting.GetXTHaterCount() == 0 then
                     Logger.log_debug("\ayPetManagement - Case 1 no Pocket Pet and no Pet")
-                    if not self.ClassConfig.HelperFunctions.summon_pet(self) then
+                    if not self.Helpers.summon_pet(self) then
                         Logger.log_debug("\arPetManagement - Case 1 -> Summon Failed")
                         return false
                     end
@@ -837,7 +837,7 @@ _ClassConfig    = {
                 Logger.log_debug("\ayPetManagement - Case 2 no Pocket Pet But Pet is up - pocketing")
                 Casting.UseAA("Suspended Minion", mq.TLO.Me.ID(), true)
                 if (mq.TLO.Me.Pet.ID() or 0) == 0 then
-                    if not self.ClassConfig.HelperFunctions.summon_pet(self) then
+                    if not self.Helpers.summon_pet(self) then
                         Logger.log_debug("\arPetManagement - Case 2 -> Summon Failed")
                         return false
                     end
@@ -850,7 +850,7 @@ _ClassConfig    = {
             -- Case 3 - Pocket Pet and no pet up
             if self.TempSettings.PocketPet and (mq.TLO.Me.Pet.ID() or 0) == 0 and Targeting.GetXTHaterCount() == 0 then
                 Logger.log_debug("\ayPetManagement - Case 3 Pocket Pet But No Pet is up")
-                if not self.ClassConfig.HelperFunctions.summon_pet(self) then
+                if not self.Helpers.summon_pet(self) then
                     Logger.log_debug("\arPetManagement - Case 3 -> Summon Failed")
                     return false
                 end
@@ -901,7 +901,7 @@ _ClassConfig    = {
                     if self.TempSettings.PocketPet == nil then self.TempSettings.PocketPet = false end
                     return mq.TLO.Me.Pet.ID() == 0 and Config:GetSetting('DoPet')
                 end,
-                custom_func = function(self) return self.ClassConfig.HelperFunctions.summon_pet(self) end,
+                custom_func = function(self) return self.Helpers.summon_pet(self) end,
                 post_activate = function(self, _, success)
                     if success and mq.TLO.Me.Pet.ID() > 0 then
                         mq.delay(50) -- slight delay to prevent chat bug with command issue
@@ -919,7 +919,7 @@ _ClassConfig    = {
                     if self.TempSettings.PocketPet == nil then self.TempSettings.PocketPet = false end
                     return not self.TempSettings.PocketPet and Config:GetSetting('DoPocketPet')
                 end,
-                custom_func = function(self) return self.ClassConfig.HelperFunctions.pet_management(self) end,
+                custom_func = function(self) return self.Helpers.pet_management(self) end,
             },
         },
         ['PetHealing'] = {
@@ -1346,7 +1346,7 @@ _ClassConfig    = {
                 end,
                 post_activate = function(self, spell, success)
                     if success then
-                        Core.SafeCallFunc("Autoinventory", self.ClassConfig.HelperFunctions.HandleItemSummon, self, spell, "group")
+                        Core.SafeCallFunc("Autoinventory", self.Helpers.HandleItemSummon, self, spell, "group")
                     end
                 end,
             },
@@ -1373,7 +1373,7 @@ _ClassConfig    = {
                 end,
                 post_activate = function(self, aaName, success)
                     if success then
-                        Core.SafeCallFunc("Autoinventory", self.ClassConfig.HelperFunctions.HandleItemSummon, self, aaName, "group")
+                        Core.SafeCallFunc("Autoinventory", self.Helpers.HandleItemSummon, self, aaName, "group")
                     end
                 end,
             },
@@ -1389,7 +1389,7 @@ _ClassConfig    = {
                 end,
                 post_activate = function(self, spell, success)
                     if success then
-                        Core.SafeCallFunc("Autoinventory", self.ClassConfig.HelperFunctions.HandleItemSummon, self, spell, "group")
+                        Core.SafeCallFunc("Autoinventory", self.Helpers.HandleItemSummon, self, spell, "group")
                     end
                 end,
             },

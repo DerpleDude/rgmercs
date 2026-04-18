@@ -337,7 +337,7 @@ return {
             end,
         },
     },
-    ['HelperFunctions']   = {
+    ['Helpers']           = {
         DoRez = function(self, corpseId)
             local rezStaff = self.ResolvedActionMap['RezStaff']
 
@@ -392,7 +392,7 @@ return {
                 name = "Ranged Mode",
                 type = "CustomFunc",
                 custom_func = function(self)
-                    Core.SafeCallFunc("Ranger Custom Nav", self.ClassConfig.HelperFunctions.combatNav, false)
+                    Core.SafeCallFunc("Ranger Custom Nav", self.Helpers.combatNav, false)
                 end,
             },
         },

@@ -28,25 +28,25 @@ local auraSpellToName = {
 }
 
 local _ClassConfig    = {
-    _version            = "1.5 - Live",
-    _author             = "Derple, Grimmier, Algar",
-    ['ModeChecks']      = {
+    _version          = "1.5 - Live",
+    _author           = "Derple, Grimmier, Algar",
+    ['ModeChecks']    = {
         CanMez     = function() return true end,
         CanCharm   = function() return true end,
         IsCharming = function() return Config:GetSetting('CharmOn') end,
         IsMezzing  = function() return Config:GetSetting('MezOn') end,
     },
-    ['Modes']           = {
+    ['Modes']         = {
         'Default',
         'ModernEra', --Different DPS rotation, meant for ~90+ (and may not come fully online until 105ish)
     },
-    ['ItemSets']        = {
+    ['ItemSets']      = {
         ['Epic'] = {
             "Staff of Eternal Eloquence",
             "Oculus of Persuasion",
         },
     },
-    ['AbilitySets']     = {
+    ['AbilitySets']   = {
         ['TwincastAura'] = {
             "Twincast Aura",
         },
@@ -829,7 +829,7 @@ local _ClassConfig    = {
             "Root",
         },
     },
-    ['RotationOrder']   = {
+    ['RotationOrder'] = {
         {
             name = 'Downtime',
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
@@ -931,7 +931,7 @@ local _ClassConfig    = {
             end,
         },
     },
-    ['HelperFunctions'] = { --used to autoinventory our azure crystal after summon
+    ['Helpers']       = { --used to autoinventory our azure crystal after summon
         StashCrystal = function()
             mq.delay("2s", function() return mq.TLO.Cursor.ID() == mq.TLO.Me.AltAbility("Azure Mind Crystal").Spell.Base(1)() end)
 
@@ -958,7 +958,7 @@ local _ClassConfig    = {
             end
         end,
     },
-    ['Rotations']       = {
+    ['Rotations']     = {
         ['Downtime'] = {
             {
                 name = "Orator's Unity",
@@ -1018,7 +1018,7 @@ local _ClassConfig    = {
                 cond = function(self, aaName) return mq.TLO.Me.PctMana() > 90 and not mq.TLO.FindItem(aaName)() end,
                 post_activate = function(self, aaName, success)
                     if success then
-                        Core.SafeCallFunc("Autoinventory", self.ClassConfig.HelperFunctions.StashCrystal)
+                        Core.SafeCallFunc("Autoinventory", self.Helpers.StashCrystal)
                     end
                 end,
             },
@@ -1031,7 +1031,7 @@ local _ClassConfig    = {
                 name = "LearnersAura",
                 type = "Spell",
                 active_cond = function(self, spell) return Casting.AuraActiveByName(spell.Name()) end,
-                pre_activate = function(self) self.ClassConfig.HelperFunctions.AuraCheck() end,
+                pre_activate = function(self) self.Helpers.AuraCheck() end,
                 cond = function(self, spell)
                     return Config:GetSetting('DoLearners') and not Casting.AuraActiveByName(spell.Name())
                 end,
@@ -1040,7 +1040,7 @@ local _ClassConfig    = {
                 name = "TwincastAura",
                 type = "Spell",
                 active_cond = function(self, spell) return Casting.AuraActiveByName(spell.Name()) end,
-                pre_activate = function(self) self.ClassConfig.HelperFunctions.AuraCheck() end,
+                pre_activate = function(self) self.Helpers.AuraCheck() end,
                 cond = function(self, spell)
                     -- don't use this if we selected learners and don't have two auras
                     if Config:GetSetting('DoLearners') and not Casting.CanUseAA('Auroria Mastery') then return false end
@@ -1054,7 +1054,7 @@ local _ClassConfig    = {
                     local aura = spell and auraSpellToName[spell.Name()] or "None"
                     return Casting.AuraActiveByName(aura)
                 end,
-                pre_activate = function(self) self.ClassConfig.HelperFunctions.AuraCheck() end,
+                pre_activate = function(self) self.Helpers.AuraCheck() end,
                 cond = function(self, spell)
                     -- don't use this if we have learner's selected, whether one aura or two
                     local useLearnersInstead = Config:GetSetting('DoLearners') and Core.GetResolvedActionMapItem('LearnersAura')
@@ -1498,7 +1498,7 @@ local _ClassConfig    = {
             },
         },
     },
-    ['SpellList']       = { -- New style spell list, gemless, priority-based. Will use the first set whose conditions are met.
+    ['SpellList']     = { -- New style spell list, gemless, priority-based. Will use the first set whose conditions are met.
         {
             name = "Default",
             -- cond = function(self) return true end, --Code kept here for illustration, if there is no condition to check, this line is not required
@@ -1530,7 +1530,7 @@ local _ClassConfig    = {
             },
         },
     },
-    ['PullAbilities']   = {
+    ['PullAbilities'] = {
         {
             id = 'TashSpell',
             Type = "Spell",
@@ -1556,7 +1556,7 @@ local _ClassConfig    = {
             end,
         },
     },
-    ['DefaultConfig']   = {
+    ['DefaultConfig'] = {
         ['Mode']               = {
             DisplayName = "Mode",
             Category = "Combat",
@@ -1810,7 +1810,7 @@ local _ClassConfig    = {
             Default = true,
         },
     },
-    ['ClassFAQ']        = {
+    ['ClassFAQ']      = {
         {
             Question = "What is the current status of this class config?",
             Answer = "This class config is a current release aimed at official servers.\n\n" ..

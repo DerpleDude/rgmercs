@@ -312,7 +312,7 @@ return {
             },
         },
     },
-    ['HelperFunctions']   = {
+    ['Helpers']           = {
         --Did not include Staff of Forbidden Rites, GoR refresh is very fast and rez is 96%
         DoRez = function(self, corpseId)
             local rezAction = false
@@ -587,7 +587,7 @@ return {
                     -- we are under our defense start HP
                     (mq.TLO.Me.PctHPs() <= Config:GetSetting('DefenseStart') or
                         -- we have met our defense count threshold
-                        self.ClassConfig.HelperFunctions.DefensiveDiscCheck(true) or
+                        self.Helpers.DefensiveDiscCheck(true) or
                         -- we are fighting a named and we are (presumably) tanking it
                         (Globals.AutoTargetIsNamed and Targeting.GetAutoTargetAggroPct() >= 100))
             end,
@@ -771,9 +771,7 @@ return {
                 name = "SancDisc",
                 type = "Disc",
                 cond = function(self, discSpell)
-                    local blockReady = mq.TLO.Me.CombatAbilityReady(Core.GetResolvedActionMapItem('BlockDisc') or "")()
-                    local guardReady = mq.TLO.Me.CombatAbilityReady(Core.GetResolvedActionMapItem('GuardDisc') or "")()
-                    return Casting.NoDiscActive() and not blockReady and not guardReady
+                    return Casting.NoDiscActive() and Casting.DiscOnCoolDown('BlockDisc') and Casting.DiscOnCoolDown('GuardDisc')
                 end,
             },
         },

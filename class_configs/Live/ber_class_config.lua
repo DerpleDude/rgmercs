@@ -8,17 +8,17 @@ local Strings   = require("utils.strings")
 local Logger    = require("utils.logger")
 
 return {
-    _version            = "1.4 - Live",
+    _version          = "1.4 - Live",
     -- 1.1 added Dicho to rotation -SCVOne
     -- 1.2 added Bfrenzy  timer 11 -SCVOne
     -- 1.3 seperated DPS into 3 sections to increase freq of attacks -SCVOne
     -- 1.4 Added toggle for Disconcering Disc, Fixed errors in burn phase with minor refactors --Algar
 
-    _author             = "Derple, SCVOne, Algar",
-    ['Modes']           = {
+    _author           = "Derple, SCVOne, Algar",
+    ['Modes']         = {
         'DPS',
     },
-    ['ItemSets']        = {
+    ['ItemSets']      = {
         ['Epic'] = {
             "Vengeful Taelosian Blood Axe",
             "Raging Taelosian Alloy Axe",
@@ -27,7 +27,7 @@ return {
             "Cohort's Warmonger Coat",
         },
     },
-    ['AbilitySets']     = {
+    ['AbilitySets']   = {
         ['EndRegen'] = {
             "Hiatus V", -- 126
             "Second Wind",
@@ -307,7 +307,7 @@ return {
             "Leg Strike",
         },
     },
-    ['RotationOrder']   = {
+    ['RotationOrder'] = {
         -- Downtime doesn't have state because we run the whole rotation at once.
         {
             name = 'Downtime',
@@ -365,7 +365,7 @@ return {
         },
     },
 
-    ['Rotations']       = {
+    ['Rotations']     = {
         ['Downtime'] = {
             {
                 name = "Summon Axes",
@@ -428,7 +428,7 @@ return {
                         local maxLoops = 10
                         while mq.TLO.FindItemCount(itemId)() < count do
                             Logger.log_debug("\ayWe need more %d because we dont have %d - using %s", itemId, count, summonSkill)
-                            self.ClassConfig.HelperFunctions.SummonAxe(mq.TLO.Spell(summonSkill))
+                            self.Helpers.SummonAxe(mq.TLO.Spell(summonSkill))
                             maxLoops = maxLoops - 1
                             if maxLoops <= 0 then return end
                         end
@@ -812,7 +812,7 @@ return {
             },
         },
     },
-    ['HelperFunctions'] = {
+    ['Helpers']       = {
         SummonAxe = function(axeDisc)
             if not axeDisc or not axeDisc() then return false end
             Logger.log_verbose("\aySummonAxe(): Checking if %s is ready.", axeDisc.Name())
@@ -850,7 +850,7 @@ return {
             end
         end,
     },
-    ['DefaultConfig']   = {
+    ['DefaultConfig'] = {
         ['Mode']            = {
             DisplayName = "Mode",
             Category = "Combat",
@@ -969,7 +969,7 @@ return {
             Max = 99,
         },
     },
-    ['ClassFAQ']        = {
+    ['ClassFAQ']      = {
         {
             Question = "What is the current status of this class config?",
             Answer = "This class config is a current release aimed at official servers.\n\n" ..

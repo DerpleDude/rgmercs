@@ -14,21 +14,21 @@ local Logger    = require("utils.logger")
 local Combat    = require("utils.combat")
 
 return {
-    _version            = "2.0 - Live",
-    _author             = "Derple, Algar",
-    ['Modes']           = {
+    _version          = "2.0 - Live",
+    _author           = "Derple, Algar",
+    ['Modes']         = {
         'DPS',
         'PBAE(LowLevel)',
     },
-    ['OnModeChange']    = function(self, mode)
+    ['OnModeChange']  = function(self, mode)
     end,
-    ['ItemSets']        = {
+    ['ItemSets']      = {
         ['Epic'] = {
             "Staff of Phenomenal Power",
             "Staff of Prismatic Power",
         },
     },
-    ['AbilitySets']     = {
+    ['AbilitySets']   = {
         ['AllianceSpell'] = {
             "Frostbound Covariance",
             "Frostbound Conjunction",
@@ -624,14 +624,14 @@ return {
             "Jyll's Static Pulse", -- Level 53
         },
     },
-    ['HelperFunctions'] = {
+    ['Helpers']       = {
 
         RainCheck = function(target) -- I made a funny
             if not (Config:GetSetting('DoRain') and Config:GetSetting('DoAEDamage')) then return false end
             return Targeting.GetTargetDistance() >= Config:GetSetting('RainDistance') and Targeting.MobNotLowHP(target)
         end,
     },
-    ['RotationOrder']   = {
+    ['RotationOrder'] = {
         -- Downtime doesn't have state because we run the whole rotation at once.
         {
             name = 'Downtime',
@@ -781,7 +781,7 @@ return {
             end,
         },
     },
-    ['Rotations']       = {
+    ['Rotations']     = {
         ['Burn'] = {
             {
                 name = "Focus of Arcanum",
@@ -1066,7 +1066,7 @@ return {
                 name = "FireRain",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    return self.ClassConfig.HelperFunctions.RainCheck(target)
+                    return self.Helpers.RainCheck(target)
                 end,
             },
             {
@@ -1086,7 +1086,7 @@ return {
                 name = "IceRain",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    return self.ClassConfig.HelperFunctions.RainCheck(target)
+                    return self.Helpers.RainCheck(target)
                 end,
             },
             {
@@ -1223,7 +1223,7 @@ return {
             },
         },
     },
-    ['Spells']          = {
+    ['Spells']        = {
         {
             gem = 1,
             spells = {
@@ -1348,7 +1348,7 @@ return {
             },
         },
     },
-    ['DefaultConfig']   = {
+    ['DefaultConfig'] = {
         ['Mode']                 = {
             DisplayName = "Mode",
             Category = "Combat",
@@ -1543,7 +1543,7 @@ return {
             Max = 99,
         },
     },
-    ['ClassFAQ']        = {
+    ['ClassFAQ']      = {
         {
             Question = "What is the current status of this class config?",
             Answer = "This class config is a current release aimed at official servers.\n\n" ..

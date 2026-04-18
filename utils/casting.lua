@@ -1298,6 +1298,12 @@ function Casting.NoDiscActive()
     return not mq.TLO.Me.ActiveDisc.ID()
 end
 
+-- Returns true if the disc resolved from the given map is on cooldown (or unavailable)
+function Casting.DiscOnCoolDown(actionMapName)
+    local disc = Core.GetResolvedActionMapItem(actionMapName)
+    return not (disc and mq.TLO.Me.CombatAbilityReady(disc.RankName())())
+end
+
 -- Check if an item has a clicky effect.
 function Casting.ItemHasClicky(itemName)
     local item = mq.TLO.FindItem(string.format("=%s", itemName or "None"))
@@ -1768,10 +1774,7 @@ function Casting.UseSong(songName, targetId, bAllowMem, retryCount)
         Logger.log_verbose("\ag %s \ar =>> \ay %s \ar <<=", songName, targetSpawn.CleanName() or "None")
 
         -- Swap Instruments
-        local classConfig = Modules:ExecModule("Class", "GetClassConfig")
-        if classConfig and classConfig.HelperFunctions and classConfig.HelperFunctions.SwapInst then
-            classConfig.HelperFunctions.SwapInst(spell.Skill())
-        end
+        Core.SafeCallClassHelper("SwapInst", "SwapInst", spell.Skill())
 
         retryCount = retryCount or 0
 
@@ -1870,9 +1873,7 @@ function Casting.UseSong(songName, targetId, bAllowMem, retryCount)
             Core.DoCmd("/stopsong")
         end
 
-        if classConfig and classConfig.HelperFunctions and classConfig.HelperFunctions.SwapInst then
-            classConfig.HelperFunctions.SwapInst("Weapon")
-        end
+        Core.SafeCallClassHelper("SwapInst", "SwapInst", "Weapon")
 
         if mq.TLO.Target.ID() ~= oldTargetId and Combat.ValidCombatTarget(oldTargetId) and (oldTargetId == Globals.AutoTargetID or not Config:GetSetting('DoAutoTarget')) then
             Logger.log_debug("UseSong(): Retargeting previous target after song use.")

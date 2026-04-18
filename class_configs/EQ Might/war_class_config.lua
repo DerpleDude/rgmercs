@@ -11,17 +11,17 @@ local Combat       = require("utils.combat")
 
 local _ClassConfig = {
     -- Added Mayhem line for AE taunt
-    _version            = "3.1 - EQ Might",
-    _author             = "Algar, Derple",
-    ['ModeChecks']      = {
+    _version          = "3.1 - EQ Might",
+    _author           = "Algar, Derple",
+    ['ModeChecks']    = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
         IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
     },
-    ['Modes']           = {
+    ['Modes']         = {
         'Tank',
         'DPS',
     },
-    ['ItemSets']        = {
+    ['ItemSets']      = {
         ['RezStaff'] = {
             "Legendary Fabled Staff of Forbidden Rites",
             "Fabled Staff of Forbidden Rites",
@@ -36,7 +36,7 @@ local _ClassConfig = {
             "Gladiator's Plate Chestguard of War",
         },
     },
-    ['AbilitySets']     = {
+    ['AbilitySets']   = {
         ['StandDisc'] = { -- Timer 1
             "Final Stand Discipline",
             "Shelter Me Discipline",
@@ -52,8 +52,8 @@ local _ClassConfig = {
             "Fortitude Discipline",
             "Furious Discipline",
         },
-        ['GroupACBuff'] = { -- Has Commanding Voice (Dodge Buff) baked in
-            "Field Armorer",
+        ['GroupDodgeBuff'] = {
+            "Commanding Voice",
         },
         ['BladeDisc'] = {
             "Vortex Blade",
@@ -80,10 +80,6 @@ local _ClassConfig = {
             "Champion's Aura",
             "Myrmidon's Aura",
         },
-        ['Attention'] = {
-            "Unyielding Attention",
-            "Undivided Attention",
-        },
         ['Onslaught'] = {
             "Savage Onslaught Discipline",
             "Brutal Onslaught Discipline",
@@ -105,8 +101,14 @@ local _ClassConfig = {
             "Protective Discipline",
             "Protective Surge Discipline",
         },
+        ['HealingDisc'] = { --EQM Custom, 2m duration, 5m reuse, hp regen
+            "Lifebloom Will Discipline",
+            "Rejuvenating Will Discipline",
+            "Healing Determination Discipline",
+            "Healing Will Discipline",
+        },
     },
-    ['HelperFunctions'] = {
+    ['Helpers']       = {
         DoRez = function(self, corpseId)
             local rezStaff = self.ResolvedActionMap['RezStaff']
 
@@ -147,18 +149,13 @@ local _ClassConfig = {
             return true
         end,
         DefenseBuffCheck = function(self)
-            local standDisc = Core.GetResolvedActionMapItem('StandDisc')
-            if not standDisc then return false end
-            if standDisc() and mq.TLO.Me.ActiveDisc.Name() == standDisc.RankName() then return false end
-            if mq.TLO.Me.ActiveDisc.Name() == "Protective Discipline" then return false end
-            local defBuff = { "Guardian's Boon", "Guardian's Bravery", "Warlord's Bravery", }
-            for _, buffName in ipairs(defBuff) do
-                if mq.TLO.Me.Buff(buffName)() then return false end
-            end
-            return true
+            -- Allow healing disc to be cancelled by other defensive discs
+            if Casting.NoDiscActive() then return true end
+            local healingDisc = Core.GetResolvedActionMapItem('HealingDisc')
+            return healingDisc and mq.TLO.Me.ActiveDisc.Name() == healingDisc.RankName()
         end,
     },
-    ['RotationOrder']   = {
+    ['RotationOrder'] = {
         { --Self Buffs
             name = 'Downtime',
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
@@ -239,7 +236,7 @@ local _ClassConfig = {
                     -- we are under our defense start HP
                     (mq.TLO.Me.PctHPs() <= Config:GetSetting('DefenseStart') or
                         -- we have met our defense count threshold
-                        self.ClassConfig.HelperFunctions.DefensiveDiscCheck(true) or
+                        self.Helpers.DefensiveDiscCheck(true) or
                         -- we are fighting a named and we are (presumably) tanking it
                         (Globals.AutoTargetIsNamed and Targeting.GetAutoTargetAggroPct() >= 100))
             end,
@@ -265,7 +262,7 @@ local _ClassConfig = {
             end,
         },
     },
-    ['Rotations']       = {
+    ['Rotations']     = {
         ['Downtime'] = {
             {
                 name = "AuraBuff",
@@ -277,24 +274,6 @@ local _ClassConfig = {
                     return not mq.TLO.Me.Aura(1).ID()
                 end,
             },
-            {
-                name = "GroupACBuff",
-                type = "Disc",
-                active_cond = function(self, discSpell)
-                    return Casting.IHaveBuff(discSpell)
-                end,
-                cond = function(self, discSpell)
-                    return Casting.SelfBuffCheck(discSpell)
-                end,
-            },
-            {
-                name = "Infused by Rage",
-                type = "AA",
-                cond = function(self, aaName)
-                    return Core.IsTanking() and Casting.SelfBuffAACheck(aaName)
-                end,
-            },
-
         },
         ['HateTools(AggroTarget)'] = {
             { --more valuable on laz because we have less hate tools and no other hatelist + 1 abilities
@@ -303,10 +282,6 @@ local _ClassConfig = {
                 cond = function(self, abilityName, target)
                     return Targeting.GetTargetDistance(target) < 30
                 end,
-            },
-            {
-                name = "Attention",
-                type = "Disc",
             },
             {
                 name = "Xeno's Faceguard",
@@ -328,6 +303,14 @@ local _ClassConfig = {
                 cond = function(self, discSpell)
                     return Casting.DetSpellCheck(discSpell)
                 end,
+            },
+            {
+                name = "Grappling Strike",
+                type = "AA",
+            },
+            {
+                name = "Gut Punch",
+                type = "AA",
             },
         },
         ['HateTools(AutoTarget)'] = {
@@ -345,13 +328,6 @@ local _ClassConfig = {
                     return (Globals.AutoTargetIsNamed or Targeting.GetAutoTargetPctHPs() < 90) and Targeting.LostAutoTargetAggro()
                 end,
             },
-            { --used to jumpstart hatred on named from the outset and prevent early rips from burns
-                name = "Attention",
-                type = "Disc",
-                cond = function(self, discSpell, target)
-                    return Globals.AutoTargetIsNamed
-                end,
-            },
             {
                 name = "Xeno's Faceguard",
                 type = "Item",
@@ -374,11 +350,8 @@ local _ClassConfig = {
                 end,
             },
             {
-                name = "Projection of Fury",
+                name = "Grappling Strike",
                 type = "AA",
-                cond = function(self, aaName, target)
-                    return Globals.AutoTargetIsNamed
-                end,
             },
         },
         ['AEHateTools'] = {
@@ -414,10 +387,6 @@ local _ClassConfig = {
             },
             {
                 name = "Warlord's Tenacity",
-                type = "AA",
-            },
-            {
-                name = "Warlord's Resurgence",
                 type = "AA",
             },
             {
@@ -463,42 +432,43 @@ local _ClassConfig = {
                 name = "Protective",
                 type = "Disc",
                 cond = function(self, discSpell, target)
-                    return self.ClassConfig.HelperFunctions.DefenseBuffCheck(self)
+                    return self.Helpers.DefenseBuffCheck(self)
                 end,
             },
-            { --shares effect with OoW Chest and Warlord's Bravery
+            { --shares effect with OoW Chest
                 name = "StandDisc",
                 type = "Disc",
-                cond = function(self, discSpell)
-                    return self.ClassConfig.HelperFunctions.DefenseBuffCheck(self)
+                cond = function(self, discSpell, target)
+                    return self.Helpers.DefenseBuffCheck(self) and Casting.DiscOnCoolDown('Protective')
                 end,
             },
-            { --shares effect with StandDisc and Warlord's Bravery
+            { --shares effect with StandDisc
                 name = "OoW_Chest",
                 type = "Item",
                 cond = function(self, itemName)
-                    return self.ClassConfig.HelperFunctions.DefenseBuffCheck(self)
-                end,
-            },
-            { --shares effect with StandDisc and OoW_Chest
-                name = "Warlord's Bravery",
-                type = "AA",
-                cond = function(self, aaName)
-                    return self.ClassConfig.HelperFunctions.DefenseBuffCheck(self)
+                    return self.Helpers.DefenseBuffCheck(self) and Casting.DiscOnCoolDown('Protective') and Casting.DiscOnCoolDown('StandDisc')
                 end,
             },
             {
                 name = "Hold the Line",
                 type = "AA",
                 cond = function(self, aaName)
-                    return Casting.SelfBuffAACheck(aaName)
+                    return self.Helpers.DefenseBuffCheck(self) and Casting.DiscOnCoolDown('Protective') and Casting.DiscOnCoolDown('StandDisc')
                 end,
             },
+            {
+                name = "HealingDisc",
+                type = "Disc",
+                cond = function(self, discSpell, target)
+                    return self.Helpers.DefenseBuffCheck(self) and Casting.DiscOnCoolDown('Protective') and Casting.DiscOnCoolDown('StandDisc')
+                end,
+            },
+
         },
         ['Burn'] = {
             {
                 name_func = function(self)
-                    return string.format("Fundament: %s Spire of the Warlord", Core.IsTanking() and "Third" or "Second")
+                    return string.format("Fundament: %s Spire of the Warlord", Core.IsTanking() and "First" or "Second")
                 end,
                 type = "AA",
             },
@@ -506,14 +476,14 @@ local _ClassConfig = {
                 name = "Onslaught",
                 type = "Disc",
                 cond = function(self, discSpell)
-                    return not Core.IsTanking() and self.ClassConfig.HelperFunctions.BurnDiscCheck(self)
+                    return not Core.IsTanking() and self.Helpers.BurnDiscCheck(self)
                 end,
             },
             {
                 name = "StrikeDisc",
                 type = "Disc",
                 cond = function(self, discSpell)
-                    return not Core.IsTanking() and self.ClassConfig.HelperFunctions.BurnDiscCheck(self)
+                    return not Core.IsTanking() and self.Helpers.BurnDiscCheck(self)
                 end,
             },
             {
@@ -527,24 +497,6 @@ local _ClassConfig = {
                 name = "Rage of Rallos Zek",
                 type = "AA",
             },
-            {
-                name = "Warlord's Fury",
-                type = "AA",
-                cond = function(self, aaName, target)
-                    return Core.IsTanking() and Casting.SelfBuffAACheck(aaName)
-                end,
-            },
-            {
-                name = "Battered Smuggler's Barrel",
-                type = "Item",
-            },
-            {
-                name = "Resplendent Glory",
-                type = "AA",
-                cond = function(self, aaName)
-                    return Core.IsTanking()
-                end,
-            },
         },
         ['Combat'] = {
             {
@@ -555,12 +507,19 @@ local _ClassConfig = {
                 end,
             },
             {
+                name = "GroupDodgeBuff",
+                type = "Disc",
+                cond = function(self, discSpell)
+                    return Casting.SelfBuffCheck(discSpell)
+                end,
+            },
+            {
                 name = "Battle Leap",
                 type = "AA",
                 cond = function(self, aaName, target)
                     if not Config:GetSetting('DoBattleLeap') then return false end
-                    return not Casting.IHaveBuff(aaName) and not Casting.IHaveBuff('Group Bestial Alignment')
-                        and not mq.TLO.Me.HeadWet() --Stops Leap from launching us above the water's surface
+                    return Casting.SelfBuffAACheck(aaName) and Casting.AddedBuffCheck(16439, target) --Group Bestial Alignment
+                        and not mq.TLO.Me.HeadWet()                                                  --Stops Leap from launching us above the water's surface
                 end,
             },
             {
@@ -643,7 +602,7 @@ local _ClassConfig = {
             },
         },
     },
-    ['DefaultConfig']   = {
+    ['DefaultConfig'] = {
         ['Mode']            = {
             DisplayName = "Mode",
             Category = "Combat",
@@ -829,7 +788,7 @@ local _ClassConfig = {
             Answer = "The Shield on Named option doesn't check levels, so feel free to disable this setting (or Bandolier swapping entirely) if you are farming fodder.",
         },
     },
-    ['ClassFAQ']        = {
+    ['ClassFAQ']      = {
         {
             Question = "What is the current status of this class config?",
             Answer = "This class config is currently a Work-In-Progress that was originally based off of the Project Lazarus config.\n\n" ..

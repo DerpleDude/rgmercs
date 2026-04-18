@@ -11,16 +11,16 @@ local Combat      = require("utils.combat")
 
 
 local _ClassConfig = {
-    _version            = "2.2 - Live",
-    _author             = "Algar, Derple",
-    ['ModeChecks']      = {
+    _version          = "2.2 - Live",
+    _author           = "Algar, Derple",
+    ['ModeChecks']    = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
     },
-    ['Modes']           = {
+    ['Modes']         = {
         'Tank',
         'DPS',
     },
-    ['ItemSets']        = {
+    ['ItemSets']      = {
         ['Epic'] = {
             "Kreljnok's Sword of Eternal Power",
             "Champion's Sword of Eternal Power",
@@ -34,7 +34,7 @@ local _ClassConfig = {
             "Blood Drinker's Coating",
         },
     },
-    ['AbilitySets']     = {
+    ['AbilitySets']   = {
         ['StandDisc'] = {
             "Final Stand Discipline VI",
             "Climactic Stand",
@@ -253,7 +253,7 @@ local _ClassConfig = {
             "Mighty Strike Discipline",
         },
     },
-    ['HelperFunctions'] = {
+    ['Helpers']       = {
         --function to make sure we don't have non-hostiles in range before we use AE damage or non-taunt AE hate abilities
 
         --function to determine if we have enough mobs in range to use a defensive disc
@@ -288,7 +288,7 @@ local _ClassConfig = {
             return true
         end,
     },
-    ['RotationOrder']   = {
+    ['RotationOrder'] = {
         { --Self Buffs
             name = 'Downtime',
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
@@ -347,7 +347,7 @@ local _ClassConfig = {
             cond = function(self, combat_state)
                 --need to look at rotation and decide if it should fire during emergencies. leaning towards no
                 return combat_state == "Combat" and Core.IsTanking() and (mq.TLO.Me.PctHPs() < Config:GetSetting('EmergencyStart') or
-                    Globals.AutoTargetIsNamed or self.ClassConfig.HelperFunctions.DefensiveDiscCheck(true))
+                    Globals.AutoTargetIsNamed or self.Helpers.DefensiveDiscCheck(true))
             end,
         },
         { --Offensive actions to temporarily boost damage dealt
@@ -369,7 +369,7 @@ local _ClassConfig = {
             end,
         },
     },
-    ['Rotations']       = {
+    ['Rotations']     = {
         ['Downtime'] = {
             {
                 name = "EndRegen",
@@ -542,7 +542,7 @@ local _ClassConfig = {
                 name = "StandDisc",
                 type = "Disc",
                 cond = function(self, discSpell)
-                    return Core.IsTanking() and self.ClassConfig.HelperFunctions.DiscOverwriteCheck(self)
+                    return Core.IsTanking() and self.Helpers.DiscOverwriteCheck(self)
                 end,
             },
         },
@@ -596,7 +596,7 @@ local _ClassConfig = {
                 type = "Disc",
                 cond = function(self, discSpell)
                     local absorbDisc = Core.GetResolvedActionMapItem('AbsorbDisc')
-                    return not mq.TLO.Me.Song(absorbDisc)() and self.ClassConfig.HelperFunctions.DiscOverwriteCheck(self)
+                    return not mq.TLO.Me.Song(absorbDisc)() and self.Helpers.DiscOverwriteCheck(self)
                 end,
             },
             { --offset from StandDisc for automation flow/coverage
@@ -655,21 +655,21 @@ local _ClassConfig = {
                 name = "Onslaught",
                 type = "Disc",
                 cond = function(self, discSpell)
-                    return not Core.IsTanking() and self.ClassConfig.HelperFunctions.BurnDiscCheck(self)
+                    return not Core.IsTanking() and self.Helpers.BurnDiscCheck(self)
                 end,
             },
             {
                 name = "MightyStrike",
                 type = "Disc",
                 cond = function(self, discSpell)
-                    return not Core.IsTanking() and self.ClassConfig.HelperFunctions.BurnDiscCheck(self)
+                    return not Core.IsTanking() and self.Helpers.BurnDiscCheck(self)
                 end,
             },
             {
                 name = "OffensiveDisc",
                 type = "Disc",
                 cond = function(self, discSpell)
-                    return not Core.IsTanking() and self.ClassConfig.HelperFunctions.BurnDiscCheck(self)
+                    return not Core.IsTanking() and self.Helpers.BurnDiscCheck(self)
                 end,
             },
             {
@@ -825,7 +825,7 @@ local _ClassConfig = {
             },
         },
     },
-    ['DefaultConfig']   = {
+    ['DefaultConfig'] = {
         ['Mode']             = {
             DisplayName = "Mode",
             Category = "Combat",
@@ -1006,7 +1006,7 @@ local _ClassConfig = {
             Default = false,
         },
     },
-    ['ClassFAQ']        = {
+    ['ClassFAQ']      = {
         {
             Question = "What is the current status of this class config?",
             Answer = "This class config is a current release aimed at official servers.\n\n" ..

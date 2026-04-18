@@ -8,19 +8,19 @@ local Casting      = require("utils.casting")
 local Logger       = require("utils.logger")
 
 local _ClassConfig = {
-    _version            = "1.5 - EQ Might",
-    _author             = "Derple, Grimmier, Algar, Robban",
-    ['ModeChecks']      = {
+    _version          = "1.5 - EQ Might",
+    _author           = "Derple, Grimmier, Algar, Robban",
+    ['ModeChecks']    = {
         CanMez     = function() return true end,
         CanCharm   = function() return true end,
         IsCharming = function() return Config:GetSetting('CharmOn') end,
         IsMezzing  = function() return Config:GetSetting('MezOn') end,
         IsRezing   = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
     },
-    ['Modes']           = {
+    ['Modes']         = {
         'Default',
     },
-    ['ItemSets']        = {
+    ['ItemSets']      = {
         ['RezStaff'] = {
             "Legendary Fabled Staff of Forbidden Rites",
             "Fabled Staff of Forbidden Rites",
@@ -35,7 +35,7 @@ local _ClassConfig = {
             "Charmweaver's Robe",
         },
     },
-    ['AbilitySets']     = {
+    ['AbilitySets']   = {
         --Commented any currently unused spell lines
         ['TwincastAura'] = {
             "Entrancer's Aura",
@@ -343,7 +343,7 @@ local _ClassConfig = {
             "Renewal of Lucifer",
         },
     },
-    ['RotationOrder']   = {
+    ['RotationOrder'] = {
         {
             name = 'Downtime',
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
@@ -464,7 +464,7 @@ local _ClassConfig = {
             cond = function(self, target) return (mq.TLO.Me.Pet.PctHPs() or 100) < Config:GetSetting('PetHealPct') end,
         },
     },
-    ['HelperFunctions'] = { --used to autoinventory our crystals after summon. Crystal is a group-wide spell on Laz.
+    ['Helpers']       = { --used to autoinventory our crystals after summon. Crystal is a group-wide spell on Laz.
         DoRez = function(self, corpseId)
             local rezStaff = self.ResolvedActionMap['RezStaff']
 
@@ -489,7 +489,7 @@ local _ClassConfig = {
             Core.DoCmd("/autoinventory")
         end,
     },
-    ['Rotations']       = {
+    ['Rotations']     = {
         ['Downtime']      = {
             {
                 name = "Eldritch Rune",
@@ -573,7 +573,7 @@ local _ClassConfig = {
                 end,
                 post_activate = function(self, aaName, success)
                     if success then
-                        Core.SafeCallFunc("Autoinventory", self.ClassConfig.HelperFunctions.StashCrystal(aaName))
+                        Core.SafeCallFunc("Autoinventory", self.Helpers.StashCrystal(aaName))
                     end
                 end,
             },
@@ -589,7 +589,7 @@ local _ClassConfig = {
                 end,
                 post_activate = function(self, aaName, success)
                     if success then
-                        Core.SafeCallFunc("Autoinventory", self.ClassConfig.HelperFunctions.StashCrystal(aaName))
+                        Core.SafeCallFunc("Autoinventory", self.Helpers.StashCrystal(aaName))
                     end
                 end,
             },
@@ -1075,7 +1075,7 @@ local _ClassConfig = {
             },
         },
     },
-    ['SpellList']       = { -- New style spell list, gemless, priority-based. Will use the first set whose conditions are met.
+    ['SpellList']     = { -- New style spell list, gemless, priority-based. Will use the first set whose conditions are met.
         {
             name = "Default Mode",
             -- cond = function(self) return true end, --Code kept here for illustration, if there is no condition to check, this line is not required
@@ -1105,7 +1105,7 @@ local _ClassConfig = {
             },
         },
     },
-    ['PullAbilities']   = {
+    ['PullAbilities'] = {
         {
             id = 'TashSpell',
             Type = "Spell",
@@ -1131,7 +1131,7 @@ local _ClassConfig = {
             end,
         },
     },
-    ['DefaultConfig']   = {
+    ['DefaultConfig'] = {
         ['Mode']               = {
             DisplayName = "Mode",
             Category = "Combat",
@@ -1457,7 +1457,7 @@ local _ClassConfig = {
             Max = 99,
         },
     },
-    ['ClassFAQ']        = {
+    ['ClassFAQ']      = {
         {
             Question = "What is the current status of this class config?",
             Answer = "This class config is currently a Work-In-Progress that was originally based off of the Project Lazarus config.\n\n" ..

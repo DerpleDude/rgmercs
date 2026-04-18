@@ -1589,7 +1589,7 @@ local _ClassConfig = {
             },
         },
     },
-    ['HelperFunctions']   = {
+    ['Helpers']           = {
         DoRez = function(self, corpseId, ownerName)
             local rezAction = false
             local okayToRez = Casting.OkayToRez(corpseId)
