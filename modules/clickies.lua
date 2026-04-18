@@ -2013,7 +2013,13 @@ function Module:GiveTime()
                             -- distance check
                             local distanceCheckPassed = true
                             if targetId and targetId ~= mq.TLO.Me.ID() then
-                                local spellRange = (itemSpell.MyRange() or 0) > 0 and itemSpell.MyRange() or (itemSpell.AERange() > 0 and itemSpell.AERange() or 200)
+                                local spellRange = itemSpell.MyRange() or 0
+
+                                if spellRange == 0 then
+                                    local aeRange = itemSpell.AERange() or 0
+                                    spellRange = aeRange > 0 and aeRange or 200
+                                end
+
                                 if Targeting.GetTargetDistance(target) > spellRange then
                                     Logger.log_debug("\ayClicky: \arTried to use item on targetId %s they are too far away!!", target and target.DisplayName() or "None")
                                     distanceCheckPassed = false
