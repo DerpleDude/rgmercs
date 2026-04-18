@@ -459,13 +459,7 @@ local _ClassConfig = {
             },
         },
         ['Defenses'] = {
-            {
-                name = "Protective",
-                type = "Disc",
-                cond = function(self, discSpell, target)
-                    return self.ClassConfig.HelperFunctions.DefenseBuffCheck(self)
-                end,
-            },
+            
             { --shares effect with OoW Chest and Warlord's Bravery
                 name = "StandDisc",
                 type = "Disc",
@@ -484,6 +478,13 @@ local _ClassConfig = {
                 name = "Warlord's Bravery",
                 type = "AA",
                 cond = function(self, aaName)
+                    return self.ClassConfig.HelperFunctions.DefenseBuffCheck(self)
+                end,
+            },
+			{
+                name = "Protective",
+                type = "Disc",
+                cond = function(self, discSpell, target)
                     return self.ClassConfig.HelperFunctions.DefenseBuffCheck(self)
                 end,
             },
