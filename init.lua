@@ -239,6 +239,11 @@ local function RGInit(...)
 
     Core.CheckSpawnMasterVersion()
 
+    if mq.TLO.Plugin("MQ2Mono").IsLoaded() then
+        Logger.log_warning("\ar MQ2Mono detected! \aw Pausing E3N to avoid conflicts.")
+        mq.cmd("/e3p on")
+    end
+
     initPctComplete = 0
     initMsg = "Initializing RGMercs..."
     local args = { ..., }
