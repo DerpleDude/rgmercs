@@ -155,10 +155,11 @@ local _ClassConfig = {
             "Twilight Breath",
         },
         ['ReptileBuff'] = {
+            "Skin of the Green Dragon", -- EQM Custom
             "Skin of the Reptile",
-            "Skin of the Serpent", -- EQM Custom
+            "Skin of the Serpent",      -- EQM Custom
         },
-        ['SwarmDot'] = {           -- Magic Dot, 54s
+        ['SwarmDot'] = {                -- Magic Dot, 54s
             "Swarm of Fireants",
             "Wasp Swarm",
             "Swarming Death",

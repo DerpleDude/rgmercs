@@ -59,6 +59,7 @@ _ClassConfig    = {
         },
         ['BigFireDD'] = { -- Longer cast time bolts we can use when mobs are at higher health.
             "Bolt of Molten Slag",
+            -- "Ancient: Nova Strike", -- considered how to implement smart toggles for this, didn't like what i've come up with so far.
             "Spear of Ro",
             "Bolt of Jerikor",
             "Ancient: Chaos Vortex",
@@ -448,14 +449,6 @@ _ClassConfig    = {
                 end
             end
             Logger.log_warning("Warning: Mage pet orb not destroyed! An error or conflict has occured.")
-        end,
-        user_tu_spell = function(self, aaName)
-            local shroudSpell = self.ResolvedActionMap['ShroudSpell']
-            local aaSpell = Casting.GetAASpell(aaName)
-            if not shroudSpell or not shroudSpell() or not aaSpell or not aaSpell() or not Casting.CanUseAA(aaName) then return false end
-            -- do we need to lookup the spell basename here? I dont think so but if this doesn't fire right take a look.
-            if shroudSpell.Level() > aaSpell.Level() then return false end
-            return true
         end,
         summon_pet = function(self)
             local petSpellVar = string.format("%sPetSpell", self.ClassConfig.DefaultConfig.PetType.ComboOptions[Config:GetSetting('PetType')])
@@ -1044,7 +1037,6 @@ _ClassConfig    = {
                 { name = "MaloDebuff",       cond = function(self) return Config:GetSetting('DoMalo') and (not Config:GetSetting('DoMaloAA') or not Casting.CanUseAA("Malosinete")) end, },
                 { name = "PetHealSpell",     cond = function(self) return Config:GetSetting('DoPetHealSpell') end, },
                 { name = "FireOrbSummon", },
-                -- { name = "GroupCotH", },
                 { name = "SingleCotH", },
                 { name = "ManaRodSummon",    cond = function(self) return Config:GetSetting('SummonModRods') and not Casting.CanUseAA("Small Modulation Shard") end, },
                 { name = "FireShroud", },
@@ -1096,24 +1088,6 @@ _ClassConfig    = {
             RequiresLoadoutChange = true, -- this is a load condition
             Default = true,
         },
-        -- ['DoPetArmor']     = {
-        --     DisplayName = "Do Pet Armor",
-        --     Group = "Items",
-        --     Header = "Item Summoning",
-        --     Category = "Item Summoning",
-        --     Index = 101,
-        --     Tooltip = "Summon Armor for Pets",
-        --     Default = false,
-        -- },
-        -- ['DoPetWeapons']   = {
-        --     DisplayName = "Do Pet Weapons",
-        --     Group = "Items",
-        --     Header = "Item Summoning",
-        --     Category = "Item Summoning",
-        --     Index = 102,
-        --     Tooltip = "Summon Weapons for Pets",
-        --     Default = false,
-        -- },
         ['PetType']        = {
             DisplayName = "Pet Type",
             Group = "Abilities",
@@ -1127,15 +1101,6 @@ _ClassConfig    = {
             Min = 1,
             Max = 4,
         },
-        -- ['DoPetHeirlooms'] = {
-        --     DisplayName = "Do Pet Heirlooms",
-        --     Group = "Items",
-        --     Header = "Item Summoning",
-        --     Category = "Item Summoning",
-        --     Index = 103,
-        --     Tooltip = "Summon Heirlooms for Pets",
-        --     Default = false,
-        -- },
         ['DoPetHealSpell'] = {
             DisplayName = "Pet Heal Spell",
             Group = "Abilities",
@@ -1153,7 +1118,6 @@ _ClassConfig    = {
             Category = "Healing Thresholds",
             Index = 101,
             Tooltip = "Use your pet heal spell when your pet is at or below this HP percentage.",
-
             Default = 60,
             Min = 1,
             Max = 99,
@@ -1237,28 +1201,6 @@ _ClassConfig    = {
             RequiresLoadoutChange = true, --this setting is used as a load condition
             Default = true,
         },
-        -- ['DoAEMalo']       = {
-        --     DisplayName = "Cast AE Malo",
-        --     Group = "Abilities",
-        --     Header = "Debuffs",
-        --     Category = "Resist",
-        --     Index = 102,
-        --     Tooltip = "Do AE Malo Spells/AAs",
-        --     RequiresLoadoutChange = true, --this setting is used as a load condition
-        --     Default = false,
-        -- },
-        -- ['AEMaloCount']    = {
-        --     DisplayName = "AE Malo Count",
-        --     Group = "Abilities",
-        --     Header = "Debuffs",
-        --     Category = "Resist",
-        --     Index = 103,
-        --     Tooltip = "Number of XT Haters before we use AE Malo.",
-        --     Min = 1,
-        --     Default = 2,
-        --     Max = 30,
-        --     ConfigType = "Advanced",
-        -- },
         ['CombatModRod']   = {
             DisplayName = "Combat Mod Rods",
             Group = "Items",

@@ -212,7 +212,8 @@ local _ClassConfig = {
         --     "Disease Cloud",
         -- },
         ['PoisonDot'] = {
-            "Chaos Venom",
+            -- "Chaos Venom", this is worse than corath venom
+            "Corath Venom",
             "Blood of Thule",
             "Envenomed Bolt",
             "Chilling Embrace",
