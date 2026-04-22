@@ -1712,7 +1712,7 @@ function Ui.DrawInspectableSpellIcon(iconID, spell)
     ImGui.InvisibleButton(spell.Name() or "?", ImVec2(ICON_SIZE, ICON_SIZE),
         bit32.bor(ImGuiButtonFlags.MouseButtonLeft))
     if ImGui.IsItemHovered() and ImGui.IsMouseReleased(ImGuiMouseButton.Left) then
-        spell.Inspect()
+        spell.RankName.Inspect()
     end
     ImGui.PopID()
 end
@@ -1743,7 +1743,7 @@ function Ui.RenderLoadoutTable(loadoutTable)
             ImGui.TableNextColumn()
             local _, clicked = ImGui.Selectable(loadoutData.spell.RankName())
             if clicked then
-                loadoutData.spell.Inspect()
+                loadoutData.spell.RankName.Inspect()
             end
         end
 
@@ -3870,9 +3870,9 @@ function Ui.RenderToastNotifications(states, lingerTime)
 
     local text_max_w    = max_toast_w - toast_pad_x * 2
 
-    local sep_h = 1.0
-    local sep_gap = 4.0
-    local from_extra_h = line_h + sep_h + sep_gap * 2
+    local sep_h         = 1.0
+    local sep_gap       = 4.0
+    local from_extra_h  = line_h + sep_h + sep_gap * 2
 
     -- pre-compute heights so we can stack from the bottom
     local heights       = {}
@@ -3949,8 +3949,8 @@ function Ui.RenderToastNotifications(states, lingerTime)
                     Ui.ReduceAlpha(accentCol, alpha), 6.0, ImDrawFlags.RoundCornersLeft)
 
                 -- from header + separator
-                local text_col  = IM_COL32(255, 255, 255, iAlpha)
-                local text_y    = base_y + toast_pad_y
+                local text_col = IM_COL32(255, 255, 255, iAlpha)
+                local text_y   = base_y + toast_pad_y
                 if state.from then
                     local from_col = IM_COL32(220, 180, 100, iAlpha)
                     draw_list:AddText(ImVec2(x + toast_pad_x, text_y), from_col, state.from)
