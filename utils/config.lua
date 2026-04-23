@@ -3068,6 +3068,10 @@ function Config:MakeValidSetting(module, setting, value)
     local defaultConfig = self:GetModuleDefaultSettings(module)
 
     if defaultConfig[setting].Type == "Color" then
+        if type(value) ~= "table" then
+            Logger.log_error("\ayError: %s is a color setting and requires a table value, falling back to previous value.", setting)
+            return nil
+        end
         return value
     elseif type(defaultConfig[setting].Default) == 'number' then
         value = tonumber(value)
@@ -3087,8 +3091,16 @@ function Config:MakeValidSetting(module, setting, value)
 
         return boolValue
     elseif type(defaultConfig[setting].Default) == 'string' then
+        if type(value) ~= "string" then
+            Logger.log_error("\ayError: %s is a string setting and cannot accept a %s value, falling back to previous value.", setting, type(value))
+            return nil
+        end
         return value
     elseif type(defaultConfig[setting].Default) == 'table' then
+        if type(value) ~= "table" then
+            Logger.log_error("\ayError: %s is a list setting and cannot be set directly from the command line, falling back to previous value.", setting)
+            return nil
+        end
         return value
     end
 
