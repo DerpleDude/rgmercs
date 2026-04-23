@@ -188,13 +188,14 @@ Module.CommandHandlers                       = {
     },
     rebuff = {
         usage = "/rgl rebuff",
-        about = "Resets the delay timer on buff rotations. Does not force the cast of any buff.",
+        about = "Forces buff checks to re-run on the next rotation. Does not cast any buff.",
         handler = function(self)
             self:ResetRotationTimer("SlowDowntime")
             self:ResetRotationTimer("GroupBuff")
             self:ResetRotationTimer("PetBuff")
+            Globals.LastCachedBuffUpdate = {}
 
-            Logger.log_info("\awResetting buff rotation timers.")
+            Logger.log_info("\awForcing buff checks.")
 
             return true
         end,

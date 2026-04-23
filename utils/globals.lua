@@ -40,6 +40,7 @@ Globals.Minimized                     = false
 Globals.LastUsedSpell                 = "None"
 Globals.CorpseConned                  = false
 Globals.RezzedCorpses                 = {}
+Globals.LastCachedBuffUpdate          = {}
 Globals.SLPeerLooting                 = false
 Globals.LastBurnCheck                 = false
 Globals.CurrentBuffs                  = {}

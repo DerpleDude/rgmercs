@@ -382,6 +382,7 @@ local function Main()
             Config.TempSettings.NoLevZone = false
             Globals.ForceCombatID = 0
             Globals.IgnoredTargetIDs = Set.new({})
+            Globals.LastCachedBuffUpdate = {}
             Globals.AutoTargetID = 0
             Globals.AutoTargetIsNamed = false
             Globals.AggroTargetID = 0

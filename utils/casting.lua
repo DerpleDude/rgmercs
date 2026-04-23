@@ -302,8 +302,16 @@ function Casting.ResolveBuffCheck(spellId, target, skipBlockCheck, skipTriggerCh
             return Casting.PeerBuffCheck(spellId, target, skipBlockCheck, skipTriggerCheck)
         end
 
-        Logger.log_verbose("ResolveBuffCheck: Target is not myself or a DanNet peer, using TargetSpellCheck.")
-        local allowTargetChange = mq.TLO.Me.CombatState():lower() ~= "combat"
+        local allowTargetChange = (mq.TLO.Me.CombatState() or ""):lower() ~= "combat"
+        if allowTargetChange and target.ID() ~= mq.TLO.Target.ID() then
+            local now = Globals.GetTimeSeconds()
+            if now - (Globals.LastCachedBuffUpdate[target.ID()] or 0) < Config:GetSetting('BuffTargetingInterval') then
+                Logger.log_verbose("ResolveBuffCheck: Throttled target-change for %s(ID:%d).", target.CleanName(), target.ID())
+                return false
+            end
+            Globals.LastCachedBuffUpdate[target.ID()] = now
+        end
+        Logger.log_verbose("ResolveBuffCheck: Target is not myself or a DanNet peer, using TargetBuffCheck.")
         return Casting.TargetBuffCheck(spellId, target, allowTargetChange, false, skipTriggerCheck)
     end
 end
