@@ -427,7 +427,7 @@ return {
                     return mq.TLO.Me.Level() >= 68 and (Core.GetResolvedActionMapItem('SlowSpell').Level() or 99) < 70 and mq.TLO.FindItem("=Legendary Armband of Muada")()
                 end,
                 cond = function(self, itemName, target)
-                    return Casting.DetSpellCheck(itemName) and not Casting.SlowImmuneTarget(target)
+                    return Casting.DetItemCheck(itemName) and not Casting.SlowImmuneTarget(target)
                 end,
 
             },
