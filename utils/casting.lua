@@ -1003,11 +1003,13 @@ function Casting.GetBuffableInZoneIDs()
     local count = mq.TLO.Group.Members()
     for i = 1, count do
         local member = mq.TLO.Group.Member(i)
-        if checkCorpses and Casting.HasNearbyCorpse(member.DisplayName()) then
-            Logger.log_debug("Groupmember corpse detected (%s), aborting group buff rotation.", member.DisplayName())
-            return {}
+        if not member.OtherZone() then
+            if checkCorpses and Casting.HasNearbyCorpse(member.DisplayName()) then
+                Logger.log_debug("Groupmember corpse detected (%s), aborting group buff rotation.", member.DisplayName())
+                return {}
+            end
+            zoneIds:add(member.ID())
         end
-        zoneIds:add(member.ID())
     end
 
     -- if we aren't foregrounded, check ourselves after we've already buffed the group (tank is likeliest to be first ID this way)
@@ -1023,20 +1025,21 @@ function Casting.GetBuffableInZoneIDs()
 
     for _, peer in ipairs(Comms.GetPeers(false)) do
         local peerName = Comms.GetNameFromPeer(peer)
-        if checkCorpses and Casting.HasNearbyCorpse(peerName) then
-            Logger.log_debug("Peer corpse detected (%s), aborting group buff rotation.", peerName)
-            return {}
-        end
         local zoneSpawn = mq.TLO.Spawn(("pc =%s"):format(peerName))
         if zoneSpawn and zoneSpawn() then
-            zoneIds:add(zoneSpawn.ID())
-        end
+            if checkCorpses and Casting.HasNearbyCorpse(peerName) then
+                Logger.log_debug("Peer corpse detected (%s), aborting group buff rotation.", peerName)
+                return {}
+            end
 
-        if Config:GetSetting("DoActorPetBuffs") then
-            local groupMember = mq.TLO.Group.Member(peerName or "")
-            if groupMember() and groupMember.Pet.ID() > 0 then
-                if not (groupMember.Pet.CleanName() or "familiar"):lower():find("familiar") then
-                    zoneIds:add(groupMember.Pet.ID())
+            zoneIds:add(zoneSpawn.ID())
+
+            if Config:GetSetting("DoActorPetBuffs") then
+                local groupMember = mq.TLO.Group.Member(peerName or "")
+                if groupMember() and groupMember.Pet.ID() > 0 then
+                    if not (groupMember.Pet.CleanName() or "familiar"):lower():find("familiar") then
+                        zoneIds:add(groupMember.Pet.ID())
+                    end
                 end
             end
         end
@@ -1074,11 +1077,13 @@ function Casting.GetBuffableRaidIDs()
     local count = mq.TLO.Group.Members()
     for i = 1, count do
         local member = mq.TLO.Group.Member(i)
-        if checkCorpses and Casting.HasNearbyCorpse(member.DisplayName()) then
-            Logger.log_debug("Groupmember corpse detected (%s), aborting group buff rotation.", member.DisplayName())
-            return {}
+        if not member.OtherZone() then
+            if checkCorpses and Casting.HasNearbyCorpse(member.DisplayName()) then
+                Logger.log_debug("Groupmember corpse detected (%s), aborting group buff rotation.", member.DisplayName())
+                return {}
+            end
+            raidIds:add(member.ID())
         end
-        raidIds:add(member.ID())
     end
 
     -- if we aren't foregrounded, check ourselves after we've already buffed the group (tank is likeliest to be first ID this way)
@@ -1095,18 +1100,19 @@ function Casting.GetBuffableRaidIDs()
     for _, peer in ipairs(Comms.GetPeers(false)) do
         local peerName = Comms.GetNameFromPeer(peer)
         local raidMember = mq.TLO.Raid.Member(peerName or "")
-        if raidMember() then
+        if raidMember() and raidMember.Spawn() then
             if checkCorpses and Casting.HasNearbyCorpse(peer) then
                 Logger.log_debug("Raidmember corpse detected (%s), aborting group buff rotation.", peer)
                 return {}
             end
             raidIds:add(raidMember.ID())
-        end
-        if Config:GetSetting("DoActorPetBuffs") then
-            local groupMember = mq.TLO.Group.Member(peer)
-            if groupMember() and groupMember.Pet.ID() > 0 then
-                if not (groupMember.Pet.CleanName() or "familiar"):lower():find("familiar") then
-                    raidIds:add(groupMember.Pet.ID())
+
+            if Config:GetSetting("DoActorPetBuffs") then
+                local groupMember = mq.TLO.Group.Member(peer)
+                if groupMember() and groupMember.Pet.ID() > 0 and not groupMember.OtherZone() then
+                    if not (groupMember.Pet.CleanName() or "familiar"):lower():find("familiar") then
+                        raidIds:add(groupMember.Pet.ID())
+                    end
                 end
             end
         end
@@ -1114,13 +1120,13 @@ function Casting.GetBuffableRaidIDs()
 
     if Config:GetSetting("BuffAssistList") then
         for _, name in ipairs(Config:GetSetting('AssistList')) do
-            local oaSpawn = mq.TLO.Spawn(("pc =%s"):format(name))
-            if oaSpawn and oaSpawn() then
+            local listSpawn = mq.TLO.Spawn(("pc =%s"):format(name))
+            if listSpawn and listSpawn() then
                 if checkCorpses and Casting.HasNearbyCorpse(name) then
-                    Logger.log_debug("Assist List corpse detected (%s), aborting group buff rotation.", oaSpawn.DisplayName())
+                    Logger.log_debug("Assist List corpse detected (%s), aborting group buff rotation.", name)
                     return {}
                 end
-                raidIds:add(oaSpawn.ID())
+                raidIds:add(listSpawn.ID())
             end
         end
     end
@@ -1146,16 +1152,18 @@ function Casting.GetBuffableGroupIDs()
     local count = mq.TLO.Group.Members()
     for i = 1, count do
         local member = mq.TLO.Group.Member(i)
-        if checkCorpses and Casting.HasNearbyCorpse(member.DisplayName()) then
-            Logger.log_debug("Groupmember corpse detected (%s), aborting group buff rotation.", member.DisplayName())
-            return {}
-        end
-        groupIds:add(member.ID())
-        if Config:GetSetting("DoActorPetBuffs") then
-            if #Comms.GetPeerHeartbeatByName(member.DisplayName()) > 0 then
-                if member() and member.Pet.ID() > 0 then
-                    if not (member.Pet.CleanName() or "familiar"):lower():find("familiar") then
-                        groupIds:add(member.Pet.ID())
+        if not member.OtherZone() then
+            if checkCorpses and Casting.HasNearbyCorpse(member.DisplayName()) then
+                Logger.log_debug("Groupmember corpse detected (%s), aborting group buff rotation.", member.DisplayName())
+                return {}
+            end
+            groupIds:add(member.ID())
+            if Config:GetSetting("DoActorPetBuffs") then
+                if #Comms.GetPeerHeartbeatByName(member.DisplayName()) > 0 then
+                    if member() and member.Pet.ID() > 0 then
+                        if not (member.Pet.CleanName() or "familiar"):lower():find("familiar") then
+                            groupIds:add(member.Pet.ID())
+                        end
                     end
                 end
             end
@@ -1176,13 +1184,13 @@ function Casting.GetBuffableGroupIDs()
     if Config:GetSetting("BuffAssistList") then
         for _, name in ipairs(Config:GetSetting('AssistList')) do
             if not mq.TLO.Group.Member(name)() then
-                local oaSpawn = mq.TLO.Spawn(("pc =%s"):format(name))
-                if oaSpawn and oaSpawn() then
+                local listSpawn = mq.TLO.Spawn(("pc =%s"):format(name))
+                if listSpawn and listSpawn() then
                     if checkCorpses and Casting.HasNearbyCorpse(name) then
                         Logger.log_debug("Assist List corpse detected (%s), aborting group buff rotation.", name)
                         return {}
                     end
-                    groupIds:add(oaSpawn.ID())
+                    groupIds:add(listSpawn.ID())
                 end
             end
         end
