@@ -1998,12 +1998,14 @@ function Module:GiveTime()
                                 buffCheckPassed = target and Casting.DetItemCheck(clicky.itemName, target)
                             elseif clicky.target == "Mercs Peer" then
                                 targetPeer = Comms.GetPeerHeartbeatByName(clicky.mercs_peer_name or "")
-                                local found = (targetPeer and targetPeer.Data and targetPeer.Data.ID ~= nil and (targetPeer.Data.Zone or "") == mq.TLO.Zone.Name()) or false
+                                local peerFound = (targetPeer and targetPeer.Data and targetPeer.Data.ID and (targetPeer.Data.Zone or "") == mq.TLO.Zone.Name()) or false
                                 Logger.log_verbose("\ayClicky: \awChecking Mercs Peer Target: \am%s\aw found: %s", clicky.mercs_peer_name or "",
-                                    Strings.BoolToColorString(found))
-                                if found then
+                                    Strings.BoolToColorString(peerFound))
+                                if peerFound then
                                     target = mq.TLO.Spawn(targetPeer.Data.ID)
                                     buffCheckPassed = target and Casting.ActorBuffCheck(item.Clicky.Spell.RankName.ID(), target)
+                                else
+                                    buffCheckPassed = false
                                 end
                             end
 
