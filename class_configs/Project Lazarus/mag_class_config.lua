@@ -957,6 +957,7 @@ _ClassConfig    = {
             Default = 2,
             Min = 1,
             Max = 4,
+            RequiresLoadoutChange = true,
         },
         ['DoPetHealSpell'] = {
             DisplayName = "Pet Heal Spell",

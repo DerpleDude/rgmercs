@@ -222,13 +222,13 @@ local _ClassConfig = {
             "Allure of Death",
             "Dark Pact",
         },
-        ['PetSpellRog'] = {
+        ['RogPetSpell'] = {
             "Dark Assassin",
             "Child of Bertoxxulous",
             "Saryrn's Companion",
             "Minion of Shadows",
         },
-        ['PetSpellWar'] = {
+        ['WarPetSpell'] = {
             "Lost Soul",
             "Child of Bertoxxulous",
             "Legacy of Zek",
@@ -842,34 +842,17 @@ local _ClassConfig = {
         },
         ['PetSummon']       = {
             {
-                name = "PetSpellWar",
+                name_func = function(self)
+                    return string.format("%sPetSpell", self.ClassConfig.DefaultConfig.PetType.ComboOptions[Config:GetSetting('PetType')])
+                end,
                 type = "Spell",
-                load_cond = function(self) return Config:GetSetting('PetType') == 1 end,
-                active_cond = function(self, _) return mq.TLO.Me.Pet.ID() ~= 0 and mq.TLO.Me.Pet.Class.ShortName():lower() == ("war" or "mnk") end,
+                active_cond = function(self) return mq.TLO.Me.Pet.ID() > 0 end,
                 cond = function(self, spell)
                     return Casting.ReagentCheck(spell)
                 end,
                 post_activate = function(self, spell, success)
                     local pet = mq.TLO.Me.Pet
                     if success and pet.ID() > 0 then
-                        Comms.PrintGroupMessage("Summoned a new %d %s pet named %s using '%s'!", pet.Level(), pet.Class.Name(), pet.CleanName(), spell.RankName())
-                        mq.delay(50) -- slight delay to prevent chat bug with command issue
-                        self:SetPetHold()
-                    end
-                end,
-            },
-            {
-                name = "PetSpellRog",
-                type = "Spell",
-                load_cond = function(self) return Config:GetSetting('PetType') == 2 end,
-                active_cond = function(self, _) return mq.TLO.Me.Pet.ID() ~= 0 and mq.TLO.Me.Pet.Class.ShortName():lower() == "rog" end,
-                cond = function(self, spell)
-                    return Casting.ReagentCheck(spell)
-                end,
-                post_activate = function(self, spell, success)
-                    local pet = mq.TLO.Me.Pet
-                    if success and pet.ID() > 0 then
-                        Comms.PrintGroupMessage("Summoned a new %d %s pet named %s using '%s'!", pet.Level(), pet.Class.Name(), pet.CleanName(), spell.RankName())
                         mq.delay(50) -- slight delay to prevent chat bug with command issue
                         self:SetPetHold()
                     end
@@ -970,6 +953,7 @@ local _ClassConfig = {
             Default = 1,
             Min = 1,
             Max = 2,
+            RequiresLoadoutChange = true,
         },
         ['DoPetHealSpell']    = {
             DisplayName = "Pet Heal Spell",

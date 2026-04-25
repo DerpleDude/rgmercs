@@ -9,7 +9,7 @@ local DanNet    = require('lib.dannet.helpers')
 local Logger    = require("utils.logger")
 
 _ClassConfig    = {
-    _version              = "1.2 - Live",
+    _version              = "1.3 - Live",
     _author               = "Derple, Morisato, Algar",
     ['ModeChecks']        = {
         IsTanking = function() return Core.IsModeActive("PetTank") end,
@@ -728,48 +728,47 @@ _ClassConfig    = {
             --- PetManaNuke
             "Thaumatize Pet",
         },
-        -- - Summoned item Spells
-        ['PetArmorSummon'] = {
-            -- >=LVL71
-            "Grant Arcane Plate",
-            "Grant The Alloy's Plate",
-            "Grant the Centien's Plate",
-            "Grant Ocoenydd's Plate",
-            "Grant Wirn's Plate",
-            "Grant Thassis' Plate",
-            "Grant Frightforged Plate",
-            "Grant Manaforged Plate",
-            "Grant Spectral Plate",
-            "Summon Plate of the Prime",
-            "Summon Plate of the Elements",
-        },
-        ['PetWeaponSummon'] = {
-            "Grant Arcane Armaments",
-            "Grant Goliath's Armaments",
-            "Grant Shak Dathor's Armaments",
-            "Grant Yalrek's Armaments",
-            "Grant Wirn's Armaments",
-            "Grant Thassis' Armaments",
-            "Grant Frightforged Armaments",
-            "Grant Manaforged Armaments",
-            "Grant Spectral Armaments",
-            "Summon Ethereal Armaments",
-            "Summon Prime Armaments",
-            "Summon Elemental Armaments",
-        },
-        ['PetHeirloomSummon'] = {
-            "Grant Arcane Heirlooms",
-            "Grant Ankexfen's Heirlooms",
-            "Grant the Diabo's Heirlooms",
-            "Summon Nastel's Heirlooms",
-            "Summon Zabella's Heirlooms",
-            "Grant Enibik's Heirlooms",
-            "Grant Atleris' Heirlooms",
-            "Grant Nint's Heirlooms",
-            "Grant Calix's Heirlooms",
-            "Grant Ioulin's Heirlooms",
-            "Grant Crystasia's Heirlooms",
-        },
+        -- ['PetArmorSummon'] = {
+        --     -- >=LVL71
+        --     "Grant Arcane Plate",
+        --     "Grant The Alloy's Plate",
+        --     "Grant the Centien's Plate",
+        --     "Grant Ocoenydd's Plate",
+        --     "Grant Wirn's Plate",
+        --     "Grant Thassis' Plate",
+        --     "Grant Frightforged Plate",
+        --     "Grant Manaforged Plate",
+        --     "Grant Spectral Plate",
+        --     "Summon Plate of the Prime",
+        --     "Summon Plate of the Elements",
+        -- },
+        -- ['PetWeaponSummon'] = {
+        --     "Grant Arcane Armaments",
+        --     "Grant Goliath's Armaments",
+        --     "Grant Shak Dathor's Armaments",
+        --     "Grant Yalrek's Armaments",
+        --     "Grant Wirn's Armaments",
+        --     "Grant Thassis' Armaments",
+        --     "Grant Frightforged Armaments",
+        --     "Grant Manaforged Armaments",
+        --     "Grant Spectral Armaments",
+        --     "Summon Ethereal Armaments",
+        --     "Summon Prime Armaments",
+        --     "Summon Elemental Armaments",
+        -- },
+        -- ['PetHeirloomSummon'] = {
+        --     "Grant Arcane Heirlooms",
+        --     "Grant Ankexfen's Heirlooms",
+        --     "Grant the Diabo's Heirlooms",
+        --     "Summon Nastel's Heirlooms",
+        --     "Summon Zabella's Heirlooms",
+        --     "Grant Enibik's Heirlooms",
+        --     "Grant Atleris' Heirlooms",
+        --     "Grant Nint's Heirlooms",
+        --     "Grant Calix's Heirlooms",
+        --     "Grant Ioulin's Heirlooms",
+        --     "Grant Crystasia's Heirlooms",
+        -- },
         ['IceOrbSummon'] = {
             "Grant Frostbound Paradox",
             "Grant Icebound Paradox",
@@ -865,7 +864,7 @@ _ClassConfig    = {
             name = 'PetSummon',
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
-                return combat_state == "Downtime" and Casting.OkayToPetBuff() and (mq.TLO.Me.Pet.ID() == 0 or Config:GetSetting('DoPocketPet')) and Casting.AmIBuffable()
+                return combat_state == "Downtime" and Casting.OkayToPetBuff() and mq.TLO.Me.Pet.ID() == 0 and Casting.AmIBuffable()
             end,
         },
         {
@@ -918,16 +917,6 @@ _ClassConfig    = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and Casting.OkayToDebuff()
-            end,
-        },
-        {
-            name = 'Combat Pocket Pet',
-            state = 1,
-            steps = 1,
-            load_cond = function() return Config:GetSetting('DoPocketPet') end,
-            targetId = function(self) return { mq.TLO.Me.ID(), } end,
-            cond = function(self, combat_state)
-                return combat_state == "Combat"
             end,
         },
         {
@@ -1022,92 +1011,6 @@ _ClassConfig    = {
             if shroudSpell.Level() > aaSpell.Level() then return false end
             return true
         end,
-        summon_pet = function(self)
-            local petSpellVar = string.format("%sPetSpell", self.ClassConfig.DefaultConfig.PetType.ComboOptions[Config:GetSetting('PetType')])
-            local resolvedPetSpell = self.ResolvedActionMap[petSpellVar]
-
-            if not resolvedPetSpell then
-                Logger.log_debug("No valid pet spell found for type: %s", petSpellVar)
-                return false
-            end
-
-            if mq.TLO.FindItemCount("Malachite")() > 0 then
-                return Casting.UseSpell(resolvedPetSpell.RankName(), mq.TLO.Me.ID(), self.CombatState == "Downtime")
-            else
-                Logger.log_error("\ayYou don't have \agMalachite\ay. And you call yourself a mage?")
-                return false
-            end
-        end,
-        pet_management = function(self)
-            if not Config:GetSetting('DoPet') or (Casting.CanUseAA("Companion's Suspension") and not Casting.AAReady("Companion's Suspension")) then
-                return false
-            end
-
-            -- Low Level Check - In 2 cases You're too lowlevel to Know Suspend companion and have no pet or You've Turned off Usepocket pet.
-            if mq.TLO.Me.Pet.ID() == 0 and (not Casting.CanUseAA("Companion's Suspension") or not Config:GetSetting('DoPocketPet')) then
-                if not self.Helpers.summon_pet(self) then
-                    Logger.log_debug("\arPetManagement - Case 0 -> Summon Failed")
-                    return false
-                end
-            end
-
-            -- Pocket Pet Stuff Begins. -  Added Check for DoPocketPet to be Positive Rather than Assuming
-            if Config:GetSetting('DoPocketPet') then
-                if self.TempSettings.PocketPet and mq.TLO.Me.Pet.ID() == 0 and Targeting.GetXTHaterCount() > 0 then
-                    Casting.UseAA("Companion's Suspension", 0)
-                    self.TempSettings.PocketPet = false
-                    return true
-                end
-
-                -- Case 1 - No pocket pet and no pet up
-                if not self.TempSettings.PocketPet and mq.TLO.Me.Pet.ID() == 0 and Targeting.GetXTHaterCount() == 0 then
-                    Logger.log_debug("\ayPetManagement - Case 1 no Pocket Pet and no Pet")
-                    if not self.Helpers.summon_pet(self) then
-                        Logger.log_debug("\arPetManagement - Case 1 -> Summon Failed")
-                        return false
-                    end
-
-                    if Casting.AARank("Companion's Suspension") > 2 then
-                        -- Need to buff
-                        local resolvedPetHasteSpell = self.ResolvedActionMap["PetHaste"]
-                        Casting.UseSpell(resolvedPetHasteSpell.RankName(), mq.TLO.Me.Pet.ID(), true)
-                        local resolvedPetBuffSpell = self.ResolvedActionMap["PetIceFlame"]
-                        Casting.UseSpell(resolvedPetBuffSpell.RankName(), mq.TLO.Me.Pet.ID(), true)
-                        Casting.UseAA("Companion's Suspension", 0)
-                        self.TempSettings.PocketPet = true
-                    end
-
-                    return true
-                end
-            end
-            -- Case 2 - No pocket pet and pet up
-            if not self.TempSettings.PocketPet and (mq.TLO.Me.Pet.ID() or 0) > 0 and Targeting.GetXTHaterCount() == 0 then
-                Logger.log_debug("\ayPetManagement - Case 2 no Pocket Pet But Pet is up - pocketing")
-                Casting.UseAA("Companion's Suspension", 0)
-                if (mq.TLO.Me.Pet.ID() or 0) == 0 then
-                    if not self.Helpers.summon_pet(self) then
-                        Logger.log_debug("\arPetManagement - Case 2 -> Summon Failed")
-                        return false
-                    end
-                end
-                self.TempSettings.PocketPet = true
-
-                return true
-            end
-
-            -- Case 3 - Pocket Pet and no pet up
-            if self.TempSettings.PocketPet and (mq.TLO.Me.Pet.ID() or 0) == 0 and Targeting.GetXTHaterCount() == 0 then
-                Logger.log_debug("\ayPetManagement - Case 3 Pocket Pet But No Pet is up")
-                if not self.Helpers.summon_pet(self) then
-                    Logger.log_debug("\arPetManagement - Case 3 -> Summon Failed")
-                    return false
-                end
-
-                return true
-            end
-
-            return true
-        end,
         HandleItemSummon = function(self, itemSource, scope) --scope: "personal" or "group" summons
             if not itemSource and itemSource() then return false end
             if not scope then return false end
@@ -1139,34 +1042,21 @@ _ClassConfig    = {
     ['Rotations']         = {
         ['PetSummon'] = {
             {
-                name = "Pet Summon",
-                type = "CustomFunc",
-                active_cond = function(self)
-                    return mq.TLO.Me.Pet.ID() > 0
+                name_func = function(self)
+                    return string.format("%sPetSpell", self.ClassConfig.DefaultConfig.PetType.ComboOptions[Config:GetSetting('PetType')])
                 end,
-                cond = function(self)
-                    if self.TempSettings.PocketPet == nil then self.TempSettings.PocketPet = false end
-                    return mq.TLO.Me.Pet.ID() == 0 and Config:GetSetting('DoPet')
+                type = "Spell",
+                active_cond = function(self) return mq.TLO.Me.Pet.ID() > 0 end,
+                cond = function(self, spell)
+                    return Casting.ReagentCheck(spell)
                 end,
-                custom_func = function(self) return self.Helpers.summon_pet(self) end,
-                post_activate = function(self, _, success)
-                    if success and mq.TLO.Me.Pet.ID() > 0 then
+                post_activate = function(self, spell, success)
+                    local pet = mq.TLO.Me.Pet
+                    if success and pet.ID() > 0 then
                         mq.delay(50) -- slight delay to prevent chat bug with command issue
                         self:SetPetHold()
                     end
                 end,
-            },
-            {
-                name = "Store Pocket Pet",
-                type = "CustomFunc",
-                active_cond = function(self)
-                    return self.TempSettings.PocketPet == true
-                end,
-                cond = function(self)
-                    if self.TempSettings.PocketPet == nil then self.TempSettings.PocketPet = false end
-                    return not self.TempSettings.PocketPet and Config:GetSetting('DoPocketPet')
-                end,
-                custom_func = function(self) return self.Helpers.pet_management(self) end,
             },
         },
         ['PetHealSpell'] = {
@@ -1237,26 +1127,6 @@ _ClassConfig    = {
                 type = "AA",
                 cond = function(self, aaName)
                     return Casting.PetBuffAACheck(aaName)
-                end,
-            },
-        },
-        ['Combat Pocket Pet'] = {
-            {
-                name = "Engage Pocket Pet",
-                type = "CustomFunc",
-                active_cond = function(self)
-                    return self.TempSettings.PocketPet == true and mq.TLO.Me.Pet.ID() == 0
-                end,
-                cond = function(self)
-                    if self.TempSettings.PocketPet == nil then self.TempSettings.PocketPet = false end
-                    return self.TempSettings.PocketPet and mq.TLO.Me.Pet.ID() == 0 and Targeting.GetXTHaterCount() > 0
-                end,
-                custom_func = function(self)
-                    Logger.log_info("\atPocketPet: \arNo pet while in combat! \agPulling out pocket pet")
-                    Casting.UseAA("Companion's Suspension", mq.TLO.Me.ID())
-                    self.TempSettings.PocketPet = false
-
-                    return true
                 end,
             },
         },
@@ -1875,15 +1745,6 @@ _ClassConfig    = {
             Answer = "Fire Mode will use Fire Nukes and strive for DPS.\n" ..
                 "PetTank mode will Focus on keeping the Pet alive as the main tank.",
         },
-        ['DoPocketPet']    = {
-            DisplayName = "Do Pocket Pet",
-            Group = "Abilities",
-            Header = "Pet",
-            Category = "Pet Summoning",
-            Tooltip = "Pocket your pet during downtime",
-            RequiresLoadoutChange = true,
-            Default = false,
-        },
         ['PetType']        = {
             DisplayName = "Pet Type",
             Group = "Abilities",
@@ -1895,6 +1756,7 @@ _ClassConfig    = {
             Default = 2,
             Min = 1,
             Max = 4,
+            RequiresLoadoutChange = true,
         },
         ['DoPetHealSpell'] = {
             DisplayName = "Pet Heal Spell",

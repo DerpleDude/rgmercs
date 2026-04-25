@@ -509,25 +509,27 @@ _ClassConfig    = {
                     end
                 end,
             },
-            ['PetSummon'] = {
-                {
-                    name_func = function(self)
-                        return string.format("%sPetSpell", self.ClassConfig.DefaultConfig.PetType.ComboOptions[Config:GetSetting('PetType')])
-                    end,
-                    type = "Spell",
-                    active_cond = function(self) return mq.TLO.Me.Pet.ID() > 0 end,
-                    cond = function(self, spell)
-                        return Casting.ReagentCheck(spell)
-                    end,
-                    post_activate = function(self, spell, success)
-                        local pet = mq.TLO.Me.Pet
-                        if success and pet.ID() > 0 then
-                            Comms.PrintGroupMessage("Summoned a new %d %s pet named %s using '%s'!", pet.Level(), pet.Class.Name(), pet.CleanName(), spell.RankName())
-                            mq.delay(50) -- slight delay to prevent chat bug with command issue
-                            self:SetPetHold()
-                        end
-                    end,
-                },
+            {
+                name_func = function(self)
+                    return string.format("%sPetSpell", self.ClassConfig.DefaultConfig.PetType.ComboOptions[Config:GetSetting('PetType')])
+                end,
+                type = "Spell",
+                active_cond = function(self) return mq.TLO.Me.Pet.ID() > 0 end,
+                load_cond = function(self)
+                    return (not Config:GetSetting("UseEpicPet") or not mq.TLO.Me.Book("Summon Orb")()) and
+                        (not Config:GetSetting("UseDonorPet") or not mq.TLO.FindItem("=Artifact of Asterion")())
+                end,
+                cond = function(self, spell)
+                    return Casting.ReagentCheck(spell)
+                end,
+                post_activate = function(self, spell, success)
+                    local pet = mq.TLO.Me.Pet
+                    if success and pet.ID() > 0 then
+                        Comms.PrintGroupMessage("Summoned a new %d %s pet named %s using '%s'!", pet.Level(), pet.Class.Name(), pet.CleanName(), spell.RankName())
+                        mq.delay(50) -- slight delay to prevent chat bug with command issue
+                        self:SetPetHold()
+                    end
+                end,
             },
         },
         ['PetHealing'] = {
@@ -948,6 +950,7 @@ _ClassConfig    = {
             Default = 2,
             Min = 1,
             Max = 4,
+            RequiresLoadoutChange = true,
         },
         ['DoPetHealSpell'] = {
             DisplayName = "Pet Heal Spell",
