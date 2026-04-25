@@ -1407,17 +1407,17 @@ function Module:ProcessQueuedEvents()
     end
 
     if not success then
-        Logger.log_error("\arFailed to cast queued %s: %s on %s", queueData.type, queueData.name, queueData.targetId)
+        Logger.log_debug("\arFailed to cast queued %s: %s on %s", queueData.type, queueData.name, queueData.targetId)
         self.TempSettings.QueuedAbilities[1].retries = (self.TempSettings.QueuedAbilities[1].retries or 0) + 1
 
         if self.TempSettings.QueuedAbilities[1].retries > 3 then
-            Logger.log_error("\arFailed to cast queued %s: %s on %s after 3 attempts - giving up", queueData.type, queueData.name, queueData.targetId)
+            Logger.log_warning("\arFailed to cast queued %s: %s on %s after 3 attempts - giving up", queueData.type, queueData.name, queueData.targetId)
             table.remove(self.TempSettings.QueuedAbilities, 1)
         else
             Logger.log_debug("\ayRetrying queued %s: %s on %s (%d)", queueData.type, queueData.name, queueData.targetId, self.TempSettings.QueuedAbilities[1].retries)
         end
     else
-        Logger.log_info("\agSuccessfully cast queued %s: %s on %s", queueData.type, queueData.name, queueData.targetId)
+        Logger.log_debug("\agSuccessfully cast queued %s: %s on %s", queueData.type, queueData.name, queueData.targetId)
         table.remove(self.TempSettings.QueuedAbilities, 1)
     end
 

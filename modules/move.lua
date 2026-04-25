@@ -874,18 +874,18 @@ function Module:CheckStuck()
                 local startingToggleSelf = mq.TLO.AutoSize.ResizeSelf()
 
                 if not startingToggleEnabled then
-                    Logger.log_warning("\awWARNING:\ax Enabling AutoSize to unstick")
+                    Logger.log_debug("\awWARNING:\ax Enabling AutoSize to unstick")
                     Core.DoCmd("/squelch /autosize on")
                 end
 
                 if not startingToggleSelf then
-                    Logger.log_warning("\awWARNING:\ax Enabling AutoSize Self to unstick")
+                    Logger.log_debug("\awWARNING:\ax Enabling AutoSize Self to unstick")
                     Core.DoCmd("/squelch /autosize self on")
                 end
 
                 local cycleSizes = { startingSize * 2, 1, startingSize * 1.5, 1, startingSize * 3, 1, }
                 for _, size in ipairs(cycleSizes) do
-                    Logger.log_warning("\awWARNING:\ax Setting size to %d to unstick", size)
+                    Logger.log_debug("\awWARNING:\ax Setting size to %d to unstick", size)
                     Core.DoCmd("/squelch /autosize sizeself %d", size)
 
                     mq.delay("2s", function()

@@ -10,7 +10,7 @@ local Logger    = require("utils.logger")
 local Combat    = require("utils.combat")
 
 _ClassConfig    = {
-    _version          = "1.3 - EQ Might",
+    _version          = "1.4 - EQ Might",
     _author           = "Derple, Morisato, Algar",
     ['ModeChecks']    = {
         IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
@@ -287,7 +287,7 @@ _ClassConfig    = {
             name = 'PetSummon',
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
-                return combat_state == "Downtime" and Casting.OkayToPetBuff() and (mq.TLO.Me.Pet.ID() == 0 or Config:GetSetting('DoPocketPet'))
+                return combat_state == "Downtime" and Casting.OkayToPetBuff() and mq.TLO.Me.Pet.ID() == 0
                     and Casting.AmIBuffable()
             end,
         },
@@ -341,17 +341,6 @@ _ClassConfig    = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and Casting.BurnCheck()
-            end,
-        },
-        {
-            name = 'Combat Pocket Pet',
-            state = 1,
-            steps = 1,
-            doFullRotation = true,
-            load_cond = function() return Config:GetSetting('DoPocketPet') end,
-            targetId = function(self) return { mq.TLO.Me.ID(), } end,
-            cond = function(self, combat_state)
-                return combat_state == "Combat"
             end,
         },
         {
@@ -450,86 +439,6 @@ _ClassConfig    = {
             end
             Logger.log_warning("Warning: Mage pet orb not destroyed! An error or conflict has occured.")
         end,
-        summon_pet = function(self)
-            local petSpellVar = string.format("%sPetSpell", self.ClassConfig.DefaultConfig.PetType.ComboOptions[Config:GetSetting('PetType')])
-            local resolvedPetSpell = self.ResolvedActionMap[petSpellVar]
-
-            if not resolvedPetSpell then
-                Logger.log_debug("No valid pet spell found for type: %s", petSpellVar)
-                return false
-            end
-
-            return Casting.UseSpell(resolvedPetSpell.RankName(), mq.TLO.Me.ID(), self.CombatState == "Downtime")
-        end,
-        pet_management = function(self)
-            if not Config:GetSetting('DoPet') or (Casting.CanUseAA("Suspended Minion") and not Casting.AAReady("Suspended Minion")) then
-                return false
-            end
-
-            -- Low Level Check - In 2 cases You're too lowlevel to Know Suspend companion and have no pet or You've Turned off Usepocket pet.
-            if mq.TLO.Me.Pet.ID() == 0 and (not Casting.CanUseAA("Suspended Minion") or not Config:GetSetting('DoPocketPet')) then
-                if not self.Helpers.summon_pet(self) then
-                    Logger.log_debug("\arPetManagement - Case 0 -> Summon Failed")
-                    return false
-                end
-            end
-
-            -- Pocket Pet Stuff Begins. -  Added Check for DoPocketPet to be Positive Rather than Assuming
-            if Config:GetSetting('DoPocketPet') then
-                if self.TempSettings.PocketPet and mq.TLO.Me.Pet.ID() == 0 and Targeting.GetXTHaterCount() > 0 then
-                    Casting.UseAA("Suspended Minion", mq.TLO.Me.ID(), true)
-                    self.TempSettings.PocketPet = false
-                    return true
-                end
-
-                -- Case 1 - No pocket pet and no pet up
-                if not self.TempSettings.PocketPet and mq.TLO.Me.Pet.ID() == 0 and Targeting.GetXTHaterCount() == 0 then
-                    Logger.log_debug("\ayPetManagement - Case 1 no Pocket Pet and no Pet")
-                    if not self.Helpers.summon_pet(self) then
-                        Logger.log_debug("\arPetManagement - Case 1 -> Summon Failed")
-                        return false
-                    end
-
-                    if Casting.AARank("Suspended Minion") > 1 then --Need to buff
-                        local resolvedPetHasteSpell = self.ResolvedActionMap["PetHaste"]
-                        Casting.UseSpell(resolvedPetHasteSpell.RankName(), mq.TLO.Me.Pet.ID(), true)
-                        local resolvedPetBuffSpell = self.ResolvedActionMap["PetIceFlame"]
-                        Casting.UseSpell(resolvedPetBuffSpell.RankName(), mq.TLO.Me.Pet.ID(), true)
-                        Casting.UseAA("Suspended Minion", mq.TLO.Me.ID(), true)
-                        self.TempSettings.PocketPet = true
-                    end
-
-                    return true
-                end
-            end
-            -- Case 2 - No pocket pet and pet up
-            if not self.TempSettings.PocketPet and (mq.TLO.Me.Pet.ID() or 0) > 0 and Targeting.GetXTHaterCount() == 0 then
-                Logger.log_debug("\ayPetManagement - Case 2 no Pocket Pet But Pet is up - pocketing")
-                Casting.UseAA("Suspended Minion", mq.TLO.Me.ID(), true)
-                if (mq.TLO.Me.Pet.ID() or 0) == 0 then
-                    if not self.Helpers.summon_pet(self) then
-                        Logger.log_debug("\arPetManagement - Case 2 -> Summon Failed")
-                        return false
-                    end
-                end
-                self.TempSettings.PocketPet = true
-
-                return true
-            end
-
-            -- Case 3 - Pocket Pet and no pet up
-            if self.TempSettings.PocketPet and (mq.TLO.Me.Pet.ID() or 0) == 0 and Targeting.GetXTHaterCount() == 0 then
-                Logger.log_debug("\ayPetManagement - Case 3 Pocket Pet But No Pet is up")
-                if not self.Helpers.summon_pet(self) then
-                    Logger.log_debug("\arPetManagement - Case 3 -> Summon Failed")
-                    return false
-                end
-
-                return true
-            end
-
-            return true
-        end,
         HandleItemSummon = function(self, itemSource, scope) --scope: "personal" or "group" summons
             if not itemSource and itemSource() then return false end
             if not scope then return false end
@@ -600,39 +509,25 @@ _ClassConfig    = {
                     end
                 end,
             },
-            {
-                name = "Pet Summon",
-                type = "CustomFunc",
-                load_cond = function(self)
-                    return (not Config:GetSetting("UseEpicPet") or not mq.TLO.Me.Book("Summon Orb")()) and
-                        (not Config:GetSetting("UseDonorPet") or not mq.TLO.FindItem("=Artifact of Asterion")())
-                end,
-                active_cond = function(self)
-                    return mq.TLO.Me.Pet.ID() > 0
-                end,
-                cond = function(self)
-                    if self.TempSettings.PocketPet == nil then self.TempSettings.PocketPet = false end
-                    return mq.TLO.Me.Pet.ID() == 0 and Config:GetSetting('DoPet')
-                end,
-                custom_func = function(self) return self.Helpers.summon_pet(self) end,
-                post_activate = function(self, _, success)
-                    if success and mq.TLO.Me.Pet.ID() > 0 then
-                        mq.delay(50) -- slight delay to prevent chat bug with command issue
-                        self:SetPetHold()
-                    end
-                end,
-            },
-            {
-                name = "Store Pocket Pet",
-                type = "CustomFunc",
-                active_cond = function(self)
-                    return self.TempSettings.PocketPet == true
-                end,
-                cond = function(self)
-                    if self.TempSettings.PocketPet == nil then self.TempSettings.PocketPet = false end
-                    return not self.TempSettings.PocketPet and Config:GetSetting('DoPocketPet')
-                end,
-                custom_func = function(self) return self.Helpers.pet_management(self) end,
+            ['PetSummon'] = {
+                {
+                    name_func = function(self)
+                        return string.format("%sPetSpell", self.ClassConfig.DefaultConfig.PetType.ComboOptions[Config:GetSetting('PetType')])
+                    end,
+                    type = "Spell",
+                    active_cond = function(self) return mq.TLO.Me.Pet.ID() > 0 end,
+                    cond = function(self, spell)
+                        return Casting.ReagentCheck(spell)
+                    end,
+                    post_activate = function(self, spell, success)
+                        local pet = mq.TLO.Me.Pet
+                        if success and pet.ID() > 0 then
+                            Comms.PrintGroupMessage("Summoned a new %d %s pet named %s using '%s'!", pet.Level(), pet.Class.Name(), pet.CleanName(), spell.RankName())
+                            mq.delay(50) -- slight delay to prevent chat bug with command issue
+                            self:SetPetHold()
+                        end
+                    end,
+                },
             },
         },
         ['PetHealing'] = {
@@ -706,27 +601,6 @@ _ClassConfig    = {
                 end,
             },
         },
-        ['Combat Pocket Pet'] = {
-            {
-                name = "Engage Pocket Pet",
-                type = "CustomFunc",
-                active_cond = function(self)
-                    return self.TempSettings.PocketPet == true and mq.TLO.Me.Pet.ID() == 0
-                end,
-                cond = function(self)
-                    if self.TempSettings.PocketPet == nil then self.TempSettings.PocketPet = false end
-                    return self.TempSettings.PocketPet and mq.TLO.Me.Pet.ID() == 0 and Targeting.GetXTHaterCount() > 0
-                end,
-                custom_func = function(self)
-                    Logger.log_info("\atPocketPet: \arNo pet while in combat! \agPulling out pocket pet")
-                    Targeting.SetTarget(mq.TLO.Me.ID())
-                    Casting.UseAA("Suspended Minion", mq.TLO.Me.ID(), true)
-                    self.TempSettings.PocketPet = false
-
-                    return true
-                end,
-            },
-        },
         ['Burn'] = {
             {
                 name = "Epic",
@@ -760,22 +634,6 @@ _ClassConfig    = {
             {
                 name = "OoW_Chest",
                 type = "Item",
-            },
-        },
-        ['DPS PET'] = {
-            {
-                name = "ShortDurDmgShield",
-                type = "Spell",
-                cond = function(self, spell)
-                    return Casting.PetBuffCheck(spell)
-                end,
-            },
-            {
-                name = "FireShroud",
-                type = "Spell",
-                cond = function(self, spell)
-                    return Casting.PetBuffCheck(spell)
-                end,
             },
         },
         ['Weaves'] = {
@@ -1057,16 +915,6 @@ _ClassConfig    = {
             FAQ = "What is the difference between the modes?",
             Answer = "DPS Mode performs exactly as described.\n" ..
                 "PBAE Mode will use PBAE spells when configured, alongside the DPS rotation.",
-        },
-        ['DoPocketPet']    = {
-            DisplayName = "Do Pocket Pet",
-            Group = "Abilities",
-            Header = "Pet",
-            Category = "Pet Summoning",
-            Index = 102,
-            Tooltip = "Use suspend minion to pocket your pet during downtime.",
-            Default = false,
-            RequiresLoadoutChange = true,
         },
         ['UseDonorPet']    = {
             DisplayName = "Summon Asterion",

@@ -41,7 +41,7 @@ function Events.HandleDeath()
             mq.delay("2s",
                 function() return (mq.TLO.FindItem("Fellowship Registration Insignia").Timer.TotalSeconds() ~= 0) end)
         else
-            Logger.log_error("\aw Bummer, Insignia on cooldown, you must really suck at this game...")
+            Logger.log_debug("\aw Bummer, Insignia on cooldown, you must really suck at this game...")
         end
     end
 end
