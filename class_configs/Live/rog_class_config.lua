@@ -221,7 +221,7 @@ return {
             "Hidden Blade",      -- Level 104
             "Holdout Blade",     -- Level 99
         },
-        ["DichoSpell"] = {
+        ["Dicho"] = {
             "Reciprocal Weapons", -- Level 121
             "Ecliptic Weapons",   -- Level 116
             "Composite Weapons",  -- Level 111
@@ -502,7 +502,7 @@ return {
                 end,
             },
             {
-                name = "Carve",
+                name = "Slice",
                 type = "Disc",
             },
             {
@@ -616,13 +616,6 @@ return {
                 end,
                 cond = function(self)
                     return Casting.SelfBuffItemCheck(Config:GetSetting('PoisonName'))
-                end,
-            },
-            {
-                name = "Envenomed Blades",
-                type = "AA",
-                cond = function(self, aaName)
-                    return Casting.SelfBuffAACheck(aaName)
                 end,
             },
         },
