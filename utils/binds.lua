@@ -243,6 +243,36 @@ Binds.Handlers    = {
             Config:ListClear("HealList")
         end,
     },
+    ['namedadd'] = {
+        usage = "/rgl namedadd <Name>",
+        about = "Adds <Name> to the User Named List for the current zone. If no name is entered, your target's name is used.",
+        handler = function(name)
+            if not name then
+                if not mq.TLO.Target() then
+                    Logger.log_error("/rgl namedadd - no name given and no valid target exists!")
+                    return
+                end
+                if not Targeting.TargetIsType("NPC") then
+                    Logger.log_error("/rgl namedadd - target must be an NPC!")
+                    return
+                end
+                name = mq.TLO.Target.CleanName()
+            end
+            Config:ZoneListAdd(name, "CustomNamedList")
+        end,
+    },
+    ['nameddelete'] = {
+        usage = "/rgl nameddelete (<Name> or <List#>)",
+        about = "Deletes (<Name> or <List#>) from the User Named List for the current zone. If no name is entered, your target's name is used.",
+        handler = function(arg1)
+            if not arg1 then arg1 = mq.TLO.Target.CleanName() end
+            if not arg1 then
+                Logger.log_error("/rgl nameddelete - no argument given and no valid target exists!")
+                return
+            end
+            Config:ZoneListDelete(arg1, "CustomNamedList")
+        end,
+    },
     ['backoff'] = {
         usage = "/rgl backoff <on|off>",
         about = "Toggles or sets backoff flag, which temporarily stops the PC from assisting or engaging.",

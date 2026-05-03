@@ -1739,7 +1739,7 @@ function Ui.RenderZoneNamed()
 
             if spawnExists and namedSpawn.PctHPs() > 0 then
                 ImGui.TableNextColumn()
-                local _, clicked = ImGui.Selectable(named.Name, false)
+                local _, clicked = ImGui.Selectable(string.format("%s##%d", named.Name, namedSpawn.ID()), false)
                 if clicked then
                     namedSpawn.DoTarget()
                 end

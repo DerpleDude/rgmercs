@@ -42,6 +42,19 @@ local SCHEMA              = [[
 
     CREATE INDEX IF NOT EXISTS idx_config_lookup
         ON config_value(character_id, module, class);
+
+    CREATE TABLE IF NOT EXISTS server_config (
+        id         INTEGER PRIMARY KEY,
+        server_id  INTEGER NOT NULL REFERENCES server(id) ON DELETE CASCADE,
+        module     TEXT    NOT NULL,
+        key        TEXT    NOT NULL,
+        value_type TEXT    NOT NULL CHECK (value_type IN ('bool','number','string','lua')),
+        value      TEXT,
+        UNIQUE (server_id, module, key)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_server_config_lookup
+        ON server_config(server_id, module);
 ]]
 
 ---@param path        string        Full path to the .db file
@@ -94,8 +107,17 @@ function DB.new(path, onUpdate)
         -- previous totals for delta calculation
         prev         = { selects = 0, inserts = 0, deletes = 0, cacheHits = 0, cacheMisses = 0, },
     }
-    local self = setmetatable(
-        { _db = db, _onUpdate = onUpdate, _writeQueue = {}, _cache = {}, _dataVersion = 0, _externalVersion = -1, _telemetry = telemetry, _collectStats = false, }, DB)
+    local self = setmetatable({
+        _db = db,
+        _onUpdate = onUpdate,
+        _writeQueue = {},
+        _cache = {},
+        _serverCache = {},
+        _dataVersion = 0,
+        _externalVersion = -1,
+        _telemetry = telemetry,
+        _collectStats = false,
+    }, DB)
     self:_exec(SCHEMA)
     self._externalVersion = self:_getDataVersion()
 
@@ -646,6 +668,213 @@ function DB:deleteCharacter(serverName, charName)
     return ok
 end
 
+---@param serverName string
+---@param module     string
+---@param key        string
+---@return any|nil  deserialized value, or nil if not found
+function DB:getServerValue(serverName, module, key)
+    local moduleCache = self._serverCache[serverName] and self._serverCache[serverName][module]
+    local entry = moduleCache and moduleCache[key]
+    if entry == nil or entry.version < self._dataVersion then
+        if self._collectStats then
+            self._telemetry.cacheMisses = self._telemetry.cacheMisses + 1
+        end
+        return self:_fetchServerValue(serverName, module, key)
+    end
+    if self._collectStats then
+        self._telemetry.cacheHits = self._telemetry.cacheHits + 1
+    end
+    return entry.value
+end
+
+---@param serverName string
+---@param module     string
+---@return table  { key -> deserialized value }
+function DB:getServerAll(serverName, module)
+    local moduleCache = self._serverCache[serverName] and self._serverCache[serverName][module]
+    if moduleCache then
+        local stale = false
+        for _, entry in pairs(moduleCache) do
+            if entry.version < self._dataVersion then
+                stale = true
+                break
+            end
+        end
+        if stale then
+            if self._collectStats then
+                self._telemetry.cacheMisses = self._telemetry.cacheMisses + 1
+            end
+            self:_fetchServerModule(serverName, module)
+            moduleCache = self._serverCache[serverName][module]
+        elseif self._collectStats then
+            self._telemetry.cacheHits = self._telemetry.cacheHits + 1
+        end
+    else
+        if self._collectStats then
+            self._telemetry.cacheMisses = self._telemetry.cacheMisses + 1
+        end
+        self:_fetchServerModule(serverName, module)
+        moduleCache = self._serverCache[serverName] and self._serverCache[serverName][module]
+    end
+    if not moduleCache then return {} end
+    local out = {}
+    for k, entry in pairs(moduleCache) do
+        out[k] = entry.value
+    end
+    return out
+end
+
+---@param serverName string
+---@param module     string
+---@param key        string
+---@param value      any
+---@param vtype      string|nil  Inferred if omitted
+---@return boolean  true on success, false if busy (write queued for retry)
+function DB:setServerValue(serverName, module, key, value, vtype)
+    local serverId = self:upsertServer(serverName)
+    if not serverId then return false end
+    vtype = vtype or inferType(value)
+    local text = serialize(value, vtype)
+    local stmt = self:_prepare([[
+        INSERT INTO server_config(server_id, module, key, value_type, value)
+        VALUES(?,?,?,?,?)
+        ON CONFLICT(server_id, module, key)
+        DO UPDATE SET value_type=excluded.value_type, value=excluded.value;
+    ]])
+    if not stmt then return false end
+    stmt:bind(1, serverId)
+    stmt:bind(2, module)
+    stmt:bind(3, key)
+    stmt:bind(4, vtype)
+    stmt:bind(5, text)
+    local ok = self:_step(stmt)
+    stmt:finalize()
+    if self._collectStats then
+        if ok then
+            self._telemetry.inserts = self._telemetry.inserts + 1
+        else
+            self._telemetry.queuedWrites = self._telemetry.queuedWrites + 1
+        end
+    end
+    if not ok then
+        self:_enqueueWrite("setServerValue", serverName, module, key, value, vtype)
+    end
+    self:_serverCacheSet(serverName, module, key, value)
+    return ok
+end
+
+---@param serverName string
+---@param module     string
+---@param settings   table  { key -> value }
+---@return boolean  true on success, false if busy (write queued for retry)
+function DB:setServerAll(serverName, module, settings)
+    local serverId = self:upsertServer(serverName)
+    if not serverId then return false end
+
+    local stmt = self:_prepare([[
+        INSERT INTO server_config(server_id, module, key, value_type, value)
+        VALUES(?,?,?,?,?)
+        ON CONFLICT(server_id, module, key)
+        DO UPDATE SET value_type=excluded.value_type, value=excluded.value;
+    ]])
+    if not stmt then return false end
+
+    if not self:_exec("BEGIN IMMEDIATE TRANSACTION;") then
+        stmt:finalize()
+        self:_enqueueWrite("setServerAll", serverName, module, settings)
+        return false
+    end
+    for key, value in pairs(settings) do
+        local vtype = inferType(value)
+        stmt:bind(1, serverId)
+        stmt:bind(2, module)
+        stmt:bind(3, key)
+        stmt:bind(4, vtype)
+        stmt:bind(5, serialize(value, vtype))
+        if not self:_step(stmt) then
+            stmt:finalize()
+            self:_exec("ROLLBACK;")
+            if self._collectStats then
+                self._telemetry.queuedWrites = self._telemetry.queuedWrites + 1
+            end
+            self:_enqueueWrite("setServerAll", serverName, module, settings)
+            return false
+        end
+        if self._collectStats then
+            self._telemetry.inserts = self._telemetry.inserts + 1
+        end
+        stmt:reset()
+    end
+    stmt:finalize()
+    self:_exec("COMMIT;")
+    for key, value in pairs(settings) do
+        self:_serverCacheSet(serverName, module, key, value)
+    end
+    return true
+end
+
+---@param serverName string
+---@param module     string
+---@param key        string
+---@return boolean  true on success, false if busy (write queued for retry)
+function DB:deleteServerValue(serverName, module, key)
+    self:_serverCacheDel(serverName, module, key)
+    local stmt = self:_prepare([[
+        DELETE FROM server_config WHERE id IN (
+            SELECT sc.id FROM server_config sc
+            JOIN server s ON s.id = sc.server_id
+            WHERE s.name=? AND sc.module=? AND sc.key=?
+        );
+    ]])
+    if not stmt then return false end
+    stmt:bind(1, serverName)
+    stmt:bind(2, module)
+    stmt:bind(3, key)
+    local ok = self:_step(stmt)
+    stmt:finalize()
+    if self._collectStats then
+        if ok then
+            self._telemetry.deletes = self._telemetry.deletes + 1
+        else
+            self._telemetry.queuedWrites = self._telemetry.queuedWrites + 1
+        end
+    end
+    if not ok then
+        self:_enqueueWrite("deleteServerValue", serverName, module, key)
+    end
+    return ok
+end
+
+---@param serverName string
+---@param module     string
+---@return boolean  true on success, false if busy (write queued for retry)
+function DB:deleteServerModule(serverName, module)
+    self:_serverCacheDelModule(serverName, module)
+    local stmt = self:_prepare([[
+        DELETE FROM server_config WHERE id IN (
+            SELECT sc.id FROM server_config sc
+            JOIN server s ON s.id = sc.server_id
+            WHERE s.name=? AND sc.module=?
+        );
+    ]])
+    if not stmt then return false end
+    stmt:bind(1, serverName)
+    stmt:bind(2, module)
+    local ok = self:_step(stmt)
+    stmt:finalize()
+    if self._collectStats then
+        if ok then
+            self._telemetry.deletes = self._telemetry.deletes + 1
+        else
+            self._telemetry.queuedWrites = self._telemetry.queuedWrites + 1
+        end
+    end
+    if not ok then
+        self:_enqueueWrite("deleteServerModule", serverName, module)
+    end
+    return ok
+end
+
 --- In-Memory Cache
 -- Each entry: { value = v, version = N }
 -- _dataVersion is refreshed each tick. On read, if entry.version < _dataVersion
@@ -699,6 +928,30 @@ function DB:_cacheDelChar(serverName, charName)
     if serverCache then serverCache[charName] = nil end
 end
 
+function DB:_serverCacheSet(serverName, module, key, value)
+    local serverCache = self._serverCache[serverName]
+    if not serverCache then
+        serverCache = {}
+        self._serverCache[serverName] = serverCache
+    end
+    local moduleCache = serverCache[module]
+    if not moduleCache then
+        moduleCache = {}
+        serverCache[module] = moduleCache
+    end
+    moduleCache[key] = { value = value, version = self._dataVersion, }
+end
+
+function DB:_serverCacheDel(serverName, module, key)
+    local moduleCache = self._serverCache[serverName] and self._serverCache[serverName][module]
+    if moduleCache then moduleCache[key] = nil end
+end
+
+function DB:_serverCacheDelModule(serverName, module)
+    local serverCache = self._serverCache[serverName]
+    if serverCache then serverCache[module] = nil end
+end
+
 function DB:_fetchValue(serverName, charName, charClass, module, key)
     if self._collectStats then
         self._telemetry.selects = self._telemetry.selects + 1
@@ -739,6 +992,44 @@ function DB:_fetchModule(serverName, charName, charClass, module)
     stmt:bind(4, module)
     for row in stmt:nrows() do
         self:_cacheSet(serverName, charName, charClass, module, row.key, deserialize(row.value, row.value_type))
+    end
+    stmt:finalize()
+end
+
+function DB:_fetchServerValue(serverName, module, key)
+    if self._collectStats then
+        self._telemetry.selects = self._telemetry.selects + 1
+    end
+    local stmt = self:_prepare([[
+        SELECT sc.value, sc.value_type FROM server_config sc
+        JOIN server s ON s.id = sc.server_id
+        WHERE s.name=? AND sc.module=? AND sc.key=?;
+    ]])
+    if not stmt then return nil end
+    stmt:bind(1, serverName)
+    stmt:bind(2, module)
+    stmt:bind(3, key)
+    local rows = collectRows(stmt)
+    if not rows[1] then return nil end
+    local value = deserialize(rows[1].value, rows[1].value_type)
+    self:_serverCacheSet(serverName, module, key, value)
+    return value
+end
+
+function DB:_fetchServerModule(serverName, module)
+    if self._collectStats then
+        self._telemetry.selects = self._telemetry.selects + 1
+    end
+    local stmt = self:_prepare([[
+        SELECT sc.key, sc.value, sc.value_type FROM server_config sc
+        JOIN server s ON s.id = sc.server_id
+        WHERE s.name=? AND sc.module=?;
+    ]])
+    if not stmt then return end
+    stmt:bind(1, serverName)
+    stmt:bind(2, module)
+    for row in stmt:nrows() do
+        self:_serverCacheSet(serverName, module, row.key, deserialize(row.value, row.value_type))
     end
     stmt:finalize()
 end

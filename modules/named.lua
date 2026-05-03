@@ -2,8 +2,10 @@
 local mq           = require('mq')
 local Config       = require('utils.config')
 local Globals      = require("utils.globals")
+local Modules      = require("utils.modules")
 local Targeting    = require("utils.targeting")
 local Ui           = require("utils.ui")
+local Icons        = require('mq.ICONS')
 local NamedDefault = require("namedlist.named_default")
 local NamedEQMight = require("namedlist.named_eqmight")
 local Base         = require("modules.base")
@@ -26,18 +28,30 @@ Module.DefaultConfig   = {
         Type = "Custom",
         Default = false,
     },
+    ['CustomNamedList'] = {
+        DisplayName = "Custom Named List",
+        Type = "Custom",
+        Default = {},
+        Scope = "server",
+        OnChange = function() Modules.ModuleList["Named"].LastZoneID = -1 end,
+        FAQ = "Can I add my own named NPCs to RGMercs?",
+        Answer = "Open the Named module tab and add your current target via the Custom Named List editor. " ..
+            "This per-server, per-zone list is shared in real-time with all RGMercs peers on this machine.\n\n" ..
+            "From the command line: /rgl namedadd \"<name>\" or /rgl nameddelete \"<name>\".",
+    },
 }
 
 Module.FAQ             = {
     {
         Question = "Why am I not taking any special actions on a Named, boss, or mission mob?",
         Answer =
-            "  RGMercs default class configs fully support burning, using defenses, or other special actions on Named mobs, however, your target must be indentified as such. There are three methods for doing so:\n\n" ..
-            "  1) The Named List: RGMercs will consult the built-in Named List. If the mob is found on the list, it will be treated as a Named.\n\n" ..
-            "  2) The SpawnMaster TLO: If the 'Check SM For Named' setting is enabled, and the MQ2SpawnMaster plugin is loaded (highly recommended), you can simply add a mob to the watch list (see '/spawnmaster help'). We will query SpawnMaster via built-in data reporting (TLO), and if the mob is present, treat it as a named.\n\n" ..
-            "  3) The Alert Master TLO: If the 'Check AM For Named' setting is enabled, and the Alert Master script is loaded, you can simply add a mob to the alert list (see '/alertmaster help'). We will query Alert Master via built-in data reporting (TLO), and if the mob is present, treat it as a named.\n\n" ..
-            "  Using these methods, it is very easy to treat mission bosses as named, even if they are not on the named list, whose source was typically aimed at typical PH/rare spawn style mobs.\n\n" ..
-            "  Specific feedback on missing, incorrect, or otherwise erroneous entries on the RGMercs Named List is always welcome!\n\n",
+            "  RGMercs default class configs fully support burning, using defenses, or other special actions on Named mobs, " ..
+            "however, your target must be identified as such. There are several ways to make this happen:\n\n" ..
+            "  1) Add Named NPCs using the UI on the Named module tab, or using the CLI (search the command list for \"named\").\n\n" ..
+            "  2) The built-in Named List: RGMercs has a list of known nameds per zone. If a mob is on the list, RGMercs treats it as a Named automatically.\n\n" ..
+            "  3) SpawnMaster (optional): If 'Check SM For Named' is enabled and MQ2SpawnMaster is loaded, RGMercs queries it via TLO. Useful if you already maintain SpawnMaster watch lists.\n\n" ..
+            "  4) Alert Master (optional): If 'Check AM For Named' is enabled and the Alert Master script is loaded, RGMercs queries it via TLO. Useful if you already maintain Alert Master alert lists.\n\n" ..
+            "  Specific feedback on missing, incorrect, or otherwise erroneous entries on the built-in RGMercs Named List is always welcome!\n\n",
         Settings_Used = "",
     },
 }
@@ -48,11 +62,9 @@ end
 
 function Module:Render()
     Base.Render(self)
-
-    ImGui.SameLine()
-    Ui.RenderText("Make any mob \"named\" for burns by adding it to your MQ2SpawnMaster or Alert Master list! See burn settings.")
-    ImGui.NewLine()
     Ui.RenderZoneNamed()
+    ImGui.NewLine()
+    self:RenderCustomNamedList()
 end
 
 function Module:GiveTime()
@@ -65,8 +77,12 @@ end
 
 --- Caches the named list in the zone
 function Module:RefreshNamedCache()
-    if self.LastZoneID ~= mq.TLO.Zone.ID() then
-        self.LastZoneID = mq.TLO.Zone.ID()
+    local curZone = mq.TLO.Zone.ID()
+    -- LastUserList identity catches cross-instance edits; local edits invalidate via OnChange.
+    local userList = Config:GetSetting('CustomNamedList') or {}
+    if self.LastZoneID ~= curZone or self.LastUserList ~= userList then
+        self.LastZoneID = curZone
+        self.LastUserList = userList
         self.NamedList = {}
         local zoneName = mq.TLO.Zone.Name():lower()
 
@@ -77,6 +93,10 @@ function Module:RefreshNamedCache()
         zoneName = mq.TLO.Zone.ShortName():lower()
 
         for _, n in ipairs(self.DefNamed[zoneName] or {}) do
+            self.NamedList[n] = true
+        end
+
+        for _, n in ipairs(userList[zoneName] or {}) do
             self.NamedList[n] = true
         end
     end
@@ -144,6 +164,52 @@ function Module:IsNamed(spawn)
     if Config:GetSetting('CheckAMForNamed') and mq.TLO.AlertMaster ~= nil and mq.TLO.AlertMaster.IsNamed(spawn.DisplayName())() then return true end
 
     return false
+end
+
+function Module:AddNamedToCustomList(npcName)
+    Config:ZoneListAdd(npcName, 'CustomNamedList')
+end
+
+function Module:DeleteNamedFromCustomList(arg1)
+    Config:ZoneListDelete(arg1, 'CustomNamedList')
+end
+
+function Module:RenderCustomNamedList()
+    if ImGui.CollapsingHeader("Custom Named List") then
+        if mq.TLO.Target() and Targeting.TargetIsType("NPC") then
+            ImGui.PushID("##_small_btn_add_target_custom_named")
+            if ImGui.SmallButton("Add Target To List") then
+                self:AddNamedToCustomList(mq.TLO.Target.CleanName())
+            end
+            ImGui.PopID()
+        end
+
+        if ImGui.BeginTable("CustomNamedList", 3, bit32.bor(ImGuiTableFlags.Borders)) then
+            ImGui.TableSetupColumn('Id', ImGuiTableColumnFlags.WidthFixed, 40.0)
+            ImGui.TableSetupColumn('Name', ImGuiTableColumnFlags.WidthStretch, 150.0)
+            ImGui.TableSetupColumn('Controls', ImGuiTableColumnFlags.WidthFixed, 80.0)
+            ImGui.TableHeadersRow()
+
+            local zoneList = (Config:GetSetting('CustomNamedList') or {})[(mq.TLO.Zone.ShortName() or ""):lower()] or {}
+            for idx, npcName in ipairs(zoneList) do
+                ImGui.TableNextColumn()
+                Ui.RenderText(tostring(idx))
+                ImGui.TableNextColumn()
+                Ui.RenderText(npcName)
+                ImGui.TableNextColumn()
+                ImGui.PushID("##_small_btn_delete_custom_named_" .. tostring(idx))
+                if ImGui.SmallButton(Icons.FA_TRASH) then
+                    self:DeleteNamedFromCustomList(idx)
+                end
+                ImGui.PopID()
+            end
+
+            ImGui.EndTable()
+        end
+
+        ImGui.Spacing()
+        Ui.RenderText("Note: This list is shared in real-time with all RGMercs peers on this machine.")
+    end
 end
 
 return Module

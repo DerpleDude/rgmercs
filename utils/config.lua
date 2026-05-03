@@ -34,6 +34,7 @@ Config.TempSettings                                      = {}
 Config.TempSettings.lastModuleRegisteredTime             = 0
 Config.TempSettings.lastHighlightTime                    = Globals.GetTimeSeconds()
 Config.TempSettings.SettingToModuleCache                 = {}
+Config.TempSettings.SettingToScopeCache                  = {}
 Config.TempSettings.SettingsLowerToNameCache             = {}
 Config.TempSettings.SettingsCategoryToSettingMapping     = {}
 Config.TempSettings.PeerModuleSettingsLowerToNameCache   = {}
@@ -3054,6 +3055,34 @@ function Config:PeerGetSetting(peer, setting, failOk)
     return self.peerModuleSettings[Config.TempSettings.PeerSettingToModuleCache[setting]][setting]
 end
 
+function Config:SettingDbRead(module, key)
+    local scope = Config.TempSettings.SettingToScopeCache[key]
+    if scope == "server" then
+        return self.Db:getServerValue(Globals.ServerEnv, module, key)
+    end
+    return self.Db:getValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, module, key)
+end
+
+function Config:SettingDbWrite(module, key, value)
+    local scope = Config.TempSettings.SettingToScopeCache[key]
+    if scope == "server" then
+        return self.Db:setServerValue(Globals.ServerEnv, module, key, value)
+    end
+    return self.Db:setValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, module, key, value)
+end
+
+function Config:SettingDbDelete(module, key)
+    local scope = Config.TempSettings.SettingToScopeCache[key]
+    if scope == "server" then
+        return self.Db:deleteServerValue(Globals.ServerEnv, module, key)
+    elseif scope then
+        return self.Db:deleteValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, module, key)
+    end
+    -- unknown scope (deprecated key) - try both, idempotent
+    self.Db:deleteValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, module, key)
+    self.Db:deleteServerValue(Globals.ServerEnv, module, key)
+end
+
 --- Retrieves a specified setting.
 --- @param setting string The name of the setting to retrieve.
 --- @param failOk boolean? If true, the function will not raise an error if the setting is not found.
@@ -3068,7 +3097,7 @@ function Config:GetSetting(setting, failOk)
 
     local value = self:GetTempSetting(setting)
     if value == nil then
-        value = self.Db:getValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, Config.TempSettings.SettingToModuleCache[setting], setting)
+        value = self:SettingDbRead(Config.TempSettings.SettingToModuleCache[setting], setting)
     end
 
     return value
@@ -3226,7 +3255,7 @@ function Config:SetSetting(setting, value, tempOnly, noCallback)
         if tempOnly then
             self.moduleTempSettings[settingModuleName][setting] = cleanValue
         else
-            self.Db:setValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, settingModuleName, setting, cleanValue)
+            self:SettingDbWrite(settingModuleName, setting, cleanValue)
             self.moduleTempSettings[settingModuleName][setting] = nil
         end
     else
@@ -3330,7 +3359,7 @@ function Config.ResolveDefaults(defaults, settings, module)
             settings[k] = nil
             Logger.log_info("\aySetting [\am%s\ay] has been deprecated -- removing from your config.", k)
             if module then
-                Config.Db:deleteValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, module, k)
+                Config:SettingDbDelete(module, k)
             end
             changed = true
         end
@@ -3405,6 +3434,8 @@ function Config:RegisterModuleSettings(module, settings, defaultSettings, faq, f
             Config.TempSettings.SettingsLowerToNameCache[setting:lower()] = setting
             self:RegisterCategoryToSettingMapping(setting)
         end
+
+        Config.TempSettings.SettingToScopeCache[setting] = v.Scope
     end
 
     if firstSaveRequired or settingsChanged then
@@ -3426,6 +3457,7 @@ function Config:ClearModuleSettings(module)
         self:UnRegisterCategoryToSettingMapping(setting)
         Config.TempSettings.SettingsLowerToNameCache[setting:lower()] = nil
         Config.TempSettings.SettingToModuleCache[setting] = nil
+        Config.TempSettings.SettingToScopeCache[setting] = nil
     end
 
     self.moduleTempSettings[module] = nil
@@ -3491,6 +3523,7 @@ function Config:ClearAllModuleSettings()
     self.moduleDefaultSettings = {}
     self.moduleSettingCategories = {}
     self.TempSettings.SettingToModuleCache = {}
+    self.TempSettings.SettingToScopeCache = {}
     self.TempSettings.SettingsLowerToNameCache = {}
     self.TempSettings.SettingsCategoryToSettingMapping = {}
     self.SettingsLoadComplete = false
@@ -3501,7 +3534,7 @@ function Config:SaveModuleSettings(module, settings)
     local settingsCategories = self:GetModuleSettingCategories(module):toList() or {}
 
     for setting, value in pairs(settings) do
-        self.Db:setValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, module, setting, value)
+        self:SettingDbWrite(module, setting, value)
     end
     Logger.log_debug("\agModule %s - save settings requested!", module)
 
@@ -3704,19 +3737,66 @@ function Config:AssistMoveDown(id, listName)
     self:SetSetting(listName, list)
 end
 
-function Config:ConvertListNameToID(arg1, listName)
-    if arg1:match("^%d$") then
-        arg1 = tonumber(arg1)
-        return arg1
-    else
-        for idx, cur_name in ipairs(Config:GetSetting(listName) or {}) do
-            if cur_name:lower() == arg1:lower() then
-                arg1 = tonumber(idx)
-                return arg1
-            end
-        end
+--- Resolve a name-or-index argument to a 1-based index in `list`. Returns nil if invalid/not found.
+--- @param arg1 string|number
+--- @param list table
+--- @return number|nil
+function Config:ResolveListIndex(arg1, list)
+    if type(arg1) == 'number' then return arg1 end
+    if type(arg1) ~= 'string' then return nil end
+    if arg1:match("^%d+$") then return tonumber(arg1) end
+    for idx, cur in ipairs(list) do
+        if cur:lower() == arg1:lower() then return idx end
     end
-    return 0
+    return nil
+end
+
+function Config:ConvertListNameToID(arg1, listName)
+    local idx = self:ResolveListIndex(arg1, self:GetSetting(listName) or {})
+    return idx or 0
+end
+
+--- Adds the given name to a zone-keyed list for the current (or specified) zone.
+--- Storage shape: list[zoneShort] = { "Name 1", ... }. Silent on duplicates.
+--- @param name string The name to add.
+--- @param listName string The setting name of the zone-keyed list.
+--- @param zoneKey string? Optional zone short name (lowercase). Defaults to current zone.
+function Config:ZoneListAdd(name, listName, zoneKey)
+    zoneKey = zoneKey or (mq.TLO.Zone.ShortName() or ""):lower()
+    local list = self:GetSetting(listName) or {}
+    list[zoneKey] = list[zoneKey] or {}
+    for _, cur in ipairs(list[zoneKey]) do
+        if cur:lower() == name:lower() then return end
+    end
+    table.insert(list[zoneKey], name)
+    self:SetSetting(listName, list)
+    Logger.log_info("\ax%s [\ay%s\ax]: \ag%s\ax added at position \at%d\ax.", listName, zoneKey, name, #list[zoneKey])
+end
+
+--- Deletes a name (or index) from a zone-keyed list for the current (or specified) zone.
+--- @param arg1 string|number Either a name to match or a 1-based index.
+--- @param listName string The setting name of the zone-keyed list.
+--- @param zoneKey string? Optional zone short name (lowercase). Defaults to current zone.
+function Config:ZoneListDelete(arg1, listName, zoneKey)
+    if not arg1 then
+        Logger.log_error("\ar%s Delete: this command requires a valid argument!", listName)
+        return
+    end
+    zoneKey = zoneKey or (mq.TLO.Zone.ShortName() or ""):lower()
+    local list = self:GetSetting(listName) or {}
+    local zoneList = list[zoneKey]
+    if not zoneList or #zoneList == 0 then
+        Logger.log_error("\ar%s Delete: zone [\ay%s\ar] has no entries!", listName, zoneKey)
+        return
+    end
+    local idx = self:ResolveListIndex(arg1, zoneList)
+    if idx and idx >= 1 and idx <= #zoneList then
+        Logger.log_info("\ax%s [\ay%s\ax]: \ag%s\ax deleted.", listName, zoneKey, zoneList[idx])
+        table.remove(zoneList, idx)
+        self:SetSetting(listName, list)
+    else
+        Logger.log_error("\ar%s Delete: %s was not on the list or is not a valid argument!", listName, tostring(arg1))
+    end
 end
 
 function Config:GetCommandHandlers()
@@ -4027,7 +4107,11 @@ function Config:DbConsistencyCheck()
 end
 
 function Config:GetAllModuleSettingsFromDb(module)
-    return self.Db:getAll(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, module) or {}
+    local out = self.Db:getAll(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, module) or {}
+    for k, v in pairs(self.Db:getServerAll(Globals.ServerEnv, module) or {}) do
+        out[k] = v
+    end
+    return out
 end
 
 function Config:CharacterExistsInDb()
