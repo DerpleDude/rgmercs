@@ -297,6 +297,7 @@ local _ClassConfig = {
             "Nature Wanderer's Behest",
             "Hierophant's Behest", -- EQM Custom
             "Nature Walker's Behest",
+            "Wanderer's Behest", -- EQM Custom lvl 42
         },
         ['Dawnstrike'] = { -- I think better to just spam solstice strike
             "Dawnstrike",
