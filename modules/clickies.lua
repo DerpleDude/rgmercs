@@ -1117,9 +1117,7 @@ function Module:LoadSettings()
 
         -- insert default server clickies on very first run per PC
         if firstSaveRequired then
-            -- Live/Test use "Live". Emu servers use server-specific.
-            local serverType = Globals.BuildType:lower() ~= "emu" and "Live" or Globals.CurServer
-            local defaultClickyList = self.DefaultServerClickies[serverType]
+            local defaultClickyList = self.DefaultServerClickies[Globals.ServerEnv] -- uses server name for emu, "Live" otherwise
             Config:SetSetting('Clickies', defaultClickyList or {})
         end
 
@@ -1904,9 +1902,7 @@ function Module:ValidateClickies()
 end
 
 function Module:InsertDefaultClickies()
-    -- Live/Test use "Live". Emu servers use server-specific.
-    local serverType = Globals.BuildType:lower() ~= "emu" and "Live" or Globals.CurServer
-    local defaultClickyList = self.DefaultServerClickies[serverType]
+    local defaultClickyList = self.DefaultServerClickies[Globals.ServerEnv] -- uses server name for emu, "Live" otherwise
     local clickes = Config:GetSetting('Clickies') or {}
 
     if defaultClickyList then

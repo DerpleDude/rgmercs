@@ -36,6 +36,7 @@ Globals.CurServer                     = mq.TLO.EverQuest.Server()
 Globals.CurServerNormalized           = mq.TLO.EverQuest.Server():gsub(" ", "")
 Globals.CastResult                    = 0
 Globals.BuildType                     = mq.TLO.MacroQuest.BuildName()
+Globals.ServerEnv                     = (Globals.BuildType:lower() == "emu") and Globals.CurServer or "Live"
 Globals.Minimized                     = false
 Globals.LastUsedSpell                 = "None"
 Globals.CorpseConned                  = false

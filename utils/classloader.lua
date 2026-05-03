@@ -76,8 +76,8 @@ function ClassLoader.writeCustomConfig(class)
         currentConfigDir = currentConfigDir:sub(9)
     end
     local current_File = string.format("%s/rgmercs/class_configs/%s/%s_class_config.lua", currentConfigPath, currentConfigDir, class:lower())
-    local configType = Globals.BuildType:lower() ~= "emu" and "Live" or Globals.CurServer
-    local customFile = string.format("%s/rgmercs/class_configs/%s/%s_class_config.lua", mq.configDir, configType, class:lower())
+    local configType = Globals.ServerEnv -- use server name for emu, "Live" otherwise
+    local customFile = string.format("%s/rgmercs/class_configs/%s/%s_class_config.lua", mq.configDir, Globals.ServerEnv, class:lower())
     local backupFile = string.format("%s/rgmercs/class_configs/%s/%s_class_config_%s.lua", mq.configDir, configType, class:lower(), os.date("%Y%m%d_%H%M%S"))
 
     -- Backup the custom config file if one exists
