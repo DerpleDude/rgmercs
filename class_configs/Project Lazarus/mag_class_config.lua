@@ -22,7 +22,7 @@ _ClassConfig    = {
             "Staff of Elemental Essence",
         },
         ['OoW_Chest'] = {
-            "Glyphwielder's Vest of the Summoner",
+            "Glyphwielder's Tunic of the Summoner",
             "Runemaster's Robe",
         },
     },

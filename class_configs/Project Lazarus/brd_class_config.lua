@@ -1296,7 +1296,7 @@ local _ClassConfig = {
             Index = 101,
             Tooltip =
             "The duration threshold for refreshing a buff song outside of combat. ***WARNING: Editing this value can drastically alter your ability to maintain buff songs!*** This needs to be carefully tailored towards your song line-up.",
-            Default = 12,
+            Default = 7,
             Min = 0,
             Max = 30,
             ConfigType = "Advanced",
@@ -1312,7 +1312,7 @@ local _ClassConfig = {
             Index = 102,
             Tooltip =
             "The duration threshold for refreshing a buff song in combat. ***WARNING: Editing this value can drastically alter your ability to maintain buff songs!*** This needs to be carefully tailored towards your song line-up.",
-            Default = 6,
+            Default = 4,
             Min = 0,
             Max = 30,
             ConfigType = "Advanced",

@@ -297,9 +297,9 @@ local _ClassConfig = {
             "Nature Wanderer's Behest",
             "Hierophant's Behest", -- EQM Custom
             "Nature Walker's Behest",
-            "Wanderer's Behest", -- EQM Custom lvl 42
+            "Wanderer's Behest",   -- EQM Custom lvl 42
         },
-        ['Dawnstrike'] = { -- I think better to just spam solstice strike
+        ['Dawnstrike'] = {         -- I think better to just spam solstice strike
             "Dawnstrike",
         },
         -- ['BurstDS'] = { -- Laz specific, short duration 210pt damge shield
@@ -525,7 +525,10 @@ local _ClassConfig = {
             name = 'DPS(AE)',
             state = 1,
             steps = 1,
-            load_cond = function(self) return Config:GetSetting('DoPBAE') and self:GetResolvedActionMapItem('PBAEMagic') end,
+            load_cond = function(self)
+                return (Config:GetSetting('DoPBAE') and Core.GetResolvedActionMapItem('PBAEMagic')) or
+                    (Config:GetSetting('DoRain') and Core.GetResolvedActionMapItem('IceRain'))
+            end,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
@@ -638,6 +641,7 @@ local _ClassConfig = {
                 name = "PBAEMagic",
                 type = "Spell",
                 allowDead = true,
+                load_cond = function(self) return Config:GetSetting('DoPBAE') end,
                 cond = function(self, spell, target)
                     return Casting.HaveManaToNuke(true) and Targeting.InSpellRange(spell, target)
                 end,
@@ -645,6 +649,7 @@ local _ClassConfig = {
             {
                 name = "IceRain",
                 type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoRain') end,
                 cond = function(self, spell, target)
                     if not self.Helpers.RainCheck(target) then return false end
                     return Casting.HaveManaToNuke(true)
