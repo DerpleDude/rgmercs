@@ -77,6 +77,10 @@ local _ClassConfig = {
             "Blade of Vesagran",
             "Prismatic Dragon Blade",
         },
+        ['OoW_Chest'] = {
+            "Farseekers's Plate Chestguard of Harmony",
+            "Traveler's Mail Chestguard",
+        },
     },
     ['AbilitySets']   = {
         -- TO DO: Added Dirgle of Metala/Snare line
