@@ -243,6 +243,18 @@ return {
         --     "Defense of Calrena",
         -- },
     },
+    ['AASets']        = {
+        ['Devastation'] = {
+            "Prolonged Destruction",
+            "Frenzied Devastation",
+        },
+        ['ManaBurn'] = {
+            "Volatile Mana Blaze",
+            "Mana Blaze",
+            "Mana Blast",
+            "Mana Burn",
+        },
+    },
     ['Helpers']       = {
         DoRez = function(self, corpseId)
             local rezStaff = self.ResolvedActionMap['RezStaff']
@@ -412,9 +424,7 @@ return {
                 type = "AA",
             },
             { --Crit Chance AA, will use the first(best) one found
-                name_func = function(self)
-                    return Casting.GetFirstAA({ "Prolonged Destruction", "Frenzied Devastation", })
-                end,
+                name = "Devastation",
                 type = "AA",
                 cond = function(self, aaName)
                     return Casting.SelfBuffAACheck(aaName)
@@ -425,9 +435,7 @@ return {
                 type = "AA",
             },
             {
-                name_func = function(self)
-                    return Casting.GetFirstAA({ "Volatile Mana Blaze", "Mana Blaze", "Mana Blast", "Mana Burn", })
-                end,
+                name = "ManaBurn",
                 type = "AA",
                 load_cond = function(self) return Config:GetSetting('DoManaBurn') end,
                 cond = function(self, aaName, target)

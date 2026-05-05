@@ -108,6 +108,12 @@ local _ClassConfig = {
             "Healing Will Discipline",
         },
     },
+    ['AASets']        = {
+        ['AreaTaunt'] = {
+            "Enhanced Area Taunt",
+            "Area Taunt",
+        },
+    },
     ['Helpers']       = {
         DoRez = function(self, corpseId)
             local rezStaff = self.ResolvedActionMap['RezStaff']
@@ -371,7 +377,7 @@ local _ClassConfig = {
                 end,
             },
             {
-                name_func = function(self) return Casting.GetFirstAA({ "Enhanced Area Taunt", "Area Taunt", }) end,
+                name = "AreaTaunt",
                 type = "AA",
             },
         },

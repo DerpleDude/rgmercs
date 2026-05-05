@@ -88,6 +88,12 @@ return {
             "Unsettling Scream",
         },
     },
+    ['AASets']        = {
+        ['RageAA'] = {
+            "Cascading Rage",
+            "Untamed Rage",
+        },
+    },
     ['RotationOrder'] = {
         {
             name = 'Buffs',
@@ -203,7 +209,7 @@ return {
                 type = "Disc",
             },
             { -- goes to disc window
-                name_func = function(self) return Casting.GetFirstAA({ "Cascading Rage", "Untamed Rage", }) end,
+                name = "RageAA",
                 type = "AA",
             },
             { -- goes to disc window

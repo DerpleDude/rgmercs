@@ -728,7 +728,7 @@ return {
             },
             {
                 name = "Alliance",
-                type = "spell",
+                type = "Spell",
                 cond = function(self, spell)
                     return Config:GetSetting('DoAlliance') and Casting.CanAlliance() and
                         not Casting.TargetHasBuff(spell)

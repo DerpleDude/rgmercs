@@ -343,6 +343,12 @@ local _ClassConfig = {
             "Moon Shadow",
         },
     },
+    ['AASets']            = {
+        ['FireDebuffAA'] = {
+            "Blessing of Ro",
+            "Hand of Ro",
+        },
+    },
     ['HealRotationOrder'] = {
         {
             name  = 'BigHealPoint',
@@ -706,11 +712,9 @@ local _ClassConfig = {
         },
         ['Debuff'] = {
             { -- Fire Debuff AA, will use the first(best) available
-                name_func = function(self)
-                    return Casting.GetFirstAA({ "Blessing of Ro", "Hand of Ro", })
-                end,
+                name = "FireDebuffAA",
                 type = "AA",
-                load_cond = function() return Config:GetSetting('DoFireDebuff') and Casting.CanUseAA("Hand of Ro") end,
+                load_cond = function() return Config:GetSetting('DoFireDebuff') and Core.GetResolvedActionMapItem('FireDebuffAA') end,
                 cond = function(self, aaName, target)
                     return Casting.DetAACheck(aaName)
                 end,
@@ -718,7 +722,7 @@ local _ClassConfig = {
             {
                 name = "FireDebuff",
                 type = "Spell",
-                load_cond = function() return Config:GetSetting('DoFireDebuff') and not Casting.CanUseAA("Hand of Ro") end,
+                load_cond = function() return Config:GetSetting('DoFireDebuff') and not Core.GetResolvedActionMapItem('FireDebuffAA') end,
                 cond = function(self, spell, target)
                     return Casting.DetSpellCheck(spell)
                 end,

@@ -340,6 +340,12 @@ local _ClassConfig = {
             "Lesser Minionskin",
         },
     },
+    ['AASets']          = {
+        ['DeadSwarm'] = {
+            "Army of the Dead",
+            "Wake the Dead",
+        },
+    },
     ['RotationOrder']   = {
         { --Summon pet even when buffs are off on emu
             name = 'PetSummon',
@@ -482,7 +488,7 @@ local _ClassConfig = {
                     end
                     return "No Scent Item Found"
                 end,
-                type = "item",
+                type = "Item",
                 load_cond = function(self) return self.Helpers.GetScentItem ~= nil end,
                 cond = function(self, itemName, target)
                     return Casting.DetItemCheck(itemName)
@@ -714,9 +720,7 @@ local _ClassConfig = {
                 end,
             },
             {
-                name_func = function(self)
-                    return Casting.GetFirstAA({ "Army of the Dead", "Wake the Dead", })
-                end,
+                name = "DeadSwarm",
                 type = "AA",
                 cond = function(self, aaName, target)
                     return mq.TLO.SpawnCount("corpse radius 100")() >= Config:GetSetting('WakeDeadCorpseCnt') and Globals.AutoTargetIsNamed

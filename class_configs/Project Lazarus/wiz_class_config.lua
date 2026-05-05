@@ -234,6 +234,23 @@ return {
             "Flaming Sword of Xuzl", --homework
         },
     },
+    ['AASets']        = {
+        ['Devastation'] = {
+            "Prolonged Destruction",
+            "Frenzied Devastation",
+        },
+        ['ManaBurn'] = {
+            "Volatile Mana Blaze",
+            "Mana Blaze",
+            "Mana Blast",
+            "Mana Burn",
+        },
+        ['FamiliarAA'] = {
+            "Kerafyrm's Prismatic Familiar",
+            "Ro's Flaming Familiar",
+            "Improved Familiar",
+        },
+    },
     ['Helpers']       = {
 
         RainCheck = function(target) -- I made a funny
@@ -419,9 +436,7 @@ return {
                 end,
             },
             { --Crit Chance AA, will use the first(best) one found
-                name_func = function(self)
-                    return Casting.GetFirstAA({ "Prolonged Destruction", "Frenzied Devastation", })
-                end,
+                name = "Devastation",
                 type = "AA",
                 cond = function(self, aaName)
                     return Casting.SelfBuffAACheck(aaName)
@@ -432,9 +447,7 @@ return {
                 type = "AA",
             },
             {
-                name_func = function(self)
-                    return Casting.GetFirstAA({ "Volatile Mana Blaze", "Mana Blaze", "Mana Blast", "Mana Burn", })
-                end,
+                name = "ManaBurn",
                 type = "AA",
                 load_cond = function(self) return Config:GetSetting('DoManaBurn') end,
                 cond = function(self, aaName, target)
@@ -678,9 +691,7 @@ return {
                 end,
             },
             { --Familiar AA, will use the first(best) one found
-                name_func = function(self)
-                    return Casting.GetFirstAA({ "Kerafyrm's Prismatic Familiar", "Ro's Flaming Familiar", "Improved Familiar", })
-                end,
+                name = "FamiliarAA",
                 type = "AA",
                 active_cond = function(self, aaName) return Casting.IHaveBuff(aaName) end,
                 cond = function(self, aaName)
@@ -690,7 +701,7 @@ return {
             {
                 name = "FamiliarBuff",
                 type = "Spell",
-                load_cond = function(self) return not Casting.CanUseAA("Improved Familiar") end,
+                load_cond = function(self) return not Core.GetResolvedActionMapItem('FamiliarAA') end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
                     return Casting.SelfBuffCheck(spell)

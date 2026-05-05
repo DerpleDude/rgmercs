@@ -343,6 +343,12 @@ local _ClassConfig = {
             "Renewal of Lucifer",
         },
     },
+    ['AASets']        = {
+        ['ManaRestore'] = {
+            "Mana Draw",
+            "Gather Mana",
+        },
+    },
     ['RotationOrder'] = {
         {
             name = 'Downtime',
@@ -521,9 +527,7 @@ local _ClassConfig = {
                 cond = function(self, spell) return Casting.SelfBuffCheck(spell) end,
             },
             { -- Mana Restore AA, will use the first(best) available
-                name_func = function(self)
-                    return Casting.GetFirstAA({ "Mana Draw", "Gather Mana", })
-                end,
+                name = "ManaRestore",
                 type = "AA",
                 cond = function(self, aaName) return mq.TLO.Me.PctMana() < 30 end,
             },

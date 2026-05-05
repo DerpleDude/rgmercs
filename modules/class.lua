@@ -245,7 +245,7 @@ Module.CommandHandlers                       = {
         "RGMercs will queue the mapped spell, song, AA, disc, or item (using smart targeting, or, if provided, on the specified <targetID>). The 'mapname' is the entry name from your rotation window.",
         handler = function(self, mapType, mapName, targetId)
             local action = Modules:ExecModule("Class", "GetResolvedActionMapItem", mapName)
-            if not action or not action() then
+            if not action or (type(action) ~= "string" and not action()) then
                 Logger.log_debug("\arUseMap: \"\ay%s\ar\" does not appear to be a valid mapped action! \awPlease note this value is case-sensitive.", mapName)
                 return false
             end
@@ -379,7 +379,7 @@ function Module:SetCombatMode(mode)
     self.TempSettings.ResolvingActions = true
 
     if self.ClassConfig then
-        self.ResolvedActionMap = Rotation.ResolveActions(self.ClassConfig.ItemSets, self.ClassConfig.AbilitySets)
+        self.ResolvedActionMap = Rotation.ResolveActions(self.ClassConfig.ItemSets, self.ClassConfig.AbilitySets, self.ClassConfig.AASets)
         self.TempSettings.ResolvingActions = false
 
         if self.ClassConfig.SpellList then
@@ -1460,8 +1460,7 @@ function Module:GiveTime()
                 Core.SafeCallFunc("GetCureSpells", self.ClassConfig.Cures.GetCureSpells, self)
             end
         end
-        self:SetRotationClickies()
-        self:SetRotationAAs()
+        self:SetRotationActions()
         self.TempSettings.NewCombatMode = false
         self.TempSettings.CombatModeSet = true
         self.TempSettings.CombatModeChangeTime = Globals.GetTimeSeconds()
@@ -1789,56 +1788,39 @@ function Module:TargetIsImmune(effect, targetId)
     return false
 end
 
-function Module:SetRotationClickies()
-    -- clear list for loadout rescan
+function Module:SetRotationActions()
+    -- clear lists for loadout rescan
+    self.TempSettings.RotationAAs = Set.new({})
     self.TempSettings.RotationClickies = Set.new({})
 
-    -- Check rotations for clickies, either by checking items that were resolved from the maps, or checking strings for item entries without a map
-    for _, rotation in pairs(self.TempSettings.RotationTable) do
-        for _, entry in ipairs(rotation) do
-            if entry.type:lower() == "item" and not entry.from_clicky then
-                local resolvedMap = self.ResolvedActionMap[entry.name]
-                if resolvedMap and mq.TLO.FindItem(string.format("=%s", resolvedMap))() then
-                    self.TempSettings.RotationClickies:add(resolvedMap)
-                elseif type(entry.name) == "string" and mq.TLO.FindItem(string.format("=%s", entry.name))() then
-                    self.TempSettings.RotationClickies:add(entry.name)
+    local aaSets = self.ClassConfig.AASets or {}
+    local itemSets = self.ClassConfig.ItemSets or {}
+
+    -- Single pass over the loaded (post-load_cond) rotation tables for both AA and Item tracking.
+    -- For set entries, all set members are added so warnings/highlights cover stepping-stone ranks too.
+    for _, rotationTable in ipairs({ self.TempSettings.RotationTable, self.TempSettings.HealRotationTable or {}, }) do
+        for _, rotation in pairs(rotationTable) do
+            for _, entry in ipairs(rotation) do
+                local entryType = entry.type:lower()
+                if entryType == "aa" then
+                    local set = aaSets[entry.name]
+                    if set then
+                        for _, aaName in ipairs(set) do
+                            self.TempSettings.RotationAAs:add(aaName)
+                        end
+                    else
+                        self.TempSettings.RotationAAs:add(entry.name)
+                    end
+                elseif entryType == "item" and not entry.from_clicky then
+                    local set = itemSets[entry.name]
+                    if set then
+                        for _, itemName in ipairs(set) do
+                            self.TempSettings.RotationClickies:add(itemName)
+                        end
+                    elseif type(entry.name) == "string" then
+                        self.TempSettings.RotationClickies:add(entry.name)
+                    end
                 end
-            end
-        end
-    end
-
-    -- do it again for heal rotation
-    for _, rotation in pairs(self.TempSettings.HealRotationTable or {}) do
-        for _, entry in ipairs(rotation) do
-            if entry.type:lower() == "item" and not entry.from_clicky then
-                local resolvedMap = self.ResolvedActionMap[entry.name]
-                if resolvedMap and mq.TLO.FindItem(string.format("=%s", resolvedMap))() then
-                    self.TempSettings.RotationClickies:add(resolvedMap)
-                elseif type(entry.name) == "string" and mq.TLO.FindItem(string.format("=%s", entry.Name))() then
-                    self.TempSettings.RotationClickies:add(entry.name)
-                end
-            end
-        end
-    end
-end
-
-function Module:SetRotationAAs()
-    self.TempSettings.RotationAAs = Set.new({})
-
-    -- Check rotations for clickies, either by checking items that were resolved from the maps, or checking strings for item entries without a map
-    for rname, rotation in pairs(self.ClassConfig.Rotations) do
-        for _, entry in ipairs(rotation) do
-            if entry.type:lower() == "aa" then
-                self.TempSettings.RotationAAs:add(entry.name)
-            end
-        end
-    end
-
-    -- do it again for heal rotation
-    for _, rotation in pairs(self.ClassConfig.HealRotations or {}) do
-        for _, entry in ipairs(rotation) do
-            if entry.type:lower() == "aa" then
-                self.TempSettings.RotationAAs:add(entry.name)
             end
         end
     end

@@ -38,6 +38,31 @@ function Rotation.GetBestItem(t)
     return selectedItem
 end
 
+--- Get the first available purchased AA from a list.
+---
+--- This function iterates through a list of AA names and returns the first one the character has purchased.
+---
+--- @param aaList table The list of AA names to evaluate.
+--- @return string|nil The first available AA name, or nil if none are purchased.
+function Rotation.GetBestAA(aaList)
+    local selectedAA = nil
+
+    for _, abil in ipairs(aaList or {}) do
+        if Casting.CanUseAA(abil) then
+            selectedAA = abil
+            break
+        end
+    end
+
+    if selectedAA then
+        Logger.log_debug("\agFound\ax %s!", selectedAA)
+    else
+        Logger.log_debug("\arNo AA found for slot!")
+    end
+
+    return selectedAA
+end
+
 --- Get the best spell from a list of spells.
 ---
 --- This function iterates through a list of spells and determines the best spell based on certain criteria.
@@ -179,11 +204,15 @@ function Rotation.ExecEntry(caller, entry, targetId, resolvedActionMap, bAllowMe
     end
 
     if entry.type:lower() == "aa" then
-        if Casting.AAReady(entry.name) then
+        --Allow us to pass entry names directly for AA in addition to Action Map tables
+        local aaName = resolvedActionMap[entry.name]
+        if not aaName then aaName = entry.name end
+
+        if Casting.AAReady(aaName) then
             Rotation.RunPreActivate(caller, resolvedActionMap, entry)
-            ret, isGroup = Casting.UseAA(entry.name, targetId, entry.allowDead, entry.retries)
+            ret, isGroup = Casting.UseAA(aaName, targetId, entry.allowDead, entry.retries)
         end
-        Logger.log_verbose("(AA) Trying to use %s :: %s", entry.name, ret and "\agSuccess" or "\arFailed!")
+        Logger.log_verbose("(AA) Trying to use %s :: %s", aaName, ret and "\agSuccess" or "\arFailed!")
     end
 
     if entry.type:lower() == "ability" then
@@ -224,7 +253,9 @@ function Rotation.GetEntryConditionArg(map, entry)
         condArg = map[entry.name] or mq.TLO.Spell(entry.name)
     elseif entryType == "item" then        -- item mapping is optional, entry.name can be an actual item name
         condArg = map[entry.name] or entry.name
-    else                                   -- AA/abils needs to return a name directly in case they share a name with a map
+    elseif entryType == "aa" then          -- AA mapping is optional, entry.name can be an actual AA name
+        condArg = map[entry.name] or entry.name
+    else                                   -- abils needs to return a name directly
         condArg = entry.name
     end
 
@@ -414,10 +445,11 @@ function Rotation.Run(caller, rotationTable, targetTable, resolvedActionMap, ste
     return lastStepIdx, anySuccess
 end
 
---- Maps available actions, including item and ability sets.
+--- Maps available actions, including item, ability, and AA sets.
 --- @param itemSets table A list of item sets to be equipped.
 --- @param abilitySets table A list of ability sets to be configured.
-function Rotation.ResolveActions(itemSets, abilitySets)
+--- @param aaSets table|nil A list of AA sets to resolve to the first purchased AA.
+function Rotation.ResolveActions(itemSets, abilitySets, aaSets)
     local resolvedActionMap = {}
 
     -- Map AbilitySet Items and Load Them
@@ -436,6 +468,11 @@ function Rotation.ResolveActions(itemSets, abilitySets)
         local spellTable = abilitySets[unresolvedName]
         Logger.log_debug("\ayFinding best spell for Set: \am%s", unresolvedName)
         resolvedActionMap[unresolvedName] = Rotation.GetBestSpell(spellTable, resolvedActionMap)
+    end
+
+    for unresolvedName, aaTable in pairs(aaSets or {}) do
+        Logger.log_debug("\ayFinding best AA for Set: \am%s", unresolvedName)
+        resolvedActionMap[unresolvedName] = Rotation.GetBestAA(aaTable)
     end
 
     return resolvedActionMap

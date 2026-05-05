@@ -282,6 +282,13 @@ _ClassConfig    = {
             "Summon Orb",
         },
     },
+    ['AASets']        = {
+        ['ModRod'] = {
+            "Large Modulation Shard",
+            "Medium Modulation Shard",
+            "Small Modulation Shard",
+        },
+    },
     ['RotationOrder'] = { -- TODO: Add emergency rotation, shared health, etc
         {                 --Summon pet even when buffs are off on emu
             name = 'PetSummon',
@@ -848,11 +855,9 @@ _ClassConfig    = {
         },
         ['Summon ModRods'] = {
             { -- Mod Rod AA, will use the first(best) one found.
-                name_func = function(self)
-                    return Casting.GetFirstAA({ "Large Modulation Shard", "Medium Modulation Shard", "Small Modulation Shard", })
-                end,
+                name = "ModRod",
                 type = "AA",
-                load_cond = function() return Casting.CanUseAA("Small Modulation Shard") end,
+                load_cond = function() return Core.GetResolvedActionMapItem('ModRod') end,
                 cond = function(self, aaName, target)
                     if not Targeting.TargetIsACaster(target) then return false end
                     local modRodItem = mq.TLO.Spell(aaName).RankName.Base(1)()
@@ -868,7 +873,7 @@ _ClassConfig    = {
             {
                 name = "ManaRodSummon",
                 type = "Spell",
-                load_cond = function() return not Casting.CanUseAA("Small Modulation Shard") end,
+                load_cond = function() return not Core.GetResolvedActionMapItem('ModRod') end,
                 cond = function(self, spell, target)
                     if not Targeting.TargetIsACaster(target) then return false end
                     local modRodItem = spell.RankName.Base(1)()
@@ -898,7 +903,7 @@ _ClassConfig    = {
                 { name = "PetHealSpell",     cond = function(self) return Config:GetSetting('DoPetHealSpell') end, },
                 { name = "FireOrbSummon", },
                 { name = "SingleCotH", },
-                { name = "ManaRodSummon",    cond = function(self) return Config:GetSetting('SummonModRods') and not Casting.CanUseAA("Small Modulation Shard") end, },
+                { name = "ManaRodSummon",    cond = function(self) return Config:GetSetting('SummonModRods') and not Core.GetResolvedActionMapItem('ModRod') end, },
                 { name = "FireShroud", },
                 { name = "LongDurDmgShield", },
             },

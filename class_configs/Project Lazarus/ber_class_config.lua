@@ -83,6 +83,12 @@ return {
             "Battle Focus Discipline",
         },
     },
+    ['AASets']        = {
+        ['RageAA'] = {
+            "Cascading Rage",
+            "Untamed Rage",
+        },
+    },
     ['RotationOrder'] = {
         {
             name = 'Buffs',
@@ -235,7 +241,7 @@ return {
                 type = "Disc",
             },
             { --goes to disc window on laz
-                name_func = function(self) return Casting.GetFirstAA({ "Cascading Rage", "Untamed Rage", }) end,
+                name = "RageAA",
                 type = "AA",
             },
             {

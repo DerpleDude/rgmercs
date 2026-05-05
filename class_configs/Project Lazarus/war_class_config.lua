@@ -91,6 +91,12 @@ local _ClassConfig = {
             "Shocking Defense Discipline",
         },
     },
+    ['AASets']        = {
+        ['AreaTaunt'] = {
+            "Enhanced Area Taunt",
+            "Area Taunt",
+        },
+    },
     ['Helpers']       = {
         --function to make sure we don't have non-hostiles in range before we use AE damage or non-taunt AE hate abilities
 
@@ -347,7 +353,7 @@ local _ClassConfig = {
                 end,
             },
             {
-                name_func = function(self) return Casting.GetFirstAA({ "Enhanced Area Taunt", "Area Taunt", }) end,
+                name = "AreaTaunt",
                 type = "AA",
             },
         },

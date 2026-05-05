@@ -335,6 +335,13 @@ return {
             "Challenge for Honor",
         },
     },
+    ['AASets']            = {
+        ['Disruption'] = {
+            "Force of Disruption",
+            "Hand of Disruption",
+            "Divine Stun",
+        },
+    },
     ['SpellList']         = {
         {
             name = "Default",
@@ -822,7 +829,7 @@ return {
                 load_cond = function(self) return mq.TLO.FindItem("=Xeno's Faceguard")() end,
             },
             {
-                name = "Force of Disruption",
+                name = "Disruption",
                 type = "AA",
             },
             {
@@ -855,7 +862,7 @@ return {
                 load_cond = function(self) return mq.TLO.FindItem("=Xeno's Faceguard")() end,
             },
             {
-                name = "Force of Disruption",
+                name = "Disruption",
                 type = "AA",
             },
             {
@@ -1048,11 +1055,6 @@ return {
                 end,
             },
             {
-                name_func = function(self) return Casting.GetFirstAA({ "Hand of Disruption", "Divine Stun", }) end,
-                type = "AA",
-                load_cond = function(self) return not Core.IsTanking() or not Casting.CanUseAA("Force of Disruption") end,
-            },
-            {
                 name = "Bash",
                 type = "Ability",
                 cond = function(self)
@@ -1113,13 +1115,13 @@ return {
             end,
         },
         {
-            id = 'Force of Disruption',
+            id = 'Disruption',
             Type = "AA",
-            DisplayName = function() return Casting.CanUseAA("Force of Disruption") and "Force of Disruption" or "" end,
-            AbilityName = function() return Casting.CanUseAA("Force of Disruption") and "Force of Disruption" or "" end,
+            DisplayName = function() return Core.GetResolvedActionMapItem('Disruption') or "" end,
+            AbilityName = function() return Core.GetResolvedActionMapItem('Disruption') or "" end,
             AbilityRange = 150,
             cond = function(self)
-                return Casting.CanUseAA("Force of Disruption") and "Force of Disruption"
+                return Core.GetResolvedActionMapItem('Disruption')
             end,
         },
     },

@@ -2463,11 +2463,12 @@ function Casting.AutoMed()
     end
 end
 
---renamed function due to misleading name, deprecated.
+-- Deprecated 5/26 - Use AASets
 function Casting.GetBestAA(aaList)
     return Casting.GetFirstAA(aaList)
 end
 
+-- Deprecated 5/26 - Use AASets
 --- Retrieves the first available purchased AA in a list.
 --- @param aaList table The list of AA to check.
 --- @return string The name of the selected AA (or "None" if no ability was found).

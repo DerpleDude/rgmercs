@@ -85,7 +85,7 @@ local _ClassConfig = {
     -- For each table, the script will select the highest level spell out of those we have scribed.
     -- In the event that two spells of the same level are listed, the first spell found is the one used.
     -- Any spell/song/disc rotation entry should also have an entry here, even if it is a single spell!
-    -- Note that AA do not use sets (AA are referred to directly by name in their entries).
+    -- AA can be referred to directly by name in their entries (no set required), or grouped into an AASet when you want fallback resolution across ranked AA whose names change between ranks.
     -- Note that single items (i.e, not in a set) do not require an entry here (Items can be referred to directly by name in their entries).
     -- Generally, if you aren't using a spell line at all, you could consider commenting the entire thing out to stop it from being processed on load. This way it is still there if you change your mind.
     ['ItemSets']      = {
@@ -165,6 +165,17 @@ local _ClassConfig = {
             "Voice of Death",    -- level 50, 6% hate
             "Voice of Shadows",  -- level 46, 4% hate
             "Voice of Darkness", -- level 39, 2% hate
+        },
+    },
+
+    -- AA Sets work just like AbilitySets, but for AA where the ability name changes between ranks and you want the rotation to fall through to the first one you've purchased.
+    -- Most AA share a single name across ranks (e.g. "Visage of Death") and don't need a set -- just use name = "AA Name", type = "AA" in the rotation.
+    -- Reach for an AASet when the ranks have different names (e.g. a high-tier AA that supersedes a lower-tier one).
+    ['AASets']        = {
+        -- Illustrative only -- not a real SK progression. Patterned on real cases like the Berserker "Cascading Rage" -> "Untamed Rage" line.
+        ['ExampleRankedAA'] = {
+            "Newest Rank AA Name",
+            "Older Rank AA Name",
         },
     },
 

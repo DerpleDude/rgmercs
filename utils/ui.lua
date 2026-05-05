@@ -1980,8 +1980,9 @@ function Ui.RenderRotationTable(name, rotationTable, resolvedActionMap, rotation
             if enabledRotationEntries[entry.name] == false then Ui.StrikeThroughText(entry.name) else Ui.RenderText(entry.name) end
             ImGui.TableNextColumn()
             local mappedAction = resolvedActionMap[entry.name]
-            if mappedAction then
-                if entry.type:lower() == "spell" then
+            local typeLower = entry.type:lower()
+            if typeLower == "spell" or typeLower == "song" or typeLower == "disc" then
+                if mappedAction then
                     ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.Purple)
                     ImGui.PushStyleColor(ImGuiCol.HeaderHovered, Globals.Constants.Colors.NearBlack)
                     local rankSpell = mappedAction.RankName
@@ -1990,116 +1991,71 @@ function Ui.RenderRotationTable(name, rotationTable, resolvedActionMap, rotation
                         rankSpell.Inspect()
                     end
                     ImGui.PopStyleColor(2)
-                    Ui.Tooltip(string.format("Spell: %s (click to inspect)", rankSpell() or "Unknown"))
-                elseif entry.type:lower() == "song" then
-                    ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.Purple)
-                    ImGui.PushStyleColor(ImGuiCol.HeaderHovered, Globals.Constants.Colors.NearBlack)
-                    local rankSpell = mappedAction.RankName
-                    local _, clicked = ImGui.Selectable(rankSpell())
-                    if clicked then
-                        rankSpell.Inspect()
-                    end
-                    ImGui.PopStyleColor(2)
-                    Ui.Tooltip(string.format("Song: %s (click to inspect)", rankSpell() or "Unknown"))
-                elseif entry.type:lower() == "disc" then
-                    ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.Purple)
-                    ImGui.PushStyleColor(ImGuiCol.HeaderHovered, Globals.Constants.Colors.NearBlack)
-                    local rankSpell = mappedAction.RankName
-                    local _, clicked = ImGui.Selectable(rankSpell())
-                    if clicked then
-                        rankSpell.Inspect()
-                    end
-                    ImGui.PopStyleColor(2)
-                    Ui.Tooltip(string.format("Disc: %s (click to inspect)", rankSpell() or "Unknown"))
-                elseif type(mappedAction) == "string" and entry.type:lower() == "item" then
-                    local item = mq.TLO.FindItem("=" .. mappedAction)
-                    if item() and item.Clicky() then
-                        ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.LightOrange)
-                        ImGui.PushStyleColor(ImGuiCol.HeaderHovered, Globals.Constants.Colors.NearBlack)
-                        local _, clicked = ImGui.Selectable(mappedAction)
-                        local clickySpell = item.Clicky.Spell
-                        if clickySpell() and clicked then
-                            clickySpell.Inspect()
-                        end
-                        ImGui.PopStyleColor(2)
-                        Ui.Tooltip(string.format("Clicky Spell: %s (click to inspect)", clickySpell.Name() or "Unknown"))
-                    else
-                        ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.Grey)
-                        Ui.RenderText(mappedAction)
-                        ImGui.PopStyleColor()
-                    end
+                    Ui.Tooltip(string.format("%s: %s (click to inspect)", entry.type, rankSpell() or "Unknown"))
                 else
-                    ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.Grey)
-                    Ui.RenderText(mappedAction.Name() or mappedAction)
+                    ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.Red)
+                    Ui.RenderText("No %s Detected", entry.type)
                     ImGui.PopStyleColor()
                 end
-            else
-                if entry.type:lower() == "customfunc" then
-                    ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.Yellow)
-                    Ui.RenderText(entry.desc or "Custom Function")
-                    ImGui.PopStyleColor()
-                elseif entry.type:lower() == "spell" then
-                    ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.Red)
-                    Ui.RenderText("No Spell Detected")
-                    ImGui.PopStyleColor()
-                elseif entry.type:lower() == "song" then
-                    ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.Red)
-                    Ui.RenderText("No Song Detected")
-                    ImGui.PopStyleColor()
-                elseif entry.type:lower() == "disc" then
-                    ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.Red)
-                    Ui.RenderText("No Disc Detected")
-                    ImGui.PopStyleColor()
-                elseif entry.type:lower() == "ability" then
-                    local abilTrained = mq.TLO.Me.Ability(entry.name)()
-                    if abilTrained then
-                        ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.LightRed)
-                        Ui.RenderText(entry.name)
-                        ImGui.PopStyleColor()
-                    else
-                        ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.Red)
-                        Ui.RenderText("No Ability Detected")
-                        ImGui.PopStyleColor()
+            elseif typeLower == "aa" then
+                local aaName = (type(mappedAction) == "string") and mappedAction or entry.name
+                local aaPurchased = mq.TLO.Me.AltAbility(aaName)() ~= nil
+                if aaPurchased then
+                    ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.LightBlue)
+                    ImGui.PushStyleColor(ImGuiCol.HeaderHovered, Globals.Constants.Colors.NearBlack)
+                    local _, clicked = ImGui.Selectable(aaName)
+                    local aaSpell = mq.TLO.Me.AltAbility(aaName).Spell
+                    if aaSpell() and clicked then
+                        aaSpell.Inspect()
                     end
-                elseif entry.type:lower() == "aa" then
-                    local aaPurchased = mq.TLO.Me.AltAbility(entry.name)() ~= nil
-                    if aaPurchased then
-                        ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.LightBlue)
-                        ImGui.PushStyleColor(ImGuiCol.HeaderHovered, Globals.Constants.Colors.NearBlack)
-                        local _, clicked = ImGui.Selectable(entry.name)
-                        local aaSpell = mq.TLO.Me.AltAbility(entry.name).Spell
-                        if aaSpell() and clicked then
-                            aaSpell.Inspect()
-                        end
-                        ImGui.PopStyleColor(2)
-                        Ui.Tooltip(string.format("AA Spell: %s (click to inspect)", aaSpell.Name() or "Unknown"))
-                    else
-                        ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.Red)
-                        Ui.RenderText("No AA Detected")
-                        ImGui.PopStyleColor()
-                    end
-                elseif entry.type:lower() == "item" then
-                    local item = mq.TLO.FindItem("=" .. entry.name)
-                    if item() and item.Clicky() then
-                        ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.Yellow)
-                        ImGui.PushStyleColor(ImGuiCol.HeaderHovered, Globals.Constants.Colors.NearBlack)
-                        local _, clicked = ImGui.Selectable(entry.name)
-                        local clickySpell = item.Clicky.Spell
-                        if clickySpell() and clicked then
-                            clickySpell.Inspect()
-                        end
-                        ImGui.PopStyleColor(2)
-                        Ui.Tooltip(string.format("Clicky Spell: %s (click to inspect)", clickySpell.Name() or "Unknown"))
-                    else
-                        ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.Red)
-                        Ui.RenderText("No Item Detected")
-                        ImGui.PopStyleColor()
-                    end
+                    ImGui.PopStyleColor(2)
+                    Ui.Tooltip(string.format("AA Spell: %s (click to inspect)", aaSpell.Name() or "Unknown"))
                 else
-                    ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.Grey)
+                    ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.Red)
+                    Ui.RenderText("No AA Detected")
+                    ImGui.PopStyleColor()
+                end
+            elseif typeLower == "item" then
+                local itemName = (type(mappedAction) == "string") and mappedAction or entry.name
+                local item = mq.TLO.FindItem("=" .. itemName)
+                if item() and item.Clicky() then
+                    ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.LightOrange)
+                    ImGui.PushStyleColor(ImGuiCol.HeaderHovered, Globals.Constants.Colors.NearBlack)
+                    local _, clicked = ImGui.Selectable(itemName)
+                    local clickySpell = item.Clicky.Spell
+                    if clickySpell() and clicked then
+                        clickySpell.Inspect()
+                    end
+                    ImGui.PopStyleColor(2)
+                    Ui.Tooltip(string.format("Clicky Spell: %s (click to inspect)", clickySpell.Name() or "Unknown"))
+                else
+                    ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.Red)
+                    Ui.RenderText("No Item Detected")
+                    ImGui.PopStyleColor()
+                end
+            elseif typeLower == "ability" then
+                local abilTrained = mq.TLO.Me.Ability(entry.name)()
+                if abilTrained then
+                    ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.LightRed)
                     Ui.RenderText(entry.name)
                     ImGui.PopStyleColor()
+                else
+                    ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.Red)
+                    Ui.RenderText("No Ability Detected")
+                    ImGui.PopStyleColor()
                 end
+            elseif typeLower == "customfunc" then
+                ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.Yellow)
+                Ui.RenderText(entry.desc or "Custom Function")
+                ImGui.PopStyleColor()
+            else
+                ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.Grey)
+                if mappedAction and type(mappedAction) ~= "string" and mappedAction.Name then
+                    Ui.RenderText(mappedAction.Name() or entry.name)
+                else
+                    Ui.RenderText(entry.name)
+                end
+                ImGui.PopStyleColor()
             end
 
             if Config:GetSetting('ShowDebugTiming') then

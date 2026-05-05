@@ -741,6 +741,12 @@ local _ClassConfig = {
             'Reanimation',
         },
     },
+    ['AASets']            = {
+        ['Disruption'] = {
+            "Force of Disruption",
+            "Divine Stun",
+        },
+    },
     ['Helpers']           = {
         DoRez = function(self, corpseId)
             local rezAction = false
@@ -1294,7 +1300,7 @@ local _ClassConfig = {
                 end,
             },
             {
-                name_func = function(self) return Casting.GetFirstAA({ "Force of Disruption", "Divine Stun", }) end,
+                name = "Disruption",
                 type = "AA",
             },
             {
@@ -1334,7 +1340,7 @@ local _ClassConfig = {
         },
         ['HateTools(AutoTarget)'] = {
             {
-                name_func = function(self) return Casting.GetFirstAA({ "Force of Disruption", "Divine Stun", }) end,
+                name = "Disruption",
                 type = "AA",
             },
             {
@@ -1690,7 +1696,7 @@ local _ClassConfig = {
                 load_cond = function(self) return Config:GetSetting('Timer6Choice') == 2 end,
             },
             {
-                name_func = function(self) return Casting.GetFirstAA({ "Force of Disruption", "Divine Stun", }) end,
+                name = "Disruption",
                 type = "AA",
                 load_cond = function(self) return Core.IsTanking() end,
             },
