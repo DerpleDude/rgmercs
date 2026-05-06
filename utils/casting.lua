@@ -1958,8 +1958,10 @@ function Casting.UseDisc(discSpell, targetId)
 
             Core.DoCmd("/squelch /doability \"%s\"", discSpell.RankName.Name())
 
-            mq.delay(discSpell.MyCastTime() or 1000,
-                function() return (not me.CombatAbilityReady(discSpell.RankName.Name())() and not me.Casting()) end)
+            local castTime = discSpell.MyCastTime()
+            -- most discs never show a cast window at all (no cast time). in case they do, adding this. also, there is latency involved with the ready check, we need to give it a little time
+            local delay = (not castTime or castTime < 251) and 250 or castTime
+            mq.delay(delay, function() return (not me.CombatAbilityReady(discSpell.RankName.Name())() and not me.Casting()) end)
 
             -- Is this even needed?
             if Casting.IsActiveDisc(discSpell.RankName.Name()) then
@@ -2107,7 +2109,7 @@ function Casting.UseItem(itemName, targetId, bAllowDead, retryCount)
         return false
     end
 
-    if not me.ItemReady(itemName) then
+    if not me.ItemReady(itemName)() then
         Logger.log_debug("\awUseItem(\ag%s\aw): \arTried to use item - but it is not ready!", itemName)
         return false
     end
@@ -2170,7 +2172,7 @@ function Casting.UseItem(itemName, targetId, bAllowDead, retryCount)
     Casting.SetLastCastResult(Globals.Constants.CastResults.CAST_RESULT_NONE)
 
     local spellRange = itemSpell and (itemSpell.MyRange() > 0 and itemSpell.MyRange() or (itemSpell.AERange() > 0 and itemSpell.AERange() or 250))
-    local delay = (not castTime or castTime < 101) and 20 or castTime -- Items with clickies this fast may never show a cast window
+    local delay = (not castTime or castTime < 251) and 250 or castTime -- clickies this fast may never show a cast window, latency involved if checking ItemReady for success
     local cmd = string.format("/useitem \"%s\"", itemName)
     retryCount = retryCount or 2
 
@@ -2189,10 +2191,11 @@ function Casting.UseItem(itemName, targetId, bAllowDead, retryCount)
         end
         mq.doevents()
         Events.DoEvents()
-        mq.delay(1)
-        Logger.log_verbose("\ayUseItem(): Finished waiting on cast: %s result = %s retries left = %d", itemName, Casting.GetLastCastResultName(), retryCount)
+        mq.delay(20)
+        Logger.log_verbose("\ayUseItem(): Finished waiting on cast: %s result = %s ready = %s retries left = %d", itemName, Casting.GetLastCastResultName(),
+            Strings.BoolToColorString(me.ItemReady(itemName)()), retryCount)
         retryCount = retryCount - 1
-    until Globals.Constants.CastCompleted:contains(Casting.GetLastCastResultName()) or not me.ItemReady(itemName) or retryCount < 0
+    until Globals.Constants.CastCompleted:contains(Casting.GetLastCastResultName()) or not me.ItemReady(itemName)() or retryCount < 0
 
     if mq.TLO.Cursor.ID() then
         Core.DoCmd("/autoinv")
@@ -2203,7 +2206,7 @@ function Casting.UseItem(itemName, targetId, bAllowDead, retryCount)
         Targeting.SetTarget(oldTargetId, true)
     end
 
-    return (Globals.Constants.CastCompleted:contains(Casting.GetLastCastResultName()) or not me.ItemReady(itemName)), Casting.IsGroupSpell(targetType)
+    return (Globals.Constants.CastCompleted:contains(Casting.GetLastCastResultName()) or not me.ItemReady(itemName)()), Casting.IsGroupSpell(targetType)
 end
 
 --- Prepares the necessary actions for the Casting module.
