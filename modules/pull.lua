@@ -106,6 +106,19 @@ Module.Constants.PullAbilities         = {
         end,
     },
     {
+        id = "Throw Stone",
+        Type = "Disc",
+        DisplayName = "Throw Stone",
+        AbilityName = "Throw Stone",
+        AbilityRange = function()
+            local stoneSpell = mq.TLO.Spell("Throw Stone")
+            return stoneSpell and stoneSpell.MyRange() or 70 -- actually 200 on laz, let the spell file do the work.
+        end,
+        cond = function(self)
+            return mq.TLO.Me.CombatAbility("Throw Stone")()
+        end,
+    },
+    {
         id = "Taunt",
         Type = "Ability",
         DisplayName = "Taunt",
@@ -2500,6 +2513,10 @@ function Module:GiveTime()
                         local abilityName = pullAbility.AbilityName
                         if type(abilityName) == 'function' then abilityName = abilityName() end
                         Casting.UseSpell(abilityName, self.TempSettings.PullID, false, false, 0)
+                    elseif pullAbility.Type:lower() == "disc" then
+                        local abilityName = pullAbility.AbilityName
+                        if type(abilityName) == 'function' then abilityName = abilityName() end
+                        Casting.UseDisc(mq.TLO.Spell(abilityName), self.TempSettings.PullID)
                     elseif pullAbility.Type:lower() == "aa" then
                         local aaName = pullAbility.AbilityName
                         if type(aaName) == 'function' then aaName = aaName() end

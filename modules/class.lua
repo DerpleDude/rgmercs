@@ -1727,7 +1727,7 @@ end
 ---@return boolean
 function Module:HandleBind(cmd, ...)
     -- /rglua cmd handler
-    if self.ClassConfig.CommandHandlers and self.ClassConfig.CommandHandlers[cmd] then
+    if self.ClassConfig and self.ClassConfig.CommandHandlers and self.ClassConfig.CommandHandlers[cmd] then
         return Core.SafeCallFunc(string.format("Command Handler: %s", cmd), self.ClassConfig.CommandHandlers[cmd].handler, self, ...)
     end
 
