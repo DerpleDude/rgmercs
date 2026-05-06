@@ -2203,7 +2203,7 @@ function Casting.UseItem(itemName, targetId, bAllowDead, retryCount)
         Targeting.SetTarget(oldTargetId, true)
     end
 
-    return Globals.Constants.CastCompleted:contains(Casting.GetLastCastResultName()), Casting.IsGroupSpell(targetType)
+    return (Globals.Constants.CastCompleted:contains(Casting.GetLastCastResultName()) or not me.ItemReady(itemName)), Casting.IsGroupSpell(targetType)
 end
 
 --- Prepares the necessary actions for the Casting module.
