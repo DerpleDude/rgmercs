@@ -73,6 +73,7 @@ _ClassConfig    = {
             "Spear of Blistersteel",
             "Spear of Molten Steel",
             "Spear of Magma",
+            "Bolt of Molten Slag", -- Added for TLP without spear unlocked yet
             "Spear of Ro",
         },
         ['ChaoticNuke'] = {
@@ -173,6 +174,8 @@ _ClassConfig    = {
         --     "Iron Bolt",
         -- },
         ['FireDD'] = { --Mix of Fire Nukes and Bolts appropriate for use at lower levels.
+            "Scalding Sands",
+            "Burning Earth",
             "Burning Sand",
             "Scars of Sigil",
             "Lava Bolt",
@@ -1333,14 +1336,11 @@ _ClassConfig    = {
                 name = "SpearNuke",
                 type = "Spell",
             },
-            --   {
-            --       name = "AllianceBuff",
-            --       type = "Spell",
-            --      cond = function(self, spell, target)
-            --           return Globals.AutoTargetIsNamed and not Casting.TargetHasBuff(spell) and
-            --               Config:GetSetting('DoAlliance') and Casting.CanAlliance()
-            --       end,
-            --    },
+            {
+                name = "FireDD",
+                type = "Spell",
+                load_cond = function(self) return not Core.GetResolvedActionMapItem('SpearNuke') end,
+            },
         },
         ['DPS(LowLevel)'] = {
             {
