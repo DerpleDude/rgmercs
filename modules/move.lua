@@ -208,7 +208,7 @@ Module.DefaultConfig   = {
         Index = 8,
         Tooltip =
         "Use location data reported directly by RGMercs from the chase target to conduct chase checks and navigation if needed. May be useful if you notice PCs trying to chase your target to a stale location.",
-        Default = false,
+        Default = true,
         ConfigType = "Advanced",
     },
     ['AttemptToFixStuck']                      = {
@@ -219,7 +219,6 @@ Module.DefaultConfig   = {
         Index = 9,
         Tooltip = "If we become stuck while chasing, attempt to fix it by toggling your height via MQ2AutoSize - requires MQ2AutoSize plugin.",
         Default = true,
-        ConfigType = "Advanced",
     },
     ['AttemptToFixStuckTimer']                 = {
         DisplayName = "Stuck Fix Timer",

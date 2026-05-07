@@ -1179,6 +1179,12 @@ local _ClassConfig = {
             Min = 1,
             Max = 99,
             ConfigType = "Advanced",
+            Warning = function()
+                if Config:GetSetting('CompleteHealPct') > Config:GetSetting('MaxHealPoint') then
+                    return true, "Warning: CompleteHealPct exceeds MaxHealPoint - we will not check if heals are needed until health is under MaxHealPoint."
+                end
+                return false, ""
+            end,
         },
         ['DoSingleElixir']    = {
             DisplayName = "Single Elixir",

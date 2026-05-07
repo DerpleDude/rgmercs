@@ -311,7 +311,6 @@ Module.DefaultConfig                   = {
         Index = 4,
         Tooltip = "Pull in spite of being debuffed (Not ignored: Rez Sickness, Root.)",
         Default = false,
-        ConfigType = "Advanced",
     },
     ['PullMobsInWater']                        = {
         DisplayName = "Pull Mobs In Water",
@@ -355,6 +354,7 @@ Module.DefaultConfig                   = {
         Default = 15,
         Min = 5,
         Max = 60,
+        ConfigType = "Advanced",
         FAQ = "I keep trying to pull an invalid target, can I fix this?",
         Answer =
             "You should likely add that target to the Pull Deny List, which persists across sessions. However, RGMercs will auto-detect a repeatedly failed pull and will ignore that mob for the remainder of the pulling session.\n\n" ..
@@ -368,6 +368,7 @@ Module.DefaultConfig                   = {
         Index = 9,
         Tooltip = "Disable Pulling once you have died (even if you are rezzed).",
         Default = true,
+        ConfigType = "Advanced",
     },
     -- Distance
     ['PullRadius']                             = {
@@ -436,6 +437,7 @@ Module.DefaultConfig                   = {
         Default = 5,
         Min = 1,
         Max = 60,
+        ConfigType = "Advanced",
         FAQ = "Why does my puller stop every so often before running again to the same target, or change targets while pulling?",
         Answer = "The puller will periodically reassess targets if navigation has been active for a while to improve efficiency.\n" ..
             "The time period can be adjusted with the Max Move Time setting in the Pulling Distance category.",
@@ -541,6 +543,7 @@ Module.DefaultConfig                   = {
         Default = 6,
         Min = 4,
         Max = 125,
+        ConfigType = "Advanced",
     },
     ['UsePullLevels']                          = {
         DisplayName = "Use Level-Based Pulling",
@@ -668,7 +671,7 @@ Module.DefaultConfig                   = {
         Category = "Group Vitals",
         Index = 10,
         Tooltip = "Hold pulls while we detect any groupmember's corpse in the vicinity.",
-        Default = true,
+        Default = Globals.ServerEnv:lower() == "live",
     },
     ['WaitAfterRez']                           = {
         DisplayName = "Delay After Rez",
@@ -678,7 +681,7 @@ Module.DefaultConfig                   = {
         Index = 11,
         Tooltip = "If the puller detected a group corpse and held pulls, allow x seconds for the group to rebuff after the corpse is rezzed.\n" ..
             "**Only respected when \"Hold for Corpses\" is enabled and a corpse was detected by that process!**",
-        Default = 0,
+        Default = 30,
         Min = 0,
         Max = 90,
     },

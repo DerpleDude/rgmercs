@@ -93,10 +93,11 @@ Module.DefaultConfig                 = {
 		Header      = "Charm",
 		Category    = "Charm Targets",
 		Index       = 1,
-		Default     = 80,
+		Default     = 50,
 		Min         = 1,
 		Max         = 100,
 		Tooltip     = "Don't try to charm a mob that is below this HP%.",
+		ConfigType  = "Advanced",
 	},
 	['AutoLevelRangeCharm']                    = {
 		DisplayName = "Auto Level Range",
@@ -106,6 +107,7 @@ Module.DefaultConfig                 = {
 		Index       = 2,
 		Default     = true,
 		Tooltip     = "Use automatic charm max-level detection based on the current charm spell.",
+		ConfigType  = "Advanced",
 	},
 	['CharmMinLevel']                          = {
 		DisplayName = "Charm Min Level",
@@ -117,6 +119,7 @@ Module.DefaultConfig                 = {
 		Min         = 1,
 		Max         = 200,
 		Tooltip     = "If Auto Level Range is disabled, the minimum level of a potential charm target for charm spells.",
+		ConfigType  = "Advanced",
 	},
 	['CharmMaxLevel']                          = {
 		DisplayName = "Charm Max Level",
@@ -128,6 +131,7 @@ Module.DefaultConfig                 = {
 		Min         = 1,
 		Max         = 200,
 		Tooltip     = "If Auto Level Range is disabled, the maximum level of a potential charm target for charm spells.",
+		ConfigType  = "Advanced",
 	},
 	['DireCharmMaxLvl']                        = {
 		DisplayName = "DireCharm Max Level",
@@ -139,6 +143,7 @@ Module.DefaultConfig                 = {
 		Min         = 1,
 		Max         = 200,
 		Tooltip     = "If Auto Level Range is disabled, the maximum level of a potential charm target for Dire Charm.",
+		ConfigType  = "Advanced",
 	},
 	[string.format("%s_Popped", Module._name)] = {
 		DisplayName = Module._name .. " Popped",

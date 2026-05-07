@@ -1793,8 +1793,12 @@ local _ClassConfig = {
             Min = 1,
             Max = 99,
             ConfigType = "Advanced",
-            FAQ = "How can I stagger my clerics to use Complete Heal at different times?",
-            Answer = "Adjust the Complete Heal Pct on the Spells and Abilities tab to different amounts to help stagger Complete Heals.",
+            Warning = function()
+                if Config:GetSetting('CompleteHealPct') > Config:GetSetting('MaxHealPoint') then
+                    return true, "Warning: CompleteHealPct exceeds MaxHealPoint - we will not check if heals are needed until health is under MaxHealPoint."
+                end
+                return false, ""
+            end,
         },
         ['KeepCureMemmed']    = {
             DisplayName = "Mem Cure:",

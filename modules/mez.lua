@@ -99,6 +99,7 @@ Module.DefaultConfig           = {
         Min = 1,
         Max = 20,
         Tooltip = "The maximum number of xtargets before we will cease attempts to mez.",
+        ConfigType = "Advanced",
     },
     ['MezRadius']                              = {
         DisplayName = "Mez Radius",
@@ -110,6 +111,7 @@ Module.DefaultConfig           = {
         Min = 1,
         Max = 200,
         Tooltip = "The maximum distance away a potential mez target can be from the PC.",
+        ConfigType = "Advanced",
     },
     ['MezZRadius']                             = {
         DisplayName = "Mez ZRadius",
@@ -117,10 +119,11 @@ Module.DefaultConfig           = {
         Header = "Mez",
         Category = "Mez General",
         Index = 9,
-        Default = 15,
+        Default = 25,
         Min = 1,
         Max = 200,
         Tooltip = "The maximum height difference between the potential mez target and the PC.",
+        ConfigType = "Advanced",
     },
     ['SafeAEMez']                              = {
         DisplayName = "AE Mez Safety Check",
@@ -131,6 +134,7 @@ Module.DefaultConfig           = {
         Tooltip =
         "Check to ensure there aren't neutral mobs in range we could aggro if AE mez is used. May result in non-use due to false positives.",
         Default = false,
+        ConfigType = "Advanced",
         FAQ = "Can you better explain the AE Mez Safety Check?",
         Answer = "If the option is enabled, the script will use various checks to determine if a non-hostile or not-aggroed NPC is present and avoid use of the mez.\n" ..
             "Unfortunately, the script currently cannot always discern whether an NPC is (un)attackable, so at times this may lead to the mez not being used when it is safe to do so.",
@@ -146,6 +150,7 @@ Module.DefaultConfig           = {
         Min = 1,
         Max = 100,
         Tooltip = "Don't try to mez a mob that is below this HP%.",
+        ConfigType = "Advanced",
     },
     ['AutoLevelRange']                         = {
         DisplayName = "Auto Level Range",
@@ -155,6 +160,7 @@ Module.DefaultConfig           = {
         Index = 2,
         Default = true,
         Tooltip = "Use automatic mez max-level detection based on the current mez spell.",
+        ConfigType = "Advanced",
     },
     ['MezMinLevel']                            = {
         DisplayName = "Mez Min Level",

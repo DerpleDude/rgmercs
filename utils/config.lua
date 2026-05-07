@@ -391,7 +391,7 @@ Config.DefaultConfig                                     = {
         Category = "Med Rules",
         Index = 3,
         Tooltip = "How may seconds to delay after combat before sitting to meditate.",
-        Default = 6,
+        Default = 3,
         Min = 0,
         Max = 60,
         ConfigType = "Advanced",
@@ -506,6 +506,7 @@ Config.DefaultConfig                                     = {
         Default = 2,
         Min = 1,
         Max = 3,
+        ConfigType = "Advanced",
     },
     ['ModRodManaPct']              = {
         DisplayName = "Mod Rod Mana %",
@@ -684,6 +685,7 @@ Config.DefaultConfig                                     = {
         Index = 6,
         Tooltip = "Turn off auto-attack if we are not in combat and not cleared to engage the current target.",
         Default = false,
+        ConfigType = "Advanced",
     },
 
     ['ScanNamedPriority']          = {
@@ -784,6 +786,7 @@ Config.DefaultConfig                                     = {
         Index = 2,
         Tooltip = "If the Tank Aggro Scan is enabled and the current Auto Target is forced, stay on that target without switching to an Aggro Target.",
         Default = true,
+        ConfigType = "Advanced",
     },
 
     -- Assisting
@@ -793,42 +796,30 @@ Config.DefaultConfig                                     = {
         Header = "Assisting",
         Category = "Assisting",
         Index = 1,
-        Tooltip = "Automatically engage targets.",
+        Tooltip = "Automatically engage targets for combat actions.",
         Default = true,
-        ConfigType = "Advanced",
-    },
-    ['UseAssistList']              = {
-        DisplayName = "Use Assist List",
-        Group = "Combat",
-        Header = "Assisting",
-        Category = "Assisting",
-        Index = 2,
-        Tooltip = "Use names from the Assist List to choose a Main Assist (see FAQs).",
-        Default = false,
     },
     ['AutoAssistAt']               = {
         DisplayName = "Auto Assist Percent",
         Group = "Combat",
         Header = "Assisting",
         Category = "Assisting",
-        Index = 3,
+        Index = 2,
         Tooltip = "Begin combat actions against the auto target when its reaches this health percentage.",
         Default = 98,
         Min = 1,
         Max = 100,
-        ConfigType = "Advanced",
     },
     ['AssistRange']                = {
         DisplayName = "Assist Range",
         Group = "Combat",
         Header = "Assisting",
         Category = "Assisting",
-        Index = 4,
+        Index = 3,
         Tooltip = "Engage the combat target when it is within this distance.",
         Default = 100,
         Min = 0,
         Max = 300,
-        ConfigType = "Advanced",
         Warning = function()
             if Config:GetSetting('AssistRange') > Config:GetSetting('AutoCampRadius') then
                 return true, "Warning: AssistRange exceeds AutoCampRadius - this might cause your characters to run out of camp to assist."
@@ -841,9 +832,9 @@ Config.DefaultConfig                                     = {
         Group = "Combat",
         Header = "Assisting",
         Category = "Assisting",
-        Index = 5,
-        Tooltip = "Auto attack the combat target.",
-        Default = Globals.CurLoadedClass ~= "RNG" and Globals.Constants.RGMelee:contains(Globals.CurLoadedClass),
+        Index = 4,
+        Tooltip = "Auto attack the combat target. (Ranger Only: Disable to use ranged combat.)",
+        Default = Globals.Constants.RGMelee:contains(Globals.CurLoadedClass),
         ConfigType = "Normal",
     },
     ['AllowMezBreak']              = {
@@ -851,7 +842,7 @@ Config.DefaultConfig                                     = {
         Group = "Combat",
         Header = "Assisting",
         Category = "Assisting",
-        Index = 6,
+        Index = 5,
         Tooltip = "Allow combat actions if the target is mezzed.",
         Default = (Globals.Constants.RGTank:contains(mq.TLO.Me.Class.ShortName())),
         ConfigType = "Advanced",
@@ -861,7 +852,7 @@ Config.DefaultConfig                                     = {
         Group = "Combat",
         Header = "Assisting",
         Category = "Assisting",
-        Index = 7,
+        Index = 6,
         Tooltip = "Allow RGMercs to issue pet commands.",
         Default = true,
         ConfigType = "Advanced",
@@ -871,7 +862,7 @@ Config.DefaultConfig                                     = {
         Group = "Combat",
         Header = "Assisting",
         Category = "Assisting",
-        Index = 8,
+        Index = 7,
         Tooltip = "Send pets to attack the combat target when it reaches this health percentage.",
         Default = 96,
         Min = 1,
@@ -883,7 +874,7 @@ Config.DefaultConfig                                     = {
         Group = "Combat",
         Header = "Assisting",
         Category = "Assisting",
-        Index = 9,
+        Index = 8,
         Tooltip = "Allow RGMercs to issue mercenary commands. We plan to add selectable stances in a future update.",
         Default = (Globals.BuildType ~= 'Emu'),
         ConfigType = "Normal",
@@ -893,12 +884,35 @@ Config.DefaultConfig                                     = {
         Group = "Combat",
         Header = "Assisting",
         Category = "Assisting",
-        Index = 10,
+        Index = 9,
         Tooltip =
         "The stance to use for your merc. Since mercs have different stances, find the one for your current mercenary type.\nNote: an invalid stance selection will default to the first listed.",
         Type = "Combo",
         ComboOptions = { 'Aggressive or Balanced', 'Assist or Reactive or Burn', 'Efficient or BurnAE', },
         Default = 2,
+        Min = 1,
+        Max = 3,
+        ConfigType = "Advanced",
+    },
+    ['UseAssistList']              = {
+        DisplayName = "Use Assist List",
+        Group = "Combat",
+        Header = "Assisting",
+        Category = "Assisting",
+        Index = 10,
+        Tooltip = "Use names from the Assist List to choose a Main Assist instead of assisting the EQ group or raid assist (see FAQs).",
+        Default = false,
+    },
+    ['RaidAssistTarget']           = {
+        DisplayName = "Raid Assist Target",
+        Group = "Combat",
+        Header = "Assisting",
+        Category = "Assisting",
+        Index = 11,
+        Tooltip = "Which Raid Assist target to follow. Please note that we will not fallback if this is not set properly.",
+        Type = "Combo",
+        ComboOptions = { 'First', 'Second', 'Third', },
+        Default = 1,
         Min = 1,
         Max = 3,
         ConfigType = "Normal",
@@ -908,24 +922,10 @@ Config.DefaultConfig                                     = {
         Group = "Combat",
         Header = "Assisting",
         Category = "Assisting",
-        Index = 11,
+        Index = 12,
         Tooltip = "Prioritize the Marked target as the combat target.",
         Default = false,
         ConfigType = "Advanced",
-    },
-    ['RaidAssistTarget']           = {
-        DisplayName = "Raid Assist Target",
-        Group = "Combat",
-        Header = "Assisting",
-        Category = "Assisting",
-        Index = 12,
-        Tooltip = "Which Raid Assist target to follow. Please note that we will not fallback if this is not set properly.",
-        Type = "Combo",
-        ComboOptions = { 'First', 'Second', 'Third', },
-        Default = 1,
-        Min = 1,
-        Max = 3,
-        ConfigType = "Normal",
     },
     ['SelfAssistFallback']         = {
         DisplayName = "Self-Assist Fallback",
@@ -939,7 +939,7 @@ Config.DefaultConfig                                     = {
         Default = 4,
         Min = 1,
         Max = 4,
-        ConfigType = "Normal",
+        ConfigType = "Advanced",
     },
 
     -- Positioning/General
@@ -990,7 +990,7 @@ Config.DefaultConfig                                     = {
         Index = 4,
         Tooltip = "Stand up if feigning at the start of combat.",
         Default = true,
-        ConfigType = "Normal",
+        ConfigType = "Advanced",
     },
     ['HandleCantSeeTarget']        = {
         DisplayName = "Handle Cannot See Target",
@@ -1066,7 +1066,6 @@ Config.DefaultConfig                                     = {
         Tooltip =
         "This will disable all automated movement on your character but not using abilities.",
         Default = false,
-        ConfigType = "Advanced",
         OnChange = function(oldVal, newVal)
             local settings = { 'DoAutoNav', 'DoAutoStick', 'FaceTarget', 'HandleCantSeeTarget', 'HandleTooClose', 'HandleTooFar', }
 
@@ -1126,7 +1125,6 @@ Config.DefaultConfig                                     = {
         Default = 50,
         Min = 1,
         Max = 100,
-        ConfigType = "Advanced",
     },
     ['NamedLowHP']                 = {
         DisplayName = "Named Low HP%",
@@ -1138,7 +1136,6 @@ Config.DefaultConfig                                     = {
         Default = 25,
         Min = 1,
         Max = 100,
-        ConfigType = "Advanced",
     },
     ['AggroThrottling']            = {
         DisplayName = "Use Aggro Throttling",
@@ -1197,7 +1194,7 @@ Config.DefaultConfig                                     = {
         Category = "Under the Hood",
         Index = 1,
         Tooltip = "This will cause RGMercs to use '/cast =<Spell>' which , must be supported by your MQ version but will avoid things like 'Bane' casting 'Bane of Nife' instead.",
-        Default = false,
+        Default = true,
         ConfigType = "Advanced",
     },
     ['CastReadyDelayFact']         = {
@@ -1238,7 +1235,6 @@ Config.DefaultConfig                                     = {
         Default = 30,
         Min = 1,
         Max = 100,
-        ConfigType = "Advanced",
     },
     --Damage/Over Time
     ['ManaToDot']                  = {
@@ -1252,7 +1248,6 @@ Config.DefaultConfig                                     = {
         Default = 30,
         Min = 1,
         Max = 100,
-        ConfigType = "Advanced",
     },
     -- Damage/AE
     ['DoAEDamage']                 = {
@@ -1299,6 +1294,7 @@ Config.DefaultConfig                                     = {
         Index = 4,
         Tooltip = "Check to ensure there aren't neutral mobs in range we could aggro if AE damage is used. May result in non-use due to false positives.",
         Default = false,
+        ConfigType = "Advanced",
         FAQ = "Can you better explain the AE Proximity Check?",
         Answer = "If the option is enabled, the script will use various checks to determine if a non-hostile or not-aggroed NPC is present and avoid use of the AE action.\n" ..
             "Unfortunately, the script currently does not discern whether an NPC is (un)attackable, so at times this may lead to the action not being used when it is safe to do so.\n" ..
@@ -1316,7 +1312,6 @@ Config.DefaultConfig                                     = {
         Default = 10,
         Min = 1,
         Max = 100,
-        ConfigType = "Advanced",
     },
     ['DebuffMinCon']               = {
         DisplayName = "Debuff Min Con",
@@ -1390,8 +1385,8 @@ Config.DefaultConfig                                     = {
         Header = "Buffs",
         Category = "Buff Rules",
         Index = 2,
-        Tooltip = "Seconds to wait after stoping movement before doing buffs.",
-        Default = 5,
+        Tooltip = "Seconds to wait after stopping movement before doing buffs.",
+        Default = 3,
         Min = 0,
         Max = 60,
         ConfigType = "Advanced",
@@ -1404,7 +1399,7 @@ Config.DefaultConfig                                     = {
         Index = 3,
         Tooltip =
         "If a PC has a corpse near us, buff them even though they are likely to get rezed. (Note: If disabled, they may still be receiving group buffs aimed at those without corpses.)",
-        Default = false,
+        Default = Globals.ServerEnv:lower() ~= "live",
         ConfigType = "Advanced",
     },
     ['UseCounterActions']          = {
@@ -1415,7 +1410,7 @@ Config.DefaultConfig                                     = {
         Index = 4,
         Tooltip =
         "Automatically use counter actions (such as the Aureate's Bane AA to counter Curse of Subjugation in TOB zones.",
-        Default = (mq.TLO.MacroQuest.BuildName() or ""):lower() ~= "emu",
+        Default = Globals.ServerEnv:lower() == "live",
     },
     ['BreakInvisForSay']           = {
         DisplayName = "Break Invis for Say Commands",
@@ -1427,19 +1422,18 @@ Config.DefaultConfig                                     = {
         Default = false,
     },
     ['ActorBuffScope']             = {
-        DisplayName = "Actor Buff Scope",
+        DisplayName = "Peer Buff Scope",
         Group = "Abilities",
         Header = "Buffs",
         Category = "Buff Rules",
         Index = 6,
         Tooltip =
         "Choose who to use group buffs on. Please note that we will only buff raid/in-zone if they are actor peers (other PCs running RGMercs on the local computer/network).",
-        Default = 1,
+        Default = 2,
         Min = 1,
         Max = 3,
         Type = "Combo",
         ComboOptions = { 'Group', 'Raid', 'Any In-Zone', },
-        ConfigType = "Advanced",
     },
     ['BuffTargetingInterval']      = {
         DisplayName = "Buff Targeting Interval",
@@ -1460,7 +1454,7 @@ Config.DefaultConfig                                     = {
         Header = "Buffs",
         Category = "Buff Rules",
         Index = 8,
-        Tooltip = "Process group buff rotations on members of the Asist List.",
+        Tooltip = "Process group buff rotations on members of the Assist List.",
         Default = true,
     },
     ['DoActorPetBuffs']            = {
@@ -1472,6 +1466,7 @@ Config.DefaultConfig                                     = {
         Tooltip =
         "Allow group pets to be targeted in PC group buff rotations.\nNote that only the pets buffs of PCs who have this setting enabled are discoverable.\nFurther note this incurs a minor performance penalty and is not advised in most situations.",
         Default = false,
+        ConfigType = "Advanced",
         OnChange = function(oldValue, newValue)
             if newValue == false then
                 Globals.CurrentPetBuffs = nil
@@ -1487,7 +1482,7 @@ Config.DefaultConfig                                     = {
         Header = "Buffs",
         Category = "Self",
         Index = 99,
-        Tooltip = "Enable the use of Alliance spells.",
+        Tooltip = "Enable the use of Alliance spells (for supporting class configs, not every class config uses this).",
         Default = false,
         ConfigType = "Advanced",
     },
@@ -1580,7 +1575,7 @@ Config.DefaultConfig                                     = {
         Category = "Healing Thresholds",
         Index = 5,
         Tooltip = "Minimum PctHPs to use the Group Heal Rotation or actions that check whether Group Heals are needed.",
-        Default = 75,
+        Default = 80,
         Min = 1,
         Max = 100,
         ConfigType = "Advanced",
@@ -1618,7 +1613,6 @@ Config.DefaultConfig                                     = {
         Index = 1,
         Tooltip = "Use Cure spells to clear detrimental effects from your group or yourself.",
         Default = true,
-        ConfigType = "Advanced",
     },
     ['DoCureAA']                   = {
         DisplayName = "Do Cure AA",
@@ -1628,7 +1622,6 @@ Config.DefaultConfig                                     = {
         Index = 2,
         Tooltip = "Use Cure AA to clear detrimental effects from your group or yourself.",
         Default = true,
-        ConfigType = "Advanced",
     },
     ['CureInterval']               = {
         DisplayName = "Downtime Cure Check Interval",
@@ -1663,7 +1656,6 @@ Config.DefaultConfig                                     = {
         Index = 1,
         Tooltip = "Use Rezes. If disabled, no rez spells will be used at any time.",
         Default = true,
-        ConfigType = "Advanced",
     },
     ['DoBattleRez']                = {
         DisplayName = "Do Battle Rez",
@@ -1672,8 +1664,7 @@ Config.DefaultConfig                                     = {
         Category = "Rezzing",
         Index = 2,
         Tooltip = "Enable rezzing while in combat",
-        Default = mq.TLO.Me.Class.ShortName():lower() == "clr",
-        ConfigType = "Advanced",
+        Default = true,
     },
     ['RezOutside']                 = {
         DisplayName = "Rez Outside",
@@ -1704,7 +1695,7 @@ Config.DefaultConfig                                     = {
         Category = "Rezzing",
         Index = 5,
         Tooltip = "Rez corpses of live PCs in the zone (If disabled, we will only rez corpses of PCs not in our current zone).Note that we will not rez in-zone PCs during combat.",
-        Default = true,
+        Default = Globals.ServerEnv:lower() == "live",
         ConfigType = "Advanced",
         FAQ = "Why would I want (or not want) to rez corpses of PCs that are in-zone with us already?",
         Answer = "Emu servers have various rules, such as no xp loss on death, or not dropping items to your corpse\n" ..
@@ -1717,7 +1708,7 @@ Config.DefaultConfig                                     = {
         Category = "Rezzing",
         Index = 6,
         Tooltip = "If this setting is enabled, we will attempt to con a corpse and rez only if that corpse has not yet taken one.",
-        Default = (mq.TLO.MacroQuest.BuildName() or ""):lower() == "emu",
+        Default = false,
         ConfigType = "Advanced",
         FAQ = "Why am I conning corpses? I play on a server with no exp penalty, or where we don't need to loot corpses.",
         Answer = "The Check for Previous Rez setting is enabled by default on emu, this can be adjusted on the Heal/Rez options tab.",
@@ -1923,7 +1914,7 @@ Config.DefaultConfig                                     = {
         Category = "ForceTarget Window",
         Index = 10,
         Tooltip = "Show ForceTarget controls to clear/set forced targets.",
-        Default = false, -- defaulted to false just to annoy Algar
+        Default = true, -- defaulted to false just to annoy Algar -- returned to true by Algar only out of spite
     },
     ['FTHPOverlay']                      = {
         DisplayName = "HP % Overlay for ForceTarget Window",
@@ -1984,7 +1975,7 @@ Config.DefaultConfig                                     = {
         Default = 1,
         Min = 1,
         Max = 3,
-        ConfigType = "Advaced",
+        ConfigType = "Advanced",
     },
     ['StatusLeftClickCursorClickAction'] = {
         DisplayName = "Mercs Status Cursor+Left-Click Action",
@@ -1998,7 +1989,7 @@ Config.DefaultConfig                                     = {
         Default = 1,
         Min = 1,
         Max = 2,
-        ConfigType = "Advaced",
+        ConfigType = "Advanced",
     },
     ['StatusRightClickAction']           = {
         DisplayName = "Mercs Status Right-Click Action",
@@ -2012,7 +2003,7 @@ Config.DefaultConfig                                     = {
         Default = 2,
         Min = 1,
         Max = 3,
-        ConfigType = "Advaced",
+        ConfigType = "Advanced",
     },
     ['ActorPeerTimeout']                 = {
         DisplayName = "Actor Peer Timeout",
@@ -2024,6 +2015,7 @@ Config.DefaultConfig                                     = {
         Default = 45,
         Min = 10,
         Max = 120,
+        ConfigType = "Advanced",
     },
     ['PopoutWindowsLockWithMain']        = {
         DisplayName = "Lock Popout Windows with Main",
@@ -2324,7 +2316,6 @@ Config.DefaultConfig                                     = {
             Config.CacheCustomColors()
         end,
     },
-
     ['SearchHighlightColor']             = {
         DisplayName = "Search Highlight",
         Group = "General",
@@ -2583,7 +2574,6 @@ Config.DefaultConfig                                     = {
         Index = 0,
         Tooltip = "Enable the Debug Panel",
         Default = false,
-        ConfigType = "Advanced",
     },
     ['RunSelfTestsOnStartup']            = {
         DisplayName = "Run Self-Tests on Startup",
@@ -2593,7 +2583,6 @@ Config.DefaultConfig                                     = {
         Default = false,
         ConfigType = "Advanced",
     },
-
     ['DrawTooltipDebugBox']              = {
         DisplayName = "Draw Tooltip Debug Box",
         Category = "Internals",
@@ -2602,7 +2591,6 @@ Config.DefaultConfig                                     = {
         Default = false,
         ConfigType = "Advanced",
     },
-
     ['LootModuleType']                   = {
         DisplayName = "Loot Module Type",
         Group = "General",
@@ -2655,6 +2643,7 @@ Config.DefaultConfig                                     = {
         Index = 112,
         Tooltip = "Check to ensure there aren't neutral mobs in range we could aggro if AE taunts are used. May result in non-use due to false positives.",
         Default = false,
+        ConfigType = "Advanced",
         FAQ = "Can you better explain the AE Taunt Safety Check?",
         Answer = "If the option is enabled, the script will use various checks to determine if a non-hostile or not-aggroed NPC is present and avoid use of the taunt.\n" ..
             "Unfortunately, the script currently does not discern whether an NPC is (un)attackable, so at times this may lead to the taunt not being used when it is safe to do so.",
@@ -4033,14 +4022,14 @@ function Config:ConvertToDb()
         local configFile = Config.GetConfigFileName(fileName)
 
         if not Files.file_exists(configFile) then
-            Logger.log_info("\ayConvertToDb: no config file found for module \ay%s\ay, skipping.", name)
+            Logger.log_verbose("\ayConvertToDb: no config file found for module \ay%s\ay, skipping.", name)
         else
             local loaded, err = loadfile(configFile)
             if not loaded or err then
                 Logger.log_warn("\ayConvertToDb: could not parse file %s: %s", configFile, tostring(err))
             else
                 local fileSettings = loaded() or {}
-                Logger.log_info("\agConvertToDb: loaded file \at%s\ag for module \ay%s", configFile, name)
+                Logger.log_verbose("\agConvertToDb: loaded file \at%s\ag for module \ay%s", configFile, name)
                 for setting, value in pairs(fileSettings) do
                     local existing = self.Db:getValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, name, setting)
                     if existing == nil then
