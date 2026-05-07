@@ -248,14 +248,14 @@ end)
 mq.event('Level Up', "You have gained a level! Welcome to level#*#", function()
     -- we may have spells scribed for the new level already on EQ Might, where deleveling is a standard part of play
     -- Feb 2026, live added "autoscribe"
-    if not Core.OnEMU() or Globals.CurServer == "EQ Might" then
+    if not Core.OnEMU() or Core.OnMight() then
         Modules:ExecModule("Class", "RescanLoadout")
     end
 end)
 
 mq.event('Level Down', "You have LOST a level! You are now level#*#", function()
     -- support EQ Might, where deleveling is a standard part of play
-    if Globals.CurServer == "EQ Might" then
+    if Core.OnMight() then
         Modules:ExecModule("Class", "RescanLoadout")
     end
 end)

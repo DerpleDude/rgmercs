@@ -96,7 +96,17 @@ Config.DefaultConfig                                     = {
     ['ClassConfigDir']             = {
         DisplayName = "Class Config Dir",
         Type = "Custom",
-        Default = (Globals.BuildType:lower() == "emu" and Globals.Constants.SupportedEmuServers:contains(Globals.CurServer)) and Globals.CurServer or "Live",
+        Default = function()
+            local server = "Live"
+            if Globals.BuildType:lower() == "emu" then
+                if Globals.Constants.SupportedEmuServers:contains(Globals.CurServer) then
+                    server = Globals.CurServer
+                elseif Globals.CurServer:lower() == "project might" then
+                    server = "EQ Might"
+                end
+            end
+            return server
+        end,
     },
     ['AssistList']                 = {
         DisplayName = "List of User-Defined Assists",
@@ -3333,6 +3343,10 @@ function Config.ResolveDefaults(defaults, settings, module)
     end
 
     for k, v in pairs(defaults) do
+        if v.Default and type(v.Default):lower() == "function" then
+            v.Default = v.Default()
+        end
+
         if settings[k] == nil then
             settings[k] = v.Default
             changed = true

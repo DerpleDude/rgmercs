@@ -20,9 +20,15 @@ Module.CommandHandlers = {}
 Module.NamedList       = {}
 Module.LastNamedCheck  = 0
 
-Module.DefNamed        = Globals.CurServer == "EQ Might" and (NamedEQMight or {}) or (NamedDefault or {})
+Module.DefNamed        = {}
 
-Module.DefaultConfig   = {
+if Globals.CurServer == "EQ Might" or Globals.CurServer == "Project Might" then
+    Module.DefNamed = NamedEQMight or {}
+else
+    Module.DefNamed = NamedDefault or {}
+end
+
+Module.DefaultConfig = {
     [string.format("%s_Popped", Module._name)] = {
         DisplayName = Module._name .. " Popped",
         Type = "Custom",
@@ -41,7 +47,7 @@ Module.DefaultConfig   = {
     },
 }
 
-Module.FAQ             = {
+Module.FAQ           = {
     {
         Question = "Why am I not taking any special actions on a Named, boss, or mission mob?",
         Answer =

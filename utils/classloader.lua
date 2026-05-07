@@ -11,7 +11,7 @@ local ClassLoader = { _version = '0.1', _name = "ClassLoader", _author = 'Derple
 
 function ClassLoader.getClassConfigFileName(class)
     local baseConfigDir = Globals.ScriptDir .. "/class_configs"
-    local classConfigDir = Config:GetSetting('ClassConfigDir') -- now defaults to current server
+    local classConfigDir = Config:GetSetting('ClassConfigDir') -- now defaults to current server (PrM falls back to EQM)
     local configFile = string.format("%s/%s/%s_class_config.lua", baseConfigDir, classConfigDir, class:lower())
     local deprecated = Tables.TableContains(Globals.Constants.DeprecatedConfigs[class] or {}, classConfigDir)
 
@@ -39,12 +39,15 @@ function ClassLoader.getClassConfigFileName(class)
 end
 
 function ClassLoader.getFallbackClassConfigFolder()
+    local server = "Live"
     if Core.OnEMU() then
         if Globals.Constants.SupportedEmuServers:contains(Globals.CurServer) then
-            return Globals.CurServer
+            server = Globals.CurServer
+        elseif Globals.CurServer:lower() == "project might" then
+            server = "EQ Might"
         end
     end
-    return "Live"
+    return server
 end
 
 ---@param class string # EQ Class ShortName

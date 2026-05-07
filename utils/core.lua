@@ -77,6 +77,13 @@ function Core.OnLaz()
     return Globals.CurServer:lower() == "project lazarus"
 end
 
+--- Checks if the current server is a Might server.
+---
+--- @return boolean True if the server is EQ Might or Project Might, false otherwise.
+function Core.OnMight()
+    return Globals.CurServer:lower() == "eq might" or Globals.CurServer:lower() == "project might"
+end
+
 --- Executes a given command with optional arguments.
 --- @param cmd string: The command to execute.
 --- @param ... any: Optional arguments for the command.

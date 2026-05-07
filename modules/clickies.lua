@@ -21,7 +21,7 @@ local Module    = { _version = '0.1a', _name = "Clickies", _author = 'Derple', }
 Module.__index  = Module
 setmetatable(Module, { __index = Base, })
 
-Module.FAQ                                 = {
+Module.FAQ                                    = {
     {
         Question = "How do I set RGmercs up to use a clicky item?",
         Answer = "  Using the GUI on the Clickies tab, you can add, remove and organize clickies you would like your PCs to use, under customizable conditions.\n\n" ..
@@ -33,9 +33,9 @@ Module.FAQ                                 = {
     },
 }
 
-Module.ClickyRotationIndex                 = 1
+Module.ClickyRotationIndex                    = 1
 
-Module.CommandHandlers                     = {
+Module.CommandHandlers                        = {
     enableclicky = {
         usage = "/rgl enableclicky <clicky name|idx>",
         about = "Enables the clicky item with the specified name or index.",
@@ -104,19 +104,19 @@ Module.CommandHandlers                     = {
     },
 }
 
-Module.TempSettings                        = {}
-Module.TempSettings.ClickyState            = {}
-Module.TempSettings.ConditionsCache        = {}
-Module.TempSettings.CombatClickiesTimer    = 0
-Module.TempSettings.ClickyDropFrame        = {}
-Module.TempSettings.ClickyHeaderOpen       = {}
-Module.TempSettings.RotationComboIdx       = {}
-Module.TempSettings.RotationNamesCache     = nil
-Module.TempSettings.RotationNameSet        = nil
-Module.TempSettings.HealRotationNamesCache = nil
-Module.TempSettings.HealRotationNameSet    = nil
+Module.TempSettings                           = {}
+Module.TempSettings.ClickyState               = {}
+Module.TempSettings.ConditionsCache           = {}
+Module.TempSettings.CombatClickiesTimer       = 0
+Module.TempSettings.ClickyDropFrame           = {}
+Module.TempSettings.ClickyHeaderOpen          = {}
+Module.TempSettings.RotationComboIdx          = {}
+Module.TempSettings.RotationNamesCache        = nil
+Module.TempSettings.RotationNameSet           = nil
+Module.TempSettings.HealRotationNamesCache    = nil
+Module.TempSettings.HealRotationNameSet       = nil
 
-Module.DefaultServerClickies               = {
+Module.DefaultServerClickies                  = {
     ['Project Lazarus'] = {
         [1] = {
             ['conditions'] = {
@@ -214,8 +214,9 @@ Module.DefaultServerClickies               = {
         },
     },
 }
+Module.DefaultServerClickies['Project Might'] = Module.DefaultServerClickies['EQ Might']
 
-Module.DefaultConfig                       = {
+Module.DefaultConfig                          = {
     ['MaxClickiesPerFrame']                    = {
         DisplayName = "Max Clickies Per Frame",
         Group = "Items",
@@ -247,19 +248,19 @@ Module.DefaultConfig                       = {
     },
 }
 
-Module.CombatTargetTypes                   = { 'Self', 'Pet', 'Main Assist', 'Auto Target', 'Mercs Peer', 'Rotation Target', }
-Module.NonCombatTargetTypes                = { 'Self', 'Pet', 'Main Assist', 'Mercs Peer', 'Rotation Target', }
-Module.RotationTargetTypes                 = { 'Rotation Target', }
-Module.MercPeerTargetTypes                 = { 'Mercs Peer', }
-Module.CombatStates                        = { 'Downtime', 'Combat', 'Any', 'During Rotation', 'During Heal Rotation', }
-Module.ImpliedCondition                    = {
+Module.CombatTargetTypes                      = { 'Self', 'Pet', 'Main Assist', 'Auto Target', 'Mercs Peer', 'Rotation Target', }
+Module.NonCombatTargetTypes                   = { 'Self', 'Pet', 'Main Assist', 'Mercs Peer', 'Rotation Target', }
+Module.RotationTargetTypes                    = { 'Rotation Target', }
+Module.MercPeerTargetTypes                    = { 'Mercs Peer', }
+Module.CombatStates                           = { 'Downtime', 'Combat', 'Any', 'During Rotation', 'During Heal Rotation', }
+Module.ImpliedCondition                       = {
     render_header_text = function(_, _)
         return "Not already active and will stack on the target"
     end,
 }
 
 -- each of these becomes a condition you can set per clickie
-Module.LogicBlocks                         = {
+Module.LogicBlocks                            = {
     {
         name = "None",
         cond = function(self, target, peerData) return true end,
@@ -1034,7 +1035,7 @@ Module.LogicBlocks                         = {
     },
 }
 
-Module.LogicBlockTypeIDs                   = {}
+Module.LogicBlockTypeIDs                      = {}
 
 for id, block in ipairs(Module.LogicBlocks) do
     Module.LogicBlockTypeIDs[block.name] = id
