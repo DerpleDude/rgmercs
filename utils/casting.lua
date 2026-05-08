@@ -1600,14 +1600,11 @@ function Casting.UseSpell(spellName, targetId, bAllowMem, bAllowDead, retryCount
 
         if (not Config:GetSetting('IgnoreLevelCheck')) and targetSpawn() and Targeting.TargetIsType("pc", targetSpawn) then
             -- check to see if this is too powerful a spell
-            local targetLevel    = targetSpawn.Level()
-            local spellLevel     = spell.Level()
-            local levelCheckPass = true
-            if targetLevel <= 45 and spellLevel > 50 then levelCheckPass = false end
-            if targetLevel <= 60 and spellLevel > 65 then levelCheckPass = false end
-            if targetLevel <= 65 and spellLevel > 95 then levelCheckPass = false end
+            local targetLevel = targetSpawn.Level() or 0
+            local spellLevel  = spell.Level() or 999
+            printf("check spell target %s spell %s", targetLevel, spellLevel)
 
-            if not levelCheckPass then
+            if not Casting.LevelCheckPass(targetLevel, spellLevel) then
                 Logger.log_error("\ayUseSpell(): \arCasting %s failed level check with target=%d and spell=%d", spellName,
                     targetLevel, spellLevel)
                 return false
@@ -1996,7 +1993,9 @@ function Casting.UseAA(aaName, targetId, bAllowDead, retryCount)
         return false
     end
 
-    if not aaAbility.Spell() then
+    local aaSpell = aaAbility.Spell
+
+    if not aaSpell() then
         Logger.log_debug("\arUseAA(): You can't activate a passive AA: %s!", aaName)
         return false
     end
@@ -2006,7 +2005,7 @@ function Casting.UseAA(aaName, targetId, bAllowDead, retryCount)
         return false
     end
 
-    local allowCastWindow = Core.MyClassIs("BRD") and (aaAbility.Spell.MyCastTime() or -1) == 0
+    local allowCastWindow = Core.MyClassIs("BRD") and (aaSpell.MyCastTime() or -1) == 0
     if (mq.TLO.Window("CastingWindow").Open() or me.Casting()) and not allowCastWindow then
         Logger.log_debug("\ayUseAA(): CANT CAST AA - Casting Window Open")
         return false
@@ -2026,6 +2025,19 @@ function Casting.UseAA(aaName, targetId, bAllowDead, retryCount)
         return false
     end
 
+    if not Config:GetSetting('IgnoreLevelCheck') and targetSpawn() and Targeting.TargetIsType("pc", targetSpawn) then
+        print('checking aa')
+        -- check to see if this is too powerful a spell
+        local targetLevel = targetSpawn.Level() or 0
+        local spellLevel  = aaSpell.Level() or 999
+
+        if not Casting.LevelCheckPass(targetLevel, spellLevel) then
+            Logger.log_error("\ayUseAA(): \arCasting %s(spell: %s) failed level check with target=%d and spell=%d", aaName, aaSpell.Name(),
+                targetLevel, spellLevel)
+            return false
+        end
+    end
+
     Casting.ActionPrep()
 
     local oldTargetId = mq.TLO.Target.ID()
@@ -2043,12 +2055,12 @@ function Casting.UseAA(aaName, targetId, bAllowDead, retryCount)
     retryCount = retryCount or 2
     local cmd = string.format("/alt act %d", aaAbility.ID())
 
-    Logger.log_debug("\ayUseAA():Activating AA: '%s' [t: %dms]", cmd, aaAbility.Spell.MyCastTime())
+    Logger.log_debug("\ayUseAA():Activating AA: '%s' [t: %dms]", cmd, aaSpell.MyCastTime())
 
     if aaAbility.Spell.MyCastTime() > 0 then
         Casting.SetLastCastResult(Globals.Constants.CastResults.CAST_RESULT_NONE)
 
-        local spellRange = aaAbility.Spell.MyRange() > 0 and aaAbility.Spell.MyRange() or (aaAbility.Spell.AERange() > 0 and aaAbility.Spell.AERange() or 250)
+        local spellRange = aaSpell.MyRange() > 0 and aaSpell.MyRange() or (aaSpell.AERange() > 0 and aaSpell.AERange() or 250)
 
         repeat
             Logger.log_verbose("\ayUseAA(): Attempting to cast: %s", aaName)
@@ -2076,7 +2088,7 @@ function Casting.UseAA(aaName, targetId, bAllowDead, retryCount)
         end
     end
 
-    return Globals.Constants.CastCompleted:contains(Casting.GetLastCastResultName()), Casting.IsGroupSpell(aaAbility.Spell.TargetType())
+    return Globals.Constants.CastCompleted:contains(Casting.GetLastCastResultName()), Casting.IsGroupSpell(aaSpell.TargetType())
 end
 
 --- Uses the specified ability.
@@ -2580,6 +2592,24 @@ function Casting.GetUseableSpellId(spell)
 
     -- also allow for buff checking spells we don't have
     return spellId > 0 and spellId or spell.ID()
+end
+
+function Casting.LevelCheckPass(targetLevel, spellLevel)
+    local maxSpellLevel
+
+    -- table data taken from https://everquest.fanra.info/wiki/Spells,_Songs,_Disciplines,_and_AAs#Buff_level_restrictions
+    -- converted to perpetuate past the table limits. untested
+    if targetLevel <= 39 then
+        maxSpellLevel = 50
+    elseif targetLevel <= 46 then
+        maxSpellLevel = 51 + (targetLevel - 40) * 2
+    elseif targetLevel <= 60 then
+        maxSpellLevel = 65
+    else
+        maxSpellLevel = 93 + (targetLevel - 61) * 2
+    end
+
+    return maxSpellLevel >= spellLevel
 end
 
 return Casting

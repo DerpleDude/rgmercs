@@ -1183,7 +1183,7 @@ Config.DefaultConfig                                     = {
         Category = "Common Rules",
         Index = 6,
         Tooltip = "Ignore checks for minimum level on spells. Used on servers that allow heals, buffs and other spells to land on PCs regardless of level.",
-        Default = false,
+        Default = Globals.ServerEnv:lower() ~= "live", -- more emu servers ignore level checks than not, and all the ones we support currently do. lesser of two evils.
         ConfigType = "Advanced",
     },
     -- Common/Under the Hood
