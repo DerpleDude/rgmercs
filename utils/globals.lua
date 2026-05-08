@@ -272,6 +272,8 @@ Globals.Constants.DeprecatedConfigs = {
     ['PAL'] = { "Alpha (Live)", },
 }
 
+Globals.Constants.LiveLevelCap      = 130
+
 function Globals.GetTimeSeconds()
     return mq.gettime() / 1000
 end

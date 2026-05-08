@@ -1602,7 +1602,6 @@ function Casting.UseSpell(spellName, targetId, bAllowMem, bAllowDead, retryCount
             -- check to see if this is too powerful a spell
             local targetLevel = targetSpawn.Level() or 0
             local spellLevel  = spell.Level() or 999
-            printf("check spell target %s spell %s", targetLevel, spellLevel)
 
             if not Casting.LevelCheckPass(targetLevel, spellLevel) then
                 Logger.log_error("\ayUseSpell(): \arCasting %s failed level check with target=%d and spell=%d", spellName,
@@ -2026,12 +2025,11 @@ function Casting.UseAA(aaName, targetId, bAllowDead, retryCount)
     end
 
     if not Config:GetSetting('IgnoreLevelCheck') and targetSpawn() and Targeting.TargetIsType("pc", targetSpawn) then
-        print('checking aa')
         -- check to see if this is too powerful a spell
         local targetLevel = targetSpawn.Level() or 0
         local spellLevel  = aaSpell.Level() or 999
 
-        if not Casting.LevelCheckPass(targetLevel, spellLevel) then
+        if spellLevel <= Globals.Constants.LiveLevelCap and not Casting.LevelCheckPass(targetLevel, spellLevel) then
             Logger.log_error("\ayUseAA(): \arCasting %s(spell: %s) failed level check with target=%d and spell=%d", aaName, aaSpell.Name(),
                 targetLevel, spellLevel)
             return false
@@ -2606,7 +2604,7 @@ function Casting.LevelCheckPass(targetLevel, spellLevel)
     elseif targetLevel <= 60 then
         maxSpellLevel = 65
     else
-        maxSpellLevel = 93 + (targetLevel - 61) * 2
+        maxSpellLevel = math.min(93 + (targetLevel - 61) * 2, Globals.Constants.LiveLevelCap)
     end
 
     return maxSpellLevel >= spellLevel
