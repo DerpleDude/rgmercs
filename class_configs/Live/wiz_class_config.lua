@@ -876,6 +876,14 @@ return {
                 name = "Call of Xuzl",
                 type = "AA",
             },
+            { -- do not use on emu, can lead to serious xtarg issues
+                name = "Ward of Destruction",
+                type = "AA",
+                load_cond = function() return not Core.OnEMU() end,
+                cond = function(self, aaName, target)
+                    return Config:GetSetting('DoAEDamage')
+                end,
+            },
         },
         ['Aggro Management'] =
         {
