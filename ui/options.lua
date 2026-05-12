@@ -7,6 +7,7 @@ local Ui                        = require('utils.ui')
 local Icons                     = require('mq.ICONS')
 local Modules                   = require('utils.modules')
 local Comms                     = require('utils.comms')
+local DBManagement              = require('utils.db_management')
 local Tables                    = require('utils.tables')
 local ImAnim                    = require('ImAnim')
 local Set                       = require("mq.Set")
@@ -208,7 +209,6 @@ OptionsUI.dbChars        = nil
 OptionsUI.dbFromIdx      = 1
 OptionsUI.dbToIdx        = 1
 OptionsUI.dbModuleIdx    = 1
-OptionsUI.dbFromClass    = nil -- selected from-class (string), nil until loaded
 OptionsUI.dbFromClasses  = nil -- cached class list for current from-char
 OptionsUI.dbFromClassIdx = 1
 OptionsUI.dbToClassIdx   = 1
@@ -674,6 +674,7 @@ function OptionsUI:RenderDBManagement()
                 self.dbFromIdx = i; break
             end
         end
+        if self.dbToIdx > #self.dbChars then self.dbToIdx = 1 end
     end
 
     -- build module list: "All Modules" + registered module names
@@ -709,62 +710,183 @@ function OptionsUI:RenderDBManagement()
 
     ImGui.Spacing()
 
-    -- Module selector
-    ImGui.SetNextItemWidth(220)
-    local newModIdx, modChanged = Ui.SearchableCombo("dbmod", self.dbModuleIdx, moduleNames)
-    if modChanged then self.dbModuleIdx = newModIdx end
-    ImGui.SameLine(0, 8)
-    ImGui.TextDisabled("Module")
+    local fromClass  = self.dbFromClasses[self.dbFromClassIdx]
+    local moduleName = moduleNames[self.dbModuleIdx]
+    local noChars    = charCount == 0 or self.dbChars[self.dbFromIdx] == "(no characters in DB)"
+    local sameChar   = self.dbFromIdx == self.dbToIdx
+    local sameClass  = sameChar and fromClass == Globals.Constants.AllClasses[self.dbToClassIdx]
+    local canCopy    = not noChars and not (sameChar and sameClass)
 
-    ImGui.Spacing()
+    local fromName, fromServer
+    if not noChars then
+        fromName, fromServer = self.dbChars[self.dbFromIdx]:match('^(.+) %((.+)%)$')
+    end
+    local fromIsRunning = fromName and Comms.IsCharRunning(fromName, fromServer, fromClass) or false
+    local canDelete     = not noChars and not fromIsRunning
 
-    local tableW = ImGui.GetContentRegionAvail()
-    local colW   = (tableW - 130) / 2
+    if ImGui.BeginTable("##dbmgmt", 4, ImGuiTableFlags.SizingFixedFit) then
+        ImGui.TableSetupColumn("label", ImGuiTableColumnFlags.WidthFixed, 80)
+        ImGui.TableSetupColumn("char", ImGuiTableColumnFlags.WidthFixed, 230)
+        ImGui.TableSetupColumn("class", ImGuiTableColumnFlags.WidthFixed, 110)
+        ImGui.TableSetupColumn("action", ImGuiTableColumnFlags.WidthStretch)
 
-    if ImGui.BeginTable("##dbmgmt", 3, bit32.bor(ImGuiTableFlags.BordersOuter, ImGuiTableFlags.SizingFixedFit)) then
-        ImGui.TableSetupColumn("From", ImGuiTableColumnFlags.WidthFixed, colW)
-        ImGui.TableSetupColumn("Action", ImGuiTableColumnFlags.WidthFixed, 130)
-        ImGui.TableSetupColumn("To", ImGuiTableColumnFlags.WidthFixed, colW)
-        ImGui.TableHeadersRow()
+        -- Module row
         ImGui.TableNextRow()
-
-        -- From column: character + class (only classes with existing DB data)
         ImGui.TableNextColumn()
+        ImGui.AlignTextToFramePadding()
+        ImGui.Text("Module:")
+        ImGui.TableNextColumn()
+        ImGui.SetNextItemWidth(-1)
+        local newModIdx, modChanged = Ui.SearchableCombo("dbmod", self.dbModuleIdx, moduleNames)
+        if modChanged then
+            self.dbModuleIdx = newModIdx
+            moduleName = moduleNames[self.dbModuleIdx]
+        end
+
+        -- Selected character row (Copy source / Reset target)
+        ImGui.TableNextRow()
+        ImGui.TableNextColumn()
+        ImGui.AlignTextToFramePadding()
+        ImGui.Text("Character:")
+        ImGui.TableNextColumn()
+        ImGui.SetNextItemWidth(-1)
         local newFrom, fromChanged = Ui.SearchableCombo("dbfrom", self.dbFromIdx, self.dbChars)
         if fromChanged then
             self.dbFromIdx = newFrom
-            local fromName, fromServer = self.dbChars[newFrom]:match('^(.+) %((.+)%)$')
+            fromName, fromServer = self.dbChars[newFrom]:match('^(.+) %((.+)%)$')
             self.dbFromClasses = (fromName and Config.Db:getClassesForCharacter(fromServer, fromName)) or {}
             if #self.dbFromClasses == 0 then self.dbFromClasses = { Globals.CurLoadedClass, } end
             self.dbFromClassIdx = 1
+            fromClass = self.dbFromClasses[self.dbFromClassIdx]
         end
-        local newFromClass, fromClassChanged = Ui.SearchableCombo("dbfromclass", self.dbFromClassIdx, self.dbFromClasses)
-        if fromClassChanged then self.dbFromClassIdx = newFromClass end
-
-        -- Action column
         ImGui.TableNextColumn()
-        ImGui.Spacing()
-        local sameChar  = self.dbFromIdx == self.dbToIdx
-        local sameClass = sameChar and self.dbFromClasses[self.dbFromClassIdx] == Globals.Constants.AllClasses[self.dbToClassIdx]
-        local canCopy   = charCount > 0 and not (sameChar and sameClass)
+        ImGui.SetNextItemWidth(-1)
+        local newFromClass, fromClassChanged = Ui.SearchableCombo("dbfromclass", self.dbFromClassIdx, self.dbFromClasses)
+        if fromClassChanged then
+            self.dbFromClassIdx = newFromClass
+            fromClass = self.dbFromClasses[self.dbFromClassIdx]
+        end
+        ImGui.TableNextColumn()
+        if noChars then ImGui.BeginDisabled() end
+        if ImGui.Button(Icons.MD_RESTORE .. " Reset to Defaults##dbreset") then
+            self.dbOpenResetPopup = true
+        end
+        if noChars then ImGui.EndDisabled() end
+        ImGui.SameLine()
+        if not canDelete then ImGui.BeginDisabled() end
+        if ImGui.Button(Icons.FA_TRASH .. " Delete from Database##dbdelete") then
+            self.dbOpenDeletePopup = true
+        end
+        if not canDelete then ImGui.EndDisabled() end
+        if fromIsRunning and not noChars then
+            if ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled) then
+                ImGui.SetTooltip("Cannot delete: target character is currently running RGMercs.")
+            end
+        end
+
+        -- Copy destination row
+        ImGui.TableNextRow()
+        ImGui.TableNextColumn()
+        ImGui.AlignTextToFramePadding()
+        ImGui.Text("Copy To:")
+        ImGui.TableNextColumn()
+        ImGui.SetNextItemWidth(-1)
+        local newTo, toChanged = Ui.SearchableCombo("dbto", self.dbToIdx, self.dbChars)
+        if toChanged then self.dbToIdx = newTo end
+        ImGui.TableNextColumn()
+        ImGui.SetNextItemWidth(-1)
+        local newToClass, toClassChanged = Ui.SearchableCombo("dbtoclass", self.dbToClassIdx, Globals.Constants.AllClasses)
+        if toClassChanged then self.dbToClassIdx = newToClass end
+        ImGui.TableNextColumn()
         if not canCopy then ImGui.BeginDisabled() end
-        if ImGui.Button(Icons.FA_ARROW_RIGHT .. " Copy##dbcopy", ImVec2(120, 0)) then
-            self:DBCopySettings(self.dbChars, self.dbFromIdx, self.dbFromClasses[self.dbFromClassIdx],
-                self.dbToIdx, Globals.Constants.AllClasses[self.dbToClassIdx], moduleNames[self.dbModuleIdx])
+        if ImGui.Button(Icons.FA_ARROW_DOWN .. " Copy Selected Settings##dbcopy") then
+            self.dbOpenCopyPopup = true
         end
         if not canCopy then ImGui.EndDisabled() end
         if sameChar and sameClass then
+            ImGui.SameLine()
             ImGui.TextDisabled("(same char+class)")
         end
 
-        -- To column: character + class (any valid EQ class)
-        ImGui.TableNextColumn()
-        local newTo, toChanged = Ui.SearchableCombo("dbto", self.dbToIdx, self.dbChars)
-        if toChanged then self.dbToIdx = newTo end
-        local newToClass, toClassChanged = Ui.SearchableCombo("dbtoclass", self.dbToClassIdx, Globals.Constants.AllClasses)
-        if toClassChanged then self.dbToClassIdx = newToClass end
-
         ImGui.EndTable()
+    end
+
+    if self.dbOpenResetPopup then ImGui.OpenPopup("DBResetConfirm##DBMgmt"); self.dbOpenResetPopup = false end
+    if self.dbOpenDeletePopup then ImGui.OpenPopup("DBDeleteConfirm##DBMgmt"); self.dbOpenDeletePopup = false end
+    if self.dbOpenCopyPopup then ImGui.OpenPopup("DBCopyConfirm##DBMgmt"); self.dbOpenCopyPopup = false end
+
+    ImGui.SetNextWindowSize(ImVec2(460, 0), ImGuiCond.Appearing)
+    if ImGui.BeginPopup("DBResetConfirm##DBMgmt") then
+        ImGui.PushTextWrapPos(440)
+        ImGui.TextWrapped("Reset the following settings to defaults?")
+        ImGui.Spacing()
+        ImGui.Text("Target: ")
+        ImGui.SameLine()
+        ImGui.TextColored(Globals.Constants.BasicColors.Yellow, "%s [%s]", self.dbChars[self.dbFromIdx], fromClass)
+        ImGui.Text("Module: ")
+        ImGui.SameLine()
+        ImGui.TextColored(Globals.Constants.BasicColors.Yellow, "%s", moduleName)
+        ImGui.PopTextWrapPos()
+        ImGui.Spacing()
+        if ImGui.Button("Reset##dbresetconfirm") then
+            self:ResetSettings(self.dbChars, self.dbFromIdx, fromClass, moduleName)
+            ImGui.CloseCurrentPopup()
+        end
+        ImGui.SameLine()
+        if ImGui.Button("Cancel##dbresetcancel") then
+            ImGui.CloseCurrentPopup()
+        end
+        ImGui.EndPopup()
+    end
+
+    ImGui.SetNextWindowSize(ImVec2(460, 0), ImGuiCond.Appearing)
+    if ImGui.BeginPopup("DBCopyConfirm##DBMgmt") then
+        local toClass = Globals.Constants.AllClasses[self.dbToClassIdx]
+        ImGui.PushTextWrapPos(440)
+        ImGui.TextWrapped("Copy the following settings?")
+        ImGui.Spacing()
+        ImGui.Text("Source: ")
+        ImGui.SameLine()
+        ImGui.TextColored(Globals.Constants.BasicColors.Yellow, "%s [%s]", self.dbChars[self.dbFromIdx], fromClass)
+        ImGui.Text("Destination: ")
+        ImGui.SameLine()
+        ImGui.TextColored(Globals.Constants.BasicColors.Yellow, "%s [%s]", self.dbChars[self.dbToIdx], toClass)
+        ImGui.Text("Module: ")
+        ImGui.SameLine()
+        ImGui.TextColored(Globals.Constants.BasicColors.Yellow, "%s", moduleName)
+        ImGui.PopTextWrapPos()
+        ImGui.Spacing()
+        if ImGui.Button("Copy##dbcopyconfirm") then
+            self:CopySettings(self.dbChars, self.dbFromIdx, fromClass,
+                self.dbToIdx, toClass, moduleName)
+            ImGui.CloseCurrentPopup()
+        end
+        ImGui.SameLine()
+        if ImGui.Button("Cancel##dbcopycancel") then
+            ImGui.CloseCurrentPopup()
+        end
+        ImGui.EndPopup()
+    end
+
+    ImGui.SetNextWindowSize(ImVec2(460, 0), ImGuiCond.Appearing)
+    if ImGui.BeginPopup("DBDeleteConfirm##DBMgmt") then
+        ImGui.PushTextWrapPos(440)
+        ImGui.TextWrapped("Delete the following from the database?")
+        ImGui.Spacing()
+        ImGui.Text("Target: ")
+        ImGui.SameLine()
+        ImGui.TextColored(Globals.Constants.BasicColors.Yellow, "%s [%s]", self.dbChars[self.dbFromIdx], fromClass)
+        ImGui.PopTextWrapPos()
+        ImGui.Spacing()
+        if ImGui.Button("Delete##dbdeleteconfirm") then
+            self:DeleteSettings(self.dbChars, self.dbFromIdx, fromClass)
+            ImGui.CloseCurrentPopup()
+        end
+        ImGui.SameLine()
+        if ImGui.Button("Cancel##dbdeletecancel") then
+            ImGui.CloseCurrentPopup()
+        end
+        ImGui.EndPopup()
     end
 
     ImGui.Spacing()
@@ -784,37 +906,49 @@ function OptionsUI:RenderDBManagement()
     Config.Db:renderTelemetryGraph()
 end
 
-function OptionsUI:DBCopySettings(charLabels, fromIdx, fromClass, toIdx, toClass, moduleName)
-    local function parseLabel(label)
-        local name, server = label:match('^(.+) %((.+)%)$')
-        return name, server
-    end
+function OptionsUI:CopySettings(charLabels, fromIdx, fromClass, toIdx, toClass, moduleName)
+    local fromName, fromServer = charLabels[fromIdx]:match('^(.+) %((.+)%)$')
+    local toName, toServer     = charLabels[toIdx]:match('^(.+) %((.+)%)$')
+    local result               = DBManagement.CopySettings(fromName, fromServer, fromClass, toName, toServer, toClass, moduleName)
+    if not result.ok then return end
 
-    local fromName, fromServer = parseLabel(charLabels[fromIdx])
-    local toName, toServer     = parseLabel(charLabels[toIdx])
-    if not fromName or not toName then return end
+    -- copying to the same char on a new class means its class list is stale
+    if result.sameChar then self.dbFromClasses = nil end
 
-    local toCopy = {}
-    if moduleName == "All Modules" then
-        for modName in pairs(Config.moduleDefaultSettings) do
-            table.insert(toCopy, modName)
-        end
-    else
-        table.insert(toCopy, moduleName)
-    end
-
-    for _, modName in ipairs(toCopy) do
-        local values = Config.Db:getAll(fromServer, fromName, fromClass, modName)
-        if values and next(values) then
-            Config.Db:setAll(toServer, toName, toClass, modName, values)
-        end
-    end
-
-    Logger.log_info("DB Management: copied %s settings from %s [%s] to %s [%s]", moduleName, charLabels[fromIdx], fromClass, charLabels[toIdx], toClass)
     table.insert(self.ToastStates, {
         active  = true,
         timer   = 0,
-        message = string.format("Copied %s from %s [%s] to %s [%s]", moduleName, charLabels[fromIdx], fromClass, charLabels[toIdx], toClass),
+        message = result.toastMessage,
+        color   = Ui.ImVec4ToColor(Globals.Constants.Colors.Green),
+    })
+end
+
+function OptionsUI:ResetSettings(charLabels, fromIdx, fromClass, moduleName)
+    local fromName, fromServer = charLabels[fromIdx]:match('^(.+) %((.+)%)$')
+    local result = DBManagement.ResetSettings(fromName, fromServer, fromClass, moduleName)
+    if not result.ok then return end
+
+    table.insert(self.ToastStates, {
+        active  = true,
+        timer   = 0,
+        message = result.toastMessage,
+        color   = Ui.ImVec4ToColor(Globals.Constants.Colors.Green),
+    })
+end
+
+function OptionsUI:DeleteSettings(charLabels, fromIdx, fromClass)
+    local fromName, fromServer = charLabels[fromIdx]:match('^(.+) %((.+)%)$')
+    local result = DBManagement.DeleteSettings(fromName, fromServer, fromClass)
+    if not result.ok then return end
+
+    -- invalidate cached pickers so the deleted char/class disappears from the list
+    self.dbChars       = nil
+    self.dbFromClasses = nil
+
+    table.insert(self.ToastStates, {
+        active  = true,
+        timer   = 0,
+        message = result.toastMessage,
         color   = Ui.ImVec4ToColor(Globals.Constants.Colors.Green),
     })
 end
@@ -831,6 +965,7 @@ function OptionsUI:ValidateSelectedPeer()
     if self.selectedCharacter == nil or self.selectedCharacter == "" then
         Logger.log_error("\ayOptionsUI: \awSelected peer is invalid. Defaulting back to local character.")
         self.selectedCharacter = Comms.GetPeerName()
+        return
     end
 
     if not next(Comms.GetPeerHeartbeat(self.selectedCharacter)) then

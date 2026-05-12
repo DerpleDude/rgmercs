@@ -376,10 +376,30 @@ function DB:getCharacters()
     local stmt = self:_prepare([[
         SELECT c.id, c.name, s.name AS server_name
         FROM character c JOIN server s ON s.id = c.server_id
+        WHERE EXISTS (SELECT 1 FROM config_value cv WHERE cv.character_id = c.id)
         ORDER BY s.name, c.name;
     ]])
     if not stmt then return {} end
     return collectRows(stmt)
+end
+
+---@param serverName string
+---@param charName   string
+---@return boolean  true if any config_value rows exist for this character
+function DB:characterHasAnyConfig(serverName, charName)
+    local stmt = self:_prepare([[
+        SELECT 1 FROM config_value cv
+        JOIN character c ON c.id = cv.character_id
+        JOIN server s    ON s.id = c.server_id
+        WHERE s.name=? AND c.name=?
+        LIMIT 1;
+    ]])
+    if not stmt then return true end -- safe default: keep char row on error
+    stmt:bind(1, serverName)
+    stmt:bind(2, charName)
+    local has = stmt:step() == sqlite.ROW
+    stmt:finalize()
+    return has
 end
 
 ---@param serverName string
@@ -635,6 +655,41 @@ function DB:deleteModule(serverName, charName, charClass, module)
     if not ok then
         self:_enqueueWrite("deleteModule", serverName, charName, charClass, module)
     end
+    return ok
+end
+
+---@param serverName string
+---@param charName   string
+---@param charClass  string
+---@return boolean  true on success, false if busy (write queued for retry)
+function DB:deleteCharacterClass(serverName, charName, charClass)
+    local stmt = self:_prepare([[
+        DELETE FROM config_value WHERE id IN (
+            SELECT cv.id FROM config_value cv
+            JOIN character c ON c.id = cv.character_id
+            JOIN server s ON s.id = c.server_id
+            WHERE s.name=? AND c.name=? AND cv.class=?
+        );
+    ]])
+    if not stmt then return false end
+    stmt:bind(1, serverName)
+    stmt:bind(2, charName)
+    stmt:bind(3, charClass)
+    local ok = self:_step(stmt)
+    stmt:finalize()
+    if self._collectStats then
+        if ok then
+            self._telemetry.deletes = self._telemetry.deletes + 1
+        else
+            self._telemetry.queuedWrites = self._telemetry.queuedWrites + 1
+        end
+    end
+    if not ok then
+        self:_enqueueWrite("deleteCharacterClass", serverName, charName, charClass)
+    end
+    -- wipe any cached entries for this char/class across all modules
+    local classCache = self._cache[serverName] and self._cache[serverName][charName]
+    if classCache then classCache[charClass] = nil end
     return ok
 end
 

@@ -18,15 +18,37 @@ Comms.OutgoingToasts       = {}
 --- Returns "Name (Server)" for use as the actor peer key. Uppercases
 --- the first letter of the server name for Live compatibility.
 --- @param peerName string? Character name; defaults to Me.DisplayName().
+--- @param peerServer string? Server name; defaults to the local server.
 --- @return string The formatted "Name (Server)" peer identifier.
-function Comms.GetPeerName(peerName)
-    local server = mq.TLO.EverQuest.Server()
+function Comms.GetPeerName(peerName, peerServer)
+    local server = peerServer or mq.TLO.EverQuest.Server()
     --upper first letter if it isnt (Live)
     if server:len() > 0 then
         server = server:sub(1, 1):upper() .. server:sub(2)
     end
 
     return string.format("%s (%s)", peerName and peerName or mq.TLO.Me.DisplayName(), server)
+end
+
+--- Returns true if the given char/server/class identifies the local current character.
+--- @param charName string The character name to test.
+--- @param server string The server name to test.
+--- @param class string The class short name to test.
+--- @return boolean
+function Comms.IsLocalCurrent(charName, server, class)
+    return charName == Globals.CurLoadedChar and server == Globals.CurServer and class == Globals.CurLoadedClass
+end
+
+--- Returns true if the given char/server/class is the local current character
+--- or a networked peer currently running RGMercs on that class.
+--- @param charName string The character name to test.
+--- @param server string The server name to test.
+--- @param class string The class short name to test.
+--- @return boolean
+function Comms.IsCharRunning(charName, server, class)
+    if Comms.IsLocalCurrent(charName, server, class) then return true end
+    local hb = Comms.GetPeerHeartbeat(Comms.GetPeerName(charName, server))
+    return hb and hb.Data and hb.Data.Class == class and true or false
 end
 
 --- Looks up a peer key in PeersToServerNameMap and returns its
