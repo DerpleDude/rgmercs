@@ -125,6 +125,7 @@ local _ClassConfig = {
             "Brutal Onslaught Discipline",
         },
         ['StrikeDisc'] = {
+            "Mighty Blow Discipline",
             "Fellstrike Discipline",
             "Mighty Strike Discipline",
         },
@@ -146,6 +147,15 @@ local _ClassConfig = {
             "Rejuvenating Will Discipline",
             "Healing Determination Discipline",
             "Healing Will Discipline",
+        },
+        ['Revitalize'] = {
+            "Steely Revitalize",
+            "Iron Revitalize",
+            "Hardened Revitalize",
+            "Revitalize",
+        },
+        ['BattlecryHeal'] = { -- EQM Custom, restores HP/End for group, 8m reuse
+            "Invigorating Battlecry Discipline",
         },
     },
     ['AASets']        = {
@@ -199,6 +209,15 @@ local _ClassConfig = {
             if Casting.NoDiscActive() then return true end
             local healingDisc = Core.GetResolvedActionMapItem('HealingDisc')
             return healingDisc and mq.TLO.Me.ActiveDisc.Name() == healingDisc.RankName()
+        end,
+        MeleeMitBuffCheck = function(self) -- Make sure we spread out our MeleeMit buffs because only the highest in slot 1 takes effect
+            local standDisc = Core.GetResolvedActionMapItem('StandDisc')
+            local protective = Core.GetResolvedActionMapItem('Protective')
+            local mitEffects = { (standDisc and standDisc.RankName() or ""), (protective and protective.RankName() or ""), "Guardian's Boon", "Guardian's Bravery", }
+            for _, buffName in ipairs(mitEffects) do
+                if Casting.IHaveBuff(buffName) then return false end
+            end
+            return true
         end,
     },
     ['RotationOrder'] = {
@@ -425,6 +444,13 @@ local _ClassConfig = {
             --Note that in Tank Mode, defensive discs are preemptively cycled on named in the (non-emergency) Defenses rotation
             --Abilities should be placed in order of lowest to highest triggered HP thresholds
             {
+                name = "Revitalize",
+                type = "Disc",
+                cond = function(self, discSpell, target)
+                    return mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart')
+                end,
+            },
+            {
                 name = "Fortitude",
                 type = "Disc",
                 cond = function(self, discSpell)
@@ -433,6 +459,10 @@ local _ClassConfig = {
             },
             {
                 name = "Warlord's Tenacity",
+                type = "AA",
+            },
+            {
+                name = "Warlord's Resurgence",
                 type = "AA",
             },
             {
@@ -481,7 +511,7 @@ local _ClassConfig = {
                     return self.Helpers.DefenseBuffCheck(self)
                 end,
             },
-            { --shares effect with OoW Chest
+            { --shares effect with OoW Chest and Warlord's Bravery
                 name = "StandDisc",
                 type = "Disc",
                 cond = function(self, discSpell, target)
@@ -492,21 +522,28 @@ local _ClassConfig = {
                 name = "OoW_Chest",
                 type = "Item",
                 cond = function(self, itemName)
-                    return self.Helpers.DefenseBuffCheck(self) and Casting.DiscOnCoolDown('Protective') and Casting.DiscOnCoolDown('StandDisc')
+                    return Casting.DiscOnCoolDown('Protective') and Casting.DiscOnCoolDown('StandDisc') and self.Helpers.MeleeMitBuffCheck()
+                end,
+            },
+            { --shares effect with StandDisc and OoW Chest
+                name = "Warlord's Bravery",
+                type = "AA",
+                cond = function(self, aaName)
+                    return Casting.DiscOnCoolDown('Protective') and Casting.DiscOnCoolDown('StandDisc') and self.Helpers.MeleeMitBuffCheck()
                 end,
             },
             {
                 name = "Hold the Line",
                 type = "AA",
                 cond = function(self, aaName)
-                    return self.Helpers.DefenseBuffCheck(self) and Casting.DiscOnCoolDown('Protective') and Casting.DiscOnCoolDown('StandDisc')
+                    return Casting.DiscOnCoolDown('Protective') and Casting.DiscOnCoolDown('StandDisc')
                 end,
             },
             {
                 name = "HealingDisc",
                 type = "Disc",
                 cond = function(self, discSpell, target)
-                    return self.Helpers.DefenseBuffCheck(self) and Casting.DiscOnCoolDown('Protective') and Casting.DiscOnCoolDown('StandDisc')
+                    return Casting.DiscOnCoolDown('Protective') and Casting.DiscOnCoolDown('StandDisc')
                 end,
             },
 
@@ -542,6 +579,13 @@ local _ClassConfig = {
             {
                 name = "Rage of Rallos Zek",
                 type = "AA",
+            },
+            {
+                name = "BattlecryHeal",
+                type = "Disc",
+                cond = function(self, discSpell, target)
+                    return mq.TLO.Me.PctHPs() < Config:GetSetting('EmergencyStart') or Targeting.BigGroupHealsNeeded()
+                end,
             },
         },
         ['Combat'] = {

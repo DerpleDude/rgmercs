@@ -277,6 +277,11 @@ local _ClassConfig = {
         ['Skals'] = {
             "Skal's Stance Discipline",
         },
+        ['Revitalize'] = {
+            "Iron Revitalize",
+            "Hardened Revitalize",
+            "Revitalize",
+        },
     },
     ['Helpers']       = {
         DoRez = function(self, corpseId)
@@ -767,6 +772,13 @@ local _ClassConfig = {
                     if not Config:GetSetting('UseFading') then return false end
                     return self.Helpers.UnwantedAggroCheck(self)
                     --I wanted to use XTAggroCount here but it doesn't include your current target in the number it returns and I don't see a good workaround. For Loop it is.
+                end,
+            },
+            {
+                name = "Revitalize",
+                type = "Disc",
+                cond = function(self, discSpell, target)
+                    return mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart')
                 end,
             },
             {

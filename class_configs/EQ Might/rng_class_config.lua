@@ -504,6 +504,10 @@ return {
         },
         ['Emergency']  = {
             {
+                name = "Cover Tracks",
+                type = "AA",
+            },
+            {
                 name = "Protection of the Spirit Wolf",
                 type = "AA",
             },

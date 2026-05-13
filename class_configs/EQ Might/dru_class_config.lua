@@ -25,10 +25,16 @@ local _ClassConfig = {
             --(re)initialize the table for loadout changes
             self.TempSettings.CureSpells = {}
 
+            -- Choose whether we should be trying to resolve the groupheal based on our settings and whether it cures at its level
+            local ghealSpell = Core.GetResolvedActionMapItem('GroupHeal')
+            local groupHeal = (Config:GetSetting('GroupHealAsCure') and (ghealSpell and ghealSpell.Level() or 0) >= 66) and "GroupHeal"
+
+            -- Find the map for each cure spell we need, given availability of groupheal, groupcure. fallback to curespell
+            -- Curse is convoluted: If Keepmemmed, always use cure, if not, use groupheal if available and fallback to cure
             local neededCures = {
-                ['Poison'] = "CurePoison",
-                ['Disease'] = "CureDisease",
-                ['Curse'] = "CureCurse",
+                ['Poison'] = Casting.GetFirstMapItem({ groupHeal, "CurePoison", }),
+                ['Disease'] = Casting.GetFirstMapItem({ groupHeal, "CureDisease", }),
+                ['Curse'] = not Config:GetSetting('KeepCurseMemmed') and (groupHeal or 'CureCurse') or 'CureCurse',
                 ['Corruption'] = "CureCorrupt",
             }
 
@@ -176,11 +182,12 @@ local _ClassConfig = {
             "Twilight Breath",
         },
         ['ReptileBuff'] = {
-            "Skin of the Green Dragon", -- EQM Custom
+            "Skin of the Green Dragon",     -- EQM Custom
+            "Ancient: Skin of the Reptile", -- EQM Custom
             "Skin of the Reptile",
-            "Skin of the Serpent",      -- EQM Custom
+            "Skin of the Serpent",          -- EQM Custom
         },
-        ['SwarmDot'] = {                -- Magic Dot, 54s
+        ['SwarmDot'] = {                    -- Magic Dot, 54s
             "Swarm of Fireants",
             "Wasp Swarm",
             "Swarming Death",
@@ -417,6 +424,14 @@ local _ClassConfig = {
     ['HealRotations']     = {
         ['BigHealPoint'] = {
             {
+                name = "Balance of the Grove",
+                type = "AA",
+                cond = function(self, aaName, target)
+                    if not Targeting.GroupedWithTarget(target) then return false end
+                    return Targeting.TargetIsATank(target)
+                end,
+            },
+            {
                 name = "Convergence of Spirits",
                 type = "AA",
             },
@@ -504,6 +519,17 @@ local _ClassConfig = {
             end,
         },
         {
+            name = 'Emergency',
+            state = 1,
+            steps = 1,
+            doFullRotation = true,
+            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
+            cond = function(self, combat_state)
+                return Targeting.GetXTHaterCount() > 0 and
+                    (mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') or (Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 99))
+            end,
+        },
+        {
             name = 'Slow',
             state = 1,
             steps = 1,
@@ -575,7 +601,7 @@ local _ClassConfig = {
         },
     },
     ['Rotations']         = {
-        ['DPS'] = {
+        ['DPS']       = {
             {
                 name = "Epic",
                 type = "Item",
@@ -663,7 +689,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['DPS(AE)'] = {
+        ['DPS(AE)']   = {
             {
                 name = "PBAEMagic",
                 type = "Spell",
@@ -683,7 +709,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Burn'] = {
+        ['Burn']      = {
             {
                 name = "Improved Twincast",
                 type = "AA",
@@ -739,7 +765,13 @@ local _ClassConfig = {
                 type = "Item",
             },
         },
-        ['Slow'] = {
+        ['Emergency'] = {
+            {
+                name = "Cover Tracks",
+                type = "AA",
+            },
+        },
+        ['Slow']      = {
             {
                 name = "ColdSlow",
                 type = "Spell",
@@ -748,7 +780,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Debuff'] = {
+        ['Debuff']    = {
             { -- Fire Debuff AA, will use the first(best) available
                 name = "FireDebuffAA",
                 type = "AA",
@@ -782,7 +814,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Snare'] = {
+        ['Snare']     = {
             {
                 name = "Entrap",
                 type = "AA",
@@ -886,7 +918,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Downtime'] = {
+        ['Downtime']  = {
             {
                 name = "Communion of the Cheetah",
                 type = "AA",
@@ -956,7 +988,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['PetBuff'] = {
+        ['PetBuff']   = {
             {
                 name = "PetHaste",
                 type = "Spell",
@@ -1372,15 +1404,38 @@ local _ClassConfig = {
             Default = false,
             ConfigType = "Advanced",
         },
+        ['GroupHealAsCure']   = {
+            DisplayName = "Use Group Heal to Cure",
+            Group = "Abilities",
+            Header = "Recovery",
+            Category = "Curing",
+            Index = 105,
+            Tooltip = "If Word of Reconstitution is available, use this to cure instead of individual cure spells. \n" ..
+                "Please note that we will prioritize Remove Greater Curse if you have selected to keep it memmed as above (due to the counter disparity).",
+            Default = true,
+            ConfigType = "Advanced",
+        },
         ['KeepEvacMemmed']    = {
             DisplayName = "Memorize Evac",
             Group = "Abilities",
             Header = "Utility",
             Category = "Emergency",
-            Index = 101,
+            Index = 102,
             Tooltip = "Keep (Lesser) Succor memorized.",
             Default = false,
             RequiresLoadoutChange = true,
+        },
+        ['EmergencyStart']    = {
+            DisplayName = "Emergency HP%",
+            Group = "Abilities",
+            Header = "Utility",
+            Category = "Emergency",
+            Index = 101,
+            Tooltip = "Your HP % before we begin to use emergency mitigation abilities.",
+            Default = 50,
+            Min = 1,
+            Max = 100,
+            ConfigType = "Advanced",
         },
         ['UseDonorPet']       = {
             DisplayName = "Summon Nature Spirit",

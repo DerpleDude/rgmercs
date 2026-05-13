@@ -108,6 +108,15 @@ return {
         ['Scream'] = { -- Throwing/Archery Dmg taken debuff
             "Unsettling Scream",
         },
+        ['Revitalize'] = {
+            "Steely Revitalize",
+            "Iron Revitalize",
+            "Hardened Revitalize",
+            "Revitalize",
+        },
+        ['BattlecryHeal'] = { -- EQM Custom, restores HP/End for group, 8m reuse
+            "Invigorating Battlecry Discipline",
+        },
     },
     ['AASets']        = {
         ['RageAA'] = {
@@ -196,6 +205,13 @@ return {
         },
         ['Emergency'] = {
             {
+                name = "Revitalize",
+                type = "Disc",
+                cond = function(self, discSpell, target)
+                    return mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart')
+                end,
+            },
+            {
                 name = "Uncanny Resilience",
                 type = "AA",
                 cond = function(self, aaName)
@@ -208,6 +224,13 @@ return {
                 load_cond = function(self) return Config:GetSetting('DoHealingDisc') end,
                 cond = function(self, discName)
                     return mq.TLO.Me.PctHPs() < Config:GetSetting('EmergencyStart')
+                end,
+            },
+            {
+                name = "Self Preservation",
+                type = "AA",
+                cond = function(self, aaName)
+                    return Targeting.IHaveAggro(100)
                 end,
             },
         },
@@ -290,7 +313,13 @@ return {
                 name = "Reckless Abandon",
                 type = "AA",
             },
-
+            {
+                name = "BattlecryHeal",
+                type = "Disc",
+                cond = function(self, discSpell, target)
+                    return mq.TLO.Me.PctHPs() < Config:GetSetting('EmergencyStart') or Targeting.BigGroupHealsNeeded()
+                end,
+            },
         },
         ['DPS'] = {
             {

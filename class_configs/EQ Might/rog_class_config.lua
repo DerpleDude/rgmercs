@@ -96,6 +96,12 @@ return {
         ['PoisonGuide'] = {
             "Guide of Toxicity",
         },
+        ['Revitalize'] = {
+            "Steely Revitalize",
+            "Iron Revitalize",
+            "Hardened Revitalize",
+            "Revitalize",
+        },
     },
     ['RotationOrder'] = {
         {
@@ -274,6 +280,13 @@ return {
             },
         },
         ['Emergency'] = {
+            {
+                name = "Revitalize",
+                type = "Disc",
+                cond = function(self, discSpell, target)
+                    return mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart')
+                end,
+            },
             {
                 name = "HealingDisc",
                 type = "Disc",

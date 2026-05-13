@@ -215,6 +215,7 @@ local _ClassConfig = {
             -- "Chaos Venom", this is worse than corath venom
             "Corath Venom",
             "Blood of Thule",
+            "Virulent Bolt",
             "Envenomed Bolt",
             "Chilling Embrace",
             "Venom of the Snake",

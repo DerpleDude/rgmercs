@@ -450,6 +450,9 @@ local _ClassConfig = {
             "Talisman of Might",          -- Level 70, Group
             "Spirit of Might",            -- Level 68, Single Target
         },
+        ['VirulentDot'] = {               -- waiting to see where this goes for now, this is worse than some lower level dots
+            "Virulent Bolt",
+        },
     },
     ['Helpers']           = {
         DoRez = function(self, corpseId, ownerName)

@@ -115,6 +115,7 @@ return {
             "Black Ice",
             "Draught of E`ci",
             "Draught of Ice",
+            "Frozen Harpoon",
             "Ice Comet",
             "Ice Shock",
             "Frost Shock",
@@ -206,7 +207,7 @@ return {
             "Ancient: Greater Concussion",
             "Concussion",
         },
-        -- Lure Spells
+        -- Lure Spells (I may implement these in the future. It would need some testing... and yet more options. Custom config users, double check these lists before use!)
         -- ['IceLureNuke'] = {
         -- "RimeLure",
         --     "Icebane",
@@ -217,6 +218,7 @@ return {
         --     "Firebane",
         --     "Lure of Ro",
         --     "Lure of Flame",
+        --     "Lure of Fire", -- EQM Custom
         --     "Enticement of Flame",
         -- },
         -- ['MagicLureNuke'] = {

@@ -374,6 +374,11 @@ return {
         ["ForHonor"] = { -- Hate Over Time with small absorb recourse
             "Challenge for Honor",
         },
+        -- ['FlameLure'] = { -- eqm port of wizard fire lures, not quite sure what i'm going to do with these yet
+        --     "Lure of Ro",
+        --     "Lure of Flame",
+        --     "Lure of Fire", -- EQM Custom
+        -- },
     },
     ['AASets']            = {
         ['Disruption'] = {
@@ -502,6 +507,13 @@ return {
                 name = "BlueBand",
                 type = "Item",
                 load_cond = function(self) return Core.GetResolvedActionMapItem("BlueBand") and (mq.TLO.Me.Level() < 68 or not Core.GetResolvedActionMapItem("VampiricBlueBand")) end,
+            },
+            { -- Changed on EQM: rank 1 heals all group members for 5k and puts a 2k DoT on the Paladin for 6 ticks.. 3 ranks.
+                name = "Act of Valor",
+                type = "AA",
+                cond = function(self, aaName, target)
+                    return self.CombatState == "Combat" and Targeting.BigGroupHealsNeeded()
+                end,
             },
             {
                 name = "WaveHeal",
@@ -821,6 +833,14 @@ return {
                 cond = function(self, spell, target)
                     if (spell.TargetType() or ""):lower() == "single" and target.ID() ~= Core.GetMainAssistId() then return false end
                     return Casting.GroupBuffCheck(spell, target)
+                end,
+            },
+            {
+                name = "Marr's Salvation",
+                type = "AA",
+                load_cond = function() return Config:GetSetting('DoSalvation') end,
+                cond = function(self, aaName, target)
+                    return not Targeting.TargetIsATank(target) and Casting.GroupBuffAACheck(aaName, target)
                 end,
             },
         },
