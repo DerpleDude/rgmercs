@@ -173,7 +173,6 @@ local _ClassConfig = {
             "Funeral Pyre of Kelador",
             "Pyrocruor",
             "Ignite Blood",
-            "Boil Blood",
         },
         ['FireDot3'] = {
             "Pyre of the Fallen",
@@ -182,8 +181,6 @@ local _ClassConfig = {
             "Night Fire",
             "Funeral Pyre of Kelador",
             "Pyrocruor",
-            "Ignite Blood",
-            "Boil Blood",
         },
         -- ['SplurtDot'] = {
         --     "Splurt",
@@ -237,7 +234,6 @@ local _ClassConfig = {
             "Envenomed Bolt",
             "Chilling Embrace",
             "Venom of the Snake",
-            "Poison Bolt",
         },
         ['SnareDot'] = {
             "Desecrating Darkness",
@@ -934,7 +930,6 @@ local _ClassConfig = {
                 { name = "PoisonNuke", },
                 { name = "FireDot", 	 cond = function(self) return Config:GetSetting('DoFireDots') end, },	
                 { name = "FireDot2", 	 cond = function(self) return Config:GetSetting('DoFireDots') end, },
-                { name = "FireDot3", 	 cond = function(self) return Config:GetSetting('DoFireDots') end, },
                 { name = "CurseDot", 	 cond = function(self) return Config:GetSetting('DoCurseDots') end, },
                 { name = "CurseDot2", 	 cond = function(self) return Config:GetSetting('DoCurseDots') end, },
                 { name = "PoisonDot", 	 cond = function(self) return Config:GetSetting('DoPoisonDots') end, },
@@ -945,6 +940,7 @@ local _ClassConfig = {
                 { name = "OrbNuke",      cond = function(self) return Config:GetSetting('DoOrbNuke') end, },
                 { name = "LifeTap",      cond = function(self) return Config:GetSetting('DoLifetap') end, },
                 { name = "UndeadNuke",   cond = function(self) return Config:GetSetting('DoUndeadNuke') end, },
+				{ name = "FireDot3", 	 cond = function(self) return Config:GetSetting('DoFireDots') end, },
             },
         },
     },
