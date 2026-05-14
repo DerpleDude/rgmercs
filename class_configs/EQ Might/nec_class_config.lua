@@ -171,6 +171,9 @@ local _ClassConfig = {
             "Pyre of Mori",
             "Night Fire",
             "Funeral Pyre of Kelador",
+            "Pyrocruor",
+            "Ignite Blood",
+            "Boil Blood",
         },
         ['FireDot3'] = {
             "Pyre of the Fallen",
@@ -178,6 +181,9 @@ local _ClassConfig = {
             "Pyre of Mori",
             "Night Fire",
             "Funeral Pyre of Kelador",
+            "Pyrocruor",
+            "Ignite Blood",
+            "Boil Blood",
         },
         -- ['SplurtDot'] = {
         --     "Splurt",
@@ -195,6 +201,8 @@ local _ClassConfig = {
             "Ancient: Curse of Mori", -- Timer 5
             "Dark Nightmare",         -- Timer 4
             "Horror",
+            "Imprecation",
+            "Dark Soul",
         },
         ['PlagueDot'] = {
             "Sevaran's Rot",
@@ -212,6 +220,16 @@ local _ClassConfig = {
         --     "Disease Cloud",
         -- },
         ['PoisonDot'] = {
+            -- "Chaos Venom", this is worse than corath venom
+            "Corath Venom",
+            "Blood of Thule",
+            "Virulent Bolt",
+            "Envenomed Bolt",
+            "Chilling Embrace",
+            "Venom of the Snake",
+            "Poison Bolt",
+        },
+	    ['PoisonDot2'] = {
             -- "Chaos Venom", this is worse than corath venom
             "Corath Venom",
             "Blood of Thule",
@@ -588,6 +606,7 @@ local _ClassConfig = {
             {
                 name = "FireDot",
                 type = "Spell",
+				load_cond = function() return Config:GetSetting('DoFireDots') end,
                 cond = function(self, spell, target)
                     return Casting.DotSpellCheck(spell, target)
                 end,
@@ -595,6 +614,7 @@ local _ClassConfig = {
             {
                 name = "CurseDot",
                 type = "Spell",
+				load_cond = function() return Config:GetSetting('DoCurseDots') end,
                 cond = function(self, spell, target)
                     return Casting.DotSpellCheck(spell, target)
                 end,
@@ -602,6 +622,7 @@ local _ClassConfig = {
             {
                 name = "PoisonDot",
                 type = "Spell",
+				load_cond = function() return Config:GetSetting('DoPoisonDots') end,
                 cond = function(self, spell, target)
                     return Casting.DotSpellCheck(spell, target)
                 end,
@@ -632,6 +653,7 @@ local _ClassConfig = {
             {
                 name = "FireDot2",
                 type = "Spell",
+				load_cond = function() return Config:GetSetting('DoFireDots') end,
                 cond = function(self, spell, target)
                     return Casting.DotSpellCheck(spell, target)
                 end,
@@ -639,6 +661,15 @@ local _ClassConfig = {
             {
                 name = "CurseDot2",
                 type = "Spell",
+				load_cond = function() return Config:GetSetting('DoCurseDots') end,
+                cond = function(self, spell, target)
+                    return Casting.DotSpellCheck(spell, target)
+                end,
+            },
+            {
+                name = "PoisonDot2",
+                type = "Spell",
+				load_cond = function() return Config:GetSetting('DoPoisonDots') end,
                 cond = function(self, spell, target)
                     return Casting.DotSpellCheck(spell, target)
                 end,
@@ -653,6 +684,7 @@ local _ClassConfig = {
             {
                 name = "FireDot3",
                 type = "Spell",
+				load_cond = function() return Config:GetSetting('DoFireDots') end,
                 cond = function(self, spell, target)
                     return Casting.DotSpellCheck(spell, target)
                 end,
@@ -900,12 +932,13 @@ local _ClassConfig = {
                 { name = "ScentDebuff",  cond = function(self) return Config:GetSetting('ScentDebuffUse') == 2 and not self.Helpers.GetScentItem end, },
                 { name = "ScentDebuff2", cond = function(self) return Config:GetSetting('ScentDebuffUse') == 3 end, },
                 { name = "PoisonNuke", },
-                { name = "FireDot", },
-                { name = "FireDot2", },
-                { name = "FireDot3", },
-                { name = "CurseDot", },
-                { name = "CurseDot2", },
-                { name = "PoisonDot", },
+                { name = "FireDot", 	 cond = function(self) return Config:GetSetting('DoFireDots') end, },	
+                { name = "FireDot2", 	 cond = function(self) return Config:GetSetting('DoFireDots') end, },
+                { name = "FireDot3", 	 cond = function(self) return Config:GetSetting('DoFireDots') end, },
+                { name = "CurseDot", 	 cond = function(self) return Config:GetSetting('DoCurseDots') end, },
+                { name = "CurseDot2", 	 cond = function(self) return Config:GetSetting('DoCurseDots') end, },
+                { name = "PoisonDot", 	 cond = function(self) return Config:GetSetting('DoPoisonDots') end, },
+                { name = "PoisonDot2", 	 cond = function(self) return Config:GetSetting('DoPoisonDots') end, },
                 { name = "DurationTap", },
                 { name = "PlagueDot", },
                 { name = "LichSpell",    cond = function(self) return Config:GetSetting('DoLich') end, },
@@ -1020,6 +1053,36 @@ local _ClassConfig = {
         },
 
         --Combat
+	    ['DoFireDots']         = {
+            DisplayName = "Do Fire DoTs",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "Over Time",
+            Index = 101,
+            Tooltip = "Use your fire based DoT lines.",
+            RequiresLoadoutChange = true,
+            Default = true,
+        },
+	    ['DoPoisonDots']         = {
+            DisplayName = "Do Poison DoTs",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "Over Time",
+            Index = 101,
+            Tooltip = "Use your poison based DoT lines.",
+            RequiresLoadoutChange = true,
+            Default = true,
+        },
+		['DoCurseDots']         = {
+            DisplayName = "Do Curse DoTs",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "Over Time",
+            Index = 101,
+            Tooltip = "Use your curse/magic based DoT lines.",
+            RequiresLoadoutChange = true,
+            Default = true,
+        },
         ['DoLifetap']         = {
             DisplayName = "Do Lifetap",
             Group = "Abilities",
