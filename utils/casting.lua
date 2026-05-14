@@ -625,8 +625,13 @@ function Casting.ActorBuffCheck(spellId, target, skipBlockCheck, skipTriggerChec
         Logger.log_verbose("ActorBuffCheck: %s(ID:%d) block check skipped on %s(ID:%d).", spellName, spellId, targetName, targetId)
     end
 
-    if openBuffs <= 0 then
-        Logger.log_verbose("ActorBuffCheck: No open buff slots for %s, falling back on DanNet to have the PC perform local checks for %s(ID: %d)", targetName, spellName, spellId)
+    -- if they don't have open buff slots, even if local stacking is true, it may not be able to land on them... they should check it.
+    -- if this PC doesn't have open buff slots, some stackswith checks will incorrectly return false, so they need to check it then as well.
+    local myOpenBuffs = mq.TLO.Me.MaxBuffSlots() - Globals.CurrentBuffCount
+    if openBuffs <= 0 or myOpenBuffs <= 0 then
+        Logger.log_verbose(
+            "ActorBuffCheck: Either %s or myself has full buffs, falling back on DanNet checks for %s(ID: %d). MyOpenSlots: %d, TargetOpenSlots: %d", targetName, spellName, spellId,
+            myOpenBuffs, openBuffs)
         return Casting.PeerBuffCheck(spellId, target, true, skipTriggerCheck) -- we already did the block check (if needed) here, skip it, saves a query
     end
 
