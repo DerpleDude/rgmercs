@@ -34,7 +34,7 @@ local _ClassConfig = {
             local neededCures = {
                 ['Poison'] = Casting.GetFirstMapItem({ groupHeal, "CurePoison", }),
                 ['Disease'] = Casting.GetFirstMapItem({ groupHeal, "CureDisease", }),
-                ['Curse'] = not Config:GetSetting('KeepCurseMemmed') and (groupHeal or 'CureCurse') or 'CureCurse',
+                ['Curse'] = "CureCurse",
                 ['Corruption'] = "CureCorrupt",
             }
 
