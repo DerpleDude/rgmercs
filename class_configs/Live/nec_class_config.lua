@@ -1271,7 +1271,7 @@ local _ClassConfig = {
                 name = "Wake the Dead",
                 type = "AA",
                 cond = function(self, aaName)
-                    return mq.TLO.SpawnCount("corpse radius 100")() >= Config:GetSetting('WakeDeadCorpseCnt')
+                    return mq.TLO.SpawnCount("corpse radius 100 los")() >= Config:GetSetting('WakeDeadCorpseCnt')
                 end,
             },
             {
