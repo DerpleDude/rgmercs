@@ -106,6 +106,9 @@ local _ClassConfig = {
             "Shielding",
             "Lesser Shielding",
         },
+        ['Levitate'] = {
+            "Dead Men Floating",
+        },
         ['SelfRune1'] = {
             "Wraithskin XIII",
             "Golemskin",
@@ -119,6 +122,13 @@ local _ClassConfig = {
             "Corpseskin",
             "Shadowskin",
             "Wraithskin",
+            "Dull Pain",
+            "Force Shield",
+            "Manaskin",
+            "Diamondskin",
+            "Steelskin",
+            "Leatherskin",
+            "Shieldskin",
         },
         ['SelfSpellShield1'] = {
             "Shield of Fate VII",
@@ -242,7 +252,8 @@ local _ClassConfig = {
             "Frozen Leech",
             "Ashen Leech",
             "Dark Leech",
-            "Leech",
+            "Night Stalker",
+            "Zevfeer's Theft of Vitae",
         },
         ['ManaDrain'] = {
             --Mana Drain with Group Mana Recourse
@@ -708,7 +719,6 @@ local _ClassConfig = {
             "Noxious Servant",
             "Putrescent Servant",
             "Dark Assassin",
-            "Child of Bertoxxulous",
             "Saryrn's Companion",
             "Minion of Shadows",
         },
@@ -726,6 +736,7 @@ local _ClassConfig = {
             "Relamar's Shade",
             "Riza`farr's Shadow",
             "Lost Soul",
+            "Child of Bertoxxulous",
             "Emissary of Thule",
             "Servant of Bones",
             "Invoke Death",
@@ -772,6 +783,24 @@ local _ClassConfig = {
             "Augment Death",
             "Intensify Death",
             "Focus Death",
+        },
+        ['PetHealSpell'] = {
+            "Chilling Renewal XVI",
+            "Bracing Revival",
+            "Frigid Salubrity",
+            "Icy Revival",
+            "Algid Renewal",
+            "Icy Mending",
+            "Algid Mending",
+            "Chilled Mending",
+            "Gelid Mending",
+            "Icy Stitches",
+            "Wintry Revival",
+            "Chilling Renewal",
+            "Dark Salve",
+            "Touch of Death",
+            "Renew Bones",
+            "Mend Bones",
         },
         ['FleshBuff'] = {
             "Flesh to Toxin",  -- Level 119
@@ -874,6 +903,14 @@ local _ClassConfig = {
             cond = function(self, combat_state)
                 return combat_state == "Combat" and not Casting.IAmFeigning() and Targeting.MobHasLowHP(Targeting.GetAutoTarget())
             end,
+        },
+        {
+            name = 'PetHealing',
+            state = 1,
+            steps = 1,
+            doFullRotation = true,
+            targetId = function(self) return mq.TLO.Me.Pet.ID() > 0 and { mq.TLO.Me.Pet.ID(), } or {} end,
+            cond = function(self, target) return (mq.TLO.Me.Pet.PctHPs() or 100) < Config:GetSetting('PetHealPct') end,
         },
     },
     ['Rotations']       = {
@@ -1027,7 +1064,8 @@ local _ClassConfig = {
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoGroupLeech') end,
                 cond = function(self, spell, target)
-                    return Casting.HaveManaToDot() and Casting.DotSpellCheck(spell, target)
+                    return Casting.HaveManaToDot() and Casting.DotSpellCheck(spell, target) and
+                        self.Helpers.GroupMemberBelowHP(self, Config:GetSetting('LightHealPoint'))
                 end,
             },
             {
@@ -1228,6 +1266,13 @@ local _ClassConfig = {
                 type = "AA",
             },
             {
+                name = "Wake the Dead",
+                type = "AA",
+                cond = function(self, aaName)
+                    return mq.TLO.SpawnCount("corpse radius 100")() >= Config:GetSetting('WakeDeadCorpseCnt')
+                end,
+            },
+            {
                 name = "Companion's Fury",
                 type = "AA",
             },
@@ -1276,6 +1321,27 @@ local _ClassConfig = {
                 end,
             },
         },
+        ['PetHealing']      = {
+            {
+                name = "Companion's Blessing",
+                type = "AA",
+                cond = function(self, aaName, target)
+                    return (mq.TLO.Me.Pet.PctHPs() or 999) <= Config:GetSetting('BigHealPoint')
+                end,
+            },
+            {
+                name_func = function() return Casting.CanUseAA("Replenish Companion") and "Replenish Companion" or "Mend Companion" end,
+                type = "AA",
+                cond = function(self, aaName, target)
+                    return (mq.TLO.Me.Pet.PctHPs() or 999) <= Config:GetSetting('MainHealPoint')
+                end,
+            },
+            {
+                name = "PetHealSpell",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoPetHealSpell') end,
+            },
+        },
         ['Downtime']        = {
             {
                 name = "Mortifier's Unity",
@@ -1286,6 +1352,12 @@ local _ClassConfig = {
             },
             {
                 name = "SelfHPBuff",
+                type = "Spell",
+                active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
+                cond = function(self, spell) return Casting.SelfBuffCheck(spell) end,
+            },
+            {
+                name = "Levitate",
                 type = "Spell",
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell) return Casting.SelfBuffCheck(spell) end,
@@ -1365,6 +1437,19 @@ local _ClassConfig = {
         },
     },
     ['Helpers']         = {
+        -- Check if any group member (excluding self) is at or below a given HP%.
+        -- Group.Member(0) is you; 1..N are your group members.
+        GroupMemberBelowHP = function(self, pct)
+            local count = mq.TLO.Group.Members() or 0
+            for i = 1, count do
+                local member = mq.TLO.Group.Member(i)
+                if member and member() and (member.PctHPs() or 100) <= pct then
+                    return true
+                end
+            end
+            return false
+        end,
+
         CancelLich = function(self)
             -- detspa means detremental spell affect
             -- spa is positive spell affect
@@ -1398,6 +1483,7 @@ local _ClassConfig = {
             name = "Default",
             -- cond = function(self) return true end, --Kept here for illustration, this line could be removed in this instance since we aren't using conditions.
             spells = {
+                { name = "PetHealSpell", cond = function(self) return Config:GetSetting('DoPetHealSpell') end, },
                 { name = "PoisonNuke1", cond = function(self) return not Core.GetResolvedActionMapItem('PoisonNuke2') end, },
                 { name = "PoisonNuke2", },
                 { name = "FireNuke", },
@@ -1455,6 +1541,27 @@ local _ClassConfig = {
             Min = 1,
             Max = 2,
             RequiresLoadoutChange = true,
+        },
+        ['DoPetHealSpell']    = {
+            DisplayName = "Pet Heal Spell",
+            Group = "Abilities",
+            Header = "Recovery",
+            Category = "General Healing",
+            Index = 101,
+            Tooltip = "Mem and cast your Pet Heal (Salve) spell. AA Pet Heals are always used in emergencies.",
+            Default = false,
+        },
+        ['PetHealPct']        = {
+            DisplayName = "Pet Heal Spell HP%",
+            Group = "Abilities",
+            Header = "Recovery",
+            Category = "Healing Thresholds",
+            Index = 101,
+            Tooltip = "Use your pet heal spell when your pet is at or below this HP percentage.",
+
+            Default = 60,
+            Min = 1,
+            Max = 99,
         },
         ['BattleRez']         = {
             DisplayName = "Battle Rez",
@@ -1673,7 +1780,7 @@ local _ClassConfig = {
             Header = "Damage",
             Category = "Over Time",
             Index = 106,
-            Tooltip = "Use your Group Leech dot line.",
+            Tooltip = "Use your Group Leech dot line. Only fires when a watched party member is below the light heal threshold.",
             RequiresLoadoutChange = true,
             Default = false,
         },
