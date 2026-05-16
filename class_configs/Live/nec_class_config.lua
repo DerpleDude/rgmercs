@@ -224,7 +224,7 @@ local _ClassConfig = {
             "Lifetap",
         },
         ['DurationTap'] = {
-            ---DurationTap >= LVL29
+            ---DurationTap >= LVL9
             "Sharosh's Grasp",
             "Helmsbane's Grasp",
             "The Protector's Grasp",
@@ -242,10 +242,12 @@ local _ClassConfig = {
             "Saryrn's Kiss",
             "Vexing Mordinia",
             "Bond of Death",
+            "Auspice",
             "Vampiric Curse",
+            "Leech",
         },
         ['GroupLeech'] = {
-            ---GroupLeech >= LVL9
+            ---GroupLeech >= LVL60
             "Dark Leech VIII",
             "Ghastly Leech",
             "Twilight Leech",
