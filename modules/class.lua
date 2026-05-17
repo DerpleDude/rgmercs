@@ -821,6 +821,45 @@ function Module:GetRotations()
                 Modules:ExecModule("Clickies", "GetClickiesForHealRotation", rname) or {})
         end
     end
+
+    -- Cache the resist type on every entry so Rotation.TestConditionForEntry can gate without per-tick lookups.
+    local validResistTypes = {}
+    for _, e in ipairs(Globals.Constants.ResistTypes) do validResistTypes[e] = true end
+
+    local function deriveResistType(entry)
+        local etype = (entry.type or ""):lower()
+        local spell = nil
+        if etype == "spell" or etype == "song" or etype == "disc" then
+            spell = self.ResolvedActionMap[entry.name]
+        elseif etype == "aa" then
+            local aaName = self.ResolvedActionMap[entry.name] or entry.name
+            spell = Casting.GetAASpell(aaName)
+        elseif etype == "item" then
+            local itemName = self.ResolvedActionMap[entry.name] or entry.name
+            spell = Casting.GetClickySpell(itemName)
+        elseif etype == "clickyitem" then
+            local itemName = Config:GetSetting(entry.name)
+            if itemName and itemName:len() > 0 then
+                spell = Casting.GetClickySpell(itemName)
+            end
+        else
+            return nil
+        end
+        if not spell or not spell() then return nil end
+        local rt = spell.ResistType and spell.ResistType()
+        return validResistTypes[rt] and rt or nil
+    end
+
+    for _, entries in pairs(self.TempSettings.RotationTable) do
+        for _, entry in ipairs(entries) do
+            entry.cachedResistType = deriveResistType(entry)
+        end
+    end
+    for _, entries in pairs(self.TempSettings.HealRotationTable) do
+        for _, entry in ipairs(entries) do
+            entry.cachedResistType = deriveResistType(entry)
+        end
+    end
 end
 
 ---@param reason string
@@ -1782,9 +1821,16 @@ function Module:TargetIsImmune(effect, targetId)
     if not effect or not targetId or targetId == 0 then return false end
 
     local effectSet = Module.TempSettings.ImmuneTargets[effect]
-    if effectSet then
-        return effectSet:contains(targetId)
+    if effectSet and effectSet:contains(targetId) then
+        Logger.log_verbose("\ay   :: Status immunity matched (runtime) - target(%d) flagged %s-immune", targetId, effect)
+        return true
     end
+
+    if targetId == Globals.AutoTargetID and Globals.AutoTargetStatusImmunities[effect] then
+        Logger.log_verbose("\ay   :: Status immunity matched (registry) - auto-target flagged %s-immune", effect)
+        return true
+    end
+
     return false
 end
 

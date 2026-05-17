@@ -2735,6 +2735,19 @@ function Casting.StunImmuneTarget(target)
     return Modules:ExecModule("Class", "TargetIsImmune", "Stun", targetId)
 end
 
+--- Returns true if a spell of the given element should be skipped against this spawn.
+--- Only fires when targetId matches the current auto-target. Combines the global
+--- Skip<Element>Spells toggle with the per-mob elemental immunity flag from the Named List.
+--- Buffs, heals, and group abilities against non-auto-target spawns are never affected.
+---@param element string Element name ("Fire"/"Cold"/"Magic"/"Poison"/"Disease").
+---@param targetId number Spawn ID of the intended cast target.
+---@return boolean True if the spell should be skipped.
+function Casting.ShouldSkipElement(element, targetId)
+    if not element or targetId ~= Globals.AutoTargetID then return false end
+    if Config:GetSetting("Skip" .. element .. "Spells") then return true end
+    return Globals.AutoTargetElementalImmunities[element] == true
+end
+
 --- Returns true if TempSettings flags the current zone as no-lev,
 --- used to gate levitation buff casting.
 ---@return boolean True if the zone prohibits levitation.

@@ -1794,11 +1794,12 @@ end
 function Ui.RenderZoneNamed()
     Ui.ShowDownNamed, _ = Ui.RenderOptionToggle("ShowDown", "Show Downed Named", Ui.ShowDownNamed)
 
-    if ImGui.BeginTable("Zone Named", 4, ImGuiTableFlags.None + ImGuiTableFlags.Borders) then
+    if ImGui.BeginTable("Zone Named", 5, bit32.bor(ImGuiTableFlags.Borders, ImGuiTableFlags.Resizable)) then
         ImGui.TableSetupColumn('Name', (ImGuiTableColumnFlags.WidthFixed), 250.0)
         ImGui.TableSetupColumn('Up', (ImGuiTableColumnFlags.WidthFixed), 20.0)
         ImGui.TableSetupColumn('Distance', (ImGuiTableColumnFlags.WidthFixed), 60.0)
         ImGui.TableSetupColumn('Loc', (ImGuiTableColumnFlags.WidthFixed), 160.0)
+        ImGui.TableSetupColumn('Immunities', (ImGuiTableColumnFlags.WidthStretch), 1.0)
         ImGui.TableHeadersRow()
 
         local namedList = Modules:ExecModule("Named", "GetNamedList")
@@ -1820,6 +1821,15 @@ function Ui.RenderZoneNamed()
                 Ui.RenderText(tostring(math.ceil(named.Distance)))
                 ImGui.TableNextColumn()
                 Ui.NavEnabledLoc(named.Loc)
+                ImGui.TableNextColumn()
+                if named.Immunities and named.Immunities ~= "" then
+                    local availW = ImGui.GetContentRegionAvail()
+                    local textW = ImGui.CalcTextSize(named.Immunities)
+                    Ui.RenderText(named.Immunities)
+                    if textW > availW and ImGui.IsItemHovered() then
+                        ImGui.SetTooltip(named.Immunities)
+                    end
+                end
             elseif spawnExists or Ui.ShowDownNamed then
                 ImGui.TableNextColumn()
                 Ui.RenderText(named.Name)
@@ -1829,6 +1839,15 @@ function Ui.RenderZoneNamed()
                 ImGui.PopStyleColor()
                 ImGui.TableNextColumn()
                 ImGui.TableNextColumn()
+                ImGui.TableNextColumn()
+                if named.Immunities and named.Immunities ~= "" then
+                    local availW = ImGui.GetContentRegionAvail()
+                    local textW = ImGui.CalcTextSize(named.Immunities)
+                    Ui.RenderText(named.Immunities)
+                    if textW > availW and ImGui.IsItemHovered() then
+                        ImGui.SetTooltip(named.Immunities)
+                    end
+                end
             end
         end
 

@@ -663,6 +663,8 @@ function Combat.FindBestAutoTarget(validateFn)
         else
             Globals.AutoTargetID = 0
             assistTargetIsNamed = false
+            Globals.AutoTargetElementalImmunities = {}
+            Globals.AutoTargetStatusImmunities = {}
         end
     end
 
@@ -672,6 +674,11 @@ function Combat.FindBestAutoTarget(validateFn)
         else
             Globals.AutoTargetIsNamed = Targeting.IsNamed(mq.TLO.Spawn(Globals.AutoTargetID))
         end
+
+        local cleanName = mq.TLO.Spawn(Globals.AutoTargetID).CleanName() or ""
+        local elementalImmunities, statusImmunities = Modules:ExecModule("Named", "GetImmuneFlags", cleanName)
+        Globals.AutoTargetElementalImmunities = elementalImmunities or {}
+        Globals.AutoTargetStatusImmunities = statusImmunities or {}
     end
 
     Logger.log_verbose("FindAutoTarget(): FoundTargetID(%d) - Named(%s), myTargetId(%d)", Globals.AutoTargetID or 0, Strings.BoolToColorString(Globals.AutoTargetIsNamed),

@@ -109,7 +109,7 @@ return {
             "Garrison's Superior Sundering",
             "Sunstrike",
         },
-        ['IceNuke'] = {
+        ['ColdNuke'] = {
             "Ancient: Spear of Gelaqua",
             "Spark of Ice",
             "Black Ice",
@@ -122,7 +122,7 @@ return {
             "Shock of Ice",
             "Blast of Cold",
         },
-        ['BigIceNuke'] = { -- Level 60-70, Timed with great Ratio or High Cast Time/Damage
+        ['BigColdNuke'] = { -- Level 60-70, Timed with great Ratio or High Cast Time/Damage
             "Gelidin Comet",
             "Ice Meteor",
             "Ancient: Destruction of Ice", --13s T1
@@ -240,7 +240,7 @@ return {
         --     "Tears of Druzzil",
         --     "Energy Storm",
         -- },
-        ['IceRain'] = {
+        ['ColdRain'] = {
             "Gelid Rains",
             "Tears of Marr",
             "Tears of Prexus",
@@ -270,7 +270,7 @@ return {
         ['FireJyll'] = {
             "Jyll's Wave of Heat", -- Level 59
         },
-        ['IceJyll'] = {
+        ['ColdJyll'] = {
             "Jyll's Zephyr of Ice", -- Level 56
         },
         ['MagicJyll'] = {
@@ -313,6 +313,30 @@ return {
         RainCheck = function(target) -- I made a funny
             if not (Config:GetSetting('DoRain') and Config:GetSetting('DoAEDamage')) then return false end
             return Targeting.GetTargetDistance() >= Config:GetSetting('RainDistance') and Targeting.MobNotLowHP(target)
+        end,
+
+        -- Resolves the currently-active element based on ElementMode.
+        -- Auto: prefers Fire, then Cold, then Magic, skipping any element the auto-target is
+        -- immune to (per the Named List) or one toggled off via Skip<X>Spells.
+        PickElement = function()
+            local mode = Config:GetSetting('ElementMode') or 1
+            if mode == 2 then return "Fire" end
+            if mode == 3 then return "Cold" end
+            if mode == 4 then return "Magic" end
+            local autoId = Globals.AutoTargetID or 0
+            if not Casting.ShouldSkipElement("Fire",  autoId) then return "Fire" end
+            if not Casting.ShouldSkipElement("Cold",  autoId) then return "Cold" end
+            if not Casting.ShouldSkipElement("Magic", autoId) then return "Magic" end
+            return "Fire" -- all skipped; default so Fury/Familiar still resolve
+        end,
+
+        -- Familiar element pick: explicit element if set, Fire fallback in Auto. See FAQ.
+        PickFamiliarElement = function()
+            local mode = Config:GetSetting('ElementMode') or 1
+            if mode == 2 then return "Fire" end
+            if mode == 3 then return "Cold" end
+            if mode == 4 then return "Magic" end
+            return "Fire"
         end,
     },
     ['RotationOrder'] = {
@@ -379,23 +403,21 @@ return {
             name = 'DPS(Fire)',
             state = 1,
             steps = 1,
-            load_cond = function() return Config:GetSetting('ElementChoice') == 1 or Config:GetSetting('KeepFireMemmed') end,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                if Config:GetSetting('ElementChoice') ~= 1 then return false end
+                if self.Helpers.PickElement() ~= "Fire" then return false end
                 return combat_state == "Combat" and not (Core.IsModeActive('PBAE') and Combat.AETargetCheck(true))
             end,
         },
         {
-            name = 'DPS(Ice)',
+            name = 'DPS(Cold)',
             state = 1,
             steps = 1,
-            load_cond = function() return Config:GetSetting('ElementChoice') == 2 or Config:GetSetting('KeepIceMemmed') end,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                if Config:GetSetting('ElementChoice') ~= 2 then return false end
+                if self.Helpers.PickElement() ~= "Cold" then return false end
                 return combat_state == "Combat" and not (Core.IsModeActive('PBAE') and Combat.AETargetCheck(true))
             end,
         },
@@ -403,11 +425,10 @@ return {
             name = 'DPS(Magic)',
             state = 1,
             steps = 1,
-            load_cond = function() return Config:GetSetting('ElementChoice') == 3 or Config:GetSetting('KeepMagicMemmed') end,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                if Config:GetSetting('ElementChoice') ~= 3 then return false end
+                if self.Helpers.PickElement() ~= "Magic" then return false end
                 return combat_state == "Combat" and not (Core.IsModeActive('PBAE') and Combat.AETargetCheck(true))
             end,
         },
@@ -458,12 +479,20 @@ return {
                 name = "Focus of Arcanum",
                 type = "AA",
             },
-            { --Familiar AA, will use the correct element, and fallback to improved
-                name_func = function(self)
-                    local furyBuff = { "Fury of Ro", "Fury of Eci", "Fury of Druzzil", }
-                    return furyBuff[Config:GetSetting('ElementChoice')] or "Unknown Error"
-                end,
+            { -- Fury AA: split per element so Auto mode picks the right one on the fly each burn pass
+                name = "Fury of Ro",
                 type = "AA",
+                cond = function(self) return self.Helpers.PickElement() == "Fire" end,
+            },
+            {
+                name = "Fury of Eci",
+                type = "AA",
+                cond = function(self) return self.Helpers.PickElement() == "Cold" end,
+            },
+            {
+                name = "Fury of Druzzil",
+                type = "AA",
+                cond = function(self) return self.Helpers.PickElement() == "Magic" end,
             },
             { --Crit Chance AA, will use the first(best) one found
                 name = "Devastation",
@@ -617,7 +646,7 @@ return {
                 end,
             },
         },
-        ['DPS(Ice)'] = {
+        ['DPS(Cold)'] = {
             {
                 name = "Cryomancy",
                 type = "AA",
@@ -627,7 +656,7 @@ return {
                 end,
             },
             {
-                name = "IceRain",
+                name = "ColdRain",
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoRain') end,
                 cond = function(self, spell, target)
@@ -636,14 +665,14 @@ return {
                 end,
             },
             {
-                name = "BigIceNuke",
+                name = "BigColdNuke",
                 type = "Spell",
                 cond = function(self, spell, target)
                     return Targeting.MobNotLowHP(target) and Targeting.AggroCheckOkay()
                 end,
             },
             {
-                name = "IceNuke",
+                name = "ColdNuke",
                 type = "Spell",
                 cond = function(self, spell, target)
                     return Targeting.AggroCheckOkay()
@@ -692,7 +721,7 @@ return {
                 end,
             },
             {
-                name = "IceJyll",
+                name = "ColdJyll",
                 type = "Spell",
                 allowDead = true,
                 cond = function(self, spell, target)
@@ -728,8 +757,8 @@ return {
             },
             { --Familiar AA, will use the correct element, and fallback to improved
                 name_func = function(self)
-                    local familiars = { "Ro's Flaming Familiar", "E'ci's Icy Familiar", "Druzzil's Mystical Familiar", }
-                    local currentFam = familiars[Config:GetSetting('ElementChoice')] or "Unknown Error"
+                    local familiars = { Fire = "Ro's Flaming Familiar", Cold = "E'ci's Icy Familiar", Magic = "Druzzil's Mystical Familiar", }
+                    local currentFam = familiars[self.Helpers.PickFamiliarElement()] or "Unknown Error"
                     return Casting.CanUseAA(currentFam) and currentFam or "Improved Familiar"
                 end,
                 type = "AA",
@@ -776,15 +805,15 @@ return {
             name = "Default Mode",
             -- cond = function(self) return true end, --Code kept here for illustration, if there is no condition to check, this line is not required
             spells = {
-                { name = "FireNuke",     cond = function() return Config:GetSetting('ElementChoice') == 1 or Config:GetSetting('KeepFireMemmed') end, },
-                { name = "BigFireNuke",  cond = function() return Config:GetSetting('ElementChoice') == 1 or Config:GetSetting('KeepFireMemmed') end, },
-                { name = "IceNuke",      cond = function() return Config:GetSetting('ElementChoice') == 2 or Config:GetSetting('KeepIceMemmed') end, },
-                { name = "BigIceNuke",   cond = function() return Config:GetSetting('ElementChoice') == 2 or Config:GetSetting('KeepIceMemmed') end, },
-                { name = "MagicNuke",    cond = function() return Config:GetSetting('ElementChoice') == 3 or Config:GetSetting('KeepMagicMemmed') end, },
-                { name = "BigMagicNuke", cond = function() return Config:GetSetting('ElementChoice') == 3 or Config:GetSetting('KeepMagicMemmed') end, },
-                { name = "WildNuke",     cond = function() return Config:GetSetting('DoWildNuke') end, },
-                { name = "FireRain",     cond = function() return Config:GetSetting('DoRain') and Config:GetSetting('ElementChoice') == 1 end, },
-                { name = "IceRain",      cond = function() return Config:GetSetting('DoRain') and Config:GetSetting('ElementChoice') == 2 end, },
+                { name = "FireNuke", },
+                { name = "BigFireNuke", },
+                { name = "ColdNuke", },
+                { name = "BigColdNuke", },
+                { name = "MagicNuke", },
+                { name = "BigMagicNuke", },
+                { name = "WildNuke",  cond = function() return Config:GetSetting('DoWildNuke') end, },
+                { name = "FireRain",  cond = function() return Config:GetSetting('DoRain') end, },
+                { name = "ColdRain",  cond = function() return Config:GetSetting('DoRain') end, },
                 { name = "HarvestSpell", cond = function() return not Casting.CanUseAA("Harvest of Druzzil") end, },
                 { name = "SnareSpell",   cond = function() return Config:GetSetting('DoSnare') and not Casting.CanUseAA("Atol's Shackles") end, },
                 { name = "EvacSpell",    cond = function() return Config:GetSetting('KeepEvacMemmed') end, },
@@ -792,7 +821,7 @@ return {
                 { name = "JoltSpell",    cond = function() return Config:GetSetting('DoJoltSpell') end, },
                 { name = "PBTimer4",     cond = function() return Core.IsModeActive('PBAE') end, },
                 { name = "FireJyll",     cond = function() return Core.IsModeActive('PBAE') end, },
-                { name = "IceJyll",      cond = function() return Core.IsModeActive('PBAE') end, },
+                { name = "ColdJyll",      cond = function() return Core.IsModeActive('PBAE') end, },
                 { name = "MagicJyll",    cond = function() return Core.IsModeActive('PBAE') end, },
                 { name = "SelfRune1", },
                 { name = "SelfHPBuff", },
@@ -814,54 +843,27 @@ return {
         },
 
         -- Damage (ST)
-        ['ElementChoice']        = {
-            DisplayName = "Element Choice:",
+        ['ElementMode']          = {
+            DisplayName = "Element Mode:",
             Group = "Abilities",
             Header = "Damage",
             Category = "Direct",
             Index = 101,
-            Tooltip = "Choose which element-specific nukes and buffs will be used. See FAQ for more details.",
+            Tooltip = "Pick the element strategy for nukes and buffs. Auto rotates Fire/Cold/Magic based on target immunity. " ..
+                "See FAQ for details on Skip<Element>Spells conflicts and Familiar AA handling in Auto mode.",
             Type = "Combo",
-            ComboOptions = { 'Fire', 'Ice', 'Magic', },
+            ComboOptions = { 'Auto', 'Fire', 'Cold', 'Magic', },
             Default = 1,
             Min = 1,
-            Max = 3,
-            RequiresLoadoutChange = true,
-            FAQ = "How do I select to use multiple elements in combat?",
+            Max = 4,
+            FAQ = "How does Element Mode work?",
             Answer =
-                "   The 'Element Choice' setting determines which element you will use in combat. To avoid conflicts with the Familiar, 'Fury' and '-mancy' AA buffs, the default class config will focus on a single element at a time.\n\n" ..
-                "   The choice can be changed in combat (used in conjuction with the 'Keep X Memmed' settings), but we will not rescribe spells in combat, and Fury/Familiars will not be updated in the rotation until after combat is over.\n\n" ..
-                "   PBAE spells, if enabled, will use any available element, due to the nature of their recast timers.",
-        },
-        ['KeepFireMemmed']       = {
-            DisplayName = "Keep Fire Memmed",
-            Group = "Abilities",
-            Header = "Damage",
-            Category = "Direct",
-            Index = 102,
-            Tooltip = "Regardless of our current element selection, keep fire spells memorized so that we can switch elements in combat without changing our loadout.",
-            RequiresLoadoutChange = true,
-            Default = false,
-        },
-        ['KeepIceMemmed']        = {
-            DisplayName = "Keep Ice Memmed",
-            Group = "Abilities",
-            Header = "Damage",
-            Category = "Direct",
-            Index = 103,
-            Tooltip = "Regardless of our current element selection, keep ice spells memorized so that we can switch elements in combat without changing our loadout.",
-            RequiresLoadoutChange = true,
-            Default = false,
-        },
-        ['KeepMagicMemmed']      = {
-            DisplayName = "Keep Magic Memmed",
-            Group = "Abilities",
-            Header = "Damage",
-            Category = "Direct",
-            Index = 103,
-            Tooltip = "Regardless of our current element selection, keep magic spells memorized so that we can switch elements in combat without changing our loadout.",
-            RequiresLoadoutChange = true,
-            Default = false,
+                "   The 'Element Mode' setting determines which element you will use in combat. All three element lines (Fire/Cold/Magic) are memorized regardless of mode, so you can change mode in combat freely.\n\n" ..
+                "   Auto mode prefers Fire, then Cold, then Magic, automatically skipping any element your target is immune to (per the Named List) or any element you've globally toggled off via the Skip <Element> Spells settings. The explicit modes (Fire/Cold/Magic) lock to that element regardless of immunity data.\n\n" ..
+                "   Heads up: explicit modes still respect the global Skip <Element> Spells toggles. If you pick Fire mode here but have SkipFireSpells enabled in your combat settings, the global skip wins and Fire casts will be blocked - you'll need to clear the conflicting toggle, or pick a different element here.\n\n" ..
+                "   Fury AA buffs follow whatever element is active each burn pass - in Auto mode, this means Fury can swap mid-burn as the target changes.\n\n" ..
+                "   In Auto mode, the script buffs the Fire familiar (Ro's Flaming) and leaves it alone. Explicit modes buff the matching familiar. To change familiars in Auto, briefly switch ElementMode to Cold or Magic to let the script buff that one, then switch back - the buff persists.\n\n" ..
+                "   PBAE spells, if enabled, will use any available element due to the nature of their recast timers.",
         },
         ['DoManaBurn']           = {
             DisplayName = "Use Mana Burn AA",

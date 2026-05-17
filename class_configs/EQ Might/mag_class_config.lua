@@ -464,6 +464,19 @@ _ClassConfig    = {
 
             return false
         end,
+
+        -- Resolves the currently-active element based on ElementMode.
+        -- Auto: prefers Fire, then Magic, skipping either if the auto-target is immune
+        -- (per the Named List) or toggled off via Skip<X>Spells.
+        PickElement = function()
+            local mode = Config:GetSetting('ElementMode') or 1
+            if mode == 2 then return "Fire" end
+            if mode == 3 then return "Magic" end
+            local autoId = Globals.AutoTargetID or 0
+            if not Casting.ShouldSkipElement("Fire",  autoId) then return "Fire" end
+            if not Casting.ShouldSkipElement("Magic", autoId) then return "Magic" end
+            return "Fire" -- both skipped; default so downstream logic still resolves
+        end,
         DeleteEpicOrb = function(self)
             if mq.TLO.Cursor() and mq.TLO.Cursor.ID() > 0 then
                 Core.DoCmd("/autoinventory")
@@ -759,7 +772,7 @@ _ClassConfig    = {
                 name = "BigFireDD",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    if Config:GetSetting('ElementChoice') ~= 1 then return false end
+                    if self.Helpers.PickElement() ~= "Fire" then return false end
                     return Targeting.MobNotLowHP(target)
                 end,
             },
@@ -767,7 +780,7 @@ _ClassConfig    = {
                 name = "FireDD",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    if Config:GetSetting('ElementChoice') ~= 1 then return false end
+                    if self.Helpers.PickElement() ~= "Fire" then return false end
                     return Targeting.MobHasLowHP(target) or not Core.GetResolvedActionMapItem("BigFireDD")
                 end,
             },
@@ -775,7 +788,7 @@ _ClassConfig    = {
                 name = "MagicDD",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    return Config:GetSetting('ElementChoice') == 2
+                    return self.Helpers.PickElement() == "Magic"
                 end,
             },
             {
@@ -1028,18 +1041,24 @@ _ClassConfig    = {
             RequiresLoadoutChange = true,
             Default = true,
         },
-        ['ElementChoice']  = {
-            DisplayName = "Element Choice:",
+        ['ElementMode']    = {
+            DisplayName = "Element Mode:",
             Group = "Abilities",
             Header = "Damage",
             Category = "Direct",
             Index = 1,
-            Tooltip = "Choose an element to focus on under level 71.",
+            Tooltip = "Pick the element strategy for nukes. Auto rotates Fire and Magic based on target immunity. " ..
+                "See FAQ for details on Skip<Element>Spells conflicts.",
             Type = "Combo",
-            ComboOptions = { 'Fire', 'Magic', },
+            ComboOptions = { 'Auto', 'Fire', 'Magic', },
             Default = 1,
             Min = 1,
-            Max = 2,
+            Max = 3,
+            FAQ = "How does Element Mode work?",
+            Answer =
+                "   The 'Element Mode' setting determines which element your nukes will use. Fire and Magic spell lines are always memorized so you can change mode in combat freely.\n\n" ..
+                "   Auto mode prefers Fire, then Magic, automatically skipping either if your target is immune (per the Named List) or if you've globally toggled that element off via the Skip <Element> Spells settings. The explicit modes (Fire/Magic) lock to that element regardless of immunity data.\n\n" ..
+                "   Heads up: explicit modes still respect the global Skip <Element> Spells toggles. If you pick Fire mode here but have SkipFireSpells enabled in your combat settings, the global skip wins and Fire casts will be blocked - you'll need to clear the conflicting toggle, or pick a different element here.",
         },
         ['DoSwarmPet']     = {
             DisplayName = "Swarm Pet Spell:",
