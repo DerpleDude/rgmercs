@@ -72,6 +72,7 @@ Globals.Constants.CastCompleted       = Set.new({ "CAST_SUCCESS", "CAST_IMMUNE",
 Globals.Constants.CastRetriable       = Set.new({ "CAST_INTERRUPTED", "CAST_FIZZLE", "CAST_STUNNED", "CAST_DISTRACTED", "CAST_RECOVER", "CAST_NOTREADY", "CAST_COLLAPSE", })
 Globals.Constants.GroupTargetTypes    = Set.new({ "Group v1", "Group v2", "AE PC v1", "AE PC v2", })
 Globals.Constants.ResistTypes         = { "Fire", "Cold", "Magic", "Poison", "Disease", }
+Globals.Constants.ResistTypesSet      = Set.new(Globals.Constants.ResistTypes)
 Globals.Constants.ImmunityEffects     = { "Slow", "Snare", "Stun", }
 
 Globals.Constants.CastResults         = {

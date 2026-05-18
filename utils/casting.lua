@@ -2744,7 +2744,7 @@ end
 ---@return boolean True if the spell should be skipped.
 function Casting.ShouldSkipElement(element, targetId)
     if not element or targetId ~= Globals.AutoTargetID then return false end
-    if not Globals.Constants.ResistTypes[element] then return false end
+    if not Globals.Constants.ResistTypesSet:contains(element) then return false end
     if Config:GetSetting("Skip" .. element .. "Spells") then return true end
     return Globals.AutoTargetElementalImmunities[element] == true
 end

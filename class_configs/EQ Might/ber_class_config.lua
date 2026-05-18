@@ -53,69 +53,69 @@ return {
     },
     ['AbilitySets']   = {
         ['BerAura'] = {
-            "Aura of Rage",
-            "Bloodlust Aura",
+            "Bloodlust Aura", -- Level 66
+            "Aura of Rage",   -- Level 55
         },
         ['VolleyDisc'] = {
-            "Rage Volley",
-            "Destroyer's Volley",
+            "Destroyer's Volley", -- Level 69
+            "Rage Volley",        -- Level 61
         },
         ['FlurryDisc'] = {
-            "Vengeful Flurry Discipline",
+            "Vengeful Flurry Discipline", -- Level 70
         },
         ['RageDisc'] = {
-            --"Blind Rage Discipline",
-            "Cleaving Rage Discipline",
+            -- "Blind Rage Discipline", -- Level 58
+            "Cleaving Rage Discipline", -- Level 54
         },
         ['AngerDisc'] = {
-            "Cleaving Anger Discipline",
+            "Cleaving Anger Discipline", -- Level 65
         },
         ['CryDisc'] = {
-            "Battle Cry",
-            "War Cry",
-            "Battle Cry of Dravel",
-            "War Cry of Dravel",
-            "Battle Cry of the Mastruq",
-            "Ancient: Cry of Chaos",
-            "Ancient: Cry of Sullon",
+            "Ancient: Cry of Sullon",    -- Level 68
+            "Battle Cry of the Mastruq", -- Level 65
+            "Ancient: Cry of Chaos",     -- Level 65
+            "War Cry of Dravel",         -- Level 64
+            "Battle Cry of Dravel",      -- Level 57
+            "War Cry",                   -- Level 50
+            "Battle Cry",                -- Level 30
         },
         ['GroupCrit'] = {
-            "Cry Havoc",
+            "Cry Havoc", -- Level 68
         },
         ['StunStrike'] = {
-            "Temple Blow",
-            "Mind Strike",
-            "Head Crush",
-            "Head Pummel",
-            "Head Strike",
+            "Temple Blow", -- Level 71
+            "Mind Strike", -- Level 68
+            "Head Crush",  -- Level 60
+            "Head Pummel", -- Level 40
+            "Head Strike", -- Level 16
         },
         ['SnareStrike'] = {
-            "Tendon Cleave",
-            "Crippling Strike",
-            "Leg Slice",
-            "Leg Cut",
-            "Leg Strike",
+            "Tendon Cleave",    -- Level 70
+            "Crippling Strike", -- Level 67
+            "Leg Slice",        -- Level 54
+            "Leg Cut",          -- Level 32
+            "Leg Strike",       -- Level 8
         },
         ['DmgModProc'] = {
-            "Unpredictable Rage Discipline",
+            "Unpredictable Rage Discipline",    -- Level 66
         },
-        ['HealingDisc'] = { --EQM Custom, 2m duration, 5m reuse, hp regen
-            "Lifebloom Will Discipline",
-            "Rejuvenating Will Discipline",
-            "Healing Determination Discipline",
-            "Healing Will Discipline",
+        ['HealingDisc'] = {                     --EQM Custom, 2m duration, 5m reuse, hp regen
+            "Lifebloom Will Discipline",        -- Level 70
+            "Rejuvenating Will Discipline",     -- Level 68
+            "Healing Determination Discipline", -- Level 66
+            "Healing Will Discipline",          -- Level 59
         },
-        ['Scream'] = { -- Throwing/Archery Dmg taken debuff
-            "Unsettling Scream",
+        ['Scream'] = {                          -- Throwing/Archery Dmg taken debuff
+            "Unsettling Scream",                -- Level 71
         },
         ['Revitalize'] = {
-            "Steely Revitalize",
-            "Iron Revitalize",
-            "Hardened Revitalize",
-            "Revitalize",
+            "Steely Revitalize",      -- Level 69
+            "Iron Revitalize",        -- Level 65
+            "Hardened Revitalize",    -- Level 55
+            "Revitalize",             -- Level 44
         },
-        ['BattlecryHeal'] = { -- EQM Custom, restores HP/End for group, 8m reuse
-            "Invigorating Battlecry Discipline",
+        ['BattlecryHeal'] = {         -- EQM Custom, restores HP/End for group, 8m reuse
+            "Invigorating Battlecry", -- Level 63
         },
     },
     ['AASets']        = {

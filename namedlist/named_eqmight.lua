@@ -75,8 +75,8 @@ return {
         "Timeless Ghoul Cavalier",
         "Timeless Ghoul Lord",
         "Timeless Minotaur Patriarch",
-        { name = "The Midnight Martriarch",   elementalImmunities = { Poison = true, }, },
-        { name = "a timeless ghoul remnant",  statusImmunities = { Slow = true, }, },
+        { name = "The Midnight Martriarch",  elementalImmunities = { Poison = true, }, },
+        { name = "a timeless ghoul remnant", statusImmunities = { Slow = true, }, },
     },
 
     ["kedge"] = {
@@ -134,11 +134,11 @@ return {
         "The Fabled Darkpaw",
         "The Fabled Gnashmaw",
         "The Fabled Grizzleknot",
-        { name = "The Fabled Groi Gutblade",  statusImmunities = { Slow = true, }, },
+        { name = "The Fabled Groi Gutblade", statusImmunities = { Slow = true, }, },
         "The Fabled Grusch Val Gnoll",
         "The Fabled Ishva Mal",
         "The Fabled Kroldir Thunderhoof",
-        { name = "The Fabled Lord Grimrot",   statusImmunities = { Slow = true, }, },
+        { name = "The Fabled Lord Grimrot",  statusImmunities = { Slow = true, }, },
         "The Fabled Mroon",
         "The Fabled Quillmane",
         "The Fabled Synger Foxfyre",
@@ -451,12 +451,12 @@ return {
         { name = "Gorvash Bloodmarauder, Shadow of Zek", statusImmunities = { Slow = true, }, },
         { name = "Vorruk Skullcleaver, Fury of Zek",     statusImmunities = { Slow = true, }, },
         "Warden Gulgreth",
-        { name = "Rallos Zek", statusImmunities = { Slow = true, }, },
+        { name = "Rallos Zek",                        statusImmunities = { Slow = true, }, },
         "Ward Sergeant Krug",
         "Ward Sergeant Razzok",
         "Ward Sergeant Ulgok",
-        { name = "Glyphhoarder Kanxor",                 statusImmunities = { Slow = true, }, },
-        { name = "Aureon the Gleamforged Juggernaut",   elementalImmunities = { Magic = true, Poison = true, Disease = true, }, statusImmunities = { Slow = true, }, },
+        { name = "Glyphhoarder Kanxor",               statusImmunities = { Slow = true, }, },
+        { name = "Aureon the Gleamforged Juggernaut", elementalImmunities = { Magic = true, Poison = true, Disease = true, }, statusImmunities = { Slow = true, }, },
     },
 
     ["velketor"] = {
@@ -686,7 +686,7 @@ return {
         { name = "The Fabled Warlord Prollaz",         statusImmunities = { Slow = true, }, },
         { name = "The Fabled Wild Fiery Spirit Steed", statusImmunities = { Slow = true, }, },
         "The Ultrafabled Magmaton",
-        { name = "The Lavaforged Behemoth",            elementalImmunities = { Fire = true, },               statusImmunities = { Slow = true, }, },
+        { name = "The Lavaforged Behemoth", elementalImmunities = { Fire = true, }, statusImmunities = { Slow = true, }, },
     },
 
     ["potactics"] = {
@@ -875,7 +875,7 @@ return {
         { name = "Vilria the Keeper",   elementalImmunities = { Fire = true, }, },
         { name = "Warden Hanvar",       elementalImmunities = { Disease = true, }, },
         { name = "Overlord Mata Muram", elementalImmunities = { Fire = true, Cold = true, Poison = true, Disease = true, }, },
-        { name = "Glyphhoarder Krjsta", elementalImmunities = { Magic = true, }, statusImmunities = { Slow = true, }, },
+        { name = "Glyphhoarder Krjsta", elementalImmunities = { Magic = true, },                                            statusImmunities = { Slow = true, }, },
     },
 
     ["provinggrounds"] = {
@@ -1149,7 +1149,7 @@ return {
         "Uriasarpe",
         "Vorasarpex",
         "Shade of Glenicae",
-        { name = "Glyphhoarder Gloombranch",   statusImmunities = { Slow = true, }, },
+        { name = "Glyphhoarder Gloombranch",    statusImmunities = { Slow = true, }, },
         { name = "The Ultrafabled Ternsmochin", statusImmunities = { Slow = true, }, },
     },
 
@@ -1256,11 +1256,19 @@ return {
         { name = "Rear Guard Captain Balreth",    statusImmunities = { Slow = true, }, },
         { name = "Astire, the Lunar Eclipse",     statusImmunities = { Slow = true, }, },
         { name = "Irrissa the Seer",              statusImmunities = { Slow = true, }, },
-        { name = "Irrissa the Seer (Clone)",      statusImmunities = { Slow = true, }, },
         { name = "Commodus, Solar Construct",     elementalImmunities = { Fire = true, }, statusImmunities = { Slow = true, }, },
-        { name = "Mayong Mistmoore",              statusImmunities = { Slow = true, }, },
         { name = "Mayong Mistmoore the Darkness", statusImmunities = { Slow = true, }, },
-        { name = "Solusek Ro",                    elementalImmunities = { Fire = true, }, statusImmunities = { Slow = true, }, },
+        { name = "Mayong Mistmoore",              statusImmunities = { Slow = true, }, }, -- not a typo/duplicate. spawns during sol ro fight
+        { name = "Solusek Ro The Burning Prince", elementalImmunities = { Fire = true, }, statusImmunities = { Slow = true, }, },
+        { name = "a living flame",                named = false,                          elementalImmunities = { Fire = true, }, },
+        { name = "Aspect of Justice",             named = false,                          elementalImmunities = { Fire = true, }, statusImmunities = { Slow = true, }, },
+        { name = "Aspect of Fortitude",           named = false,                          elementalImmunities = { Fire = true, }, statusImmunities = { Slow = true, }, },
+        { name = "Aspect of Temperance",          named = false,                          elementalImmunities = { Fire = true, }, statusImmunities = { Slow = true, }, },
+        { name = "Aspect of Wisdom",              named = false,                          elementalImmunities = { Fire = true, }, statusImmunities = { Slow = true, }, },
+        { name = "Aspect of Resourcefulness",     named = false,                          elementalImmunities = { Fire = true, }, statusImmunities = { Slow = true, }, },
+        { name = "Aspect of Ambition",            named = false,                          elementalImmunities = { Fire = true, }, statusImmunities = { Slow = true, }, },
+        { name = "Aspect of Devotion",            named = false,                          elementalImmunities = { Fire = true, }, statusImmunities = { Slow = true, }, },
+        { name = "Aspect of Courage",             named = false,                          elementalImmunities = { Fire = true, }, statusImmunities = { Slow = true, }, },
         "Athena",
     },
 
@@ -1353,7 +1361,7 @@ return {
 
     ["taka"] = {
         "Avatar of Dust",
-        { name = "Petrified Desert Treant", statusImmunities = { Slow = true, }, },
+        { name = "Petrified Desert Treant",      statusImmunities = { Slow = true, }, },
         "Dunebreaker",
         "Flowkeeper Berta",
         "Gravitus Gargantua",
@@ -1364,7 +1372,7 @@ return {
         { name = "Sirocco",                      statusImmunities = { Slow = true, }, },
         "Mistral", -- Sirocco add, need to kill fast.
         "Geomancer Blackquill",
-        { name = "A Sunbane Seductress", named = false, statusImmunities = { Slow = true, }, },
+        { name = "A Sunbane Seductress", named = false,                       statusImmunities = { Slow = true, }, },
         { name = "Glyphhoarder Kinso",   statusImmunities = { Slow = true, }, },
     },
 
@@ -1392,10 +1400,10 @@ return {
     },
 
     ["nadox"] = {
-        { name = "Glyphhoarder Issus",            elementalImmunities = { Magic = true, }, statusImmunities = { Slow = true, }, },
-        { name = "Harvester of Souls",            statusImmunities = { Slow = true, }, },
-        { name = "Morvath, Soul Tyrant of Nadox", statusImmunities = { Slow = true, }, },
-        { name = "The Dread Archivist",           statusImmunities = { Slow = true, }, },
+        { name = "Glyphhoarder Issus",              elementalImmunities = { Magic = true, }, statusImmunities = { Slow = true, }, },
+        { name = "Harvester of Souls",              statusImmunities = { Slow = true, }, },
+        { name = "Morvath, Soul Tyrant of Nadox",   statusImmunities = { Slow = true, }, },
+        { name = "The Dread Archivist",             statusImmunities = { Slow = true, }, },
         { name = "an immortal black gate sentinel", statusImmunities = { Slow = true, }, },
     },
 

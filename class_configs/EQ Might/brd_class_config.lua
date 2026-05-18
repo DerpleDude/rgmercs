@@ -114,173 +114,173 @@ local _ClassConfig = {
         -- TO DO: Added Dirgle of Metala/Snare line
         -- bellow of chaos 66 dd nuke??
         ['RunBuff'] = {
-            "Selo's Accelerating Chorus",
-            "Selo's Accelerando",
+            "Selo's Accelerating Chorus", -- Level 49
+            "Selo's Accelerando",         -- Level 5
         },
         ['EndBreathSong'] = {
-            "Tarew's Aquatic Ayre", --Level 16
+            "Tarew's Aquatic Ayre", -- Level 16
         },
         ['AriaSong'] = {
-            "Aria of the Harmoniarch", -- 70 EQM
-            "Ancient: Call of Power",
-            "Eriki's Psalm of Power",
-            "Yelhun's Mystic Call",
-            "Echo of the Trusik",
-            "Rizlona's Call of Flame",   -- overhaste/spell damage
-            "Battlecry of the Vah Shir", -- overhaste only
-            "Warsong of the Vah Shir",   -- overhaste only
-            -- "Rizlona's Fire",   -- spell damage only
-            -- "Rizlona's Embers", -- spell damage only
+            "Aria of the Harmoniarch",   -- Level 70 EQM
+            "Ancient: Call of Power",    -- Level 70
+            "Eriki's Psalm of Power",    -- Level 69
+            "Yelhun's Mystic Call",      -- Level 68
+            "Echo of the Trusik",        -- Level 65
+            "Rizlona's Call of Flame",   -- Level 64 overhaste/spell damage
+            "Warsong of the Vah Shir",   -- Level 60 overhaste only
+            -- "Rizlona's Fire",         -- Level 53 spell damage only
+            "Battlecry of the Vah Shir", -- Level 52 overhaste only
+            -- "Rizlona's Embers",       -- Level 45 spell damage only
         },
         ['ArcaneSong'] = {
-            "Arcane Aria",
+            "Arcane Aria", -- Level 70
         },
         ['DPSAura'] = {
-            "Aura of the Muse",
-            "Aura of Insight",
+            "Aura of the Muse", -- Level 66
+            "Aura of Insight",  -- Level 55
         },
         ['GroupRegenSong'] = {
-            "Erollisi's Cantata",            -- 70 EQM
-            "Cantata of Life",               -- 67
-            "Wind of Marr",                  -- 62
-            "Cantata of Replenishment",      -- 55
-            "Cantata of Soothing",           -- 34 start hp/mana. Slightly less mana. They can custom if it they want the 2 mana/tick
-            "Cassindra's Chorus of Clarity", -- 32, mana only
-            "Cassindra's Chant of Clarity",  -- 20, mana only
-            "Hymn of Restoration",           -- 7, hp only
+            "Erollisi's Cantata",            -- Level 70 EQM
+            "Cantata of Life",               -- Level 67
+            "Wind of Marr",                  -- Level 62
+            "Cantata of Replenishment",      -- Level 55
+            "Cantata of Soothing",           -- Level 34 start hp/mana. Slightly less mana. They can custom if it they want the 2 mana/tick
+            "Cassindra's Chorus of Clarity", -- Level 32 mana only
+            "Cassindra's Chant of Clarity",  -- Level 20 mana only
+            "Hymn of Restoration",           -- Level 6 hp only
         },
         ['AreaRegenSong'] = {
-            "Erollisi's Chorus",       -- 71 EQM
-            "Chorus of Life",          -- 69
-            "Chorus of Marr",          -- 64
-            "Ancient: Lcea's Lament",  -- 60
-            "Chorus of Replenishment", -- 58
+            "Erollisi's Chorus",       -- Level 71 EQM
+            "Chorus of Life",          -- Level 69
+            "Chorus of Marr",          -- Level 64
+            "Ancient: Lcea's Lament",  -- Level 60
+            "Chorus of Replenishment", -- Level 58
         },
         ['WarMarchSong'] = {
-            "War March of Muram",
-            "War March of the Mastruq",
-            "Warsong of Zek",
-            "McVaxius' Rousing Rondo",
-            "Vilia's Chorus of Celerity",
-            "Verses of Victory",
-            "McVaxius' Berserker Crescendo",
-            "Vilia's Verses of Celerity",
-            "Anthem de Arms",
+            "War March of Muram",            -- Level 68
+            "War March of the Mastruq",      -- Level 65
+            "Warsong of Zek",                -- Level 62
+            "McVaxius' Rousing Rondo",       -- Level 57
+            "Vilia's Chorus of Celerity",    -- Level 54
+            "Verses of Victory",             -- Level 50
+            "McVaxius' Berserker Crescendo", -- Level 42
+            "Vilia's Verses of Celerity",    -- Level 36
+            "Anthem de Arms",                -- Level 10
         },
         ['SlowSong'] = {
-            "Requiem of Time",
-            "Angstlich's Assonance",    --snare/slow
-            "Largo's Assonant Binding", --snare/slow
-            "Selo's Consonant Chain",   --snare/slow
+            "Requiem of Time",          -- Level 64
+            "Angstlich's Assonance",    -- Level 60 snare/slow
+            "Largo's Assonant Binding", -- Level 51 snare/slow
+            "Selo's Consonant Chain",   -- Level 23 snare/slow
         },
         ['AESlowSong'] = {
-            "Zuriki's Song of Shenanigans",
-            "Largo's Melodic Binding",
+            "Zuriki's Song of Shenanigans", -- Level 67
+            "Largo's Melodic Binding",      -- Level 20
         },
         ['FireDotSong'] = {
-            "Vulka's Chant of Flame",
-            "Tuyen's Chant of Fire",
-            "Tuyen's Chant of Flame",
+            "Vulka's Chant of Flame", -- Level 70
+            "Tuyen's Chant of Fire",  -- Level 65
+            "Tuyen's Chant of Flame", -- Level 38
         },
         ['IceDotSong'] = {
-            "Vulka's Chant of Frost",
-            "Tuyen's Chant of Ice",
-            "Tuyen's Chant of Frost",
+            "Vulka's Chant of Frost", -- Level 67
+            "Tuyen's Chant of Ice",   -- Level 63
+            "Tuyen's Chant of Frost", -- Level 46
         },
         ['PoisonDotSong'] = {
-            "Vulka's Chant of Poison",
-            "Tuyen's Chant of Venom",
-            "Tuyen's Chant of Poison",
+            "Vulka's Chant of Poison", -- Level 68
+            "Tuyen's Chant of Venom",  -- Level 63
+            "Tuyen's Chant of Poison", -- Level 50
         },
         ['DiseaseDotSong'] = {
-            "Vulka's Chant of Disease",
-            "Tuyen's Chant of the Plague",
-            "Tuyen's Chant of Disease",
+            "Vulka's Chant of Disease",    -- Level 66
+            "Tuyen's Chant of the Plague", -- Level 61
+            "Tuyen's Chant of Disease",    -- Level 42
         },
         ['CureSong'] = {
-            --"Aria of Innocence", --curse only, and only 2 x 2 counters
-            "Aria of Asceticism", --poison/disease Only
+            -- "Aria of Innocence", -- Level 52 curse only, and only 2 x 2 counters
+            "Aria of Asceticism",   -- Level 45 poison/disease Only
         },
         ['CharmSong'] = {
-            "Voice of the Vampire",
-            "Call of the Banshee",        -- 65
-            "Solon's Bewitching Bravura", -- 39
-            "Solon's Song of the Sirens", -- 27
+            "Voice of the Vampire",       -- Level 70
+            "Call of the Banshee",        -- Level 64
+            "Solon's Bewitching Bravura", -- Level 39
+            "Solon's Song of the Sirens", -- Level 27
         },
         -- ['ChordsAE'] = {
-        --     "Chords of Dissonance",
+        --     "Chords of Dissonance", -- Level 2
         -- },
 
         ['AmpSong'] = {
-            "Amplification",
+            "Amplification", -- Level 30
         },
         ['DispelSong'] = {
             -- Dispel Song - For pulling to avoid Summons
-            "Syvelian's Anti-Magic Aria",
-            "Druzzil's Disillusionment",
+            "Druzzil's Disillusionment",  -- Level 62
+            "Syvelian's Anti-Magic Aria", -- Level 40
         },
         ['ResistSong'] = {
-            "Psalm of Veeshan",
-            "Elemental Chorus",
+            "Psalm of Veeshan", -- Level 63
+            "Elemental Chorus", -- Level 54
         },
         ['MezSong'] = {
-            "Aelfric's Last Lullaby",
-            "Vulka's Lullaby",
-            "Creeping Dreams",
-            "Luvwen's Lullaby",
-            "Lullaby of Morell",
-            "Dreams of Terris",
-            "Dreams of Thule",
-            "Ancient: Lullaby of Shadow",
-            "Dreams of Ayonae",
-            "Song of Twilight",
-            "Sionachie's Dreams",
-            "Crission's Pixie Strike",
-            "Kelin's Lucid Lullaby",
+            "Aelfric's Last Lullaby",     -- Level 70
+            "Vulka's Lullaby",            -- Level 70
+            "Creeping Dreams",            -- Level 68
+            "Luvwen's Lullaby",           -- Level 67
+            "Lullaby of Morell",          -- Level 65
+            "Dreams of Terris",           -- Level 64
+            "Dreams of Thule",            -- Level 62
+            "Ancient: Lullaby of Shadow", -- Level 60
+            "Dreams of Ayonae",           -- Level 58
+            "Song of Twilight",           -- Level 53
+            "Sionachie's Dreams",         -- Level 40
+            "Crission's Pixie Strike",    -- Level 28
+            "Kelin's Lucid Lullaby",      -- Level 15
         },
         ['MezAESong'] = {
-            "Wave of Morell",
+            "Wave of Morell", -- Level 66
         },
         ['Jonthan'] = {
-            "Jonthan's Mightful Caretaker",
-            "Jonthan's Inspiration",
-            "Jonthan's Provocation",
-            "Jonthan's Whistling Warsong",
+            "Jonthan's Mightful Caretaker", -- Level 70
+            "Jonthan's Inspiration",        -- Level 58
+            "Jonthan's Provocation",        -- Level 45
+            "Jonthan's Whistling Warsong",  -- Level 7
         },
         ['CalmSong'] = {
             -- CalmSong - Level Range 8+ --Included for manual use with /rgl usemap
-            "Whispersong of Veshma",
+            "Whispersong of Veshma",     -- Level 70
             "Luvwen's Aria of Serenity", -- Level 66
             "Silent Song of Quellious",  -- Level 61
             "Kelin's Lugubrious Lament", -- Level 8 (Max Mob Level of 60)
         },
         ['ThousandBlades'] = {
-            "Thousand Blades",
+            "Thousand Blades", -- Level 69
         },
         ['ProcSong'] = {
-            "Storm Blade",
-            "Song of the Storm",
+            "Storm Blade",       -- Level 69
+            "Song of the Storm", -- Level 61
         },
         ['ResistDebuff'] = {
-            "Ancient: Chaos Chant", -- EQM: -15 all resists
-            "Harmony of Sound",
-            "Occlusion of Sound",
+            "Ancient: Chaos Chant", -- Level 65 EQM: -15 all resists
+            "Harmony of Sound",     -- Level 65
+            "Occlusion of Sound",   -- Level 55
         },
         ['MitigationSong'] = {
-            "Song of the Dryads",
-            "Verse of Vesagran",
-            "Verse of Huell",
+            "Song of the Dryads", -- Level 71
+            "Verse of Vesagran",  -- Level 69
+            "Verse of Huell",     -- Level 65
         },
         ['Protective'] = {
-            "Protective Surge Discipline",
+            "Protective Surge Discipline", -- Level 55
         },
         ['Skals'] = {
-            "Skal's Stance Discipline",
+            "Skal's Stance Discipline", -- Level 61
         },
         ['Revitalize'] = {
-            "Iron Revitalize",
-            "Hardened Revitalize",
-            "Revitalize",
+            "Iron Revitalize",     -- Level 68
+            "Hardened Revitalize", -- Level 62
+            "Revitalize",          -- Level 51
         },
     },
     ['Helpers']       = {
@@ -398,17 +398,6 @@ local _ClassConfig = {
             end,
         },
         {
-            name = 'Melody',
-            state = 1,
-            steps = 1,
-            timer = 0,
-            doFullRotation = true,
-            targetId = function(self) return { mq.TLO.Me.ID(), } end,
-            cond = function(self, combat_state)
-                return not (combat_state == "Downtime" and mq.TLO.Me.Invis()) and not Globals.InMedState
-            end,
-        },
-        {
             name = 'Downtime',
             state = 1,
             steps = 1,
@@ -435,6 +424,17 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and Casting.OkayToDebuff()
+            end,
+        },
+        {
+            name = 'Melody',
+            state = 1,
+            steps = 1,
+            timer = 0,
+            doFullRotation = true,
+            targetId = function(self) return { mq.TLO.Me.ID(), } end,
+            cond = function(self, combat_state)
+                return not (combat_state == "Downtime" and mq.TLO.Me.Invis()) and not Globals.InMedState
             end,
         },
         {

@@ -838,17 +838,6 @@ local _ClassConfig = {
             end,
         },
         {
-            name = 'Melody',
-            state = 1,
-            steps = 1,
-            timer = 0,
-            doFullRotation = true,
-            targetId = function(self) return { mq.TLO.Me.ID(), } end,
-            cond = function(self, combat_state)
-                return not (combat_state == "Downtime" and mq.TLO.Me.Invis()) and not Globals.InMedState
-            end,
-        },
-        {
             name = 'Downtime',
             state = 1,
             steps = 1,
@@ -875,6 +864,17 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and Casting.OkayToDebuff()
+            end,
+        },
+        {
+            name = 'Melody',
+            state = 1,
+            steps = 1,
+            timer = 0,
+            doFullRotation = true,
+            targetId = function(self) return { mq.TLO.Me.ID(), } end,
+            cond = function(self, combat_state)
+                return not (combat_state == "Downtime" and mq.TLO.Me.Invis()) and not Globals.InMedState
             end,
         },
         {

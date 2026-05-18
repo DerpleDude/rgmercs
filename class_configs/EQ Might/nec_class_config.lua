@@ -82,275 +82,275 @@ local _ClassConfig = {
     },
     ['AbilitySets']     = {
         ['SelfHPBuff'] = {
-            "Shield of Darkness",
-            "Shadow Guard",
-            "Shield of Maelin",
-            "Shield of the Arcane",
-            "Shield of the Magi",
-            "Arch Shielding",
-            "Greater Shielding",
-            "Major Shielding",
-            "Shielding",
-            "Lesser Shielding",
-            "Minor Shielding",
+            "Shield of Darkness",   -- Level 70
+            "Shadow Guard",         -- Level 66
+            "Shield of Maelin",     -- Level 64
+            "Shield of the Arcane", -- Level 61
+            "Shield of the Magi",   -- Level 54
+            "Arch Shielding",       -- Level 41
+            "Greater Shielding",    -- Level 33
+            "Major Shielding",      -- Level 24
+            "Shielding",            -- Level 16
+            "Lesser Shielding",     -- Level 8
+            "Minor Shielding",      -- Level 1
         },
         ['SelfRune'] = {
-            "WraitSkin",
-            "Dull Pain",
-            "Force Shield",
-            "Manaskin",
-            "Diamondskin",
-            "Steelskin",
-            "Leatherskin",
-            "Shieldskin",
+            "WraithSkin",   -- Level 71
+            "Dull Pain",    -- Level 69
+            "Force Shield", -- Level 63
+            "Manaskin",     -- Level 52
+            "Diamondskin",  -- Level 43
+            "Steelskin",    -- Level 32
+            "Leatherskin",  -- Level 22
+            "Shieldskin",   -- Level 14
         },
         ['CharmSpell'] = {
-            "Word of Chaos",
-            "Word of Terris",
-            "Enslave Death",
-            "Thrall of Bones",
-            "Cajole Undead",
-            "Beguile Undead",
-            "Dominate Undead",
+            "Word of Chaos",   -- Level 70
+            "Word of Terris",  -- Level 65
+            "Enslave Death",   -- Level 60
+            "Thrall of Bones", -- Level 54
+            "Cajole Undead",   -- Level 47
+            "Beguile Undead",  -- Level 31
+            "Dominate Undead", -- Level 18
         },
         ['LifeTap'] = {
-            "Drink of Vitae",
-            "Drain Life",
-            "Ancient: Touch of Orshilak",
-            "Soulspike",
-            "Touch of Mujaki",
-            -- "Gangrenous Touch of Zum`uul",
-            "Touch of Night",
-            "Deflux",
-            "Drain Soul",
-            "Drain Spirit",
-            "Spirit Tap",
-            "Siphon Life",
-            "Lifedraw",
-            "Lifespike",
-            "Lifetap",
+            "Drink of Vitae",             -- Level 70
+            "Drain Life",                 -- Level 70
+            "Ancient: Touch of Orshilak", -- Level 68
+            "Soulspike",                  -- Level 67
+            "Touch of Mujaki",            -- Level 61
+            -- "Gangrenous Touch of Zum`uul", -- Level 60
+            "Touch of Night",             -- Level 59
+            "Deflux",                     -- Level 54
+            "Drain Soul",                 -- Level 48
+            "Drain Spirit",               -- Level 39
+            "Spirit Tap",                 -- Level 26
+            "Siphon Life",                -- Level 20
+            "Lifedraw",                   -- Level 12
+            "Lifespike",                  -- Level 3
+            "Lifetap",                    -- Level 1
         },
         ['DurationTap'] = {
-            "Dyn`leth's Grasp",
-            "Ancient: Chiasa's Kiss",
-            -- "Fang of Death",
-            -- "Night's Beckon",
-            -- "Saryrn's Kiss",
-            -- "Vexing Replenishment",
-            -- "Auspice",
-            -- "Bond of Death",
-            -- "Vampiric Curse",
-            -- "Shadow Compact",
-            -- "Leech",
+            "Dyn`leth's Grasp",       -- Level 71
+            "Ancient: Chiasa's Kiss", -- Level 68
+            -- "Fang of Death",         -- Level 68
+            -- "Night's Beckon",        -- Level 65
+            -- "Saryrn's Kiss",         -- Level 62
+            -- "Vexing Replenishment",  -- Level 57
+            -- "Bond of Death",         -- Level 49
+            -- "Auspice",               -- Level 45
+            -- "Vampiric Curse",        -- Level 29
+            -- "Shadow Compact",        -- Level 17
+            -- "Leech",                 -- Level 9
         },
         ['PoisonNuke'] = {
-            "Venin",
-            "Call for Blood",
-            "Acikin",
-            "Neurotoxin",
-            "Ancient: Lifebane",
-            "Torbas' Venom Blast",
-            "Torbas' Poison Blast",
-            "Torbas' Acid Blast",
-            "Shock of Poison",
+            "Venin",                -- Level 70
+            "Call for Blood",       -- Level 68
+            "Acikin",               -- Level 66
+            "Neurotoxin",           -- Level 61
+            "Ancient: Lifebane",    -- Level 60
+            "Torbas' Venom Blast",  -- Level 54
+            "Torbas' Poison Blast", -- Level 49
+            "Torbas' Acid Blast",   -- Level 32
+            "Shock of Poison",      -- Level 21
         },
         ['FireDot'] = {
-            "Pyre of the Fallen",
-            "Dread Pyre",
-            "Pyre of Mori",
-            "Night Fire",
-            "Funeral Pyre of Kelador",
-            "Pyrocruor",
-            "Ignite Blood",
-            "Boil Blood",
-            "Heat Blood",
+            "Pyre of the Fallen",      -- Level 71
+            "Dread Pyre",              -- Level 70
+            "Pyre of Mori",            -- Level 67
+            "Night Fire",              -- Level 65
+            "Funeral Pyre of Kelador", -- Level 60
+            "Pyrocruor",               -- Level 58
+            "Ignite Blood",            -- Level 47
+            "Boil Blood",              -- Level 28
+            "Heat Blood",              -- Level 10
         },
         ['FireDot2'] = {
-            "Pyre of the Fallen",
-            "Dread Pyre",
-            "Pyre of Mori",
-            "Night Fire",
-            "Funeral Pyre of Kelador",
-            "Pyrocruor",
-            "Ignite Blood",
+            "Pyre of the Fallen",      -- Level 71
+            "Dread Pyre",              -- Level 70
+            "Pyre of Mori",            -- Level 67
+            "Night Fire",              -- Level 65
+            "Funeral Pyre of Kelador", -- Level 60
+            "Pyrocruor",               -- Level 58
+            "Ignite Blood",            -- Level 47
         },
         ['FireDot3'] = {
-            "Pyre of the Fallen",
-            "Dread Pyre",
-            "Pyre of Mori",
-            "Night Fire",
-            "Funeral Pyre of Kelador",
+            "Pyre of the Fallen",      -- Level 71
+            "Dread Pyre",              -- Level 70
+            "Pyre of Mori",            -- Level 67
+            "Night Fire",              -- Level 65
+            "Funeral Pyre of Kelador", -- Level 60
         },
         -- ['SplurtDot'] = {
-        --     "Splurt",
+        --     "Splurt", -- Level 51
         -- },
         ['CurseDot'] = {
-            "Curse of Mortality",     -- Timer 4
-            "Ancient: Curse of Mori", -- Timer 5
-            "Dark Nightmare",         -- Timer 4
-            "Horror",
-            "Imprecation",
-            "Dark Soul",
+            "Curse of Mortality",     -- Level 71 Timer 4
+            "Ancient: Curse of Mori", -- Level 70 Timer 5
+            "Dark Nightmare",         -- Level 67 Timer 4
+            "Horror",                 -- Level 63
+            "Imprecation",            -- Level 54
+            "Dark Soul",              -- Level 39
         },
         ['CurseDot2'] = {
-            "Curse of Mortality",     -- Timer 4
-            "Ancient: Curse of Mori", -- Timer 5
-            "Dark Nightmare",         -- Timer 4
-            "Horror",
-            "Imprecation",
+            "Curse of Mortality",     -- Level 71 Timer 4
+            "Ancient: Curse of Mori", -- Level 70 Timer 5
+            "Dark Nightmare",         -- Level 67 Timer 4
+            "Horror",                 -- Level 63
+            "Imprecation",            -- Level 54
         },
         ['PlagueDot'] = {
-            "Sevaran's Rot",
-            "Chaos Plague",
-            "Dark Plague",
-            "Cessation of Cor",
+            "Severan's Rot",    -- Level 70
+            "Chaos Plague",     -- Level 66
+            "Dark Plague",      -- Level 61
+            "Cessation of Cor", -- Level 56
         },
         -- ['DebuffDot'] = {
-        --     "Grip of Mori",
-        --     "Plague",
-        --     "Asystole",
-        --     "Scourge",
-        --     "Heart Flutter",
-        --     "Infectious Cloud",
-        --     "Disease Cloud",
+        --     "Plague",           -- Level 52
+        --     "Asystole",         -- Level 40
+        --     "Scourge",          -- Level 35
+        --     "Infectious Cloud", -- Level 15
+        --     "Heart Flutter",    -- Level 13
+        --     "Disease Cloud",    -- Level 1
+        --     "Grip of Mori",     -- Level 67 (note: original list position kept)
         -- },
         ['PoisonDot'] = {
-            -- "Chaos Venom", this is worse than corath venom
-            "Corath Venom",
-            "Blood of Thule",
-            "Virulent Bolt",
-            "Envenomed Bolt",
-            "Chilling Embrace",
-            "Venom of the Snake",
-            "Poison Bolt",
+            -- "Chaos Venom",     -- Level 70 (worse than corath venom)
+            "Corath Venom",       -- Level 69
+            "Blood of Thule",     -- Level 65
+            "Virulent Bolt",      -- Level 59
+            "Envenomed Bolt",     -- Level 50
+            "Chilling Embrace",   -- Level 36
+            "Venom of the Snake", -- Level 34
+            "Poison Bolt",        -- Level 4
         },
         ['PoisonDot2'] = {
-            -- "Chaos Venom", this is worse than corath venom
-            "Corath Venom",
-            "Blood of Thule",
-            "Virulent Bolt",
-            "Envenomed Bolt",
-            "Chilling Embrace",
-            "Venom of the Snake",
+            -- "Chaos Venom",     -- Level 70 (worse than corath venom)
+            "Corath Venom",       -- Level 69
+            "Blood of Thule",     -- Level 65
+            "Virulent Bolt",      -- Level 59
+            "Envenomed Bolt",     -- Level 50
+            "Chilling Embrace",   -- Level 36
+            "Venom of the Snake", -- Level 34
         },
         ['SnareDot'] = {
-            "Desecrating Darkness",
-            "Embracing Darkness",
-            "Devouring Darkness",
-            "Cascading Darkness",
-            "Scent of Darkness",
-            "Dooming Darkness",
-            "Engulfing Darkness",
-            "Clinging Darkness",
+            "Desecrating Darkness", -- Level 68
+            "Embracing Darkness",   -- Level 63
+            "Devouring Darkness",   -- Level 59
+            "Cascading Darkness",   -- Level 47
+            "Scent of Darkness",    -- Level 37
+            "Dooming Darkness",     -- Level 27
+            "Engulfing Darkness",   -- Level 11
+            "Clinging Darkness",    -- Level 4
         },
         ['ScentDebuff'] = {
-            "Scent of Terris",
-            "Scent of Darkness",
-            "Scent of Shadow",
-            "Scent of Dusk",
+            "Scent of Terris",   -- Level 52
+            "Scent of Darkness", -- Level 37
+            "Scent of Shadow",   -- Level 21
+            "Scent of Dusk",     -- Level 10
         },
         ['ScentDebuff2'] = {
-            "Scent of Midnight",
-            "Scent of Twilight",
+            "Scent of Twilight", -- Level 71
+            "Scent of Midnight", -- Level 68
         },
         ['LichSpell'] = {
-            "Dark Possession",
-            "Grave Pact",
-            "Ancient: Seduction of Chaos",
-            "Seduction of Saryrn",
-            "Ancient: Master of Death",
-            "Arch Lich",
-            "Demi Lich",
-            "Lich",
-            "Call of Bones",
-            "Allure of Death",
-            "Dark Pact",
+            "Dark Possession",             -- Level 70
+            "Grave Pact",                  -- Level 70
+            "Ancient: Seduction of Chaos", -- Level 65
+            "Seduction of Saryrn",         -- Level 64
+            "Ancient: Master of Death",    -- Level 60
+            "Arch Lich",                   -- Level 60
+            "Demi Lich",                   -- Level 56
+            "Lich",                        -- Level 48
+            "Call of Bones",               -- Level 31
+            "Allure of Death",             -- Level 18
+            "Dark Pact",                   -- Level 6
         },
         ['RogPetSpell'] = {
-            "Dark Assassin",
-            "Child of Bertoxxulous",
-            "Saryrn's Companion",
-            "Minion of Shadows",
+            "Dark Assassin",         -- Level 70
+            "Child of Bertoxxulous", -- Level 65
+            "Saryrn's Companion",    -- Level 63
+            "Minion of Shadows",     -- Level 53
         },
         ['WarPetSpell'] = {
-            "Lost Soul",
-            "Child of Bertoxxulous",
-            "Legacy of Zek",
-            "Emissary of Thule",
-            "Servant of Bones",
-            "Invoke Death",
-            "Cackling Bones",
-            "Malignant Dead",
-            "Invoke Shadow",
-            "Summon Dead",
-            "Haunting Corpse",
-            "Animate Dead",
-            "Restless Bones",
-            "Convoke Shadow",
-            "Bone Walk",
-            "Leering Corpse",
-            "Cavorting Bones",
+            "Lost Soul",             -- Level 66
+            "Child of Bertoxxulous", -- Level 65
+            "Legacy of Zek",         -- Level 61
+            "Emissary of Thule",     -- Level 59
+            "Servant of Bones",      -- Level 55
+            "Invoke Death",          -- Level 48
+            "Cackling Bones",        -- Level 44
+            "Malignant Dead",        -- Level 39
+            "Invoke Shadow",         -- Level 33
+            "Summon Dead",           -- Level 29
+            "Haunting Corpse",       -- Level 24
+            "Animate Dead",          -- Level 20
+            "Restless Bones",        -- Level 16
+            "Convoke Shadow",        -- Level 12
+            "Bone Walk",             -- Level 8
+            "Leering Corpse",        -- Level 4
+            "Cavorting Bones",       -- Level 1
         },
         ['PetHaste'] = {
-            "Sigil of the Unnatural",
-            "Glyph of Darkness",
-            "Rune of Death",
-            "Augmentation of Death",
-            "Augment Death",
-            "Intensify Death",
-            "Focus Death",
+            "Sigil of the Unnatural", -- Level 71
+            "Glyph of Darkness",      -- Level 67
+            "Rune of Death",          -- Level 62
+            "Augmentation of Death",  -- Level 55
+            "Augment Death",          -- Level 35
+            "Intensify Death",        -- Level 23
+            "Focus Death",            -- Level 11
         },
         ['UndeadNuke'] = {
-            "Desolate Undead",
-            "Destroy Undead",
-            "Exile Undead",
-            "Banish Undead",
-            "Expel Undead",
-            "Dismiss Undead",
-            "Expulse Undead",
-            "Ward Undead",
+            "Desolate Undead", -- Level 70
+            "Destroy Undead",  -- Level 65
+            "Exile Undead",    -- Level 57
+            "Banish Undead",   -- Level 46
+            "Expel Undead",    -- Level 38
+            "Dismiss Undead",  -- Level 28
+            "Expulse Undead",  -- Level 19
+            "Ward Undead",     -- Level 6
         },
         ['OrbNuke'] = {
-            "Umbra Orb",
-            "Shadow Orb",
-            "Soul Orb",
+            "Umbra Orb",  -- Level 70
+            "Shadow Orb", -- Level 69
+            "Soul Orb",   -- Level 61
         },
         -- ['Calliav'] = { --35s refresh on mem, and this does not seem worth a gem slot currently
-        --     "Bulwark of Calliav",
-        --     "Protection of Calliav",
-        --     "Guard of Calliav",
-        --     "Ward of Calliav",
+        --     "Bulwark of Calliav",    -- Level 69
+        --     "Protection of Calliav", -- Level 64
+        --     "Guard of Calliav",      -- Level 58
+        --     "Ward of Calliav",       -- Level 49
         -- },
-        ['PetHealSpell'] = { -- Also has cure effect for pet
-            "Chiling Renewal",
-            "Dark Salve",
-            "Renewal of Lucifer", -- EQM Custom
-            "Touch of Death",
-            "Renew Bones",
-            "Mend Bones",
+        ['PetHealSpell'] = {      -- Also has cure effect for pet
+            "Chilling Renewal",   -- Level 71
+            "Dark Salve",         -- Level 69
+            "Renewal of Lucifer", -- Level 67 EQM Custom
+            "Touch of Death",     -- Level 64
+            "Renew Bones",        -- Level 26
+            "Mend Bones",         -- Level 7
         },
         -- ['GroupLeech'] = {
-        --     "Night Stalker",
-        --     "Zevfeer's Theft of Vitae",
+        --     "Night Stalker",            -- Level 65
+        --     "Zevfeer's Theft of Vitae", -- Level 60
         -- },
         ['FeignSpell'] = {
-            "Death Peace",
-            "Comatose",
-            "Feign Death",
+            "Death Peace", -- Level 60
+            "Comatose",    -- Level 52
+            "Feign Death", -- Level 16
         },
         ['HarmshieldSpell'] = {
-            "Quivering Veil of Xarn",
-            "Harmshield",
+            "Quivering Veil of Xarn", -- Level 58
+            "Harmshield",             -- Level 20
         },
         -- ['UndeadConvert'] = {
-        --     "Chill Bones",
-        --     "Ignite Bones",
+        --     "Chill Bones",  -- Level 55
+        --     "Ignite Bones", -- Level 42
         -- },
-        ['Minionskin'] = { --EQM Custom: HP/Regen/mitigation (May need to block druid HP buff line on pet)
-            "Major Minionskin",
-            "Greater Minionskin",
-            "Minionskin",
-            "Lesser Minionskin",
+        ['Minionskin'] = {        --EQM Custom: HP/Regen/mitigation (May need to block druid HP buff line on pet)
+            "Major Minionskin",   -- Level 66
+            "Greater Minionskin", -- Level 56
+            "Minionskin",         -- Level 43
+            "Lesser Minionskin",  -- Level 30
         },
     },
     ['AASets']          = {

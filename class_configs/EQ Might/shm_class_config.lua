@@ -151,307 +151,306 @@ local _ClassConfig = {
     ['AbilitySets']       = {
         ["GroupFocusSpell"] = {
             -- Focus Spell - Group Spells will be used on everyone
-            "Khura's Focusing",            -- Level 60 - Group
-            "Focus of the Seventh",        -- Level 65 - Group
+            "Ancient: Blessing of Wunshi", -- Level 70 EQM
             "Talisman of Wunshi",          -- Level 70 - Group
-            "Ancient: Blessing of Wunshi", -- EQM 70
+            "Focus of the Seventh",        -- Level 65 - Group
+            "Khura's Focusing",            -- Level 60 - Group
         },
         ["RunSpeedBuff"] = {
-            -- Run Speed Buff - 9 - 74
-            "Spirit of Bih`Li",
-            "Pack Shrew",
-            "Spirit of Wolf",
+            -- Run Speed Buff
+            "Spirit of Bih`Li", -- Level 36
+            "Pack Shrew",       -- Level 34
+            "Spirit of Wolf",   -- Level 9
         },
         ["HasteBuff"] = {
-            -- Haste Buff - 26 - 64
-            "Talisman of Celerity",
-            "Swift Like the Wind",
-            "Celerity",
-            "Quickness",
+            -- Haste Buff
+            "Talisman of Celerity", -- Level 64
+            "Swift Like the Wind",  -- Level 63
+            "Celerity",             -- Level 56
+            "Quickness",            -- Level 26
         },
         ["LowLvlStaBuff"] = {
             -- Low Level Stamina Buff --- I guess this may be okay for tanks (but largely a raid thing). Need to scrub which levels. Not currently used.
-            "Spirit of Bear",
-            "Spirit of Ox",
-            "Health",
-            "Stamina",
-            "Riotous Health",
-            "Talisman of the Brute",
-            "Endurance of the Boar",
-            "Talisman of the Boar",
-            "Spirit of Fortitude",
-            "Talisman of Fortitude",
-            "Talisman of Persistence",
+            "Talisman of Persistence", -- Level 70
+            "Talisman of Fortitude",   -- Level 69
+            "Spirit of Fortitude",     -- Level 68
+            "Talisman of the Boar",    -- Level 63
+            "Endurance of the Boar",   -- Level 62
+            "Talisman of the Brute",   -- Level 57
+            "Riotous Health",          -- Level 54
+            "Stamina",                 -- Level 43
+            "Health",                  -- Level 30
+            "Spirit of Ox",            -- Level 21
+            "Spirit of Bear",          -- Level 6
         },
         ["LowLvlAtkBuff"] = {
             -- Low Level Attack Buff --- user under level 86. Including Harnessing of Spirit as they will have similar usecases and targets.
-            "Harnessing of Spirit",
-            "Primal Avatar",
-            "Ancient: Feral Avatar",
-            "Ferine Avatar",
-            "Champion",
+            "Champion",              -- Level 70
+            "Ferine Avatar",         -- Level 65
+            "Ancient: Feral Avatar", -- Level 60
+            "Primal Avatar",         -- Level 60
+            "Harnessing of Spirit",  -- Level 46
         },
         ["LowLvlHPBuff"] = {
-            "Inner Fire",         -- Level 1 - Single
-            "Talisman of Tnarg",  -- Level 32 - Single
-            "Talisman of Altuna", -- Level 40 - Single
             "Talisman of Kragg",  -- Level 55 - Single
+            "Talisman of Altuna", -- Level 40 - Single
+            "Talisman of Tnarg",  -- Level 32 - Single
+            "Inner Fire",         -- Level 1 - Single
         },
         ["LowLvlStrBuff"] = {
             -- Low Level Strength Buff -- Below 68 these are only worthwhile on non-live, defiant stat caps too easily. Even then arguable.
-            "Talisman of the Diaku",
-            "Infusion of Spirit", -- Level 49, Str/Dex/Sta, can use HP buff
-            "Tumultuous Strength",
-            "Raging Strength",
-            "Spirit Strength", -- Level 18, Can't see this as being very worth but keeping for now.
+            "Talisman of the Diaku", -- Level 64
+            "Infusion of Spirit",    -- Level 49, Str/Dex/Sta, can use HP buff
+            "Tumultuous Strength",   -- Level 35
+            "Raging Strength",       -- Level 28
+            "Spirit Strength",       -- Level 18, Can't see this as being very worth but keeping for now.
         },
         ["LowLvlDexBuff"] = {
             -- Low Level Dex Buff -- This has no real place outside of raids on select tanks. Waste of mana.
-            "Talisman of the Raptor",
-            "Mortal Deftness",
-            "Dexterity",
-            "Deftness",
-            "Rising Dexterity",
-            "Spirit of Monkey",
-            "Dexterous Aura",
+            "Talisman of the Raptor",  -- Level 59
+            "Mortal Deftness",         -- Level 58
+            "Dexterity",               -- Level 48
+            "Deftness",                -- Level 39
+            "Rising Dexterity",        -- Level 25
+            "Spirit of Monkey",        -- Level 21
+            "Dexterous Aura",          -- Level 1
         },
-        ['EvasionBuff'] = { -- on EQM these are evasion buffs, not AGI.
-            "Preternatural Foresight",
-            "Talisman of Sense",
-            "Spirit of Sense",
+        ['EvasionBuff'] = {            -- on EQM these are evasion buffs, not AGI.
+            "Preternatural Foresight", -- Level 70
+            "Talisman of Sense",       -- Level 68
+            "Spirit of Sense",         -- Level 66
         },
         ["LowLvlAgiBuff"] = {
             --- Low Level AGI Buff -- This has no real place outside of raids on select tanks. Waste of mana.
             -- "Talisman of Sense",
             -- "Spirit of Sense",
-            "Talisman of the Wrulan",
-            "Agility of the Wrulan",
-            "Talisman of the Cat",
-            "Deliriously Nimble",
-            "Agility",
-            "Nimble",
-            "Spirit of Cat",
-            "Feet like Cat",
+            "Talisman of the Wrulan", -- Level 62
+            "Agility of the Wrulan",  -- Level 61
+            "Talisman of the Cat",    -- Level 57
+            "Deliriously Nimble",     -- Level 53
+            "Agility",                -- Level 41
+            "Nimble",                 -- Level 31
+            "Spirit of Cat",          -- Level 18
+            "Feet like Cat",          -- Level 3
         },
         ["AEMaloSpell"] = {
-            "Idol of Malos",
+            "Idol of Malos", -- Level 70
         },
         ["MaloSpell"] = {
-            "Malosinise",
-            "Malos",
-            "Malosinia",
-            "Malo",
-            "Malosini",
+            "Malosinise",      -- Level 70
+            "Malos",           -- Level 65
+            "Malosinia",       -- Level 63
+            "Malo",            -- Level 60
+            "Malosini",        -- Level 57
             --Below this these spells are considered by many to be a waste of mana, but the user can elect to turn this off.
-            "Malosi",
-            "Malaisement",
-            "Malaise",
+            "Malosi",          -- Level 48
+            "Malaisement",     -- Level 32
+            "Malaise",         -- Level 18
         },
-        ["AESlowSpell"] = { --Often considered a waste of mana in group situations, user option.
-            "Tigir's Insects",
+        ["AESlowSpell"] = {    --Often considered a waste of mana in group situations, user option.
+            "Tigir's Insects", -- Level 58
             -- PBAE Slow spell at 71, Tortugone's Drowse, also has a self melee absorb. chew on this for later. (50' range)
         },
         ["SlowSpell"] = {
-            "Balance of Discord",
-            "Balance of the Nihil",
-            "Turgur's Insects", --Can save mana by continuing to use Togor's on group mobs, but this is problematic for automation. Not worth splitting the entry.
-            "Togor's Insects",
-            "Tagar's Insects",
-            --"Walking Sleep", --Too much mana with little benefit at these levels
-            --"Drowsy", --Too much mana with little benefit at these levels
+            "Balance of Discord",   -- Level 69
+            "Balance of the Nihil", -- Level 65
+            "Turgur's Insects",     -- Level 51, Can save mana by continuing to use Togor's on group mobs, but this is problematic for automation. Not worth splitting the entry.
+            "Togor's Insects",      -- Level 38
+            "Tagar's Insects",      -- Level 27
+            -- "Walking Sleep",     -- Level 13, Too much mana with little benefit at these levels
+            -- "Drowsy",            -- Level 5, Too much mana with little benefit at these levels
         },
         ["DiseaseSlow"] = {
-            "Hungry Plague",
-            "Cloud of Grummus",
-            "Plague of Insects",
+            "Hungry Plague",     -- Level 70
+            "Cloud of Grummus",  -- Level 61
+            "Plague of Insects", -- Level 54
         },
-        ["CrippleSpell"] = {   -- needs to be added to spell list and have entries made
-            "Crippling Spasm", -- Level 66
-            "Cripple",         -- Level 53, Starts to become worth it, depending on target
-            "Incapacitate",    -- Level 41, Likely not worth
-            "Listless Power",  -- Level 29, Definitely not worth
+        ["CrippleSpell"] = {     -- needs to be added to spell list and have entries made
+            "Crippling Spasm",   -- Level 66
+            "Cripple",           -- Level 53, Starts to become worth it, depending on target
+            "Incapacitate",      -- Level 41, Likely not worth
+            "Listless Power",    -- Level 29, Definitely not worth
         },
         ["MeleeProcBuff"] = {
-            "Talisman of the Panther",
-            -- "Spirit of the Panther", -- 69, group spell == less casting, longer duration, more avail to do other things
-            --"Talisman of the Leopard", -- EQ Might Custom, but item only currently
-            -- "Spirit of the Leopard", -- 61, group spell == less casting, longer duration, more avail to do other things
-            "Talisman of the Jaguar", -- 61
-            --  "Spirit of the Jaguar", -- 57, group spell == less casting, longer duration, more avail to do other things
-            "Talisman of the Puma",   -- 55
-            "Spirit of the Puma",     -- 50
+            "Talisman of the Panther", -- Level 70
+            -- "Spirit of the Panther",   -- Level 69, group spell == less casting, longer duration, more avail to do other things
+            -- "Talisman of the Leopard", -- Level 66 EQ Might Custom, but item only currently
+            -- "Spirit of the Leopard",   -- Level 61, group spell == less casting, longer duration, more avail to do other things
+            "Talisman of the Jaguar", -- Level 61
+            -- "Spirit of the Jaguar",    -- Level 57, group spell == less casting, longer duration, more avail to do other things
+            "Talisman of the Puma",   -- Level 55
+            "Spirit of the Puma",     -- Level 50
         },
         ["SlowProcBuff"] = {
-            "Lassitude",
-            "Lingering Sloth",
+            "Lassitude",       -- Level 70
+            "Lingering Sloth", -- Level 68
         },
         ['RezSpell'] = {
             'Incarnate Anew', -- Level 59
         },
         ["HealSpell"] = {
-            "Ancient: Wilslik's Mending",
-            "Yoppa's Mending",
-            "Daluda's Mending",
-            "Tnarg's Mending",
-            "Chloroblast",
-            "Kragg's Salve",
-            "Superior Healing",
-            "Spirit Salve",
-            "Greater Healing",
-            "Healing",
-            "Light Healing",
-            "Minor Healing",
+            "Ancient: Wilslik's Mending", -- Level 70
+            "Yoppa's Mending",            -- Level 67
+            "Daluda's Mending",           -- Level 65
+            "Tnarg's Mending",            -- Level 62
+            "Chloroblast",                -- Level 55
+            "Superior Healing",           -- Level 51
+            "Kragg's Salve",              -- Level 49
+            "Spirit Salve",               -- Level 39
+            "Greater Healing",            -- Level 29
+            "Healing",                    -- Level 19
+            "Light Healing",              -- Level 9
+            "Minor Healing",              -- Level 1
         },
         ["GroupRenewalHoT"] = {
-            "Ancient: Ghost of Vitality",
-            "Ghost of Renewal",
+            "Ancient: Ghost of Vitality", -- Level 70
+            "Ghost of Renewal",           -- Level 70
         },
         ['SnareHot'] = {
-            "Torpor",
-            "Stoicism",
+            "Torpor",   -- Level 60
+            "Stoicism", -- Level 44
         },
         ["SingleHot"] = {
-            "Halcyon Breeze",
-            "Spiritual Serenity",
-            "Breath of Trushar",
-            "Quiescence",
-            "Spiritual Rejuvenation",
+            "Halcyon Breeze",         -- Level 71
+            "Spiritual Serenity",     -- Level 70
+            "Breath of Trushar",      -- Level 65
+            "Quiescence",             -- Level 65
+            "Spiritual Rejuvenation", -- Level 62
         },
         ["CanniSpell"] = {
-            "Ancestral Bargain",
-            "Ancient: Ancestral Calling",
-            "Pained Memory",
-            "Ancient: Chaotic Pain",
-            "Cannibalize IV",
-            "Cannibalize III",
-            "Cannibalize II",
-            "Cannibalize",
+            "Ancestral Bargain",          -- Level 71
+            "Ancient: Ancestral Calling", -- Level 70
+            "Pained Memory",              -- Level 68
+            "Ancient: Chaotic Pain",      -- Level 65
+            "Cannibalize IV",             -- Level 58
+            "Cannibalize III",            -- Level 54
+            "Cannibalize II",             -- Level 38
+            "Cannibalize",                -- Level 23
         },
         ["PoisonNuke"] = {
-            "Sting of the Queen", -- Start fast poison nuke
-            "Ahnkaul's Spear of Venom",
-            "Yoppa's Spear of Venom",
-            "Spear of Torment",
-            "Blast of Venom",
-            "Shock of Venom",
-            "Blast of Poison",
-            "Shock of the Tainted",
+            "Sting of the Queen",       -- Level 71, Start fast poison nuke
+            "Ahnkaul's Spear of Venom", -- Level 70
+            "Yoppa's Spear of Venom",   -- Level 66
+            "Spear of Torment",         -- Level 61
+            "Blast of Venom",           -- Level 54
+            "Shock of Venom",           -- Level 47
+            "Blast of Poison",          -- Level 42
+            "Shock of the Tainted",     -- Level 34
         },
         ["ColdNuke"] = {
             --- ColdNuke - Level 4+
-            "Ice Age",
-            "Velium Strike",
-            "Ice Strike",
-            "Blizzard Blast",
-            "Winter's Roar",
-            "Frost Strike",
-            "Spirit Strike",
-            "Frost Rift",
+            "Ice Age",        -- Level 69
+            "Velium Strike",  -- Level 64
+            "Ice Strike",     -- Level 54
+            "Blizzard Blast", -- Level 44
+            "Winter's Roar",  -- Level 33
+            "Frost Strike",   -- Level 23
+            "Spirit Strike",  -- Level 14
+            "Frost Rift",     -- Level 4
         },
         ["CurseDot"] = {
             -- Curse Dot 1 Stacking: Curse - Long Dot(30s) - Level 34+
-            "Curse of Sisslak",
-            "Bane",
-            "Anathema",
-            "Odium",
-            "Curse",
+            "Curse of Sisslak", -- Level 69
+            "Bane",             -- Level 64
+            "Anathema",         -- Level 54
+            "Odium",            -- Level 43
+            "Curse",            -- Level 34
         },
         ["SaryrnDot"] = {
             -- Stacking: Blood of Saryrn - Long Dot(42s) - Level 8+
-            "Blood of Yoppa",
-            "Blood of Saryrn",
-            "Ancient: Scourge of Nife",
-            "Bane of Nife",
-            "Envenomed Bolt",
-            "Venom of the Snake",
-            "Envenomed Breath",
-            "Tainted Breath",
+            "Blood of Yoppa",           -- Level 70
+            "Blood of Saryrn",          -- Level 65
+            "Ancient: Scourge of Nife", -- Level 60
+            "Bane of Nife",             -- Level 56
+            "Envenomed Bolt",           -- Level 49
+            "Venom of the Snake",       -- Level 37
+            "Envenomed Breath",         -- Level 24
+            "Tainted Breath",           -- Level 8
         },
         ["UltorDot"] = {
             ---, Stacking: Breath of Ultor - Long Dot(84s) - Level 4+
-            "Breath of Ternsmochin",
-            "Breath of Wunshi",
-            "Breath of Ultor",
-            "Pox of Bertoxxulous",
-            "Plague",
-            "Scourge",
-            "Affliction",
-            "Sicken",
+            "Breath of Ternsmochin", -- Level 70
+            "Breath of Wunshi",      -- Level 67
+            "Breath of Ultor",       -- Level 64
+            "Pox of Bertoxxulous",   -- Level 59
+            "Plague",                -- Level 49
+            "Scourge",               -- Level 31
+            "Affliction",            -- Level 19
+            "Sicken",                -- Level 4
         },
         ['PBAEPoison'] = {
-            "Yoppa's Rain of Venom",
-            "Tears of Saryn",
-            "Torrent of Poison",
-            -- "Gale of Poison",
-            -- "Poison Storm",
+            "Yoppa's Rain of Venom", -- Level 68
+            "Tears of Saryrn",       -- Level 63
+            "Torrent of Poison",     -- Level 55
+            -- "Gale of Poison",     -- Level 36
+            -- "Poison Storm",       -- Level 22
         },
-        ["PetSpell"] = { --We need to add handling for commune to get the mammoth/etc
+        ["PetSpell"] = {            --We need to add handling for commune to get the mammoth/etc
             -- Pet Spell - 32+
-            "Farrel's Companion",
-            "True Spirit",
-            "Spirit of the Howler",
-            "Frenzied Spirit",
-            "Guardian spirit",
-            "Vigilant Spirit",
-            "Companion Spirit",
+            "Farrel's Companion",   -- Level 67
+            "True Spirit",          -- Level 61
+            "Spirit of the Howler", -- Level 55
+            "Frenzied Spirit",      -- Level 45
+            "Guardian spirit",      -- Level 41
+            "Vigilant Spirit",      -- Level 37
+            "Companion Spirit",     -- Level 32
         },
         -- ["PetBuffSpell"] = { -- Haste is generally better
         --     ---Pet Buff Spell - 50+
-        --     "Spirit Quickening",
+        --     "Spirit Quickening", -- Level 50
         -- },
         ['CurePoison'] = {
-            "Eradicate Poison",
-            "Counteract Poison",
-            "Cure Poison",
+            "Eradicate Poison",  -- Level 56
+            "Counteract Poison", -- Level 26
+            "Cure Poison",       -- Level 2
         },
         ['CureDisease'] = {
-            "Eradicate Disease",
-            "Counteract Disease",
-            "Cure Disease",
+            "Eradicate Disease",  -- Level 52
+            "Counteract Disease", -- Level 22
+            "Cure Disease",       -- Level 1
         },
         ['CureCurse'] = {
-            "Eradicate Curse",
-            "Remove Greater Curse",
-            "Remove Curse",
-            "Remove Lesser Curse",
-            "Remove Minor Curse",
+            "Eradicate Curse",      -- Level 54
+            "Remove Greater Curse", -- Level 54
+            "Remove Curse",         -- Level 38
+            "Remove Lesser Curse",  -- Level 24
+            "Remove Minor Curse",   -- Level 9
         },
         ['CureCorrupt'] = {
-            "Cure Corruption",
+            "Cure Corruption", -- Level 65
         },
         -- ['GroupCure'] = {
-        --     "Blood of Nadox",
+        --     "Blood of Nadox", -- Level 52
         -- },
         ["RegenBuff"] = {
-            "Spirit of the Stoic One",
-            "Talisman of Perseverance",
-            "Spirit of Perseverance",
-            "Blessing of Replenishment", -- 63
-            "Replenishment",
+            "Spirit of the Stoic One",   -- Level 70
+            "Talisman of Perseverance",  -- Level 69
+            "Spirit of Perseverance",    -- Level 66
+            "Blessing of Replenishment", -- Level 63
+            "Replenishment",             -- Level 61
             "Regrowth of Dar Khura",     -- Level 56
-            "Regrowth",
-            "Chloroplast",
-            "Regeneration", -- Level 22
+            "Regrowth",                  -- Level 52
+            "Chloroplast",               -- Level 39
+            "Regeneration",              -- Level 23
         },
         ["ShrinkSpell"] = {
-            "Shrink",
+            "Shrink",             -- Level 15
         },
-        ["PutridDecay"] = { -- Level 66 Poi/Dis resist debuff
-            "Putrid Decay",
+        ["PutridDecay"] = {       -- Level 66 Poi/Dis resist debuff
+            "Putrid Decay",       -- Level 66
         },
-        ['Minionskin'] = { --EQM Custom: HP/Regen/mitigation (May need to block druid HP buff line on pet)
-            "Major Minionskin",
-            "Greater Minionskin",
-            "Minionskin",
-            "Lesser Minionskin",
+        ['Minionskin'] = {        --EQM Custom: HP/Regen/mitigation (May need to block druid HP buff line on pet)
+            "Major Minionskin",   -- Level 66
+            "Greater Minionskin", -- Level 56
+            "Minionskin",         -- Level 43
         },
         ['MeleeBuff'] = {
             "Ancient: Talisman of Might", -- Level 70, Group
             "Talisman of Might",          -- Level 70, Group
-            "Spirit of Might",            -- Level 68, Single Target
+            "Spirit of Might",            -- Level 67, Single Target
         },
         ['VirulentDot'] = {               -- waiting to see where this goes for now, this is worse than some lower level dots
-            "Virulent Bolt",
+            "Virulent Bolt",              -- Level 58
         },
     },
     ['Helpers']           = {

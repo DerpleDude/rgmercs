@@ -146,225 +146,224 @@ local _ClassConfig = {
     ['AbilitySets']   = {
         --Laz spells to look into: Fickle Shadows
         ['Mantle'] = {
-            "Soul Carapace",
-            "Ancient: Guard of Chivalry", -- EQM Custom
-            "Soul Shield",
-            "Soul Guard",
-            "Ichor Guard", -- Level 56, Timer 5
-            "Squire Guard",
+            "Soul Carapace",              -- Level 71
+            "Ancient: Guard of Chivalry", -- Level 68 EQM Custom
+            "Soul Shield",                -- Level 67
+            "Soul Guard",                 -- Level 61
+            "Ichor Guard",                -- Level 56 Timer 5
+            "Squire Guard",               -- Level 40
         },
         ['BlockDisc'] = {
-            "Deflection Discipline",
+            "Deflection Discipline", -- Level 59
         },
 
-        ['LeechCurse'] = { 'Leechcurse Discipline', },
+        ['LeechCurse'] = { 'Leechcurse Discipline', },  -- Level 60
 
-        ['UnholyAura'] = { 'Unholy Aura Discipline', },
+        ['UnholyAura'] = { 'Unholy Aura Discipline', }, -- Level 55
 
         ['PetSpell'] = {
-            "Son of Decay",
-            "Invoke Death",
-            "Cackling Bones",
-            "Leering Corpse",
-            "Malignant Dead",
-            "Summon Dead",
-            "Animate Dead",
-            "Restless Bones",
-            "Bone Walk",
-            "Convoke Shadow",
-            "Leering Corpse,",
+            "Son of Decay",   -- Level 68
+            "Invoke Death",   -- Level 64
+            "Cackling Bones", -- Level 58
+            "Malignant Dead", -- Level 52
+            "Summon Dead",    -- Level 46
+            "Animate Dead",   -- Level 38
+            "Restless Bones", -- Level 30
+            "Convoke Shadow", -- Level 22
+            "Bone Walk",      -- Level 14
+            "Leering Corpse", -- Level 7
         },
         ['PetHaste'] = {
-            "Amplify Death",
-            "Rune of Decay",
-            "Augmentation of Death",
-            "Augment Death",
-            "Strengthen Death",
+            "Amplify Death",           -- Level 71
+            "Rune of Decay",           -- Level 69
+            "Augmentation of Death",   -- Level 64
+            "Augment Death",           -- Level 60
+            "Strengthen Death",        -- Level 29
         },
         ['Horror'] = {                 -- HP Tap Proc
             "Shroud of the Nightborn", -- Level 71
-            "Marrowthirst Horror",     -- EQM Added
-            "Shroud of Discord",       -- Level 67 -- Buff Slot 1 <
+            "Marrowthirst Horror",     -- Level 70 EQM Added
+            "Shroud of Discord",       -- Level 67 Buff Slot 1 <
             "Black Shroud",            -- Level 65
             "Shroud of Chaos",         -- Level 63
             "Shroud of Death",         -- Level 55
         },
         ['Mental'] = {                 -- Mana Tap Proc
-            "Mental Horror",           -- Level 65 --Buff Slot 1 >
+            "Mental Horror",           -- Level 65 Buff Slot 1 >
             "Mental Corruption",       -- Level 52
         },
         ['Skin'] = {
             "Decrepit Skin", -- Level 70
         },
         ['SelfDS'] = {
-            "Banshee Aura",
+            "Banshee Aura", -- Level 54
         },
         ['CloakHP'] = {
-            "Cloak of the Akheva",
-            "Cloak of Luclin",
-            "Cloak of Discord",
+            "Cloak of Discord",    -- Level 70
+            "Cloak of Luclin",     -- Level 65
+            "Cloak of the Akheva", -- Level 60
         },
         ['CallAtk'] = {
-            "Call of Darkness",
+            "Call of Darkness", -- Level 54
         },
         ['AETaunt'] = {
             "Dread Gaze", -- Level 69
         },
         ['PoisonDot'] = {
             "Blood of the Blacktalon", -- Level 71
+            "Blood of Inruku",         -- Level 68
+            "Blood of Discord",        -- Level 66
+            "Blood of Hate",           -- Level 63
             "Blood of Pain",           -- Level 41
-            "Blood of Hate",
-            "Blood of Discord",
-            "Blood of Inruku",
         },
         ['SpearNuke'] = {
-            "Spear of Decay",
-            "Miasmic Spear",
-            "Spear of Muram",
+            "Spear of Muram",   -- Level 69
+            "Miasmic Spear",    -- Level 65
+            "Spear of Decay",   -- Level 64
+            "Spear of Plague",  -- Level 54
+            "Spear of Pain",    -- Level 48
+            "Spear of Disease", -- Level 34
             "Spike of Disease", -- Level 1
-            "Spear of Disease",
-            "Spear of Pain",
-            "Spear of Plague",
         },
         ['BondTap'] = {
-            "Bond of the Blacktalon", -- EQM Added
-            "Bond of Inruku",
-            "Bond of Death",
-            "Vampiric Curse", -- Level 57
+            "Bond of the Blacktalon", -- Level 70 EQM Added
+            "Bond of Inruku",         -- Level 66
+            "Bond of Death",          -- Level 62
+            "Vampiric Curse",         -- Level 57
         },
         ['LifeTap'] = {
-            "Touch of the Devourer",
-            "Leech Soul", -- EQM Custom
-            "Touch of Inruku",
-            "Touch of Innoruuk",
-            "Touch of Volatis",
-            "Drain Soul",
-            "Drain Spirit",
-            "Spirit Tap",
-            "Siphon Life",
-            "Life Leech",
-            "Lifedraw",
-            "Lifespike", -- Level 15
-            "Lifetap",   -- Level 8
+            "Touch of the Devourer", -- Level 70
+            "Leech Soul",            -- Level 68 EQM Custom
+            "Touch of Inruku",       -- Level 67
+            "Touch of Innoruuk",     -- Level 65
+            "Touch of Volatis",      -- Level 62
+            "Drain Soul",            -- Level 60
+            "Drain Spirit",          -- Level 55
+            "Spirit Tap",            -- Level 51
+            "Siphon Life",           -- Level 47
+            "Life Leech",            -- Level 44
+            "Lifedraw",              -- Level 25
+            "Lifespike",             -- Level 15
+            "Lifetap",               -- Level 8
         },
         ['LifeTap2'] = {
-            "Touch of the Devourer",
-            "Leech Soul", -- EQM Custom
-            "Touch of Inruku",
-            "Touch of Innoruuk",
-            "Touch of Volatis",
-            "Drain Soul",
-            "Drain Spirit",
-            "Spirit Tap",
-            "Siphon Life",
-            "Life Leech",
-            "Lifedraw",
-            "Lifespike",
-            "Lifetap", -- Level 8
+            "Touch of the Devourer", -- Level 70
+            "Leech Soul",            -- Level 68 EQM Custom
+            "Touch of Inruku",       -- Level 67
+            "Touch of Innoruuk",     -- Level 65
+            "Touch of Volatis",      -- Level 62
+            "Drain Soul",            -- Level 60
+            "Drain Spirit",          -- Level 55
+            "Spirit Tap",            -- Level 51
+            "Siphon Life",           -- Level 47
+            "Life Leech",            -- Level 44
+            "Lifedraw",              -- Level 25
+            "Lifespike",             -- Level 15
+            "Lifetap",               -- Level 8
         },
         ['LifeTap3'] = {
-            "Touch of the Devourer",
-            "Leech Soul", -- EQM Custom
-            "Touch of Inruku",
-            "Touch of Innoruuk",
-            "Touch of Volatis",
-            "Drain Soul",
-            "Drain Spirit",
-            "Spirit Tap",
-            "Siphon Life",
-            "Life Leech",
-            "Lifedraw",
-            "Lifespike",
-            "Lifetap", -- Level 8
+            "Touch of the Devourer", -- Level 70
+            "Leech Soul",            -- Level 68 EQM Custom
+            "Touch of Inruku",       -- Level 67
+            "Touch of Innoruuk",     -- Level 65
+            "Touch of Volatis",      -- Level 62
+            "Drain Soul",            -- Level 60
+            "Drain Spirit",          -- Level 55
+            "Spirit Tap",            -- Level 51
+            "Siphon Life",           -- Level 47
+            "Life Leech",            -- Level 44
+            "Lifedraw",              -- Level 25
+            "Lifespike",             -- Level 15
+            "Lifetap",               -- Level 8
         },
         -- ['TouchTap'] = {
         --     "Touch of Draygun",
         -- },
         ['BiteTap'] = {
-            "Zevfeer's Bite", -- Level 62
-            "Ancient: Bite of Chaos",
-            "Inruku's Bite",
-            "Ancient: Bite of Muram",
-            "Blacktalon Bite", -- EQM Added
+            "Ancient: Bite of Muram", -- Level 70
+            "Blacktalon Bite",        -- Level 70 EQM Added
+            "Inruku's Bite",          -- Level 67
+            "Ancient: Bite of Chaos", -- Level 65
+            "Zevfeer's Bite",         -- Level 62
         },
         ['Terror'] = {
-            "Terror of Darkness", -- Level 33
+            "Terror of Vergalid", -- Level 70 EQM added
+            "Terror of Discord",  -- Level 67
+            "Terror of Thule",    -- Level 63
+            "Terror of Terris",   -- Level 59
+            "Terror of Death",    -- Level 53
             "Terror of Shadows",  -- Level 42
-            "Terror of Death",
-            "Terror of Terris",
-            "Terror of Thule",
-            "Terror of Discord",
-            "Terror of Vergalid", -- EQM added
+            "Terror of Darkness", -- Level 33
         },
         ['Terror2'] = {
-            "Terror of Darkness",
-            "Terror of Shadows",
-            "Terror of Death",
-            "Terror of Terris",
-            "Terror of Thule",
-            "Terror of Discord",
-            "Terror of Vergalid", -- EQM added
+            "Terror of Vergalid", -- Level 70 EQM added
+            "Terror of Discord",  -- Level 67
+            "Terror of Thule",    -- Level 63
+            "Terror of Terris",   -- Level 59
+            "Terror of Death",    -- Level 53
+            "Terror of Shadows",  -- Level 42
+            "Terror of Darkness", -- Level 33
         },
         ['Terror3'] = {
-            "Terror of Darkness",
-            "Terror of Shadows",
-            "Terror of Death",
-            "Terror of Terris",
-            "Terror of Thule",
-            "Terror of Discord",
-            "Terror of Vergalid", -- EQM added
+            "Terror of Vergalid", -- Level 70 EQM added
+            "Terror of Discord",  -- Level 67
+            "Terror of Thule",    -- Level 63
+            "Terror of Terris",   -- Level 59
+            "Terror of Death",    -- Level 53
+            "Terror of Shadows",  -- Level 42
+            "Terror of Darkness", -- Level 33
         },
         ['PowerTapAC'] = {
-            "Theft of Agony",
-            "Theft of Pain",
-            "Aura of Pain",
-            "Torrent of Pain",
-            "Shroud of Pain",
-            "Scream of Pain",
+            "Theft of Agony",  -- Level 70
+            "Theft of Pain",   -- Level 68
+            "Aura of Pain",    -- Level 63
+            "Torrent of Pain", -- Level 56
+            "Shroud of Pain",  -- Level 50
+            "Scream of Pain",  -- Level 23
         },
         ['PowerTapAtk'] = {
-            "Theft of Hate",
-            "Aura of Hate",
-            "Torrent of Hate",
-            "Shroud of Hate",
-            "Scream of Hate",
+            "Theft of Hate",   -- Level 70
+            "Aura of Hate",    -- Level 65
+            "Torrent of Hate", -- Level 54
+            "Shroud of Hate",  -- Level 35
+            "Scream of Hate",  -- Level 15
         },
         ['SnareDot'] = {
-            "Festering Darkness",
-            "Cascading Darkness",
-            "Dooming Darkness",
-            "Engulfing Darkness",
-            "Clinging Darkness", -- Level 11
+            "Festering Darkness", -- Level 61
+            "Cascading Darkness", -- Level 59
+            "Dooming Darkness",   -- Level 44
+            "Engulfing Darkness", -- Level 20
+            "Clinging Darkness",  -- Level 11
         },
         ['DireDot'] = {
-            "Dark Constriction",
-            "Asystole",
-            "Heart Flutter",
-            "Disease Cloud",
+            "Dark Constriction", -- Level 66
+            "Asystole",          -- Level 60
+            "Heart Flutter",     -- Level 36
+            "Disease Cloud",     -- Level 5
         },
         ['HateBuff'] = {         --9 minute reuse makes these somewhat ridiculous to gem on the fly.
-            "Voice of Thule",    -- level 60, 12% hate
-            "Voice of Terris",   -- level 55, 10% hate
-            "Voice of Death",    -- level 50, 6% hate
-            "Voice of Shadows",  -- level 46, 4% hate
-            "Voice of Darkness", -- level 39, 2% hate
+            "Voice of Thule",    -- Level 65 12% hate
+            "Voice of Terris",   -- Level 60 10% hate
+            "Voice of Death",    -- Level 55 6% hate
+            "Voice of Shadows",  -- Level 46 4% hate
+            "Voice of Darkness", -- Level 39 2% hate
         },
         ['BladeDisc'] = {
-            "Whirlwind Blade",
-            "Mayhem Blade",
+            "Whirlwind Blade",    -- Level 65
+            "Mayhem Blade",       -- Level 52
         },
-        ['Minionskin'] = { --EQM Custom: HP/Regen/mitigation (May need to block druid HP buff line on pet)
-            "Major Minionskin",
-            "Greater Minionskin",
-            "Minionskin",
-            "Lesser Minionskin",
+        ['Minionskin'] = {        --EQM Custom: HP/Regen/mitigation (May need to block druid HP buff line on pet)
+            "Major Minionskin",   -- Level 66
+            "Greater Minionskin", -- Level 56
+            "Minionskin",         -- Level 43
+            "Lesser Minionskin",  -- not castable for SHD
         },
         ['Protective'] = {
-            "Protective Discipline",
-            "Protective Surge Discipline",
+            "Protective Discipline",       -- Level 69
+            "Protective Surge Discipline", -- Level 45
         },
         ['ForPower'] = {
-            "Challenge for Power",
+            "Challenge for Power", -- Level 71
         },
         -- pact of decay ... is this a lich? level 69
     },

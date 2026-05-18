@@ -50,50 +50,49 @@ local _ClassConfig = {
     },
     ['AbilitySets']   = {
         ['MonkAura'] = {
-            "Master's Aura",
-            "Disciple's Aura",
+            "Master's Aura",   -- Level 66
+            "Disciple's Aura", -- Level 55
         },
         ['Fang'] = {
-            "Dragon Fang",
-            "Clawstriker's Flurry",
+            "Clawstriker's Flurry", -- Level 74
+            "Dragon Fang",          -- Level 69
         },
         ['FistsOfWu'] = {
-            "Fists Of Wu",
+            "Fists Of Wu", -- Level 68
         },
         ['MeleeMit'] = {
-            "Impenetrable Discipline",
-            "Earthwalk Discipline",
-            "Stonestance Discipline",
+            "Impenetrable Discipline", -- Level 70
+            "Earthwalk Discipline",    -- Level 65
+            "Stonestance Discipline",  -- Level 51
         },
         ['FistDisc'] = {
-            "Ashenhand Discipline",
-            "Thunderkick Discipline",
+            "Ashenhand Discipline",   -- Level 60
+            "Thunderkick Discipline", -- Level 52
         },
         ['Heel'] = {
-            "Heel of Kai",
-            "Heel of Kanji",
+            "Heel of Kanji", -- Level 70
         },
         ['Focus'] = {
-            "Last Mile Focus Discipline",
-            "Speed Focus Discipline",
+            "Last Mile Focus Discipline", -- Level 69
+            "Speed Focus Discipline",     -- Level 63
         },
         ['Palm'] = {
-            "Hundred Fists Discipline",
-            "Innerflame Discipline",
+            "Hundred Fists Discipline", -- Level 57
+            "Innerflame Discipline",    -- Level 56
         },
         -- ['ResistantDisc'] = {
-        --     "Dreamwalk Discipline",
-        --     "Resistant Discipline",
+        --     "Dreamwalk Discipline", -- Level 66
+        --     "Resistant Discipline", -- Level 30
         -- },
-        ['HealingDisc'] = { --EQM Custom, 2m duration, 5m reuse, hp regen
-            "Lifebloom Will Discipline",
-            "Rejuvenating Will Discipline",
-            "Healing Determination Discipline",
-            "Healing Will Discipline",
+        ['HealingDisc'] = {                     --EQM Custom, 2m duration, 5m reuse, hp regen
+            "Lifebloom Will Discipline",        -- Level 70
+            "Rejuvenating Will Discipline",     -- Level 68
+            "Healing Determination Discipline", -- Level 66
+            "Healing Will Discipline",          -- Level 59
         },
         ['Claw'] = {
-            "Panther Claw",
-            "Leopard Claw",
+            "Panther Claw", -- Level 66
+            "Leopard Claw", -- Level 61
         },
     },
     ['Helpers']       = {

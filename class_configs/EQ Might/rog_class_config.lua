@@ -54,7 +54,7 @@ return {
     },
     ['AbilitySets']   = {
         ["ThiefBuff"] = {
-            "Thief's Eyes", -- Level 65
+            "Thief's Eyes", -- Level 68
         },
         ["Kinesthetics"] = {
             "Kinesthetics Discipline", -- Level 57
@@ -67,7 +67,7 @@ return {
             "Deadeye Discipline",        -- Level 54
         },
         ["Frenzied"] = {
-            "Frenzied Stabbing Discipline", -- Level 70
+            "Frenzied Stabbing Discipline", -- Level 69
         },
         ["SneakAttack"] = {
             "Razorarc",              -- Level 70
@@ -79,28 +79,27 @@ return {
             "Sneak Attack",          -- Level 20
         },
         ["CADisc"] = {
-            "Counterattack Discipline",
+            "Counterattack Discipline", -- Level 53
         },
         ["AimDisc"] = {
-            "Deadly Aim Discipline", --  Level 68
+            "Deadly Aim Discipline", -- Level 68
         },
         ['Precision'] = {
-            "Deadly Precision Discipline",
+            "Deadly Precision Discipline",      -- Level 63
         },
-        ['HealingDisc'] = { --EQM Custom, 2m duration, 5m reuse, hp regen
-            "Lifebloom Will Discipline",
-            "Rejuvenating Will Discipline",
-            "Healing Determination Discipline",
-            "Healing Will Discipline",
+        ['HealingDisc'] = {                     --EQM Custom, 2m duration, 5m reuse, hp regen
+            "Lifebloom Will Discipline",        -- Level 70
+            "Rejuvenating Will Discipline",     -- Level 68
+            "Healing Determination Discipline", -- Level 66
+            "Healing Will Discipline",          -- Level 59
         },
         ['PoisonGuide'] = {
-            "Guide of Toxicity",
+            "Guide of Toxicity", -- Level 71
         },
         ['Revitalize'] = {
-            "Steely Revitalize",
-            "Iron Revitalize",
-            "Hardened Revitalize",
-            "Revitalize",
+            "Iron Revitalize",     -- Level 68
+            "Hardened Revitalize", -- Level 62
+            "Revitalize",          -- Level 51
         },
     },
     ['RotationOrder'] = {

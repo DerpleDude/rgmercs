@@ -59,309 +59,304 @@ local _ClassConfig = {
     ['AbilitySets']   = {
         --Commented any currently unused spell lines
         ['TwincastAura'] = {
-            "Entrancer's Aura",
+            "Entrancer's Aura", -- Level 71
         },
         ['SpellProcAura'] = {
-            "Illusionist's Aura",
-            "Beguiler's Aura",
+            "Illusionist's Aura", -- Level 66
+            "Beguiler's Aura",    -- Level 55
         },
         ['HasteBuff'] = {
-            "Speed of Ellowind",
-            "Hastening of Salik",
-            "Speed of Salik",
-            "Vallon's Quickening",
+            "Speed of Ellowind",   -- Level 71
+            "Hastening of Salik",  -- Level 70
+            "Speed of Salik",      -- Level 67
+            "Vallon's Quickening", -- Level 65
             -- "Speed of Vallon",
-            "Speed of the Brood",
-            "Visions of Grandeur",
-            "Wondrous Rapidity",
-            "Aanya's Quickening",
-            "Swift Like the Wind",
-            "Celerity",
-            "Alacrity",
-            "Quickness",
+            "Speed of the Brood",  -- Level 60
+            "Visions of Grandeur", -- Level 60
+            "Wondrous Rapidity",   -- Level 58
+            "Aanya's Quickening",  -- Level 53
+            "Swift Like the Wind", -- Level 47
+            "Celerity",            -- Level 39
+            "Alacrity",            -- Level 21
+            "Quickness",           -- Level 15
         },
         ['ManaRegen'] = {
-            "Seer's Intuition",
-            "Ancient: Blessing of Clairvoyance",
-            "Voice of Clairvoyance",
-            "Clairvoyance",
-            "Voice of Quellious",
-            "Tranquility",
-            "Koadic's Endless Intellect",
-            "Gift of Pure Thought",
-            "Clarity II",
-            "Boon of the Clear Mind",
-            "Clarity",
-            "Breeze",
+            "Seer's Intuition",                  -- Level 71
+            "Ancient: Blessing of Clairvoyance", -- Level 70
+            "Voice of Clairvoyance",             -- Level 70
+            "Clairvoyance",                      -- Level 68
+            "Voice of Quellious",                -- Level 65
+            "Tranquility",                       -- Level 63
+            "Koadic's Endless Intellect",        -- Level 60
+            "Gift of Pure Thought",              -- Level 56
+            "Clarity II",                        -- Level 52
+            "Boon of the Clear Mind",            -- Level 42
+            "Clarity",                           -- Level 26
+            "Breeze",                            -- Level 14
         },
         ['MezBuff'] = {
-            "Ward of Bedazzlement",
+            "Ward of Bedazzlement", -- Level 70
         },
         ['TankIllusionBuff'] = {
-            "Boon of the Brute",
+            "Boon of the Brute", -- Level 66
         },
         ['IllusionBuff'] = {
-            "Boon of the Sanguinarch",
-            "Boon of the Vampire",
-            "Night's Dark Terror",
-            "Boon of the Garou",
+            "Boon of the Sanguinarch", -- Level 68
+            "Boon of the Vampire",     -- Level 65
+            "Night's Dark Terror",     -- Level 63
+            "Boon of the Garou",       -- Level 40
         },
         ['SelfHPBuff'] = {
-            "Sorcerous Shield",
-            "Mystic Shield",
-            "Shield of Maelin",
-            "Shield of the Arcane",
-            "Shield of the Magi",
-            "Arch Shielding",
-            "Greater Shielding",
-            "Major Shielding",
-            "Shielding",
-            "Lesser Shielding",
-            "Minor Shielding",
+            "Sorcerous Shield",     -- Level 70
+            "Mystic Shield",        -- Level 66
+            "Shield of Maelin",     -- Level 64
+            "Shield of the Arcane", -- Level 61
+            "Shield of the Magi",   -- Level 54
+            "Arch Shielding",       -- Level 40
+            "Greater Shielding",    -- Level 31
+            "Major Shielding",      -- Level 23
+            "Shielding",            -- Level 16
+            "Lesser Shielding",     -- Level 6
+            "Minor Shielding",      -- Level 1
         },
         ['SelfRune1'] = {
-            "Draconic Rune",
-            "Ethereal Rune",
-            "Arcane Rune",
+            "Draconic Rune", -- Level 70
+            "Ethereal Rune", -- Level 66
+            "Arcane Rune",   -- Level 61
         },
         ['SingleRune'] = {
-            "Rune of Ellowind",
-            "Rune of Salik",
-            "Rune of Zebuxoruk",
-            "Rune V",
-            "Rune IV",
-            "Rune III",
-            "Rune II",
-            "Rune I",
+            "Rune of Ellowind",  -- Level 70
+            "Rune of Salik",     -- Level 67
+            "Rune of Zebuxoruk", -- Level 61
+            "Rune V",            -- Level 52
+            "Rune IV",           -- Level 40
+            "Rune III",          -- Level 33
+            "Rune II",           -- Level 22
+            "Rune I",            -- Level 13
         },
         ['GroupRune'] = {
-            "Rune of Rikkukin",
-            "Rune of the Scale",
+            "Rune of Rikkukin",  -- Level 69
+            "Rune of the Scale", -- Level 61
         },
         ['HateBuff'] = {
-            "Horrifying Visage",
-            "Haunting Visage",
+            "Horrifying Visage", -- Level 56
+            "Haunting Visage",   -- Level 26
         },
         -- ['SingleSpellShield'] = {
-        -- "Aegist of Alendar",
-        --     "Wall of Alendar",
-        --     "Bulwark of Alendar",
-        --     "Protection of Alendar",
-        --     "Guard of Alendar",
-        --     "Ward of Alendar",
+        --     "Aegis of Alendar",      -- Level 71
+        --     "Wall of Alendar",       -- Level 68
+        --     "Bulwark of Alendar",    -- Level 63
+        --     "Protection of Alendar", -- Level 55
+        --     "Guard of Alendar",      -- Level 44
+        --     "Ward of Alendar",       -- Level 29
         -- },
         ['GroupSpellShield'] = {
-            "Circle of Alendar",
+            "Circle of Alendar", -- Level 70
         },
         ['SpellProcBuff'] = {
-            "Mana Recursion",
-            "Mana Flare",
+            "Mana Recursion", -- Level 71
+            "Mana Flare",     -- Level 69
         },
         ['PBAEStunSpell'] = {
-            "Color Snap",
-            "Color Cloud",
-            "Color Slant",
-            "Color Skew",
-            "Color Shift",
-            "Color Flux",
+            "Color Snap",  -- Level 69
+            "Color Cloud", -- Level 63
+            "Color Slant", -- Level 52
+            "Color Skew",  -- Level 43
+            "Color Shift", -- Level 20
+            "Color Flux",  -- Level 3
         },
         ['SpinStunSpell'] = {
-            "Whirl Till You Hurl",
+            "Whirl Till You Hurl", -- Level 9
         },
         ['CharmSpell'] = {
-            "Coax",
-            "Ancient: Voice of Muram",
-            "True Name",
-            "Compel",
-            "Command of Druzzil",
-            "Beckon",
-            "Dictate",
-            "Boltran's Agacerie",
-            "Ordinance",
-            "Allure",
-            "Cajoling Whispers",
-            "Beguile",
-            "Charm",
+            "Coax",                    -- Level 71
+            "Ancient: Voice of Muram", -- Level 70
+            "True Name",               -- Level 70
+            "Compel",                  -- Level 68
+            "Command of Druzzil",      -- Level 64
+            "Beckon",                  -- Level 62
+            "Dictate",                 -- Level 60
+            "Boltran's Agacerie",      -- Level 53
+            "Ordinance",               -- Level 52
+            "Allure",                  -- Level 46
+            "Cajoling Whispers",       -- Level 37
+            "Beguile",                 -- Level 23
+            "Charm",                   -- Level 11
         },
         ['CrippleSpell'] = {
-            "Fractured Consciousness",
-            "Synapsis Spasm",
-            "Cripple",
-            "Incapacitate",
-            "Listless Power",
-            "Disempower",
-            "Enfeeblement",
+            "Fractured Consciousness", -- Level 70
+            "Synapsis Spasm",          -- Level 66
+            "Cripple",                 -- Level 53
+            "Incapacitate",            -- Level 40
+            "Listless Power",          -- Level 25
+            "Disempower",              -- Level 16
+            "Enfeeblement",            -- Level 4
         },
         ['SlowSpell'] = {
-            "Desolate Deeds",
-            "Dreary Deeds",
-            "Forlorn Deeds",
-            "Shiftless Deeds",
-            "Tepid Deeds",
-            "Languid Pace",
+            "Desolate Deeds",  -- Level 69
+            "Dreary Deeds",    -- Level 65
+            "Forlorn Deeds",   -- Level 57
+            "Shiftless Deeds", -- Level 41
+            "Tepid Deeds",     -- Level 23
+            "Languid Pace",    -- Level 9
         },
         ['Dispel'] = {
-            "Abashi's Disempowerment",
-            "Recant Magic",
-            "Pillage Enchantment",
-            "Nullify Magic",
-            "Strip Enchantment",
-            "Cancel Magic",
-            "Taper Enchantment",
+            "Recant Magic",        -- Level 53
+            "Pillage Enchantment", -- Level 42
+            "Nullify Magic",       -- Level 28
+            "Strip Enchantment",   -- Level 22
+            "Cancel Magic",        -- Level 7
+            "Taper Enchantment",   -- Level 1
         },
         ['TashSpell'] = {
-            "Echo of Tashan",
-            "Howl of Tashan",
-            "Tashanian",
-            "Tashania",
-            "Tashani",
-            "Tashina",
+            "Echo of Tashan", -- Level 71
+            "Howl of Tashan", -- Level 61
+            "Tashanian",      -- Level 57
+            "Tashania",       -- Level 41
+            "Tashani",        -- Level 18
+            "Tashina",        -- Level 2
         },
         -- ['ManaDrainNuke'] = {
-        --     "Torment of Scio",
-        --     "Torment of Argli",
-        --     "Scryer's Trespass",
-        --     "Wandering Mind",
-        --     "Mana Sieve",
+        --     "Torment of Scio",     -- Level 63
+        --     "Torment of Argli",    -- Level 56
+        --     "Scryer's Trespass",   -- Level 52
+        --     "Wandering Mind",      -- Level 38
+        --     "Mana Sieve",          -- Level 30
         -- },
         ['StrangleDot'] = {
-            "Thin Air",
-            "Arcane Noose",
-            "Strangle",
-            "Asphyxiate",
-            "Gasping Embrace",
-            "Suffocate",
-            "Choke",
-            "Suffocating Sphere",
-            "Shallow Breath",
+            "Thin Air",           -- Level 71
+            "Arcane Noose",       -- Level 68
+            "Strangle",           -- Level 62
+            "Asphyxiate",         -- Level 59
+            "Gasping Embrace",    -- Level 47
+            "Suffocate",          -- Level 26
+            "Choke",              -- Level 11
+            "Suffocating Sphere", -- Level 4
+            "Shallow Breath",     -- Level 1
         },
         ['MindDot'] = {
-            "Mind Shatter",
+            "Mind Shatter", -- Level 70
         },
         ['MagicNuke'] = {
-            "Polychromatic Assault",
-            "Ancient: Neurosis",
-            "Psychosis",
-            "Ancient: Chaos Madness",
-            "Madness of Ikkibi",
-            "Insanity",
-            "Ancient: Chaotic Visions",
-            "Dementing Visions",
-            "Dementia",
-            "Discordant Mind",
-            "Anarchy",
-            "Chaos Flux",
-            "Sanity Warp",
-            "Chaotic Feedback",
-            "Chromarcana",
+            "Polychromatic Assault",    -- Level 71
+            "Ancient: Neurosis",        -- Level 68
+            "Psychosis",                -- Level 68
+            "Ancient: Chaos Madness",   -- Level 65
+            "Madness of Ikkibi",        -- Level 65
+            "Insanity",                 -- Level 64
+            "Ancient: Chaotic Visions", -- Level 60
+            "Dementing Visions",        -- Level 58
+            "Dementia",                 -- Level 54
+            "Discordant Mind",          -- Level 43
+            "Anarchy",                  -- Level 32
+            "Chaos Flux",               -- Level 21
+            "Sanity Warp",              -- Level 16
+            "Chaotic Feedback",         -- Level 7
         },
-        ['PetSpell'] = { -- Might Specific: Monster Summoning avail on ENC and superior to normal pets
-            "Monster Summoning V",
-            "Monster Summoning IV",
-            "Monster Summoning III",
-            "Monster Summoning II",
-            "Monster Summoning I",
-            -- "Salik's Animation",
-            -- "Aeldorb's Animation",
-            -- "Zumaik's Animation",
-            -- "Kintaz's Animation",
-            -- "Yegoreff's Animation",
-            -- "Aanya's Animation",
-            "Boltran's Animation",
-            "Uleen's Animation",
-            "Sagar's Animation",
-            "Sisna's Animation",
-            "Shalee's Animation",
-            "Kilan's Animation",
-            "Mircyl's Animation",
-            "Juli's Animation",
-            "Pendril's Animation",
+        ['PetSpell'] = {                -- Might Specific: Monster Summoning avail on ENC and superior to normal pets
+            "Monster Summoning V",      -- Level 70
+            "Monster Summoning IV",     -- Level 66
+            -- "Salik's Animation",     -- Level 66
+            "Monster Summoning III",    -- Level 61
+            -- "Aeldorb's Animation",   -- Level 62
+            -- "Zumaik's Animation",    -- Level 55
+            "Monster Summoning II", -- Level 52
+            -- "Kintaz's Animation",    -- Level 48
+            -- "Yegoreff's Animation",  -- Level 41
+            -- "Aanya's Animation",     -- Level 37
+            "Monster Summoning I", -- Level 32
+            "Boltran's Animation", -- Level 31
+            "Uleen's Animation",   -- Level 29
+            "Sagar's Animation",   -- Level 22
+            "Sisna's Animation",   -- Level 17
+            "Shalee's Animation",  -- Level 14
+            "Kilan's Animation",   -- Level 9
+            "Mircyl's Animation",  -- Level 7
+            "Juli's Animation",    -- Level 2
+            "Pendril's Animation", -- Level 1
         },
         ['MezAESpell'] = {
-            "Wake of Felicity",
-            "Bliss of the Nihil",
-            "Fascination",
-            "Mesmerization",
-            "Bewildering Wave",
-            "Stupefying Wave",
+            "Wake of Felicity",   -- Level 69
+            "Bliss of the Nihil", -- Level 65
+            "Fascination",        -- Level 52
+            "Mesmerization",      -- Level 16
         },
         -- ['MezPBAESpell'] = {
-        --     "Circle of Dreams",
-        --     "Word of Morell",
-        --     "Entrancing Lights",
-        --     "Bewilderment",
-        --     "Wonderment",
+        --     "Bewilderment",      -- Level 71
+        --     "Circle of Dreams",  -- Level 68
+        --     "Word of Morell",    -- Level 62
+        --     "Entrancing Lights", -- Level 30
         -- },
         ['MezSpell'] = {
-            "Bewilderment",
-            "Perplexing Flash",
-            "Euphoria",
-            "Echoing Madness",
-            "Felicity",
-            "Bliss",
-            "Sleep",
-            "Apathy",
-            "Ancient: Eternal Rapture",
-            "Rapture",
-            "Glamour of Kintaz",
-            "Enthrall",
-            "Mesmerize",
+            "Bewilderment",             -- Level 71
+            "Perplexing Flash",         -- Level 70
+            "Euphoria",                 -- Level 69
+            "Echoing Madness",          -- Level 68
+            "Felicity",                 -- Level 67
+            "Bliss",                    -- Level 64
+            "Sleep",                    -- Level 63
+            "Apathy",                   -- Level 61
+            "Ancient: Eternal Rapture", -- Level 60
+            "Rapture",                  -- Level 59
+            "Glamour of Kintaz",        -- Level 54
+            "Enthrall",                 -- Level 13
+            "Mesmerize",                -- Level 2
         },
         -- ['MezSpellFast'] = {
-        --     "Perplexing Flash",
+        --     "Perplexing Flash",  -- Level 70
         -- },
         -- ['BlurSpell'] = {
-        --     "Memory Flux",
-        --     "Reoccurring Amnesia",
-        --     "Memory Blur",
+        --     "Memory Flux",          -- Level 55
+        --     "Reoccurring Amnesia",  -- Level 45
+        --     "Memory Blur",          -- Level 10
         -- },
         -- ['AEBlurSpell'] = {
-        --     "Blanket of Forgetfulness",
-        --     "Mind Wipe",
+        --     "Blanket of Forgetfulness",  -- Level 46
+        --     "Mind Wipe",                 -- Level 36
         -- },
         -- ['CalmSpell'] = {
-        -- "Quiet Mind",
-        --     "Placate",
-        --     "Pacification",
-        --     "Pacify",
-        --     "Calm",
-        --     "Soothe",
-        --     "Lull",
+        --     "Quiet Mind",     -- Level 70
+        --     "Placate",        -- Level 67
+        --     "Pacification",   -- Level 62
+        --     "Pacify",         -- Level 35
+        --     "Calm",           -- Level 18
+        --     "Soothe",         -- Level 6
+        --     "Lull",           -- Level 1
         -- },
         -- ['FearSpell'] = {
-        --     "Anxiety Attack",
-        --     "Jitterskin",
-        --     "Phobia",
-        --     "Trepidation",
-        --     "Invoke Fear",
-        --     "Chase the Moon",
-        --     "Fear",
+        --     "Anxiety Attack",  -- Level 67
+        --     "Jitterskin",      -- Level 62
+        --     "Phobia",          -- Level 57
+        --     "Trepidation",     -- Level 56
+        --     "Invoke Fear",     -- Level 35
+        --     "Chase the Moon",  -- Level 16
+        --     "Fear",            -- Level 3
         -- },
         -- ['RootSpell'] = {
-        --     "Greater Fetter",
-        --     "Fetter",
-        --     "Paralyzing Earth",
-        --     "Immobilize",
-        --     "Instill",
-        --     "Root",
+        --     "Greater Fetter",    -- Level 61
+        --     "Fetter",            -- Level 58
+        --     "Paralyzing Earth",  -- Level 45
+        --     "Immobilize",        -- Level 39
+        --     "Instill",           -- Level 25
+        --     "Root",              -- Level 6
         -- },
         -- ['ColoredNuke'] = {
-        --     "Colored Chaos",
+        --     "Colored Chaos",  -- Level 69
         -- },
-        ['Minionskin'] = { --EQM Custom: HP/Regen/mitigation (May need to block druid HP buff line on pet)
-            "Major Minionskin",
-            "Greater Minionskin",
-            "Minionskin",
-            "Lesser Minionskin",
+        ['Minionskin'] = {        --EQM Custom: HP/Regen/mitigation (May need to block druid HP buff line on pet)
+            "Major Minionskin",   -- Level 66
+            "Greater Minionskin", -- Level 56
+            "Minionskin",         -- Level 43
+            "Lesser Minionskin",  -- Level 30
         },
         ['KoadicRune'] = {
-            "Koadic's Guard IV",
-            "Koadic's Guard III",
-            "Koadic's Guard II",
-            "Koadic's Guard I",
+            "Koadic's Guard IV",  -- Level 67
+            "Koadic's Guard III", -- Level 62
+            "Koadic's Guard II",  -- Level 55
+            "Koadic's Guard I",   -- Level 43
         },
         ['PetHealSpell'] = {
-            "Renewal of Lucifer",
+            "Renewal of Lucifer", -- Level 68
         },
     },
     ['AASets']        = {

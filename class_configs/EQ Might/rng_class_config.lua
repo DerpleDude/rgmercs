@@ -56,189 +56,186 @@ return {
         },
     },
     ['AbilitySets']       = {
-        ['PredatorBuff'] = { -- Groupv2 Atk Buff
-            "Snarl of the Predator",
-            "Howl of the Predator",
-            "Spirit of the Predator",
-            "Call of the Predator",
-            "Mark of the Predator",
+        ['PredatorBuff'] = {                  -- Groupv2 Atk Buff
+            "Snarl of the Predator",          -- Level 71
+            "Howl of the Predator",           -- Level 69
+            "Spirit of the Predator",         -- Level 64
+            "Call of the Predator",           -- Level 60
+            "Mark of the Predator",           -- Level 56
         },
-        ['StrengthHPBuff'] = { -- Groupv2 HP Type 2, Atk
-            "Strength of the Forest Stalker",
-            "Strength of the Hunter",
-            "Strength of Tunare",
-            "Strength of Nature", -- Single Target
+        ['StrengthHPBuff'] = {                -- Groupv2 HP Type 2, Atk
+            "Strength of the Forest Stalker", -- Level 71
+            "Strength of the Hunter",         -- Level 67
+            "Strength of Tunare",             -- Level 62
+            "Strength of Nature",             -- Level 51 - Single Target
         },
-        ['SkinBuff'] = {          -- ST HP Type 1, small regen
-            "Onyx Skin",
-            "Natureskin",
-            "Skin like Nature",
-            "Skin like Diamond",
-            "Skin like Steel",
-            "Skin like Rock",
-            "Skin like Wood",
+        ['SkinBuff'] = {                      -- ST HP Type 1, small regen
+            "Onyx Skin",                      -- Level 70
+            "Natureskin",                     -- Level 65
+            "Skin like Nature",               -- Level 59
+            "Skin like Diamond",              -- Level 54
+            "Skin like Steel",                -- Level 38
+            "Skin like Rock",                 -- Level 21
+            "Skin like Wood",                 -- Level 7
         },
-        ['EyeBuff'] = { -- Self Archery Buff
-            "Eyes of the Hawk",
-            "Eyes of the Owl",
-            "Eyes of the Eagle",
-            "Eagle Eye",
-            "Falcon Eye",
-            "Hawk Eye",
+        ['EyeBuff'] = {                       -- Self Archery Buff
+            "Eagle Eye",                      -- Level 58
+            "Falcon Eye",                     -- Level 52
+            "Hawk Eye",                       -- Level 11
         },
-        ['FireNukeT1'] = { -- ST Fire DD, Timer 1, 30s Recast
-            "Volcanic Ash",
-            "Hearth Embers",
-            "Sylvan Burn",
-            "Call of Flame",
-            "Flaming Arrow",
+        ['FireNukeT1'] = {                    -- ST Fire DD, Timer 1, 30s Recast
+            "Volcanic Ash",                   -- Level 71
+            "Hearth Embers",                  -- Level 69
+            "Sylvan Burn",                    -- Level 65
+            "Call of Flame",                  -- Level 49
+            "Flaming Arrow",                  -- Level 29
         },
-        ['ColdNukeT2'] = { -- ST Cold DD, Timer 2, 30s Recast
-            "Icefall Chill",
-            "Frost Wind",
-            "Icewind",
+        ['ColdNukeT2'] = {                    -- ST Cold DD, Timer 2, 30s Recast
+            "Icefall Chill",                  -- Level 71
+            "Frost Wind",                     -- Level 68
+            "Icewind",                        -- Level 52
         },
-        ['ColdNukeT3'] = { -- ST Cold DD, Timer 3, 30s Recast
-            "Ancient: North Wind",
-            "Frozen Wind",
+        ['ColdNukeT3'] = {                    -- ST Cold DD, Timer 3, 30s Recast
+            "Ancient: North Wind",            -- Level 70
+            "Frozen Wind",                    -- Level 63
         },
-        ['FireNukeT4'] = { -- ST Fire DD, Timer 4, 30s Recast
-            "Scorched Earth",
-            "Ancient: Burning Chaos",
-            "Brushfire",
-            "Burning Arrow",
+        ['FireNukeT4'] = {                    -- ST Fire DD, Timer 4, 30s Recast
+            "Scorched Earth",                 -- Level 70
+            "Ancient: Burning Chaos",         -- Level 65
+            "Brushfire",                      -- Level 64
+            "Burning Arrow",                  -- Level 39
         },
         ["DDProc"] = {
-            "Call of Lightning",
-            "Cry of Thunder",
-            "Call of Ice",
-            "Call of Fire",
-            "Call of Sky",
+            "Call of Lightning", -- Level 70
+            "Cry of Thunder",    -- Level 65
+            "Call of Ice",       -- Level 58
+            "Call of Fire",      -- Level 55
+            "Call of Sky",       -- Level 36
         },
         -- ["SummonedProc"] = {
-        --     "Nature's Denial",
-        --     "Nature's Rebuke",
+        --     "Nature's Denial", -- Level 69
+        --     "Nature's Rebuke", -- Level 64
         -- },
         ['SelfBuff'] = {
-            "Ward of the Hunter",
-            "Protection of the Wild",
-            "Warder's Protection",
-            "Nature's Precision", --Self ATK Buff, filler
-            "Firefist",           --Self ATK Buff, filler
+            "Ward of the Hunter",     -- Level 70
+            "Protection of the Wild", -- Level 65
+            "Warder's Protection",    -- Level 60
+            "Nature's Precision",     -- Level 37 - Self ATK Buff, filler
+            "Firefist",               -- Level 17 - Self ATK Buff, filler
         },
-        ['ArrowHail'] = {         -- DirAE multihit archery attack
-            "Hail of Arrows",
+        ['ArrowHail'] = {             -- DirAE multihit archery attack
+            "Hail of Arrows",         -- Level 68
         },
         ['Dispel'] = {
-            "Nature's Entropy",
-            "Nature's Balance",
-            "Annul Magic",
-            "Nullify Magic",
-            "Cancel Magic",
+            "Nature's Entropy", -- Level 70
+            "Nature's Balance", -- Level 69
+            "Annul Magic",      -- Level 61
+            "Nullify Magic",    -- Level 58
+            "Cancel Magic",     -- Level 30
         },
         ['RegenBuff'] = {
-            "Hunter's Vigor",
-            "Regrowth",
-            "Chloroplast",
+            "Hunter's Vigor",        -- Level 68
+            "Regrowth",              -- Level 64
+            "Chloroplast",           -- Level 55
         },
-        ['CoatBuff'] = { -- Self DS
-            "Briarcoat",
-            "Bladecoat",
-            "Thorncoat",
-            "Spikecoat",
-            "Bramblecoat",
-            "Barbcoat",
-            "Thistlecoat",
+        ['CoatBuff'] = {             -- Self DS
+            "Briarcoat",             -- Level 68
+            "Bladecoat",             -- Level 63
+            "Thorncoat",             -- Level 60
+            "Spikecoat",             -- Level 42
+            "Bramblecoat",           -- Level 34
+            "Barbcoat",              -- Level 30
+            "Thistlecoat",           -- Level 13
         },
-        ['GuardBuff'] = { -- ST AC DS Buff
-            "Guard of the Earth",
-            "Call of the Rathe",
-            "Call of Earth",
-            "Riftwind's Protection",
+        ['GuardBuff'] = {            -- ST AC DS Buff
+            "Guard of the Earth",    -- Level 67
+            "Call of the Rathe",     -- Level 62
+            "Call of Earth",         -- Level 50
+            "Riftwind's Protection", -- Level 29
         },
         ['HealSpell'] = {
-            "Sunderock Springwater",
-            "Sylvan Water",
-            "Sylvan Light",
-            "Chloroblast",
-            "Greater Healing",
-            "Healing",
-            "Light Healing",
-            "Minor Healing",
-            "Salve",
+            "Sunderock Springwater", -- Level 70
+            "Sylvan Water",          -- Level 67
+            "Sylvan Light",          -- Level 65
+            "Chloroblast",           -- Level 62
+            "Greater Healing",       -- Level 57
+            "Healing",               -- Level 38
+            "Light Healing",         -- Level 21
+            "Minor Healing",         -- Level 8
+            "Salve",                 -- Level 1
         },
         ['SwarmDot'] = {
-            "Cloud of Wasps",
-            "Locust Swarm",
-            "Drifting Death",
-            "Fire Swarm",
-            "Drones of Doom",
-            "Swarm of Pain",
-            "Stinging Swarm",
+            "Cloud of Wasps", -- Level 70
+            "Locust Swarm",   -- Level 67
+            "Drifting Death", -- Level 62
+            "Fire Swarm",     -- Level 55
+            "Drones of Doom", -- Level 54
+            "Swarm of Pain",  -- Level 40
+            "Stinging Swarm", -- Level 25
         },
         ['Trueshot'] = {
-            "Trueshot Discipline",
+            "Trueshot Discipline", -- Level 55
         },
-        ['ShieldDS'] = { -- ST Slot 1 DS
-            "Shield of Needles",
-            "Shield of Briar",
-            "Shield of Thorns",
-            "Shield of Spikes",
-            "Shield of Brambles",
-            "Shield of Thistles",
+        ['ShieldDS'] = {           -- ST Slot 1 DS
+            "Shield of Needles",   -- Level 70
+            "Shield of Briar",     -- Level 66
+            "Shield of Thorns",    -- Level 62
+            "Shield of Spikes",    -- Level 58
+            "Shield of Brambles",  -- Level 43
+            "Shield of Thistles",  -- Level 24
         },
-        ['NatureProc'] = { -- ST Hade reduction defensive proc buff
-            "Nature Veil",
+        ['NatureProc'] = {         -- ST Hade reduction defensive proc buff
+            "Nature Veil",         -- Level 66
         },
         -- ['DDStunProcBuff'] = {
-        --     "Sylvan Call",
+        --     "Sylvan Call", -- Level 65
         -- },
         -- ['MaskBuff'] = { -- no stack with eyes of the hawk
-        --     "Mask of the Stalker",
+        --     "Mask of the Stalker", -- Level 65
         -- },
         ['MoveBuff'] = {
-            "Spirit of Eagle",
+            "Spirit of Eagle", -- Level 65
         },
         -- ['SelfWolfBuff'] = {
-        --     "Feral Form",
-        --     "Greater Wolf Form",
-        --     "Wolf Form",
+        --     "Feral Form",        -- Level 64
+        --     "Greater Wolf Form", -- Level 56
+        --     "Wolf Form",         -- Level 48
         -- },
         ['ColdResistBuff'] = {
-            "Circle of Summer",
+            "Circle of Summer", -- Level 63
         },
         ['FireResistBuff'] = {
-            "Circle of Winter",
+            "Circle of Winter", -- Level 61
         },
         ['SnareSpell'] = {
-            "Earthen Shackles",
-            "Earthen Embrace",
-            "Ensnare",
-            "Tangle",
-            "Snare",
-            "Tangling Weeds",
+            "Earthen Shackles", -- Level 69
+            "Earthen Embrace",  -- Level 61
+            "Ensnare",          -- Level 51
+            "Tangle",           -- Level 51
+            "Snare",            -- Level 6
+            "Tangling Weeds",   -- Level 5
         },
         ['WeaponShield'] = {
-            "Weapon Shield Discipline",
+            "Weapon Shield Discipline", -- Level 60
         },
         ['JoltSpell'] = {
-            "Cinder Jolt",
-            "Jolt",
+            "Cinder Jolt", -- Level 55
+            "Jolt",        -- Level 50
         },
         ['WrathDisc'] = {
-            "Warder's Wrath",
+            "Warder's Wrath", -- Level 69
         },
-        ['KickDisc'] = { -- 2-hit kick attack
-            "Jolting Kicks",
+        ['KickDisc'] = {      -- 2-hit kick attack
+            "Jolting Kicks",  -- Level 71
         },
         ['Skals'] = {
-            "Skal's Stance Discipline",
+            "Skal's Stance Discipline", -- Level 61
         },
         -- ['JoltProcBuff'] = {
-        --     "Jolting Blades",
+        --     "Jolting Blades", -- Level 54
         -- },
         -- ['ResistDisc'] = {
-        --     "Resistant Discipline",
+        --     "Resistant Discipline", -- Level 51
         -- },
         -- TODO: Potameid Salve (small heal, cure)
     },

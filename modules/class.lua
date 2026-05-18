@@ -823,9 +823,6 @@ function Module:GetRotations()
     end
 
     -- Cache the resist type on every entry so Rotation.TestConditionForEntry can gate without per-tick lookups.
-    local validResistTypes = {}
-    for _, e in ipairs(Globals.Constants.ResistTypes) do validResistTypes[e] = true end
-
     local function deriveResistType(entry)
         local etype = (entry.type or ""):lower()
         local spell = nil
@@ -847,7 +844,7 @@ function Module:GetRotations()
         end
         if not spell or not spell() then return nil end
         local rt = spell.ResistType and spell.ResistType()
-        return validResistTypes[rt] and rt or nil
+        return Globals.Constants.ResistTypesSet:contains(rt) and rt or nil
     end
 
     for _, entries in pairs(self.TempSettings.RotationTable) do
