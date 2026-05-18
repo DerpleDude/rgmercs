@@ -237,8 +237,8 @@ return {
             "War Cry",
             "Battle Cry of Dravel",
             "War Cry of Dravel",
-            "Battle Cry of the Mastruq",
             "Ancient: Cry of Chaos",
+            "Battle Cry of the Mastruq",
         },
         ['CryDmg'] = {
             "Cry Havoc",
@@ -665,8 +665,8 @@ return {
                 end,
             },
             {
-                name = "War Cry of the Braxi",
-                type = "Disc",
+                name = "Braxi's Howl",
+                type = "AA",
                 cond = function(self, aaName)
                     return Casting.SelfBuffAACheck(aaName)
                 end,
@@ -675,7 +675,7 @@ return {
                 name = "HHEBuff",
                 type = "Disc",
                 cond = function(self, discSpell)
-                    return not Casting.AAReady("War Cry of the Braxi") and Casting.NoDiscActive() and Casting.SelfBuffCheck(discSpell)
+                    return not Casting.AAReady("Braxi's Howl") and Casting.NoDiscActive() and Casting.SelfBuffCheck(discSpell)
                 end,
             },
         },
