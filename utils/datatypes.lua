@@ -45,7 +45,7 @@ local rgMercsMainType   = mq.DataType.new('RGMercsMain', {
             end
 
             if type(Globals[param]) == "number" then
-                return 'number', Globals[param]
+                return 'int', Globals[param]
             end
 
             if type(Globals[param]) == "table" then
@@ -63,7 +63,9 @@ local rgMercsMainType   = mq.DataType.new('RGMercsMain', {
                 return 'string', "false"
             end
 
+
             local value = Config:GetSetting(param)
+
             if value == nil then
                 return 'string', "nil"
             end
@@ -73,7 +75,7 @@ local rgMercsMainType   = mq.DataType.new('RGMercsMain', {
             end
 
             if type(value) == "number" then
-                return 'number', value
+                return 'int', value
             end
 
             if type(value) == "table" then

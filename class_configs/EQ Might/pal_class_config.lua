@@ -147,77 +147,76 @@ return {
         },
         ["QuickUndeadNuke"] = {
             -- Undead Quick Nuke with chance to snare and reduce AC
-            "Burial Rites", -- EQ Custom
+            "Burial Rites", -- Level 70 EQM Custom
             "Last Rites",   -- Level 68 - Timer 7
         },
         ["DDProc"] = {
             --- Fury Proc Strike
-            "Divine Might", -- Level 45, 65pt
-            "Pious Might",  -- Level 63, 150pt
-            "Holy Order",   -- Level 65, 180pt
             "Pious Fury",   -- Level 68, 250pt, + 250pt if undead
+            "Holy Order",   -- Level 65, 180pt
+            "Pious Might",  -- Level 63, 150pt
+            "Divine Might", -- Level 45, 65pt
         },
         ["UndeadProc"] = {
             --- Undead Proc Strike : does not stack with Fury Proc, will be used until Fury is available even if setting not enabled.
-            "Instrument of Nife", -- Level 26, 243pt
-            "Ward of Nife",       -- Level 62, 500pt
             "Silvered Fury",      -- Level 67, 750pt
+            "Ward of Nife",       -- Level 62, 500pt
+            "Instrument of Nife", -- Level 26, 243pt
         },
         ["StunTimer5"] = {
-            "Desist",                  -- Level 13 - Not Timer 5, filler
-            "Stun",                    -- Level 28
-            "Force of Akera",          -- Level 53
-            "Ancient: Force of Chaos", -- Level 65
             "Ancient: Force of Jeron", -- Level 70
+            "Ancient: Force of Chaos", -- Level 65
+            "Force of Akera",          -- Level 53
+            "Stun",                    -- Level 28
+            "Desist",                  -- Level 13 - Not Timer 5, filler
         },
         ["StunTimer4"] = {
-            "Cease",           -- Level 7 - Not Timer 4, filler
-            "Force",           -- Level 52 - Not Timer 4, filler
-            "Force of Akilae", -- Level 62
+            "Sacred Force",    -- Level 70 EQM Custom
             "Force of Piety",  -- Level 66
-            "Sacred Force",    -- EQM Custom
+            "Force of Akilae", -- Level 62
+            "Force",           -- Level 52 - Not Timer 4, filler
+            "Cease",           -- Level 7 - Not Timer 4, filler
         },
         ["AegoBuff"] = {
             --- Pally Aegolism
-            "Courage",               -- Level 8
-            "Center",                -- Level 20
-            "Daring",                -- Level 37
-            "Valor",                 -- Level 47
-            "Austerity",             -- Level 55 --First actual Aego
-            "Blessing of Austerity", -- Level 58 - Group
-            "Guidance",              -- Level 65
             "Affirmation",           -- Level 70
+            "Guidance",              -- Level 65
+            "Blessing of Austerity", -- Level 58 - Group
+            "Austerity",             -- Level 55 --First actual Aego
+            "Valor",                 -- Level 47
+            "Daring",                -- Level 37
+            "Center",                -- Level 20
+            "Courage",               -- Level 8
         },
         -- ['HPTypeOne'] = {
-        --     "Hand of Direction", --GV1
-        --     "Direction",         --ST
-        --     "Heroic Bond",       --ST
-        --     "Heroism",           --ST
-        --     "Resolution",
+        --     "Hand of Direction", -- Level 69 GV1
+        --     "Direction",         -- Level 66 ST
+        --     "Heroic Bond",       -- Level 64 ST
+        --     "Heroism",           -- Level 61 ST
+        --     "Resolution",        -- Level 60
         -- },
         ["Brells"] = {
-            "Ancient: Brell's Brawny Bulwark",
-            "Brell's Vibrant Barricade",
-            "Brell's Brawny Bulwark",
-            "Brell's Stalwart Shield",
-            "Brell's Mountainous Barrier",
-            "Brell's Steadfast Aegis",
+            "Ancient: Brell's Brawny Bulwark", -- Level 70
+            "Brell's Brawny Bulwark",          -- Level 70
+            "Brell's Stalwart Shield",         -- Level 65
+            "Brell's Mountainous Barrier",     -- Level 60
+            "Brell's Steadfast Aegis",         -- Level 49
         },
         ["WaveHeal"] = {
-            "Wave of Piety",
-            "Wave of Trushar",
-            "Wave of Marr",
-            "Healing Wave of Prexus",
-            "Wave of Healing",
-            "Wave of Life",
+            "Wave of Piety",          -- Level 70
+            "Wave of Trushar",        -- Level 65
+            "Wave of Marr",           -- Level 63
+            "Healing Wave of Prexus", -- Level 58
+            "Wave of Healing",        -- Level 55
+            "Wave of Life",           -- Level 39
         },
         ["WaveHeal2"] = {
-            "Wave of Piety",
-            "Wave of Trushar",
-            "Wave of Marr",
-            "Healing Wave of Prexus",
-            "Wave of Healing",
-            "Wave of Life",
+            "Wave of Piety",          -- Level 70
+            "Wave of Trushar",        -- Level 65
+            "Wave of Marr",           -- Level 63
+            "Healing Wave of Prexus", -- Level 58
+            "Wave of Healing",        -- Level 55
+            "Wave of Life",           -- Level 39
         },
         ["Cleansing"] = {
             "Sacred Cleansing",    -- Level 71
@@ -228,156 +227,151 @@ return {
         },
         ["ArmorSelfBuff"] = {
             --- Self Buff Armor Line Ac/Hp/Mana regen
-            "Armor of the Divine",        -- Level 60
-            "Aura of the Crusader",       -- Level 64
-            "Armor of the Champion",      -- Level 69
             "Armor of Unrelenting Faith", -- Level 71
+            "Armor of the Champion",      -- Level 69
+            "Aura of the Crusader",       -- Level 64
         },
         ["SymbolBuff"] = {
-            "Jeron's Mark",
-            "Symbol of Jeron",
-            "Symbol of Marzin",
-            "Symbol of Naltron",
-            "Symbol of Pinzarn",
-            "Symbol of Ryltan",
-            "Symbol of Transal",
+            "Jeron's Mark",      -- Level 68
+            "Symbol of Jeron",   -- Level 67
+            "Symbol of Marzin",  -- Level 63
+            "Symbol of Naltron", -- Level 58
+            "Symbol of Pinzarn", -- Level 46
+            "Symbol of Ryltan",  -- Level 33
+            "Symbol of Transal", -- Level 24
         },
         ["SereneStun"] = {
             --- Lesson Stun - Timer 6
-            "Quellious' Word of Tranquility", -- Level 54
-            "Quellious' Word of Serenity",    -- Level 64
+            "Lesson of Penitence",            -- Level 71
             "Serene Command",                 -- Level 68
-            "Lesson of Penitence",
+            "Quellious' Word of Serenity",    -- Level 64
+            "Quellious' Word of Tranquility", -- Level 54
         },
         ["TouchHeal"] = {
             -- Target Light Heal
-            "Salve",            -- Level 1
-            "Minor Healing",    -- Level 6
-            "Light Healing",    -- Level 12
-            "Healing",          -- Level 27
-            "Greater Healing",  -- Level 36
+            "Sacred Touch",     -- Level 70 EQM Custom
+            "Touch of Piety",   -- Level 66
+            "Touch of Nife",    -- Level 61
             "Superior Healing", -- Level 57
-            "Touch of Nife",
-            "Touch of Piety",
-            "Sacred Touch", -- EQM Custom
+            "Greater Healing",  -- Level 36
+            "Healing",          -- Level 27
+            "Light Healing",    -- Level 12
+            "Minor Healing",    -- Level 6
+            "Salve",            -- Level 1
         },
         ["LightHeal"] = {
             -- ToT Light Heal
-            "Light of Life",  -- Level 52
-            "Light of Nife",  -- Level 63
-            "Light of Order", -- Level 65
-            "Light of Piety", -- Level 68
             "Gleaming Light", -- Level 71
+            "Light of Piety", -- Level 68
+            "Light of Order", -- Level 65
+            "Light of Nife",  -- Level 63
+            "Light of Life",  -- Level 52
         },
         ["LightHeal2"] = {
             -- ToT Light Heal
-            "Light of Life",  -- Level 52
-            "Light of Nife",  -- Level 63
-            "Light of Order", -- Level 65
-            "Light of Piety", -- Level 68
             "Gleaming Light", -- Level 71
+            "Light of Piety", -- Level 68
+            "Light of Order", -- Level 65
+            "Light of Nife",  -- Level 63
+            "Light of Life",  -- Level 52
         },
         ['BurstHeal'] = {
-            "Burst of Sunlight",
+            "Burst of Sunlight", -- Level 71
         },
         -- ["Pacify"] = {
-        --     "Pacify",
-        --     "Calm",
-        --     "Soothe",
-        --     "Lull",
+        --     "Pacify", -- Level 49
+        --     "Calm",   -- Level 43
+        --     "Soothe", -- Level 25
+        --     "Lull",   -- Level 10
         -- },
         ["PurityCure"] = {
             --- Purity Cure Poison/Diease Cure Half Power to curse
-            "Crusader's Purity",
-            "Crusader's Touch",
+            "Crusader's Purity", -- Level 67
+            "Crusader's Touch",  -- Level 62
         },
         ['CureCorrupt'] = {
-            "Cure Corruption",
+            "Cure Corruption", -- Level 66
         },
         ["HealReceivedAura"] = {
             -- Aura Buffs
-            "Blessed Aura",
-            "Holy Aura",
+            "Blessed Aura", -- Level 66
+            "Holy Aura",    -- Level 55
         },
         ["UndeadNuke"] = {
             -- Undead Nuke
-            "Ward Undead",    -- Level 14
-            "Expulse Undead", -- Level 30
-            "Dismiss Undead", -- Level 46
-            "Expel Undead",   -- Level 54
-            "Deny Undead",    -- Level 62 - Timer 7
             "Spurn Undead",   -- Level 67 - Timer 7
+            "Deny Undead",    -- Level 62 - Timer 7
+            "Expel Undead",   -- Level 54
+            "Dismiss Undead", -- Level 46
+            "Expulse Undead", -- Level 30
+            "Ward Undead",    -- Level 14
         },
         ["CureCurse"] = {
             -- Curse Cure Line
-            "Remove Minor Curse",
-            "Remove Lesser Curse",
-            "Remove Curse",
-            "Remove Greater Curse",
-            "Eradicate Curse",
+            "Eradicate Curse",      -- Level 60
+            "Remove Greater Curse", -- Level 60
+            "Remove Curse",         -- Level 45
+            "Remove Lesser Curse",  -- Level 34
+            "Remove Minor Curse",   -- Level 19
         },
         ["ForgeDisc"] = {
-            "Hallowforge Discipline",
-            "Holyforge Discipline",
+            "Holyforge Discipline", -- Level 55
         },
         ['RezSpell'] = {
-            'Resurrection',
-            'Restoration',
-            'Renewal',
-            'Revive',
-            'Reparation',
-            'Reconstitution',
-            'Reanimation',
+            'Resurrection',             -- Level 59
+            'Restoration',              -- Level 55
+            'Renewal',                  -- Level 49
+            'Revive',                   -- Level 39
+            'Reparation',               -- Level 31
+            'Reconstitution',           -- Level 30
+            'Reanimation',              -- Level 22
         },
         ['PBAEStun'] = {                -- timer 6
-            "Ancient Command of Might", -- EQM Custom
-            "Ancient: Force of Might",  -- EQM Custom
-            "Word of Might",            -- EQM Custom
+            "Ancient Command of Might", -- Level 70 EQM Custom
+            "Ancient: Force of Might",  -- Level 67 EQM Custom
+            "Word of Might",            -- Level 62 EQM Custom
         },
         ['BlockDisc'] = {
-            "Deflection Discipline",
+            "Deflection Discipline", -- Level 59
         },
         ['SancDisc'] = {
-            "Sanctification Discipline",
+            "Sanctification Discipline", -- Level 60
         },
-        -- ['TwinHealNuke'] = {
-        --     "Justice of Marr",
-        -- },
         ['GuardDisc'] = {
-            "Armor of Righteousness",
-            "Ancient: Guard of Chivalry",
-            "Guard of Righteousness",
-            "Guard of Humility",
-            "Guard of Piety",
-            "Squire Guard",
+            "Armor of Righteousness",     -- Level 71
+            "Ancient: Guard of Chivalry", -- Level 68
+            "Guard of Righteousness",     -- Level 67
+            "Guard of Humility",          -- Level 61
+            "Guard of Piety",             -- Level 56
+            "Squire Guard",               -- Level 40
         },
         ['ACBuff'] = {
-            "Bulwark of Piety",
-            "Bulwark of Faith",
-            "Shield of Words",
-            "Armor of Faith",
+            "Bulwark of Piety", -- Level 69
+            "Bulwark of Faith", -- Level 65
+            "Shield of Words",  -- Level 60
+            "Armor of Faith",   -- Level 48
         },
         ['BladeDisc'] = {
-            "Whirlwind Blade",
-            "Mayhem Blade",
+            "Whirlwind Blade", -- Level 65
+            "Mayhem Blade",    -- Level 52
         },
         ['Protective'] = {
-            "Protective Discipline",
-            "Protective Surge Discipline",
+            "Protective Discipline",       -- Level 69
+            "Protective Surge Discipline", -- Level 45
         },
-        ['SelfHeal'] = { -- EQM Custom Zero-Casttime Self-heal
-            "Blessed Mantle Heal",
+        ['SelfHeal'] = {                   -- EQM Custom Zero-Casttime Self-heal
+            "Blessed Mantle Heal",         -- Level 66 EQM Custom
         },
         ['SpellResistBuff'] = {
-            "Silent Piety",
+            "Silent Piety",        -- Level 69
         },
-        ["ForHonor"] = { -- Hate Over Time with small absorb recourse
-            "Challenge for Honor",
+        ["ForHonor"] = {           -- Hate Over Time with small absorb recourse
+            "Challenge for Honor", -- Level 71
         },
         -- ['FlameLure'] = { -- eqm port of wizard fire lures, not quite sure what i'm going to do with these yet
-        --     "Lure of Ro",
-        --     "Lure of Flame",
-        --     "Lure of Fire", -- EQM Custom
+        --     "Lure of Ro",    -- Level 67
+        --     "Lure of Flame", -- Level 62
+        --     "Lure of Fire",  -- Level 55 EQM Custom
         -- },
     },
     ['AASets']            = {

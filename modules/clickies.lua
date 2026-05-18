@@ -2037,8 +2037,10 @@ function Module:GiveTime()
                             end
 
                             local readyCheckPassed = Casting.ItemReady(item.Name())
+                            local element = itemSpell and itemSpell.ResistType and itemSpell.ResistType() or nil
+                            local elementCheckPassed = not Casting.ShouldSkipElement(element, target and target.ID() or 0)
 
-                            if buffCheckPassed and distanceCheckPassed and readyCheckPassed then
+                            if buffCheckPassed and distanceCheckPassed and readyCheckPassed and elementCheckPassed then
                                 Logger.log_verbose("\ayClicky: \awItem \am%s\aw Clicky Spell: \at%s\ag!", item.Name(), item.Clicky.Spell.RankName.Name())
                                 Casting.UseItem(item.Name(), targetId)
                                 clickiesUsedThisFrame = clickiesUsedThisFrame + 1
@@ -2050,9 +2052,9 @@ function Module:GiveTime()
                                 self.TempSettings.ClickyState[clicky.itemName].lastUsed = Globals.GetTimeSeconds()
                                 break --ensure we stop after we process a single clicky to allow rotations to continue
                             else
-                                Logger.log_verbose("\ayClicky: \awItem \am%s\aw Clicky: \at%s\ar checks failed, not using!\aw BuffCheck(%s), DistanceCheck(%s), ItemReady(%s)",
+                                Logger.log_verbose("\ayClicky: \awItem \am%s\aw Clicky: \at%s\ar checks failed, not using!\aw BuffCheck(%s), DistanceCheck(%s), ItemReady(%s), ElementCheck(%s)",
                                     item.Name(), item.Clicky.Spell.RankName.Name(), Strings.BoolToColorString(buffCheckPassed), Strings.BoolToColorString(distanceCheckPassed),
-                                    Strings.BoolToColorString(readyCheckPassed))
+                                    Strings.BoolToColorString(readyCheckPassed), Strings.BoolToColorString(elementCheckPassed))
                             end
                         end
                     else

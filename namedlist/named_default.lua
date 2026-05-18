@@ -1,3 +1,24 @@
+-- Built-in named NPC registry.
+--
+-- Entry shapes:
+--   * Bare string         -> mob is flagged as named only.
+--     "Some Boss",
+--   * Table with .name    -> mob may carry immunity flags. Named flag defaults to true;
+--                            set named = false to carry immunity data without being
+--                            treated as a named (e.g. for trash mobs that resist key
+--                            spells).
+--     { name = "Mayong Mistmoore",   elementalImmunities = { Magic = true, }, },
+--     { name = "Snoozeproof Beast",  statusImmunities    = { Slow = true, }, },
+--     { name = "an immortal shade",  named = false, elementalImmunities = { Fire = true, }, },
+--
+-- EDITORIAL STANDARD for immunity flags:
+--   * Only attach a flag if the mob is *effectively* immune (i.e., a level-capped
+--     player cannot reliably land that element/effect). Soft-resist mobs should
+--     NOT carry flags.
+--   * Slow/Snare/Stun entries must be verified-immune, not anecdotal.
+--   * elementalImmunities keys: "Fire"/"Cold"/"Magic"/"Poison"/"Disease".
+--   * statusImmunities    keys: "Slow"/"Snare"/"Stun".
+--   * Zone keys: lowercase short names matching mq.TLO.Zone.ShortName().
 return {
     ["temple of cazic-thule"] = {
         "a Tae Ew aggressor",
@@ -545,9 +566,6 @@ return {
         "a werewolf bandit",
     },
 
-    ["[[[ ---- the ruins of kunark ---- "] = {
-    },
-
     ["the burning woods"] = {
         "Gorgul Paclock",
         "Gullerback",
@@ -918,19 +936,12 @@ return {
         "Iksar Bandit Lord",
     },
 
-    ["[[[ ---- the scars of velious ---- "] = {
-    },
-
-
-
     ["crystaltwob"] = {
         "Crystal Grinder",
         "Gem collector",
         "Life Leech",
         "Queen Dracnia",
     },
-
-
 
     ["eastwastes"] = {
         "Chief Ry`Gorr",
@@ -1116,11 +1127,6 @@ return {
         "Lord Prismwing",
         "Rapticor",
         "Wuoshi",
-    },
-
-
-
-    ["[[[ ---- the shadows of luclin ---- "] = {
     },
 
     ["acrylia"] = {
@@ -4160,7 +4166,7 @@ return {
         "Diabo Va Thall",
         "Diabo Xi Va",
         "Diabo Xi Xin",
-        "The Protector ",
+        "The Protector",
     },
 
     ["vexthaltwo"] = {

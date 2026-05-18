@@ -77,249 +77,246 @@ _ClassConfig    = {
     ['AbilitySets']   = {
         --- Nukes
         ['SwarmPet'] = {
-            "Raging Servant",
-            "Restrained Raging Servant",
+            "Raging Servant",            -- Level 70
+            "Restrained Raging Servant", -- Level 65
         },
         -- ['ChaoticNuke'] = {
         --     -- Chaotic Nuke with Beneficial Effect >= LVL69
-        --     "Fickle Fire",
+        --     "Fickle Fire", -- Level 69
         -- },
-        ['FireDD'] = { -- Mix of Fire Nukes and Bolts appropriate for use at lower levels.
-            "Scalding Sands",
-            "Burning Earth",
-            "Burning Sand",
-            "Scars of Sigil",
-            "Lava Bolt",
-            "Cinder Bolt",
-            "Bolt of Flame",
-            "Shock of Flame",
-            "Flame Bolt",
-            "Burn",
-            "Burst of Flame",
+        ['FireDD'] = {                 -- Mix of Fire Nukes and Bolts appropriate for use at lower levels.
+            "Scalding Sands",          -- Level 71
+            "Burning Earth",           -- Level 69
+            "Burning Sand",            -- Level 62
+            "Scars of Sigil",          -- Level 54
+            "Lava Bolt",               -- Level 47
+            "Cinder Bolt",             -- Level 33
+            "Bolt of Flame",           -- Level 18
+            "Shock of Flame",          -- Level 15
+            "Flame Bolt",              -- Level 5
+            "Burn",                    -- Level 4
+            "Burst of Flame",          -- Level 1
         },
-        ['BigFireDD'] = { -- Longer cast time bolts we can use when mobs are at higher health.
-            "Bolt of Molten Slag",
-            -- "Ancient: Nova Strike", -- considered how to implement smart toggles for this, didn't like what i've come up with so far.
-            "Spear of Ro",
-            "Bolt of Jerikor",
-            "Ancient: Chaos Vortex",
-            "Firebolt of Tallon",
-            "Ancient: Shock of Sun",
-            "Seeking Flame of Seukor",
+        ['BigFireDD'] = {              -- Longer cast time bolts we can use when mobs are at higher health.
+            "Bolt of Molten Slag",     -- Level 70
+            -- "Ancient: Nova Strike",  -- Level 70 -- considered how to implement smart toggles for this, didn't like what i've come up with so far.
+            "Spear of Ro",             -- Level 68
+            "Bolt of Jerikor",         -- Level 66
+            "Ancient: Chaos Vortex",   -- Level 65
+            "Firebolt of Tallon",      -- Level 61
+            "Ancient: Shock of Sun",   -- Level 60
+            "Seeking Flame of Seukor", -- Level 59
         },
-        ['MagicDD'] = { -- Magic does not have any faster casts like Fire, we have only these.
-            "Shock of Silvered Steel",
-            "Blade Strike",
-            "Rock of Taelosia",
-            "Black Steel",
-            "Shock of Steel",
-            "Shock of Swords",
-            "Shock of Spikes",
-            "Shock of Blades",
+        ['MagicDD'] = {                -- Magic does not have any faster casts like Fire, we have only these.
+            "Shock of Silvered Steel", -- Level 71
+            "Blade Strike",            -- Level 68
+            "Rock of Taelosia",        -- Level 65
+            "Black Steel",             -- Level 63
+            "Shock of Steel",          -- Level 57
+            "Shock of Swords",         -- Level 41
+            "Shock of Spikes",         -- Level 23
+            "Shock of Blades",         -- Level 7
         },
         --- Buffs
         ['SelfShield'] = {
-            "Prime Shielding",
-            "Elemental Aura",
-            "Shield of Maelin",
-            "Shield of the Arcane",
-            "Shield of the Magi",
-            "Arch Shielding",
-            "Greater Shielding",
-            "Major Shielding",
-            "Shielding",
-            "Lesser Shielding",
-            "Minor Shielding",
+            "Prime Shielding",      -- Level 70
+            "Elemental Aura",       -- Level 66
+            "Shield of Maelin",     -- Level 64
+            "Shield of the Arcane", -- Level 61
+            "Shield of the Magi",   -- Level 54
+            "Arch Shielding",       -- Level 43
+            "Greater Shielding",    -- Level 32
+            "Major Shielding",      -- Level 24
+            "Shielding",            -- Level 16
+            "Lesser Shielding",     -- Level 5
+            "Minor Shielding",      -- Level 1
         },
         ['ShortDurDmgShield'] = {
             -- Use at the start of the DPS loop
-            "Ancient: Veil of Pyrilonus",
-            "Pyrilen Skin",
+            "Ancient: Veil of Pyrilonus", -- Level 70
+            "Pyrilen Skin",               -- Level 68
         },
         ['LongDurDmgShield'] = {
             -- Preferring group buffs for ease. Included all Single target Now as well
             -- "Magmaskin", Single target vs group (convenience), minimal difference
-            "Circle of Fireskin",
-            "Fireskin",
-            "Maelstrom of Ro",
-            "FlameShield of Ro",
-            "Aegis of Ro",
-            "Cadeau of Flame",
-            "Boon of Immolation",
-            "Shield of Lava",
-            "Barrier of Combustion",
-            "Inferno Shield",
-            "Shield of Flame",
-            "Shield of Fire",
+            "Circle of Fireskin",    -- Level 70
+            "Fireskin",              -- Level 66
+            "Maelstrom of Ro",       -- Level 63
+            "Flameshield of Ro",     -- Level 61
+            "Aegis of Ro",           -- Level 60
+            "Cadeau of Flame",       -- Level 56
+            "Boon of Immolation",    -- Level 53
+            "Shield of Lava",        -- Level 45
+            "Barrier of Combustion", -- Level 38
+            "Inferno Shield",        -- Level 28
+            "Shield of Flame",       -- Level 19
+            "Shield of Fire",        -- Level 7
         },
         ['ManaRegenBuff'] = {
-            "Phantasmal Warden",
-            "Phantom Shield",
-            "Xegony's Phantasmal Guard",
-            "Transon's Phantasmal Protection",
+            "Phantasmal Warden",               -- Level 71
+            "Phantom Shield",                  -- Level 68
+            "Xegony's Phantasmal Guard",       -- Level 62
+            "Transon's Phantasmal Protection", -- Level 58
         },
         ['PetAura'] = {
             -- Mage Pet Aura
-            "Rathe's Strength",
-            "Earthen Strength",
+            "Rathe's Strength", -- Level 70
+            "Earthen Strength", -- Level 55
         },
         ['FireShroud'] = {
             -- Defensive Proc 3-6m Buff
-            "Burning Aura",
+            "Burning Aura", -- Level 68
         },
         -- Pet Spells Pets & Spells Affecting them
         ['PetHealSpell'] = {
-            "Renewal of Aenda",
-            "Renewal of Jerikor",
-            "Renewal of Lucifer", -- EQM Custom
-            "Planar Renewal",
-            "Transon's Elemental Renewal",
-            "Transon's Elemental Infusion",
-            "Refresh Summoning",
-            "Renew Summoning",
-            "Renew Elements",
+            "Renewal of Aenda",             -- Level 71
+            "Renewal of Jerikor",           -- Level 68
+            "Renewal of Lucifer",           -- Level 66 EQM Custom
+            "Planar Renewal",               -- Level 64
+            "Transon's Elemental Renewal",  -- Level 60
+            "Transon's Elemental Infusion", -- Level 52
+            "Refresh Summoning",            -- Level 34
+            "Renew Summoning",              -- Level 18
+            "Renew Elements",               -- Level 7
         },
         ['PetManaConv'] = {
-            "Elemental Simulacrum",
-            "Elemental Siphon",
-            "Elemental Draw",
+            "Elemental Simulacrum", -- Level 70
+            "Elemental Siphon",     -- Level 65
+            "Elemental Draw",       -- Level 54
         },
         ['PetHaste'] = {
-            "Burnout VI",
-            "Elemental Fury",
-            "Burnout V",
-            "Ancient: Burnout Blaze",
-            "Burnout IV",
-            "Elemental Empathy",
-            "Burnout III",
-            "Burnout II",
-            "Burnout",
+            "Burnout VI",             -- Level 69
+            "Elemental Fury",         -- Level 68
+            "Burnout V",              -- Level 62
+            "Ancient: Burnout Blaze", -- Level 60
+            "Burnout IV",             -- Level 55
+            "Elemental Empathy",      -- Level 52
+            "Burnout III",            -- Level 47
+            "Burnout II",             -- Level 29
+            "Burnout",                -- Level 11
         },
         ['PetIceFlame'] = {
-            "Iceflame Guard",
+            "Iceflame Guard", -- Level 70
         },
         ['EarthPetSpell'] = {
-            "Child of Earth",
-            "Rathe's Son",
-            "Greater Vocaration: Earth",
-            "Vocarate: Earth",
-            "Greater Conjuration: Earth",
-            "Conjuration: Earth",
-            "Lesser Conjuration: Earth",
-            "Minor Conjuration: Earth",
-            "Greater Summoning: Earth",
-            "Summoning: Earth",
-            "Lesser Summoning: Earth",
-            "Minor Summoning: Earth",
-            "Elemental: Earth",
-            "Elementaling: Earth",
-            "Elementalkin: Earth",
+            "Child of Earth",             -- Level 69
+            "Rathe's Son",                -- Level 65
+            "Greater Vocaration: Earth",  -- Level 57
+            "Vocarate: Earth",            -- Level 51
+            "Greater Conjuration: Earth", -- Level 46
+            "Conjuration: Earth",         -- Level 44
+            "Lesser Conjuration: Earth",  -- Level 39
+            "Minor Conjuration: Earth",   -- Level 34
+            "Greater Summoning: Earth",   -- Level 29
+            "Summoning: Earth",           -- Level 25
+            "Lesser Summoning: Earth",    -- Level 21
+            "Minor Summoning: Earth",     -- Level 17
+            "Elemental: Earth",           -- Level 13
+            "Elementaling: Earth",        -- Level 9
+            "Elementalkin: Earth",        -- Level 5
         },
         ['WaterPetSpell'] = {
-            "Essence of Water",
-            "Child of Water",
-            "Servant of Marr",
-            "Greater Vocaration: Water",
-            "Vocarate: Water",
-            "Greater Conjuration: Water",
-            "Conjuration: Water",
-            "Lesser Conjuration: Water",
-            "Minor Conjuration: Water",
-            "Greater Summoning: Water",
-            "Summoning: Water",
-            "Lesser Summoning: Water",
-            "Minor Summoning: Water",
-            "Elemental: Water",
-            "Elementaling: Water",
-            "Elementalkin: Water",
+            "Essence of Water",           -- Level 71
+            "Child of Water",             -- Level 67
+            "Servant of Marr",            -- Level 62
+            "Greater Vocaration: Water",  -- Level 60
+            "Vocarate: Water",            -- Level 54
+            "Greater Conjuration: Water", -- Level 49
+            "Conjuration: Water",         -- Level 41
+            "Lesser Conjuration: Water",  -- Level 36
+            "Minor Conjuration: Water",   -- Level 31
+            "Greater Summoning: Water",   -- Level 26
+            "Summoning: Water",           -- Level 22
+            "Lesser Summoning: Water",    -- Level 18
+            "Minor Summoning: Water",     -- Level 14
+            "Elemental: Water",           -- Level 10
+            "Elementaling: Water",        -- Level 6
+            "Elementalkin: Water",        -- Level 2
         },
         ['AirPetSpell'] = {
             ----- Air Pet
-            "Essence of Air",
-            "Child of Wind",
-            "Ward of Xegony",
-            "Greater Vocaration: Air",
-            "Vocarate: Air",
-            "Greater Conjuration: Air",
-            "Conjuration: Air",
-            "Lesser Conjuration: Air",
-            "Minor Conjuration: Air",
-            "Greater Summoning: Air",
-            "Summoning: Air",
-            "Lesser Summoning: Air",
-            "Minor Summoning: Air",
-            "Elemental: Air",
-            "Elementaling: Air",
-            "Elementalkin: Air",
+            "Essence of Air",           -- Level 70
+            "Child of Wind",            -- Level 66
+            "Ward of Xegony",           -- Level 61
+            "Greater Vocaration: Air",  -- Level 59
+            "Vocarate: Air",            -- Level 53
+            "Greater Conjuration: Air", -- Level 48
+            "Conjuration: Air",         -- Level 43
+            "Lesser Conjuration: Air",  -- Level 38
+            "Minor Conjuration: Air",   -- Level 33
+            "Greater Summoning: Air",   -- Level 28
+            "Summoning: Air",           -- Level 24
+            "Lesser Summoning: Air",    -- Level 20
+            "Minor Summoning: Air",     -- Level 16
+            "Elemental: Air",           -- Level 12
+            "Elementaling: Air",        -- Level 8
+            "Elementalkin: Air",        -- Level 4
         },
         ['FirePetSpell'] = {
-            "Child of Fire",
-            "Child of Ro",
-            "Greater Vocaration: Fire",
-            "Vocarate: Fire",
-            "Greater Conjuration: Fire",
-            "Conjuration: Fire",
-            "Lesser Conjuration: Fire",
-            "Minor Conjuration: Fire",
-            "Greater Summoning: Fire",
-            "Summoning: Fire",
-            "Lesser Summoning: Fire",
-            "Minor Summoning: Fire",
-            "Elemental: Fire",
-            "Elementaling: Fire",
-            "Elementalkin: Fire",
+            "Child of Fire",             -- Level 68
+            "Child of Ro",               -- Level 63
+            "Greater Vocaration: Fire",  -- Level 58
+            "Vocarate: Fire",            -- Level 52
+            "Greater Conjuration: Fire", -- Level 47
+            "Conjuration: Fire",         -- Level 42
+            "Lesser Conjuration: Fire",  -- Level 37
+            "Minor Conjuration: Fire",   -- Level 32
+            "Greater Summoning: Fire",   -- Level 27
+            "Summoning: Fire",           -- Level 23
+            "Lesser Summoning: Fire",    -- Level 19
+            "Minor Summoning: Fire",     -- Level 15
+            "Elemental: Fire",           -- Level 11
+            "Elementaling: Fire",        -- Level 7
+            "Elementalkin: Fire",        -- Level 3
         },
         ['AegisBuff'] = {
             ---Pet Aegis Shield Buff (Short Duration)*
-            "Bulwark of Calliav",
-            "Protection of Calliav",
-            "Guard of Calliav",
-            "Ward of Calliav",
+            "Bulwark of Calliav",    -- Level 69
+            "Protection of Calliav", -- Level 64
+            "Guard of Calliav",      -- Level 58
+            "Ward of Calliav",       -- Level 46
         },
         -- - Summoned item Spells
         ['FireOrbSummon'] = {
-            -- "Summon Molten Komatiite Orb",
-            -- "Summon Firebound Orb",
-            -- "Summon Blazing Orb",
-            "Summon: Molten Orb",
-            "Summon: Lava Orb",
+            "Summon: Molten Orb", -- Level 69
+            "Summon: Lava Orb",   -- Level 61
         },
         ['ManaRodSummon'] = {
             --- ManaRodSummon - Focuses on group mana rod summon for ease. _
-            -- "Wand of Elemental Transvergence",
-            "Mass Mystical Transvergence",
-            "Modulating Rod",
+            -- "Wand of Elemental Transvergence", -- Level 71
+            "Mass Mystical Transvergence", -- Level 56
+            "Modulating Rod",              -- Level 44
         },
         -- - Debuffs
         ['MaloDebuff'] = {
-            "Malosinise",
-            "Malosinia",
-            "Mala",
-            "Malosini",
-            "Malosi",
-            "Malaisement",
-            "Malaise",
+            "Malosinise",  -- Level 70
+            "Malosinia",   -- Level 63
+            "Mala",        -- Level 60
+            "Malosini",    -- Level 58
+            "Malosi",      -- Level 51
+            "Malaisement", -- Level 44
+            "Malaise",     -- Level 22
         },
         ['SingleCotH'] = {
-            "Call of the Hero",
+            "Call of the Hero", -- Level 55
         },
         -- ['GroupCotH'] = {
-        --     "Call of the Harbinger", -- does not appear to be added
+        --     "Call of the Harbinger", -- Level 68 -- does not appear to be added
         -- },
         ['PBAE2'] = {
-            "Scintillation",
+            "Scintillation", -- Level 51
         },
         ['PBAE1'] = {
-            "Wind of the Desert",
+            "Wind of the Desert", -- Level 60
         },
-        ['Minionskin'] = { --EQM Custom: HP/Regen/mitigation (May need to block druid HP buff line on pet)
-            "Major Minionskin",
-            "Greater Minionskin",
-            "Minionskin",
-            "Lesser Minionskin",
+        ['Minionskin'] = {        --EQM Custom: HP/Regen/mitigation (May need to block druid HP buff line on pet)
+            "Major Minionskin",   -- Level 66
+            "Greater Minionskin", -- Level 56
+            "Minionskin",         -- Level 43
+            "Lesser Minionskin",  -- Level 30
         },
         ['EpicPetOrb'] = {
-            "Summon Orb",
+            "Summon Orb", -- Level 45
         },
     },
     ['AASets']        = {
@@ -463,6 +460,19 @@ _ClassConfig    = {
             end
 
             return false
+        end,
+
+        -- Resolves the currently-active element based on ElementMode.
+        -- Auto: prefers Fire, then Magic, skipping either if the auto-target is immune
+        -- (per the Named List) or toggled off via Skip<X>Spells.
+        PickElement = function()
+            local mode = Config:GetSetting('ElementMode') or 1
+            if mode == 2 then return "Fire" end
+            if mode == 3 then return "Magic" end
+            local autoId = Globals.AutoTargetID or 0
+            if not Casting.ShouldSkipElement("Fire", autoId) then return "Fire" end
+            if not Casting.ShouldSkipElement("Magic", autoId) then return "Magic" end
+            return "Fire" -- both skipped; default so downstream logic still resolves
         end,
         DeleteEpicOrb = function(self)
             if mq.TLO.Cursor() and mq.TLO.Cursor.ID() > 0 then
@@ -759,7 +769,7 @@ _ClassConfig    = {
                 name = "BigFireDD",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    if Config:GetSetting('ElementChoice') ~= 1 then return false end
+                    if self.Helpers.PickElement() ~= "Fire" then return false end
                     return Targeting.MobNotLowHP(target)
                 end,
             },
@@ -767,7 +777,7 @@ _ClassConfig    = {
                 name = "FireDD",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    if Config:GetSetting('ElementChoice') ~= 1 then return false end
+                    if self.Helpers.PickElement() ~= "Fire" then return false end
                     return Targeting.MobHasLowHP(target) or not Core.GetResolvedActionMapItem("BigFireDD")
                 end,
             },
@@ -775,7 +785,7 @@ _ClassConfig    = {
                 name = "MagicDD",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    return Config:GetSetting('ElementChoice') == 2
+                    return self.Helpers.PickElement() == "Magic"
                 end,
             },
             {
@@ -1028,18 +1038,24 @@ _ClassConfig    = {
             RequiresLoadoutChange = true,
             Default = true,
         },
-        ['ElementChoice']  = {
-            DisplayName = "Element Choice:",
+        ['ElementMode']    = {
+            DisplayName = "Element Mode:",
             Group = "Abilities",
             Header = "Damage",
             Category = "Direct",
             Index = 1,
-            Tooltip = "Choose an element to focus on under level 71.",
+            Tooltip = "Pick the element strategy for nukes. Auto rotates Fire and Magic based on target immunity. " ..
+                "See FAQ for details on Skip<Element>Spells conflicts.",
             Type = "Combo",
-            ComboOptions = { 'Fire', 'Magic', },
+            ComboOptions = { 'Auto', 'Fire', 'Magic', },
             Default = 1,
             Min = 1,
-            Max = 2,
+            Max = 3,
+            FAQ = "How does Element Mode work?",
+            Answer =
+                "   The 'Element Mode' setting determines which element your nukes will use. Fire and Magic spell lines are always memorized so you can change mode in combat freely.\n\n" ..
+                "   Auto mode prefers Fire, then Magic, automatically skipping either if your target is immune (per the Named List) or if you've globally toggled that element off via the Skip <Element> Spells settings. The explicit modes (Fire/Magic) lock to that element regardless of immunity data.\n\n" ..
+                "   Heads up: explicit modes still respect the global Skip <Element> Spells toggles. If you pick Fire mode here but have SkipFireSpells enabled in your combat settings, the global skip wins and Fire casts will be blocked - you'll need to clear the conflicting toggle, or pick a different element here.",
         },
         ['DoSwarmPet']     = {
             DisplayName = "Swarm Pet Spell:",

@@ -680,10 +680,10 @@ return {
             {
                 name = "Hobble of Spirits",
                 type = "AA",
+                load_cond = function(self) return Config:GetSetting('DoPetSnare') end,
                 cond = function(self, aaName, target)
                     local slowProc = self.ResolvedActionMap['PetSlowProc']
-                    return Config:GetSetting('DoPetSnare') and (slowProc and slowProc() and mq.TLO.Me.PetBuff(slowProc.RankName()) == nil) and
-                        mq.TLO.Me.PetBuff(mq.TLO.Me.AltAbility(aaName).Spell.RankName.Name())() == nil
+                    return (slowProc and slowProc() and mq.TLO.Me.PetBuff(slowProc.RankName()) == nil) and Casting.PetBuffAACheck(aaName)
                 end,
             },
             {

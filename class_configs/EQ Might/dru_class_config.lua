@@ -138,261 +138,252 @@ local _ClassConfig = {
     ['AbilitySets']       = {
         ['HealingAura'] = {
             -- Healing Aura >= 55
-            "Aura of Life",
-            "Aura of the Grove",
+            "Aura of Life",      -- Level 66
+            "Aura of the Grove", -- Level 55
         },
         ['HealSpell'] = {
             -- Long Heal >= 1 -- skipped 10s cast heals.
-            "Ancient: Chlorobon",
-            "Chlorotrope",
-            "Sylvan Infusion",
-            "Nature's Infusion",
-            "Nature's Touch",
-            "Chloroblast",
-            "Forest's Renewal",
-            "Superior Healing",
-            "Nature's Renewal",
-            "Healing Water",
-            "Greater Healing",
-            "Healing",
-            "Light Healing",
-            "Minor Healing",
+            "Ancient: Chlorobon", -- Level 69
+            "Chlorotrope",        -- Level 67
+            "Sylvan Infusion",    -- Level 65
+            "Nature's Infusion",  -- Level 63
+            "Nature's Touch",     -- Level 60
+            "Chloroblast",        -- Level 55
+            "Superior Healing",   -- Level 51
+            "Forest's Renewal",   -- Level 49
+            "Healing Water",      -- Level 44
+            "Nature's Renewal",   -- Level 39
+            "Greater Healing",    -- Level 29
+            "Healing",            -- Level 19
+            "Light Healing",      -- Level 9
+            "Minor Healing",      -- Level 1
         },
         ['GroupHeal'] = {
-            "Moonshadow",
-            "Lunarglow",
-            "Lunargleam",
+            "Moonshadow",                  -- Level 70
+            "Lunarglow",                   -- Level 66
+            "Lunargleam",                  -- Level 61
         },
-        ['ATKDebuff'] = { -- ATK Debuff
-            "Sun's Corona",
-            "Ro's Illumination",
+        ['ATKDebuff'] = {                  -- ATK Debuff
+            "Sun's Corona",                -- Level 67
+            "Ro's Illumination",           -- Level 62
         },
-        ['ATKACDebuff'] = { -- ATK/AC Debuff, replaced by AA (Fixation > Blessing of Ro)
-            "Fixation of Ro",
+        ['ATKACDebuff'] = {                -- ATK/AC Debuff, replaced by AA (Fixation > Blessing of Ro)
+            "Fixation of Ro",              -- Level 42
         },
-        ['FireDebuff'] = { -- Fire and some other stats, replaced by AA (Hand > Blessing of Ro)
-            "Hand of Ro",
-            "Ro's Smoldering Disjunction",
-            "Ro's Fiery Sundering",
+        ['FireDebuff'] = {                 -- Fire and some other stats, replaced by AA (Hand > Blessing of Ro)
+            "Hand of Ro",                  -- Level 61
+            "Ro's Smoldering Disjunction", -- Level 56
+            "Ro's Fiery Sundering",        -- Level 37
         },
-        ['ColdDebuff'] = { -- Cold/AC Debuff
-            "Icefall Breath",
-            "Glacier Breath",
-            "E`ci's Frosty Breath",
-            "Twilight Breath",
+        ['ColdDebuff'] = {                 -- Cold/AC Debuff
+            "Icefall Breath",              -- Level 71
+            "Glacier Breath",              -- Level 67
+            "E`ci's Frosty Breath",        -- Level 63
         },
         ['ReptileBuff'] = {
-            "Skin of the Green Dragon",     -- EQM Custom
-            "Ancient: Skin of the Reptile", -- EQM Custom
-            "Skin of the Reptile",
-            "Skin of the Serpent",          -- EQM Custom
+            "Skin of the Green Dragon",     -- Level 71 EQM Custom
+            "Ancient: Skin of the Reptile", -- Level 70 EQM Custom
+            "Skin of the Reptile",          -- Level 68
+            "Skin of the Serpent",          -- Level 59 EQM Custom
         },
         ['SwarmDot'] = {                    -- Magic Dot, 54s
-            "Swarm of Fireants",
-            "Wasp Swarm",
-            "Swarming Death",
-            "Winged Death",
-            "Drifting Death",
-            "Drones of Doom",
-            "Creeping Crud",
-            "Stinging Swarm",
+            "Swarm of Fireants",            -- Level 71
+            "Wasp Swarm",                   -- Level 68
+            "Swarming Death",               -- Level 63
+            "Winged Death",                 -- Level 53
+            "Drifting Death",               -- Level 40
+            "Drones of Doom",               -- Level 32
+            "Creeping Crud",                -- Level 24
+            "Stinging Swarm",               -- Level 10
         },
-        ['VengeanceDot'] = { -- Fire Dot, 30s
-            "Vengeance of the Sun",
-            "Vengeance of Tunare",
-            "Vengeance of Nature",
-            "Vengeance of the Wild",
+        ['VengeanceDot'] = {                -- Fire Dot, 30s
+            "Vengeance of the Sun",         -- Level 69
+            "Vengeance of Tunare",          -- Level 64
+            "Vengeance of Nature",          -- Level 55
+            "Vengeance of the Wild",        -- Level 49
         },
-        ['FlameLickDot'] = { -- Fire Dot with Fire Resist Reduction, 60s
-            "Immolation of the Sun",
-            "Sylvan Embers",
-            "Immolation of Ro",
-            "Breath of Ro",
-            "Immolate",
-            "Flame Lick",
+        ['FlameLickDot'] = {                -- Fire Dot with Fire Resist Reduction, 60s
+            "Immolation of the Sun",        -- Level 67
+            "Sylvan Embers",                -- Level 65
+            "Immolation of Ro",             -- Level 62
+            "Breath of Ro",                 -- Level 52
+            "Immolate",                     -- Level 25
+            "Flame Lick",                   -- Level 1
         },
         ['StunNuke'] = {
-            "Gale of the Stormborn",
-            "Stormwatch",
-            "Storm's Fury",
-            -- "Breath of Karana", -- Only cast outdoors
-            -- "Dustdevil", --Does not Stun
-            "Fury of Air",
-            -- "Dizzying Wind", -- Only cast outdoors
-            -- "Whirling Wind", -- Only cast outdoors
+            "Gale of the Stormborn", -- Level 70
+            "Stormwatch",            -- Level 66
+            "Storm's Fury",          -- Level 61
+            -- "Breath of Karana",    -- Level 56 Only cast outdoors
+            -- "Dustdevil",           -- Level 43 Does not Stun
+            "Fury of Air", -- Level 30
+            -- "Dizzying Wind",       -- Level 16 Only cast outdoors
+            -- "Whirling Wind",       -- Level 3 Only cast outdoors
         },
         ['SnareSpell'] = {
-            -- "Hungry Vines", -- The out-of-era Serpent Vines is much less mana and lasts longer without the Dot And melee guard
-            "Serpent Vines",
-            "Entangle",
-            "Mire Thorns",
-            "Bonds of Tunare",
-            "Ensnare",
-            "Snare",
-            "Tangling Weeds",
+            -- "Hungry Vines",   -- Level 70 The out-of-era Serpent Vines is much less mana and lasts longer without the Dot And melee guard
+            "Serpent Vines",   -- Level 69
+            "Entangle",        -- Level 61
+            "Mire Thorns",     -- Level 61
+            "Bonds of Tunare", -- Level 57
+            "Ensnare",         -- Level 26
+            "Snare",           -- Level 1
+            "Tangling Weeds",  -- Level 1
         },
         ['FireNuke'] = {
-            "Winter's Flame", -- start to add cold damage in as well
-            "Solstice Strike",
-            "Sylvan Fire",
-            "Summer's Flame",
-            "Ancient: Starfire of Ro",
-            "Wildfire",
-            "Scoriae",
-            "Starfire",
-            "Firestrike",
-            "Combust",
-            "Ignite",
-            "Burst of Fire",
-            "Burst of Flame",
+            "Winter's Flame",          -- Level 71 start to add cold damage in as well
+            "Solstice Strike",         -- Level 69
+            "Sylvan Fire",             -- Level 65
+            "Summer's Flame",          -- Level 64
+            "Ancient: Starfire of Ro", -- Level 60
+            "Wildfire",                -- Level 59
+            "Scoriae",                 -- Level 54
+            "Starfire",                -- Level 48
+            "Firestrike",              -- Level 38
+            "Combust",                 -- Level 28
+            "Ignite",                  -- Level 8
+            "Burst of Fire",           -- Level 3
+            "Burst of Flame",          -- Level 1
         },
         ['IceNuke'] = {
-            "Ancient: Glacier Frost",
-            "Glitterfrost",
-            "Ancient: Chaos Frost",
-            "Winter's Frost",
-            "Moonfire",
-            "Frost",
+            "Ancient: Glacier Frost", -- Level 70
+            "Glitterfrost",           -- Level 70
+            "Ancient: Chaos Frost",   -- Level 65
+            "Winter's Frost",         -- Level 65
+            "Moonfire",               -- Level 60
+            "Frost",                  -- Level 55
         },
         ['IceRain'] = {
-            "Tempest Wind",
-            "Winter's Storm",
-            "Blizzard",
-            "Avalanche",
-            "Pogonip",
-            "Cascade of Hail",
+            "Tempest Wind",    -- Level 66
+            "Winter's Storm",  -- Level 61
+            "Blizzard",        -- Level 54
+            "Avalanche",       -- Level 37
+            "Pogonip",         -- Level 22
+            "Cascade of Hail", -- Level 12
         },
         ['SelfDS'] = {
-            "Viridicoat",
-            "Nettlecoat",
-            "Brackencoat",
-            "Bladecoat",
-            "Thorncoat",
-            "Spikecoat",
-            "Bramblecoat",
-            "Barbcoat",
-            "Thistlecoat",
+            "Viridicoat",  -- Level 71
+            "Nettlecoat",  -- Level 68
+            "Brackencoat", -- Level 64
+            "Bladecoat",   -- Level 56
+            "Thorncoat",   -- Level 47
+            "Spikecoat",   -- Level 37
+            "Bramblecoat", -- Level 27
+            "Barbcoat",    -- Level 17
+            "Thistlecoat", -- Level 7
         },
         ['SelfManaRegen'] = {
-            "Mask of the Wild",
-            "Mask of the Forest",
-            "Mask of the Stalker",
+            "Mask of the Wild",    -- Level 70
+            "Mask of the Forest",  -- Level 65
+            "Mask of the Stalker", -- Level 60
         },
         ['HPTypeOneGroup'] = {
-            "Blessing of Steeloak",
-            "Blessing of the Nine",
-            "Protection of the Glades",
-            "Protection of Nature",
-            "Protection of Diamond",
-            "Protection of Steel",
-            "Protection of Rock",
-            "Protection of Wood",
-            'Skin like Wood',
+            "Blessing of Steeloak",     -- Level 70
+            "Blessing of the Nine",     -- Level 65
+            "Protection of the Glades", -- Level 60
+            "Protection of Nature",     -- Level 49
+            "Protection of Diamond",    -- Level 39
+            "Protection of Steel",      -- Level 27
+            "Protection of Rock",       -- Level 19
+            "Protection of Wood",       -- Level 9
+            'Skin like Wood',           -- Level 1
         },
         ['GroupRegenBuff'] = {
-            "Blessing of Oak",
-            "Blessing of Replenishment",
-            "Regrowth of the Grove",
-            "Pack Chloroplast",
-            "Pack Regeneration",
-            "Regeneration",
+            "Blessing of Oak",           -- Level 69
+            "Blessing of Replenishment", -- Level 63
+            "Regrowth of the Grove",     -- Level 58
+            "Pack Chloroplast",          -- Level 45
+            "Pack Regeneration",         -- Level 39
+            "Regeneration",              -- Level 34
         },
-        ['MeleeBuff'] = {      --Hit Damage/STR Buff
-            "Mammoth's Strength",
-            "Lion's Strength", -- 5% Hit Damage
-            "Nature's Might",  -- STR Buff
+        ['MeleeBuff'] = {                --Hit Damage/STR Buff
+            "Mammoth's Strength",        -- Level 70
+            "Lion's Strength",           -- Level 67 - 5% Hit Damage
+            "Nature's Might",            -- Level 62 - STR Buff
         },
         ['GroupDmgShield'] = {
-            "Legacy of Nettles",
-            "Legacy of Bracken",
-            "Ancient: Legacy of Blades",
-            "Legacy of Thorn",
-            "Legacy of Spike",
+            "Legacy of Nettles",         -- Level 70
+            "Legacy of Bracken",         -- Level 65
+            "Ancient: Legacy of Blades", -- Level 60
+            "Legacy of Thorn",           -- Level 59
+            "Legacy of Spike",           -- Level 49
             -- Before this, use ST filler
-            "Shield of Thorns",
-            "Shield of Spikes",
-            "Shield of Brambles",
-            "Shield of Barbs",
-            "Shield of Thistles",
+            "Shield of Thorns",          -- Level 47
+            "Shield of Spikes",          -- Level 37
+            "Shield of Brambles",        -- Level 27
+            "Shield of Barbs",           -- Level 17
+            "Shield of Thistles",        -- Level 7
         },
         ['MoveSpells'] = {
-            "Flight of Eagles",
-            "Spirit of Eagle",
-            "Pack Spirit",
-            "Spirit of Wolf",
+            "Flight of Eagles", -- Level 62
+            "Spirit of Eagle",  -- Level 54
+            "Pack Spirit",      -- Level 35
+            "Spirit of Wolf",   -- Level 10
         },
         ['PetSpell'] = {
-            "Nature Wanderer's Behest",
-            "Hierophant's Behest", -- EQM Custom
-            "Nature Walker's Behest",
-            "Wanderer's Behest",   -- EQM Custom lvl 42
+            "Hierophant's Behest",    -- Level 64 EQM Custom
+            "Nature Walker's Behest", -- Level 55
+            "Wanderer's Behest",      -- Level 42 EQM Custom lvl 42
         },
-        ['Dawnstrike'] = {         -- I think better to just spam solstice strike
-            "Dawnstrike",
+        ['Dawnstrike'] = {            -- I think better to just spam solstice strike
+            "Dawnstrike",             -- Level 70
         },
         -- ['BurstDS'] = { -- Laz specific, short duration 210pt damge shield
-        --     "Barkspur",
+        --     "Barkspur", -- Level 70
         -- },
         ['RezSpell'] = {
             'Incarnate Anew', -- Level 59
         },
         ['CurePoison'] = {
-            "Eradicate Poison",
-            "Counteract Poison",
-            "Cure Poison",
+            "Eradicate Poison",  -- Level 58
+            "Counteract Poison", -- Level 28
+            "Cure Poison",       -- Level 5
         },
         ['CureDisease'] = {
-            "Eradicate Disease",
-            "Counteract Disease",
-            "Cure Disease",
+            "Eradicate Disease",  -- Level 58
+            "Counteract Disease", -- Level 28
+            "Cure Disease",       -- Level 4
         },
         ['CureCurse'] = {
-            "Eradicate Curse",
-            "Remove Greater Curse",
-            "Remove Curse",
-            "Remove Lesser Curse",
-            "Remove Minor Curse",
+            "Eradicate Curse",      -- Level 54
+            "Remove Greater Curse", -- Level 54
+            "Remove Curse",         -- Level 38
+            "Remove Lesser Curse",  -- Level 23
+            "Remove Minor Curse",   -- Level 8
         },
         ['CureCorrupt'] = {
-            "Cure Corruption",
+            "Cure Corruption", -- Level 65
         },
         -- ['PureBlood'] = {
-        --     "Pure Blood",
+        --     "Pure Blood", -- Level 52
         -- },
         ['PBAEMagic'] = {
-            "Earth Shiver",
-            "Castastrophe",
-            "Upheaval",
-            "Earthquake",
-            "Tremor",
+            "Earth Shiver", -- Level 66
+            "Catastrophe",  -- Level 61
+            "Upheaval",     -- Level 48
+            "Earthquake",   -- Level 31
+            "Tremor",       -- Level 21
         },
         ['PetHaste'] = {
-            "Savage Spirit",
-            "Feral Spirit",
+            "Savage Spirit",         -- Level 41
+            "Feral Spirit",          -- Level 18
         },
-        ['GroupResistBuff'] = { -- Fire/Cold Resist
-            "Protection of Seasons",
-            "Circle of Seasons",
-        },
-        ['Elixir'] = { --Laz gives these to druids
-            "Celestial Elixir",
-            "Celestial Healing",
-            "Celestial Health",
-            "Celestial Remedy",
+        ['GroupResistBuff'] = {      -- Fire/Cold Resist
+            "Protection of Seasons", -- Level 64
+            "Circle of Seasons",     -- Level 58
         },
         ['EvacSpell'] = {
-            "Succor",
-            "Lesser Succor",
+            "Succor",             -- Level 57
+            "Lesser Succor",      -- Level 18
         },
-        ['Minionskin'] = { --EQM Custom: HP/Regen/mitigation (May need to block druid HP buff line on pet)
-            "Major Minionskin",
-            "Greater Minionskin",
-            "Minionskin",
-            "Lesser Minionskin",
+        ['Minionskin'] = {        --EQM Custom: HP/Regen/mitigation (May need to block druid HP buff line on pet)
+            "Major Minionskin",   -- Level 66
+            "Greater Minionskin", -- Level 56
+            "Minionskin",         -- Level 43
         },
         ['ColdSlow'] = {
-            "Permafrost Grip",
-            "Ancient: Permafrost Veil",
+            "Permafrost Grip",          -- Level 68
+            "Ancient: Permafrost Veil", -- Level 60
         },
     },
     ['AASets']            = {

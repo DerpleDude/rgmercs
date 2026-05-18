@@ -82,182 +82,181 @@ return {
     },
     ['AbilitySets']   = {
         -- ['IceClaw'] = {
-        --     "Claw of Vox",
-        --     "Claw of Frost",
+        --     "Claw of Vox",   -- Level 69
+        --     "Claw of Frost", -- Level 61
         -- },
         ['WildNuke'] = {
-            "Wildmagic Strike",
+            "Wildmagic Strike", -- Level 70
         },
         ['FireNuke'] = {
-            "Chaos Flame",
-            "Spark of Fire",
-            "Draught of Ro",
-            "Draught of Fire",
-            "Conflagration",
-            "Inferno Shock",
-            "Flame Shock",
-            "Fire Bolt",
-            "Shock of Fire",
+            "Chaos Flame",                   -- Level 70
+            "Spark of Fire",                 -- Level 66
+            "Draught of Ro",                 -- Level 62
+            "Draught of Fire",               -- Level 51
+            "Conflagration",                 -- Level 43
+            "Inferno Shock",                 -- Level 26
+            "Flame Shock",                   -- Level 15
+            "Fire Bolt",                     -- Level 5
+            "Shock of Fire",                 -- Level 4
         },
-        ['BigFireNuke'] = { -- Level 51-70, Long Cast, Heavy Damage
-            "Ether Flame",
-            "Ancient: Core Fire",
-            "Corona Flare", --67 on EQM
-            "Ancient: Strike of Chaos",
-            "White Fire",
-            "Strike of Solusek",
-            "Garrison's Superior Sundering",
-            "Sunstrike",
+        ['BigFireNuke'] = {                  -- Level 51-70, Long Cast, Heavy Damage
+            "Ether Flame",                   -- Level 70
+            "Ancient: Core Fire",            -- Level 68
+            "Corona Flare",                  -- Level 67 EQM Custom
+            "Ancient: Strike of Chaos",      -- Level 65
+            "White Fire",                    -- Level 65
+            "Strike of Solusek",             -- Level 65
+            "Garrison's Superior Sundering", -- Level 60
+            "Sunstrike",                     -- Level 60
         },
-        ['IceNuke'] = {
-            "Ancient: Spear of Gelaqua",
-            "Spark of Ice",
-            "Black Ice",
-            "Draught of E`ci",
-            "Draught of Ice",
-            "Frozen Harpoon",
-            "Ice Comet",
-            "Ice Shock",
-            "Frost Shock",
-            "Shock of Ice",
-            "Blast of Cold",
+        ['ColdNuke'] = {
+            "Spark of Ice",                -- Level 69
+            "Ancient: Spear of Gelaqua",   -- Level 68
+            "Black Ice",                   -- Level 65
+            "Draught of E`ci",             -- Level 64
+            "Draught of Ice",              -- Level 57
+            "Frozen Harpoon",              -- Level 52
+            "Ice Comet",                   -- Level 49
+            "Ice Shock",                   -- Level 34
+            "Frost Shock",                 -- Level 24
+            "Shock of Ice",                -- Level 8
+            "Blast of Cold",               -- Level 1
         },
-        ['BigIceNuke'] = { -- Level 60-70, Timed with great Ratio or High Cast Time/Damage
-            "Gelidin Comet",
-            "Ice Meteor",
-            "Ancient: Destruction of Ice", --13s T1
-            "Ice Spear of Solist",         --13s T2
+        ['BigColdNuke'] = {                -- Level 60-70, Timed with great Ratio or High Cast Time/Damage
+            "Gelidin Comet",               -- Level 69
+            "Ice Meteor",                  -- Level 64
+            "Ancient: Destruction of Ice", -- Level 60, 13s T1
+            "Ice Spear of Solist",         -- Level 60, 13s T2
         },
         ['MagicNuke'] = {
-            "Spark of Lightning",
-            "Draught of Lightning",
-            "Voltaic Draught",
-            "Rend",
-            "Lightning Shock",
-            "Garrison's Mighty Mana Shock",
-            "Shock of Lightning",
+            "Spark of Lightning",            -- Level 68
+            "Draught of Lightning",          -- Level 63
+            "Voltaic Draught",               -- Level 54
+            "Rend",                          -- Level 47
+            "Lightning Shock",               -- Level 37
+            "Garrison's Mighty Mana Shock",  -- Level 18
+            "Shock of Lightning",            -- Level 10
         },
-        ['BigMagicNuke'] = { -- Level 60-70, High Cast Time/Damage
-            "Mana Weave",
-            "Thundaka",
-            "Shock of Magic",
-            "Agnarr's Thunder",
-            "Elnerick's Electrical Rending",
+        ['BigMagicNuke'] = {                 -- Level 60-70, High Cast Time/Damage
+            "Mana Weave",                    -- Level 69
+            "Thundaka",                      -- Level 68
+            "Shock of Magic",                -- Level 65
+            "Agnarr's Thunder",              -- Level 63
+            "Elnerick's Electrical Rending", -- Level 60
         },
         ['StunSpell'] = {
-            "Telekara",
-            "Telaka",
-            "Telekin",
-            "Markar's Discord",
-            "Markar's Clash",
-            "Tishan's Clash",
+            "Telekara",         -- Level 70
+            "Telaka",           -- Level 65
+            "Telekin",          -- Level 64
+            "Markar's Discord", -- Level 56
+            "Markar's Clash",   -- Level 47
+            "Tishan's Clash",   -- Level 19
         },
         ['SelfHPBuff'] = {
-            "Shield of the Crystalwing",
-            "Ether Shield",
-            "Shield of Maelin",
-            "Shield of the Arcane",
-            "Shield of the Magi",
-            "Arch Shielding",
-            "Greater Shielding",
-            "Major Shielding",
-            "Shielding",
-            "Lesser Shielding",
-            "Minor Shielding",
+            "Shield of the Crystalwing", -- Level 70
+            "Ether Shield",              -- Level 66
+            "Shield of Maelin",          -- Level 64
+            "Shield of the Arcane",      -- Level 61
+            "Shield of the Magi",        -- Level 54
+            "Arch Shielding",            -- Level 44
+            "Greater Shielding",         -- Level 33
+            "Major Shielding",           -- Level 23
+            "Shielding",                 -- Level 15
+            "Lesser Shielding",          -- Level 6
+            "Minor Shielding",           -- Level 1
         },
         ['FamiliarBuff'] = {
-            "Greater Familiar",
-            "Familiar",
-            "Lesser Familiar",
-            "Minor Familiar",
+            "Greater Familiar", -- Level 60
+            "Familiar",         -- Level 54
+            "Lesser Familiar",  -- Level 45
+            "Minor Familiar",   -- Level 25
         },
         ['SelfRune1'] = {
-            "Ether Ward",
-            "Ether Skin",
-            "Force Shield",
+            "Ether Ward",   -- Level 69
+            "Ether Skin",   -- Level 68
+            "Force Shield", -- Level 63
         },
         ['Dispel'] = {
-            "Annul Magic",
-            "Nullify Magic",
-            "Cancel Magic",
+            "Annul Magic",   -- Level 53
+            "Nullify Magic", -- Level 34
+            "Cancel Magic",  -- Level 11
         },
         -- ['RootSpell'] = {
-        -- "Iceblock",
-        --     "Greater Fetter",
-        --     "Fetter",
-        --     "Paralyzing Earth",
-        --     "Immobilize",
-        --     "Instill",
-        --     "Root",
+        --     "Greater Fetter",   -- Level 61
+        --     "Fetter",           -- Level 58
+        --     "Paralyzing Earth", -- Level 48
+        --     "Immobilize",       -- Level 39
+        --     "Instill",          -- Level 17
+        --     "Root",             -- Level 3
         -- },
         ['SnareSpell'] = {
-            "Atol's Spectral Shackles",
-            "Bonds of Force",
+            "Atol's Spectral Shackles", -- Level 51
+            "Bonds of Force",           -- Level 27
         },
         ['EvacSpell'] = {
-            "Evacuate",
-            "Lesser Evacuate",
+            "Evacuate",        -- Level 57
+            "Lesser Evacuate", -- Level 18
         },
         ['HarvestSpell'] = {
-            "Patient Harvest",
-            "Harvest",
+            "Patient Harvest", -- Level 71
+            "Harvest",         -- Level 32
         },
         ['JoltSpell'] = {
-            "Concussive Blast",
-            "Ancient: Greater Concussion",
-            "Concussion",
+            "Concussive Blast",            -- Level 70
+            "Ancient: Greater Concussion", -- Level 60
+            "Concussion",                  -- Level 37
         },
         -- Lure Spells (I may implement these in the future. It would need some testing... and yet more options. Custom config users, double check these lists before use!)
         -- ['IceLureNuke'] = {
-        -- "RimeLure",
-        --     "Icebane",
-        --     "Lure of Ice",
-        --     "Lure of Frost",
+        --     "RimeLure",      -- Level 70
+        --     "Icebane",       -- Level 66
+        --     "Lure of Ice",   -- Level 60
+        --     "Lure of Frost", -- Level 52
         -- },
         -- ['FireLureNuke'] = {
-        --     "Firebane",
-        --     "Lure of Ro",
-        --     "Lure of Flame",
-        --     "Lure of Fire", -- EQM Custom
-        --     "Enticement of Flame",
+        --     "Firebane",            -- Level 68
+        --     "Lure of Ro",          -- Level 62
+        --     "Lure of Flame",       -- Level 55
+        --     "Lure of Fire",        -- Level 48 EQM Custom
+        --     "Enticement of Flame", -- Level 44
         -- },
         -- ['MagicLureNuke'] = {
-        --     "Lightningbane",
-        --     "Lure of Thunder",
-        --     "Lure of Lightning",
+        --     "Lightningbane",     -- Level 67
+        --     "Lure of Thunder",   -- Level 61
+        --     "Lure of Lightning", -- Level 58
         -- },
         -- ['StunMagicNuke'] = {
-        --     "Spark of Thunder",
-        --     "Draught of Thunder",
-        --     "Draught of Jiva",
-        --     "Force Strike",
-        --     "Thunder Strike",
-        --     "Force Snap",
-        --     "Lightning Bolt",
+        --     "Spark of Thunder",   -- Level 68
+        --     "Draught of Thunder", -- Level 63
+        --     "Draught of Jiva",    -- Level 55
+        --     "Force Strike",       -- Level 41
+        --     "Thunder Strike",     -- Level 28
+        --     "Force Snap",         -- Level 17
+        --     "Lightning Bolt",     -- Level 16
         -- },
         -- ['MagicRain'] = { -- Last one is at 54, not sustainable
-        --     "Pillar of Lightning",
-        --     "Tears of Druzzil",
-        --     "Energy Storm",
+        --     "Pillar of Lightning", -- Level 54
+        --     "Tears of Druzzil",    -- Level 52
+        --     "Energy Storm",        -- Level 26
         -- },
-        ['IceRain'] = {
-            "Gelid Rains",
-            "Tears of Marr",
-            "Tears of Prexus",
-            "Frost Storm",
-            "Icestrike",
+        ['ColdRain'] = {
+            "Gelid Rains",     -- Level 70
+            "Tears of Marr",   -- Level 65
+            "Tears of Prexus", -- Level 58
+            "Frost Storm",     -- Level 41
+            "Icestrike",       -- Level 6
         },
         ['FireRain'] = {
-            "Tears of the Betrayed",
-            "Tears of the Sun",
-            "Tears of Ro",
-            "Tears of Solusek",
-            "Lava Storm",
-            "Firestorm",
+            "Tears of the Betrayed", -- Level 70
+            "Tears of the Sun",      -- Level 66
+            "Tears of Ro",           -- Level 61
+            "Tears of Solusek",      -- Level 55
+            "Lava Storm",            -- Level 32
+            "Firestorm",             -- Level 12
         },
         -- ['FireLureRain'] = {
-        --     "Meteor Storm",
-        --     "Tears of Arlyxir",
+        --     "Meteor Storm",     -- Level 69
+        --     "Tears of Arlyxir", -- Level 64
         -- },
         ['PBTimer4'] = {
             "Magmaraug's Presence", -- Level 71, Fire
@@ -270,19 +269,19 @@ return {
         ['FireJyll'] = {
             "Jyll's Wave of Heat", -- Level 59
         },
-        ['IceJyll'] = {
+        ['ColdJyll'] = {
             "Jyll's Zephyr of Ice", -- Level 56
         },
         ['MagicJyll'] = {
             "Jyll's Static Pulse", -- Level 53
         },
         ['SwarmPet'] = {
-            -- "Solist's Frozen Sword", -- Bugged, does not attack on Laz/Emu
-            "Flaming Sword of Xuzl", --homework
+            -- "Solist's Frozen Sword", -- Level 69, Bugged, does not attack on Laz/Emu
+            "Flaming Sword of Xuzl", -- Level 59
         },
         -- ['SpellWard'] = {
-        --     "Bulwark of Calrena",
-        --     "Defense of Calrena",
+        --     "Bulwark of Calrena", -- Level 70
+        --     "Defense of Calrena", -- Level 70
         -- },
     },
     ['AASets']        = {
@@ -313,6 +312,30 @@ return {
         RainCheck = function(target) -- I made a funny
             if not (Config:GetSetting('DoRain') and Config:GetSetting('DoAEDamage')) then return false end
             return Targeting.GetTargetDistance() >= Config:GetSetting('RainDistance') and Targeting.MobNotLowHP(target)
+        end,
+
+        -- Resolves the currently-active element based on ElementMode.
+        -- Auto: prefers Fire, then Cold, then Magic, skipping any element the auto-target is
+        -- immune to (per the Named List) or one toggled off via Skip<X>Spells.
+        PickElement = function()
+            local mode = Config:GetSetting('ElementMode') or 1
+            if mode == 2 then return "Fire" end
+            if mode == 3 then return "Cold" end
+            if mode == 4 then return "Magic" end
+            local autoId = Globals.AutoTargetID or 0
+            if not Casting.ShouldSkipElement("Fire", autoId) then return "Fire" end
+            if not Casting.ShouldSkipElement("Cold", autoId) then return "Cold" end
+            if not Casting.ShouldSkipElement("Magic", autoId) then return "Magic" end
+            return "Fire" -- all skipped; default so Fury/Familiar still resolve
+        end,
+
+        -- Familiar element pick: explicit element if set, Fire fallback in Auto. See FAQ.
+        PickFamiliarElement = function()
+            local mode = Config:GetSetting('ElementMode') or 1
+            if mode == 2 then return "Fire" end
+            if mode == 3 then return "Cold" end
+            if mode == 4 then return "Magic" end
+            return "Fire"
         end,
     },
     ['RotationOrder'] = {
@@ -379,23 +402,21 @@ return {
             name = 'DPS(Fire)',
             state = 1,
             steps = 1,
-            load_cond = function() return Config:GetSetting('ElementChoice') == 1 or Config:GetSetting('KeepFireMemmed') end,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                if Config:GetSetting('ElementChoice') ~= 1 then return false end
+                if self.Helpers.PickElement() ~= "Fire" then return false end
                 return combat_state == "Combat" and not (Core.IsModeActive('PBAE') and Combat.AETargetCheck(true))
             end,
         },
         {
-            name = 'DPS(Ice)',
+            name = 'DPS(Cold)',
             state = 1,
             steps = 1,
-            load_cond = function() return Config:GetSetting('ElementChoice') == 2 or Config:GetSetting('KeepIceMemmed') end,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                if Config:GetSetting('ElementChoice') ~= 2 then return false end
+                if self.Helpers.PickElement() ~= "Cold" then return false end
                 return combat_state == "Combat" and not (Core.IsModeActive('PBAE') and Combat.AETargetCheck(true))
             end,
         },
@@ -403,11 +424,10 @@ return {
             name = 'DPS(Magic)',
             state = 1,
             steps = 1,
-            load_cond = function() return Config:GetSetting('ElementChoice') == 3 or Config:GetSetting('KeepMagicMemmed') end,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                if Config:GetSetting('ElementChoice') ~= 3 then return false end
+                if self.Helpers.PickElement() ~= "Magic" then return false end
                 return combat_state == "Combat" and not (Core.IsModeActive('PBAE') and Combat.AETargetCheck(true))
             end,
         },
@@ -458,12 +478,20 @@ return {
                 name = "Focus of Arcanum",
                 type = "AA",
             },
-            { --Familiar AA, will use the correct element, and fallback to improved
-                name_func = function(self)
-                    local furyBuff = { "Fury of Ro", "Fury of Eci", "Fury of Druzzil", }
-                    return furyBuff[Config:GetSetting('ElementChoice')] or "Unknown Error"
-                end,
+            { -- Fury AA: split per element so Auto mode picks the right one on the fly each burn pass
+                name = "Fury of Ro",
                 type = "AA",
+                cond = function(self) return self.Helpers.PickElement() == "Fire" end,
+            },
+            {
+                name = "Fury of Eci",
+                type = "AA",
+                cond = function(self) return self.Helpers.PickElement() == "Cold" end,
+            },
+            {
+                name = "Fury of Druzzil",
+                type = "AA",
+                cond = function(self) return self.Helpers.PickElement() == "Magic" end,
             },
             { --Crit Chance AA, will use the first(best) one found
                 name = "Devastation",
@@ -617,7 +645,7 @@ return {
                 end,
             },
         },
-        ['DPS(Ice)'] = {
+        ['DPS(Cold)'] = {
             {
                 name = "Cryomancy",
                 type = "AA",
@@ -627,7 +655,7 @@ return {
                 end,
             },
             {
-                name = "IceRain",
+                name = "ColdRain",
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoRain') end,
                 cond = function(self, spell, target)
@@ -636,14 +664,14 @@ return {
                 end,
             },
             {
-                name = "BigIceNuke",
+                name = "BigColdNuke",
                 type = "Spell",
                 cond = function(self, spell, target)
                     return Targeting.MobNotLowHP(target) and Targeting.AggroCheckOkay()
                 end,
             },
             {
-                name = "IceNuke",
+                name = "ColdNuke",
                 type = "Spell",
                 cond = function(self, spell, target)
                     return Targeting.AggroCheckOkay()
@@ -692,7 +720,7 @@ return {
                 end,
             },
             {
-                name = "IceJyll",
+                name = "ColdJyll",
                 type = "Spell",
                 allowDead = true,
                 cond = function(self, spell, target)
@@ -728,8 +756,8 @@ return {
             },
             { --Familiar AA, will use the correct element, and fallback to improved
                 name_func = function(self)
-                    local familiars = { "Ro's Flaming Familiar", "E'ci's Icy Familiar", "Druzzil's Mystical Familiar", }
-                    local currentFam = familiars[Config:GetSetting('ElementChoice')] or "Unknown Error"
+                    local familiars = { Fire = "Ro's Flaming Familiar", Cold = "E'ci's Icy Familiar", Magic = "Druzzil's Mystical Familiar", }
+                    local currentFam = familiars[self.Helpers.PickFamiliarElement()] or "Unknown Error"
                     return Casting.CanUseAA(currentFam) and currentFam or "Improved Familiar"
                 end,
                 type = "AA",
@@ -776,15 +804,15 @@ return {
             name = "Default Mode",
             -- cond = function(self) return true end, --Code kept here for illustration, if there is no condition to check, this line is not required
             spells = {
-                { name = "FireNuke",     cond = function() return Config:GetSetting('ElementChoice') == 1 or Config:GetSetting('KeepFireMemmed') end, },
-                { name = "BigFireNuke",  cond = function() return Config:GetSetting('ElementChoice') == 1 or Config:GetSetting('KeepFireMemmed') end, },
-                { name = "IceNuke",      cond = function() return Config:GetSetting('ElementChoice') == 2 or Config:GetSetting('KeepIceMemmed') end, },
-                { name = "BigIceNuke",   cond = function() return Config:GetSetting('ElementChoice') == 2 or Config:GetSetting('KeepIceMemmed') end, },
-                { name = "MagicNuke",    cond = function() return Config:GetSetting('ElementChoice') == 3 or Config:GetSetting('KeepMagicMemmed') end, },
-                { name = "BigMagicNuke", cond = function() return Config:GetSetting('ElementChoice') == 3 or Config:GetSetting('KeepMagicMemmed') end, },
+                { name = "FireNuke", },
+                { name = "BigFireNuke", },
+                { name = "ColdNuke", },
+                { name = "BigColdNuke", },
+                { name = "MagicNuke", },
+                { name = "BigMagicNuke", },
                 { name = "WildNuke",     cond = function() return Config:GetSetting('DoWildNuke') end, },
-                { name = "FireRain",     cond = function() return Config:GetSetting('DoRain') and Config:GetSetting('ElementChoice') == 1 end, },
-                { name = "IceRain",      cond = function() return Config:GetSetting('DoRain') and Config:GetSetting('ElementChoice') == 2 end, },
+                { name = "FireRain",     cond = function() return Config:GetSetting('DoRain') end, },
+                { name = "ColdRain",     cond = function() return Config:GetSetting('DoRain') end, },
                 { name = "HarvestSpell", cond = function() return not Casting.CanUseAA("Harvest of Druzzil") end, },
                 { name = "SnareSpell",   cond = function() return Config:GetSetting('DoSnare') and not Casting.CanUseAA("Atol's Shackles") end, },
                 { name = "EvacSpell",    cond = function() return Config:GetSetting('KeepEvacMemmed') end, },
@@ -792,7 +820,7 @@ return {
                 { name = "JoltSpell",    cond = function() return Config:GetSetting('DoJoltSpell') end, },
                 { name = "PBTimer4",     cond = function() return Core.IsModeActive('PBAE') end, },
                 { name = "FireJyll",     cond = function() return Core.IsModeActive('PBAE') end, },
-                { name = "IceJyll",      cond = function() return Core.IsModeActive('PBAE') end, },
+                { name = "ColdJyll",     cond = function() return Core.IsModeActive('PBAE') end, },
                 { name = "MagicJyll",    cond = function() return Core.IsModeActive('PBAE') end, },
                 { name = "SelfRune1", },
                 { name = "SelfHPBuff", },
@@ -814,54 +842,27 @@ return {
         },
 
         -- Damage (ST)
-        ['ElementChoice']        = {
-            DisplayName = "Element Choice:",
+        ['ElementMode']          = {
+            DisplayName = "Element Mode:",
             Group = "Abilities",
             Header = "Damage",
             Category = "Direct",
             Index = 101,
-            Tooltip = "Choose which element-specific nukes and buffs will be used. See FAQ for more details.",
+            Tooltip = "Pick the element strategy for nukes and buffs. Auto rotates Fire/Cold/Magic based on target immunity. " ..
+                "See FAQ for details on Skip<Element>Spells conflicts and Familiar AA handling in Auto mode.",
             Type = "Combo",
-            ComboOptions = { 'Fire', 'Ice', 'Magic', },
+            ComboOptions = { 'Auto', 'Fire', 'Cold', 'Magic', },
             Default = 1,
             Min = 1,
-            Max = 3,
-            RequiresLoadoutChange = true,
-            FAQ = "How do I select to use multiple elements in combat?",
+            Max = 4,
+            FAQ = "How does Element Mode work?",
             Answer =
-                "   The 'Element Choice' setting determines which element you will use in combat. To avoid conflicts with the Familiar, 'Fury' and '-mancy' AA buffs, the default class config will focus on a single element at a time.\n\n" ..
-                "   The choice can be changed in combat (used in conjuction with the 'Keep X Memmed' settings), but we will not rescribe spells in combat, and Fury/Familiars will not be updated in the rotation until after combat is over.\n\n" ..
-                "   PBAE spells, if enabled, will use any available element, due to the nature of their recast timers.",
-        },
-        ['KeepFireMemmed']       = {
-            DisplayName = "Keep Fire Memmed",
-            Group = "Abilities",
-            Header = "Damage",
-            Category = "Direct",
-            Index = 102,
-            Tooltip = "Regardless of our current element selection, keep fire spells memorized so that we can switch elements in combat without changing our loadout.",
-            RequiresLoadoutChange = true,
-            Default = false,
-        },
-        ['KeepIceMemmed']        = {
-            DisplayName = "Keep Ice Memmed",
-            Group = "Abilities",
-            Header = "Damage",
-            Category = "Direct",
-            Index = 103,
-            Tooltip = "Regardless of our current element selection, keep ice spells memorized so that we can switch elements in combat without changing our loadout.",
-            RequiresLoadoutChange = true,
-            Default = false,
-        },
-        ['KeepMagicMemmed']      = {
-            DisplayName = "Keep Magic Memmed",
-            Group = "Abilities",
-            Header = "Damage",
-            Category = "Direct",
-            Index = 103,
-            Tooltip = "Regardless of our current element selection, keep magic spells memorized so that we can switch elements in combat without changing our loadout.",
-            RequiresLoadoutChange = true,
-            Default = false,
+                "   The 'Element Mode' setting determines which element you will use in combat. All three element lines (Fire/Cold/Magic) are memorized regardless of mode, so you can change mode in combat freely.\n\n" ..
+                "   Auto mode prefers Fire, then Cold, then Magic, automatically skipping any element your target is immune to (per the Named List) or any element you've globally toggled off via the Skip <Element> Spells settings. The explicit modes (Fire/Cold/Magic) lock to that element regardless of immunity data.\n\n" ..
+                "   Heads up: explicit modes still respect the global Skip <Element> Spells toggles. If you pick Fire mode here but have SkipFireSpells enabled in your combat settings, the global skip wins and Fire casts will be blocked - you'll need to clear the conflicting toggle, or pick a different element here.\n\n" ..
+                "   Fury AA buffs follow whatever element is active each burn pass - in Auto mode, this means Fury can swap mid-burn as the target changes.\n\n" ..
+                "   In Auto mode, the script buffs the Fire familiar (Ro's Flaming) and leaves it alone. Explicit modes buff the matching familiar. To change familiars in Auto, briefly switch ElementMode to Cold or Magic to let the script buff that one, then switch back - the buff persists.\n\n" ..
+                "   PBAE spells, if enabled, will use any available element due to the nature of their recast timers.",
         },
         ['DoManaBurn']           = {
             DisplayName = "Use Mana Burn AA",

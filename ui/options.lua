@@ -133,6 +133,7 @@ OptionsUI.Groups                = { --- Add a default of the same name for any k
         IconImage = OptionsUI.LoadIcon("themeicon"),
         Headers = {
             { Name = 'Interface', Categories = { "Interface", "Main Panel", "ForceTarget Window", "Mercs Status Window", "Mercs Target Window", "Default Colors", }, },
+            { Name = 'Map',       Categories = { "Map", }, },
             {
                 Name = 'User Theme',
                 RenderCategories = {

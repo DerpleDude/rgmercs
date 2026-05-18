@@ -168,7 +168,6 @@ local _ClassConfig = {
             "Restless Bones",
             "Bone Walk",
             "Convoke Shadow",
-            "Leering Corpse,",
         },
         ['PetHaste'] = {
             "Rune of Decay",

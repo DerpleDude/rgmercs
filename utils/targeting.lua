@@ -52,6 +52,8 @@ function Targeting.ClearTarget()
         Logger.log_debug("Clearing Target")
         Globals.AutoTargetID = 0
         Globals.AutoTargetIsNamed = false
+        Globals.AutoTargetElementalImmunities = {}
+        Globals.AutoTargetStatusImmunities = {}
         Globals.AggroTargetID = 0
         if Globals.ForceTargetID > 0 and not Targeting.IsSpawnXTHater(Globals.ForceTargetID) then Globals.SetForcedTargetId(0) end
         Globals.ForceCombatID = 0

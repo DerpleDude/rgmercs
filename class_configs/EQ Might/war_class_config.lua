@@ -77,85 +77,82 @@ local _ClassConfig = {
         },
     },
     ['AbilitySets']   = {
-        ['StandDisc'] = { -- Timer 1
-            "Final Stand Discipline",
-            "Shelter Me Discipline",
-            -- "Stonewall Discipline",
-            "Defensive Discipline",
-            "Evasive Discipline",
+        ['StandDisc'] = {             -- Timer 1
+            "Final Stand Discipline", -- Level 71
+            "Shelter Me Discipline",  -- Level 69
+            -- "Stonewall Discipline", -- Level 65
+            "Defensive Discipline",   -- Level 55
+            "Evasive Discipline",     -- Level 52
         },
         ['StanceDisc'] = {
-            "Myrmidon Stance Discipline",
-            "Warrior Stance Discipline",
+            "Myrmidon Stance Discipline", -- Level 61
+            "Warrior Stance Discipline",  -- Level 40
         },
-        ['Fortitude'] = { -- Timer 3
-            "Fortitude Discipline",
-            "Furious Discipline",
+        ['Fortitude'] = {                 -- Timer 3
+            "Fortitude Discipline",       -- Level 59
+            "Furious Discipline",         -- Level 56
         },
         ['GroupDodgeBuff'] = {
-            "Commanding Voice",
+            "Commanding Voice", -- Level 68
         },
         ['BladeDisc'] = {
-            "Vortex Blade",
-            "Cyclone Blade",
-            "Whirlwind Blade",
-            "Mayhem Blade",
+            "Vortex Blade",    -- Level 74
+            "Cyclone Blade",   -- Level 67
+            "Whirlwind Blade", -- Level 61
+            "Mayhem Blade",    -- Level 45
         },
         ['AddHate'] = {
-            "Ancient: Chaos Cry",
-            "Bellow of the Mastruq",
-            "Incite",
-            "Berate",
-            "Bellow",
-            "Provoke",
+            "Ancient: Chaos Cry",    -- Level 65
+            "Bellow of the Mastruq", -- Level 65
+            "Incite",                -- Level 63
+            "Berate",                -- Level 56
+            "Bellow",                -- Level 52
+            "Provoke",               -- Level 20
         },
         ['AbsorbTaunt'] = {
-            "Mock",
+            "Mock", -- Level 70
         },
         ['EndRegen'] = {
-            "Third Wind", -- also does HP
-            "Second Wind",
+            "Third Wind",  -- Level 77 also does HP
+            "Second Wind", -- Level 70
         },
         ['AuraBuff'] = {
-            "Champion's Aura",
-            "Myrmidon's Aura",
+            "Champion's Aura", -- Level 66
+            "Myrmidon's Aura", -- Level 55
         },
         ['Onslaught'] = {
-            "Savage Onslaught Discipline",
-            "Brutal Onslaught Discipline",
+            "Brutal Onslaught Discipline", -- Level 74
+            "Savage Onslaught Discipline", -- Level 68
         },
         ['StrikeDisc'] = {
-            "Mighty Blow Discipline",
-            "Fellstrike Discipline",
-            "Mighty Strike Discipline",
+            "Mighty Blow Discipline",   -- Level 66
+            "Fellstrike Discipline",    -- Level 58
+            "Mighty Strike Discipline", -- Level 54
         },
         ['Throat'] = {
-            "Throat Jab",
-        },
-        ['Flaunt'] = {
-            "Flaunt",
+            "Throat Jab", -- Level 71
         },
         -- ['ShockDisc'] = { -- Timer 7, defensive stun proc
-        --     "Shocking Defense Discipline",
+        --     "Shocking Defense Discipline", -- Level 70
         -- },
         ['Protective'] = {
-            "Protective Discipline",
-            "Protective Surge Discipline",
+            "Protective Discipline",            -- Level 69
+            "Protective Surge Discipline",      -- Level 45
         },
-        ['HealingDisc'] = { --EQM Custom, 2m duration, 5m reuse, hp regen
-            "Lifebloom Will Discipline",
-            "Rejuvenating Will Discipline",
-            "Healing Determination Discipline",
-            "Healing Will Discipline",
+        ['HealingDisc'] = {                     --EQM Custom, 2m duration, 5m reuse, hp regen
+            "Lifebloom Will Discipline",        -- Level 70
+            "Rejuvenating Will Discipline",     -- Level 68
+            "Healing Determination Discipline", -- Level 66
+            "Healing Will Discipline",          -- Level 59
         },
         ['Revitalize'] = {
-            "Steely Revitalize",
-            "Iron Revitalize",
-            "Hardened Revitalize",
-            "Revitalize",
+            "Steely Revitalize",      -- Level 69
+            "Iron Revitalize",        -- Level 65
+            "Hardened Revitalize",    -- Level 55
+            "Revitalize",             -- Level 44
         },
-        ['BattlecryHeal'] = { -- EQM Custom, restores HP/End for group, 8m reuse
-            "Invigorating Battlecry Discipline",
+        ['BattlecryHeal'] = {         -- EQM Custom, restores HP/End for group, 8m reuse
+            "Invigorating Battlecry", -- Level 63
         },
     },
     ['AASets']        = {
@@ -617,13 +614,6 @@ local _ClassConfig = {
                 type = "Disc",
                 cond = function(self, discSpell, target)
                     return Core.IsTanking()
-                end,
-            },
-            {
-                name = "Flaunt",
-                type = "Disc",
-                cond = function(self, discSpell, target)
-                    return not Core.IsTanking()
                 end,
             },
             {

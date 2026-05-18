@@ -13,6 +13,10 @@ local Set         = require('mq.set')
 
 local Binds       = { _version = '0.1a', _name = "Binds", _author = 'Derple', }
 
+Binds.ImmunityKeywords = {}
+for _, name in ipairs(Globals.Constants.ResistTypes)     do Binds.ImmunityKeywords[name:lower()] = { canonical = name, group = "elementalImmunities", } end
+for _, name in ipairs(Globals.Constants.ImmunityEffects) do Binds.ImmunityKeywords[name:lower()] = { canonical = name, group = "statusImmunities", } end
+
 Binds.MainHandler = function(cmd, ...)
     if not cmd or cmd:len() == 0 then cmd = "help" end
 
@@ -193,6 +197,18 @@ Binds.Handlers    = {
             Config:ListMoveUp(name, "AssistList")
         end,
     },
+    ['assisttop'] = {
+        usage = "/rgl assisttop (<Name> or <List#>)",
+        about = "Moves (<Name> or <List#>) to the top of the Assist List. If no name is entered, your target's name is used.",
+        handler = function(name)
+            if not name then name = mq.TLO.Target.CleanName() end
+            if not name then
+                Logger.log_error("/rgl assisttop - no name given and no valid target exists!")
+                return
+            end
+            Config:ListMoveTop(name, "AssistList")
+        end,
+    },
     ['assistdown'] = {
         usage = "/rgl assistdown (<Name> or <List#>)",
         about = "Moves (<Name> or <List#>) one position down on the Assist List. If no name is entered, your target's name is used.",
@@ -258,19 +274,61 @@ Binds.Handlers    = {
                 end
                 name = mq.TLO.Target.CleanName()
             end
-            Config:ZoneListAdd(name, "CustomNamedList")
+            Modules.ModuleList.Named:AddNamedToCustomList(name)
         end,
     },
     ['nameddelete'] = {
-        usage = "/rgl nameddelete (<Name> or <List#>)",
-        about = "Deletes (<Name> or <List#>) from the User Named List for the current zone. If no name is entered, your target's name is used.",
+        usage = "/rgl nameddelete [Name]",
+        about = "Clears the Named flag for a mob in the current zone. If no name is entered, your target's name is used.",
         handler = function(arg1)
             if not arg1 then arg1 = mq.TLO.Target.CleanName() end
             if not arg1 then
                 Logger.log_error("/rgl nameddelete - no argument given and no valid target exists!")
                 return
             end
-            Config:ZoneListDelete(arg1, "CustomNamedList")
+            Modules.ModuleList.Named:DeleteNamedFromCustomList(arg1)
+        end,
+    },
+    ['immuneadd'] = {
+        usage = "/rgl immuneadd <Fire|Cold|Magic|Poison|Disease|Slow|Snare|Stun> [Name]",
+        about = "Flag a mob as immune to an element (Fire/Cold/Magic/Poison/Disease) or status effect (Slow/Snare/Stun) in the current zone. If no name is entered, your target's name is used.",
+        handler = function(keyword, name)
+            local match = keyword and Binds.ImmunityKeywords[tostring(keyword):lower()]
+            if not match then
+                Logger.log_error("/rgl immuneadd - invalid or missing keyword. Use Fire/Cold/Magic/Poison/Disease or Slow/Snare/Stun.")
+                return
+            end
+            if not name then
+                if not mq.TLO.Target() then
+                    Logger.log_error("/rgl immuneadd - no name given and no valid target exists!")
+                    return
+                end
+                if not Targeting.TargetIsType("NPC") then
+                    Logger.log_error("/rgl immuneadd - target must be an NPC!")
+                    return
+                end
+                name = mq.TLO.Target.CleanName()
+            end
+            Config:ZoneRegistrySetSubFlag(name, "CustomNamedList", match.group, match.canonical, true)
+            Logger.log_info("\ag[Immune] \ay%s\ax marked %s-immune in this zone.", name, match.canonical)
+        end,
+    },
+    ['immunedelete'] = {
+        usage = "/rgl immunedelete <Fire|Cold|Magic|Poison|Disease|Slow|Snare|Stun> [Name]",
+        about = "Clear an elemental or status immunity flag from a mob in the current zone. If no name is entered, your target's name is used.",
+        handler = function(keyword, arg1)
+            local match = keyword and Binds.ImmunityKeywords[tostring(keyword):lower()]
+            if not match then
+                Logger.log_error("/rgl immunedelete - invalid or missing keyword. Use Fire/Cold/Magic/Poison/Disease or Slow/Snare/Stun.")
+                return
+            end
+            if not arg1 then arg1 = mq.TLO.Target.CleanName() end
+            if not arg1 then
+                Logger.log_error("/rgl immunedelete - no name given and no valid target exists!")
+                return
+            end
+            Config:ZoneRegistryClearFlag(arg1, "CustomNamedList", match.group, match.canonical)
+            Logger.log_info("\ag[Immune] \ay%s\ax cleared %s flag.", tostring(arg1), match.canonical)
         end,
     },
     ['backoff'] = {

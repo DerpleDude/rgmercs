@@ -337,7 +337,7 @@ local _ClassConfig = {
         },
         ['PBAEMagic'] = {
             "Earth Shiver",
-            "Castastrophe",
+            "Catastrophe",
             "Upheaval",
             "Earthquake",
             "Tremor",

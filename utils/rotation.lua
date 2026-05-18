@@ -265,6 +265,15 @@ end
 ---@return boolean pass True if entry.cond passed (or no condition).
 ---@return boolean active True if entry.active_cond passed.
 function Rotation.TestConditionForEntry(caller, resolvedActionMap, entry, targetId)
+    if not entry.IgnoreImmuneCheck and entry.cachedResistType and Casting.ShouldSkipElement(entry.cachedResistType, targetId) then
+        local element = entry.cachedResistType
+        local skipGlobal = Config:GetSetting("Skip" .. element .. "Spells") and true or false
+        local skipPerMob = Globals.AutoTargetElementalImmunities[element] == true
+        Logger.log_verbose("\ay   :: Elemental immunity gate skipped \at%s\ay (element=%s, global=%s, perMob=%s)",
+            entry.name, element, Strings.BoolToColorString(skipGlobal), Strings.BoolToColorString(skipPerMob))
+        return false, false
+    end
+
     local condArg = Rotation.GetEntryConditionArg(resolvedActionMap, entry)
     local condTarg = mq.TLO.Spawn(targetId)
     local pass = false

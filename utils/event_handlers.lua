@@ -281,23 +281,15 @@ mq.event('Collapsed1', "Your gate is too unstable, and collapses#*#", function()
     Casting.SetLastCastResult(Globals.Constants.CastResults.CAST_COLLAPSE)
 end)
 
-mq.event('Distracted1', "You need to play a#*#instrument for this song#*#", function()
+mq.event('Distracted1', "You are too distracted to cast a spell now#*#", function()
     Casting.SetLastCastResult(Globals.Constants.CastResults.CAST_DISTRACTED)
 end)
 
-mq.event('Distracted2', "You are too distracted to cast a spell now#*#", function()
+mq.event('Distracted2', "You can't cast spells while invulnerable#*#", function()
     Casting.SetLastCastResult(Globals.Constants.CastResults.CAST_DISTRACTED)
 end)
 
-mq.event('Distracted3', "You can't cast spells while invulnerable#*#", function()
-    Casting.SetLastCastResult(Globals.Constants.CastResults.CAST_DISTRACTED)
-end)
-
-mq.event('Distracted4', "You *CANNOT* cast spells, you have been silenced#*#", function()
-    Casting.SetLastCastResult(Globals.Constants.CastResults.CAST_DISTRACTED)
-end)
-
-mq.event('Distracted5', "You do not have sufficient focus to maintain that ability.", function()
+mq.event('Distracted3', "You *CANNOT* cast spells, you have been silenced#*#", function()
     Casting.SetLastCastResult(Globals.Constants.CastResults.CAST_DISTRACTED)
 end)
 
@@ -401,6 +393,10 @@ mq.event('TakeHold4', "Your spell is too powerfull for your intended target#*#",
     Casting.SetLastCastResult(Globals.Constants.CastResults.CAST_TAKEHOLD)
 end)
 
+mq.event('TakeHold5', "You do not have sufficient focus to maintain that ability.", function()
+    Casting.SetLastCastResult(Globals.Constants.CastResults.CAST_TAKEHOLD)
+end)
+
 mq.event('CanNotSee1', "You cannot see your target#*#", function()
     Casting.SetLastCastResult(Globals.Constants.CastResults.CAST_CANNOTSEE)
 end)
@@ -410,6 +406,10 @@ mq.event('Components1', "You are missing some required components#*#", function(
 end)
 
 mq.event('Components2', "Your ability to use this item has been disabled because you do not have at least a gold membership#*#", function()
+    Casting.SetLastCastResult(Globals.Constants.CastResults.CAST_COMPONENTS)
+end)
+
+mq.event('Components3', "You need to play a#*#instrument for this song#*#", function()
     Casting.SetLastCastResult(Globals.Constants.CastResults.CAST_COMPONENTS)
 end)
 
@@ -500,6 +500,7 @@ end)
 
 mq.event('Camping', "It will take you about #1# seconds to prepare your camp.", function(_, seconds)
     Globals.PauseMain = true
+    Globals.StopCast = true
 end)
 
 -- [ END GAME EVENT HANDLERS ] --

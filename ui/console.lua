@@ -14,11 +14,13 @@ function ConsoleUI:DrawConsole(showPopout)
 
     if RGMercsConsole then
         if showPopout then
+            ImGui.PushID("##console_popout_btn")
             if ImGui.SmallButton(Icons.MD_OPEN_IN_NEW) then
                 Config:SetSetting('PopOutConsole', true)
             end
             Ui.Tooltip("Pop the Console out into its own window.")
             ImGui.NewLine()
+            ImGui.PopID()
         end
 
         local changed
