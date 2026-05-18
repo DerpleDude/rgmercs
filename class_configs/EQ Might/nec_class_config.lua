@@ -740,6 +740,9 @@ local _ClassConfig = {
             {
                 name = "OoW_Chest",
                 type = "Item",
+                cond = function(self, itemName, target)
+                    return Globals.AutoTargetIsNamed and Targeting.GetAutoTargetPctHPs() <= Config:GetSetting('BurnHPThreshold')
+                end,
             },
             {
                 name = "Focus of Arcanum",
@@ -766,7 +769,9 @@ local _ClassConfig = {
             {
                 name = "Gathering Dusk",
                 type = "AA",
-                cond = function(self, aaName, target) return Globals.AutoTargetIsNamed and Targeting.GetAutoTargetPctHPs() < 85 and mq.TLO.Me.PctAggro() <= 25 end,
+                cond = function(self, aaName, target)
+                    return Globals.AutoTargetIsNamed and Targeting.GetAutoTargetPctHPs() <= Config:GetSetting('BurnHPThreshold') and mq.TLO.Me.PctAggro() <= 25
+                end,
             },
             {
                 name = "Life Burn",
@@ -1262,6 +1267,19 @@ local _ClassConfig = {
             Tooltip = "Use your Orb nuke to summon more Soul/Shadow orbs when needed.",
             RequiresLoadoutChange = true,
             Default = true,
+        },
+        ['BurnHPThreshold']   = {
+            DisplayName = "Burn HP Threshold",
+            Group = "Combat",
+            Header = "Burning",
+            Category = "Burning",
+            Index = 101,
+            Tooltip =
+            "Burn abilities that are best used once dots have been applied will be held until a named has reached this HP value. (Affected abilities: Spire, Gathering Dusk, OoW Robe)",
+            Default = 70,
+            Min = 1,
+            Max = 100,
+            ConfigType = "Advanced",
         },
     },
     ['ClassFAQ']        = {

@@ -1241,6 +1241,9 @@ local _ClassConfig = {
             {
                 name = "OoW_Chest",
                 type = "Item",
+                cond = function(self, itemName, target)
+                    return Globals.AutoTargetIsNamed and Targeting.GetAutoTargetPctHPs() <= Config:GetSetting('BurnHPThreshold')
+                end,
             },
             {
                 name = "Funeral Pyre",
@@ -1249,6 +1252,9 @@ local _ClassConfig = {
             {
                 name = "Hand of Death",
                 type = "AA",
+                cond = function(self, aaName, target)
+                    return Globals.AutoTargetIsNamed and Targeting.GetAutoTargetPctHPs() <= Config:GetSetting('BurnHPThreshold')
+                end,
             },
             {
                 name = "Mercurial Torment",
@@ -1261,7 +1267,9 @@ local _ClassConfig = {
             {
                 name = "Gathering Dusk",
                 type = "AA",
-                cond = function(self, aaName, target) return Globals.AutoTargetIsNamed end,
+                cond = function(self, aaName, target)
+                    return Globals.AutoTargetIsNamed and Targeting.GetAutoTargetPctHPs() <= Config:GetSetting('BurnHPThreshold') and mq.TLO.Me.PctAggro() <= 25
+                end,
             },
             {
                 name = "Swarm of Decay",
@@ -1294,6 +1302,9 @@ local _ClassConfig = {
             {
                 name = "Spire of Necromancy",
                 type = "AA",
+                cond = function(self, aaName, target)
+                    return Globals.AutoTargetIsNamed and Targeting.GetAutoTargetPctHPs() <= Config:GetSetting('BurnHPThreshold')
+                end,
             },
             { --Chest Click, name function stops errors in rotation window when slot is empty
                 name_func = function() return mq.TLO.Me.Inventory("Chest").Name() or "ChestClick(Missing)" end,
@@ -1447,8 +1458,8 @@ local _ClassConfig = {
         },
     },
     ['Helpers']         = {
-        -- Check if any group member (excluding self) is at or below a given HP%.
-        -- Group.Member(0) is you; 1..N are your group members.
+        -- Check if any group member (excluding self) is at or below a given HP%. This is used to make sure someone needs to heal before we use the group leech.
+        -- The intent is to only use the mana heavy group leech as a quasi-heal when someone actually needs the health.
         GroupMemberBelowHP = function(self, pct)
             local count = mq.TLO.Group.Members() or 0
             for i = 1, count do
@@ -1886,6 +1897,19 @@ local _ClassConfig = {
             Index = 101,
             Tooltip = "Click your equipped chest.",
             Default = mq.TLO.MacroQuest.BuildName() ~= "Emu",
+        },
+        ['BurnHPThreshold']   = {
+            DisplayName = "Burn HP Threshold",
+            Group = "Combat",
+            Header = "Burning",
+            Category = "Burning",
+            Index = 101,
+            Tooltip =
+            "Burn abilities that are best used once dots have been applied will be held until a named has reached this HP value. (Affected abilities: Spire, Hand of Death, Gathering Dusk, OoW Robe)",
+            Default = 70,
+            Min = 1,
+            Max = 100,
+            ConfigType = "Advanced",
         },
     },
     ['ClassFAQ']        = {

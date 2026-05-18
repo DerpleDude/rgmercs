@@ -903,7 +903,7 @@ function Casting.BurnCheck()
     local burnTarget = Targeting.GetAutoTarget()
     local burnTargetName = burnTarget and (burnTarget() and burnTarget.CleanName() or "None") or "None"
     local autoBurn = Config:GetSetting('BurnAuto') and
-        ((Targeting.GetXTHaterCount() >= Config:GetSetting('BurnMobCount')) or (Globals.AutoTargetIsNamed and Config:GetSetting('BurnNamed')))
+        ((Targeting.GetXTHaterCount() >= Config:GetSetting('BurnMobCount')) or (Globals.AutoTargetIsNamed and Config:GetSetting('BurnNamed') and Targeting.GetAutoTargetPctHPs() <= Config:GetSetting('NamedMinHPPct')))
     local alwaysBurn = (Config:GetSetting('BurnAlways') and Config:GetSetting('BurnAuto'))
     local forcedBurn = Targeting.ForceBurnTargetID > 0 and Targeting.ForceBurnTargetID == mq.TLO.Target.ID()
 

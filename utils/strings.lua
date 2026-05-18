@@ -121,10 +121,9 @@ function Strings.BoolToColorString(b)
 end
 
 --- Trims leading and trailing whitespace from a string.
---- @param s string? Input string (passes nil through).
---- @return string? Trimmed string, or nil if input was nil.
+--- @param s string Input string.
+--- @return string Trimmed string.
 function Strings.TrimSpaces(s)
-    if not s then return s end
     return (s:gsub("^%s+", ""):gsub("%s+$", ""))
 end
 
