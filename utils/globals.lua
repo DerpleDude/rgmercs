@@ -55,7 +55,7 @@ Globals.CurrentPetBlocked             = nil
 
 Globals.Constants                     = {}
 
-Globals.Constants.SupportedEmuServers = Set.new({ "Project Lazarus", "EQ Might", })
+Globals.Constants.DefaultEmuServers   = Set.new({ "Project Lazarus", "EQ Might", })
 Globals.Constants.LootModuleTypes     = { 'None', 'LootNScoot', 'SmartLoot', }
 Globals.Constants.RGCasters           = Set.new({ "BRD", "BST", "CLR", "DRU", "ENC", "MAG", "NEC", "PAL", "RNG", "SHD",
     "SHM", "WIZ", })

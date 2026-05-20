@@ -100,9 +100,33 @@ Module.FAQ                                   = {
             "  The drop-down selection box can be used to choose which config you have loaded. Any configs found for your class (both default and custom) will be displayed.",
         Settings_Used = "",
     },
+    {
+        Question = "How do I edit my class config?",
+        Answer = "  Class configs are written in Lua - a fully documented language - and are fully customizable. Two easy paths:\n\n" ..
+            "  Edit it yourself: While it may be possible with a basic editor such as Notepad++, the preferred method is to use a code editor like VS Code (free) and install the 'mq-defs' extension (by ZenithCodeForge, also free) from the Extensions marketplace. This will give you important information about the MQ API, autocomplete, hover docs, and live error-checking.\n\n" ..
+            "  Use an AI: run '/rgl copy guide' and paste it into an AI chat, then run '/rgl copy config' and paste that too (paste each one before running the next - the clipboard only holds one at a time). Tell the AI what to change. Claude, ChatGPT, and DeepSeek worked well in our testing; some other models did not.\n\n" ..
+            "  Either way, edits belong in a custom config, not the default - see the custom config FAQs for info.",
+        Settings_Used = "",
+    },
 }
 
 Module.CommandHandlers                       = {
+    copy = {
+        usage = "/rgl copy <config|guide>",
+        about =
+        "Copy your loaded class config, or the AI editing guide, to the clipboard to hand to an AI assistant (e.g. Claude, ChatGPT, Deepseek).",
+        handler = function(self, what)
+            what = (what or ""):lower()
+            if what == "config" then
+                self:CopyConfigToClipboard()
+            elseif what == "guide" then
+                self:CopyGuideToClipboard()
+            else
+                Logger.log_info("\awUsage: \ay/rgl copy <config|guide>")
+            end
+            return true
+        end,
+    },
     setmode = {
         usage = "/rgl setmode <mode>",
         about = "Change the active class mode to <mode>.",
@@ -334,6 +358,53 @@ end
 
 function Module:WriteCustomConfig()
     ClassLoader.writeCustomConfig(Globals.CurLoadedClass)
+end
+
+-- Builds the per-user header prepended to the AI editing guide so the AI gets this character's exact save path.
+function Module:BuildAIEnvBlock()
+    local class = Globals.CurLoadedClass:lower()
+    local savePath = string.format("%s/rgmercs/class_configs/%s/%s_class_config.lua", mq.configDir, Globals.ServerEnv, class)
+    savePath = savePath:gsub("/", "\\")
+    local onCustom = (Config:GetSetting('ClassConfigDir') or ""):find("Custom: ") ~= nil
+    local statusLine = onCustom and
+        "Custom config: YES - save the edited file to the path above, then reload." or
+        "Custom config: NO (you're on a shipped default) - in-game, click Class tab -> Create Custom Config first, then save the edited file to the path above."
+
+    return string.format(
+        "<!-- RGMercs auto-filled this for the current user. Use these exact values; ignore the <placeholder> save path in the guide below. -->\n" ..
+        "## Your save target (filled in by RGMercs)\n" ..
+        "- Save the edited config to: %s\n" ..
+        "- Server: %s   Class: %s\n" ..
+        "- %s\n" ..
+        "- Load it: on the Class tab, select this config in the dropdown if it isn't active, or click Reload Current Config if it is.\n" ..
+        "<!-- end auto-filled -->\n\n",
+        savePath, Globals.ServerEnv, class, statusLine)
+end
+
+function Module:CopyConfigToClipboard()
+    local path = ClassLoader.getClassConfigFileName(Globals.CurLoadedClass)
+    local f = io.open(path, "r")
+    if not f then
+        Logger.log_error("\arCould not read your class config at: %s", path)
+        return
+    end
+    local content = f:read("*all")
+    f:close()
+    ImGui.SetClipboardText(content)
+    Logger.log_info("\awCopied your loaded \ag%s\aw config to the clipboard. Paste it into your AI along with the guide (\ay/rgl copy guide\aw).", Globals.CurLoadedClass)
+end
+
+function Module:CopyGuideToClipboard()
+    local guidePath = string.format("%s/docs/CUSTOMIZING_WITH_AI.md", Globals.ScriptDir)
+    local f = io.open(guidePath, "r")
+    if not f then
+        Logger.log_error("\arCould not find the AI editing guide at: %s", guidePath)
+        return
+    end
+    local guide = f:read("*all")
+    f:close()
+    ImGui.SetClipboardText(self:BuildAIEnvBlock() .. guide)
+    Logger.log_info("\awCopied the AI editing guide (with your save path filled in) to the clipboard. Paste it into your AI, then run \ay/rgl copy config\aw and paste that too.")
 end
 
 function Module:Init()

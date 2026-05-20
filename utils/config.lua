@@ -99,7 +99,7 @@ Config.DefaultConfig                                     = {
         Default = function()
             local server = "Live"
             if Globals.BuildType:lower() == "emu" then
-                if Globals.Constants.SupportedEmuServers:contains(Globals.CurServer) then
+                if Globals.Constants.DefaultEmuServers:contains(Globals.CurServer) then
                     server = Globals.CurServer
                 elseif Globals.CurServer:lower() == "project might" then
                     server = "EQ Might"

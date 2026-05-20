@@ -17,7 +17,7 @@
 - Sensible default settings allow you to be productive from your first run! 
 - *This means **no** ini editing, no hours of homework on a new class... we help flatten the EQ/MQ learning curve.*
 
-<sup>* Currently, RGMercs has default configs for Live/Test, EQ Might, Project Lazarus, and "WIP" configs for The Hidden Forest. Other emu servers should have a reasonable starting point using these configs!</sup>
+<sup>* Currently, RGMercs has default configs for Live/Test, EQ Might, and Project Lazarus. Other emu servers should have a reasonable starting point using these configs!</sup>
 
 <img width="230" height="151" alt="image" src="https://github.com/user-attachments/assets/576d4922-2c65-413e-b854-495b3e3214f3" />
 
@@ -78,7 +78,7 @@ Getting settled in? Asking "why is that doing (that thing you don't like)?" RGMe
 - Feedback is always requested and taken seriously. PRs and other contributions are always welcome!
 - Additionally, this script is and will remain FOSS (Free, open-source software).
 
-To make a suggestion, or ask a question, find us on the RG Discord (in our #rg-mercs channel), the RG Forums, or any "MQ" discord channel for our supported emu servers.
+To make a suggestion, or ask a question, find us on the RG Discord (in our #rg-mercs channel), the RG Forums, or any "MQ" discord channel for the emu servers we build default configs for.
 
 ***A special thanks to our contributors, users, and to those who have given us advice, feedback or assistance along the way!***
 

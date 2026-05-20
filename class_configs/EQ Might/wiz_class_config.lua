@@ -616,7 +616,7 @@ return {
             {
                 name = "Pyromancy",
                 type = "AA",
-                load_condtion = function(self) return Casting.CanUseAA("Pyromancy") end,
+                load_cond = function(self) return Casting.CanUseAA("Pyromancy") end,
                 cond = function(self, aaName)
                     return Casting.SelfBuffAACheck(aaName)
                 end,
@@ -649,7 +649,7 @@ return {
             {
                 name = "Cryomancy",
                 type = "AA",
-                load_condtion = function(self) return Casting.CanUseAA("Cryomancy") end,
+                load_cond = function(self) return Casting.CanUseAA("Cryomancy") end,
                 cond = function(self, aaName)
                     return Casting.SelfBuffAACheck(aaName)
                 end,
@@ -682,7 +682,7 @@ return {
             {
                 name = "Acromancy",
                 type = "AA",
-                load_condtion = function(self) return Casting.CanUseAA("Acromancy") end,
+                load_cond = function(self) return Casting.CanUseAA("Acromancy") end,
                 cond = function(self, aaName)
                     return Casting.SelfBuffAACheck(aaName)
                 end,
