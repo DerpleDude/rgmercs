@@ -38,6 +38,7 @@ Module.TempSettings.PullID                = 0
 Module.TempSettings.LastPullAbilityCheck  = 0
 Module.TempSettings.LastPullerMercCheck   = 0
 Module.TempSettings.LastFoundGroupCorpse  = 0
+Module.TempSettings.LastTooFarAnnounce    = 0
 Module.TempSettings.HuntX                 = 0
 Module.TempSettings.HuntY                 = 0
 Module.TempSettings.HuntZ                 = 0
@@ -218,8 +219,8 @@ Module.DefaultConfig                   = {
         Max = 4,
         FAQ = "What are the different Pull modes and how do they work?",
         Answer = "You can adjust Pull Modes on the Pull module tab.\n\n" ..
-            "Normal: Attempt to pull single mobs back to a static camp location.\n\n" ..
-            "Chain: Continuously pull single mobs back to a static camp location until the chain count has been reached.\n\n" ..
+            "Normal: Attempt to pull single mobs back to a static camp location. Requires a camp to be set.\n\n" ..
+            "Chain: Continuously pull single mobs back to a static camp location until the chain count has been reached. Requires a camp to be set.\n\n" ..
             "Hunt: Move from target to target within a defined circular area, fighting as you go.\n\n" ..
             "Farm: Move from waypoint to waypoint, hunting mobs in a defined radius from each.",
     },
@@ -1486,17 +1487,27 @@ function Module:ShouldPull(campData)
         return false, string.format("XTargetCount(%d) > 0", Targeting.GetXTHaterCount())
     end
 
-    --[[ Why do we do this at all?
+    if (self:IsPullMode("Normal") or self:IsPullMode("Chain")) and not campData.returnToCamp then
+        Logger.log_warn("\ar ALERT: No camp set for camp-style pull mode - Disabling Pulling. \ax")
+        Comms.HandleAnnounce(Comms.FormatChatEvent("Pull", "None", "No camp set - Disabling pulls. Use /rgl campon and re-enable pulls."),
+            Config:GetSetting('PullAnnounceGroup'), Config:GetSetting('PullAnnounce'), Config:GetSetting('AnnounceToRaidIfInRaid'))
+        Config:SetSetting('DoPull', false)
+        return false, "No camp set"
+    end
+
     if campData.returnToCamp and Math.GetDistanceSquared(me.X(), me.Y(), campData.campSettings.AutoCampX, campData.campSettings.AutoCampY) > math.max(Config:GetSetting('AutoCampRadius') ^ 2, 200 ^ 2) then
         Logger.log_verbose("\ay::PULL:: \arAborted!\ax I am too far away from camp!")
-        Comms.HandleAnnounce(Comms.FormatChatEvent("Pull", "None", "I am too far away from camp - Holding pulls!"), Config:GetSetting('PullAnnounceGroup'),
-            Config:GetSetting('PullAnnounce'),
-            Config:GetSetting('AnnounceToRaidIfInRaid'))
+        local now = Globals.GetTimeSeconds()
+        if (now - self.TempSettings.LastTooFarAnnounce) > 30 then
+            self.TempSettings.LastTooFarAnnounce = now
+            Comms.HandleAnnounce(Comms.FormatChatEvent("Pull", "None", "I am too far away from camp - Holding pulls!"), Config:GetSetting('PullAnnounceGroup'),
+                Config:GetSetting('PullAnnounce'),
+                Config:GetSetting('AnnounceToRaidIfInRaid'))
+        end
         return false,
             string.format("I am Too Far (%d) (%d,%d) (%d,%d)", Math.GetDistanceSquared(me.X(), me.Y(), campData.campSettings.AutoCampX, campData.campSettings.AutoCampY),
                 me.X(), me.Y(), campData.campSettings.AutoCampX, campData.campSettings.AutoCampY)
     end
-    ]] --
 
 
     return true, ""
@@ -2701,7 +2712,7 @@ function Module:GiveTime()
         Movement:DoNav(false, "locyxz %0.2f %0.2f %0.2f log=off %s", start_y, start_x, start_z, Config:GetSetting('PullBackwards') and "facing=backward" or "")
         mq.delay("5s", function() return mq.TLO.Navigation.Active() end)
 
-        while mq.TLO.Navigation.Active() and (combat_state == "Downtime" or Targeting.GetXTHaterCount() > 0) do
+        while mq.TLO.Navigation.Active() do
             Logger.log_super_verbose("Pathing to camp...")
             if mq.TLO.Me.State():lower() == "feign" or mq.TLO.Me.Sitting() then
                 Logger.log_debug("PULL:Standing up to Engage Target")
@@ -2718,6 +2729,13 @@ function Module:GiveTime()
             mq.doevents()
             Events.DoEvents()
             mq.delay(10)
+        end
+
+        if Math.GetDistanceSquared(mq.TLO.Me.X(), mq.TLO.Me.Y(), start_x, start_y) > Config:GetSetting('AutoCampRadius') ^ 2 then
+            Logger.log_warn("PULL: Failed to reach camp (dist %.0f) - puller is stuck in the field",
+                math.sqrt(Math.GetDistanceSquared(mq.TLO.Me.X(), mq.TLO.Me.Y(), start_x, start_y)))
+            Comms.HandleAnnounce(Comms.FormatChatEvent("Pull", "None", "Failed to return to camp - manual intervention may be needed!"),
+                Config:GetSetting('PullAnnounceGroup'), Config:GetSetting('PullAnnounce'), Config:GetSetting('AnnounceToRaidIfInRaid'))
         end
 
         Core.DoCmd("/face id %d", self.TempSettings.PullID)
@@ -2752,7 +2770,15 @@ function Module:GiveTime()
 
     self:SetLastPullOrCombatEndedTimer()
     self.TempSettings.TargetSpawnID = 0
-    self:SetPullState(PullStates.PULL_IDLE, "")
+    if (self:IsPullMode("Normal") or self:IsPullMode("Chain"))
+        and campData.returnToCamp
+        and Math.GetDistanceSquared(mq.TLO.Me.X(), mq.TLO.Me.Y(),
+            campData.campSettings.AutoCampX, campData.campSettings.AutoCampY)
+            > math.max(Config:GetSetting('AutoCampRadius') ^ 2, 200 ^ 2) then
+        self:SetPullState(PullStates.PULL_WAITING_SHOULDPULL, "Awaiting return to camp")
+    else
+        self:SetPullState(PullStates.PULL_IDLE, "")
+    end
 end
 
 function Module:SetPullTarget()

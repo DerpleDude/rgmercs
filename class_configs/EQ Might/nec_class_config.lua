@@ -837,6 +837,12 @@ local _ClassConfig = {
                     Core.SafeCallFunc("Stop Necro Lich", self.Helpers.CancelLich, self)
                 end,
             },
+            {
+                name = "Gift of the Grave",
+                type = "AA",
+                active_cond = function(self, aaName) return Casting.IHaveBuff(aaName) end,
+                cond = function(self, aaName, target) return Casting.SelfBuffAACheck(aaName) end,
+            },
         },
         ['PetSummon']       = {
             {
