@@ -141,43 +141,43 @@ return {
         },
     },
     ['AbilitySets']       = {
-        ["WardProc"] = {
+        ['WardProc'] = {
             -- Timer 12 - Preservation
             "Ward of Tunare", -- Level 70
         },
-        ["QuickUndeadNuke"] = {
+        ['QuickUndeadNuke'] = {
             -- Undead Quick Nuke with chance to snare and reduce AC
             "Burial Rites", -- Level 70 EQM Custom
             "Last Rites",   -- Level 68 - Timer 7
         },
-        ["DDProc"] = {
+        ['DDProc'] = {
             --- Fury Proc Strike
             "Pious Fury",   -- Level 68, 250pt, + 250pt if undead
             "Holy Order",   -- Level 65, 180pt
             "Pious Might",  -- Level 63, 150pt
             "Divine Might", -- Level 45, 65pt
         },
-        ["UndeadProc"] = {
+        ['UndeadProc'] = {
             --- Undead Proc Strike : does not stack with Fury Proc, will be used until Fury is available even if setting not enabled.
             "Silvered Fury",      -- Level 67, 750pt
             "Ward of Nife",       -- Level 62, 500pt
             "Instrument of Nife", -- Level 26, 243pt
         },
-        ["StunTimer5"] = {
+        ['StunTimer5'] = {
             "Ancient: Force of Jeron", -- Level 70
             "Ancient: Force of Chaos", -- Level 65
             "Force of Akera",          -- Level 53
             "Stun",                    -- Level 28
             "Desist",                  -- Level 13 - Not Timer 5, filler
         },
-        ["StunTimer4"] = {
+        ['StunTimer4'] = {
             "Sacred Force",    -- Level 70 EQM Custom
             "Force of Piety",  -- Level 66
             "Force of Akilae", -- Level 62
             "Force",           -- Level 52 - Not Timer 4, filler
             "Cease",           -- Level 7 - Not Timer 4, filler
         },
-        ["AegoBuff"] = {
+        ['AegoBuff'] = {
             --- Pally Aegolism
             "Affirmation",           -- Level 70
             "Guidance",              -- Level 65
@@ -195,14 +195,14 @@ return {
         --     "Heroism",           -- Level 61 ST
         --     "Resolution",        -- Level 60
         -- },
-        ["Brells"] = {
+        ['Brells'] = {
             "Ancient: Brell's Brawny Bulwark", -- Level 70
             "Brell's Brawny Bulwark",          -- Level 70
             "Brell's Stalwart Shield",         -- Level 65
             "Brell's Mountainous Barrier",     -- Level 60
             "Brell's Steadfast Aegis",         -- Level 49
         },
-        ["WaveHeal"] = {
+        ['WaveHeal'] = {
             "Wave of Piety",          -- Level 70
             "Wave of Trushar",        -- Level 65
             "Wave of Marr",           -- Level 63
@@ -210,7 +210,7 @@ return {
             "Wave of Healing",        -- Level 55
             "Wave of Life",           -- Level 39
         },
-        ["WaveHeal2"] = {
+        ['WaveHeal2'] = {
             "Wave of Piety",          -- Level 70
             "Wave of Trushar",        -- Level 65
             "Wave of Marr",           -- Level 63
@@ -218,20 +218,20 @@ return {
             "Wave of Healing",        -- Level 55
             "Wave of Life",           -- Level 39
         },
-        ["Cleansing"] = {
+        ['Cleansing'] = {
             "Sacred Cleansing",    -- Level 71
             "Pious Cleansing",     -- Level 69
             "Supernal Cleansing",  -- Level 64
             "Celestial Cleansing", -- Level 59
             "Ethereal Cleansing",  -- Level 44
         },
-        ["ArmorSelfBuff"] = {
+        ['ArmorSelfBuff'] = {
             --- Self Buff Armor Line Ac/Hp/Mana regen
             "Armor of Unrelenting Faith", -- Level 71
             "Armor of the Champion",      -- Level 69
             "Aura of the Crusader",       -- Level 64
         },
-        ["SymbolBuff"] = {
+        ['SymbolBuff'] = {
             "Jeron's Mark",      -- Level 68
             "Symbol of Jeron",   -- Level 67
             "Symbol of Marzin",  -- Level 63
@@ -240,14 +240,14 @@ return {
             "Symbol of Ryltan",  -- Level 33
             "Symbol of Transal", -- Level 24
         },
-        ["SereneStun"] = {
+        ['SereneStun'] = {
             --- Lesson Stun - Timer 6
             "Lesson of Penitence",            -- Level 71
             "Serene Command",                 -- Level 68
             "Quellious' Word of Serenity",    -- Level 64
             "Quellious' Word of Tranquility", -- Level 54
         },
-        ["TouchHeal"] = {
+        ['TouchHeal'] = {
             -- Target Light Heal
             "Sacred Touch",     -- Level 70 EQM Custom
             "Touch of Piety",   -- Level 66
@@ -259,7 +259,7 @@ return {
             "Minor Healing",    -- Level 6
             "Salve",            -- Level 1
         },
-        ["LightHeal"] = {
+        ['LightHeal'] = {
             -- ToT Light Heal
             "Gleaming Light", -- Level 71
             "Light of Piety", -- Level 68
@@ -267,7 +267,7 @@ return {
             "Light of Nife",  -- Level 63
             "Light of Life",  -- Level 52
         },
-        ["LightHeal2"] = {
+        ['LightHeal2'] = {
             -- ToT Light Heal
             "Gleaming Light", -- Level 71
             "Light of Piety", -- Level 68
@@ -278,13 +278,13 @@ return {
         ['BurstHeal'] = {
             "Burst of Sunlight", -- Level 71
         },
-        -- ["Pacify"] = {
+        -- ['Pacify'] = {
         --     "Pacify", -- Level 49
         --     "Calm",   -- Level 43
         --     "Soothe", -- Level 25
         --     "Lull",   -- Level 10
         -- },
-        ["PurityCure"] = {
+        ['PurityCure'] = {
             --- Purity Cure Poison/Diease Cure Half Power to curse
             "Crusader's Purity", -- Level 67
             "Crusader's Touch",  -- Level 62
@@ -292,12 +292,12 @@ return {
         ['CureCorrupt'] = {
             "Cure Corruption", -- Level 66
         },
-        ["HealReceivedAura"] = {
+        ['HealReceivedAura'] = {
             -- Aura Buffs
             "Blessed Aura", -- Level 66
             "Holy Aura",    -- Level 55
         },
-        ["UndeadNuke"] = {
+        ['UndeadNuke'] = {
             -- Undead Nuke
             "Spurn Undead",   -- Level 67 - Timer 7
             "Deny Undead",    -- Level 62 - Timer 7
@@ -306,7 +306,7 @@ return {
             "Expulse Undead", -- Level 30
             "Ward Undead",    -- Level 14
         },
-        ["CureCurse"] = {
+        ['CureCurse'] = {
             -- Curse Cure Line
             "Eradicate Curse",      -- Level 60
             "Remove Greater Curse", -- Level 60
@@ -314,7 +314,7 @@ return {
             "Remove Lesser Curse",  -- Level 34
             "Remove Minor Curse",   -- Level 19
         },
-        ["ForgeDisc"] = {
+        ['ForgeDisc'] = {
             "Holyforge Discipline", -- Level 55
         },
         ['RezSpell'] = {
@@ -365,7 +365,7 @@ return {
         ['SpellResistBuff'] = {
             "Silent Piety",        -- Level 69
         },
-        ["ForHonor"] = {           -- Hate Over Time with small absorb recourse
+        ['ForHonor'] = {           -- Hate Over Time with small absorb recourse
             "Challenge for Honor", -- Level 71
         },
         -- ['FlameLure'] = { -- eqm port of wizard fire lures, not quite sure what i'm going to do with these yet
@@ -479,7 +479,7 @@ return {
         },
     },
     ['HealRotations']     = {
-        ["GroupHeal"] = {
+        ['GroupHeal'] = {
             {
                 name = "Hand of Piety",
                 type = "AA",
@@ -520,7 +520,7 @@ return {
                 load_cond = function(self) return Config:GetSetting('DoWaveHeal') == 2 end,
             },
         },
-        ["BigHeal"] = {
+        ['BigHeal'] = {
             {
                 name = "Lay on Hands",
                 type = "AA",
@@ -564,7 +564,7 @@ return {
                 end,
             },
         },
-        ["MainHeal"] = {
+        ['MainHeal'] = {
             {
                 name = "Cleansing",
                 type = "Spell",

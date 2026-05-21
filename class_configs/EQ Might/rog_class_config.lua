@@ -53,23 +53,23 @@ return {
         },
     },
     ['AbilitySets']   = {
-        ["ThiefBuff"] = {
+        ['ThiefBuff'] = {
             "Thief's Eyes", -- Level 68
         },
-        ["Kinesthetics"] = {
+        ['Kinesthetics'] = {
             "Kinesthetics Discipline", -- Level 57
         },
         ['Duelist'] = {
             "Duelist Discipline", -- Level 59
         },
-        ["ChanceDisc"] = {
+        ['ChanceDisc'] = {
             "Twisted Chance Discipline", -- Level 65
             "Deadeye Discipline",        -- Level 54
         },
-        ["Frenzied"] = {
+        ['Frenzied'] = {
             "Frenzied Stabbing Discipline", -- Level 69
         },
-        ["SneakAttack"] = {
+        ['SneakAttack'] = {
             "Razorarc",              -- Level 70
             "Daggerfall",            -- Level 69
             "Ancient: Chaos Strike", -- Level 65
@@ -78,10 +78,10 @@ return {
             "Thief's Vengeance",     -- Level 52
             "Sneak Attack",          -- Level 20
         },
-        ["CADisc"] = {
+        ['CADisc'] = {
             "Counterattack Discipline", -- Level 53
         },
-        ["AimDisc"] = {
+        ['AimDisc'] = {
             "Deadly Aim Discipline", -- Level 68
         },
         ['Precision'] = {
@@ -214,7 +214,7 @@ return {
                 type = "Disc",
             },
         },
-        ["Aggro Management"] = {
+        ['Aggro Management'] = {
             {
                 name = "Escape",
                 type = "AA",

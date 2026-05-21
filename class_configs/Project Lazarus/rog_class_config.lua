@@ -47,24 +47,24 @@ return {
         },
     },
     ['AbilitySets']   = {
-        ["ThiefBuff"] = {
+        ['ThiefBuff'] = {
             "Brigand's Gaze", -- Level 70
             "Thief's Eyes",   -- Level 65
         },
-        ["Kinesthetics"] = {
+        ['Kinesthetics'] = {
             "Kinesthetics Discipline", -- Level 57
         },
         ['Duelist'] = {
             "Duelist Discipline", -- Level 59
         },
-        ["ChanceDisc"] = {
+        ['ChanceDisc'] = {
             "Twisted Chance Discipline", -- Level 65
             "Deadeye Discipline",        -- Level 54
         },
-        ["Frenzied"] = {
+        ['Frenzied'] = {
             "Frenzied Stabbing Discipline", -- Level 70
         },
-        ["SneakAttack"] = {
+        ['SneakAttack'] = {
             "Razorarc",              -- Level 70
             "Daggerfall",            -- Level 69
             "Ancient: Chaos Strike", -- Level 65
@@ -73,29 +73,28 @@ return {
             "Thief's Vengeance",     -- Level 52
             "Sneak Attack",          -- Level 20
         },
-        ["FellStrike"] = {
-            "Assault", -- Level 70 on Laz
+        ['FellStrike'] = {
+            "Assault", -- Level 70, on Laz
         },
-        ["Pinpoint"] = {
-            "Pinpoint Vulnerability", -- Level 69 on Laz
+        ['Pinpoint'] = {
+            "Pinpoint Vulnerability", -- Level 69, on Laz
         },
         ['EndRegen'] = {
-            "Third Wind Discipline",
-            --"Second Wind",
+            "Third Wind Discipline", -- Level 70
+            -- "Second Wind",        -- Level 65
         },
-        ["CADisc"] = {
-            "Counterattack Discipline",
+        ['CADisc'] = {
+            "Counterattack Discipline", -- Level 53
         },
-        ["AimDisc"] = {
-            "Deadly Aim Discipline", --  Level 68
+        ['AimDisc'] = {
+            "Deadly Aim Discipline", -- Level 68
         },
         ['Precision'] = {
-            "Deadly Precision Discipline",
+            "Deadly Precision Discipline", -- Level 63
         },
         ['Nimble'] = {
-            "Nimble Discipline",
+            "Nimble Discipline", -- Level 55
         },
-
     },
     ['RotationOrder'] = {
         {
@@ -218,7 +217,7 @@ return {
                 type = "Disc",
             },
         },
-        ["Aggro Management"] = {
+        ['Aggro Management'] = {
             {
                 name = "Escape",
                 type = "AA",

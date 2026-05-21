@@ -45,63 +45,63 @@ return {
     },
     ['AbilitySets']   = {
         ['EndRegen'] = {
-            "Third Wind Discipline",
-            --"Second Wind",
+            "Third Wind Discipline", -- Level 70
+            -- "Second Wind",        -- Level 65
         },
         ['BerAura'] = {
-            "Aura of Rage",
-            "Bloodlust Aura",
+            "Bloodlust Aura", -- Level 65
+            "Aura of Rage",   -- Level 55
         },
         ['FrenzyDisc'] = {
-            "Overpowering Frenzy",
+            "Overpowering Frenzy", -- Level 65
         },
         ['VolleyDisc'] = {
-            "Rage Volley",
-            "Destroyer's Volley",
+            "Destroyer's Volley", -- Level 69
+            "Rage Volley",        -- Level 61
         },
         ['FlurryDisc'] = {
-            "Vengeful Flurry Discipline",
+            "Vengeful Flurry Discipline", -- Level 70
         },
         ['RageDisc'] = {
-            "Blind Rage Discipline",
-            "Cleaving Rage Discipline",
+            "Blind Rage Discipline",    -- Level 58
+            "Cleaving Rage Discipline", -- Level 54
         },
         ['AngerDisc'] = {
-            "Cleaving Anger Discipline",
+            "Cleaving Anger Discipline", -- Level 65
         },
         ['CryDisc'] = {
-            "Battle Cry",
-            "War Cry",
-            "Battle Cry of Dravel",
-            "War Cry of Dravel",
-            "Battle Cry of the Mastruq",
-            "Ancient: Cry of Chaos",
+            "Battle Cry of the Mastruq", -- Level 65
+            "Ancient: Cry of Chaos",     -- Level 65
+            "War Cry of Dravel",         -- Level 64
+            "Battle Cry of Dravel",      -- Level 57
+            "War Cry",                   -- Level 50
+            "Battle Cry",                -- Level 30
         },
         ['GroupCrit'] = {
-            "Cry Havoc",
+            "Cry Havoc", -- Level 65
         },
         ['Scream'] = { -- Stun, Throwing/Archery Dmg taken debuff
-            "Bloodcurdling Scream",
-            "Bewildering Scream",
-            "Unsettling Scream",
+            "Bloodcurdling Scream", -- Level 70
+            "Bewildering Scream",   -- Level 70
+            "Unsettling Scream",    -- Level 65
         },
         ['StunStrike'] = {
-            "Mind Strike",
-            "Head Crush",
-            "Head Pummel",
-            "Head Strike",
+            "Mind Strike", -- Level 68
+            "Head Crush",  -- Level 60
+            "Head Pummel", -- Level 40
+            "Head Strike", -- Level 16
         },
         ['SnareStrike'] = {
-            "Crippling Strike",
-            "Leg Slice",
-            "Leg Cut",
-            "Leg Strike",
+            "Crippling Strike", -- Level 67
+            "Leg Slice",        -- Level 54
+            "Leg Cut",          -- Level 32
+            "Leg Strike",       -- Level 8
         },
         ['DmgModProc'] = {
-            "Unpredictable Rage Discipline",
+            "Unpredictable Rage Discipline", -- Level 66
         },
         ['BattleFocus'] = {
-            "Battle Focus Discipline",
+            "Battle Focus Discipline", -- Level 59
         },
     },
     ['AASets']        = {

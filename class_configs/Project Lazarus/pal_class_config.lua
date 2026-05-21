@@ -126,205 +126,198 @@ return {
         },
     },
     ['AbilitySets']       = {
-        ["WardProc"] = {
+        ['WardProc'] = {
             -- Timer 12 - Preservation
             "Ward of Tunare", -- Level 70
         },
-        ["QuickUndeadNuke"] = {
+        ['QuickUndeadNuke'] = {
             -- Undead Quick Nuke with chance to snare and reduce AC
-            "Last Rites", -- Level 68 - Timer 7
+            "Last Rites", -- Level 68, - Timer 7
         },
-        ["DDProc"] = {
+        ['DDProc'] = {
             --- Fury Proc Strike
-            "Divine Might", -- Level 45, 65pt
-            "Pious Might",  -- Level 63, 150pt
-            "Holy Order",   -- Level 65, 180pt
             "Pious Fury",   -- Level 68, 250pt, + 250pt if undead
+            "Holy Order",   -- Level 65, 180pt
+            "Pious Might",  -- Level 63, 150pt
+            "Divine Might", -- Level 45, 65pt
         },
-        ["UndeadProc"] = {
+        ['UndeadProc'] = {
             --- Undead Proc Strike : does not stack with Fury Proc, will be used until Fury is available even if setting not enabled.
-            "Instrument of Nife",      -- Level 26, 243pt
-            "Ward of Nife",            -- Level 62, 500pt
-            "Silvered Fury",           -- Level 67, 750pt
+            "Silvered Fury",      -- Level 67, 750pt
+            "Ward of Nife",       -- Level 62, 500pt
+            "Instrument of Nife", -- Level 26, 243pt
         },
-        ["StunTimer5"] = {             -- mq.TLO.Target.ID() == target and not mq.TLO.Spawn(target).Stunned()
-            "Desist",                  -- Level 13 - Not Timer 5, use for TLP Low Level Stun
-            "Stun",                    -- Level 28
-            "Force of Akera",          -- Level 53
-            "Ancient: Force of Chaos", -- Level 65
+        ['StunTimer5'] = {             -- mq.TLO.Target.ID() == target and not mq.TLO.Spawn(target).Stunned()
             "Ancient: Force of Jeron", -- Level 70
+            "Ancient: Force of Chaos", -- Level 65
+            "Force of Akera",          -- Level 53
+            "Stun",                    -- Level 28
+            "Desist",                  -- Level 13, - Not Timer 5, use for TLP Low Level Stun
         },
-        ["StunTimer4"] = {
-            "Cease",           -- Level 7 - Not Timer 4, use for TLP Low Level Stun
-            "Force",           -- Level 52 - Not Timer 4, use for TLP Low Level Stun
-            "Force of Akilae", -- Level 62
+        ['StunTimer4'] = {
             "Force of Piety",  -- Level 66
+            "Force of Akilae", -- Level 62
+            "Force",           -- Level 52, - Not Timer 4, use for TLP Low Level Stun
+            "Cease",           -- Level 7, - Not Timer 4, use for TLP Low Level Stun
         },
-        ["AegoBuff"] = {
+        ['AegoBuff'] = {
             --- Pally Aegolism
-            "Courage",               -- Level 8
-            "Center",                -- Level 20
-            "Daring",                -- Level 37
-            "Valor",                 -- Level 47
-            "Austerity",             -- Level 55 --First actual Aego
-            "Blessing of Austerity", -- Level 58 - Group
-            "Guidance",              -- Level 65
             "Affirmation",           -- Level 70
+            "Guidance",              -- Level 65
+            "Blessing of Austerity", -- Level 58, - Group
+            "Austerity",             -- Level 55, --First actual Aego
+            "Valor",                 -- Level 47
+            "Daring",                -- Level 37
+            "Center",                -- Level 20
+            "Courage",               -- Level 8
         },
         -- ['HPTypeOne'] = {
-        --     "Hand of Direction", --GV1
-        --     "Direction",         --ST
-        --     "Heroic Bond",       --ST
-        --     "Heroism",           --ST
-        --     "Resolution",
+        --     "Hand of Direction", -- Level 69, GV1
+        --     "Direction",         -- Level 66, ST
+        --     "Heroic Bond",       -- Level 64, ST
+        --     "Heroism",           -- Level 61, ST
+        --     "Resolution",        -- Level 60
         -- },
-        ["Brells"] = {
-            "Brell's Vibrant Barricade",
-            "Brell's Brawny Bulwark",
-            "Brell's Stalwart Shield",
-            "Brell's Mountainous Barrier",
-            "Brell's Steadfast Aegis",
+        ['Brells'] = {
+            "Brell's Vibrant Barricade",   -- Level 70
+            "Brell's Brawny Bulwark",      -- Level 69
+            "Brell's Stalwart Shield",     -- Level 65
+            "Brell's Mountainous Barrier", -- Level 60
+            "Brell's Steadfast Aegis",     -- Level 49
         },
-        ["WaveHeal"] = {
-            "Wave of Piety",
-            "Wave of Trushar",
-            "Wave of Marr",
-            "Healing Wave of Prexus",
-            "Wave of Healing",
-            "Wave of Life",
+        ['WaveHeal'] = {
+            "Wave of Piety",          -- Level 70
+            "Wave of Trushar",        -- Level 65
+            "Wave of Marr",           -- Level 65
+            "Healing Wave of Prexus", -- Level 58
+            "Wave of Healing",        -- Level 51
+            "Wave of Life",           -- Level 44
         },
-        ["WaveHeal2"] = {
-            "Wave of Piety",
-            "Wave of Trushar",
-            "Wave of Marr",
-            "Healing Wave of Prexus",
-            "Wave of Healing",
-            "Wave of Life",
+        ['WaveHeal2'] = {
+            "Wave of Piety",          -- Level 70
+            "Wave of Trushar",        -- Level 65
+            "Wave of Marr",           -- Level 65
+            "Healing Wave of Prexus", -- Level 58
+            "Wave of Healing",        -- Level 51
+            "Wave of Life",           -- Level 44
         },
-        ["Cleansing"] = {
+        ['Cleansing'] = {
             "Pious Cleansing",     -- Level 69
             "Supernal Cleansing",  -- Level 64
             "Celestial Cleansing", -- Level 59
             "Ethereal Cleansing",  -- Level 44
         },
-        ["ArmorSelfBuff"] = {
+        ['ArmorSelfBuff'] = {
             --- Self Buff Armor Line Ac/Hp/Mana regen
-            "Armor of the Divine",   -- Level 60
-            "Armor of the Crusader", -- Level 64
             "Armor of the Champion", -- Level 69
+            "Armor of the Crusader", -- Level 64
+            "Armor of the Divine",   -- Level 60
         },
-        ["SymbolBuff"] = {
-            "Jeron's Mark",
-            "Symbol of Jeron",
-            "Symbol of Marzin",
-            "Symbol of Naltron",
-            "Symbol of Pinzarn",
-            "Symbol of Ryltan",
-            "Symbol of Transal",
+        ['SymbolBuff'] = {
+            "Jeron's Mark",      -- Level 68
+            "Symbol of Jeron",   -- Level 67
+            "Symbol of Marzin",  -- Level 63
+            "Symbol of Naltron", -- Level 58
+            "Symbol of Pinzarn", -- Level 46
+            "Symbol of Ryltan",  -- Level 33
+            "Symbol of Transal", -- Level 24
         },
-        ["SereneStun"] = {
+        ['SereneStun'] = {
             --- Lesson Stun - Timer 6
-            "Quellious' Word of Tranquility", -- Level 54
-            "Quellious' Word of Serenity",    -- Level 64
             "Serene Command",                 -- Level 68
+            "Quellious' Word of Serenity",    -- Level 64
+            "Quellious' Word of Tranquility", -- Level 54
         },
-        ["TouchHeal"] = {
+        ['TouchHeal'] = {
             -- Target Light Heal
-            "Salve",            -- Level 1
-            "Minor Healing",    -- Level 6
-            "Light Healing",    -- Level 12
-            "Healing",          -- Level 27
-            "Greater Healing",  -- Level 36
+            "Touch of Piety",   -- Level 66
+            "Touch of Nife",    -- Level 61
             "Superior Healing", -- Level 57
-            "Touch of Nife",
-            "Touch of Piety",
+            "Greater Healing",  -- Level 36
+            "Healing",          -- Level 27
+            "Light Healing",    -- Level 12
+            "Minor Healing",    -- Level 6
+            "Salve",            -- Level 1
         },
-        ["LightHeal"] = {
+        ['LightHeal'] = {
             -- ToT Light Heal
-            -- "Light of Life",  -- Level 52 -- Currently ST heal, not a ToT
-            "Light of Nife",  -- Level 63
-            "Light of Order", -- Level 65
-            "Light of Piety", -- Level 68
+            "Light of Piety",   -- Level 68
+            "Light of Order",   -- Level 65
+            "Light of Nife",    -- Level 63
+            -- "Light of Life", -- Level 52, -- Currently ST heal, not a ToT
         },
-        ["LightHeal2"] = {
+        ['LightHeal2'] = {
             -- ToT Light Heal
-            -- "Light of Life",  -- Level 52
-            "Light of Nife",  -- Level 63
-            "Light of Order", -- Level 65
-            "Light of Piety", -- Level 68
+            "Light of Piety",   -- Level 68
+            "Light of Order",   -- Level 65
+            "Light of Nife",    -- Level 63
+            -- "Light of Life", -- Level 52
         },
-        -- ["Pacify"] = {
-        --     "Pacify",
-        --     "Calm",
-        --     "Soothe",
-        --     "Lull",
+        -- ['Pacify'] = {
+        --     "Pacify", -- Level 49
+        --     "Calm",   -- Level 43
+        --     "Soothe", -- Level 25
+        --     "Lull",   -- Level 10
         -- },
-        ["PurityCure"] = {
+        ['PurityCure'] = {
             --- Purity Cure Poison/Diease Cure Half Power to curse
-            "Crusader's Purity",
-            "Crusader's Touch",
+            "Crusader's Purity", -- Level 67
+            "Crusader's Touch",  -- Level 62
         },
-        ["HealReceivedAura"] = {
+        ['HealReceivedAura'] = {
             -- Aura Buffs
-            "Blessed Aura",
-            "Holy Aura",
+            "Blessed Aura", -- Level 70
+            "Holy Aura",    -- Level 55
         },
-        ["UndeadNuke"] = {
+        ['UndeadNuke'] = {
             -- Undead Nuke
-            "Ward Undead",    -- Level 14
-            "Expulse Undead", -- Level 30
-            "Dismiss Undead", -- Level 46
+            "Spurn Undead",   -- Level 67, - Timer 7
+            "Deny Undead",    -- Level 62, - Timer 7
             "Expel Undead",   -- Level 54
-            "Deny Undead",    -- Level 62 - Timer 7
-            "Spurn Undead",   -- Level 67 - Timer 7
+            "Dismiss Undead", -- Level 46
+            "Expulse Undead", -- Level 30
+            "Ward Undead",    -- Level 14
         },
-        ["CureCurse"] = {
+        ['CureCurse'] = {
             -- Curse Cure Line
-            "Remove Minor Curse",
-            "Remove Lesser Curse",
-            "Remove Curse",
-            "Remove Greater Curse",
+            "Remove Greater Curse", -- Level 60
+            "Remove Curse",         -- Level 45
+            "Remove Lesser Curse",  -- Level 34
+            "Remove Minor Curse",   -- Level 19
         },
-        ["ForgeDisc"] = {
-            "Hallowforge Discipline",
-            "Holyforge Discipline",
+        ['ForgeDisc'] = {
+            "Hallowforge Discipline", -- Level 70
+            "Holyforge Discipline",   -- Level 55
         },
         ['RezSpell'] = {
-            'Resurrection',
-            'Restoration',
-            'Renewal',
-            'Revive',
-            'Reparation',
-            'Reconstitution',
-            'Reanimation',
         },
         ['PBAEStun'] = {
-            "The Silent Command", -- does damage
+            "The Silent Command", -- Level 65, does damage
         },
         ['AEStun'] = {            --Targeted AE
-            "Stun Command",       -- no damage
-            "Sacred Word",        -- does damage
+            "Stun Command", -- Level 57, no damage
+            "Sacred Word",  -- Level 41, does damage
         },
         ['BlockDisc'] = {
-            "Rampart Discipline",
-            "Deflection Discipline",
+            "Rampart Discipline",    -- Level 70
+            "Deflection Discipline", -- Level 59
         },
         ['SancDisc'] = {
-            "Sanctification Discipline",
+            "Sanctification Discipline", -- Level 60
         },
         ['TwinHealNuke'] = {
-            "Justice of Marr",
+            "Justice of Marr", -- Level 71
         },
         ['GuardDisc'] = {
-            "Guard of Righteousness",
-            "Guard of Humility",
-            "Guard of Piety",
+            "Guard of Righteousness", -- Level 69
+            "Guard of Humility",      -- Level 61
+            "Guard of Piety",         -- Level 56
         },
         ['ACBuff'] = {
-            "Bulwark of Piety",
-            "Bulwark of Faith",
-            "Shield of Words",
-            "Armor of Faith",
+            "Bulwark of Piety", -- Level 69
+            "Bulwark of Faith", -- Level 65
+            "Shield of Words",  -- Level 60
+            "Armor of Faith",   -- Level 48
         },
     },
     ['SpellList']         = {
@@ -412,7 +405,7 @@ return {
         },
     },
     ['HealRotations']     = {
-        ["GroupHeal"] = {
+        ['GroupHeal'] = {
             {
                 name = "Hand of Piety",
                 type = "AA",
@@ -436,7 +429,7 @@ return {
                 load_cond = function(self) return Config:GetSetting('DoWaveHeal') == 2 end,
             },
         },
-        ["BigHeal"] = {
+        ['BigHeal'] = {
             {
                 name = "Lay on Hands",
                 type = "AA",
@@ -490,7 +483,7 @@ return {
                 load_cond = function() return Config:GetSetting("DoTouchHeal") == 1 end,
             },
         },
-        ["MainHeal"] = {
+        ['MainHeal'] = {
             {
                 name = "Cleansing",
                 type = "Spell",

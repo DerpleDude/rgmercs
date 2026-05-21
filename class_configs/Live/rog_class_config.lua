@@ -47,23 +47,20 @@ return {
         },
     },
     ['AbilitySets']   = {
-        ["ConditionedReflexes"] = {
+        ['Reflex'] = {
             "Conditioned Reflexes",
             "Practiced Reflexes",
         },
-        ["PracticedReflexes"] = {
-            "Practiced Reflexes",
-        },
-        ["ThiefBuff"] = {
+        ['ThiefBuff'] = {
             "Thief's Sight",  -- Level 117
             "Thief's Vision", -- Level 96
             "Thief's Eyes",   -- Level 68
         },
-        ["DaggerThrow"] = {
+        ['DaggerThrow'] = {
             "Queseris' Dagger",       -- Level 122
             "Shadow-Hunter's Dagger", -- Level 102
         },
-        ["Slice"] = {                 --Timer 1
+        ['Slice'] = {                 --Timer 1
             "Bleed X",                -- Level 128
             "Carve",                  -- Level 123
             "Lance",                  -- Level 118
@@ -75,26 +72,26 @@ return {
             "Wound",                  -- Level 88
             "Bleed",                  -- Level 83
         },
-        ["Executioner"] = {
+        ['Executioner'] = {
             "Executioner Discipline",  -- Level 100
             "Eradicator's Discipline", -- Level 95
             "Assassin Discipline",     -- Level 75
             "Duelist Discipline",      -- Level 59
             "Kinesthetics Discipline", -- Level 57
         },
-        ["Twisted"] = {
+        ['Twisted'] = {
             "Twisted Chance Discipline", -- Level 65
             "Deadeye Discipline",        -- Level 54
         },
-        ["ProcBuff"] = {
+        ['ProcBuff'] = {
             "Weapon Covenant",    -- Level 97
             "Weapon Bond",        -- Level 92
             "Weapon Affiliation", -- Level 87
         },
-        ["Frenzied"] = {
+        ['Frenzied'] = {
             "Frenzied Stabbing Discipline", -- Level 70
         },
-        ["Ambush"] = {
+        ['Ambush'] = {
             "Ambush XI",       -- Level 126
             "Bamboozle",       -- Level 121
             "Ambuscade",       -- Level 116
@@ -107,7 +104,7 @@ return {
             "Ambush",          -- Level 81
             "Waylay",          -- Level 76
         },
-        ["SneakAttack"] = {
+        ['SneakAttack'] = {
             "Daggerslash",           -- Level 115
             "Daggerslice",           -- Level 110
             "Daggergash",            -- Level 105
@@ -124,7 +121,7 @@ return {
             "Thief's Vengeance",     -- Level 52
             "Sneak Attack",          -- Level 20
         },
-        ["PoisonBlade"] = {
+        ['PoisonBlade'] = {
             "Toxic Blade VIII",  -- Level 128
             "Venomous Blade",    -- Level 123
             "Netherbian Blade",  -- Level 118
@@ -134,7 +131,7 @@ return {
             "Asp Blade",         -- Level 98
             "Toxic Blade",       -- Level 93
         },
-        ["FellStrike"] = {
+        ['FellStrike'] = {
             "Assault X",    -- Level 130
             "Mayhem",       -- Level 125
             "Shadowstrike", -- Level 120
@@ -146,7 +143,7 @@ return {
             "Battery",      -- Level 90
             "Assault",      -- Level 85
         },
-        ["Pinpoint"] = {
+        ['Pinpoint'] = {
             "Pinpoint Fault",         -- Level 124
             "Pinpoint Defects",       -- Level 114
             "Pinpoint Shortcomings",  -- Level 109
@@ -157,7 +154,7 @@ return {
             "Pinpoint Weaknesses",    -- Level 79
             "Pinpoint Vulnerability", -- Level 74
         },
-        ["Puncture"] = {
+        ['Puncture'] = {
             "Invidious Puncture",      -- Level 124
             "Disorienting Puncture",   -- Level 119
             "Vindictive Puncture",     -- Level 114
@@ -182,15 +179,15 @@ return {
             "Relax",
             "Hiatus", --Level 106
         },
-        ["CADisc"] = {
+        ['CADisc'] = {
             "Counterattack Discipline",
         },
-        ["EdgeDisc"] = {
+        ['EdgeDisc'] = {
             "Reckless Edge Discipline", -- Level 121
             "Ragged Edge Discipline",   -- Level 107
             "Razor's Edge Discipline",  -- Level 92
         },
-        ["AspDisc"] = {
+        ['AspDisc'] = {
             "Visapehn Discipline",   -- Level 129
             "Crinotoxin Discipline", -- Level 124
             "Exotoxin Discipline",   -- Level 119
@@ -199,14 +196,14 @@ return {
             "Arcwork Discipline",    -- Level 104
             "Aspbleeder Discipline", -- Level 99
         },
-        ["AimDisc"] = {
+        ['AimDisc'] = {
             "Fatal Aim Discipline IV", --  Level 130
             "Baleful Aim Discipline",  --  Level 116
             "Lethal Aim Discipline",   --  Level 108
             "Fatal Aim Discipline",    --  Level 98
             "Deadly Aim Discipline",   --  Level 68
         },
-        ["MarkDisc"] = {
+        ['MarkDisc'] = {
             "Easy Mark X",       -- Level 126
             "Unsuspecting Mark", -- Level 121
             "Foolish Mark",      -- Level 116
@@ -217,7 +214,7 @@ return {
             "Gullible Mark",     -- Level 91
             "Easy Mark",         -- Level 86
         },
-        ["Jugular"] = {
+        ['Jugular'] = {
             "Jugular Slash XI", -- Level 127
             "Jugular Hew",      -- Level 122
             "Jugular Rend",     -- Level 117
@@ -230,10 +227,10 @@ return {
             "Jugular Slice",    -- Level 82
             "Jugular Slash",    -- Level 77
         },
-        ["Phantom"] = {
+        ['Phantom'] = {
             "Phantom Assassin", -- Level 100
         },
-        ["SecretBlade"] = {
+        ['SecretBlade'] = {
             "Holdout Blade VII", -- Level 129
             "Veiled Blade",      -- Level 124
             "Obfuscated Blade",  -- Level 119
@@ -242,24 +239,24 @@ return {
             "Hidden Blade",      -- Level 104
             "Holdout Blade",     -- Level 99
         },
-        ["Dicho"] = {
+        ['Dicho'] = {
             "Reciprocal Weapons", -- Level 121
             "Ecliptic Weapons",   -- Level 116
             "Composite Weapons",  -- Level 111
             "Dissident Weapons",  -- Level 106
             "Dichotomic Weapons", -- Level 101
         },
-        ["Alliance"] = {
+        ['Alliance'] = {
             "Poisonous Covariance",  -- Level 123
             "Poisonous Covenant",    -- Level 118
             "Poisonous Alliance",    -- Level 113
             "Poisonous Coalition",   -- Level 108
             "Poisonous Conjunction", -- Level 103
         },
-        ["Knifeplay"] = {
+        ['Knifeplay'] = {
             "Knifeplay Discipline", -- Level 98, Timer 16
         },
-        ["HateDebuff"] = {          --Timer 11, Aggro reduction and Aggro modifier for current target
+        ['HateDebuff'] = {          --Timer 11, Aggro reduction and Aggro modifier for current target
             "Misdirection IX",      -- Level 129
             "Trickery",             -- Level 124
             "Beguile",              -- Level 119
@@ -427,7 +424,7 @@ return {
                 load_cond = function(self) return Config:GetSetting('DoVetAA') end,
             },
         },
-        ["Aggro Management"] = {
+        ['Aggro Management'] = {
             {
                 name = "Escape",
                 type = "AA",

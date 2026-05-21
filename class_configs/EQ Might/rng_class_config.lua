@@ -105,14 +105,14 @@ return {
             "Brushfire",                      -- Level 64
             "Burning Arrow",                  -- Level 39
         },
-        ["DDProc"] = {
+        ['DDProc'] = {
             "Call of Lightning", -- Level 70
             "Cry of Thunder",    -- Level 65
             "Call of Ice",       -- Level 58
             "Call of Fire",      -- Level 55
             "Call of Sky",       -- Level 36
         },
-        -- ["SummonedProc"] = {
+        -- ['SummonedProc'] = {
         --     "Nature's Denial", -- Level 69
         --     "Nature's Rebuke", -- Level 64
         -- },

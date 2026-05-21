@@ -74,61 +74,61 @@ local _ClassConfig = {
     },
     ['AbilitySets']   = {
         ['StandDisc'] = {           -- Timer 2
-            "Stonewall Discipline", -- no lost movement on laz, more mitigation than defensive
-            "Defensive Discipline",
-            "Evasive Discipline",
+            "Stonewall Discipline", -- Level 65, no lost movement on laz, more mitigation than defensive
+            "Defensive Discipline", -- Level 55
+            "Evasive Discipline",   -- Level 52
         },
         ['Fortitude'] = { -- Timer 3
-            "Fortitude Discipline",
-            "Furious Discipline",
+            "Fortitude Discipline", -- Level 59
+            "Furious Discipline",   -- Level 56
         },
         ['GroupACBuff'] = { -- Has Commanding Voice (Dodge Buff) baked in
-            "Field Armorer",
+            "Field Armorer", -- Level 65
         },
         ['AEBlades'] = {
-            "Vortex Blade",
-            "Cyclone Blade",
-            "Whirlwind Blade",
+            "Vortex Blade",    -- Level 69
+            "Cyclone Blade",   -- Level 65
+            "Whirlwind Blade", -- Level 61
         },
         ['AddHate'] = {
-            "Ancient: Chaos Cry",
-            "Bellow of the Mastruq",
-            "Incite",
-            "Berate",
-            "Bellow",
-            "Provoke",
+            "Ancient: Chaos Cry",    -- Level 65
+            "Bellow of the Mastruq", -- Level 65
+            "Incite",                -- Level 63
+            "Berate",                -- Level 56
+            "Bellow",                -- Level 52
+            "Provoke",               -- Level 20
         },
         ['AbsorbTaunt'] = {
-            "Mock",
+            "Mock", -- Level 65
         },
         ['EndRegen'] = {
-            "Third Wind Discipline", -- also does HP
-            "Second Wind",
+            "Third Wind Discipline", -- Level 70, also does HP
+            "Second Wind",           -- Level 65
         },
         ['AuraBuff'] = {
-            "Champion's Aura",
-            "Myrmidon's Aura",
+            "Champion's Aura", -- Level 70
+            "Myrmidon's Aura", -- Level 55
         },
         ['Attention'] = {
-            "Unyielding Attention",
-            "Undivided Attention",
+            "Unyielding Attention", -- Level 71
+            "Undivided Attention",  -- Level 65
         },
         ['Onslaught'] = {
-            "Savage Onslaught Discipline",
-            "Brutal Onslaught Discipline",
+            "Brutal Onslaught Discipline", -- Level 68
+            "Savage Onslaught Discipline", -- Level 65
         },
         ['StrikeDisc'] = {
-            "Fellstrike Discipline",
-            "Mighty Strike Discipline",
+            "Fellstrike Discipline",    -- Level 58
+            "Mighty Strike Discipline", -- Level 54
         },
         ['Throat'] = {
-            "Throat Jab",
+            "Throat Jab", -- Level 69
         },
         ['Flaunt'] = {
-            "Flaunt",
+            "Flaunt", -- Level 70
         },
         ['ShockDisc'] = { -- Timer 7, defensive stun proc
-            "Shocking Defense Discipline",
+            "Shocking Defense Discipline", -- Level 70
         },
     },
     ['AASets']        = {

@@ -50,133 +50,132 @@ return {
     ['AbilitySets']       = {
         ['SwarmPet'] = {
             -- Swarm Pet
-            "Reptilian Venom",
-            "Amphibious Toxin",
+            "Reptilian Venom",  -- Level 68
+            "Amphibious Toxin", -- Level 62
         },
         ['Icelance1'] = {
             -- Lance 1 Timer 7 Ice Nuke Fast Cast
-            "Blast of Frost",        -- Level 12 - Timer 7
-            "Frost Shard",           -- Level 47 - Timer 7
-            "Blizzard Blast",        -- Level 59 - Timer ???
-            "Frost Spear",           -- Level 63 - Timer 7
-            "Ancient: Frozen Chaos", -- Level 65 - Timer 7
-            "Ancient: Savage Ice",   -- Level 70 - Timer 7
+            "Ancient: Savage Ice",   -- Level 70, - Timer 7
+            "Ancient: Frozen Chaos", -- Level 65, - Timer 7
+            "Frost Spear",           -- Level 63, - Timer 7
+            "Blizzard Blast",        -- Level 59, - Timer ???
+            "Frost Shard",           -- Level 47, - Timer 7
+            "Blast of Frost",        -- Level 12, - Timer 7
         },
         ['Icelance2'] = {
             -- Lance 2 Timer 11 Ice Nuke Fast Cast
-            "Ice Spear",       -- Level 33 - Timer 11
-            "Ice Shard",       -- Level 54 - Timer 11
-            "Trushar's Frost", -- Level 65 - Timer 11
-            "Glacier Spear",   -- Level 69 - Timer 11
+            "Glacier Spear",   -- Level 69, - Timer 11
+            "Trushar's Frost", -- Level 65, - Timer 11
+            "Ice Shard",       -- Level 54, - Timer 11
+            "Ice Spear",       -- Level 33, - Timer 11
         },
         ['EndemicDot'] = {
             -- Disease DoT Instant Cast
-            "Sicken",           -- Level 14
-            "Malaria",          -- Level 40
-            "Plague",           -- Level 65
             "Festering Malady", -- Level 70
+            "Plague",           -- Level 65
+            "Malaria",          -- Level 40
+            "Sicken",           -- Level 14
         },
         ['BloodDot'] = {
             -- Poison DoT Instant Cast
-            "Tainted Breath",     -- Level 19
-            "Envenomed Breath",   -- Level 35
-            "Venom of the Snake", -- Level 52
-            "Scorpion Venom",     -- Level 61
-            "Turepta Blood",      -- Level 65
             "Chimera Blood",      -- Level 66
+            "Turepta Blood",      -- Level 65
+            "Scorpion Venom",     -- Level 61
+            "Venom of the Snake", -- Level 52
+            "Envenomed Breath",   -- Level 35
+            "Tainted Breath",     -- Level 19
         },
         ['SlowSpell'] = {
             -- Slow Spell
-            "Drowsy",          -- Level 20
-            "Sha's Lethargy",  -- Level 50
-            "Sha's Advantage", -- Level 60
-            "Sha's Revenge",   -- Level 65
             "Sha's Legacy",    -- Level 70
+            "Sha's Revenge",   -- Level 65
+            "Sha's Advantage", -- Level 60
+            "Sha's Lethargy",  -- Level 50
+            "Drowsy",          -- Level 20
         },
         ['HealSpell'] = {
-            "Salve",             -- Level 1
-            "Minor Healing",     -- Level 6
-            "Light Healing",     -- Level 18
-            "Healing",           -- Level 28
-            "Greater Healing",   -- Level 38
-            "Spirit Salve",      -- Level 48
-            "Chloroblast",       -- Level 59
-            "Trushar's Mending", -- Level 65
             "Muada's Mending",   -- Level 67
+            "Trushar's Mending", -- Level 65
+            "Chloroblast",       -- Level 62
+            "Greater Healing",   -- Level 57
+            "Spirit Salve",      -- Level 48
+            "Healing",           -- Level 36
+            "Light Healing",     -- Level 20
+            "Minor Healing",     -- Level 6
+            "Salve",             -- Level 1
         },
         ['PetHealSpell'] = {
-            "Sharik's Replenishing",   -- Level 9
-            "Keshuval's Rejuvenation", -- Level 15
-            "Herikol's Soothing",      -- Level 27
-            "Yekan's Recovery",        -- Level 36
-            "Vigor of Zehkes",         -- Level 49
-            "Aid of Khurenz",          -- Level 52
-            "Sha's Restoration",       -- Level 55
-            "Healing of Sorsha",       -- Level 61
             "Healing of Mikkily",      -- Level 66
+            "Healing of Sorsha",       -- Level 61
+            "Sha's Restoration",       -- Level 55
+            "Aid of Khurenz",          -- Level 52
+            "Vigor of Zehkes",         -- Level 49
+            "Yekan's Recovery",        -- Level 36
+            "Herikol's Soothing",      -- Level 27
+            "Keshuval's Rejuvenation", -- Level 15
+            "Sharik's Replenishing",   -- Level 9
         },
         ['PetSpell'] = {
-            "Spirit of Sharik",    -- Level 8
-            "Spirit of Khaliz",    -- Level 15
-            "Spirit of Keshuval",  -- Level 21
-            "Spirit of Herikol",   -- Level 30
-            "Spirit of Yekan",     -- Level 39
-            "Spirit of Kashek",    -- Level 46
-            "Spirit of Omakin",    -- Level 54
-            "Spirit of Zehkes",    -- Level 56
-            "Spirit of Khurenz",   -- Level 58
-            "Spirit of Khati Sha", -- Level 60
-            "Spirit of Arag",      -- Level 62
-            "Spirit of Sorsha",    -- Level 64
-            "Spirit of Alladnu",   -- Level 68
             "Spirit of Rashara",   -- Level 70
+            "Spirit of Alladnu",   -- Level 68
+            "Spirit of Sorsha",    -- Level 64
+            "Spirit of Arag",      -- Level 62
+            "Spirit of Khati Sha", -- Level 60
+            "Spirit of Khurenz",   -- Level 58
+            "Spirit of Zehkes",    -- Level 56
+            "Spirit of Omakin",    -- Level 54
+            "Spirit of Kashek",    -- Level 46
+            "Spirit of Yekan",     -- Level 39
+            "Spirit of Herikol",   -- Level 30
+            "Spirit of Keshuval",  -- Level 21
+            "Spirit of Khaliz",    -- Level 15
+            "Spirit of Sharik",    -- Level 8
         },
         ['PetHaste'] = {
-            "Yekan's Quickening",
-            "Bond of The Wild",
-            "Omakin's Alacrity",
-            "Sha's Ferocity",
-            "Arag's Celerity",
-            "Growl of the Beast",
+            "Growl of the Beast", -- Level 68
+            "Arag's Celerity",    -- Level 63
+            "Sha's Ferocity",     -- Level 59
+            "Omakin's Alacrity",  -- Level 55
+            "Bond of The Wild",   -- Level 52
+            "Yekan's Quickening", -- Level 37
         },
         ['PetSlowProc'] = {
-            "Spirit of Sha",
+            "Spirit of Sha", -- Level 70
         },
         ['PetGrowl'] = {
-            "Growl of the Panther",
+            "Growl of the Panther", -- Level 69
         },
         ['PetDamageProc'] = {
-            "Spirit of Shoru",
-            "Spirit of Lightning",
-            "Spirit of the Blizzard",
-            "Spirit of Inferno",
-            "Spirit of the Scorpion",
-            "Spirit of Vermin",
-            "Spirit of Wind",
-            "Spirit of the Storm",
-            "Spirit of Snow",
-            "Spirit of Flame",
-            "Spirit of Rellic",
-            "Spirit of Irionu",
-            "Spirit of Oroshar",
+            "Spirit of Oroshar",      -- Level 70
+            "Spirit of Irionu",       -- Level 68
+            "Spirit of Rellic",       -- Level 63
+            "Spirit of Flame",        -- Level 56
+            "Spirit of Snow",         -- Level 54
+            "Spirit of the Storm",    -- Level 53
+            "Spirit of Wind",         -- Level 51
+            "Spirit of Vermin",       -- Level 46
+            "Spirit of the Scorpion", -- Level 38
+            "Spirit of Inferno",      -- Level 28
+            "Spirit of the Blizzard", -- Level 18
+            "Spirit of Lightning",    -- Level 13
         },
         ['RunSpeedBuff'] = {
-            "Spirit of Wolf",
+            "Spirit of Wolf", -- Level 24
         },
         ['ManaRegenBuff'] = {
             --Mana/Hp/End Regen Buff*
-            "Spiritual Light",
-            "Spiritual Radiance",
-            "Spiritual Purity",
-            "Spiritual Dominion",
-            "Spiritual Ascendance",
-            "Spiritual Rejuvenation",
+            "Spiritual Rejuvenation", -- Level 70
+            "Spiritual Ascendance",   -- Level 69
+            "Spiritual Dominion",     -- Level 64
+            "Spiritual Purity",       -- Level 59
+            "Spiritual Radiance",     -- Level 52
+            "Spiritual Light",        -- Level 41
         },
         ['PetBlockSpell'] = {
-            "Ward of Calliav",       -- Level 49
-            "Guard of Calliav",      -- Level 58
-            "Protection of Calliav", -- Level 64
             "Feral Guard",           -- Level 69
+            "Protection of Calliav", -- Level 64
+            "Guard of Calliav",      -- Level 58
+            "Ward of Calliav",       -- Level 49
         },
         ['AvatarSpell'] = {
             -- Str Stam Dex Buff
@@ -184,34 +183,34 @@ return {
         },
         ['FocusSpell'] = {
             -- Single target Talismans ( Like Focus)
-            "Inner Fire",
-            "Talisman of Tnarg",
-            "Talisman of Altuna",
-            "Talisman of Kragg",
-            "Focus of Alladnu",
+            "Focus of Alladnu",   -- Level 67
+            "Talisman of Kragg",  -- Level 62
+            "Talisman of Altuna", -- Level 58
+            "Talisman of Tnarg",  -- Level 53
+            "Inner Fire",         -- Level 7
         },
         ['AtkHPBuff'] = {
-            "Spiritual Vitality",
-            "Spiritual Vigor",
-            "Spiritual Brawn",
-            "Spiritual Strength",
+            "Spiritual Vitality", -- Level 67
+            "Spiritual Vigor",    -- Level 62
+            "Spiritual Strength", -- Level 60
+            "Spiritual Brawn",    -- Level 42
         },
         ['AtkBuff'] = {
             -- - Single Ferocity
-            "Savagery",           -- Level 60
-            "Ferocity",           -- Level 65
             "Ferocity of Irionu", -- Level 70
+            "Ferocity",           -- Level 65
+            "Savagery",           -- Level 60
         },
         ['DmgModDisc'] = {
             --All Skills Damage Modifier*
-            "Empathic Fury",
-            "Bestial Fury Discipline",
+            "Empathic Fury",           -- Level 69
+            "Bestial Fury Discipline", -- Level 60
         },
         ['ProtDisc'] = {
-            "Protective Spirit Discipline",
+            "Protective Spirit Discipline", -- Level 55
         },
         ['VigorBuff'] = {
-            "Feral Vigor",
+            "Feral Vigor", -- Level 69
         },
     },
     ['HealRotationOrder'] = {

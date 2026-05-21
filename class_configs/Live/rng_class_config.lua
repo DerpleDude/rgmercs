@@ -282,19 +282,19 @@ local _ClassConfig = {
         },
     },
     ['AbilitySets']       = {
-        ["ArrowOpener"] = {
+        ['ArrowOpener'] = {
             "Concealed Shot",
             "Stealthy Shot",
             "Silent Shot",
         },
-        ["PullOpener"] = {
+        ['PullOpener'] = {
             "Deadfall",
             "Heartpierce",
             "Heartrend",
             "Heartrip",
             "Heartspike",
         },
-        ["CalledShotsArrow"] = {
+        ['CalledShotsArrow'] = {
             "Called Shots IX",
             "Called Shots",
             "Announced Shots",
@@ -305,7 +305,7 @@ local _ClassConfig = {
             "Claimed Shots",
             "Inevitable Shots",
         },
-        ["FocusedArrows"] = {
+        ['FocusedArrows'] = {
             "Focused Hail of Arrows XII",
             "Focused Frenzy of Arrows",
             "Focused Storm of Arrows",
@@ -317,14 +317,14 @@ local _ClassConfig = {
             "Focused Blizzard of Arrows",
             "Focused Whirlwind of Arrows",
         },
-        ["DichoSpell"] = {
+        ['DichoSpell'] = {
             "Dichotomic Fusillade",
             "Dissident Fusillade",
             "Composite Fusillade",
             "Ecliptic Fusillade",
             "Reciprocal Fusillade",
         },
-        ["SummerNuke"] = {
+        ['SummerNuke'] = {
             "Summer's Dew XII",
             "Summer's Deluge",
             "Summer's Torrent",
@@ -337,7 +337,7 @@ local _ClassConfig = {
             "Summer's Tempest",
             "Summer's Sleet",
         },
-        ["SwarmDot"] = {
+        ['SwarmDot'] = {
             "Spitestinger Swarm",
             "Stinging Swarm",
             "Swarm of Pain",
@@ -357,7 +357,7 @@ local _ClassConfig = {
             "Bloodbeetle Swarm",
             "Hotaria Swarm",
         },
-        ["ShortSwarmDot"] = {
+        ['ShortSwarmDot'] = {
             "Swarm of Spitemidges",
             "Swarm of Fernflies",
             "Swarm of Bloodflies",
@@ -368,12 +368,12 @@ local _ClassConfig = {
             "Swarm of Hornets",
             "Swarm of Bees",
         },
-        ["UnityBuff"] = {
+        ['UnityBuff'] = {
             "Bosquetender's Unity",
             "Copsestalker's Unity",
             "Wildstalker's Unity",
         },
-        ["Protectionbuff"] = {
+        ['Protectionbuff'] = {
             "Protection of the Grove",
             "Force of Nature",
             "Warder's Protection",
@@ -389,7 +389,7 @@ local _ClassConfig = {
             "Protection of the Wakening Land",
             "Protection of the Valley",
         },
-        ["ShoutBuff"] = {
+        ['ShoutBuff'] = {
             "Shout of the Grovestalker",
             "Shout of the Fernstalker",
             "Shout of the Predator",
@@ -399,7 +399,7 @@ local _ClassConfig = {
             "Shout of the Arbor Stalker",
             "Shout of the Dusksage Stalker",
         },
-        ["AggroBuff"] = {
+        ['AggroBuff'] = {
             "Devastating Blades XII",
             "Devastating Blades",
             "Devastating Edges",
@@ -410,7 +410,7 @@ local _ClassConfig = {
             "Devastating Velium",
             "Devastating Barrage",
         },
-        ["AggroReducerBuff"] = {
+        ['AggroReducerBuff'] = {
             "Jolting Blades",
             "Jolting Strikes",
             "Jolting Swings",
@@ -422,7 +422,7 @@ local _ClassConfig = {
             "Jolting Velium",
             "Jolting Luclinite",
         },
-        ["AggroKick"] = {
+        ['AggroKick'] = {
             "Enraging Kicks XII",
             "Enraging Roundhouse Kicks",
             "Enraging Axe Kicks",
@@ -431,7 +431,7 @@ local _ClassConfig = {
             "Enraging Heel Kicks",
             "Enraging Crescent Kicks",
         },
-        ["ParryProcBuff"] = {
+        ['ParryProcBuff'] = {
             "Thundering Blades",
             "Crackling Blades",
             "Crackling Edges",
@@ -442,7 +442,7 @@ local _ClassConfig = {
             "Howling Blades",
             "Vociferous Blades",
         },
-        ["Eyes"] = {
+        ['Eyes'] = {
             "Eyes of the Grove",
             "Hawk Eye",
             "Falcon Eye",
@@ -459,7 +459,7 @@ local _ClassConfig = {
             "Eyes of the Senshali",
             "Eyes of the Phoenix",
         },
-        ["GroupStrengthBuff"] = {
+        ['GroupStrengthBuff'] = {
             "Strength of the Grovestalker",
             "Nature's Precision",
             "Strength of Nature",
@@ -475,7 +475,7 @@ local _ClassConfig = {
             "Strength of the Wildstalker",
             "Strength of the Arbor Stalker",
         },
-        ["GroupPredatorBuff"] = {
+        ['GroupPredatorBuff'] = {
             "Call of the Predator XVI",
             "Mark of the Predator",
             "Call of the Predator",
@@ -494,13 +494,13 @@ local _ClassConfig = {
             "Shout of the Dusksage Stalker",
             "Shout of the Fernstalker",
         },
-        ["GroupEnrichmentBuff"] = {
+        ['GroupEnrichmentBuff'] = {
             "Arbor Stalker's Enrichment",
             "Copsestalker's Enrichment",
             "Wildstalker's Enrichment",
             "Fernstalker's Enrichment",
         },
-        ["Rathe"] = {
+        ['Rathe'] = {
             "Cloak of Underbrush",
             "Cloak of Needlespikes",
             "Cloak of Bloodbarbs",
@@ -517,13 +517,13 @@ local _ClassConfig = {
             "Call of Earth",
             "Riftwind's Protection",
         },
-        ["BowDisc"] = {
+        ['BowDisc'] = {
             "Trueshot Discipline",
             "Aimshot Discipline",
             "Sureshot Discipline",
             "Pureshot Discipline",
         },
-        ["MeleeDisc"] = {
+        ['MeleeDisc'] = {
             "Grovestalker's Discipline",
             "Fernstalker's Discipline",
             "Dusksage Stalker's Discipline",
@@ -532,10 +532,10 @@ local _ClassConfig = {
             "Wildstalker's Discipline",
             "Arbor Stalker's Discipline",
         },
-        ["DefenseDisc"] = {
+        ['DefenseDisc'] = {
             "Weapon Shield Discipline",
         },
-        ["Fireboon"] = {
+        ['Fireboon'] = {
             "Fernflash Boon",
             "Lunarflare Boon",
             "Pyroclastic Boon",
@@ -543,7 +543,7 @@ local _ClassConfig = {
             "Wildfire Boon",
             "Ashcloud Boon",
         },
-        ["Firenuke"] = {
+        ['Firenuke'] = {
             "Volcanic Ash XVIII",
             "Flame Lick",
             "Burst of Fire",
@@ -568,7 +568,7 @@ local _ClassConfig = {
             "Pyroclastic Ash",
             "Lunarflare Ash",
         },
-        ["Iceboon"] = {
+        ['Iceboon'] = {
             "Frostsquall Boon",
             "Nocturnal Boon",
             "Mistral Boon",
@@ -576,7 +576,7 @@ local _ClassConfig = {
             "Windgale Boon",
             "Windblast Boon",
         },
-        ["Icenuke"] = {
+        ['Icenuke'] = {
             "Frozen Wind XVIII",
             "Gelid Wind",
             "Coagulated Wind",
@@ -593,7 +593,7 @@ local _ClassConfig = {
             "Frozen Wind", -- lvl 63. Spell ID: 3418
             "Icewind",
         },
-        ["Heartshot"] = {
+        ['Heartshot'] = {
             "Heartshot",
             "Heartsting",
             "Heartsting",
@@ -604,7 +604,7 @@ local _ClassConfig = {
             "Heartsunder",
             "Heartruin",
         },
-        ["EndRegenDisc"] = {
+        ['EndRegenDisc'] = {
             "Hiatus V",
             "Second Wind",
             "Third Wind",
@@ -618,7 +618,7 @@ local _ClassConfig = {
             "Night's Calming",
             "Convalesce",
         },
-        ["Coat"] = {
+        ['Coat'] = {
             "Underbrush Coat",
             "Thistlecoat",
             "Barbcoat",
@@ -637,10 +637,10 @@ local _ClassConfig = {
             "Moonthorn Coat",
             "Needlespike Coat",
         },
-        ["Mask"] = {
+        ['Mask'] = {
             "Mask of the Stalker",
         },
-        ["Hunt"] = {
+        ['Hunt'] = {
             "Consumed by the Hunt X",
             "Engulfed by the Hunt",
             "Steeled by the Hunt",
@@ -652,7 +652,7 @@ local _ClassConfig = {
             "Invigorated by the Hunt",
             "Consumed by the Hunt",
         },
-        ["Heal"] = {
+        ['Heal'] = {
             "Lifespring",
             "Elizerain Spring",
             "Darkflow Spring",
@@ -674,7 +674,7 @@ local _ClassConfig = {
             "Minor Healing",
             "Salve",
         },
-        ["Fastheal"] = { -- 30s recast. ToT
+        ['Fastheal'] = { -- 30s recast. ToT
             "Desperate Deluge IX",
             "Desperate Quenching",
             "Desperate Geyser",
@@ -685,7 +685,7 @@ local _ClassConfig = {
             "Desperate Downpour",
             "Desperate Deluge", -- lvl 89
         },
-        ["Totheal"] = {
+        ['Totheal'] = {
             "Lifespring",
             "Elizerain Spring",
             "Darkflow Spring",
@@ -694,7 +694,7 @@ local _ClassConfig = {
             "Cloundfont",
             "Cloudburst",
         },
-        ["RegenSpells"] = {
+        ['RegenSpells'] = {
             "Grovestalker's Vigor",
             "Fernstalker's Vigor",
             "Dusksage Stalker's Vigor",
@@ -708,21 +708,21 @@ local _ClassConfig = {
             "Regrowth",
             "Chloroplast",
         },
-        ["SnareSpells"] = {
+        ['SnareSpells'] = {
             "Snare",
             "Tangling Weeds",
             "Ensnare",
             "Earthen Embrace",
             "Earthen Shackles",
         },
-        ["FireFist"] = {
+        ['FireFist'] = {
             "Nature's Precision",
             "Wolf Form",
             "Greater Wolf Form",
             "Feral Form",
             "Firefist",
         },
-        ["DsBuff"] = {
+        ['DsBuff'] = {
             "Shield of Underbrush",
             "Shield of Thistles",
             "Shield of Brambles",
@@ -741,7 +741,7 @@ local _ClassConfig = {
             "Shield of Shadethorns",
             "Shield of Needlespikes",
         },
-        ["SkinLike"] = {
+        ['SkinLike'] = {
             "Skin Like Wood",
             "Skin Like Rock",
             "Skin Like Steel",
@@ -749,21 +749,21 @@ local _ClassConfig = {
             "Skin Like Nature",
             "Natureskin",
         },
-        ["MoveSpells"] = {
+        ['MoveSpells'] = {
             "Spirit of Falcons",
             "Spirit of Eagle",
             "Pack Shrew",
             "Spirit of the Shrew",
             "Spirit of Wolf",
         },
-        ["Alliance"] = {
+        ['Alliance'] = {
             "Bosquestalker's Alliance",
             "Wildstalker's Covenant",
             "Arbor Stalker's Coalition",
             "Dusksage Stalker's Conjunction",
             "Fernstalker's Covariance",
         },
-        ["Cloak"] = {
+        ['Cloak'] = {
             "Ro's Burning Cloak VI",
             "Shalowain's Crucible Cloak",
             "Luclin's Darkfire Cloak",
@@ -771,7 +771,7 @@ local _ClassConfig = {
             "Lavastorm Cloak",
             "Ro's Burning Cloak",
         },
-        ["Veil"] = {
+        ['Veil'] = {
             "Shadowveil",
             "Duskveil",
             "Frostveil",
@@ -781,7 +781,7 @@ local _ClassConfig = {
             "Veil of Alaris",
             "Nature Veil",
         },
-        ["JoltingKicks"] = {
+        ['JoltingKicks'] = {
             "Jolting Kicks XII",
             "Jolting Frontkicks",
             "Jolting Hook Kicks",
@@ -794,7 +794,7 @@ local _ClassConfig = {
             "Jolting Drop Kicks",
             "Jolting Kicks",
         },
-        ["AEBlades"] = {
+        ['AEBlades'] = {
             "Storm of Blades VII",
             "Storm of Blades",
             "Squall Of Blades",
@@ -803,7 +803,7 @@ local _ClassConfig = {
             "Tempest of Blades",
             "Maelstrom of Blades",
         },
-        ["FocusedBlades"] = {
+        ['FocusedBlades'] = {
             "Focused Storm of Blades",
             "Focused Squall of Blades",
             "Focused Gale of Blades",
@@ -811,13 +811,13 @@ local _ClassConfig = {
             "Focused Tempest of Blades",
             "Focused Maelstrom of Blades",
         },
-        ["ReflexSlashHeal"] = {
+        ['ReflexSlashHeal'] = {
             "Reflexive Bladespurs",
             "Reflexive Nettlespears",
             "Reflexive Rimespurs",
             "Reflexive Needlespikes",
         },
-        ["AEArrows"] = {
+        ['AEArrows'] = {
             "Frenzy of Arrows",
             "Whirlwind of Arrows",
             "Blizzard of Arrows",
@@ -847,7 +847,7 @@ local _ClassConfig = {
         },
     },
     ['HealRotations']     = {
-        ["MainHealPoint"] = {
+        ['MainHealPoint'] = {
             {
                 name = "Fastheal",
                 type = "Spell",

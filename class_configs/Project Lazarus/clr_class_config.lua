@@ -115,220 +115,219 @@ local _ClassConfig = {
     },
     ['AbilitySets']       = {
         -- ['WardSelfBuff'] = {
-        --     "Ward of Retribution",
+        --     "Ward of Retribution", -- Level 69
         -- },
         ['HealingLight'] = {
-            "Minor Healing",
-            "Light Healing",
-            "Healing",
-            "Greater Healing",
-            "Superior Healing",
-            "Healing Light",
-            "Divine Light",
-            "Ethereal Light",
-            "Supernal Light",
-            "Holy Light",
-            "Pious Light",
-            "Ancient: Hallowed Light",
+            "Ancient: Hallowed Light", -- Level 70
+            "Pious Light",             -- Level 68
+            "Holy Light",              -- Level 65
+            "Supernal Light",          -- Level 63
+            "Ethereal Light",          -- Level 58
+            "Divine Light",            -- Level 53
+            "Healing Light",           -- Level 39
+            "Superior Healing",        -- Level 30
+            "Greater Healing",         -- Level 20
+            "Healing",                 -- Level 10
+            "Light Healing",           -- Level 4
+            "Minor Healing",           -- Level 1
         },
-        ['RemedyHeal'] = { -- Not great until 96/RoF (Graceful)
-            "Remedy",
-            "Ethereal Remedy",
-            "Supernal Remedy",
-            "Pious Remedy",
+        ['RemedyHeal'] = {             -- Not great until 96/RoF (Graceful)
+            "Pious Remedy",            -- Level 66
+            "Supernal Remedy",         -- Level 61
+            "Ethereal Remedy",         -- Level 59
+            "Remedy",                  -- Level 51
         },
-        ['Renewal'] = { -- Level 70 +, large heal, slower cast
-            "Desperate Renewal",
+        ['Renewal'] = {                -- Level 70 +, large heal, slower cast
+            "Desperate Renewal",       -- Level 70
         },
         ['GroupHeal'] = {
             -----Group Heals No Cure Slot 5
-            "Word of Health",
-            "Word of Healing",
-            "Word of Vigor",
-            "Word of Restoration", -- No good NoCure in these level ranges using w/Cure... Note Word of Redemption omitted (12sec cast)
-            "Word of Replenishment",
-            "Word of Vivification",
-            "Word of Vivacity",
+            "Word of Vivacity",      -- Level 80
+            "Word of Vivification",  -- Level 69
+            "Word of Replenishment", -- Level 64
+            "Word of Restoration",   -- Level 57, No good NoCure in these level ranges using w/Cure... Note Word of Redemption omitted (12sec cast)
+            "Word of Vigor",         -- Level 52
+            "Word of Healing",       -- Level 45
+            "Word of Health",        -- Level 30
         },
         ['SelfHPBuff'] = {
             --Self Buff for Mana Regen and armor
-            "Armor of Protection",
-            "Blessed Armor of the Risen",
-            "Ancient: High Priest's Bulwark",
-            "Armor of the Zealot",
-            "Armor of the Pious",
+            "Armor of the Pious",             -- Level 70
+            "Armor of the Zealot",            -- Level 65
+            "Ancient: High Priest's Bulwark", -- Level 60
+            "Blessed Armor of the Risen",     -- Level 58
+            "Armor of Protection",            -- Level 34
         },
         ['AegoBuff'] = {
             ----Use HP Type one until Temperance at 40... Group Buff at 45 (Blessing of Temperance)
-            "Hand of Conviction",
-            "Hand of Virtue",
-            "Blessing of Aegolism",
-            "Blessing of Temperance",
-            "Temperance",
-            "Valor",
-            "Bravery",
-            "Daring",
-            "Center",
-            "Courage",
+            "Hand of Conviction",     -- Level 70
+            "Hand of Virtue",         -- Level 65
+            "Blessing of Aegolism",   -- Level 60
+            "Blessing of Temperance", -- Level 45
+            "Temperance",             -- Level 40
+            "Valor",                  -- Level 32
+            "Bravery",                -- Level 22
+            "Daring",                 -- Level 17
+            "Center",                 -- Level 7
+            "Courage",                -- Level 1
         },
         ['ACBuff'] = {
-            "Ward of Valiance",
-            "Ward of Gallantry",
-            "Bulwark of Faith",
-            "Shield of Words",
-            "Armor of Faith",
-            "Guard",
-            "Spirit Armor",
-            "Holy Armor",
+            "Ward of Valiance",  -- Level 66
+            "Ward of Gallantry", -- Level 61
+            "Bulwark of Faith",  -- Level 57
+            "Shield of Words",   -- Level 45
+            "Armor of Faith",    -- Level 35
+            "Guard",             -- Level 25
+            "Spirit Armor",      -- Level 15
+            "Holy Armor",        -- Level 1
         },
         ['SingleVieBuff'] = {
-            "Panoply of Vie",
-            "Bulwark of Vie",
-            "Protection of Vie",
-            "Guard of Vie",
-            "Ward of Vie",
+            "Panoply of Vie",    -- Level 67
+            "Bulwark of Vie",    -- Level 62
+            "Protection of Vie", -- Level 54
+            "Guard of Vie",      -- Level 40
+            "Ward of Vie",       -- Level 20
         },
         ['GroupSymbolBuff'] = {
             ----Group Symbols
-            "Symbol of Transal",
-            "Symbol of Ryltan",
-            "Symbol of Pinzarn",
-            "Symbol of Naltron",
-            "Symbol of Marzin",
-            "Naltron's Mark",
-            "Marzin's Mark",
-            "Kazad's Mark",
-            "Balikor's Mark",
+            "Balikor's Mark",    -- Level 70
+            "Kazad's Mark",      -- Level 63
+            "Marzin's Mark",     -- Level 60
+            "Naltron's Mark",    -- Level 58
+            "Symbol of Marzin",  -- Level 54
+            "Symbol of Naltron", -- Level 41
+            "Symbol of Pinzarn", -- Level 31
+            "Symbol of Ryltan",  -- Level 21
+            "Symbol of Transal", -- Level 11
         },
         ['AbsorbAura'] = {
             ----Aura Buffs - Aura Name is seperate than the buff name
-            "Aura of the Pious",
-            "Aura of the Zealot",
+            "Aura of the Pious",  -- Level 65
+            "Aura of the Zealot", -- Level 55
         },
         ['HPAura'] = {
             ---- Aura Buff 2 - Aura Name is the same as the buff name
-            "Aura of Divinity",
+            "Aura of Divinity", -- Level 65
         },
         ['DivineBuff'] = {
             --Divine Buffs REQUIRES extra spell slot because of the 90s recast
-            "Death Pact",
-            "Divine Intervention",
+            "Divine Intervention", -- Level 60
+            "Death Pact",          -- Level 51
         },
         ['TwinHealNuke'] = {
-            "Vigilant Condemnation",
+            "Vigilant Condemnation", -- Level 71
         },
         ['RezSpell'] = {
-            "Spiritual Awakening",
-            "Reviviscence",
-            "Resurrection",
-            "Restoration",
-            "Resuscitate",
-            "Renewal",
-            "Revive",
-            "Reparation",
-            "Reconstitution",
-            "Reanimation",
+            "Spiritual Awakening", -- Level 65
+            "Reviviscence",        -- Level 56
+            "Resurrection",        -- Level 47
+            "Restoration",         -- Level 42
+            "Resuscitate",         -- Level 37
+            "Renewal",             -- Level 32
+            "Revive",              -- Level 27
+            "Reparation",          -- Level 22
+            "Reconstitution",      -- Level 18
+            "Reanimation",         -- Level 12
         },
         ['SingleElixir'] = {
-            "Pious Elixir",
-            "Holy Elixir",
-            "Supernal Elixir",
-            "Celestial Elixir",
-            "Celestial Healing",
-            "Celestial Health",
-            "Celestial Remedy", -- Level 19
+            "Pious Elixir",      -- Level 67
+            "Holy Elixir",       -- Level 65
+            "Supernal Elixir",   -- Level 62
+            "Celestial Elixir",  -- Level 59
+            "Celestial Healing", -- Level 44
+            "Celestial Health",  -- Level 29
+            "Celestial Remedy",  -- Level 19
         },
         ['GroupElixir'] = {
-            "Elixir of Divinity",
-            "Ethereal Elixir",
+            "Elixir of Divinity", -- Level 70
+            "Ethereal Elixir",    -- Level 60
         },
         ['SpellBlessing'] = {
-            "Aura of Devotion",
-            "Blessing of Devotion",
-            "Aura of Reverence",
-            "Blessing of Reverence",
-            "Blessing of Faith",
-            "Blessing of Piety",
+            "Aura of Devotion",      -- Level 69
+            "Blessing of Devotion",  -- Level 67
+            "Aura of Reverence",     -- Level 64
+            "Blessing of Reverence", -- Level 62
+            "Blessing of Faith",     -- Level 35
+            "Blessing of Piety",     -- Level 15
         },
         -- ['CureAll'] = { -- The single target cures that come after outclass this
-        --     "Pure Blood",
+        --     "Pure Blood", -- Level 51
         -- },
         ['CurePoison'] = {
-            -- "Puratas", -- Excessive Cast Time
-            "Antidote",
-            -- "Eradicate Poison", -- not currently available on Laz
-            "Abolish Poison",
-            "Counteract Poison",
-            "Cure Poison",
+            "Antidote",          -- Level 58
+            -- "Eradicate Poison", -- Level 52, not currently available on Laz
+            "Abolish Poison",    -- Level 48
+            "Counteract Poison", -- Level 22
+            "Cure Poison",       -- Level 1
         },
         ['CureDisease'] = {
-            -- "Eradicate Disease", -- not currently available on Laz
-            "Counteract Disease",
-            "Cure Disease",
+            -- "Eradicate Disease", -- Level 58, not currently available on Laz
+            "Counteract Disease", -- Level 28
+            "Cure Disease",       -- Level 4
         },
         ['CureCurse'] = {
-            -- "Eradicate Curse", -- not currently available on Laz
-            "Remove Greater Curse",
-            "Remove Curse",
-            "Remove Lesser Curse",
-            "Remove Minor Curse",
+            -- "Eradicate Curse",   -- Level 54, not currently available on Laz
+            "Remove Greater Curse", -- Level 54
+            "Remove Curse",         -- Level 38
+            "Remove Lesser Curse",  -- Level 23
+            "Remove Minor Curse",   -- Level 8
         },
         ['YaulpSpell'] = {
-            "Yaulp VII",
-            "Yaulp VI",
+            "Yaulp VII",         -- Level 69
+            "Yaulp VI",          -- Level 65
             "Yaulp V",           -- Level 56, first rank with haste/mana regen. We won't use it before this.
         },
         ['StunTimer6'] = {       -- Timer 6 Stun, Fast Cast, Level 63+ (with ToT Heal 88+)
-            "Sound of Divinity", -- works up to level 70
-            "Sound of Might",
+            "Sound of Divinity", -- Level 68, works up to level 70
+            "Sound of Might",    -- Level 63
             --Filler before this
-            "Tarnation",     -- Timer 4, up to Level 65
-            "Force",         -- No Timer #, up to Level 58
-            "Holy Might",    -- No Timer #, up to Level 55
+            "Tarnation",         -- Level 61, Timer 4, up to Level 65
+            "Force",             -- Level 31, No Timer #, up to Level 58
+            "Holy Might",        -- Level 16, No Timer #, up to Level 55
         },
-        ['LowLevelStun'] = { --Adding a second stun at low levels
-            "Stun",
+        ['LowLevelStun'] = {     --Adding a second stun at low levels
+            "Stun",              -- Level 2
         },
-        ['UndeadNuke'] = { -- Level 4+
-            "Desolate Undead",
-            "Destroy Undead",
-            "Exile Undead",
-            "Banish Undead",
-            "Expel Undead",
-            "Dismiss Undead",
-            "Expulse Undead",
-            "Ward Undead",
+        ['UndeadNuke'] = {       -- Level 4+
+            "Desolate Undead",   -- Level 68
+            "Destroy Undead",    -- Level 64
+            "Exile Undead",      -- Level 55
+            "Banish Undead",     -- Level 43
+            "Expel Undead",      -- Level 33
+            "Dismiss Undead",    -- Level 23
+            "Expulse Undead",    -- Level 13
+            "Ward Undead",       -- Level 4
         },
         ['MagicNuke'] = {
-            "Chromastrike", --Laz specific
-            -- "Calamity", -- Chroma is better
-            "Reproach",
-            "Order",
-            "Condemnation",
-            "Judgment",
-            "Retribution",
-            "Wrath",
-            "Smite",
-            "Furor",
-            "Strike",
+            "Chromastrike", -- Level 69, Laz specific
+            -- "Calamity",  -- Level 69, Chroma is better
+            "Reproach",     -- Level 67
+            "Order",        -- Level 65
+            "Condemnation", -- Level 62
+            "Judgment",     -- Level 56
+            "Retribution",  -- Level 44
+            "Wrath",        -- Level 29
+            "Smite",        -- Level 14
+            "Furor",        -- Level 5
+            "Strike",       -- Level 1
         },
         -- ['HammerPet'] = {
-        --     "Unswerving Hammer of Retribution",
-        --     "Unswerving Hammer of Justice",
-        --     "Unswerving Hammer of Faith",
+        --     "Unswerving Hammer of Retribution", -- Level 68
+        --     "Unswerving Hammer of Justice",     -- Level 65
+        --     "Unswerving Hammer of Faith",       -- Level 54
         -- },
         ['CompleteHeal'] = {
-            "Complete Heal",
+            "Complete Heal",      -- Level 39
         },
-        ['PBAENuke'] = { --This isn't worthwhile before these spells come around.
-            "Calamity",
-            "Catastrophe",
+        ['PBAENuke'] = {          --This isn't worthwhile before these spells come around.
+            "Calamity",           -- Level 69
+            "Catastrophe",        -- Level 64
         },
-        ['PBAEStun'] = { --This isn't worthwhile before these spells come around. The stun won't land in many cases (level) but the damage is okay.
-            "Silent Dictation",
-            "The Silent Command",
+        ['PBAEStun'] = {          --This isn't worthwhile before these spells come around. The stun won't land in many cases (level) but the damage is okay.
+            "Silent Dictation",   -- Level 70
+            "The Silent Command", -- Level 62
         },
-    }, -- end AbilitySets
+    },                            -- end AbilitySets
     ['Helpers']           = {
         DoRez = function(self, corpseId)
             local rezAction = false

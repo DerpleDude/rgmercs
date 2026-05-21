@@ -75,180 +75,178 @@ return {
     },
     ['AbilitySets']   = {
         ['IceClaw'] = {
-            "Claw of Vox",
-            "Claw of Frost",
+            "Claw of Vox",   -- Level 69
+            "Claw of Frost", -- Level 61
         },
         ['FireEtherealNuke'] = {
-            "Ether Flame",
+            "Ether Flame", -- Level 70
         },
         ['ChaosNuke'] = {
-            "Chaos Flame",
+            "Chaos Flame", -- Level 70
         },
         ['WildNuke'] = {
-            "Wildmagic Burst",
+            "Wildmagic Burst", -- Level 68
         },
         ['FireNuke'] = {
-            "Spark of Fire",
-            "Draught of Ro",
-            "Draught of Fire",
-            "Conflagration",
-            "Inferno Shock",
-            "Flame Shock",
-            "Fire Bolt",
-            "Shock of Fire",
+            "Spark of Fire",   -- Level 66
+            "Draught of Ro",   -- Level 62
+            "Draught of Fire", -- Level 51
+            "Conflagration",   -- Level 43
+            "Inferno Shock",   -- Level 26
+            "Flame Shock",     -- Level 15
+            "Fire Bolt",       -- Level 5
+            "Shock of Fire",   -- Level 4
         },
-        ['BigFireNuke'] = { -- Level 51-70, Long Cast, Heavy Damage
-            -- "Ancient: Core Fire", --Ether Flame beats this soundly at the same level
-            -- "Corona Flare",       --Ether Flame beats this soundly at the same level
-            "Ancient: Strike of Chaos",
-            "White Fire",
-            "Strike of Solusek",
-            "Garrison's Superior Sundering",
-            "Sunstrike",
+        ['BigFireNuke'] = {    -- Level 51-70, Long Cast, Heavy Damage
+            -- "Ancient: Core Fire",         -- Level 70, Ether Flame beats this soundly at the same level
+            -- "Corona Flare",               -- Level 70, Ether Flame beats this soundly at the same level
+            "Ancient: Strike of Chaos",      -- Level 65
+            "White Fire",                    -- Level 65
+            "Strike of Solusek",             -- Level 65
+            "Garrison's Superior Sundering", -- Level 60
+            "Sunstrike",                     -- Level 60
         },
         ['IceNuke'] = {
-            -- "Ancient: Spear of Gelaqua" -- Commented for now, because of the recast... considering, need to playtest.
-            "Spark of Ice",
-            "Black Ice",
-            "Draught of E`ci",
-            "Draught of Ice",
-            "Ice Comet",
-            "Ice Shock",
-            "Frost Shock",
-            "Shock of Ice",
-            "Blast of Cold",
+            -- "Ancient: Spear of Gelaqua", -- Level 70, Commented for now, because of the recast... considering, need to playtest.
+            "Spark of Ice",                -- Level 69
+            "Black Ice",                   -- Level 65
+            "Draught of E`ci",             -- Level 64
+            "Draught of Ice",              -- Level 57
+            "Ice Comet",                   -- Level 49
+            "Ice Shock",                   -- Level 34
+            "Frost Shock",                 -- Level 24
+            "Shock of Ice",                -- Level 8
+            "Blast of Cold",               -- Level 1
         },
-        ['BigIceNuke'] = { -- Level 60-70, Timed with great Ratio or High Cast Time/Damage
-            "Gelidin Comet",
-            "Ice Meteor",
-            "Ancient: Destruction of Ice", --13s T1
-            "Ice Spear of Solist",         --13s T2
+        ['BigIceNuke'] = {                 -- Level 60-70, Timed with great Ratio or High Cast Time/Damage
+            "Gelidin Comet",               -- Level 69
+            "Ice Meteor",                  -- Level 64
+            "Ancient: Destruction of Ice", -- Level 60, 13s T1
+            "Ice Spear of Solist",         -- Level 60, 13s T2
         },
         ['MagicNuke'] = {
-            "Spark of Lightning",
-            "Draught of Lightning",
-            "Voltaic Draught",
-            "Rend",
-            "Lightning Shock",
-            "Garrison's Mighty Mana Shock",
-            "Shock of Lightning",
+            "Draught of Lightning",          -- Level 63
+            "Voltaic Draught",               -- Level 54
+            "Rend",                          -- Level 47
+            "Lightning Shock",               -- Level 37
+            "Garrison's Mighty Mana Shock",  -- Level 18
+            "Shock of Lightning",            -- Level 10
         },
-        ['BigMagicNuke'] = { -- Level 60-68, High Cast Time/Damage
-            "Thundaka",
-            "Shock of Magic",
-            "Agnarr's Thunder",
-            "Elnerick's Electrical Rending",
+        ['BigMagicNuke'] = {                 -- Level 60-68, High Cast Time/Damage
+            "Thundaka",                      -- Level 68
+            "Shock of Magic",                -- Level 65
+            "Agnarr's Thunder",              -- Level 63
+            "Elnerick's Electrical Rending", -- Level 60
         },
         ['StunSpell'] = {
-            "Telakemara",
-            "Telekara",
-            "Telaka",
-            "Telekin",
-            "Markar's Discord",
-            "Markar's Clash",
-            "Tishan's Clash",
+            "Telakemara",       -- Level 70
+            "Telekara",         -- Level 70
+            "Telaka",           -- Level 65
+            "Telekin",          -- Level 61
+            "Markar's Discord", -- Level 56
+            "Markar's Clash",   -- Level 47
+            "Tishan's Clash",   -- Level 19
         },
         ['SelfHPBuff'] = {
-            "Ether Shield",
-            "Shield of Maelin",
-            "Shield of the Arcane",
-            "Shield of the Magi",
-            "Arch Shielding",
-            "Greater Shielding",
-            "Major Shielding",
-            "Shielding",
-            "Lesser Shielding",
-            "Minor Shielding",
+            "Ether Shield",         -- Level 66
+            "Shield of Maelin",     -- Level 64
+            "Shield of the Arcane", -- Level 61
+            "Shield of the Magi",   -- Level 54
+            "Arch Shielding",       -- Level 44
+            "Greater Shielding",    -- Level 33
+            "Major Shielding",      -- Level 23
+            "Shielding",            -- Level 15
+            "Lesser Shielding",     -- Level 6
+            "Minor Shielding",      -- Level 1
         },
         ['FamiliarBuff'] = {
-            "Greater Familiar",
-            "Familiar",
-            "Lesser Familiar",
-            "Minor Familiar",
+            "Greater Familiar", -- Level 60
+            "Familiar",         -- Level 54
+            "Lesser Familiar",  -- Level 45
+            "Minor Familiar",   -- Level 25
         },
         ['SelfRune1'] = {
-            "Ether Skin",
-            "Force Shield",
+            "Ether Skin",   -- Level 68
+            "Force Shield", -- Level 63
         },
         ['Dispel'] = {
-            "Annul Magic",
-            "Nullify Magic",
-            "Cancel Magic",
+            "Annul Magic",   -- Level 53
+            "Nullify Magic", -- Level 34
+            "Cancel Magic",  -- Level 11
         },
         ['TwincastSpell'] = {
-            "Twincast",
+            "Twincast", -- Level 85
         },
         ['RootSpell'] = {
-            "Greater Fetter",
-            "Fetter",
-            "Paralyzing Earth",
-            "Immobilize",
-            "Instill",
-            "Root",
+            "Greater Fetter",   -- Level 61
+            "Fetter",           -- Level 58
+            "Paralyzing Earth", -- Level 48
+            "Immobilize",       -- Level 39
+            "Instill",          -- Level 17
+            "Root",             -- Level 3
         },
         ['SnareSpell'] = {
-            "Atol's Spectral Shackles",
-            "Bonds of Force",
+            "Atol's Spectral Shackles", -- Level 51
+            "Bonds of Force",           -- Level 27
         },
         ['EvacSpell'] = {
-            "Evacuate",
-            "Lesser Evacuate",
+            "Evacuate",        -- Level 57
+            "Lesser Evacuate", -- Level 18
         },
         ['HarvestSpell'] = {
-            "Harvest",
+            "Harvest", -- Level 32
         },
         ['JoltSpell'] = {
-            "Ancient: Greater Concussion",
-            "Concussion",
+            "Ancient: Greater Concussion", -- Level 60
+            "Concussion",                  -- Level 37
         },
-        -- Lure Spells
         -- ['IceLureNuke'] = {
-        --     "Icebane",
-        --     "Lure of Ice",
-        --     "Lure of Frost",
+        --     "Icebane",       -- Level 66
+        --     "Lure of Ice",   -- Level 60
+        --     "Lure of Frost", -- Level 52
         -- },
         -- ['FireLureNuke'] = {
-        --     "Firebane",
-        --     "Lure of Ro",
-        --     "Lure of Flame",
-        --     "Enticement of Flame",
+        --     "Firebane",            -- Level 68
+        --     "Lure of Ro",          -- Level 62
+        --     "Lure of Flame",       -- Level 55
+        --     "Enticement of Flame", -- Level 44
         -- },
         -- ['MagicLureNuke'] = {
-        --     "Lightningbane",
-        --     "Lure of Thunder",
-        --     "Lure of Lightning",
+        --     "Lightningbane",     -- Level 67
+        --     "Lure of Thunder",   -- Level 61
+        --     "Lure of Lightning", -- Level 58
         -- },
         -- ['StunMagicNuke'] = {
-        --     "Spark of Thunder",
-        --     "Draught of Thunder",
-        --     "Draught of Jiva",
-        --     "Force Strike",
-        --     "Thunder Strike",
-        --     "Force Snap",
-        --     "Lightning Bolt",
+        --     "Spark of Thunder",   -- Level 68
+        --     "Draught of Thunder", -- Level 63
+        --     "Draught of Jiva",    -- Level 55
+        --     "Force Strike",       -- Level 41
+        --     "Thunder Strike",     -- Level 28
+        --     "Force Snap",         -- Level 17
+        --     "Lightning Bolt",     -- Level 16
         -- },
         -- ['MagicRain'] = { -- Last one is at 54, not sustainable
-        --     "Pillar of Lightning",
-        --     "Tears of Druzzil",
-        --     "Energy Storm",
+        --     "Pillar of Lightning", -- Level 54
+        --     "Tears of Druzzil",    -- Level 52
+        --     "Energy Storm",        -- Level 26
         -- },
         ['IceRain'] = {
-            "Gelid Rains",
-            "Tears of Marr",
-            "Tears of Prexus",
-            "Frost Storm",
-            "Icestrike",
+            "Gelid Rains",     -- Level 70
+            "Tears of Marr",   -- Level 65
+            "Tears of Prexus", -- Level 58
+            "Frost Storm",     -- Level 41
+            "Icestrike",       -- Level 6
         },
         ['FireRain'] = {
-            "Tears of the Sun",
-            "Tears of Ro",
-            "Tears of Solusek",
-            "Lava Storm",
-            "Firestorm",
+            "Tears of the Sun", -- Level 66
+            "Tears of Ro",      -- Level 61
+            "Tears of Solusek", -- Level 55
+            "Lava Storm",       -- Level 32
+            "Firestorm",        -- Level 12
         },
         -- ['FireLureRain'] = {
-        --     "Meteor Storm",
-        --     "Tears of Arlyxir",
+        --     "Meteor Storm",     -- Level 69
+        --     "Tears of Arlyxir", -- Level 64
         -- },
         ['PBTimer4'] = {
             "Circle of Thunder", -- Level 70, Magic
@@ -267,11 +265,11 @@ return {
             "Jyll's Static Pulse", -- Level 53
         },
         ['ManaWeave'] = {
-            "Mana Weave",
+            "Mana Weave", -- Level 69
         },
         ['SwarmPet'] = {
-            -- "Solist's Frozen Sword", -- Bugged, does not attack on Laz/Emu
-            "Flaming Sword of Xuzl", --homework
+            -- "Solist's Frozen Sword", -- Level 69, Bugged, does not attack on Laz/Emu
+            "Flaming Sword of Xuzl", -- Level 59, homework
         },
     },
     ['AASets']        = {

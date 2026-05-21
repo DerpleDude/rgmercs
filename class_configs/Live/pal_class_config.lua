@@ -130,7 +130,7 @@ local _ClassConfig = {
         },
     },
     ['AbilitySets']       = {
-        ["CrushTimer6"] = {
+        ['CrushTimer6'] = {
             "Crush of Eminence",     -- Level 129
             "Crush of Compunction",  -- Level 85
             "Crush of Repentance",   -- Level 90
@@ -142,7 +142,7 @@ local _ClassConfig = {
             "Crush of the Umbra",    -- Level 120
             "Crush of the Heroic",   -- Level 124
         },
-        ["CrushTimer5"] = {
+        ['CrushTimer5'] = {
             "Crush of the Crying Seas X", -- Level 127
             "Crush of the Crying Seas",   -- Level 82
             "Crush of Marr",              -- Level 87
@@ -154,7 +154,7 @@ local _ClassConfig = {
             "Crush of the Twilight Sea",  -- Level 117
             "Crush of the Wayunder",      -- Level 122
         },
-        ["TwinHealNuke"] = {
+        ['TwinHealNuke'] = {
             "Brilliant Expurgation",  -- Level 130
             "Glorious Vindication",   -- Level 85
             "Glorious Exoneration",   -- Level 90
@@ -166,7 +166,7 @@ local _ClassConfig = {
             "Brilliant Acquittal",    -- Level 120
             "Brilliant Denouncement", -- Level 125
         },
-        ["TempHP"] = {
+        ['TempHP'] = {
             "Unyielding Stance",
             "Steely Stance",
             "Stubborn Stance",
@@ -178,7 +178,7 @@ local _ClassConfig = {
             "Adamant Stance",
             "Unwavering Stance",
         },
-        ["Preservation"] = {
+        ['Preservation'] = {
             "Preservation of Quellious",    -- Level 130
             "Ward of Tunare",               -- Level 70
             "Sustenance of Tunare",         -- Level 80
@@ -191,7 +191,7 @@ local _ClassConfig = {
             "Preservation of the Basilica", -- Level 120
             "Preservation of the Fern",     -- Level 125
         },
-        ["HealNuke"] = {
+        ['HealNuke'] = {
             "Denouncement IX",
             "Denouncement",
             "Reprimand",
@@ -202,14 +202,14 @@ local _ClassConfig = {
             "Upbraid",
             "Chastise",
         },
-        ["BlessingProc"] = {
+        ['BlessingProc'] = {
             "Harmonious Blessing",
             "Concordant Blessing",
             "Confluent Blessing",
             "Penumbral Blessing",
             "Paradoxical Blessing",
         },
-        ["DebuffNuke"] = {
+        ['DebuffNuke'] = {
             "Committal",    -- Level 126
             "Last Rites",   -- Level 68 - Timer 7
             "Burial Rites", -- Level 71 - Timer 7
@@ -224,7 +224,7 @@ local _ClassConfig = {
             "Hymnal",       -- Level 116
             "Revelation",   -- Level 121
         },
-        ["SteelProc"] = {   --Proc Heal ToT
+        ['SteelProc'] = {   --Proc Heal ToT
             "Rejuvenating Steel VII",
             "Restoring Steel",
             "Regenerating Steel",
@@ -233,7 +233,7 @@ local _ClassConfig = {
             "Revitalizating Steel",
             "Renewing Steel",
         },
-        ["FuryProc"] = {
+        ['FuryProc'] = {
             "Eminent Fury",   -- Level 130
             "Divine Might",   -- Level 45, 65pt
             "Pious Might",    -- Level 63, 150pt
@@ -250,13 +250,13 @@ local _ClassConfig = {
             "Wrathful Fury",  -- Level 120
             "Avowed Fury",    -- Level 125
         },
-        ["UndeadProc"] = {
+        ['UndeadProc'] = {
             --- Undead Proc Strike : does not stack with Fury Proc, will be used until Fury is available even if setting not enabled.
             "Instrument of Nife", -- Level 26, 243pt
             "Ward of Nife",       -- Level 62, 300pt
             "Silvered Fury",      -- Level 67, 390pt
         },
-        ["Aurora"] = {
+        ['Aurora'] = {
             "Aurora of Sunlight XI",
             "Aurora of Dawning",
             "Aurora of Dawnlight",
@@ -268,7 +268,7 @@ local _ClassConfig = {
             "Aurora of Wakening",
             "Aurora of Realizing",
         },
-        ["StunTimer5"] = {
+        ['StunTimer5'] = {
             "Force of Akera XV",          -- Level 130
             "Desist",                     -- Level 13 - Not Timer 5, use for TLP Low Level Stun
             "Stun",                       -- Level 28
@@ -287,7 +287,7 @@ local _ClassConfig = {
             "Force of the Umbra",         -- Level 120
             "Force of the Wayunder",      -- Level 125
         },
-        ["StunTimer4"] = {
+        ['StunTimer4'] = {
             "Eminent Force",   -- Level 126
             "Cease",           -- Level 7 - Not Timer 4, use for TLP Low Level Stun
             "Force of Akilae", -- Level 62
@@ -304,7 +304,7 @@ local _ClassConfig = {
             "Pious Force",     -- Level 116
             "Avowed Force",    -- Level 121
         },
-        ["HealStun"] = {
+        ['HealStun'] = {
             "Force of Eminence",   -- Level 129
             "Force of the Avowed", --Level 124
             "Force of Generosity",
@@ -313,7 +313,7 @@ local _ClassConfig = {
             "Force of Mercy",
             "Force of Sincerity",
         },
-        ["HealWard"] = { -- Heal ToT, Ward on Self
+        ['HealWard'] = { -- Heal ToT, Ward on Self
             "Protective Confession X",
             "Protective Acceptance",
             "Protective Revelation",
@@ -325,7 +325,7 @@ local _ClassConfig = {
             "Protective Devotion",
             "Protective Consecration",
         },
-        ["Aego"] = {
+        ['Aego'] = {
             "Hand of Austerity XVII",        -- Level 127 - Group
             "Austerity",                     -- Level 55
             "Blessing of Austerity",         -- Level 58 - Group
@@ -350,7 +350,7 @@ local _ClassConfig = {
             "Fernshade Keeper",              -- Level 122
             "Hand of the Fernshade Keeper",  -- Level 125 - Group
         },
-        ["Brells"] = {
+        ['Brells'] = {
             "Brell's Mountainous Barrior XVI",
             "Brell's Tenacious Barrier",
             "Brell's Loamy Ward",
@@ -368,7 +368,7 @@ local _ClassConfig = {
             "Brell's Steadfast Aegis",
             "Brell's Unbreakable Palisade",
         },
-        ["SplashHeal"] = {
+        ['SplashHeal'] = {
             "Splash of Eminence",
             "Splash of Heroism",
             "Splash of Repentance",
@@ -379,7 +379,7 @@ local _ClassConfig = {
             "Splash of Depuration",
             "Splash of Exaltation",
         },
-        ["HealTaunt"] = {
+        ['HealTaunt'] = {
             "Valiant Defiance",
             "Valiant Disruption",
             "Valiant Deflection",
@@ -387,7 +387,7 @@ local _ClassConfig = {
             "Valiant Diversion",
             "Valiant Deterrence",
         },
-        ["Affirmation"] = { --- Improved Super Taunt - Gets you Aggro for X seconds and reduces other Haters generation.
+        ['Affirmation'] = { --- Improved Super Taunt - Gets you Aggro for X seconds and reduces other Haters generation.
             "Unquestioned Affirmation",
             "Unconditional Affirmation",
             "Unending Affirmation",
@@ -397,7 +397,7 @@ local _ClassConfig = {
             "Unflinching Affirmation",
             "Unyielding Affirmation",
         },
-        ["WaveHeal"] = { -- Group Heal
+        ['WaveHeal'] = { -- Group Heal
             "Wave of Inspiriation",
             "Wave of Regret",
             "Wave of Bereavement",
@@ -417,7 +417,7 @@ local _ClassConfig = {
             "Wave of Healing",
             "Wave of Life",
         },
-        ["SelfHeal"] = {
+        ['SelfHeal'] = {
             "Penitence IX",
             "Penitence",
             "Contrition",
@@ -428,7 +428,7 @@ local _ClassConfig = {
             "Culpability",
             "Angst",
         },
-        ["ReverseDS"] = {
+        ['ReverseDS'] = {
             "Mark of Sharash",
             "Mark of the Saint",
             "Mark of the Crusader",
@@ -442,7 +442,7 @@ local _ClassConfig = {
             "Mark of the Eclipsed Cohort",
             "Mark of the Forgotten Hero",
         },
-        -- ["Cleansing"] = {           -- ST HoT
+        -- ['Cleansing'] = {           -- ST HoT
         --     "Ethereal Cleansing",   -- Level 44
         --     "Celestial Cleansing",  -- Level 59
         --     "Supernal Cleansing",   -- Level 64
@@ -459,7 +459,7 @@ local _ClassConfig = {
         --     "Forthright Cleansing", -- Level 118
         --     "Avowed Cleansing",     -- Level 123
         -- },
-        ["BurstHeal"] = { -- Smart Heal, Target or ToT
+        ['BurstHeal'] = { -- Smart Heal, Target or ToT
             "Burst of Sunlight XII",
             "Burst of Sunlight",
             "Burst of Morrow",
@@ -473,7 +473,7 @@ local _ClassConfig = {
             "Burst of Dawnbreak",
             "Burst of Sunspring",
         },
-        ["ArmorSelfBuff"] = {
+        ['ArmorSelfBuff'] = {
             "Armor of Unyielding Faith",  -- Level 128
             "Aura of the Crusader",       -- Level 64
             "Armor of the Champion",      -- Level 69
@@ -489,7 +489,7 @@ local _ClassConfig = {
             "Armor of Unyielding Grace",  -- Level 118
             "Armor of Heroic Faith",      -- Level 118
         },
-        ["RighteousStrike"] = {
+        ['RighteousStrike'] = {
             "Righteous Indignation VIII",
             "Righteous Antipathy",
             "Righteous Fury",
@@ -501,7 +501,7 @@ local _ClassConfig = {
             "Righteous Censure",
             "Righteous Disdain",
         },
-        ["Symbol"] = {
+        ['Symbol'] = {
             "Symbol of Liako",
             "Symbol of Jeneca",
             "Symbol of Jyleel",
@@ -520,7 +520,7 @@ local _ClassConfig = {
             "Symbol of Sevalak",
             "Symbol of Thormir",
         },
-        ["StunTimer6"] = {                    -- Timer 6, less damage than timer 6 crush, but inlcudes stun. Has Push.
+        ['StunTimer6'] = {                    -- Timer 6, less damage than timer 6 crush, but inlcudes stun. Has Push.
             "Lesson of Penitence XV",         -- Level 127
             "Quellious' Word of Tranquility", -- Level 54
             "Quellious' Word of Serenity",    -- Level 64
@@ -537,7 +537,7 @@ local _ClassConfig = {
             "Lesson of Guilt",                -- Level 117
             "Lesson of Remembrance",          -- Level 122
         },
-        ["Audacity"] = {                      -- Magic Resist debuff, Hate over time
+        ['Audacity'] = {                      -- Magic Resist debuff, Hate over time
             "Impassioned Audacity",
             "Fanatical Audacity",
             "Ardent Audacity",
@@ -546,7 +546,7 @@ local _ClassConfig = {
             "Devout Audacity",
             "Righteous Audacity",
         },
-        ["LightHeal"] = {      --ToT Heal
+        ['LightHeal'] = {      --ToT Heal
             "Eminent Light",   -- Level 127
             "Light of Life",   -- Level 52
             "Light of Nife",   -- Level 63
@@ -564,7 +564,7 @@ local _ClassConfig = {
             "Raptured Light",  -- Level 117
             "Avowed Light",    -- Level 122
         },
-        -- ["Pacify"] = {
+        -- ['Pacify'] = {
         --     "Assuring Words",
         --     "Placating Words",
         --     "Tranquil Words",
@@ -577,7 +577,7 @@ local _ClassConfig = {
         --     "Calm",
         --     "Lull",
         -- },
-        ["TouchHeal"] = {
+        ['TouchHeal'] = {
             "Eminent Touch",
             "Touch of Nife",
             "Touch of Piety",
@@ -598,7 +598,7 @@ local _ClassConfig = {
             "Minor Healing",    -- Level 6
             "Salve",            -- Level 1
         },
-        ["Dicho"] = {
+        ['Dicho'] = {
             --- Dissident Stun
             "Dichotomic Force",
             "Dissident Force",
@@ -606,7 +606,7 @@ local _ClassConfig = {
             "Ecliptic Force",
             "Reciprocal Force",
         },
-        ["PurityCure"] = { --- Purity Cure Poison/Diease Cure Half Power to curse
+        ['PurityCure'] = { --- Purity Cure Poison/Diease Cure Half Power to curse
             "Mastery: Balanced Purity",
             "Balanced Purity",
             "Devoted Purity",
@@ -616,7 +616,7 @@ local _ClassConfig = {
             "Ardent Purity",
             "Merciful Purity",
         },
-        -- ["CureCurse"] = {
+        -- ['CureCurse'] = {
         --     "Remove Minor Curse",
         --     "Remove Lesser Curse",
         --     "Remove Curse",
@@ -633,7 +633,7 @@ local _ClassConfig = {
             "Cleanse",
             "Cure Corruption",
         },
-        ["ForHonor"] = { --- Challenge Taunt Over time Debuff
+        ['ForHonor'] = { --- Challenge Taunt Over time Debuff
             "Duel for Honor",
             "Challenge for Honor",
             "Trial For Honor",
@@ -647,18 +647,18 @@ local _ClassConfig = {
             "Parlay for Honor",
             "Petition for Honor",
         },
-        ["Piety"] = { -- Spell Resist Buff
+        ['Piety'] = { -- Spell Resist Buff
             "Silent Piety",
         },
-        ["Remorse"] = { -- Killshot buff
+        ['Remorse'] = { -- Killshot buff
             "Penitence for the Fallen",
             "Remorse for the Fallen",
         },
-        ["HealAura"] = {
+        ['HealAura'] = {
             "Blessed Aura",
             "Holy Aura",
         },
-        ["UndeadNuke"] = {
+        ['UndeadNuke'] = {
             "Doctrine of Revocation",  -- Level 128
             "Doctrine of Repudiation", -- Level 121
             "Ward Undead",             -- Level 14
@@ -677,7 +677,7 @@ local _ClassConfig = {
             "Doctrine of Abolishment", -- Level 111
             "Doctrine of Annulment",   -- Level 116
         },
-        ["AllianceNuke"] = {
+        ['AllianceNuke'] = {
             "Holy Alliance",
             "Stormwall Coalition",
             "Aureate Covariance",
@@ -700,7 +700,7 @@ local _ClassConfig = {
             "Night's Calming",
             "Convalesce",
         },
-        ["MeleeMit"] = {
+        ['MeleeMit'] = {
             "Impede",
             -- "Withstand",
             "Defy",
@@ -712,7 +712,7 @@ local _ClassConfig = {
             "Repudiate",
             "Gird",
         },
-        ["ArmorDisc"] = {
+        ['ArmorDisc'] = {
             --- Armor Timer 11
             "Armor of Eminence",
             "Armor of Avowal",
@@ -724,10 +724,10 @@ local _ClassConfig = {
             "Armor of Zeal",
             "Armor of Courage",
         },
-        ["Undeadburn"] = {
+        ['Undeadburn'] = {
             "Holyforge Discipline",
         },
-        ["Penitent"] = {
+        ['Penitent'] = {
             -- Penitent Armor Discipline Timer 11
             "Avowed Penitence",
             "Fervent Penitence",
@@ -736,7 +736,7 @@ local _ClassConfig = {
             "Merciful Penitence",
             "Sincere Penitence",
         },
-        ["Mantle"] = {
+        ['Mantle'] = {
             "Mantle of Eminence",
             "Supernal Mantle",
             "Mantle of the Sapphire Cohort",
@@ -752,19 +752,19 @@ local _ClassConfig = {
             "Guard of Humility",
             "Guard of Piety",
         },
-        ["Guardian"] = {
+        ['Guardian'] = {
             "Holy Guardian Discipline IV",
             "Revered Guardian Discipline",
             "Blessed Guardian Discipline",
             "Holy Guardian Discipline",
         },
-        ["Spellblock"] = {
+        ['Spellblock'] = {
             "Sanctification Discipline",
         },
         ['Deflection'] = {
             'Deflection Discipline',
         },
-        ["ReflexStrike"] = {
+        ['ReflexStrike'] = {
             --- Reflexive Strike Heal
             "Reflexive Resolution",
             "Reflexive Redemption",
@@ -851,7 +851,7 @@ local _ClassConfig = {
         },
     },
     ['HealRotations']     = {
-        ["GroupHeal"] = {
+        ['GroupHeal'] = {
             {
                 name = "Hand of Piety",
                 type = "AA",
@@ -878,7 +878,7 @@ local _ClassConfig = {
                 load_cond = function(self) return Config:GetSetting('DoWaveHeal') end,
             },
         },
-        ["BigHeal"] = {
+        ['BigHeal'] = {
             {
                 name = "Lay on Hands",
                 type = "AA",
@@ -923,7 +923,7 @@ local _ClassConfig = {
                 load_cond = function() return Config:GetSetting("DoTouchHeal") == 1 end,
             },
         },
-        ["MainHeal"] = {
+        ['MainHeal'] = {
             {
                 name = "BurstHeal",
                 type = "Spell",

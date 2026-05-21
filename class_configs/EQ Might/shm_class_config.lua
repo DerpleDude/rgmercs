@@ -149,27 +149,27 @@ local _ClassConfig = {
         },
     },
     ['AbilitySets']       = {
-        ["GroupFocusSpell"] = {
+        ['GroupFocusSpell'] = {
             -- Focus Spell - Group Spells will be used on everyone
             "Ancient: Blessing of Wunshi", -- Level 70 EQM
             "Talisman of Wunshi",          -- Level 70 - Group
             "Focus of the Seventh",        -- Level 65 - Group
             "Khura's Focusing",            -- Level 60 - Group
         },
-        ["RunSpeedBuff"] = {
+        ['RunSpeedBuff'] = {
             -- Run Speed Buff
             "Spirit of Bih`Li", -- Level 36
             "Pack Shrew",       -- Level 34
             "Spirit of Wolf",   -- Level 9
         },
-        ["HasteBuff"] = {
+        ['HasteBuff'] = {
             -- Haste Buff
             "Talisman of Celerity", -- Level 64
             "Swift Like the Wind",  -- Level 63
             "Celerity",             -- Level 56
             "Quickness",            -- Level 26
         },
-        ["LowLvlStaBuff"] = {
+        ['LowLvlStaBuff'] = {
             -- Low Level Stamina Buff --- I guess this may be okay for tanks (but largely a raid thing). Need to scrub which levels. Not currently used.
             "Talisman of Persistence", -- Level 70
             "Talisman of Fortitude",   -- Level 69
@@ -183,7 +183,7 @@ local _ClassConfig = {
             "Spirit of Ox",            -- Level 21
             "Spirit of Bear",          -- Level 6
         },
-        ["LowLvlAtkBuff"] = {
+        ['LowLvlAtkBuff'] = {
             -- Low Level Attack Buff --- user under level 86. Including Harnessing of Spirit as they will have similar usecases and targets.
             "Champion",              -- Level 70
             "Ferine Avatar",         -- Level 65
@@ -191,13 +191,13 @@ local _ClassConfig = {
             "Primal Avatar",         -- Level 60
             "Harnessing of Spirit",  -- Level 46
         },
-        ["LowLvlHPBuff"] = {
+        ['LowLvlHPBuff'] = {
             "Talisman of Kragg",  -- Level 55 - Single
             "Talisman of Altuna", -- Level 40 - Single
             "Talisman of Tnarg",  -- Level 32 - Single
             "Inner Fire",         -- Level 1 - Single
         },
-        ["LowLvlStrBuff"] = {
+        ['LowLvlStrBuff'] = {
             -- Low Level Strength Buff -- Below 68 these are only worthwhile on non-live, defiant stat caps too easily. Even then arguable.
             "Talisman of the Diaku", -- Level 64
             "Infusion of Spirit",    -- Level 49, Str/Dex/Sta, can use HP buff
@@ -205,7 +205,7 @@ local _ClassConfig = {
             "Raging Strength",       -- Level 28
             "Spirit Strength",       -- Level 18, Can't see this as being very worth but keeping for now.
         },
-        ["LowLvlDexBuff"] = {
+        ['LowLvlDexBuff'] = {
             -- Low Level Dex Buff -- This has no real place outside of raids on select tanks. Waste of mana.
             "Talisman of the Raptor",  -- Level 59
             "Mortal Deftness",         -- Level 58
@@ -220,7 +220,7 @@ local _ClassConfig = {
             "Talisman of Sense",       -- Level 68
             "Spirit of Sense",         -- Level 66
         },
-        ["LowLvlAgiBuff"] = {
+        ['LowLvlAgiBuff'] = {
             --- Low Level AGI Buff -- This has no real place outside of raids on select tanks. Waste of mana.
             -- "Talisman of Sense",
             -- "Spirit of Sense",
@@ -233,10 +233,10 @@ local _ClassConfig = {
             "Spirit of Cat",          -- Level 18
             "Feet like Cat",          -- Level 3
         },
-        ["AEMaloSpell"] = {
+        ['AEMaloSpell'] = {
             "Idol of Malos", -- Level 70
         },
-        ["MaloSpell"] = {
+        ['MaloSpell'] = {
             "Malosinise",      -- Level 70
             "Malos",           -- Level 65
             "Malosinia",       -- Level 63
@@ -247,11 +247,11 @@ local _ClassConfig = {
             "Malaisement",     -- Level 32
             "Malaise",         -- Level 18
         },
-        ["AESlowSpell"] = {    --Often considered a waste of mana in group situations, user option.
+        ['AESlowSpell'] = {    --Often considered a waste of mana in group situations, user option.
             "Tigir's Insects", -- Level 58
             -- PBAE Slow spell at 71, Tortugone's Drowse, also has a self melee absorb. chew on this for later. (50' range)
         },
-        ["SlowSpell"] = {
+        ['SlowSpell'] = {
             "Balance of Discord",   -- Level 69
             "Balance of the Nihil", -- Level 65
             "Turgur's Insects",     -- Level 51, Can save mana by continuing to use Togor's on group mobs, but this is problematic for automation. Not worth splitting the entry.
@@ -260,18 +260,18 @@ local _ClassConfig = {
             -- "Walking Sleep",     -- Level 13, Too much mana with little benefit at these levels
             -- "Drowsy",            -- Level 5, Too much mana with little benefit at these levels
         },
-        ["DiseaseSlow"] = {
+        ['DiseaseSlow'] = {
             "Hungry Plague",     -- Level 70
             "Cloud of Grummus",  -- Level 61
             "Plague of Insects", -- Level 54
         },
-        ["CrippleSpell"] = {     -- needs to be added to spell list and have entries made
+        ['CrippleSpell'] = {     -- needs to be added to spell list and have entries made
             "Crippling Spasm",   -- Level 66
             "Cripple",           -- Level 53, Starts to become worth it, depending on target
             "Incapacitate",      -- Level 41, Likely not worth
             "Listless Power",    -- Level 29, Definitely not worth
         },
-        ["MeleeProcBuff"] = {
+        ['MeleeProcBuff'] = {
             "Talisman of the Panther", -- Level 70
             -- "Spirit of the Panther",   -- Level 69, group spell == less casting, longer duration, more avail to do other things
             -- "Talisman of the Leopard", -- Level 66 EQ Might Custom, but item only currently
@@ -281,14 +281,14 @@ local _ClassConfig = {
             "Talisman of the Puma",   -- Level 55
             "Spirit of the Puma",     -- Level 50
         },
-        ["SlowProcBuff"] = {
+        ['SlowProcBuff'] = {
             "Lassitude",       -- Level 70
             "Lingering Sloth", -- Level 68
         },
         ['RezSpell'] = {
             'Incarnate Anew', -- Level 59
         },
-        ["HealSpell"] = {
+        ['HealSpell'] = {
             "Ancient: Wilslik's Mending", -- Level 70
             "Yoppa's Mending",            -- Level 67
             "Daluda's Mending",           -- Level 65
@@ -302,7 +302,7 @@ local _ClassConfig = {
             "Light Healing",              -- Level 9
             "Minor Healing",              -- Level 1
         },
-        ["GroupRenewalHoT"] = {
+        ['GroupRenewalHoT'] = {
             "Ancient: Ghost of Vitality", -- Level 70
             "Ghost of Renewal",           -- Level 70
         },
@@ -310,14 +310,14 @@ local _ClassConfig = {
             "Torpor",   -- Level 60
             "Stoicism", -- Level 44
         },
-        ["SingleHot"] = {
+        ['SingleHot'] = {
             "Halcyon Breeze",         -- Level 71
             "Spiritual Serenity",     -- Level 70
             "Breath of Trushar",      -- Level 65
             "Quiescence",             -- Level 65
             "Spiritual Rejuvenation", -- Level 62
         },
-        ["CanniSpell"] = {
+        ['CanniSpell'] = {
             "Ancestral Bargain",          -- Level 71
             "Ancient: Ancestral Calling", -- Level 70
             "Pained Memory",              -- Level 68
@@ -327,7 +327,7 @@ local _ClassConfig = {
             "Cannibalize II",             -- Level 38
             "Cannibalize",                -- Level 23
         },
-        ["PoisonNuke"] = {
+        ['PoisonNuke'] = {
             "Sting of the Queen",       -- Level 71, Start fast poison nuke
             "Ahnkaul's Spear of Venom", -- Level 70
             "Yoppa's Spear of Venom",   -- Level 66
@@ -337,7 +337,7 @@ local _ClassConfig = {
             "Blast of Poison",          -- Level 42
             "Shock of the Tainted",     -- Level 34
         },
-        ["ColdNuke"] = {
+        ['ColdNuke'] = {
             --- ColdNuke - Level 4+
             "Ice Age",        -- Level 69
             "Velium Strike",  -- Level 64
@@ -348,7 +348,7 @@ local _ClassConfig = {
             "Spirit Strike",  -- Level 14
             "Frost Rift",     -- Level 4
         },
-        ["CurseDot"] = {
+        ['CurseDot'] = {
             -- Curse Dot 1 Stacking: Curse - Long Dot(30s) - Level 34+
             "Curse of Sisslak", -- Level 69
             "Bane",             -- Level 64
@@ -356,7 +356,7 @@ local _ClassConfig = {
             "Odium",            -- Level 43
             "Curse",            -- Level 34
         },
-        ["SaryrnDot"] = {
+        ['SaryrnDot'] = {
             -- Stacking: Blood of Saryrn - Long Dot(42s) - Level 8+
             "Blood of Yoppa",           -- Level 70
             "Blood of Saryrn",          -- Level 65
@@ -367,7 +367,7 @@ local _ClassConfig = {
             "Envenomed Breath",         -- Level 24
             "Tainted Breath",           -- Level 8
         },
-        ["UltorDot"] = {
+        ['UltorDot'] = {
             ---, Stacking: Breath of Ultor - Long Dot(84s) - Level 4+
             "Breath of Ternsmochin", -- Level 70
             "Breath of Wunshi",      -- Level 67
@@ -385,7 +385,7 @@ local _ClassConfig = {
             -- "Gale of Poison",     -- Level 36
             -- "Poison Storm",       -- Level 22
         },
-        ["PetSpell"] = {            --We need to add handling for commune to get the mammoth/etc
+        ['PetSpell'] = {            --We need to add handling for commune to get the mammoth/etc
             -- Pet Spell - 32+
             "Farrel's Companion",   -- Level 67
             "True Spirit",          -- Level 61
@@ -395,7 +395,7 @@ local _ClassConfig = {
             "Vigilant Spirit",      -- Level 37
             "Companion Spirit",     -- Level 32
         },
-        -- ["PetBuffSpell"] = { -- Haste is generally better
+        -- ['PetBuffSpell'] = { -- Haste is generally better
         --     ---Pet Buff Spell - 50+
         --     "Spirit Quickening", -- Level 50
         -- },
@@ -422,7 +422,7 @@ local _ClassConfig = {
         -- ['GroupCure'] = {
         --     "Blood of Nadox", -- Level 52
         -- },
-        ["RegenBuff"] = {
+        ['RegenBuff'] = {
             "Spirit of the Stoic One",   -- Level 70
             "Talisman of Perseverance",  -- Level 69
             "Spirit of Perseverance",    -- Level 66
@@ -433,10 +433,10 @@ local _ClassConfig = {
             "Chloroplast",               -- Level 39
             "Regeneration",              -- Level 23
         },
-        ["ShrinkSpell"] = {
+        ['ShrinkSpell'] = {
             "Shrink",             -- Level 15
         },
-        ["PutridDecay"] = {       -- Level 66 Poi/Dis resist debuff
+        ['PutridDecay'] = {       -- Level 66 Poi/Dis resist debuff
             "Putrid Decay",       -- Level 66
         },
         ['Minionskin'] = {        --EQM Custom: HP/Regen/mitigation (May need to block druid HP buff line on pet)
@@ -516,7 +516,7 @@ local _ClassConfig = {
         },
     },
     ['HealRotations']     = {
-        ["GroupHealPoint"] = {
+        ['GroupHealPoint'] = {
             {
                 name = "Call of the Ancients",
                 type = "AA",
@@ -547,7 +547,7 @@ local _ClassConfig = {
                 type = "Spell",
             },
         },
-        ["BigHealPoint"] = {
+        ['BigHealPoint'] = {
             {
                 name = "SnareHot",
                 type = "Spell",
@@ -581,7 +581,7 @@ local _ClassConfig = {
                 type = "AA",
             },
         },
-        ["MainHealPoint"] = {
+        ['MainHealPoint'] = {
             { -- keep this for big heals, unless we are critically low on mana
                 name = "Timer2HealItem",
                 type = "Item",

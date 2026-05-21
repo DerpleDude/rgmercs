@@ -67,221 +67,219 @@ _ClassConfig    = {
         },
     },
     ['AbilitySets']   = {
-        --- Nukes
         ['SwarmPet'] = {
-            "Raging Servant",
+            "Raging Servant", -- Level 70
         },
         ['SpearNuke'] = {
-            "Spear of Ro",
+            "Spear of Ro", -- Level 70
         },
         ['ChaoticNuke'] = {
-            "Fickle Fire",
+            "Fickle Fire", -- Level 69
         },
         ['FireDD'] = { --Mix of Fire Nukes and Bolts appropriate for use at lower levels.
-            "Burning Sand",
-            "Scars of Sigil",
-            "Lava Bolt",
-            "Cinder Bolt",
-            "Bolt of Flame",
-            "Shock of Flame",
-            "Flame Bolt",
-            "Burn",
-            "Burst of Flame",
+            "Burning Sand",   -- Level 62
+            "Scars of Sigil", -- Level 54
+            "Lava Bolt",      -- Level 47
+            "Cinder Bolt",    -- Level 33
+            "Bolt of Flame",  -- Level 18
+            "Shock of Flame", -- Level 15
+            "Flame Bolt",     -- Level 5
+            "Burn",           -- Level 4
+            "Burst of Flame", -- Level 1
         },
         ['BigFireDD'] = { -- Longer cast time bolts we can use when mobs are at higher health.
-            "Bolt of Jerikor",
-            "Firebolt of Tallon",
-            "Seeking Flame of Seukor",
+            "Bolt of Jerikor",         -- Level 66
+            "Firebolt of Tallon",      -- Level 61
+            "Seeking Flame of Seukor", -- Level 59
         },
         ['MagicDD'] = { -- Magic does not have any faster casts like Fire, we have only these.
-            "Rock of Taelosia",
-            "Shock of Steel",
-            "Shock of Swords",
-            "Shock of Spikes",
-            "Shock of Blades",
+            "Rock of Taelosia", -- Level 65
+            "Shock of Steel",   -- Level 57
+            "Shock of Swords",  -- Level 41
+            "Shock of Spikes",  -- Level 23
+            "Shock of Blades",  -- Level 7
         },
         ['QuickMagicDD'] = {
-            "Blade Strike",
-            "Black Steel",
+            "Blade Strike", -- Level 68
+            "Black Steel",  -- Level 63
         },
-        --- Buffs
         ['SelfShield'] = {
-            "Elemental Aura",
-            "Shield of Maelin",
-            "Shield of the Arcane",
-            "Shield of the Magi",
-            "Arch Shielding",
-            "Greater Shielding",
-            "Major Shielding",
-            "Shielding",
-            "Lesser Shielding",
-            "Minor Shielding",
+            "Elemental Aura",       -- Level 66
+            "Shield of Maelin",     -- Level 64
+            "Shield of the Arcane", -- Level 61
+            "Shield of the Magi",   -- Level 54
+            "Arch Shielding",       -- Level 43
+            "Greater Shielding",    -- Level 32
+            "Major Shielding",      -- Level 24
+            "Shielding",            -- Level 16
+            "Lesser Shielding",     -- Level 5
+            "Minor Shielding",      -- Level 1
         },
         ['ShortDurDmgShield'] = {
-            "Ancient: Veil of Pyrilonus",
-            "Pyrilen Skin",
+            "Ancient: Veil of Pyrilonus", -- Level 70
+            "Pyrilen Skin",               -- Level 68
         },
         ['LongDurDmgShield'] = {
-            "Circle of Fireskin",
-            "Fireskin",
-            "Maelstrom of Ro",
-            "FlameShield of Ro",
-            "Aegis of Ro",
-            "Cadeau of Flame",
-            "Boon of Immolation",
-            "Shield of Lava",
-            "Barrier of Combustion",
-            "Inferno Shield",
-            "Shield of Flame",
-            "Shield of Fire",
+            "Circle of Fireskin",    -- Level 70
+            "Fireskin",              -- Level 66
+            "Maelstrom of Ro",       -- Level 63
+            "FlameShield of Ro",     -- Level 61
+            "Aegis of Ro",           -- Level 60
+            "Cadeau of Flame",       -- Level 56
+            "Boon of Immolation",    -- Level 53
+            "Shield of Lava",        -- Level 45
+            "Barrier of Combustion", -- Level 38
+            "Inferno Shield",        -- Level 28
+            "Shield of Flame",       -- Level 19
+            "Shield of Fire",        -- Level 7
         },
         ['ManaRegenBuff'] = {
-            "Phantom Shield",
-            "Xegony's Phantasmal Guard",
-            "Transon's Phantasmal Protection",
+            "Phantom Shield",                  -- Level 68
+            "Xegony's Phantasmal Guard",       -- Level 62
+            "Transon's Phantasmal Protection", -- Level 58
         },
         ['PetAura'] = {
-            "Rathe's Strength",
-            "Earthen Strength",
+            "Rathe's Strength", -- Level 70
+            "Earthen Strength", -- Level 55
         },
         ['FireShroud'] = {
-            "Burning Aura",
+            "Burning Aura", -- Level 68
         },
         ['PetHealSpell'] = {
-            "Renewal of Jerikor",
-            "Planar Renewal",
-            "Transon's Elemental Renewal",
-            "Transon's Elemental Infusion",
-            "Refresh Summoning",
-            "Renew Summoning",
-            "Renew Elements",
+            "Renewal of Jerikor",           -- Level 69
+            "Planar Renewal",               -- Level 64
+            "Transon's Elemental Renewal",  -- Level 60
+            "Transon's Elemental Infusion", -- Level 52
+            "Refresh Summoning",            -- Level 34
+            "Renew Summoning",              -- Level 18
+            "Renew Elements",               -- Level 7
         },
         ['PetManaConv'] = {
-            "Elemental Simulacrum",
-            "Elemental Siphon",
-            "Elemental Draw",
+            "Elemental Simulacrum", -- Level 70
+            "Elemental Siphon",     -- Level 65
+            "Elemental Draw",       -- Level 54
         },
         ['PetHaste'] = {
-            "Elemental Fury",
-            "Burnout V",
-            "Burnout IV",
-            "Elemental Empathy",
-            "Burnout III",
-            "Burnout II",
-            "Burnout",
+            "Elemental Fury",    -- Level 69
+            "Burnout V",         -- Level 62
+            "Burnout IV",        -- Level 55
+            "Elemental Empathy", -- Level 52
+            "Burnout III",       -- Level 47
+            "Burnout II",        -- Level 29
+            "Burnout",           -- Level 11
         },
         ['PetIceFlame'] = {
-            "Iceflame Guard",
+            "Iceflame Guard", -- Level 70
         },
         ['EarthPetSpell'] = {
-            "Child of Earth",
-            "Greater Vocaration: Earth",
-            "Vocarate: Earth",
-            "Greater Conjuration: Earth",
-            "Conjuration: Earth",
-            "Lesser Conjuration: Earth",
-            "Minor Conjuration: Earth",
-            "Greater Summoning: Earth",
-            "Summoning: Earth",
-            "Lesser Summoning: Earth",
-            "Minor Summoning: Earth",
-            "Elemental: Earth",
-            "Elementaling: Earth",
-            "Elementalkin: Earth",
+            "Child of Earth",             -- Level 70
+            "Greater Vocaration: Earth",  -- Level 57
+            "Vocarate: Earth",            -- Level 51
+            "Greater Conjuration: Earth", -- Level 46
+            "Conjuration: Earth",         -- Level 44
+            "Lesser Conjuration: Earth",  -- Level 39
+            "Minor Conjuration: Earth",   -- Level 34
+            "Greater Summoning: Earth",   -- Level 29
+            "Summoning: Earth",           -- Level 25
+            "Lesser Summoning: Earth",    -- Level 21
+            "Minor Summoning: Earth",     -- Level 17
+            "Elemental: Earth",           -- Level 13
+            "Elementaling: Earth",        -- Level 9
+            "Elementalkin: Earth",        -- Level 5
         },
         ['WaterPetSpell'] = {
-            "Child of Water",
-            "Servant of Marr",
-            "Greater Vocaration: Water",
-            "Vocarate: Water",
-            "Greater Conjuration: Water",
-            "Conjuration: Water",
-            "Lesser Conjuration: Water",
-            "Minor Conjuration: Water",
-            "Greater Summoning: Water",
-            "Summoning: Water",
-            "Lesser Summoning: Water",
-            "Minor Summoning: Water",
-            "Elemental: Water",
-            "Elementaling: Water",
-            "Elementalkin: Water",
+            "Child of Water",             -- Level 67
+            "Servant of Marr",            -- Level 62
+            "Greater Vocaration: Water",  -- Level 60
+            "Vocarate: Water",            -- Level 54
+            "Greater Conjuration: Water", -- Level 49
+            "Conjuration: Water",         -- Level 41
+            "Lesser Conjuration: Water",  -- Level 36
+            "Minor Conjuration: Water",   -- Level 31
+            "Greater Summoning: Water",   -- Level 26
+            "Summoning: Water",           -- Level 22
+            "Lesser Summoning: Water",    -- Level 18
+            "Minor Summoning: Water",     -- Level 14
+            "Elemental: Water",           -- Level 10
+            "Elementaling: Water",        -- Level 6
+            "Elementalkin: Water",        -- Level 2
         },
         ['AirPetSpell'] = {
-            "Child of Wind",
-            "Ward of Xegony",
-            "Greater Vocaration: Air",
-            "Vocarate: Air",
-            "Greater Conjuration: Air",
-            "Conjuration: Air",
-            "Lesser Conjuration: Air",
-            "Minor Conjuration: Air",
-            "Greater Summoning: Air",
-            "Summoning: Air",
-            "Lesser Summoning: Air",
-            "Minor Summoning: Air",
-            "Elemental: Air",
-            "Elementaling: Air",
-            "Elementalkin: Air",
+            "Child of Wind",            -- Level 66
+            "Ward of Xegony",           -- Level 61
+            "Greater Vocaration: Air",  -- Level 59
+            "Vocarate: Air",            -- Level 53
+            "Greater Conjuration: Air", -- Level 48
+            "Conjuration: Air",         -- Level 43
+            "Lesser Conjuration: Air",  -- Level 38
+            "Minor Conjuration: Air",   -- Level 33
+            "Greater Summoning: Air",   -- Level 28
+            "Summoning: Air",           -- Level 24
+            "Lesser Summoning: Air",    -- Level 20
+            "Minor Summoning: Air",     -- Level 16
+            "Elemental: Air",           -- Level 12
+            "Elementaling: Air",        -- Level 8
+            "Elementalkin: Air",        -- Level 4
         },
         ['FirePetSpell'] = {
-            "Child of Fire",
-            "Child of Ro",
-            "Greater Vocaration: Fire",
-            "Vocarate: Fire",
-            "Greater Conjuration: Fire",
-            "Conjuration: Fire",
-            "Lesser Conjuration: Fire",
-            "Minor Conjuration: Fire",
-            "Greater Summoning: Fire",
-            "Summoning: Fire",
-            "Lesser Summoning: Fire",
-            "Minor Summoning: Fire",
-            "Elemental: Fire",
-            "Elementaling: Fire",
-            "Elementalkin: Fire",
+            "Child of Fire",             -- Level 68
+            "Child of Ro",               -- Level 63
+            "Greater Vocaration: Fire",  -- Level 58
+            "Vocarate: Fire",            -- Level 52
+            "Greater Conjuration: Fire", -- Level 47
+            "Conjuration: Fire",         -- Level 42
+            "Lesser Conjuration: Fire",  -- Level 37
+            "Minor Conjuration: Fire",   -- Level 32
+            "Greater Summoning: Fire",   -- Level 27
+            "Summoning: Fire",           -- Level 23
+            "Lesser Summoning: Fire",    -- Level 19
+            "Minor Summoning: Fire",     -- Level 15
+            "Elemental: Fire",           -- Level 11
+            "Elementaling: Fire",        -- Level 7
+            "Elementalkin: Fire",        -- Level 3
         },
         ['AegisBuff'] = {
-            "Bulwark of Calliav",
-            "Protection of Calliav",
-            "Guard of Calliav",
-            "Ward of Calliav",
+            "Bulwark of Calliav",    -- Level 69
+            "Protection of Calliav", -- Level 64
+            "Guard of Calliav",      -- Level 58
+            "Ward of Calliav",       -- Level 46
         },
         ['FireOrbSummon'] = {
-            "Summon: Molten Orb",
-            "Summon: Lava Orb",
+            "Summon: Molten Orb", -- Level 69
+            "Summon: Lava Orb",   -- Level 61
         },
         ['ManaRodSummon'] = {
-            "Mass Mystical Transvergence",
-            "Modulating Rod",
+            "Mass Mystical Transvergence", -- Level 56
+            "Modulating Rod",              -- Level 44
         },
         ['MaloDebuff'] = {
-            "Malosinia",
-            "Mala",
-            "Malosini",
-            "Malosi",
-            "Malaisement",
-            "Malaise",
+            "Malosinia",   -- Level 63
+            "Mala",        -- Level 60
+            "Malosini",    -- Level 58
+            "Malosi",      -- Level 51
+            "Malaisement", -- Level 44
+            "Malaise",     -- Level 22
         },
         ['SingleCotH'] = {
-            "Call of the Hero",
+            "Call of the Hero", -- Level 55
         },
         ['GroupCotH'] = {
-            "Call of the Heroes",
+            "Call of the Heroes", -- Level 70
         },
         ['Bladegusts'] = {
-            "Burning Bladegusts",
+            "Burning Bladegusts", -- Level 69
         },
         ['PBAE2'] = {
-            "Scintillation",
+            "Scintillation", -- Level 51
         },
         ['PBAE1'] = {
-            "Wind of the Desert",
+            "Wind of the Desert", -- Level 60
         },
         ['Myriad'] = {
-            "Shock of Myriad Minions",
+            "Shock of Myriad Minions", -- Level 70
         },
         ['FranticDS'] = {
-            "Frantic Flames",
+            "Frantic Flames", -- Level 71
         },
     },
     ['AASets']        = {

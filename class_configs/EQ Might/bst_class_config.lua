@@ -234,7 +234,7 @@ return {
         ['BiteNuke'] = {
             "Bite of the Empress", -- Level 71
         },
-        ["HasteBuff"] = {
+        ['HasteBuff'] = {
             -- Haste Buff
             "Celerity", -- Level 63
             "Alacrity", -- Level 60

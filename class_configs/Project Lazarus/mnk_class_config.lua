@@ -47,48 +47,48 @@ local _ClassConfig = {
     },
     ['AbilitySets']   = {
         ['EndRegen'] = {
-            "Third Wind Discipline",
-            --"Second Wind",
+            "Third Wind Discipline", -- Level 70
+            -- "Second Wind",        -- Level 65
         },
         ['MonkAura'] = {
-            "Master's Aura",
-            "Disciple's Aura",
+            "Master's Aura",   -- Level 65
+            "Disciple's Aura", -- Level 55
         },
         ['Fang'] = {
-            "Dragon Fang",
-            "Clawstriker's Flurry",
+            "Dragon Fang",          -- Level 69
+            "Clawstriker's Flurry", -- Level 65
         },
         ['FistsOfWu'] = {
-            "Fists Of Wu",
+            "Fists Of Wu", -- Level 65
         },
         ['MeleeMit'] = {
-            "Impenetrable Discipline",
-            "Earthwalk Discipline",
-            "Stonestance Discipline",
+            "Impenetrable Discipline", -- Level 65
+            "Earthwalk Discipline",    -- Level 65
+            "Stonestance Discipline",  -- Level 51
         },
         ['FistDisc'] = {
-            "Scaledfist Discipline",
-            "Ashenhand Discipline",
-            "Thunderkick Discipline",
+            "Scaledfist Discipline",  -- Level 65
+            "Ashenhand Discipline",   -- Level 60
+            "Thunderkick Discipline", -- Level 52
         },
         ['Heel'] = {
-            "Heel of Kai",
-            "Heel of Kanji",
+            "Heel of Kai",   -- Level 70
+            "Heel of Kanji", -- Level 65
         },
         ['Speed'] = {
-            "Speed Focus Discipline",
+            "Speed Focus Discipline", -- Level 63
         },
         ['Palm'] = {
-            "Crystalpalm Discipline",
-            "Hundred Fists Discipline",
-            "Innerflame Discipline",
+            "Crystalpalm Discipline",   -- Level 70
+            "Hundred Fists Discipline", -- Level 57
+            "Innerflame Discipline",    -- Level 56
         },
         ['Voiddance'] = {
-            "Voiddance Discipline",
+            "Voiddance Discipline", -- Level 54
         },
         -- ['ResistantDisc'] = {
-        --     "Dreamwalk Discipline",
-        --     "Resistant Discipline",
+        --     "Dreamwalk Discipline", -- Level 66
+        --     "Resistant Discipline", -- Level 30
         -- },
     },
     ['Helpers']       = {
