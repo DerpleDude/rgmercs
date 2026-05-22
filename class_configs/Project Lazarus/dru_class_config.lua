@@ -451,7 +451,7 @@ local _ClassConfig = {
                 return combat_state == "Downtime" and Core.OkayToNotHeal() and Casting.OkayToBuff() and Casting.AmIBuffable()
             end,
         },
-        { --Summon pet even when buffs are off on emu
+        {
             name = 'PetSummon',
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             load_cond = function(self) return Core.OnEMU() end,

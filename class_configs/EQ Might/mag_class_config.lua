@@ -327,7 +327,7 @@ _ClassConfig    = {
         },
     },
     ['RotationOrder'] = { -- TODO: Add emergency rotation, shared health, etc
-        {                 --Summon pet even when buffs are off on emu
+        {
             name = 'PetSummon',
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
