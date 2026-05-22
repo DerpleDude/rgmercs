@@ -1993,8 +1993,10 @@ function Module:FindTarget()
 
     if #pullTargets > 0 then
         local pullTarget = pullTargets[1]
-        Logger.log_info("\atPULL::FindPullTarget \agPulling %s [%d] with Distance: %d", pullTarget.CleanName(), pullTarget.ID(), metaData[pullTarget.ID()].distance)
-        return pullTarget.ID()
+        local pullID = pullTarget.ID()
+        local meta = metaData[pullID]
+        Logger.log_info("\atPULL::FindPullTarget \agPulling %s [%d] with Distance: %d", pullTarget.CleanName(), pullID, meta and meta.distance or -1)
+        return pullID
     end
 
     return 0
