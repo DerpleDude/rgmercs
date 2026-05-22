@@ -556,6 +556,7 @@ function OptionsUI:RenderCategorySettings(category)
                                 active = true,
                                 timer = 0,
                                 message = string.format("Setting name '%s' copied to clipboard", settingName),
+                                receivedTime = os.time(),
                                 color = Ui.ImVec4ToColor(Globals.Constants.Colors.Green),
                             })
                         end
@@ -927,10 +928,11 @@ function OptionsUI:CopySettings(charLabels, fromIdx, fromClass, toIdx, toClass, 
     if result.sameChar then self.dbFromClasses = nil end
 
     table.insert(self.ToastStates, {
-        active  = true,
-        timer   = 0,
-        message = result.toastMessage,
-        color   = Ui.ImVec4ToColor(Globals.Constants.Colors.Green),
+        active       = true,
+        timer        = 0,
+        message      = result.toastMessage,
+        receivedTime = os.time(),
+        color        = Ui.ImVec4ToColor(Globals.Constants.Colors.Green),
     })
 end
 
@@ -940,10 +942,11 @@ function OptionsUI:ResetSettings(charLabels, fromIdx, fromClass, moduleName)
     if not result.ok then return end
 
     table.insert(self.ToastStates, {
-        active  = true,
-        timer   = 0,
-        message = result.toastMessage,
-        color   = Ui.ImVec4ToColor(Globals.Constants.Colors.Green),
+        active       = true,
+        timer        = 0,
+        message      = result.toastMessage,
+        receivedTime = os.time(),
+        color        = Ui.ImVec4ToColor(Globals.Constants.Colors.Green),
     })
 end
 
@@ -957,10 +960,11 @@ function OptionsUI:DeleteSettings(charLabels, fromIdx, fromClass)
     self.dbFromClasses = nil
 
     table.insert(self.ToastStates, {
-        active  = true,
-        timer   = 0,
-        message = result.toastMessage,
-        color   = Ui.ImVec4ToColor(Globals.Constants.Colors.Green),
+        active       = true,
+        timer        = 0,
+        message      = result.toastMessage,
+        receivedTime = os.time(),
+        color        = Ui.ImVec4ToColor(Globals.Constants.Colors.Green),
     })
 end
 
