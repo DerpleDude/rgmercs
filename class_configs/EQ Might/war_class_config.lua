@@ -205,7 +205,7 @@ local _ClassConfig = {
             -- Allow healing disc to be cancelled by other defensive discs
             if Casting.NoDiscActive() then return true end
             local healingDisc = Core.GetResolvedActionMapItem('HealingDisc')
-            return healingDisc and mq.TLO.Me.ActiveDisc.Name() == healingDisc.RankName()
+            return not healingDisc or mq.TLO.Me.ActiveDisc.Name() == healingDisc.RankName()
         end,
         MeleeMitBuffCheck = function(self) -- Make sure we spread out our MeleeMit buffs because only the highest in slot 1 takes effect
             local standDisc = Core.GetResolvedActionMapItem('StandDisc')
@@ -540,7 +540,7 @@ local _ClassConfig = {
                 name = "HealingDisc",
                 type = "Disc",
                 cond = function(self, discSpell, target)
-                    return Casting.DiscOnCoolDown('Protective') and Casting.DiscOnCoolDown('StandDisc')
+                    return Casting.NoDiscActive() and Casting.DiscOnCoolDown('Protective') and Casting.DiscOnCoolDown('StandDisc')
                 end,
             },
 

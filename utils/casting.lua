@@ -493,8 +493,8 @@ function Casting.PeerBuffCheck(spellId, target, skipBlockCheck, skipTriggerCheck
     if not spellName then return false end
 
     if not mq.TLO.DanNet(mq.TLO.Spawn(targetId).CleanName())() then
-        Logger.log_error(
-            "PeerBuffCheck: Tried to check a peer's buff, but that peer isn't found! Did this peer crash?" ..
+        Logger.log_verbose(
+            "PeerBuffCheck: Tried to check a peer's buff, but that peer isn't found! Did this peer zone or crash?" ..
             "If this behavior continues, please report this. Spell:%s(ID:%d), Target:%s(ID:%d)",
             spellName, spellId, targetName, targetId)
         return false
