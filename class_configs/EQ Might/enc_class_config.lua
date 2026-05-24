@@ -82,7 +82,7 @@ local _ClassConfig = {
         },
         ['ManaRegen'] = {
             "Seer's Intuition",                  -- Level 71
-            "Ancient: Blessing of Clairvoyance", -- Level 70
+            "Ancient: Blessing of Clairvoyance", -- Level 70 EQM Custom
             "Voice of Clairvoyance",             -- Level 70
             "Clairvoyance",                      -- Level 68
             "Voice of Quellious",                -- Level 65
@@ -98,11 +98,11 @@ local _ClassConfig = {
             "Ward of Bedazzlement", -- Level 70
         },
         ['TankIllusionBuff'] = {
-            "Boon of the Brute", -- Level 66
+            "Boon of the Brute", -- Level 66 EQM Custom
         },
         ['IllusionBuff'] = {
-            "Boon of the Sanguinarch", -- Level 68
-            "Boon of the Vampire",     -- Level 65
+            "Boon of the Sanguinarch", -- Level 68 EQM Custom
+            "Boon of the Vampire",     -- Level 65 EQM Custom
             "Night's Dark Terror",     -- Level 63
             "Boon of the Garou",       -- Level 40
         },
@@ -344,19 +344,19 @@ local _ClassConfig = {
         --     "Colored Chaos",  -- Level 69
         -- },
         ['Minionskin'] = {        --EQM Custom: HP/Regen/mitigation (May need to block druid HP buff line on pet)
-            "Major Minionskin",   -- Level 66
-            "Greater Minionskin", -- Level 56
-            "Minionskin",         -- Level 43
-            "Lesser Minionskin",  -- Level 30
+            "Major Minionskin",   -- Level 66 EQM Custom
+            "Greater Minionskin", -- Level 56 EQM Custom
+            "Minionskin",         -- Level 43 EQM Custom
+            "Lesser Minionskin",  -- Level 30 EQM Custom
         },
         ['KoadicRune'] = {
-            "Koadic's Guard IV",  -- Level 67
-            "Koadic's Guard III", -- Level 62
-            "Koadic's Guard II",  -- Level 55
-            "Koadic's Guard I",   -- Level 43
+            "Koadic's Guard IV",  -- Level 67 EQM Custom
+            "Koadic's Guard III", -- Level 62 EQM Custom
+            "Koadic's Guard II",  -- Level 55 EQM Custom
+            "Koadic's Guard I",   -- Level 43 EQM Custom
         },
         ['PetHealSpell'] = {
-            "Renewal of Lucifer", -- Level 68
+            "Renewal of Lucifer", -- Level 68 EQM Custom
         },
     },
     ['AASets']        = {

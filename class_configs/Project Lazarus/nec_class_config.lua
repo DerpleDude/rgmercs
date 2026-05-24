@@ -209,7 +209,7 @@ local _ClassConfig = {
             "Scent of Midnight", -- Level 68
         },
         ['LichSpell'] = {
-            "Ancient: Allure of Extinction", -- Level 70
+            "Ancient: Allure of Extinction", -- Level 70 Laz Custom
             -- "Dark Possession",            -- Level 70, Listed in spell file, does not appear to be in game?
             "Grave Pact",                    -- Level 70
             "Ancient: Seduction of Chaos",   -- Level 65

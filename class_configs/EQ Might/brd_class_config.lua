@@ -121,7 +121,7 @@ local _ClassConfig = {
             "Tarew's Aquatic Ayre", -- Level 16
         },
         ['AriaSong'] = {
-            "Aria of the Harmoniarch",   -- Level 70 EQM
+            "Aria of the Harmoniarch",   -- Level 70 EQM Custom
             "Ancient: Call of Power",    -- Level 70
             "Eriki's Psalm of Power",    -- Level 69
             "Yelhun's Mystic Call",      -- Level 68
@@ -140,7 +140,7 @@ local _ClassConfig = {
             "Aura of Insight",  -- Level 55
         },
         ['GroupRegenSong'] = {
-            "Erollisi's Cantata",            -- Level 70 EQM
+            "Erollisi's Cantata",            -- Level 70
             "Cantata of Life",               -- Level 67
             "Wind of Marr",                  -- Level 62
             "Cantata of Replenishment",      -- Level 55
@@ -150,7 +150,7 @@ local _ClassConfig = {
             "Hymn of Restoration",           -- Level 6 hp only
         },
         ['AreaRegenSong'] = {
-            "Erollisi's Chorus",       -- Level 71 EQM
+            "Erollisi's Chorus",       -- Level 71
             "Chorus of Life",          -- Level 69
             "Chorus of Marr",          -- Level 64
             "Ancient: Lcea's Lament",  -- Level 60
@@ -239,7 +239,7 @@ local _ClassConfig = {
             "Kelin's Lucid Lullaby",      -- Level 15
         },
         ['MezAESong'] = {
-            "Wave of Morell", -- Level 66
+            "Wave of Morell", -- Level 66 EQM Custom
         },
         ['Jonthan'] = {
             "Jonthan's Mightful Caretaker", -- Level 70
@@ -269,18 +269,18 @@ local _ClassConfig = {
         ['MitigationSong'] = {
             "Song of the Dryads", -- Level 71
             "Verse of Vesagran",  -- Level 69
-            "Verse of Huell",     -- Level 65
+            "Verse of Huell",     -- Level 65 EQM Custom
         },
         ['Protective'] = {
-            "Protective Surge Discipline", -- Level 55
+            "Protective Surge Discipline", -- Level 55 EQM Custom
         },
         ['Skals'] = {
-            "Skal's Stance Discipline", -- Level 61
+            "Skal's Stance Discipline", -- Level 61 EQM Custom
         },
         ['Revitalize'] = {
-            "Iron Revitalize",     -- Level 68
-            "Hardened Revitalize", -- Level 62
-            "Revitalize",          -- Level 51
+            "Iron Revitalize",     -- Level 68 EQM Custom
+            "Hardened Revitalize", -- Level 62 EQM Custom
+            "Revitalize",          -- Level 51 EQM Custom
         },
     },
     ['Helpers']       = {

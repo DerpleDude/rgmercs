@@ -123,7 +123,7 @@ _ClassConfig    = {
             "Circle of Fireskin",    -- Level 70
             "Fireskin",              -- Level 66
             "Maelstrom of Ro",       -- Level 63
-            "FlameShield of Ro",     -- Level 61
+            "Flameshield of Ro",     -- Level 61
             "Aegis of Ro",           -- Level 60
             "Cadeau of Flame",       -- Level 56
             "Boon of Immolation",    -- Level 53
@@ -267,7 +267,7 @@ _ClassConfig    = {
             "Call of the Heroes", -- Level 70
         },
         ['Bladegusts'] = {
-            "Burning Bladegusts", -- Level 69
+            "Burning Bladegusts", -- Level 69 Laz Custom
         },
         ['PBAE2'] = {
             "Scintillation", -- Level 51
@@ -276,10 +276,10 @@ _ClassConfig    = {
             "Wind of the Desert", -- Level 60
         },
         ['Myriad'] = {
-            "Shock of Myriad Minions", -- Level 70
+            "Shock of Myriad Minions", -- Level 70 Laz Custom
         },
         ['FranticDS'] = {
-            "Frantic Flames", -- Level 71
+            "Frantic Flames", -- Level 71 Laz Custom
         },
     },
     ['AASets']        = {

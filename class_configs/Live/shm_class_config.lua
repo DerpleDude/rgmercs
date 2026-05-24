@@ -132,666 +132,664 @@ local _ClassConfig = {
     ['AbilitySets']       = {
         ['GroupFocusSpell'] = {
             -- Focus Spell - Group Spells will be used on everyone
-            "Talisman of Unity X",        -- Level 130 - Group
-            "Khura's Focusing",           -- Level 60 - Group
-            "Focus of the Seventh",       -- Level 65 - Group
-            "Talisman of Wunshi",         -- Level 70 - Group
-            "Talisman of the Dire",       -- Level 75 - Group
-            "Talisman of the Bloodworg",  -- Level 80 - Group
-            "Talisman of Unity",          -- Level 85 - Group
-            "Talisman of Soul's Unity",   -- Level 90 - Group
-            "Talisman of Kolos' Unity",   -- Level 95 - Group
-            "Talisman of the Courageous", -- Level 100 - Group
-            "Talisman of the Doomscale",  -- Level 105 - Group
-            "Talisman of the Wulthan",    -- Level 110 - Group
-            "Talisman of the Ry'Gorr",    -- Level 115 - Group
-            "Talisman of the Usurper",    -- Level 120 - Group
-            "Talisman of the Heroic",     -- Level 125 - Group
+            "Talisman of Unity X",        -- Level 126, - Group
+            "Talisman of the Heroic",     -- Level 125, - Group
+            "Talisman of the Usurper",    -- Level 120, - Group
+            "Talisman of the Ry'Gorr",    -- Level 115, - Group
+            "Talisman of the Wulthan",    -- Level 110, - Group
+            "Talisman of the Doomscale",  -- Level 105, - Group
+            "Talisman of the Courageous", -- Level 100, - Group
+            "Talisman of Kolos' Unity",   -- Level 95, - Group
+            "Talisman of Soul's Unity",   -- Level 90, - Group
+            "Talisman of Unity",          -- Level 85, - Group
+            "Talisman of the Bloodworg",  -- Level 80, - Group
+            "Talisman of the Dire",       -- Level 75, - Group
+            "Talisman of Wunshi",         -- Level 70, - Group
+            "Focus of the Seventh",       -- Level 65, - Group
+            "Khura's Focusing",           -- Level 60, - Group
         },
         ['RunSpeedBuff'] = {
             -- Run Speed Buff - 9 - 74
-            "Spirit of Tala'Tak",
-            "Spirit of Bih`Li",
-            "Pack Shrew",
-            "Spirit of Wolf",
+            "Spirit of Tala'Tak", -- Level 74
+            "Spirit of Bih`Li",   -- Level 36
+            "Pack Shrew",         -- Level 34
+            "Spirit of Wolf",     -- Level 9
         },
         ['HasteBuff'] = {
             -- Haste Buff - 26 - 64
-            "Talisman of Celerity",
-            "Swift Like the Wind",
-            "Celerity",
-            "Quickness",
+            "Talisman of Celerity", -- Level 64
+            "Swift Like the Wind",  -- Level 63
+            "Celerity",             -- Level 56
+            "Quickness",            -- Level 26
         },
         ['TempHPBuff'] = {
             -- Growth Buff 81+
-            "Wild Growth X",
-            "Overwhelming Growth",
-            "Fervent Growth",
-            "Frenzied Growth",
-            "Savage Growth",
-            "Ferocious Growth",
-            "Rampant Growth",
-            "Unfettered Growth",
-            "Untamed Growth",
-            "Wild Growth",
+            "Wild Growth X",       -- Level 126
+            "Overwhelming Growth", -- Level 121
+            "Fervent Growth",      -- Level 116
+            "Frenzied Growth",     -- Level 111
+            "Savage Growth",       -- Level 106
+            "Ferocious Growth",    -- Level 101
+            "Rampant Growth",      -- Level 96
+            "Unfettered Growth",   -- Level 91
+            "Untamed Growth",      -- Level 86
+            "Wild Growth",         -- Level 81
         },
         ['LowLvlStaBuff'] = {
             -- Low Level Stamina Buff --- I guess this may be okay for tanks (but largely a raid thing). Need to scrub which levels. Not currently used.
-            "Spirit of Bear",
-            "Spirit of Ox",
-            "Health",
-            "Stamina",
-            "Riotous Health",
-            "Talisman of the Brute",
-            "Endurance of the Boar",
-            "Talisman of the Boar",
-            "Spirit of Fortitude",
-            "Talisman of Fortitude",
-            "Talisman of Persistence",
-            "Talisman of Vehemence",
-            "Spirit of Vehemence",
+            "Talisman of Vehemence",   -- Level 76
+            "Spirit of Vehemence",     -- Level 76
+            "Talisman of Persistence", -- Level 71
+            "Talisman of Fortitude",   -- Level 69
+            "Spirit of Fortitude",     -- Level 68
+            "Talisman of the Boar",    -- Level 63
+            "Endurance of the Boar",   -- Level 62
+            "Talisman of the Brute",   -- Level 57
+            "Riotous Health",          -- Level 54
+            "Stamina",                 -- Level 43
+            "Health",                  -- Level 30
+            "Spirit of Ox",            -- Level 21
+            "Spirit of Bear",          -- Level 6
         },
         ['LowLvlAtkBuff'] = {
             -- Low Level Attack Buff --- user under level 86. Including Harnessing of Spirit as they will have similar usecases and targets.
-            "Harnessing of Spirit",
-            "Primal Avatar",
-            "Ferine Avatar",
-            "Champion",
+            "Champion",             -- Level 70
+            "Ferine Avatar",        -- Level 65
+            "Primal Avatar",        -- Level 60
+            "Harnessing of Spirit", -- Level 46
         },
         ['LowLvlHPBuff'] = {
-            "Inner Fire",         -- Level 1 - Single
-            "Talisman of Tnarg",  -- Level 32 - Single
-            "Talisman of Altuna", -- Level 40 - Single
-            "Talisman of Kragg",  -- Level 55 - Single
+            "Talisman of Kragg",  -- Level 55, - Single
+            "Talisman of Altuna", -- Level 40, - Single
+            "Talisman of Tnarg",  -- Level 32, - Single
+            "Inner Fire",         -- Level 1, - Single
         },
         ['LowLvlStrBuff'] = {
             -- Low Level Strength Buff -- Below 68 these are only worthwhile on non-live, defiant stat caps too easily. Even then arguable.
-            "Talisman of Might",  -- Level 70, Group
-            "Spirit of Might",    -- Level 68, Single Target
-            "Talisman of the Diaku",
-            "Infusion of Spirit", -- Level 49, Str/Dex/Sta, can use HP buff
-            "Tumultuous Strength",
-            "Raging Strength",
-            "Spirit Strength", -- Level 18, Can't see this as being very worth but keeping for now.
+            "Talisman of Might",     -- Level 70, Group
+            "Spirit of Might",       -- Level 67, Single Target
+            "Talisman of the Diaku", -- Level 64
+            "Infusion of Spirit",    -- Level 49, Str/Dex/Sta, can use HP buff
+            "Tumultuous Strength",   -- Level 35
+            "Raging Strength",       -- Level 28
+            "Spirit Strength",       -- Level 18, Can't see this as being very worth but keeping for now.
         },
         ['LowLvlDexBuff'] = {
             -- Low Level Dex Buff -- This has no real place outside of raids on select tanks. Waste of mana.
-            "Talisman of the Raptor",
-            "Mortal Deftness",
-            "Dexterity",
-            "Deftness",
-            "Rising Dexterity",
-            "Spirit of Monkey",
-            "Dexterous Aura",
+            "Talisman of the Raptor", -- Level 59
+            "Mortal Deftness",        -- Level 58
+            "Dexterity",              -- Level 48
+            "Deftness",               -- Level 39
+            "Rising Dexterity",       -- Level 25
+            "Spirit of Monkey",       -- Level 21
+            "Dexterous Aura",         -- Level 1
         },
         ['LowLvlAgiBuff'] = {
             --- Low Level AGI Buff -- This has no real place outside of raids on select tanks. Waste of mana.
-            "Talisman of Foresight",
-            "Preternatural Foresight",
-            "Talisman of Sense",
-            "Spirit of Sense",
-            "Talisman of the Wrulan",
-            "Agility of the Wrulan",
-            "Talisman of the Cat",
-            "Deliriously Nimble",
-            "Agility",
-            "Nimble",
-            "Spirit of Cat",
-            "Feet like Cat",
+            "Talisman of Foresight",   -- Level 74
+            "Preternatural Foresight", -- Level 71
+            "Talisman of Sense",       -- Level 68
+            "Spirit of Sense",         -- Level 66
+            "Talisman of the Wrulan",  -- Level 62
+            "Agility of the Wrulan",   -- Level 61
+            "Talisman of the Cat",     -- Level 57
+            "Deliriously Nimble",      -- Level 53
+            "Agility",                 -- Level 41
+            "Nimble",                  -- Level 31
+            "Spirit of Cat",           -- Level 18
+            "Feet like Cat",           -- Level 3
         },
         ['AEMaloSpell'] = {
-            "Wind of Malisene",
-            "Wind of Malis",
+            "Wind of Malisene", -- Level 89
+            "Wind of Malis",    -- Level 84
         },
         ['MaloSpell'] = {
             -- AA Starts at LVL 75
-            "Malaise XVI",
-            "Malosinera",
-            "Malosinetra",
-            "Malosinise",
-            "Malos",
-            "Malosinia",
-            "Malo",
-            "Malosini",
+            "Malaise XVI",     -- Level 127
+            "Malosinera",      -- Level 122
+            "Malosinetra",     -- Level 117
+            "Malosinise",      -- Level 72
+            "Malos",           -- Level 65
+            "Malosinia",       -- Level 63
+            "Malo",            -- Level 60
+            "Malosini",        -- Level 57
             --Below this these spells are considered by many to be a waste of mana, but the user can elect to turn this off.
-            "Malosi",
-            "Malaisement",
-            "Malaise",
+            "Malosi",          -- Level 48
+            "Malaisement",     -- Level 32
+            "Malaise",         -- Level 18
         },
-        ['AESlowSpell'] = { --Often considered a waste of mana in group situations, user option.
-            "Tigir's Insects",
+        ['AESlowSpell'] = {    --Often considered a waste of mana in group situations, user option.
+            "Tigir's Insects", -- Level 58
         },
         ['SlowSpell'] = {
-            "Balance of Discord",
-            "Balance of the Nihil",
-            "Turgur's Insects", --Can save mana by continuing to use Togor's on group mobs, but this is problematic for automation. Not worth splitting the entry.
-            "Togor's Insects",
-            "Tagar's Insects",
-            --"Walking Sleep", --Too much mana with little benefit at these levels
-            --"Drowsy", --Too much mana with little benefit at these levels
+            "Balance of Discord",   -- Level 69
+            "Balance of the Nihil", -- Level 65
+            "Turgur's Insects",     -- Level 51, Can save mana by continuing to use Togor's on group mobs, but this is problematic for automation. Not worth splitting the entry.
+            "Togor's Insects",      -- Level 38
+            "Tagar's Insects",      -- Level 27
+            -- "Walking Sleep",     -- Level 13, Too much mana with little benefit at these levels
+            -- "Drowsy",            -- Level 5, Too much mana with little benefit at these levels
         },
         ['DiseaseSlow'] = {
-            "Cloud of Grummus",
-            "Plague of Insects",
+            "Cloud of Grummus",  -- Level 61
+            "Plague of Insects", -- Level 54
         },
-        ['CrippleSpell'] = {   --not currently utilized for groups, gem slots are precious
-            "Crippling Spasm", -- Level 66
-            "Cripple",         -- Level 53, Starts to become worth it, depending on target
-            "Incapacitate",    -- Level 41, Likely not worth
-            "Listless Power",  -- Level 29, Definitely not worth
+        ['CrippleSpell'] = {     --not currently utilized for groups, gem slots are precious
+            "Crippling Spasm",   -- Level 66
+            "Cripple",           -- Level 53, Starts to become worth it, depending on target
+            "Incapacitate",      -- Level 41, Likely not worth
+            "Listless Power",    -- Level 29, Definitely not worth
         },
         ['GroupHealProcBuff'] = {
-            "Mindful Spirit",
-            "Watchful Spirit",
-            "Attentive Spirit",
-            "Responsive Spirit",
+            "Mindful Spirit",    -- Level 122
+            "Watchful Spirit",   -- Level 117
+            "Attentive Spirit",  -- Level 112
+            "Responsive Spirit", -- Level 101
         },
         ['WardBuff'] = {
             -- Self Heal Ward Spells
-            "Ward of Resurgence XI",
-            "Ward of Heroic Deeds",
-            "Ward of Recuperation",
-            "Ward of Remediation",
-            "Ward of Regeneration",
-            "Ward of Rejuvenation",
-            "Ward of Reconstruction",
-            "Ward of Recovery",
-            "Ward of Restoration",
-            "Ward of Resurgence",
-            "Ward of Rebirth",
+            "Ward of Resurgence XI",  -- Level 130
+            "Ward of Heroic Deeds",   -- Level 125
+            "Ward of Rebirth",        -- Level 120
+            "Ward of Recuperation",   -- Level 115
+            "Ward of Remediation",    -- Level 110
+            "Ward of Regeneration",   -- Level 105
+            "Ward of Rejuvenation",   -- Level 100
+            "Ward of Reconstruction", -- Level 95
+            "Ward of Recovery",       -- Level 90
+            "Ward of Restoration",    -- Level 85
+            "Ward of Resurgence",     -- Level 80
         },
         ['DichoSpell'] = {
-            "Reciprocal Roar",
-            "Ecliptic Roar",
-            "Composite Roar",
-            "Dissident Roar",
-            "Roar of the Lion",
+            "Reciprocal Roar",  -- Level 121
+            "Ecliptic Roar",    -- Level 116
+            "Composite Roar",   -- Level 111
+            "Dissident Roar",   -- Level 106
+            "Roar of the Lion", -- Level 101
         },
         ['MeleeProcBuff'] = {
             -- Melee Proc Buff - Level 50 - 111
             -- To be used when the Shaman does not have Dicho
-            "Talisman of the Panther XVI",
-            "Talisman of the Manul",
-            "Talisman of the Kerran",
-            "Talisman of the Lioness",
-            "Talisman of the Sabretooth",
-            "Talisman of the Leopard",
-            "Talisman of the Snow Leopard",
-            "Talisman of the Lion",
-            "Talisman of the Tiger",
-            "Talisman of the Lynx",
-            "Talisman of the Cougar",
-            "Talisman of the Panther",
+            "Talisman of the Panther XVI",  -- Level 126
+            "Talisman of the Manul",        -- Level 121
+            "Talisman of the Kerran",       -- Level 116
+            "Talisman of the Lioness",      -- Level 111
+            "Talisman of the Sabretooth",   -- Level 106
+            "Talisman of the Leopard",      -- Level 101
+            "Talisman of the Snow Leopard", -- Level 96
+            "Talisman of the Lion",         -- Level 91
+            "Talisman of the Tiger",        -- Level 86
+            "Talisman of the Lynx",         -- Level 81
+            "Talisman of the Cougar",       -- Level 76
+            "Talisman of the Panther",      -- Level 71
             -- Below Level 71 This is a single target buff and will be keyed off of the MA
-            "Spirit of the Panther",
-            "Spirit of the Leopard",
-            "Spirit of the Jaguar",
-            "Spirit of the Puma",
+            "Spirit of the Panther",        -- Level 69
+            "Spirit of the Leopard",        -- Level 61
+            "Spirit of the Jaguar",         -- Level 57
+            "Spirit of the Puma",           -- Level 50
         },
         ['SlowProcBuff'] = {
             -- Slow Proc Buff for MA - Level 68 - 122
-            "Lassitude XIII",
-            "Moroseness",
-            "Melancholy",
-            "Ennui",
-            "Incapacity",
-            "Sluggishness",
-            "Fatigue",
-            "Apathy",
-            "Lethargy",
-            "Listlessness",
-            "Languor",
-            "Lassitude",
-            "Lingering Sloth",
+            "Lassitude XIII",  -- Level 127
+            "Moroseness",      -- Level 122
+            "Melancholy",      -- Level 117
+            "Ennui",           -- Level 112
+            "Incapacity",      -- Level 107
+            "Sluggishness",    -- Level 102
+            "Fatigue",         -- Level 97
+            "Apathy",          -- Level 92
+            "Lethargy",        -- Level 87
+            "Listlessness",    -- Level 82
+            "Languor",         -- Level 77
+            "Lassitude",       -- Level 72
+            "Lingering Sloth", -- Level 68
         },
         ['PackSelfBuff'] = {
             -- Pack Self Buff - Level 90 - 115
             --- Ignoring the LVL 85 Call the Pack buff due to the decrease in mana per tick.
-            "Pack of Dire Wolves",
-            "Pack of Ancestral Beasts",
-            "Pack of Lunar Wolves",
-            "Pack of The Black Fang",
-            "Pack of Mirtuk",
-            "Pack of Olesira",
-            "Pack of Kriegas",
-            "Pack of Hilnaah",
-            "Pack of Wurt",
+            "Pack of Dire Wolves",      -- Level 130
+            "Pack of Ancestral Beasts", -- Level 125
+            "Pack of Lunar Wolves",     -- Level 120
+            "Pack of The Black Fang",   -- Level 115
+            "Pack of Mirtuk",           -- Level 110
+            "Pack of Olesira",          -- Level 105
+            "Pack of Kriegas",          -- Level 100
+            "Pack of Hilnaah",          -- Level 95
+            "Pack of Wurt",             -- Level 90
         },
         ['AllianceBuff'] = {
-            "Ancient Alliance",
-            "Ancient Coalition",
-            "Ancient Covariance",
+            "Ancient Covariance", -- Level 123
+            "Ancient Coalition",  -- Level 113
+            "Ancient Alliance",   -- Level 103
         },
         ['RezSpell'] = {
-            'Incarnate Anew', -- Level 59
         },
         ['RecklessHeal1'] = {
-            "Reckless Mending VIII",
-            "Reckless Reinvigoration",
-            "Reckless Resurgence",
-            "Reckless Renewal",
-            "Reckless Rejuvenation",
-            "Reckless Regeneration",
-            "Reckless Restoration",
-            "Reckless Remedy",
-            "Reckless Mending",
-            "Qirik's Mending",
-            "Dannal's Mending",
-            "Gemmi's Mending",
-            "Ahnkaul's Mending",
-            "Ancient: Wilslik's Mending",
-            "Yoppa's Mending",
-            "Daluda's Mending",
-            "Tnarg's Mending",
-            "Chloroblast",
-            "Kragg's Salve",
-            "Superior Healing",
-            "Spirit Salve",
-            "Greater Healing",
-            "Healing",
-            "Light Healing",
-            "Minor Healing",
+            "Reckless Mending VIII",      -- Level 130
+            "Reckless Reinvigoration",    -- Level 125
+            "Reckless Resurgence",        -- Level 120
+            "Reckless Renewal",           -- Level 115
+            "Reckless Rejuvenation",      -- Level 110
+            "Reckless Regeneration",      -- Level 105
+            "Reckless Restoration",       -- Level 100
+            "Reckless Remedy",            -- Level 95
+            "Reckless Mending",           -- Level 90
+            "Qirik's Mending",            -- Level 88
+            "Dannal's Mending",           -- Level 83
+            "Gemmi's Mending",            -- Level 78
+            "Ahnkaul's Mending",          -- Level 73
+            "Ancient: Wilslik's Mending", -- Level 70
+            "Yoppa's Mending",            -- Level 68
+            "Daluda's Mending",           -- Level 65
+            "Tnarg's Mending",            -- Level 62
+            "Chloroblast",                -- Level 55
+            "Kragg's Salve",              -- Level 50
+            "Superior Healing",           -- Level 45
+            "Spirit Salve",               -- Level 40
+            "Greater Healing",            -- Level 29
+            "Healing",                    -- Level 19
+            "Light Healing",              -- Level 9
+            "Minor Healing",              -- Level 1
         },
         ['RecklessHeal2'] = {
             --worthless to mem two mendings because they don't have a recast time, keep Qirik's for when we don't have enough Reckless.
-            "Reckless Mending VIII",
-            "Reckless Reinvigoration",
-            "Reckless Resurgence",
-            "Reckless Renewal",
-            "Reckless Rejuvenation",
-            "Reckless Regeneration",
-            "Reckless Restoration",
-            "Reckless Remedy",
-            "Reckless Mending",
-            "Qirik's Mending",
+            "Reckless Mending VIII",   -- Level 130
+            "Reckless Reinvigoration", -- Level 125
+            "Reckless Resurgence",     -- Level 120
+            "Reckless Renewal",        -- Level 115
+            "Reckless Rejuvenation",   -- Level 110
+            "Reckless Regeneration",   -- Level 105
+            "Reckless Restoration",    -- Level 100
+            "Reckless Remedy",         -- Level 95
+            "Reckless Mending",        -- Level 90
+            "Qirik's Mending",         -- Level 88
         },
         ['RecklessHeal3'] = {
             --fallback just in case we have some other DPS stuff disabled, but 3 reckless is overkill for automation
-            "Reckless Mending VIII",
-            "Reckless Reinvigoration",
-            "Reckless Resurgence",
-            "Reckless Renewal",
-            "Reckless Rejuvenation",
-            "Reckless Regeneration",
-            "Reckless Restoration",
-            "Reckless Remedy",
-            "Reckless Mending",
-            "Qirik's Mending",
+            "Reckless Mending VIII",   -- Level 130
+            "Reckless Reinvigoration", -- Level 125
+            "Reckless Resurgence",     -- Level 120
+            "Reckless Renewal",        -- Level 115
+            "Reckless Rejuvenation",   -- Level 110
+            "Reckless Regeneration",   -- Level 105
+            "Reckless Restoration",    -- Level 100
+            "Reckless Remedy",         -- Level 95
+            "Reckless Mending",        -- Level 90
+            "Qirik's Mending",         -- Level 88
         },
         ['AESpiritualHeal'] = {
             -- Pulsing AE Heal, 100+
-            "Spiritual Shower",
-            "Spiritual Squall",
-            "Spiritual Swell",
-            "Spiritual Surge",
+            "Spiritual Shower", -- Level 118
+            "Spiritual Squall", -- Level 110
+            "Spiritual Swell",  -- Level 105
+            "Spiritual Surge",  -- Level 100
         },
         ['RecourseHeal'] = {
             --- RecourseHeal Level 87+
-            "Baratu's Recourse",
-            "Grayleaf's Recourse",
-            "Rowain's Recourse",
-            "Zrelik's Recourse",
-            "Eyrzekla's Recourse",
-            "Krasir's Recourse",
-            "Blezon's Recourse",
-            "Gotikan's Recourse",
-            "Qirik's Recourse",
+            "Baratu's Recourse",   -- Level 127
+            "Grayleaf's Recourse", -- Level 122
+            "Rowain's Recourse",   -- Level 117
+            "Zrelik's Recourse",   -- Level 112
+            "Eyrzekla's Recourse", -- Level 107
+            "Krasir's Recourse",   -- Level 102
+            "Blezon's Recourse",   -- Level 97
+            "Gotikan's Recourse",  -- Level 92
+            "Qirik's Recourse",    -- Level 87
         },
         ['InterventionHeal'] = {
             -- Intervention Heal 78+
-            "Ancestral Intervention XI",
-            "Immortal Intervention",
-            "Primordial Intervention",
-            "Prehistoric Intervention",
-            "Historian's Intervention",
-            "Antecessor's Intervention",
-            "Progenitor's Intervention",
-            "Ascendant's Intervention",
-            "Antecedent's Intervention",
-            "Ancestral Intervention",
-            "Antediluvian Intervention",
+            "Ancestral Intervention XI", -- Level 128
+            "Immortal Intervention",     -- Level 123
+            "Antediluvian Intervention", -- Level 118
+            "Primordial Intervention",   -- Level 113
+            "Prehistoric Intervention",  -- Level 108
+            "Historian's Intervention",  -- Level 103
+            "Antecessor's Intervention", -- Level 98
+            "Progenitor's Intervention", -- Level 93
+            "Ascendant's Intervention",  -- Level 88
+            "Antecedent's Intervention", -- Level 83
+            "Ancestral Intervention",    -- Level 78
         },
         ['GroupRenewalHoT'] = {
             -- Prior to 70 Breath of Trushar, single HoTs will be used including the
             --- the Torpor/Stoicism line. LVL 44 is the lowest level.
-            "Ghost of Renewal XIII",
-            "Reverie of Renewal",
-            "Spirit of Renewal",
-            "Spectre of Renewal",
-            "Cloud of Renewal",
-            "Shear of Renewal",
-            "Wisp of Renewal",
-            "Phantom of Renewal",
-            "Penumbra of Renewal",
-            "Shadow of Renewal",
-            "Shade of Renewal",
-            "Specter of Renewal",
-            "Ghost of Renewal",
-            "Spiritual Serenity",
-            "Breath of Trushar",
-            "Quiescence",
-            "Torpor",
-            "Stoicism",
+            "Ghost of Renewal XIII", -- Level 128
+            "Reverie of Renewal",    -- Level 125
+            "Spirit of Renewal",     -- Level 120
+            "Spectre of Renewal",    -- Level 115
+            "Cloud of Renewal",      -- Level 110
+            "Shear of Renewal",      -- Level 105
+            "Wisp of Renewal",       -- Level 100
+            "Phantom of Renewal",    -- Level 95
+            "Penumbra of Renewal",   -- Level 90
+            "Shadow of Renewal",     -- Level 85
+            "Shade of Renewal",      -- Level 80
+            "Specter of Renewal",    -- Level 75
+            "Ghost of Renewal",      -- Level 70
+            "Spiritual Serenity",    -- Level 70
+            "Breath of Trushar",     -- Level 65
+            "Quiescence",            -- Level 65
+            "Torpor",                -- Level 60
+            "Stoicism",              -- Level 44
         },
         ['CanniSpell'] = {
             -- Convert Health to Mana - Level  23+
-            "Ancestral Bargain XIV",
-            "Traumatic Exchange",
-            "Hoary Agreement",
-            "Ancient Bargain",
-            "Tribal Bargain",
-            "Tribal Pact",
-            "Ancestral Pact",
-            "Ancestral Arrangement",
-            "Ancestral Covenant",
-            "Ancestral Obligation",
-            "Ancestral Hearkening",
-            "Ancestral Bargain",
-            "Ancient: Ancestral Calling",
-            "Pained Memory",
-            "Ancient: Chaotic Pain",
-            "Cannibalize IV",
-            "Cannibalize III",
-            "Cannibalize II",
-            "Cannibalize",
+            "Ancestral Bargain XIV",      -- Level 129
+            "Traumatic Exchange",         -- Level 124
+            "Hoary Agreement",            -- Level 118
+            "Ancient Bargain",            -- Level 113
+            "Tribal Bargain",             -- Level 108
+            "Tribal Pact",                -- Level 103
+            "Ancestral Pact",             -- Level 98
+            "Ancestral Arrangement",      -- Level 93
+            "Ancestral Covenant",         -- Level 88
+            "Ancestral Obligation",       -- Level 83
+            "Ancestral Hearkening",       -- Level 78
+            "Ancestral Bargain",          -- Level 73
+            "Ancient: Ancestral Calling", -- Level 70
+            "Pained Memory",              -- Level 68
+            "Ancient: Chaotic Pain",      -- Level 65
+            "Cannibalize IV",             -- Level 58
+            "Cannibalize III",            -- Level 54
+            "Cannibalize II",             -- Level 38
+            "Cannibalize",                -- Level 23
         },
         ['CureSpell'] = {
-            "Mastery: Blood of Mayong",
-            "Blood of Mayong",
-            "Blood of Tevik",
-            "Blood of Rivans",
-            "Blood of Sanera",
-            "Blood of Klar",
-            "Blood of Corbeth",
-            "Blood of Avoling",
-            "Blood of Nadox",
+            "Mastery: Blood of Mayong", -- Level 130
+            "Blood of Mayong",          -- Level 120
+            "Blood of Tevik",           -- Level 110
+            "Blood of Rivans",          -- Level 105
+            "Blood of Sanera",          -- Level 100
+            "Blood of Klar",            -- Level 95
+            "Blood of Corbeth",         -- Level 90
+            "Blood of Avoling",         -- Level 85
+            "Blood of Nadox",           -- Level 52
         },
         ['CureCorrupt'] = {
-            "Mastery: Chant of the Zelniak",
-            "Chant of the Zelniak",
-            "Chant of the Wulthan",
-            "Chant of the Kromtus",
-            "Chant of Jaerol",
-            "Chant of the Izon",
-            "Chant of the Tae Ew",
-            "Chant of the Burynai",
-            "Chant of the Darkvine",
-            "Chant of the Napaea",
-            "Cure Corruption",
+            "Mastery: Chant of the Zelniak", -- Level 129
+            "Chant of the Zelniak",          -- Level 119
+            "Chant of the Wulthan",          -- Level 109
+            "Chant of the Kromtus",          -- Level 104
+            "Chant of Jaerol",               -- Level 99
+            "Chant of the Izon",             -- Level 94
+            "Chant of the Tae Ew",           -- Level 89
+            "Chant of the Burynai",          -- Level 84
+            "Chant of the Darkvine",         -- Level 79
+            "Chant of the Napaea",           -- Level 64
+            "Cure Corruption",               -- Level 62
         },
         ['TwinHealNuke'] = {
             -- Nuke the MA Not the assist target - Levels 85+
-            "Frost Gift X",
-            "Gelid Gift",
-            "Polar Gift",
-            "Wintry Gift",
-            "Frostbitten Gift",
-            "Glacial Gift",
-            "Frigid Gift",
-            "Freezing Gift",
-            "Frozen Gift",
-            "Frost Gift",
+            "Frost Gift X",     -- Level 130
+            "Gelid Gift",       -- Level 125
+            "Polar Gift",       -- Level 120
+            "Wintry Gift",      -- Level 115
+            "Frostbitten Gift", -- Level 110
+            "Glacial Gift",     -- Level 105
+            "Frigid Gift",      -- Level 100
+            "Freezing Gift",    -- Level 95
+            "Frozen Gift",      -- Level 90
+            "Frost Gift",       -- Level 85
         },
         ['PoisonNuke'] = {
             -- Poison Nuke LVL34 +
-            "Tserik's Spear of Venom",
-            "Red Eye's Spear of Venom",
-            "Fleshrot's Spear of Venom",
-            "Narandi's Spear of Venom",
-            "Nexona's Spear of Venom",
-            "Serisaria's Spear of Venom",
-            "Slaunk's Spear of Venom",
-            "Hiqork's Spear of Venom",
-            "Spinechiller's Spear of Venom",
-            "Severilous' Spear of Venom",
-            "Vestax's Spear of Venom",
-            "Ahnkaul's Spear of Venom",
-            "Yoppa's Spear of Venom",
-            "Spear of Torment",
-            "Blast of Venom",
-            "Shock of Venom",
-            "Blast of Poison",
-            "Shock of the Tainted",
+            "Tserik's Spear of Venom",       -- Level 126
+            "Red Eye's Spear of Venom",      -- Level 121
+            "Fleshrot's Spear of Venom",     -- Level 116
+            "Narandi's Spear of Venom",      -- Level 111
+            "Nexona's Spear of Venom",       -- Level 106
+            "Serisaria's Spear of Venom",    -- Level 101
+            "Slaunk's Spear of Venom",       -- Level 96
+            "Hiqork's Spear of Venom",       -- Level 91
+            "Spinechiller's Spear of Venom", -- Level 86
+            "Severilous' Spear of Venom",    -- Level 81
+            "Vestax's Spear of Venom",       -- Level 76
+            "Ahnkaul's Spear of Venom",      -- Level 71
+            "Yoppa's Spear of Venom",        -- Level 66
+            "Spear of Torment",              -- Level 61
+            "Blast of Venom",                -- Level 54
+            "Shock of Venom",                -- Level 47
+            "Blast of Poison",               -- Level 42
+            "Shock of the Tainted",          -- Level 34
         },
         ['FastPoisonNuke'] = {
             -- Fast Poison Nuke LVL73+
-            "Tserik's Bite",
-            "Oka's Bite",
-            "Ander's Bite",
-            "Direfang's Bite",
-            "Mawmun's Bite",
-            "Reefmaw's Bite",
-            "Seedspitter's Bite",
-            "Bite of the Grendlaen",
-            "Bite of the Blightwolf",
-            "Bite of the Ukun",
-            "Bite of the Brownie",
-            "Sting of the Queen",
+            "Tserik's Bite",          -- Level 128
+            "Oka's Bite",             -- Level 123
+            "Ander's Bite",           -- Level 118
+            "Direfang's Bite",        -- Level 113
+            "Mawmun's Bite",          -- Level 108
+            "Reefmaw's Bite",         -- Level 103
+            "Seedspitter's Bite",     -- Level 98
+            "Bite of the Grendlaen",  -- Level 93
+            "Bite of the Blightwolf", -- Level 88
+            "Bite of the Ukun",       -- Level 83
+            "Bite of the Brownie",    -- Level 78
+            "Sting of the Queen",     -- Level 73
         },
         ['IceNuke'] = {
             --- IceNuke - Level 4+
-            "Frost Rift XX",
-            "Ice Barrage",
-            "Heavy Sleet",
-            "Ice Salvo",
-            "Ice Shards",
-            "Ice Squall",
-            "Ice Burst",
-            "Ice Mass",
-            "Ice Floe",
-            "Ice Sheet",
-            "Tundra Crumble",
-            "Glacial Avalanche",
-            "Ice Age",
-            "Velium Strike",
-            "Ice Strike",
-            "Blizzard Blast",
-            "Winter's Roar",
-            "Frost Strike",
-            "Spirit Strike",
-            "Frost Rift",
+            "Frost Rift XX",     -- Level 129
+            "Ice Barrage",       -- Level 124
+            "Heavy Sleet",       -- Level 119
+            "Ice Salvo",         -- Level 114
+            "Ice Shards",        -- Level 109
+            "Ice Squall",        -- Level 104
+            "Ice Burst",         -- Level 99
+            "Ice Mass",          -- Level 94
+            "Ice Floe",          -- Level 89
+            "Ice Sheet",         -- Level 84
+            "Tundra Crumble",    -- Level 79
+            "Glacial Avalanche", -- Level 74
+            "Ice Age",           -- Level 69
+            "Velium Strike",     -- Level 64
+            "Ice Strike",        -- Level 54
+            "Blizzard Blast",    -- Level 44
+            "Winter's Roar",     -- Level 33
+            "Frost Strike",      -- Level 23
+            "Spirit Strike",     -- Level 14
+            "Frost Rift",        -- Level 4
         },
         ['ChaoticDot'] = {
             -- Long Dot(42s) LVL 104+
             -- Two resist types because it throws 2 dots
             -- Stacking: Nectar of Pain - Stacking: Blood of Saryrn
-            "Chaotic Bloodcurse",
-            "Chaotic Poison",
-            "Chaotic Venom",
-            "Chaotic Venin",
-            "Chaotic Toxin",
+            "Chaotic Bloodcurse", -- Level 125
+            "Chaotic Toxin",      -- Level 120
+            "Chaotic Venin",      -- Level 115
+            "Chaotic Poison",     -- Level 109
+            "Chaotic Venom",      -- Level 104
         },
         ['PandemicDot'] = {
             -- Pandemic Dot Long Dot(84s) Level 103+
             -- Two resist types because it throws 2 dots
             -- Stacking: Kralbor's Pandemic  -    Stacking: Breath of Ultor
-            "Hotariton Pandemic",
-            "Tegi Pandemic",
-            "Bledrek's Pandemic",
-            "Elkikatar's Pandemic",
-            "Hemocoraxius' Pandemic",
+            "Hotariton Pandemic",     -- Level 124
+            "Tegi Pandemic",          -- Level 119
+            "Bledrek's Pandemic",     -- Level 114
+            "Elkikatar's Pandemic",   -- Level 108
+            "Hemocoraxius' Pandemic", -- Level 103
         },
         ['MaloDot'] = {
             -- Malo Dot Stacking: Yubai's Affliction - LongDot(96s) Level 99+
-            "Torrentclaw's Malosinera",
-            "Svartmane's Malosinara",
-            "Rirwech's Malosinata",
-            "Livio's Malosenia",
-            "Falhotep's Malosenia",
-            "Txiki's Malosinara",
-            "Krizad's Malosinera",
+            "Torrentclaw's Malosinera", -- Level 129
+            "Krizad's Malosinera",      -- Level 124
+            "Txiki's Malosinara",       -- Level 119
+            "Svartmane's Malosinara",   -- Level 114
+            "Rirwech's Malosinata",     -- Level 109
+            "Livio's Malosenia",        -- Level 104
+            "Falhotep's Malosenia",     -- Level 99
         },
         ['CurseDot1'] = {
             -- Curse Dot 1 Stacking: Curse - Long Dot(30s) - Level 34+
-            "Curse XVII",
-            "Malediction",
-            "Obeah",
-            "Evil Eye",
-            "Jinx",
-            "Garugaru",
-            "Naganaga",
-            "Hoodoo",
-            "Hex",
-            "Mojo",
-            "Pocus",
-            "Juju",
-            "Curse of Sisslak",
-            "Bane",
-            "Anathema",
-            "Odium",
-            "Curse",
+            "Curse XVII",       -- Level 129
+            "Malediction",      -- Level 124
+            "Obeah",            -- Level 119
+            "Evil Eye",         -- Level 114
+            "Jinx",             -- Level 109
+            "Garugaru",         -- Level 104
+            "Naganaga",         -- Level 99
+            "Hoodoo",           -- Level 94
+            "Hex",              -- Level 89
+            "Mojo",             -- Level 84
+            "Pocus",            -- Level 79
+            "Juju",             -- Level 74
+            "Curse of Sisslak", -- Level 69
+            "Bane",             -- Level 64
+            "Anathema",         -- Level 54
+            "Odium",            -- Level 43
+            "Curse",            -- Level 34
         },
         ['CurseDot2'] = {
             ---, Stacking: Enalam's Curse - Long Dot(54s) - 100+
-            "Maniadry's Curse",
-            "Lenrel's Curse",
-            "Marlek's Curse",
-            "Erogo's Curse",
-            "Sraskus' Curse",
-            "Enalam's Curse",
-            "Fandrel's Curse",
+            "Maniadry's Curse", -- Level 130
+            "Fandrel's Curse",  -- Level 125
+            "Lenrel's Curse",   -- Level 120
+            "Marlek's Curse",   -- Level 115
+            "Erogo's Curse",    -- Level 110
+            "Sraskus' Curse",   -- Level 105
+            "Enalam's Curse",   -- Level 100
         },
         ['SaryrnDot'] = {
             -- Stacking: Blood of Saryrn - Long Dot(42s) - Level 8+
-            "Blood of Torrentclaw",
-            "Caustic Blood",
-            "Desperate Vampyre Blood",
-            "Restless Blood",
-            "Reef Crawler Blood",
-            "Phase Spider Blood",
-            "Naeya Blood",
-            "Spinechiller Blood",
-            "Blood of Jaled'Dar",
-            "Blood of Kerafyrm",
-            "Vengeance of Ahnkaul",
-            "Blood of Yoppa",
-            "Blood of Saryrn",
-            "Ancient: Scourge of Nife",
-            "Bane of Nife",
-            "Envenomed Bolt",
-            "Venom of the Snake",
-            "Envenomed Breath",
-            "Tainted Breath",
+            "Blood of Torrentclaw",     -- Level 129
+            "Caustic Blood",            -- Level 124
+            "Desperate Vampyre Blood",  -- Level 120
+            "Restless Blood",           -- Level 115
+            "Reef Crawler Blood",       -- Level 105
+            "Phase Spider Blood",       -- Level 100
+            "Naeya Blood",              -- Level 95
+            "Spinechiller Blood",       -- Level 90
+            "Blood of Jaled'Dar",       -- Level 85
+            "Blood of Kerafyrm",        -- Level 80
+            "Vengeance of Ahnkaul",     -- Level 75
+            "Blood of Yoppa",           -- Level 70
+            "Blood of Saryrn",          -- Level 65
+            "Ancient: Scourge of Nife", -- Level 60
+            "Bane of Nife",             -- Level 56
+            "Envenomed Bolt",           -- Level 49
+            "Venom of the Snake",       -- Level 37
+            "Envenomed Breath",         -- Level 24
+            "Tainted Breath",           -- Level 8
         },
         ['UltorDot'] = {
             ---, Stacking: Breath of Ultor - Long Dot(84s) - Level 4+
-            "Breath of Pustim",
-            "Breath of the Hotariton",
-            "Breath of the Tegi",
-            "Breath of Bledrek",
-            "Breath of Hemocoraxius",
-            "Breath of Natigo",
-            "Breath of Silbar",
-            "Breath of the Shiverback",
-            "Breath of Queen Malarian",
-            "Breath of Big Bynn",
-            "Breath of Ternsmochin",
-            "Breath of Wunshi",
-            "Breath of Ultor",
-            "Pox of Bertoxxulous",
-            "Plague",
-            "Scourge",
-            "Affliction",
-            "Sicken",
+            "Breath of Pustim",         -- Level 126
+            "Breath of the Hotariton",  -- Level 121
+            "Breath of the Tegi",       -- Level 116
+            "Breath of Bledrek",        -- Level 111
+            "Breath of Hemocoraxius",   -- Level 101
+            "Breath of Natigo",         -- Level 96
+            "Breath of Silbar",         -- Level 91
+            "Breath of the Shiverback", -- Level 86
+            "Breath of Queen Malarian", -- Level 81
+            "Breath of Big Bynn",       -- Level 76
+            "Breath of Ternsmochin",    -- Level 71
+            "Breath of Wunshi",         -- Level 67
+            "Breath of Ultor",          -- Level 64
+            "Pox of Bertoxxulous",      -- Level 59
+            "Plague",                   -- Level 49
+            "Scourge",                  -- Level 31
+            "Affliction",               -- Level 19
+            "Sicken",                   -- Level 4
         },
         ['AfflictionDot'] = {
             ---, Stacking: Yubai's Affliction - Long Dot(96s) - Level 9+, used on named only for hybrid
-            "Torrentclaw's Affliction",
-            "Krizad's Affliction",
-            "Brightfeld's Affliction",
-            "Svartmane's Affliction",
-            "Rirwech's Affliction",
-            "Livio's Affliction",
-            "Falhotep's Affliction",
-            "Yubai's Affliction",
+            "Torrentclaw's Affliction", -- Level 127
+            "Krizad's Affliction",      -- Level 122
+            "Brightfeld's Affliction",  -- Level 117
+            "Svartmane's Affliction",   -- Level 112
+            "Rirwech's Affliction",     -- Level 107
+            "Livio's Affliction",       -- Level 102
+            "Falhotep's Affliction",    -- Level 97
+            "Yubai's Affliction",       -- Level 92
         },
-        ['NectarDot'] = { --almost never worth casting in a group, not currently gemmed.
-            "Nectar of Pain XIII",
-            "Nectar of Obscurity",
-            "Nectar of Pain",
-            "Nectar of Agony",
-            "Nectar of Rancor",
-            "Nectar of the Slitheren",
-            "Nectar of Torment",
-            "Nectar of Sholoth",
-            "Nectar of Anguish",
-            "Nectar of Woe",
-            "Nectar of Suffering",
-            "Nectar of Misery",
-            "Nectar of Destitution",
+        ['NectarDot'] = {               --almost never worth casting in a group, not currently gemmed.
+            "Nectar of Pain XIII",      -- Level 129
+            "Nectar of Obscurity",      -- Level 124
+            "Nectar of Destitution",    -- Level 119
+            "Nectar of Misery",         -- Level 114
+            "Nectar of Suffering",      -- Level 109
+            "Nectar of Woe",            -- Level 104
+            "Nectar of Anguish",        -- Level 99
+            "Nectar of Sholoth",        -- Level 94
+            "Nectar of Torment",        -- Level 89
+            "Nectar of the Slitheren",  -- Level 84
+            "Nectar of Rancor",         -- Level 79
+            "Nectar of Agony",          -- Level 74
+            "Nectar of Pain",           -- Level 70
         },
         ['PetSpell'] = {
             -- Pet Spell - 32+
-            "Aramna's Faithful",
-            "Suja's Faithful",
-            "Diabo Sivuela's Faithful",
-            "Grondo's Faithful",
-            "Mirtuk's Faithful",
-            "Olesira's Faithful",
-            "Kriegas' Faithful",
-            "Hilnaah's Faithful",
-            "Wurt's Faithful",
-            "Aina's Faithful",
-            "Vegu's Faithful",
-            "Kyrah's Faithful",
-            "Farrel's Companion",
-            "True Spirit",
-            "Spirit of the Howler",
-            "Frenzied Spirit",
-            "Guardian spirit",
-            "Vigilant Spirit",
-            "Companion Spirit",
+            "Aramna's Faithful",        -- Level 127
+            "Suja's Faithful",          -- Level 122
+            "Diabo Sivuela's Faithful", -- Level 117
+            "Grondo's Faithful",        -- Level 112
+            "Mirtuk's Faithful",        -- Level 107
+            "Olesira's Faithful",       -- Level 102
+            "Kriegas' Faithful",        -- Level 97
+            "Hilnaah's Faithful",       -- Level 92
+            "Wurt's Faithful",          -- Level 87
+            "Aina's Faithful",          -- Level 82
+            "Vegu's Faithful",          -- Level 77
+            "Kyrah's Faithful",         -- Level 72
+            "Farrel's Companion",       -- Level 67
+            "True Spirit",              -- Level 61
+            "Spirit of the Howler",     -- Level 55
+            "Frenzied Spirit",          -- Level 45
+            "Guardian spirit",          -- Level 41
+            "Vigilant Spirit",          -- Level 37
+            "Companion Spirit",         -- Level 32
         },
         ['PetBuffSpell'] = {
             ---Pet Buff Spell - 50+
-            "Spirit Bolstering V",
-            "Spirit Augmentation",
-            "Spirit Reinforcement",
-            "Spirit Bracing",
-            "Spirit Bolstering",
-            "Spirit Quickening",
+            "Spirit Bolstering V",  -- Level 127
+            "Spirit Augmentation",  -- Level 122
+            "Spirit Reinforcement", -- Level 117
+            "Spirit Bracing",       -- Level 112
+            "Spirit Bolstering",    -- Level 97
+            "Spirit Quickening",    -- Level 50
         },
         ['CureDisease'] = {
-            "Cure Disease",
-            "Counteract Disease",
-            "Eradicate Disease",
+            "Eradicate Disease",  -- Level 52
+            "Counteract Disease", -- Level 22
+            "Cure Disease",       -- Level 1
         },
         ['CurePoison'] = {
-            "Counteract Poison",
-            "Abolish Poison",
-            "Eradicate Poison",
+            "Eradicate Poison",  -- Level 56
+            "Counteract Poison", -- Level 26
         },
         ['CureCurse'] = {
-            -- "Eradicate Curse",      -- Level 54 , 30 counters, twice, 400 mana
-            "Remove Greater Curse", -- Level 54 , 9 counters, 5 times, 100 mana
-            "Remove Curse",         -- Level 38
-            "Remove Lesser Curse",  -- Level 24
-            "Remove Minor Curse",   -- Level 9
+            -- "Eradicate Curse",   -- Level 54, counters, twice, 400 mana
+            "Remove Greater Curse",          -- Level 54, counters, 5 times, 100 mana
+            "Remove Curse",                  -- Level 38
+            "Remove Lesser Curse",           -- Level 24
+            "Remove Minor Curse",            -- Level 9
         },
-        ['GroupRegenBuff'] = {      --Does not stack with Dicho Regen
-            "Talisman of Perseverance XV",
-            "Talisman of the Unforgettable",
-            "Talisman of the Tenacious",
-            "Talisman of the Enduring",
-            "Talisman of the Unwavering",
-            "Talisman of the Faithful",
-            "Talisman of the Steadfast",
-            "Talisman of the Indomitable",
-            "Talisman of the Reletntless",
-            "Talisman of the Resolute",
-            "Talisman of the Stalwart",
-            "Talisman of the Stoic One",
-            "Talisman of Perseverance",
-            "Regrowth of Dar Khura", -- Level 56
+        ['GroupRegenBuff'] = {               --Does not stack with Dicho Regen
+            "Talisman of Perseverance XV",   -- Level 126
+            "Talisman of the Unforgettable", -- Level 124
+            "Talisman of the Tenacious",     -- Level 119
+            "Talisman of the Enduring",      -- Level 114
+            "Talisman of the Unwavering",    -- Level 109
+            "Talisman of the Faithful",      -- Level 104
+            "Talisman of the Steadfast",     -- Level 99
+            "Talisman of the Indomitable",   -- Level 94
+            "Talisman of the Relentless",    -- Level 89
+            "Talisman of the Resolute",      -- Level 84
+            "Talisman of the Stalwart",      -- Level 79
+            "Talisman of the Stoic One",     -- Level 74
+            "Talisman of Perseverance",      -- Level 69
+            "Regrowth of Dar Khura",         -- Level 56
         },
         ['SingleRegenBuff'] = {
-            "Regrowth",
-            "Chloroplast",
-            "Regeneration", -- Level 22
+            "Regrowth",     -- Level 52
+            "Chloroplast",  -- Level 39
+            "Regeneration", -- Level 23
         },
         ['ShrinkSpell'] = {
-            "Tiny Terror",
-            "Shrink",
+            "Tiny Terror", -- Level 64
+            "Shrink",      -- Level 15
         },
     },
     ['Helpers']           = {

@@ -47,7 +47,7 @@ local _ClassConfig = {
     },
     ['AbilitySets']   = {
         ['EndRegen'] = {
-            "Third Wind Discipline", -- Level 70
+            "Third Wind Discipline", -- Level 70 Laz Custom
             -- "Second Wind",        -- Level 65
         },
         ['MonkAura'] = {
@@ -59,7 +59,7 @@ local _ClassConfig = {
             "Clawstriker's Flurry", -- Level 65
         },
         ['FistsOfWu'] = {
-            "Fists Of Wu", -- Level 65
+            "Fists of Wu", -- Level 65
         },
         ['MeleeMit'] = {
             "Impenetrable Discipline", -- Level 65

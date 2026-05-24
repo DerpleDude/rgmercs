@@ -148,7 +148,7 @@ local _ClassConfig = {
             "Ichor Guard", -- Level 56, Timer 5
         },
         ['BlockDisc'] = {
-            "Rampart Discipline",    -- Level 70
+            "Rampart Discipline",    -- Level 70 Laz Custom
             "Deflection Discipline", -- Level 59
         },
         ['LeechCurse'] = { 'Leechcurse Discipline', },
@@ -250,7 +250,7 @@ local _ClassConfig = {
             "Lifetap",               -- Level 8
         },
         ['AELifeTap'] = {
-            "Grasp of Lhranc", -- Level 69
+            "Grasp of Lhranc", -- Level 69 Laz Custom
         },
         ['BiteTap'] = {
             "Ancient: Bite of Muram", -- Level 70
@@ -302,7 +302,7 @@ local _ClassConfig = {
             "Disease Cloud",     -- Level 5
         },
         ['HateBuff'] = {         --9 minute reuse makes these somewhat ridiculous to gem on the fly.
-            "Voice of Innoruuk", -- Level 70, 15% hate, 150pt DS (slot 9), 15% decrease DS Mit (VoT AA is still better for tanking at 24%, but they stack. DS smexy)
+            "Voice of Innoruuk", -- Level 70, 15% hate, 150pt DS (slot 9), 15% decrease DS Mit (VoT AA is still better for tanking at 24%, but they stack. DS smexy) Laz Custom
             "Voice of Thule",    -- Level 65, 12% hate
             "Voice of Terris",   -- Level 60, 10% hate
             "Voice of Death",    -- Level 55, 6% hate

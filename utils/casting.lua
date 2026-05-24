@@ -1813,7 +1813,7 @@ function Casting.UseSpell(spellName, targetId, bAllowMem, bAllowDead, retryCount
         Targeting.SetTarget(targetId, true)
     end
 
-    local cmd = string.format("/cast \"%s%s\"", Config:GetSetting('UseExactSpellNames') and "=" or "", spellName)
+    local cmd = string.format("/cast \"=%s\"", spellName)
     local castTime = spell.MyCastTime() or 0
     local readyCheck = function() return me.SpellReady(spellName)() end
     -- Expose this if needed for EZServer if they have instant CD spells with 0 gcd
@@ -1926,7 +1926,7 @@ function Casting.UseSong(songName, targetId, bAllowMem, retryCount)
 
     repeat
         Casting.SetLastCastResult(Globals.Constants.CastResults.CAST_RESULT_NONE)
-        Core.DoCmd("/cast \"%s%s\"", Config:GetSetting('UseExactSpellNames') and "=" or "", songName)
+        Core.DoCmd("/cast \"=%s\"", songName)
 
         mq.delay("3s", function() return mq.TLO.Window("CastingWindow").Open() end)
         -- Cast window opening is our cross-platform "song started" signal (EMU has no "you begin singing" event).
@@ -2140,7 +2140,7 @@ function Casting.RunCastLoop(opts)
     local bAllowDead = opts.bAllowDead
     local spellRange = opts.spellRange
     local castTime = opts.castTime or 0
-    local retryCount = opts.retryCount or 2
+    local retryCount = opts.retryCount or Config:GetSetting('CastRetryCountBeta')
 
     -- give a small delay for when we need to rely on an action changing to "not ready" to detect success, this is data from the server. values tested on laz/might numerous times
     local floor = math.max(300, 3 * (mq.TLO.EverQuest.Ping() or 0))

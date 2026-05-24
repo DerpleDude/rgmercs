@@ -215,10 +215,10 @@ local _ClassConfig = {
             "Death Pact",          -- Level 51
         },
         ['TwinHealNuke'] = {
-            "Vigilant Condemnation", -- Level 71
+            "Vigilant Condemnation", -- Level 71 Laz Custom
         },
         ['RezSpell'] = {
-            "Spiritual Awakening", -- Level 65
+            "Spiritual Awakening", -- Level 65 Laz Custom
             "Reviviscence",        -- Level 56
             "Resurrection",        -- Level 47
             "Restoration",         -- Level 42

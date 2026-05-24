@@ -45,7 +45,7 @@ return {
     },
     ['AbilitySets']   = {
         ['EndRegen'] = {
-            "Third Wind Discipline", -- Level 70
+            "Third Wind Discipline", -- Level 70 Laz Custom
             -- "Second Wind",        -- Level 65
         },
         ['BerAura'] = {
@@ -81,8 +81,8 @@ return {
             "Cry Havoc", -- Level 65
         },
         ['Scream'] = { -- Stun, Throwing/Archery Dmg taken debuff
-            "Bloodcurdling Scream", -- Level 70
-            "Bewildering Scream",   -- Level 70
+            "Bloodcurdling Scream", -- Level 70 Laz Custom
+            "Bewildering Scream",   -- Level 70 Laz Custom
             "Unsettling Scream",    -- Level 65
         },
         ['StunStrike'] = {

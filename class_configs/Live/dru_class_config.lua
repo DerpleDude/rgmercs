@@ -122,723 +122,721 @@ local _ClassConfig = {
     ['AbilitySets']       = {
         ['Alliance'] = {
             --, Buff >= LVL102
-            "Bosquetender's Alliance,",
-            "Arbor Tender's Coalition",
-            "Arboreal Atonement",
-            "Ferntender's Covariance",
+            "Ferntender's Covariance",  -- Level 125
+            "Arboreal Atonement",       -- Level 120
+            "Arbor Tender's Coalition", -- Level 115
+            "Bosquetender's Alliance",  -- Level 102
         },
         ['FireAura'] = {
             -- Spell Series >= 87LVL Minimum
-            "Wildspark Aura",
-            "Wildblaze Aura",
-            "Wildfire Aura",
+            "Wildspark Aura", -- Level 97
+            "Wildblaze Aura", -- Level 92
+            "Wildfire Aura",  -- Level 87
         },
         ['IceAura'] = {
             -- Spell Series >= 88LVL Minimum -- Only Heroic Aura that will be used
-            "Frostfell Aura IX",
-            "Coldburst Aura",
-            "Nightchill Aura",
-            "Icerend Aura",
-            "Frostreave Aura",
-            "Frostweave Aura",
-            "Frostone Aura",
-            "Frostcloak Aura",
-            "Frostfell Aura",
+            "Frostfell Aura IX", -- Level 128
+            "Coldburst Aura",    -- Level 123
+            "Nightchill Aura",   -- Level 118
+            "Icerend Aura",      -- Level 113
+            "Frostreave Aura",   -- Level 108
+            "Frostweave Aura",   -- Level 103
+            "Frostone Aura",     -- Level 98
+            "Frostcloak Aura",   -- Level 93
+            "Frostfell Aura",    -- Level 88
         },
         ['HealingAura'] = {
             -- Healing Aura >= 55
-            "Aura of Life",
-            "Aura of the Grove",
+            "Aura of Life",      -- Level 70
+            "Aura of the Grove", -- Level 55
         },
         ['SingleTgtCure'] = {
             -- Single Target Multi-Cure >= 84
-            "Mastery: Sanctified Blood",
-            "Expurgated Blood",
-            "Unblemished Blood",
-            "Cleansed Blood",
-            "Perfected Blood",
-            "Purged Blood",
-            "Purified Blood",
-            "Sanctified Blood",
+            "Mastery: Sanctified Blood", -- Level 128
+            "Sanctified Blood",          -- Level 118
+            "Expurgated Blood",          -- Level 108
+            "Unblemished Blood",         -- Level 103
+            "Cleansed Blood",            -- Level 99
+            "Perfected Blood",           -- Level 94
+            "Purged Blood",              -- Level 89
+            "Purified Blood",            -- Level 84
         },
         ['CureCorrupt'] = {
-            "Mastery: Chant of the Zelniak",
-            "Chant of the Zelniak",
-            "Chant of the Wulthan",
-            "Chant of the Kromtus",
-            "Chant of Jaerol",
-            "Chant of the Izon",
-            "Chant of the Tae Ew",
-            "Chant of the Burynai",
-            "Chant of the Darkvine",
-            "Chant of the Napaea",
-            "Cure Corruption",
+            "Mastery: Chant of the Zelniak", -- Level 127
+            "Chant of the Zelniak",          -- Level 117
+            "Chant of the Wulthan",          -- Level 107
+            "Chant of the Kromtus",          -- Level 102
+            "Chant of Jaerol",               -- Level 99
+            "Chant of the Izon",             -- Level 94
+            "Chant of the Tae Ew",           -- Level 89
+            "Chant of the Burynai",          -- Level 84
+            "Chant of the Darkvine",         -- Level 79
+            "Chant of the Napaea",           -- Level 64
+            "Cure Corruption",               -- Level 61
         },
         ['GroupCure'] = {
             -- Group Multi-Cure >=91
-            "Mastery: Nightwhisper's Breeze",
-            "Nightwhisper's Breeze",
-            "Wildtender's Breeze",
-            "Copsetender's Breeze",
-            "Bosquetender's Breeze",
-            "Fawnwalker's Breeze",
+            "Mastery: Nightwhisper's Breeze", -- Level 126
+            "Nightwhisper's Breeze",          -- Level 116
+            "Wildtender's Breeze",            -- Level 106
+            "Copsetender's Breeze",           -- Level 101
+            "Bosquetender's Breeze",          -- Level 96
+            "Fawnwalker's Breeze",            -- Level 91
         },
         ['CharmSpell'] = {
             -- Charm Spells >= 14
-            "Beast's Beckoning XVIII",
-            "Beast's Bestowing",
-            "Beast's Bellowing",
-            "Beast's Beckoning",
-            "Beast's Beseeching",
-            "Beast's Bidding",
-            "Beast's Bespelling",
-            "Beast's Behest",
-            "Beast's Beguiling",
-            "Beast's Befriending",
-            "Beast's Bewitching",
-            "Beast's Beckoning",
-            "Nature's Beckon",
-            "Command of Tunare",
-            "Tunare's Request",
-            "Call of Karana",
-            "Allure of the Wild",
-            "Beguile Animals",
-            "Charm Animals",
-            "Befriend Animal",
+            "Beast's Beckoning XVIII", -- Level 126
+            "Beast's Bestowing",       -- Level 121
+            "Beast's Bellowing",       -- Level 116
+            "Beast's Beseeching",      -- Level 106
+            "Beast's Bidding",         -- Level 101
+            "Beast's Bespelling",      -- Level 96
+            "Beast's Behest",          -- Level 91
+            "Beast's Beguiling",       -- Level 86
+            "Beast's Befriending",     -- Level 81
+            "Beast's Bewitching",      -- Level 76
+            "Beast's Beckoning",       -- Level 71
+            "Beast's Beckoning",       -- Level 71
+            "Nature's Beckon",         -- Level 70
+            "Command of Tunare",       -- Level 63
+            "Tunare's Request",        -- Level 55
+            "Call of Karana",          -- Level 52
+            "Allure of the Wild",      -- Level 43
+            "Beguile Animals",         -- Level 33
+            "Charm Animals",           -- Level 23
+            "Befriend Animal",         -- Level 13
         },
         ['QuickHealSurge'] = {
             -- Main Quick heal >=75
-            "Adrenaline Surge XII",
-            "Adrenaline Fury",
-            "Adrenaline Spate",
-            "Adrenaline Deluge",
-            "Adrenaline Barrage",
-            "Adrenaline Torrent",
-            "Adrenaline Rush",
-            "Adrenaline Flood",
-            "Adrenaline Blast",
-            "Adrenaline Burst",
-            "Adrenaline Swell",
-            "Adrenaline Surge",
-            "Adrenaline Spate",
+            "Adrenaline Surge XII", -- Level 129
+            "Adrenaline Fury",      -- Level 124
+            "Adrenaline Spate",     -- Level 119
+            "Adrenaline Spate",     -- Level 119
+            "Adrenaline Deluge",    -- Level 114
+            "Adrenaline Barrage",   -- Level 109
+            "Adrenaline Torrent",   -- Level 104
+            "Adrenaline Rush",      -- Level 100
+            "Adrenaline Flood",     -- Level 95
+            "Adrenaline Blast",     -- Level 90
+            "Adrenaline Burst",     -- Level 85
+            "Adrenaline Swell",     -- Level 80
+            "Adrenaline Surge",     -- Level 75
         },
         ['QuickHeal'] = {
             -- Backup Quick heal >= LVL90
-            "Rejuvilation IX",
-            "Resuscitation",
-            "Sootheseance",
-            "Rejuvenescence",
-            "Revitalization",
-            "Resurgence",
-            "Vivification",
-            "Invigoration",
-            "Rejuvilation",
-            "Sootheseance",
+            "Rejuvilation IX", -- Level 130
+            "Resuscitation",   -- Level 125
+            "Sootheseance",    -- Level 120
+            "Sootheseance",    -- Level 120
+            "Rejuvenescence",  -- Level 115
+            "Revitalization",  -- Level 110
+            "Resurgence",      -- Level 105
+            "Vivification",    -- Level 100
+            "Invigoration",    -- Level 95
+            "Rejuvilation",    -- Level 90
         },
         ['LongHeal'] = {
             -- Long Heal >= 1 -- skipped 10s cast heals.
-            "Puravida XI",
-            "Vivavida",
-            "Clotavida",
-            "Viridavida",
-            "Curavida",
-            "Panavida",
-            "Sterivida",
-            "Sanavida",
-            "Benevida",
-            "Granvida",
-            "Puravida",
-            "Pure Life",
-            "Chlorotrope",
-            "Sylvan Infusion",
-            "Nature's Infusion",
-            "Nature's Touch",
-            "Chloroblast",
-            "Forest's Renewal",
-            "Superior Healing",
-            "Nature's Renewal",
-            "Healing Water",
-            "Greater Healing",
-            "Healing",
-            "Light Healing",
-            "Minor Healing",
+            "Puravida XI",       -- Level 127
+            "Vivavida",          -- Level 122
+            "Clotavida",         -- Level 117
+            "Viridavida",        -- Level 112
+            "Curavida",          -- Level 107
+            "Panavida",          -- Level 102
+            "Sterivida",         -- Level 97
+            "Sanavida",          -- Level 92
+            "Benevida",          -- Level 87
+            "Granvida",          -- Level 82
+            "Puravida",          -- Level 77
+            "Pure Life",         -- Level 72
+            "Chlorotrope",       -- Level 68
+            "Sylvan Infusion",   -- Level 65
+            "Nature's Infusion", -- Level 63
+            "Nature's Touch",    -- Level 60
+            "Chloroblast",       -- Level 55
+            "Forest's Renewal",  -- Level 49
+            "Superior Healing",  -- Level 44
+            "Nature's Renewal",  -- Level 39
+            "Healing Water",     -- Level 34
+            "Greater Healing",   -- Level 29
+            "Healing",           -- Level 19
+            "Light Healing",     -- Level 9
+            "Minor Healing",     -- Level 1
         },
         ['QuickGroupHeal'] = {
             -- Quick Group heal >= LVL78
-            "Survival of the Fittest XI",
-            "Survival of the Heroic",
-            "Survival of the Unrelenting",
-            "Survival of the Favored",
-            "Survival of the Auspicious",
-            "Survival of the Serendipitous",
-            "Survival of the Fortuitous",
-            "Survival of the Prosperous",
-            "Survival of the Propitious",
-            "Survival of the Felicitous",
-            "Survival of the Fittest",
-            "Survival of the Unrelenting",
+            "Survival of the Fittest XI",    -- Level 128
+            "Survival of the Heroic",        -- Level 123
+            "Survival of the Unrelenting",   -- Level 118
+            "Survival of the Unrelenting",   -- Level 118
+            "Survival of the Favored",       -- Level 113
+            "Survival of the Auspicious",    -- Level 108
+            "Survival of the Serendipitous", -- Level 103
+            "Survival of the Fortuitous",    -- Level 98
+            "Survival of the Prosperous",    -- Level 93
+            "Survival of the Propitious",    -- Level 88
+            "Survival of the Felicitous",    -- Level 83
+            "Survival of the Fittest",       -- Level 78
         },
         ['LongGroupHeal'] = {
             -- Long Group heal >= LVL 70
-            "Lunamend",
-            "Lunacea",
-            "Lunarush",
-            "Lunalesce",
-            "Lunasalve",
-            "Lunasoothe",
-            "Lunassuage",
-            "Lunalleviation",
-            "Lunamelioration",
-            "Lunulation",
-            "Crescentbloom",
-            "Lunarlight",
-            "Moonshadow",
-            "Lunarush",
+            "Lunamend",        -- Level 130
+            "Lunacea",         -- Level 125
+            "Lunarush",        -- Level 120
+            "Lunarush",        -- Level 120
+            "Lunalesce",       -- Level 115
+            "Lunasalve",       -- Level 110
+            "Lunasoothe",      -- Level 105
+            "Lunassuage",      -- Level 100
+            "Lunalleviation",  -- Level 95
+            "Lunamelioration", -- Level 90
+            "Lunulation",      -- Level 85
+            "Crescentbloom",   -- Level 80
+            "Lunarlight",      -- Level 75
+            "Moonshadow",      -- Level 70
         },
         ['PromHeal'] = {
             -- Promised Heals Line Druid
-            "Promised Reknit X",
-            "Promised Regrowth",
-            "Promised Reknit",
-            "Promised Replenishment",
-            "Promised Revitalization",
-            "Promised Recovery",
-            "Promised Regeneration",
-            "Promised Rebirth",
-            "Promised Refreshment",
-            "Promised Revivification",
+            "Promised Reknit X",       -- Level 127
+            "Promised Regrowth",       -- Level 122
+            "Promised Revivification", -- Level 117
+            "Promised Refreshment",    -- Level 112
+            "Promised Rebirth",        -- Level 107
+            "Promised Regeneration",   -- Level 102
+            "Promised Recovery",       -- Level 97
+            "Promised Revitalization", -- Level 92
+            "Promised Replenishment",  -- Level 87
+            "Promised Reknit",         -- Level 82
         },
         ['FrostDebuff'] = {
             -- Frost Debuff Series -- >= 74LVL -- On Bar
-            "Gelid Frost XI",
-            "Mythic Frost",
-            "Primal Frost",
-            "Restless Frost",
-            "Glistening Frost",
-            "Moonbright Frost",
-            "Lustrous Frost",
-            "Silver Frost",
-            "Argent Frost",
-            "Blanched Frost",
-            "Gelid Frost",
-            "Hoar Frost",
+            "Gelid Frost XI",   -- Level 129
+            "Mythic Frost",     -- Level 124
+            "Primal Frost",     -- Level 119
+            "Restless Frost",   -- Level 114
+            "Glistening Frost", -- Level 109
+            "Moonbright Frost", -- Level 104
+            "Lustrous Frost",   -- Level 99
+            "Silver Frost",     -- Level 94
+            "Argent Frost",     -- Level 89
+            "Blanched Frost",   -- Level 84
+            "Gelid Frost",      -- Level 79
+            "Hoar Frost",       -- Level 74
         },
         ['RoDebuff'] = {
             -- Ro Debuff Series -- >= 37LVL -- AA Starts at LVL (Single Target) -- On Bar Until AA
-            "Grasp of Ro IX",
-            "Clench of Ro",
-            "Cinch of Ro",
-            "Clasp of Ro",
-            "Cowl of Ro",
-            "Crush of Ro",
-            "Cowl of Ro",
-            "Clutch of Ro",
-            "Grip of Ro",
-            "Grasp of Ro",
-            "Sun's Corona",
-            "Ro's Illumination",
-            "Ro's Smoldering Disjunction",
-            "Fixation of Ro",
-            "Ro's Fiery Sundering",
+            "Grasp of Ro IX",              -- Level 126
+            "Clench of Ro",                -- Level 121
+            "Cinch of Ro",                 -- Level 116
+            "Clasp of Ro",                 -- Level 111
+            "Cowl of Ro",                  -- Level 106
+            "Cowl of Ro",                  -- Level 106
+            "Crush of Ro",                 -- Level 101
+            "Clutch of Ro",                -- Level 96
+            "Grip of Ro",                  -- Level 91
+            "Grasp of Ro",                 -- Level 86
+            "Sun's Corona",                -- Level 67
+            "Ro's Illumination",           -- Level 62
+            "Ro's Smoldering Disjunction", -- Level 56
+            "Fixation of Ro",              -- Level 42
+            "Ro's Fiery Sundering",        -- Level 37
         },
         ['RoDebuffAE'] = {
             -- Ro AE Debuff Series -- >= 97LVL -- AA Starts at LVL
-            "Pillar of Ro VII",
-            "Visage of Ro",
-            "Scrutiny of Ro",
-            "Glare of Ro",
-            "Gaze of Ro",
-            "Column of Ro",
-            "Pillar of Ro",
+            "Pillar of Ro VII", -- Level 127
+            "Visage of Ro",     -- Level 122
+            "Scrutiny of Ro",   -- Level 117
+            "Glare of Ro",      -- Level 112
+            "Gaze of Ro",       -- Level 107
+            "Column of Ro",     -- Level 102
+            "Pillar of Ro",     -- Level 97
         },
         ['IceBreathDebuff'] = {
             -- Ice Breath Series >= 63LVL -- On Bar
-            "Glacier Breath XIV",
-            "Algid Breath",
-            "Twilight Breath",
-            "Icerend Breath",
-            "Frostreave Breath",
-            "Blizzard Breath",
-            "Frosthowl Breath",
-            "Encompassing Breath",
-            "Bracing Breath",
-            "Coldwhisper Breath",
-            "Chillvapor Breath",
-            "Icefall Breath",
-            "Glacier Breath",
-            "E`ci's Frosty Breath",
+            "Glacier Breath XIV",   -- Level 127
+            "Algid Breath",         -- Level 122
+            "Twilight Breath",      -- Level 117
+            "Icerend Breath",       -- Level 112
+            "Frostreave Breath",    -- Level 107
+            "Blizzard Breath",      -- Level 102
+            "Frosthowl Breath",     -- Level 97
+            "Encompassing Breath",  -- Level 92
+            "Bracing Breath",       -- Level 87
+            "Coldwhisper Breath",   -- Level 82
+            "Chillvapor Breath",    -- Level 77
+            "Icefall Breath",       -- Level 72
+            "Glacier Breath",       -- Level 67
+            "E`ci's Frosty Breath", -- Level 63
         },
         ['SkinDebuff'] = {
             -- Skin Debuff Series >= 73LVL -- On Bar
-            "Skin to Lichen",
-            "Skin to Sumac",
-            "Skin to Seedlings",
-            "Skin to Foliage",
-            "Skin to Leaves",
-            "Skin to Flora",
-            "Skin to Mulch",
-            "Skin to Vines",
+            "Skin to Lichen",    -- Level 118
+            "Skin to Sumac",     -- Level 108
+            "Skin to Seedlings", -- Level 98
+            "Skin to Foliage",   -- Level 93
+            "Skin to Leaves",    -- Level 88
+            "Skin to Flora",     -- Level 83
+            "Skin to Mulch",     -- Level 78
+            "Skin to Vines",     -- Level 73
         },
         ['ReptileCombatInnate'] = {
             -- Reptile Combat Innate >= 68LVL -- On Bar
-            "Skin of the Reptile XII",
-            "Chitin of the Reptile",
-            "Bulwark of the Reptile",
-            "Defense of the Reptile",
-            "Guard of the Reptile",
-            "Pellicle of the Reptile",
-            "Husk of the Reptile",
-            "Hide of the Reptile",
-            "Shell of the Reptile",
-            "Carapace of the Reptile",
-            "Scales of the Reptile",
-            "Skin of the Reptile",
+            "Skin of the Reptile XII", -- Level 129
+            "Chitin of the Reptile",   -- Level 124
+            "Bulwark of the Reptile",  -- Level 119
+            "Defense of the Reptile",  -- Level 114
+            "Guard of the Reptile",    -- Level 109
+            "Pellicle of the Reptile", -- Level 104
+            "Husk of the Reptile",     -- Level 99
+            "Hide of the Reptile",     -- Level 94
+            "Shell of the Reptile",    -- Level 89
+            "Carapace of the Reptile", -- Level 84
+            "Scales of the Reptile",   -- Level 79
+            "Skin of the Reptile",     -- Level 68
         },
         ['NaturesWrathDot'] = {
             -- Natures Wrath DOT Line >= 75LVL -- On Bar
-            "Nature's Blazing Wrath XII",
-            "Nature's Fervid Wrath",
-            "Nature's Blistering Wrath",
-            "Nature's Fiery Wrath",
-            "Nature's Withering Wrath",
-            "Nature's Scorching Wrath",
-            "Nature's Incinerating Wrath",
-            "Nature's Searing Wrath",
-            "Nature's Burning Wrath",
-            "Nature's Blazing Wrath",
-            "Nature's Sweltering Wrath",
-            "Nature's Boiling Wrath",
+            "Nature's Blazing Wrath XII",  -- Level 130
+            "Nature's Boiling Wrath",      -- Level 125
+            "Nature's Sweltering Wrath",   -- Level 120
+            "Nature's Fervid Wrath",       -- Level 115
+            "Nature's Blistering Wrath",   -- Level 110
+            "Nature's Fiery Wrath",        -- Level 105
+            "Nature's Withering Wrath",    -- Level 100
+            "Nature's Scorching Wrath",    -- Level 95
+            "Nature's Incinerating Wrath", -- Level 90
+            "Nature's Searing Wrath",      -- Level 85
+            "Nature's Burning Wrath",      -- Level 80
+            "Nature's Blazing Wrath",      -- Level 75
         },
         ['HordeDot'] = {
-            "Horde of Spitewasps",
-            "Horde of Hotaria",
-            "Horde of Duskwigs",
-            "Horde of Hyperboreads",
-            "Horde of Polybiads",
-            "Horde of Aculeids",
-            "Horde of Mutillids",
-            "Horde of Vespids",
-            "Horde of Scoriae",
-            "Horde of the Hive",
-            "Horde of Fireants",
-            "Swarm of Fireants",
-            "Wasp Swarm",
-            "Swarming Death",
-            "Winged Death",
-            "Drifting Death",
-            "Drones of Doom",
-            "Creeping Crud",
-            "Stinging Swarm",
+            "Horde of Spitewasps",   -- Level 128
+            "Horde of Hotaria",      -- Level 123
+            "Horde of Duskwigs",     -- Level 118
+            "Horde of Hyperboreads", -- Level 113
+            "Horde of Polybiads",    -- Level 108
+            "Horde of Aculeids",     -- Level 103
+            "Horde of Mutillids",    -- Level 98
+            "Horde of Vespids",      -- Level 93
+            "Horde of Scoriae",      -- Level 88
+            "Horde of the Hive",     -- Level 83
+            "Horde of Fireants",     -- Level 78
+            "Swarm of Fireants",     -- Level 73
+            "Wasp Swarm",            -- Level 68
+            "Swarming Death",        -- Level 63
+            "Winged Death",          -- Level 53
+            "Drifting Death",        -- Level 40
+            "Drones of Doom",        -- Level 32
+            "Creeping Crud",         -- Level 24
+            "Stinging Swarm",        -- Level 10
         },
         ['SunDot'] = {
             -- SUN Dot Line >= 49LVL -- On Bar
-            "Sunscorch XII",
-            "Sunscald",
-            "Sunpyre",
-            "Sunshock",
-            "Sunflame",
-            "Sunflash",
-            "Sunblaze",
-            "Sunscorch",
-            "Sunbrand",
-            "Sunsinge",
-            "Sunsear",
-            "Sunscorch",
-            "Vengeance of the Sun",
-            "Vengeance of Tunare",
-            "Vengeance of Nature",
-            "Vengeance of the Wild",
+            "Sunscorch XII",         -- Level 129
+            "Sunscald",              -- Level 124
+            "Sunpyre",               -- Level 119
+            "Sunshock",              -- Level 114
+            "Sunflame",              -- Level 109
+            "Sunflash",              -- Level 104
+            "Sunblaze",              -- Level 99
+            "Sunbrand",              -- Level 89
+            "Sunsinge",              -- Level 84
+            "Sunsear",               -- Level 79
+            "Sunscorch",             -- Level 74
+            "Sunscorch",             -- Level 74
+            "Vengeance of the Sun",  -- Level 69
+            "Vengeance of Tunare",   -- Level 64
+            "Vengeance of Nature",   -- Level 55
+            "Vengeance of the Wild", -- Level 49
         },
         ['MoonbeamDot'] = {
-            "Gelid Moonbeam IX",
-            "Mythical Moonbeam",
-            "Onyx Moonbeam",
-            "Opaline Moonbeam",
-            "Pearlescent Moonbeam",
-            "Argent Moonbeam",
-            "Frigid Moonbeam",
-            "Algid Moonbeam",
-            "Gelid Moonbeam",
+            "Gelid Moonbeam IX",    -- Level 129
+            "Mythical Moonbeam",    -- Level 124
+            "Onyx Moonbeam",        -- Level 119
+            "Opaline Moonbeam",     -- Level 114
+            "Pearlescent Moonbeam", -- Level 109
+            "Argent Moonbeam",      -- Level 104
+            "Frigid Moonbeam",      -- Level 99
+            "Algid Moonbeam",       -- Level 94
+            "Gelid Moonbeam",       -- Level 89
         },
         ['SunrayDot'] = {
-            "Blistering Sunray XII",
-            "Searing Sunray",
-            "Tenebrous Sunray",
-            "Erupting Sunray",
-            "Overwhelming Sunray",
-            "Consuming Sunray",
-            "Incinerating Sunray",
-            "Blazing Sunray",
-            "Scorching Sunray",
-            "Withering Sunray",
-            "Torrid Sunray",
-            "Blistering Sunray",
-            "Immolation of the Sun",
-            "Sylvan Embers",
-            "Immolation of Ro",
-            "Breath of Ro",
-            "Immolate",
-            "Flame Lick",
+            "Blistering Sunray XII", -- Level 126
+            "Searing Sunray",        -- Level 121
+            "Tenebrous Sunray",      -- Level 116
+            "Erupting Sunray",       -- Level 111
+            "Overwhelming Sunray",   -- Level 106
+            "Consuming Sunray",      -- Level 101
+            "Incinerating Sunray",   -- Level 96
+            "Blazing Sunray",        -- Level 91
+            "Scorching Sunray",      -- Level 86
+            "Withering Sunray",      -- Level 81
+            "Torrid Sunray",         -- Level 76
+            "Blistering Sunray",     -- Level 71
+            "Immolation of the Sun", -- Level 67
+            "Sylvan Embers",         -- Level 65
+            "Immolation of Ro",      -- Level 62
+            "Breath of Ro",          -- Level 52
+            "Immolate",              -- Level 25
+            "Flame Lick",            -- Level 1
         },
         ['RemoteMoonDD'] = {
             -- Remote Moon DD >= 99LVL
-            "Remote Moonfire VII",
-            "Remote Moonshiver",
-            "Remote Moonchill",
-            "Remote Moonrake",
-            "Remote Moonflash",
-            "Remote Moonflame",
-            "Remote Moonfire",
+            "Remote Moonfire VII", -- Level 129
+            "Remote Moonshiver",   -- Level 124
+            "Remote Moonchill",    -- Level 119
+            "Remote Moonrake",     -- Level 114
+            "Remote Moonflash",    -- Level 109
+            "Remote Moonflame",    -- Level 104
+            "Remote Moonfire",     -- Level 99
         },
         ['RemoteSunDD'] = {
             -- Remote Sun DD >= 83LVL
-            "Remote Sunflare X",
-            "Remote Sunscorch",
-            "Remote Sunbolt",
-            "Remote Sunshock",
-            "Remote Sunblaze",
-            "Remote Sunflash",
-            "Remote Sunfire",
-            "Remote Sunburst",
-            "Remote Sunflare",
-            "Remote Manaflux",
+            "Remote Sunflare X", -- Level 130
+            "Remote Sunscorch",  -- Level 123
+            "Remote Sunbolt",    -- Level 118
+            "Remote Sunshock",   -- Level 113
+            "Remote Sunblaze",   -- Level 108
+            "Remote Sunflash",   -- Level 103
+            "Remote Sunfire",    -- Level 98
+            "Remote Sunburst",   -- Level 93
+            "Remote Sunflare",   -- Level 88
+            "Remote Manaflux",   -- Level 83
         },
         ['RoarDD'] = {
             -- Roar DD >= 93LVL
-            "Katabatic Roar VIII",
-            "Tempest Roar",
-            "Bloody Roar",
-            "Typhonic Roar",
-            "Cyclonic Roar",
-            "Anabatic Roar",
-            "Katabatic Roar",
-            "Roar of Kolos",
+            "Katabatic Roar VIII", -- Level 128
+            "Tempest Roar",        -- Level 123
+            "Bloody Roar",         -- Level 118
+            "Typhonic Roar",       -- Level 113
+            "Cyclonic Roar",       -- Level 108
+            "Anabatic Roar",       -- Level 103
+            "Katabatic Roar",      -- Level 98
+            "Roar of Kolos",       -- Level 93
         },
         ['QuickRoarDD'] = {
             -- Quick Cast Roar Series -- will be replaced by roar at lvl 93
-            "Shattering of the Stormborn",
-            "Revelry of the Stormborn",
-            "Bedlam of the Sotrmborn",
-            "Maelstrom of the Stormborn",
-            "Thunderbolt of the Stormborn",
-            "Typhoon of the Stormborn",
-            "Whirlwind of the Stormborn",
-            "Cyclone of the Stormborn",
-            "Shear of the Stormborn",
-            "Squall of the Stormborn",
-            "Tempest of the Stormborn",
-            "Gale of the Stormborn",
-            "Stormwatch",
-            "Storm's Fury",
-            "Dustdevil",
-            "Fury of Air",
+            "Shattering of the Stormborn",  -- Level 126
+            "Revelry of the Stormborn",     -- Level 121
+            "Bedlam of the Stormborn",      -- Level 116
+            "Maelstrom of the Stormborn",   -- Level 111
+            "Thunderbolt of the Stormborn", -- Level 106
+            "Typhoon of the Stormborn",     -- Level 101
+            "Whirlwind of the Stormborn",   -- Level 96
+            "Cyclone of the Stormborn",     -- Level 91
+            "Shear of the Stormborn",       -- Level 86
+            "Squall of the Stormborn",      -- Level 81
+            "Tempest of the Stormborn",     -- Level 76
+            "Gale of the Stormborn",        -- Level 71
+            "Stormwatch",                   -- Level 66
+            "Storm's Fury",                 -- Level 61
+            "Dustdevil",                    -- Level 43
+            "Fury of Air",                  -- Level 30
         },
         ['DichoSpell'] = {
             -- Dicho Spell >= 101LVL
-            "Ecliptic Winds",
-            "Composite Winds",
-            "Dissident Winds",
-            "Dichotomic Winds",
-            "Reciprocal Winds",
+            "Reciprocal Winds", -- Level 121
+            "Ecliptic Winds",   -- Level 116
+            "Composite Winds",  -- Level 111
+            "Dissident Winds",  -- Level 106
+            "Dichotomic Winds", -- Level 101
         },
         ['WinterFireDD'] = {
             -- Winters Fire DD Line >= 73LVL -- Using for Low level Fire DD as well
-            "Winder's Wildflame XII",
-            "Winder's Wildgale",
-            "Winter's Wildbrume",
-            "Winter's Wildshock",
-            "Winter's Wildblaze",
-            "Winter's Wildflame",
-            "Winter's Wildfire",
-            "Winter's Sear",
-            "Winter's Pyre",
-            "Winter's Flare",
-            "Winter's Blaze",
-            "Winter's Flame",
-            "Solstice Strike",
-            "Sylvan Fire",
-            "Summer's Flame",
-            "Wildfire",
-            "Scoriae",
-            "Starfire",
-            "Firestrike",
-            "Combust",
-            "Ignite",
-            "Burst of Fire",
-            "Burst of Flame",
+            "Winter's Wildflame XII", -- Level 128
+            "Winter's Wildgale",      -- Level 123
+            "Winter's Wildbrume",     -- Level 118
+            "Winter's Wildshock",     -- Level 113
+            "Winter's Wildblaze",     -- Level 108
+            "Winter's Wildflame",     -- Level 103
+            "Winter's Wildfire",      -- Level 98
+            "Winter's Sear",          -- Level 93
+            "Winter's Pyre",          -- Level 88
+            "Winter's Flare",         -- Level 83
+            "Winter's Blaze",         -- Level 78
+            "Winter's Flame",         -- Level 73
+            "Solstice Strike",        -- Level 69
+            "Sylvan Fire",            -- Level 65
+            "Summer's Flame",         -- Level 64
+            "Wildfire",               -- Level 59
+            "Scoriae",                -- Level 54
+            "Starfire",               -- Level 48
+            "Firestrike",             -- Level 38
+            "Combust",                -- Level 28
+            "Ignite",                 -- Level 8
+            "Burst of Fire",          -- Level 3
+            "Burst of Flame",         -- Level 1
         },
         ['ChillDot'] = {
             -- Chill DOT Line -- >= 95LVL -- Used for Burns
-            "Chill of the Grovetender",
-            "Chill of the Ferntender",
-            "Chill of the Dusksage Tender",
-            "Chill of the Arbor Tender",
-            "Chill of the Wildtender",
-            "Chill of the Copsetender",
-            "Chill of the Visionary",
-            "Chill of the Natureward",
+            "Chill of the Grovetender",     -- Level 130
+            "Chill of the Ferntender",      -- Level 125
+            "Chill of the Dusksage Tender", -- Level 120
+            "Chill of the Arbor Tender",    -- Level 115
+            "Chill of the Wildtender",      -- Level 110
+            "Chill of the Copsetender",     -- Level 105
+            "Chill of the Visionary",       -- Level 100
+            "Chill of the Natureward",      -- Level 95
         },
         ['RootSpells'] = {
             -- Root Spells
-            "Vinelash Assault",
-            "Vinelash Cascade",
-            "Spore Spiral",
-            "Savage Roots",
-            "Earthen Roots",
-            "Entrapping Roots",
-            "Engorging Roots",
-            "Engulfing Roots",
-            "Enveloping Roots",
-            "Ensnaring Roots",
-            "Grasping Roots",
+            "Vinelash Assault", -- Level 97
+            "Vinelash Cascade", -- Level 72
+            "Spore Spiral",     -- Level 69
+            "Savage Roots",     -- Level 64
+            "Earthen Roots",    -- Level 61
+            "Entrapping Roots", -- Level 60
+            "Engorging Roots",  -- Level 56
+            "Engulfing Roots",  -- Level 45
+            "Enveloping Roots", -- Level 36
+            "Ensnaring Roots",  -- Level 21
+            "Grasping Roots",   -- Level 2
         },
         ['SnareSpell'] = {
             -- Snare Spells
-            "Thornmaw Vines",
-            "Serpent Vines",
-            "Entangle",
-            "Mire Thorns",
-            "Bonds of Tunare",
-            "Ensnare",
-            "Snare",
-            "Tangling Weeds",
+            "Thornmaw Vines",  -- Level 97
+            "Serpent Vines",   -- Level 69
+            "Entangle",        -- Level 61
+            "Mire Thorns",     -- Level 61
+            "Bonds of Tunare", -- Level 57
+            "Ensnare",         -- Level 26
+            "Snare",           -- Level 1
+            "Tangling Weeds",  -- Level 1
         },
         ['TwinHealNuke'] = {
-            "Sundew Blessing X",
-            "Sunbliss Blessing",
-            "Sundew Blessing",
-            "Sunrise Blessing",
-            "Sunbreeze Blessing",
-            "Sunbeam Blessing",
-            "Sunfire Blessing",
-            "Sunflash Blessing",
-            "Sunrake Blessing",
-            "Sunwarmth Blessing",
+            "Sundew Blessing X",  -- Level 128
+            "Sunbliss Blessing",  -- Level 123
+            "Sunwarmth Blessing", -- Level 119
+            "Sunrake Blessing",   -- Level 114
+            "Sunflash Blessing",  -- Level 109
+            "Sunfire Blessing",   -- Level 104
+            "Sunbeam Blessing",   -- Level 99
+            "Sunbreeze Blessing", -- Level 94
+            "Sunrise Blessing",   -- Level 89
+            "Sundew Blessing",    -- Level 84
         },
         ['IceNuke'] = {
-            "Rime Crystals XII",
-            "Ice",
-            "Frost",
-            "Moonfire",
-            "Winter's Frost",
-            "Glitterfrost",
-            "Rime Crystals",
-            "Hoar Crystals",
-            "Glaciating Crystals",
-            "Argent Crystals",
-            "Sterlingfrost Crystals",
-            "Gelid Crystals",
-            "Frostweave Crystals",
-            "Frostreave Crystals",
-            "Icerend Crystals",
-            "Moonwhisper Crystals",
-            "Coldbite Crystals",
+            "Rime Crystals XII",      -- Level 130
+            "Coldbite Crystals",      -- Level 125
+            "Moonwhisper Crystals",   -- Level 120
+            "Icerend Crystals",       -- Level 115
+            "Frostreave Crystals",    -- Level 110
+            "Frostweave Crystals",    -- Level 105
+            "Gelid Crystals",         -- Level 100
+            "Sterlingfrost Crystals", -- Level 95
+            "Argent Crystals",        -- Level 90
+            "Glaciating Crystals",    -- Level 85
+            "Hoar Crystals",          -- Level 80
+            "Rime Crystals",          -- Level 75
+            "Glitterfrost",           -- Level 70
+            "Winter's Frost",         -- Level 65
+            "Moonfire",               -- Level 60
+            "Frost",                  -- Level 55
+            "Ice",                    -- Level 47
         },
         ['IceRainNuke'] = {
-            "Cascade of Hail XVIII",
-            "Cascade of Hail",
-            "Pogonip",
-            "Avalanche",
-            "Blizzard",
-            "Winter's Storm",
-            "Tempest Wind",
-            "Cloudburst Hail",
-            "Torrential Hail",
-            "Cascading Hail",
-            "Cyclonic Hail",
-            "Crashing Hail",
-            "Hailstorm",
-            "Plummeting Hail",
-            "Plunging Hail",
-            "Tempestuous Hail",
-            "Howling Hail",
-            "Unrelenting Hail",
+            "Cascade of Hail XVIII", -- Level 127
+            "Unrelenting Hail",      -- Level 121
+            "Howling Hail",          -- Level 116
+            "Tempestuous Hail",      -- Level 111
+            "Plunging Hail",         -- Level 106
+            "Plummeting Hail",       -- Level 101
+            "Hailstorm",             -- Level 96
+            "Crashing Hail",         -- Level 91
+            "Cyclonic Hail",         -- Level 86
+            "Cascading Hail",        -- Level 81
+            "Torrential Hail",       -- Level 76
+            "Cloudburst Hail",       -- Level 71
+            "Tempest Wind",          -- Level 66
+            "Winter's Storm",        -- Level 61
+            "Blizzard",              -- Level 54
+            "Avalanche",             -- Level 37
+            "Pogonip",               -- Level 22
+            "Cascade of Hail",       -- Level 12
         },
         ['ShroomPet'] = {
             --Druid Mushroom DOT Pet Line >= 84LVL --used for mana savings
-            "Mycelid Assault",
-            "Saprophyte Assault",
-            "Chytrid Assault",
-            "Fungusoid Assault",
-            "Sporali Storm",
-            "Sporali Assault",
-            "Myconid Assault",
-            "Polyporous Assault",
-            "Blast of Hypergrowth",
+            "Mycelid Assault",      -- Level 124
+            "Saprophyte Assault",   -- Level 119
+            "Chytrid Assault",      -- Level 114
+            "Fungusoid Assault",    -- Level 109
+            "Sporali Storm",        -- Level 104
+            "Sporali Assault",      -- Level 99
+            "Myconid Assault",      -- Level 94
+            "Polyporous Assault",   -- Level 89
+            "Blast of Hypergrowth", -- Level 84
         },
         ['IceDD'] = {
             -- Ice Nuke DD --Gap Filler
-            "Moonfire",
-            "Frost",
+            "Moonfire", -- Level 60
+            "Frost",    -- Level 55
         },
         ['SelfShield'] = {
             -- Self Shield Buff
-            "Brackenbriar Coat",
-            "Bramblespike Coat",
-            "Shadespine Coat",
-            "Icebriar Coat",
-            "Daggerspike Coat",
-            "Daggerspur Coat",
-            "Spikethistle Coat",
-            "Spineburr Coat",
-            "Bonebriar Coat",
-            "Brierbloom Coat",
-            "Viridithorn Coat",
-            "Viridicoat",
-            "Nettlecoat",
-            "Brackencoat",
-            "Bladecoat",
-            "Thorncoat",
-            "Spikecoat",
-            "Bramblecoat",
-            "Barbcoat",
-            "Thistlecoat",
+            "Brackenbriar Coat", -- Level 128
+            "Bramblespike Coat", -- Level 123
+            "Shadespine Coat",   -- Level 118
+            "Icebriar Coat",     -- Level 113
+            "Daggerspike Coat",  -- Level 108
+            "Daggerspur Coat",   -- Level 103
+            "Spikethistle Coat", -- Level 98
+            "Spineburr Coat",    -- Level 93
+            "Bonebriar Coat",    -- Level 88
+            "Brierbloom Coat",   -- Level 83
+            "Viridithorn Coat",  -- Level 78
+            "Viridicoat",        -- Level 73
+            "Nettlecoat",        -- Level 68
+            "Brackencoat",       -- Level 64
+            "Bladecoat",         -- Level 56
+            "Thorncoat",         -- Level 47
+            "Spikecoat",         -- Level 37
+            "Bramblecoat",       -- Level 27
+            "Barbcoat",          -- Level 17
+            "Thistlecoat",       -- Level 7
         },
         ['SelfManaRegen'] = {
             -- Self mana Regen Buff
-            "Mask of the Grovetender",
-            "Mask of the Ferntender",
-            "Mask of the Dusksage Tender",
-            "Mask of the Arbor Tender",
-            "Mask of the Wildtender",
-            "Mask of the Copsetender",
-            "Mask of the Bosquetender",
-            "Mask of the Thicket Dweller",
-            "Mask of the Arboreal",
-            "Mask of the Raptor",
-            "Mask of the Shadowcat",
-            "Mask of the Wild",
-            "Mask of the Forest",
-            "Mask of the Stalker",
-            "Mask of the Hunter",
+            "Mask of the Grovetender",     -- Level 130
+            "Mask of the Ferntender",      -- Level 125
+            "Mask of the Dusksage Tender", -- Level 120
+            "Mask of the Arbor Tender",    -- Level 115
+            "Mask of the Wildtender",      -- Level 110
+            "Mask of the Copsetender",     -- Level 105
+            "Mask of the Bosquetender",    -- Level 100
+            "Mask of the Thicket Dweller", -- Level 95
+            "Mask of the Arboreal",        -- Level 90
+            "Mask of the Raptor",          -- Level 85
+            "Mask of the Shadowcat",       -- Level 80
+            "Mask of the Wild",            -- Level 70
+            "Mask of the Forest",          -- Level 65
+            "Mask of the Stalker",         -- Level 60
+            "Mask of the Hunter",          -- Level 60
         },
         ['HPTypeOneGroup'] = {
-            "Grovewood Blessing",
-            "Emberquartz Blessing",
-            "Luclinite Blessing",
-            "Opaline Blessing",
-            "Arcronite Blessing",
-            "Shieldstone Blessing",
-            "Granitebark Blessing",
-            "Stonebark Blessing",
-            "Blessing of the Timbercore",
-            "Blessing of the Heartwood",
-            "Blessing of the Ironwood",
-            "Blessing of the Direwild",
-            "Blessing of Steeloak",
-            "Blessing of the Nine",
-            "Protection of the Glades",
-            "Protection of Nature",
-            "Protection of Diamond",
-            "Protection of Steel",
-            "Protection of Rock",
-            "Protection of Wood",
-            'Skin like Wood',
+            "Grovewood Blessing",         -- Level 127
+            "Emberquartz Blessing",       -- Level 125
+            "Luclinite Blessing",         -- Level 120
+            "Opaline Blessing",           -- Level 115
+            "Arcronite Blessing",         -- Level 110
+            "Shieldstone Blessing",       -- Level 105
+            "Granitebark Blessing",       -- Level 100
+            "Stonebark Blessing",         -- Level 95
+            "Blessing of the Timbercore", -- Level 90
+            "Blessing of the Heartwood",  -- Level 85
+            "Blessing of the Ironwood",   -- Level 80
+            "Blessing of the Direwild",   -- Level 75
+            "Blessing of Steeloak",       -- Level 70
+            "Blessing of the Nine",       -- Level 65
+            "Protection of the Glades",   -- Level 60
+            "Protection of Nature",       -- Level 49
+            "Protection of Diamond",      -- Level 39
+            "Protection of Steel",        -- Level 27
+            "Protection of Rock",         -- Level 19
+            "Protection of Wood",         -- Level 9
         },
         ['TempHPBuff'] = {
             -- Temp Health -- Focus on Tank
-            "Wild Growth X",
-            "Overwhelming Growth",
-            "Fervent Growth",
-            "Frenzied Growth",
-            "Savage Growth",
-            "Ferocious Growth",
-            "Rampant Growth",
-            "Unfettered Growth",
-            "Untamed Growth",
-            "Wild Growth",
+            "Wild Growth X",       -- Level 127
+            "Overwhelming Growth", -- Level 122
+            "Fervent Growth",      -- Level 117
+            "Frenzied Growth",     -- Level 112
+            "Savage Growth",       -- Level 107
+            "Ferocious Growth",    -- Level 102
+            "Rampant Growth",      -- Level 97
+            "Unfettered Growth",   -- Level 92
+            "Untamed Growth",      -- Level 87
+            "Wild Growth",         -- Level 82
         },
         ['GroupRegenBuff'] = {
             -- Group Regen BuffAll Have Long Duration HP Regen Buffs. Not Short term Heal.
-            "Talisman of Perseverance XV",
-            "Talisman of the Unforgettable",
-            "Talisman of the Tenacious",
-            "Talisman of the Enduring",
-            "Talisman of the Unwavering",
-            "Talisman of the Faithful",
-            "Talisman of the Steadfast",
-            "Talisman of the Indomitable",
-            "Talisman of the Relentless",
-            "Talisman of the Resolute",
-            "Talisman of the Stalwart",
-            "Talisman of Perseverance",
-            "Pack Regeneration",
-            "Pack Chloroplast",
-            "Regrowth of the Grove",
-            "Blessing of Oak",
-            "Blessing of Replenishment",
+            "Talisman of Perseverance XV",   -- Level 126
+            "Talisman of the Unforgettable", -- Level 124
+            "Talisman of the Tenacious",     -- Level 119
+            "Talisman of the Enduring",      -- Level 114
+            "Talisman of the Unwavering",    -- Level 109
+            "Talisman of the Faithful",      -- Level 104
+            "Talisman of the Steadfast",     -- Level 99
+            "Talisman of the Indomitable",   -- Level 94
+            "Talisman of the Relentless",    -- Level 89
+            "Talisman of the Resolute",      -- Level 84
+            "Talisman of the Stalwart",      -- Level 79
+            "Blessing of Oak",               -- Level 69
+            "Blessing of Replenishment",     -- Level 63
+            "Regrowth of the Grove",         -- Level 58
+            "Pack Chloroplast",              -- Level 45
+            "Pack Regeneration",             -- Level 39
         },
         ['AtkBuff'] = {
             -- Single Target Attack Buff for MeleeGuard
-            "Mammoth's Force",
-            "Mammoth's Strength",
-            "Lion's Strength",
-            "Nature's Might",
-            "Girdle of Karana",
-            "Storm Strength",
-            "Strength of Stone",
-            "Strength of Earth",
+            "Mammoth's Force",    -- Level 86
+            "Mammoth's Strength", -- Level 71
+            "Lion's Strength",    -- Level 67
+            "Nature's Might",     -- Level 62
+            "Girdle of Karana",   -- Level 55
+            "Storm Strength",     -- Level 44
+            "Strength of Stone",  -- Level 34
+            "Strength of Earth",  -- Level 7
         },
         ['GroupDmgShield'] = {
             -- Group Damage Shield -- Focus on the tank
-            "Legacy of Brackenbriars",
-            "Legacy of Bramblespikes",
-            "Legacy of Bloodspikes",
-            "Legacy of Icebriars",
-            "Legacy of Daggerspikes",
-            "Legacy of Daggerspurs",
-            "Legacy of Spikethistles",
-            "Legacy of Spineburrs",
-            "Legacy of Bonebriar",
-            "Legacy of Brierbloom",
-            "Legacy of Viridithorns",
-            "Legacy of Viridiflora",
-            "Legacy of Nettles",
-            "Legacy of Bracken",
-            "Legacy of Thorn",
-            "Legacy of Spike",
+            "Legacy of Brackenbriars", -- Level 127
+            "Legacy of Bramblespikes", -- Level 125
+            "Legacy of Bloodspikes",   -- Level 120
+            "Legacy of Icebriars",     -- Level 115
+            "Legacy of Daggerspikes",  -- Level 110
+            "Legacy of Daggerspurs",   -- Level 105
+            "Legacy of Spikethistles", -- Level 100
+            "Legacy of Spineburrs",    -- Level 95
+            "Legacy of Bonebriar",     -- Level 90
+            "Legacy of Brierbloom",    -- Level 85
+            "Legacy of Viridithorns",  -- Level 80
+            "Legacy of Viridiflora",   -- Level 75
+            "Legacy of Nettles",       -- Level 70
+            "Legacy of Bracken",       -- Level 65
+            "Legacy of Thorn",         -- Level 59
+            "Legacy of Spike",         -- Level 49
         },
         ['MoveSpells'] = {
-            "Spirit of Wolf",
-            "Pack Spirit",
-            "Spirit of Eagle",
-            "Flight of Eagles",
-            "Spirit of Falcons",
-            "Flight of Falcons",
+            "Flight of Falcons", -- Level 91
+            "Spirit of Falcons", -- Level 74
+            "Flight of Eagles",  -- Level 62
+            "Spirit of Eagle",   -- Level 54
+            "Pack Spirit",       -- Level 35
+            "Spirit of Wolf",    -- Level 10
         },
         ['ManaBear'] = {
             --Druid Mana Bear Growth Line
-            "Nurturing Growth",
-            "Nourishing Growth",
-            "Sustaining Growth",
-            "Bolstered Growth",
-            "Emboldened Growth",
+            "Emboldened Growth", -- Level 121
+            "Bolstered Growth",  -- Level 116
+            "Sustaining Growth", -- Level 111
+            "Nourishing Growth", -- Level 106
+            "Nurturing Growth",  -- Level 96
         },
         ['PetSpell'] = {
-            "Nature Walker's Behest",
+            "Nature Walker's Behest", -- Level 55
         },
         -- ['SingleDS'] = {
         --     -- Updated to 125
         --     --Single Target Damage Shield
-        --     "Shield of Thistles",
-        --     "Shield of Barbs",
-        --     "Shield of Brambles",
-        --     "Shield of Spikes",
-        --     "Shield of Thorns",
-        --     "Shield of Blades",
-        --     "Shield of Bracken",
-        --     "Nettle Shield",
-        --     "Viridifloral Shield",
-        --     "Viridifloral Bulwark",
-        --     "Brierbloom Bulwark",
-        --     "Bonebriar Bulwark",
-        --     "Spineburr Bulwark",
-        --     "Spikethistle Bulwark",
-        --     "Daggerspur Bulwark",
-        --     "Daggerspike Bulwark",
-        --     "Icebriar Bulwark",
-        --     "Nightspire Bulwark",
-        --     "Bramblespike Bulwark",
+        --     "Bramblespike Bulwark", -- Level 122
+        --     "Nightspire Bulwark",   -- Level 117
+        --     "Icebriar Bulwark",     -- Level 112
+        --     "Daggerspike Bulwark",  -- Level 107
+        --     "Daggerspur Bulwark",   -- Level 102
+        --     "Spikethistle Bulwark", -- Level 97
+        --     "Spineburr Bulwark",    -- Level 92
+        --     "Bonebriar Bulwark",    -- Level 87
+        --     "Brierbloom Bulwark",   -- Level 82
+        --     "Viridifloral Bulwark", -- Level 77
+        --     "Viridifloral Shield",  -- Level 72
+        --     "Nettle Shield",        -- Level 67
+        --     "Shield of Bracken",    -- Level 63
+        --     "Shield of Blades",     -- Level 58
+        --     "Shield of Thorns",     -- Level 47
+        --     "Shield of Spikes",     -- Level 37
+        --     "Shield of Brambles",   -- Level 27
+        --     "Shield of Barbs",      -- Level 17
+        --     "Shield of Thistles",   -- Level 7
         -- },
     },
     ['HealRotationOrder'] = {

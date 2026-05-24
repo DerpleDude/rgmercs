@@ -88,18 +88,18 @@ return {
             "Deadly Precision Discipline",      -- Level 63
         },
         ['HealingDisc'] = {                     --EQM Custom, 2m duration, 5m reuse, hp regen
-            "Lifebloom Will Discipline",        -- Level 70
-            "Rejuvenating Will Discipline",     -- Level 68
-            "Healing Determination Discipline", -- Level 66
+            "Lifebloom Will Discipline",        -- Level 70 EQM Custom
+            "Rejuvenating Will Discipline",     -- Level 68 EQM Custom
+            "Healing Determination Discipline", -- Level 66 EQM Custom
             "Healing Will Discipline",          -- Level 59
         },
         ['PoisonGuide'] = {
             "Guide of Toxicity", -- Level 71
         },
         ['Revitalize'] = {
-            "Iron Revitalize",     -- Level 68
-            "Hardened Revitalize", -- Level 62
-            "Revitalize",          -- Level 51
+            "Iron Revitalize",     -- Level 68 EQM Custom
+            "Hardened Revitalize", -- Level 62 EQM Custom
+            "Revitalize",          -- Level 51 EQM Custom
         },
     },
     ['RotationOrder'] = {

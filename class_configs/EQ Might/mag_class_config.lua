@@ -78,7 +78,7 @@ _ClassConfig    = {
         --- Nukes
         ['SwarmPet'] = {
             "Raging Servant",            -- Level 70
-            "Restrained Raging Servant", -- Level 65
+            "Restrained Raging Servant", -- Level 65 EQM Custom
         },
         -- ['ChaoticNuke'] = {
         --     -- Chaotic Nuke with Beneficial Effect >= LVL69
@@ -310,10 +310,10 @@ _ClassConfig    = {
             "Wind of the Desert", -- Level 60
         },
         ['Minionskin'] = {        --EQM Custom: HP/Regen/mitigation (May need to block druid HP buff line on pet)
-            "Major Minionskin",   -- Level 66
-            "Greater Minionskin", -- Level 56
-            "Minionskin",         -- Level 43
-            "Lesser Minionskin",  -- Level 30
+            "Major Minionskin",   -- Level 66 EQM Custom
+            "Greater Minionskin", -- Level 56 EQM Custom
+            "Minionskin",         -- Level 43 EQM Custom
+            "Lesser Minionskin",  -- Level 30 EQM Custom
         },
         ['EpicPetOrb'] = {
             "Summon Orb", -- Level 45
@@ -487,7 +487,7 @@ _ClassConfig    = {
                         Core.DoCmd("/destroy")
                         mq.delay(50, function() return mq.TLO.Cursor() == nil end)
                         if not mq.TLO.FindItem("28034")() then
-                            return
+                            return true
                         end
                     else
                         Logger.Log_warning("Warning: We seem to have something else on the cursor! Do you have another item named 'Orb of Mastery'? Aborting delete.")
@@ -495,6 +495,7 @@ _ClassConfig    = {
                 end
             end
             Logger.log_warning("Warning: Mage pet orb not destroyed! An error or conflict has occured.")
+            return false
         end,
         HandleItemSummon = function(self, itemSource, scope) --scope: "personal" or "group" summons
             if not itemSource and itemSource() then return false end

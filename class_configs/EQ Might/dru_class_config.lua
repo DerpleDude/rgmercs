@@ -160,8 +160,8 @@ local _ClassConfig = {
         },
         ['GroupHeal'] = {
             "Moonshadow",                  -- Level 70
-            "Lunarglow",                   -- Level 66
-            "Lunargleam",                  -- Level 61
+            "Lunarglow",                   -- Level 66 EQM Custom
+            "Lunargleam",                  -- Level 61 EQM Custom
         },
         ['ATKDebuff'] = {                  -- ATK Debuff
             "Sun's Corona",                -- Level 67
@@ -377,13 +377,13 @@ local _ClassConfig = {
             "Lesser Succor",      -- Level 18
         },
         ['Minionskin'] = {        --EQM Custom: HP/Regen/mitigation (May need to block druid HP buff line on pet)
-            "Major Minionskin",   -- Level 66
-            "Greater Minionskin", -- Level 56
-            "Minionskin",         -- Level 43
+            "Major Minionskin",   -- Level 66 EQM Custom
+            "Greater Minionskin", -- Level 56 EQM Custom
+            "Minionskin",         -- Level 43 EQM Custom
         },
         ['ColdSlow'] = {
-            "Permafrost Grip",          -- Level 68
-            "Ancient: Permafrost Veil", -- Level 60
+            "Permafrost Grip",          -- Level 68 EQM Custom
+            "Ancient: Permafrost Veil", -- Level 60 EQM Custom
         },
     },
     ['AASets']            = {

@@ -648,7 +648,6 @@ return {
         "Mystical Arbitor of Earth",
         { name = "Peregrin Rockskull", statusImmunities = { Slow = true, }, },
         "A Fabled Mystical Arbitor of Earth",
-        "The Fabled Skal's Waking Nightmare",
     },
 
     ["poearthb"] = {

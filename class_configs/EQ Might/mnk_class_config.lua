@@ -58,7 +58,7 @@ local _ClassConfig = {
             "Dragon Fang",          -- Level 69
         },
         ['FistsOfWu'] = {
-            "Fists Of Wu", -- Level 68
+            "Fists of Wu", -- Level 68
         },
         ['MeleeMit'] = {
             "Impenetrable Discipline", -- Level 70
@@ -73,7 +73,7 @@ local _ClassConfig = {
             "Heel of Kanji", -- Level 70
         },
         ['Focus'] = {
-            "Last Mile Focus Discipline", -- Level 69
+            "Last Mile Focus Discipline", -- Level 69 EQM Custom
             "Speed Focus Discipline",     -- Level 63
         },
         ['Palm'] = {
@@ -85,13 +85,13 @@ local _ClassConfig = {
         --     "Resistant Discipline", -- Level 30
         -- },
         ['HealingDisc'] = {                     --EQM Custom, 2m duration, 5m reuse, hp regen
-            "Lifebloom Will Discipline",        -- Level 70
-            "Rejuvenating Will Discipline",     -- Level 68
-            "Healing Determination Discipline", -- Level 66
+            "Lifebloom Will Discipline",        -- Level 70 EQM Custom
+            "Rejuvenating Will Discipline",     -- Level 68 EQM Custom
+            "Healing Determination Discipline", -- Level 66 EQM Custom
             "Healing Will Discipline",          -- Level 59
         },
         ['Claw'] = {
-            "Panther Claw", -- Level 66
+            "Panther Claw", -- Level 66 EQM Custom
             "Leopard Claw", -- Level 61
         },
     },

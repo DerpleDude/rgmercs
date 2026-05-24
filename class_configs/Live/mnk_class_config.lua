@@ -47,201 +47,201 @@ local _ClassConfig = {
     ['AbilitySets']   = {
         ['EndRegen'] = {
             --Timer 13, can't be used in combat
+            "Breather",    -- Level 101
+            "Rest",        -- Level 96
+            "Reprieve",    -- Level 91
+            "Respite",     -- Level 86
+            "Fourth Wind", -- Level 82
+            "Third Wind",  -- Level 77
             "Second Wind", -- Level 72
-            "Third Wind",
-            "Fourth Wind",
-            "Respite",
-            "Reprieve",
-            "Rest",
-            "Breather", --Level 101
         },
         ['CombatEndRegen'] = {
             --Timer 13, can be used in combat.
-            "Hiatus V",
-            "Hiatus", --Level 106
-            "Relax",
-            "Night's Calming",
-            "Convalesce",
+            "Hiatus V",        -- Level 126
+            "Convalesce",      -- Level 121
+            "Night's Calming", -- Level 116
+            "Relax",           -- Level 111
+            "Hiatus",          -- Level 106
         },
         ['MonkAura'] = {
-            "Disciple's Aura",
-            "Master's Aura",
+            "Master's Aura",   -- Level 70
+            "Disciple's Aura", -- Level 55
         },
         ['Dicho'] = {
-            "Dichotomic Form",
-            "Dissident Form",
-            "Composite Form",
-            "Ecliptic Form",
-            "Reciprocal Form",
+            "Reciprocal Form", -- Level 121
+            "Ecliptic Form",   -- Level 116
+            "Composite Form",  -- Level 111
+            "Dissident Form",  -- Level 106
+            "Dichotomic Form", -- Level 101
         },
         ['Drunken'] = {
-            "Drunken Monkey Style",
+            "Drunken Monkey Style", -- Level 85
         },
         ['Curse'] = {
             -- Curse Line - Alternating expansions
-            "Curse of the Thirteen Fingers", -- 103 TBM
-            "Curse of Fourteen Fists",       -- 108 TBM
-            "Curse of Fifteen Strikes",      -- 113 COV
-            "Curse of Sixteen Shadows",      -- 118 NOS
-            "Curse of Seventeen Facets",     -- 123 TOB
+            "Curse of Seventeen Facets",     -- Level 123, TOB
+            "Curse of Sixteen Shadows",      -- Level 118, NOS
+            "Curse of Fifteen Strikes",      -- Level 113, COV
+            "Curse of Fourteen Fists",       -- Level 108, TBM
+            "Curse of the Thirteen Fingers", -- Level 103, TBM
         },
         ['Fang'] = {
-            "Dragon Fang",
-            "Zalikor's Fang",
-            "Hoshkar's Fang",
-            "Zlexak's Fang",
-            "Uncia's Fang",
+            "Uncia's Fang",   -- Level 124
+            "Zlexak's Fang",  -- Level 114
+            "Hoshkar's Fang", -- Level 109
+            "Zalikor's Fang", -- Level 99
+            "Dragon Fang",    -- Level 69
         },
         ['Fists'] = {
-            "Wheel of Fists XII",
-            "Buffeting of Fists",
-            "Wheel of Fists",
-            "Whorl of Fists",
-            "Torrent of Fists",
-            "Firestorm of Fists",
-            "Barrage of Fists",
-            "Flurry of Fists",
+            "Wheel of Fists XII", -- Level 130
+            "Flurry of Fists",    -- Level 125
+            "Buffeting of Fists", -- Level 120
+            "Barrage of Fists",   -- Level 115
+            "Firestorm of Fists", -- Level 110
+            "Torrent of Fists",   -- Level 104
+            "Whorl of Fists",     -- Level 84
+            "Wheel of Fists",     -- Level 79
         },
         ['Precision1'] = {
-            "Doomwalker's Precision Strike",
-            "Firewalker's Precision Strike",
-            "Icewalker's Precision Strike",
-            "Bloodwalker's Precision Strike",
-            "Fatewalker's Precision Strike",
+            "Fatewalker's Precision Strike",  -- Level 124
+            "Bloodwalker's Precision Strike", -- Level 119
+            "Icewalker's Precision Strike",   -- Level 114
+            "Firewalker's Precision Strike",  -- Level 109
+            "Doomwalker's Precision Strike",  -- Level 104
         },
         ['Precision2'] = {
-            "Doomwalker's Precision Strike",
-            "Firewalker's Precision Strike",
-            "Icewalker's Precision Strike",
-            "Bloodwalker's Precision Strike",
-            "Fatewalker's Precision Strike",
+            "Fatewalker's Precision Strike",  -- Level 124
+            "Bloodwalker's Precision Strike", -- Level 119
+            "Icewalker's Precision Strike",   -- Level 114
+            "Firewalker's Precision Strike",  -- Level 109
+            "Doomwalker's Precision Strike",  -- Level 104
         },
         ['Precision3'] = {
-            "Doomwalker's Precision Strike",
-            "Firewalker's Precision Strike",
-            "Icewalker's Precision Strike",
-            "Bloodwalker's Precision Strike",
-            "Fatewalker's Precision Strike",
+            "Fatewalker's Precision Strike",  -- Level 124
+            "Bloodwalker's Precision Strike", -- Level 119
+            "Icewalker's Precision Strike",   -- Level 114
+            "Firewalker's Precision Strike",  -- Level 109
+            "Doomwalker's Precision Strike",  -- Level 104
         },
         ['Precision4'] = {
-            "Doomwalker's Precision Strike",
-            "Firewalker's Precision Strike",
-            "Icewalker's Precision Strike",
-            "Bloodwalker's Precision Strike",
-            "Fatewalker's Precision Strike",
+            "Fatewalker's Precision Strike",  -- Level 124
+            "Bloodwalker's Precision Strike", -- Level 119
+            "Icewalker's Precision Strike",   -- Level 114
+            "Firewalker's Precision Strike",  -- Level 109
+            "Doomwalker's Precision Strike",  -- Level 104
         },
         ['Precision5'] = {
-            "Doomwalker's Precision Strike",
-            "Firewalker's Precision Strike",
-            "Icewalker's Precision Strike",
-            "Bloodwalker's Precision Strike",
-            "Fatewalker's Precision Strike",
+            "Fatewalker's Precision Strike",  -- Level 124
+            "Bloodwalker's Precision Strike", -- Level 119
+            "Icewalker's Precision Strike",   -- Level 114
+            "Firewalker's Precision Strike",  -- Level 109
+            "Doomwalker's Precision Strike",  -- Level 104
         },
         ['Shuriken'] = {
-            "Vigorous Shuriken",
+            "Vigorous Shuriken", -- Level 83
         },
         ['CraneStance'] = {
-            "Crane Stance",
-            "Heron Stance",
+            "Heron Stance", -- Level 112
+            "Crane Stance", -- Level 93
         },
         ['Synergy'] = {
-            "Lifewalker's Synergy",
-            "Fatewalker's Synergy",  -- LS 125
-            "Bloodwalker's Synergy", -- TOL 120
-            "Calanin's Synergy",
-            "Dreamwalker's Synergy",
-            "Veilwalker's Synergy",
-            "Shadewalker's Synergy",
-            "Doomwalker's Synergy",
-            "Firewalker's Synergy",
-            "Icewalker's Synergy",
+            "Lifewalker's Synergy",  -- Level 126
+            "Fatewalker's Synergy",  -- Level 121, LS 125
+            "Bloodwalker's Synergy", -- Level 116, TOL 120
+            "Icewalker's Synergy",   -- Level 111
+            "Firewalker's Synergy",  -- Level 106
+            "Doomwalker's Synergy",  -- Level 101
+            "Shadewalker's Synergy", -- Level 96
+            "Veilwalker's Synergy",  -- Level 91
+            "Dreamwalker's Synergy", -- Level 86
+            "Calanin's Synergy",     -- Level 81
         },
         ['Alliance'] = {
             -- Alliance line - Alternates expansions
-            "Doomwalker's Alliance",
-            "Firewalker's Covenant",
-            "Icewalker's Coalition",     -- COV
-            "Bloodwalker's Conjunction", -- NOS
-            "Fatewalker's Covariance",   -- TOB
+            "Fatewalker's Covariance",   -- Level 122, TOB
+            "Bloodwalker's Conjunction", -- Level 117, NOS
+            "Icewalker's Coalition",     -- Level 112, COV
+            "Firewalker's Covenant",     -- Level 107
+            "Doomwalker's Alliance",     -- Level 102
         },
         ['Storm'] = {
-            "Eye of the Storm",
+            "Eye of the Storm", -- Level 98
         },
         ['Breaths'] = {
             --- Breaths Endurance Line
-            "Five Breaths",
-            "Six Breaths",
-            "Seven Breaths",
-            "Eight Breaths",
-            "Nine Breaths",
-            "Breath of Tranquility",
-            "Breath of Stillness",
-            "Moment of Stillness",
+            "Moment of Stillness",   -- Level 123
+            "Breath of Stillness",   -- Level 118
+            "Breath of Tranquility", -- Level 113
+            "Nine Breaths",          -- Level 108
+            "Eight Breaths",         -- Level 105
+            "Seven Breaths",         -- Level 100
+            "Six Breaths",           -- Level 95
+            "Five Breaths",          -- Level 90
         },
         ['FistsOfWu'] = {
             --- Fists of Wu - Double Attack
-            "Fists Of Wu",
+            "Fists Of Wu", -- Level 68
         },
         ['EarthDisc'] = {
             -- EarthDisc - Melee Mitigation
-            "Earthwalk Discipline",
-            "Earthforce Discipline",
+            "Earthforce Discipline", -- Level 96
+            "Earthwalk Discipline",  -- Level 65
         },
         ['ShadedStep'] = {
             -- ShadedStep - Dodge Bonus 18 Seconds
-            "Void Step",
-            "Shaded Step",
+            "Shaded Step", -- Level 97
+            "Void Step",   -- Level 92
         },
         ['RejectDeath'] = {
-            "Delay Death XI",
-            "Repeal Death",
-            "Delay Death",
-            "Defer Death",
-            "Deny Death",
-            "Decry Death",
-            "Forestall Death",
-            "Refuse Death",
-            "Reject Death",
-            "Rescind Death",
-            "Defy Death",
+            "Delay Death XI",  -- Level 130
+            "Defy Death",      -- Level 125
+            "Repeal Death",    -- Level 120
+            "Rescind Death",   -- Level 115
+            "Reject Death",    -- Level 110
+            "Refuse Death",    -- Level 105
+            "Forestall Death", -- Level 100
+            "Decry Death",     -- Level 95
+            "Deny Death",      -- Level 90
+            "Defer Death",     -- Level 85
+            "Delay Death",     -- Level 80
         },
         ['DodgeBody'] = {
-            "Void Body",
-            "Veiled Body",
+            "Veiled Body", -- Level 94
+            "Void Body",   -- Level 89
         },
         ['MezSpell'] = {
-            "Echo of Disorientation",
-            "Echo of Flinching",
-            "Echo of Diversion",
+            "Echo of Diversion",      -- Level 123
+            "Echo of Flinching",      -- Level 118
+            "Echo of Disorientation", -- Level 113
         },
         ['FistDisc'] = {
-            "Ashenhand Discipline",
-            "Scaledfist Discipline",
-            "Ironfist Discipline",
+            "Ironfist Discipline",   -- Level 88
+            "Scaledfist Discipline", -- Level 74
+            "Ashenhand Discipline",  -- Level 60
         },
         ['Heel'] = {
-            "Rapid Kick Discipline",
-            "Heel of Kanji",
-            "Heel of Kai",
-            "Heel of Kojai",
-            "Heel of Zagali",
+            "Heel of Zagali",        -- Level 100
+            "Heel of Kojai",         -- Level 95
+            "Heel of Kai",           -- Level 90
+            "Rapid Kick Discipline", -- Level 70
+            "Heel of Kanji",         -- Level 70
         },
         ['Speed'] = {
-            "Hundred Fists Discipline",
-            "Speed Focus Discipline",
+            "Speed Focus Discipline",   -- Level 63
+            "Hundred Fists Discipline", -- Level 57
         },
         ['Palm'] = {
-            "Innerflame Discipline",
-            "Crystalpalm Discipline",
-            "Diamondpalm Discipline",
-            "Terrorpalm Discipline",
+            "Terrorpalm Discipline",  -- Level 99
+            "Diamondpalm Discipline", -- Level 94
+            "Crystalpalm Discipline", -- Level 79
+            "Innerflame Discipline",  -- Level 56
         },
         ['Poise'] = {
-            "Eagles's Symmetry",
-            "Dragon's Poise",
-            "Tiger's Poise",
-            "Eagle's Poise",
-            "Tiger's Symmetry",
+            "Eagle's Symmetry", -- Level 127
+            "Tiger's Symmetry", -- Level 122
+            "Dragon's Poise",   -- Level 117
+            "Eagle's Poise",    -- Level 112
+            "Tiger's Poise",    -- Level 107
         },
     },
     ['Helpers']       = {

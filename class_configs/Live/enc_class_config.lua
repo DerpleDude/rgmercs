@@ -88,785 +88,784 @@ local _ClassConfig    = {
     },
     ['AbilitySets']   = {
         ['TwincastAura'] = {
-            "Twincast Aura",
+            "Twincast Aura", -- Level 84
         },
         ['SpellProcAura'] = {
-            "Mana Recursion Aura XI",
-            "Mana Ripple Aura",
-            "Mana Radix Aura",
-            "Mana Replication Aura",
-            "Mana Repetition Aura",
-            "Mana Reciprocation Aura",
-            "Mana Reverberation Aura",
-            "Mana Repercussion Aura",
-            "Mana Reiteration Aura",
-            "Mana Reiterate Aura",
-            "Mana Resurgence Aura",
+            "Mana Recursion Aura XI",  -- Level 130
+            "Mana Ripple Aura",        -- Level 125
+            "Mana Radix Aura",         -- Level 120
+            "Mana Replication Aura",   -- Level 115
+            "Mana Repetition Aura",    -- Level 110
+            "Mana Reciprocation Aura", -- Level 105
+            "Mana Reverberation Aura", -- Level 100
+            "Mana Repercussion Aura",  -- Level 95
+            "Mana Reiteration Aura",   -- Level 90
+            "Mana Reiterate Aura",     -- Level 85
+            "Mana Resurgence Aura",    -- Level 80
             -- Use mana regen aura until spell proc is available
-            "Mystifier's Aura",
-            "Entrancer's Aura",
-            "Illusionist's Aura",
-            "Beguiler's Aura",
+            "Mystifier's Aura",        -- Level 77
+            "Entrancer's Aura",        -- Level 72
+            "Illusionist's Aura",      -- Level 70
+            "Beguiler's Aura",         -- Level 55
         },
         ['LearnersAura'] = {
-            "Learner's Aura",
+            "Learner's Aura", -- Level 76
         },
         ['HasteBuff'] = {
-            "Hastening of Elluria",
-            "Hastening of Margator",
-            "Hastening of Jharin",
-            "Hastening of Cekenar",
-            "Hastening of Milyex",
-            "Hastening of Prokev",
-            "Hastening of Sviir",
-            "Hastening of Aransir",
-            "Hastening of Novak",
-            "Hastening of Erradien",
-            "Hastening of Ellowind",
-            "Hastening of Salik",
-            "Vallon's Quickening",
-            "Speed of the Brood",
-            "Speed of Cekenar",
-            "Speed of Milyex",
-            "Speed of Prokev",
-            "Speed of Sviir",
-            "Speed of Aransir",
-            "Speed of Novak",
-            "Speed of Erradien",
-            "Speed of Ellowind",
-            "Speed of Salik",
-            "Speed of Vallon",
-            "Visions of Grandeur",
-            "Wondrous Rapidity",
-            "Aanya's Quickening",
-            "Swift Like the Wind",
-            "Celerity",
-            "Augmentation",
-            "Alacrity",
-            "Quickness",
+            "Hastening of Elluria",  -- Level 126
+            "Hastening of Margator", -- Level 124
+            "Hastening of Jharin",   -- Level 119
+            "Hastening of Cekenar",  -- Level 114
+            "Speed of Cekenar",      -- Level 111
+            "Hastening of Milyex",   -- Level 109
+            "Speed of Milyex",       -- Level 106
+            "Hastening of Prokev",   -- Level 104
+            "Speed of Prokev",       -- Level 101
+            "Hastening of Sviir",    -- Level 100
+            "Speed of Sviir",        -- Level 96
+            "Hastening of Aransir",  -- Level 95
+            "Speed of Aransir",      -- Level 91
+            "Hastening of Novak",    -- Level 90
+            "Speed of Novak",        -- Level 86
+            "Hastening of Erradien", -- Level 80
+            "Speed of Erradien",     -- Level 77
+            "Hastening of Ellowind", -- Level 75
+            "Speed of Ellowind",     -- Level 72
+            "Hastening of Salik",    -- Level 70
+            "Speed of Salik",        -- Level 67
+            "Vallon's Quickening",   -- Level 65
+            "Speed of Vallon",       -- Level 62
+            "Speed of the Brood",    -- Level 60
+            "Visions of Grandeur",   -- Level 60
+            "Wondrous Rapidity",     -- Level 58
+            "Aanya's Quickening",    -- Level 53
+            "Swift Like the Wind",   -- Level 47
+            "Celerity",              -- Level 39
+            "Augmentation",          -- Level 28
+            "Alacrity",              -- Level 21
+            "Quickness",             -- Level 15
         },
         ['ManaRegen'] = {
-            "Voice of Clairvoyance XVIII",
-            "Voice of Preordination",
-            "Voice of Perception",
-            "Voice of Sagacity",
-            "Voice of Perspicacity",
-            "Voice of Precognition",
-            "Voice of Foresight",
-            "Voice of Premeditation",
-            "Voice of Forethought",
-            "Voice of Prescience",
-            "Voice of Cognizance",
-            "Voice of Intuition",
-            "Voice of Clairvoyance",
-            "Voice of Quellious",
-            "Tranquility",
-            -- [] = ["Gift of Brilliance", -- Removed because the Map Defaults to it Instead of Koadics
-            "Koadic's Endless Intellect",
-            "Gift of Pure Thought",
-            "Sagacity",
-            "Perspicacity",
-            "Precognition",
-            "Foresight",
-            "Premeditation",
-            "Forethought",
-            "Prescience",
-            "Seer's Cognizance",
-            "Seer's Intuition",
-            "Clairvoyance",
-            "Gift of Insight",
-            "Clarity II",
-            "Clarity",
-            "Breeze",
+            "Voice of Clairvoyance XVIII", -- Level 128
+            "Voice of Preordination",      -- Level 125
+            "Voice of Perception",         -- Level 120
+            "Voice of Sagacity",           -- Level 115
+            "Sagacity",                    -- Level 113
+            "Voice of Perspicacity",       -- Level 110
+            "Perspicacity",                -- Level 108
+            "Voice of Precognition",       -- Level 105
+            "Precognition",                -- Level 103
+            "Voice of Foresight",          -- Level 100
+            "Foresight",                   -- Level 98
+            "Voice of Premeditation",      -- Level 95
+            "Premeditation",               -- Level 93
+            "Voice of Forethought",        -- Level 90
+            "Forethought",                 -- Level 88
+            "Voice of Prescience",         -- Level 85
+            "Prescience",                  -- Level 83
+            "Voice of Cognizance",         -- Level 80
+            "Seer's Cognizance",           -- Level 78
+            "Voice of Intuition",          -- Level 75
+            "Seer's Intuition",            -- Level 73
+            "Voice of Clairvoyance",       -- Level 70
+            "Clairvoyance",                -- Level 68
+            "Voice of Quellious",          -- Level 65
+            "Tranquility",                 -- Level 63
+            -- "Gift of Brilliance",       -- Level 60, Removed because the Map Defaults to it Instead of Koadics
+            "Koadic's Endless Intellect",  -- Level 60
+            "Gift of Pure Thought",        -- Level 56
+            "Gift of Insight",             -- Level 55
+            "Clarity II",                  -- Level 52
+            "Clarity",                     -- Level 26
+            "Breeze",                      -- Level 14
         },
         ['MezBuff'] = {
-            "Ward of Bedazzlement XII",
-            "Ward of the Stupefier",
-            "Ward of the Beguiler",
-            "Ward of the Deviser",
-            "Ward of the Transfixer",
-            "Ward of the Enticer",
-            "Ward of the Mastermind",
-            "Ward of Arctending",
-            "Ward of Bafflement",
-            "Ward of Befuddlement",
-            "Ward of Mystifying",
-            "Ward of Bewilderment",
-            "Ward of Bedazzlement",
+            "Ward of Bedazzlement XII", -- Level 130
+            "Ward of the Stupefier",    -- Level 125
+            "Ward of the Beguiler",     -- Level 120
+            "Ward of the Deviser",      -- Level 115
+            "Ward of the Transfixer",   -- Level 110
+            "Ward of the Enticer",      -- Level 105
+            "Ward of the Mastermind",   -- Level 100
+            "Ward of Arctending",       -- Level 95
+            "Ward of Bafflement",       -- Level 90
+            "Ward of Befuddlement",     -- Level 85
+            "Ward of Mystifying",       -- Level 80
+            "Ward of Bewilderment",     -- Level 75
+            "Ward of Bedazzlement",     -- Level 70
         },
         ['NdtBuff'] = {
-            "Night's Eternal Terror",
-            "Night's Perpetual Terror",
-            "Night's Endless Terror",
-            "Night's Dark Terror",
-            "Boon of the Garou",
+            "Night's Eternal Terror",   -- Level 125
+            "Night's Perpetual Terror", -- Level 115
+            "Night's Endless Terror",   -- Level 103
+            "Night's Dark Terror",      -- Level 63
+            "Boon of the Garou",        -- Level 40
         },
         ['SelfHPBuff'] = {
-            "Shielding XXIII",
-            "Shield of Memories",
-            "Shield of Shadow",
-            "Shield of Restless Ice",
-            "Shield of Scales",
-            "Shield of the Pellarus",
-            "Shield of the Dauntless",
-            "Shield of Bronze",
-            "Shield of Dreams",
-            "Shield of the Void",
-            "Spellbound Shield",
-            "Sorcerous Shield",
-            "Mystic Shield",
-            "Shield of Maelin",
-            "Shield of the Arcane",
-            "Shield of the Magi",
-            "Arch Shielding",
-            "Greater Shielding",
-            "Major Shielding",
-            "Shielding",
-            "Lesser Shielding",
-            "Minor Shielding",
+            "Shielding XXIII",         -- Level 126
+            "Shield of Memories",      -- Level 121
+            "Shield of Shadow",        -- Level 116
+            "Shield of Restless Ice",  -- Level 111
+            "Shield of Scales",        -- Level 106
+            "Shield of the Pellarus",  -- Level 101
+            "Shield of the Dauntless", -- Level 96
+            "Shield of Bronze",        -- Level 91
+            "Shield of Dreams",        -- Level 86
+            "Shield of the Void",      -- Level 81
+            "Spellbound Shield",       -- Level 76
+            "Sorcerous Shield",        -- Level 71
+            "Mystic Shield",           -- Level 66
+            "Shield of Maelin",        -- Level 64
+            "Shield of the Arcane",    -- Level 61
+            "Shield of the Magi",      -- Level 54
+            "Arch Shielding",          -- Level 40
+            "Greater Shielding",       -- Level 31
+            "Major Shielding",         -- Level 23
+            "Shielding",               -- Level 16
+            "Lesser Shielding",        -- Level 6
+            "Minor Shielding",         -- Level 1
         },
         ['SelfRune1'] = {
-            "Arcane Rune XIII",
-            "Esoteric Rune",
-            "Marvel's Rune",
-            "Deviser's Rune",
-            "Transfixer's Rune",
-            "Enticer's Rune",
-            "Mastermind's Rune",
-            "Arcanaward's Rune",
-            "Spectral Rune",
-            "Pearlescent Rune",
-            "Opalescent Rune",
-            "Draconic Rune",
-            "Ethereal Rune",
-            "Arcane Rune",
+            "Arcane Rune XIII",  -- Level 126
+            "Esoteric Rune",     -- Level 121
+            "Marvel's Rune",     -- Level 116
+            "Deviser's Rune",    -- Level 111
+            "Transfixer's Rune", -- Level 106
+            "Enticer's Rune",    -- Level 101
+            "Mastermind's Rune", -- Level 96
+            "Arcanaward's Rune", -- Level 91
+            "Spectral Rune",     -- Level 86
+            "Pearlescent Rune",  -- Level 81
+            "Opalescent Rune",   -- Level 76
+            "Draconic Rune",     -- Level 71
+            "Ethereal Rune",     -- Level 66
+            "Arcane Rune",       -- Level 61
         },
         ['SelfRune2'] = {
-            "Polychromatic Rune XII",
-            "Polyradiant Rune",
-            "Polyluminous Rune",
-            "Polycascading Rune",
-            "Polyfluorescent Rune",
-            "Polyrefractive Rune",
-            "Polyiridescent Rune",
-            "Polyarcanic Rune",
-            "Polyspectral Rune",
-            "Polychaotic Rune",
-            "Multichromatic Rune",
-            "Polychromatic Rune",
+            "Polychromatic Rune XII", -- Level 130
+            "Polyradiant Rune",       -- Level 125
+            "Polyluminous Rune",      -- Level 120
+            "Polycascading Rune",     -- Level 115
+            "Polyfluorescent Rune",   -- Level 110
+            "Polyrefractive Rune",    -- Level 105
+            "Polyiridescent Rune",    -- Level 100
+            "Polyarcanic Rune",       -- Level 95
+            "Polyspectral Rune",      -- Level 90
+            "Polychaotic Rune",       -- Level 85
+            "Multichromatic Rune",    -- Level 80
+            "Polychromatic Rune",     -- Level 75
         },
         ['UnityRune'] = {
-            "Enticer's Unity IX",
-            "Esoteric Unity",
-            "Deviser's Unity",
-            "Marvel's Unity",
+            "Enticer's Unity IX", -- Level 130
+            "Esoteric Unity",     -- Level 125
+            "Marvel's Unity",     -- Level 120
+            "Deviser's Unity",    -- Level 115
         },
         ['SingleRune'] = {
-            "Rune XIX",
-            "Rune of Zoraxmen",
-            "Rune of Tearc",
-            "Rune of Kildrukaun",
-            "Rune of Skrizix",
-            "Rune of Lucem",
-            "Rune of Xolok",
-            "Rune of Tonmek",
-            "Rune of Novak",
-            "Rune of Yozan",
-            "Rune of Erradien",
-            "Rune of Ellowind",
-            "Rune of Salik",
-            "Rune of Zebuxoruk",
-            "Rune V",
-            "Rune IV",
-            "Rune III",
-            "Rune II",
-            "Rune I",
+            "Rune XIX",           -- Level 126
+            "Rune of Zoraxmen",   -- Level 121
+            "Rune of Tearc",      -- Level 116
+            "Rune of Kildrukaun", -- Level 111
+            "Rune of Skrizix",    -- Level 106
+            "Rune of Lucem",      -- Level 101
+            "Rune of Xolok",      -- Level 96
+            "Rune of Tonmek",     -- Level 91
+            "Rune of Novak",      -- Level 86
+            "Rune of Yozan",      -- Level 81
+            "Rune of Erradien",   -- Level 76
+            "Rune of Ellowind",   -- Level 71
+            "Rune of Salik",      -- Level 67
+            "Rune of Zebuxoruk",  -- Level 61
+            "Rune V",             -- Level 52
+            "Rune IV",            -- Level 40
+            "Rune III",           -- Level 33
+            "Rune II",            -- Level 22
+            "Rune I",             -- Level 13
         },
         ['GroupRune'] = {
-            "Rune of the Vortex",
-            "Gloaming Rune",
-            "Eclipsed Rune",
-            "Crepuscular Rune",
-            "Tenebrous Rune",
-            "Darkened Rune",
-            "Umbral Rune",
-            "Shadowed Rune",
-            "Twilight Rune",
-            "Rune of the Void",
-            "Rune of the Deep",
-            "Rune of the Kedge",
-            "Rune of Rikkukin",
-            "Rune of the Scale",
+            "Rune of the Vortex", -- Level 129
+            "Gloaming Rune",      -- Level 124
+            "Eclipsed Rune",      -- Level 119
+            "Crepuscular Rune",   -- Level 114
+            "Tenebrous Rune",     -- Level 109
+            "Darkened Rune",      -- Level 104
+            "Umbral Rune",        -- Level 99
+            "Shadowed Rune",      -- Level 94
+            "Twilight Rune",      -- Level 89
+            "Rune of the Void",   -- Level 84
+            "Rune of the Deep",   -- Level 79
+            "Rune of the Kedge",  -- Level 74
+            "Rune of Rikkukin",   -- Level 69
+            "Rune of the Scale",  -- Level 61
         },
         ['AggroRune'] = {
-            "Horrifying Rune VIII",
-            "Disquieting Rune",
-            "Ghastly Rune",
-            "Horrendous Rune",
-            "Dreadful Rune",
-            "Frightening Rune",
-            "Terrifying Rune",
-            "Horrifying Rune",
+            "Horrifying Rune VIII", -- Level 129
+            "Disquieting Rune",     -- Level 123
+            "Ghastly Rune",         -- Level 118
+            "Horrendous Rune",      -- Level 113
+            "Dreadful Rune",        -- Level 108
+            "Frightening Rune",     -- Level 103
+            "Terrifying Rune",      -- Level 98
+            "Horrifying Rune",      -- Level 93
         },
         ['AggroBuff'] = {
-            "Horrifying Visage",
-            "Haunting Visage",
+            "Horrifying Visage", -- Level 56
+            "Haunting Visage",   -- Level 26
         },
         ['SingleSpellShield'] = {
-            "Aegis of Elmara",
-            "Aegis of Sefra",
-            "Aegis of Omica",
-            "Aegis of Nureya",
-            "Aegis of Gordianus",
-            "Aegis of Xorbb",
-            "Aegis of Soliadal",
-            "Aegis of Zykean",
-            "Aegis of Xadrith",
-            "Aegis of Qandieal",
-            "Aegis of Alendar",
-            "Wall of Alendar",
-            "Bulwark of Alendar",
-            "Protection of Alendar",
-            "Guard of Alendar",
-            "Ward of Alendar",
+            "Aegis of Elmara",       -- Level 123
+            "Aegis of Sefra",        -- Level 118
+            "Aegis of Omica",        -- Level 113
+            "Aegis of Nureya",       -- Level 108
+            "Aegis of Gordianus",    -- Level 103
+            "Aegis of Xorbb",        -- Level 98
+            "Aegis of Soliadal",     -- Level 93
+            "Aegis of Zykean",       -- Level 88
+            "Aegis of Xadrith",      -- Level 83
+            "Aegis of Qandieal",     -- Level 78
+            "Aegis of Alendar",      -- Level 73
+            "Wall of Alendar",       -- Level 68
+            "Bulwark of Alendar",    -- Level 63
+            "Protection of Alendar", -- Level 55
+            "Guard of Alendar",      -- Level 44
+            "Ward of Alendar",       -- Level 29
         },
         ['GroupSpellShield'] = {
-            "Legion of Feish",
-            "Legion of Boberstler",
-            "Legion of Ogna",
-            "Legion of Liako",
-            "Legion of Kildrukaun",
-            "Legion of Skrizix",
-            "Legion of Lucem",
-            "Legion of Xolok",
-            "Legion of Tonmek",
-            "Legion of Zykean",
-            "Legion of Xadrith",
-            "Legion of Qandieal",
-            "Legion of Alendar",
-            "Circle of Alendar",
+            "Legion of Feish",      -- Level 128
+            "Legion of Boberstler", -- Level 126
+            "Legion of Ogna",       -- Level 124
+            "Legion of Liako",      -- Level 119
+            "Legion of Kildrukaun", -- Level 114
+            "Legion of Skrizix",    -- Level 109
+            "Legion of Lucem",      -- Level 104
+            "Legion of Xolok",      -- Level 99
+            "Legion of Tonmek",     -- Level 94
+            "Legion of Zykean",     -- Level 89
+            "Legion of Xadrith",    -- Level 84
+            "Legion of Qandieal",   -- Level 79
+            "Legion of Alendar",    -- Level 74
+            "Circle of Alendar",    -- Level 70
         },
         ['SingleDotShield'] = {
-            "Aegis of Xetheg",
-            "Aegis of Cekenar",
-            "Aegis of Milyex",
-            "Aegis of the Indagator",
-            "Aegis of the Keeper",
+            "Aegis of Xetheg",        -- Level 116
+            "Aegis of Cekenar",       -- Level 111
+            "Aegis of Milyex",        -- Level 106
+            "Aegis of the Indagator", -- Level 101
+            "Aegis of the Keeper",    -- Level 98
         },
         ['GroupDotShield'] = {
-            "Legion of Dhakka",
-            "Legion of Xetheg",
-            "Legion of Cekenar",
-            "Legion of Milyex",
-            "Legion of the Indagator",
-            "Legion of the Keeper",
+            "Legion of Dhakka",        -- Level 121
+            "Legion of Xetheg",        -- Level 117
+            "Legion of Cekenar",       -- Level 112
+            "Legion of Milyex",        -- Level 107
+            "Legion of the Indagator", -- Level 102
+            "Legion of the Keeper",    -- Level 100
         },
         ['SingleMeleeShield'] = {
-            "Umbral Auspice VII",
-            "Gloaming Auspice",
-            "Eclipsed Auspice",
-            "Crepuscular Auspice",
-            "Tenebrous Auspice",
-            "Darkened Auspice",
-            "Umbral Auspice",
+            "Umbral Auspice VII",  -- Level 129
+            "Gloaming Auspice",    -- Level 124
+            "Eclipsed Auspice",    -- Level 119
+            "Crepuscular Auspice", -- Level 114
+            "Tenebrous Auspice",   -- Level 109
+            "Darkened Auspice",    -- Level 104
+            "Umbral Auspice",      -- Level 99
         },
         ['SelfGuardShield'] = {
-            "Shield of Fate VII",
-            "Shield of Inevitability",
-            "Shield of Inescapability",
-            "Shield of Destiny",
-            "Shield of Order",
-            "Shield of Consequence",
-            "Shield of Fate",
+            "Shield of Fate VII",       -- Level 127
+            "Shield of Inescapability", -- Level 122
+            "Shield of Inevitability",  -- Level 117
+            "Shield of Destiny",        -- Level 112
+            "Shield of Order",          -- Level 107
+            "Shield of Consequence",    -- Level 102
+            "Shield of Fate",           -- Level 97
         },
         ['GroupAuspiceBuff'] = {
-            "Marvel's Auspice",
-            "Deviser's Auspice",
-            "Transfixer's Auspice",
-            "Enticer's Auspice",
-            "Stupefier's Auspice",
+            "Stupefier's Auspice",  -- Level 122
+            "Marvel's Auspice",     -- Level 117
+            "Deviser's Auspice",    -- Level 112
+            "Transfixer's Auspice", -- Level 107
+            "Enticer's Auspice",    -- Level 102
         },
         ['SpellProcBuff'] = {
-            "Mana Recursion XI",
-            "Mana Reproduction",
-            "Mana Rebirth",
-            "Mana Replication",
-            "Mana Repetition",
-            "Mana Reciprocation",
-            "Mana Reverberation",
-            "Mana Repercussion",
-            "Mana Reiteration",
-            "Mana Reiterate",
-            "Mana Resurgence",
-            "Mana Recursion",
-            "Mana Flare",
+            "Mana Recursion XI",  -- Level 128
+            "Mana Reproduction",  -- Level 123
+            "Mana Rebirth",       -- Level 118
+            "Mana Replication",   -- Level 113
+            "Mana Repetition",    -- Level 108
+            "Mana Reciprocation", -- Level 103
+            "Mana Reverberation", -- Level 98
+            "Mana Repercussion",  -- Level 93
+            "Mana Reiteration",   -- Level 88
+            "Mana Reiterate",     -- Level 83
+            "Mana Resurgence",    -- Level 78
+            "Mana Recursion",     -- Level 73
+            "Mana Flare",         -- Level 70
         },
         ['AllianceSpell'] = {
-            "Chromatic Covariance",
-            "Chromatic Conjunction",
-            "Chromatic Coalition",
-            "Chromatic Covenant",
-            "Chromatic Alliance",
+            "Chromatic Covariance",  -- Level 123
+            "Chromatic Conjunction", -- Level 118
+            "Chromatic Coalition",   -- Level 113
+            "Chromatic Covenant",    -- Level 108
+            "Chromatic Alliance",    -- Level 101
         },
         ['TwinCastMez'] = {
-            "Chaotic Enticement X",
-            "Chaotic Deception",
-            "Chaotic Delusion",
-            "Chaotic Bewildering",
-            "Chaotic Confounding",
-            "Chaotic Confusion",
-            "Chaotic Baffling",
-            "Chaotic Befuddling",
-            "Chaotic Puzzlement",
-            "Chaotic Conundrum",
+            "Chaotic Enticement X", -- Level 128
+            "Chaotic Conundrum",    -- Level 123
+            "Chaotic Puzzlement",   -- Level 118
+            "Chaotic Deception",    -- Level 113
+            "Chaotic Delusion",     -- Level 108
+            "Chaotic Bewildering",  -- Level 103
+            "Chaotic Confounding",  -- Level 98
+            "Chaotic Confusion",    -- Level 93
+            "Chaotic Baffling",     -- Level 88
+            "Chaotic Befuddling",   -- Level 83
         },
         ['PBAEStunSpell'] = {
-            "Color Flux XVIII",
-            "Color Calibration",
-            "Color Conflagration",
-            "Color Cascade",
-            "Color Congruence",
-            "Color Concourse",
-            "Color Confluence",
-            "Color Convergence",
-            "Color Clash",
-            "Color Conflux",
-            "Color Cataclysm",
-            "Color Collapse",
-            "Color Snap",
-            "Color Cloud",
-            "Color Slant",
-            "Color Skew",
-            "Color Shift",
-            "Color Flux",
+            "Color Flux XVIII",    -- Level 129
+            "Color Calibration",   -- Level 124
+            "Color Conflagration", -- Level 119
+            "Color Cascade",       -- Level 114
+            "Color Congruence",    -- Level 109
+            "Color Concourse",     -- Level 104
+            "Color Confluence",    -- Level 99
+            "Color Convergence",   -- Level 94
+            "Color Clash",         -- Level 89
+            "Color Conflux",       -- Level 84
+            "Color Cataclysm",     -- Level 79
+            "Color Collapse",      -- Level 74
+            "Color Snap",          -- Level 69
+            "Color Cloud",         -- Level 63
+            "Color Slant",         -- Level 52
+            "Color Skew",          -- Level 43
+            "Color Shift",         -- Level 20
+            "Color Flux",          -- Level 3
         },
         ['TargetAEStun'] = {
-            "Remote Color Flux XVIII",
-            "Remote Color Calibration",
-            "Remote Color Conflagration",
-            "Remote Color Cascade",
-            "Remote Color Congruence",
-            "Remote Color Concourse",
-            "Remote Color Confluence",
-            "Remote Color Convergence",
+            "Remote Color Flux XVIII",    -- Level 127
+            "Remote Color Calibration",   -- Level 122
+            "Remote Color Conflagration", -- Level 117
+            "Remote Color Cascade",       -- Level 112
+            "Remote Color Congruence",    -- Level 107
+            "Remote Color Concourse",     -- Level 102
+            "Remote Color Confluence",    -- Level 97
+            "Remote Color Convergence",   -- Level 92
         },
         ['SingleStunSpell1'] = {
-            "Dizzying Helix XII",
-            "Dizzying Spindle",
-            "Dizzying Vortex",
-            "Dizzying Coil",
-            "Dizzying Wheel",
-            "Dizzying Storm",
-            "Dizzying Squall",
-            "Dizzying Gyre",
-            "Dizzying Helix",
-            "The Downward Spiral",
-            "Whirling into the Hollow",
-            "Spinning into the Void",
-            "Largarn's Lamentation",
-            "Dyn's Dizzying Draught",
-            "Whirl till you hurl",
+            "Dizzying Helix XII",       -- Level 129
+            "Dizzying Spindle",         -- Level 124
+            "Dizzying Vortex",          -- Level 119
+            "Dizzying Coil",            -- Level 114
+            "Dizzying Wheel",           -- Level 109
+            "Dizzying Storm",           -- Level 104
+            "Dizzying Squall",          -- Level 99
+            "Dizzying Gyre",            -- Level 94
+            "Dizzying Helix",           -- Level 89
+            "The Downward Spiral",      -- Level 84
+            "Whirling into the Hollow", -- Level 79
+            "Spinning into the Void",   -- Level 74
+            "Largarn's Lamentation",    -- Level 55
+            "Dyn's Dizzying Draught",   -- Level 28
+            "Whirl till you hurl",      -- Level 9
         },
         ['CharmSpell'] = {
-            "Enticer's Command XV",
-            "Charm XVII",
-            "Stupefier's Demand",
-            "Esoteric Command",
-            "Marvel's Demand",
-            "Marvel's Command",
-            "Inveigle",
-            "Deviser's Demand",
-            "Deviser's Command",
-            "Transfixer's Command",
-            "Spellbinding",
-            "Enticer's Command",
-            "Enticer's Demand",
-            "Captivation",
-            "Impose",
-            "Temptation",
-            "Enforce",
-            "Compelling Edict",
-            "Subjugate",
-            "Deception",
-            "Dominate",
-            "Seduction",
-            "Haunting Whispers",
-            "Cajole",
-            "Dyn`leth's Whispers",
-            "Coax",
-            -- [] = "Ancient Voice of Muram",
-            "True Name",
-            "Compel",
-            "Command of Druzzil",
-            "Beckon",
-            "Dictate",
-            "Boltran's Agacerie",
-            "Ordinance",
-            "Allure",
-            "Cajoling Whispers",
-            "Beguile",
-            "Charm",
+            "Enticer's Command XV", -- Level 130
+            "Charm XVII",           -- Level 127
+            "Esoteric Command",     -- Level 125
+            "Stupefier's Demand",   -- Level 124
+            "Marvel's Command",     -- Level 120
+            "Marvel's Demand",      -- Level 119
+            "Inveigle",             -- Level 117
+            "Deviser's Command",    -- Level 115
+            "Deviser's Demand",     -- Level 114
+            "Transfixer's Command", -- Level 110
+            "Spellbinding",         -- Level 107
+            "Enticer's Command",    -- Level 105
+            "Enticer's Demand",     -- Level 104
+            "Captivation",          -- Level 102
+            "Impose",               -- Level 100
+            "Temptation",           -- Level 97
+            "Enforce",              -- Level 95
+            "Compelling Edict",     -- Level 92
+            "Subjugate",            -- Level 90
+            "Deception",            -- Level 87
+            "Dominate",             -- Level 85
+            "Seduction",            -- Level 82
+            "Haunting Whispers",    -- Level 80
+            "Cajole",               -- Level 77
+            "Dyn`leth's Whispers",  -- Level 75
+            "Coax",                 -- Level 72
+            -- "Ancient: Voice of Muram", -- Level 70
+            "True Name",            -- Level 70
+            "Compel",               -- Level 68
+            "Command of Druzzil",   -- Level 64
+            "Beckon",               -- Level 62
+            "Dictate",              -- Level 60
+            "Boltran's Agacerie",   -- Level 53
+            "Ordinance",            -- Level 52
+            "Allure",               -- Level 46
+            "Cajoling Whispers",    -- Level 37
+            "Beguile",              -- Level 23
+            "Charm",                -- Level 11
         },
         ['CrippleSpell'] = {
-            "Splintered Consciousness",
-            "Fragmented Consciousness",
-            "Shattered Consciousness",
-            "Fractured Consciousness",
-            "Synapsis Spasm",
-            "Cripple",
-            "Incapacitate",
-            "Listless Power",
-            "Disempower",
-            "Enfeeblement",
+            "Splintered Consciousness", -- Level 86
+            "Fragmented Consciousness", -- Level 81
+            "Shattered Consciousness",  -- Level 76
+            "Fractured Consciousness",  -- Level 71
+            "Synapsis Spasm",           -- Level 66
+            "Cripple",                  -- Level 53
+            "Incapacitate",             -- Level 40
+            "Listless Power",           -- Level 25
+            "Disempower",               -- Level 16
+            "Enfeeblement",             -- Level 4
         },
         ['SlowSpell'] = {
             -- Slow - lvl88 and above this is also cripple spell Starting @ Level 88  Combines With Cripple.
-            "Desolate Deeds",
-            "Dreary Deeds",
-            "Forlorn Deeds",
-            "Shiftless Deeds",
-            "Tepid Deeds",
-            "Languid Pace",
+            "Desolate Deeds",  -- Level 69
+            "Dreary Deeds",    -- Level 65
+            "Forlorn Deeds",   -- Level 57
+            "Shiftless Deeds", -- Level 41
+            "Tepid Deeds",     -- Level 23
+            "Languid Pace",    -- Level 9
         },
         ['Dispel'] = {
-            "Eradicate Magic",
-            "Recant Magic",
-            "Pillage Enchantment",
-            "Nullify Magic",
-            "Strip Enchantment",
-            "Cancel Magic",
-            "Taper Enchantment",
+            "Recant Magic",        -- Level 53
+            "Pillage Enchantment", -- Level 42
+            "Nullify Magic",       -- Level 28
+            "Strip Enchantment",   -- Level 22
+            "Cancel Magic",        -- Level 7
+            "Taper Enchantment",   -- Level 1
         },
         ['TashSpell'] = {
-            "Tashan XVII",
-            "Roar of Tashan",
-            "Edict of Tashan",
-            "Proclamation of Tashan",
-            "Order of Tashan",
-            "Decree of Tashan",
-            "Enunciation of Tashan",
-            "Declaration of Tashan",
-            "Clamor of Tashan",
-            "Bark of Tashan",
-            "Din of Tashan",
-            "Echo of Tashan",
-            "Howl of Tashan",
-            "Tashanian",
-            "Tashania",
-            "Tashani",
-            "Tashina",
+            "Tashan XVII",            -- Level 127
+            "Roar of Tashan",         -- Level 122
+            "Edict of Tashan",        -- Level 117
+            "Proclamation of Tashan", -- Level 112
+            "Order of Tashan",        -- Level 107
+            "Decree of Tashan",       -- Level 102
+            "Enunciation of Tashan",  -- Level 97
+            "Declaration of Tashan",  -- Level 92
+            "Clamor of Tashan",       -- Level 87
+            "Bark of Tashan",         -- Level 82
+            "Din of Tashan",          -- Level 77
+            "Echo of Tashan",         -- Level 72
+            "Howl of Tashan",         -- Level 61
+            "Tashanian",              -- Level 57
+            "Tashania",               -- Level 41
+            "Tashani",                -- Level 18
+            "Tashina",                -- Level 2
         },
         ['ManaDrainNuke'] = {
-            "Tears of Kasha",
-            "Tears of Xenacious",
-            "Tears of Aaryonar",
-            "Tears of Skrizix",
-            "Tears of Visius",
-            "Tears of Syrkl",
-            "Tears of Wreliard",
-            "Tears of Zykean",
-            "Tears of Xadrith",
-            "Tears of Qandieal",
-            "Torment of Scio",
-            "Torment of Argli",
-            "Scryer's Trespass",
-            "Wandering Mind",
-            "Mana Sieve",
+            "Tears of Kasha",     -- Level 121
+            "Tears of Xenacious", -- Level 116
+            "Tears of Aaryonar",  -- Level 111
+            "Tears of Skrizix",   -- Level 106
+            "Tears of Visius",    -- Level 101
+            "Tears of Syrkl",     -- Level 100
+            "Tears of Wreliard",  -- Level 95
+            "Tears of Zykean",    -- Level 90
+            "Tears of Xadrith",   -- Level 85
+            "Tears of Qandieal",  -- Level 80
+            "Torment of Scio",    -- Level 63
+            "Torment of Argli",   -- Level 56
+            "Scryer's Trespass",  -- Level 52
+            "Wandering Mind",     -- Level 38
+            "Mana Sieve",         -- Level 30
         },
         ['DichoSpell'] = {
-            "Ecliptic Reinforcement",
-            "Composite Reinforcement",
-            "Dissident Reinforcement",
-            "Dichotomic Reinforcement",
-            "Reciprocal Reinforcement",
+            "Reciprocal Reinforcement", -- Level 121
+            "Ecliptic Reinforcement",   -- Level 116
+            "Composite Reinforcement",  -- Level 111
+            "Dissident Reinforcement",  -- Level 106
+            "Dichotomic Reinforcement", -- Level 101
         },
         ['StrangleDot'] = {
             ---DoT 1 -- >=LVL1
-            "Strangle XVII",
-            "Asphyxiating Grasp",
-            "Throttling Grip",
-            "Pulmonary Grip",
-            "Strangulate",
-            "Drown",
-            "Stifle",
-            "Suffocation",
-            "Constrict",
-            "Smother",
-            "Strangling Air",
-            "Thin Air",
-            "Arcane Noose",
-            "Strangle",
-            "Asphyxiate",
-            "Gasping Embrace",
-            "Suffocate",
-            "Choke",
-            "Suffocating Sphere",
-            "Shallow Breath",
+            "Strangle XVII",      -- Level 128
+            "Asphyxiating Grasp", -- Level 123
+            "Throttling Grip",    -- Level 118
+            "Pulmonary Grip",     -- Level 113
+            "Strangulate",        -- Level 108
+            "Drown",              -- Level 103
+            "Stifle",             -- Level 98
+            "Suffocation",        -- Level 93
+            "Constrict",          -- Level 88
+            "Smother",            -- Level 83
+            "Strangling Air",     -- Level 78
+            "Thin Air",           -- Level 73
+            "Arcane Noose",       -- Level 69
+            "Strangle",           -- Level 62
+            "Asphyxiate",         -- Level 59
+            "Gasping Embrace",    -- Level 47
+            "Suffocate",          -- Level 26
+            "Choke",              -- Level 11
+            "Suffocating Sphere", -- Level 4
+            "Shallow Breath",     -- Level 1
         },
         ['MindDot'] = {
             -- DoT 2 --  >= LVL70
-            "Mind Shatter XV",
-            "Mind Whirl",
-            "Mind Vortex",
-            "Mind Coil",
-            "Mind Tempest",
-            "Mind Storm",
-            "Mind Squall",
-            "Mind Spiral",
-            "Mind Helix",
-            "Mind Twist",
-            "Mind Oscillate",
-            "Mind Phobiate",
-            "Mind Shatter",
+            "Mind Shatter XV", -- Level 130
+            "Mind Whirl",      -- Level 125
+            "Mind Vortex",     -- Level 120
+            "Mind Coil",       -- Level 115
+            "Mind Tempest",    -- Level 110
+            "Mind Storm",      -- Level 105
+            "Mind Squall",     -- Level 100
+            "Mind Spiral",     -- Level 95
+            "Mind Helix",      -- Level 90
+            "Mind Twist",      -- Level 85
+            "Mind Oscillate",  -- Level 80
+            "Mind Phobiate",   -- Level 75
+            "Mind Shatter",    -- Level 70
         },
         ['ConstrictionDot'] = {
             ---DoT 3 -- >= LVL89
-            "Dismaying Constriction",
-            "Perplexing Constriction",
-            "Deceiving Constriction",
-            "Deluding Constriction",
-            "Bewildering Constriction",
-            "Confounding Constriction",
-            "Confusing Constriction",
-            "Baffling Constriction",
+            "Dismaying Constriction",   -- Level 124
+            "Perplexing Constriction",  -- Level 119
+            "Deceiving Constriction",   -- Level 114
+            "Deluding Constriction",    -- Level 109
+            "Bewildering Constriction", -- Level 104
+            "Confounding Constriction", -- Level 99
+            "Confusing Constriction",   -- Level 94
+            "Baffling Constriction",    -- Level 89
         },
         ['MagicNuke'] = {
             --- Nuke 1 -- >= LVL7
-            "Mindblade IX",
-            "Mindrend",
-            "Mindreap",
-            "Mindrift",
-            "Mindslash",
-            "Mindsunder",
-            "Mindcleave",
-            "Mindscythe",
-            "Mindblade",
-            "Spectral Assault",
-            "Polychaotic Assault",
-            "Multichromatic Assault",
-            "Polychromatic Assault",
-            "Colored Chaos",
-            "Psychosis",
-            "Madness of Ikkibi",
-            "Insanity",
-            "Dementing Visions",
-            "Dementia",
-            "Discordant Mind",
-            "Anarchy",
-            "Chaos Flux",
-            "Sanity Warp",
-            "Chaotic Feedback",
-            "Chromarcana",
-            "Ancient: Neurosis",
-            "Ancient: Chaos Madness",
-            "Ancient: Chaotic Visions",
+            "Mindblade IX",             -- Level 130
+            "Mindrend",                 -- Level 125
+            "Mindreap",                 -- Level 120
+            "Mindrift",                 -- Level 115
+            "Mindslash",                -- Level 110
+            "Mindsunder",               -- Level 105
+            "Mindcleave",               -- Level 100
+            "Mindscythe",               -- Level 95
+            "Mindblade",                -- Level 90
+            "Spectral Assault",         -- Level 88
+            "Chromarcana",              -- Level 87
+            "Polychaotic Assault",      -- Level 83
+            "Multichromatic Assault",   -- Level 78
+            "Polychromatic Assault",    -- Level 73
+            "Ancient: Neurosis",        -- Level 70
+            "Colored Chaos",            -- Level 69
+            "Psychosis",                -- Level 68
+            "Madness of Ikkibi",        -- Level 65
+            "Ancient: Chaos Madness",   -- Level 65
+            "Insanity",                 -- Level 64
+            "Ancient: Chaotic Visions", -- Level 60
+            "Dementing Visions",        -- Level 58
+            "Dementia",                 -- Level 54
+            "Discordant Mind",          -- Level 43
+            "Anarchy",                  -- Level 32
+            "Chaos Flux",               -- Level 21
+            "Sanity Warp",              -- Level 16
+            "Chaotic Feedback",         -- Level 7
         },
         ['RuneNuke'] = {
             --- RUNE - Nuke Fast >=LVL86
-            "Chromatic Jab IX",
-            "Chromatic Spike",
-            "Chromatic Flare",
-            "Chromatic Stab",
-            "Chromatic Flicker",
-            "Chromatic Blink",
-            "Chromatic Percussion",
-            "Chromatic Flash",
-            "Chromatic Jab",
+            "Chromatic Jab IX",     -- Level 126
+            "Chromatic Spike",      -- Level 121
+            "Chromatic Flare",      -- Level 116
+            "Chromatic Stab",       -- Level 111
+            "Chromatic Flicker",    -- Level 106
+            "Chromatic Blink",      -- Level 101
+            "Chromatic Percussion", -- Level 96
+            "Chromatic Flash",      -- Level 91
+            "Chromatic Jab",        -- Level 86
         },
         ['ManaTapNuke'] = {
             --- Mana Drain Nuke - Fast -- >=LVL96
-            "Mental Appropriation VII",
-            "Psychological Appropriation",
-            "Ideological Appropriation",
-            "Psychic Appropriation",
-            "Intellectual Appropriation",
-            "Mental Appropriation",
-            "Cognitive Appropriation",
+            "Mental Appropriation VII",    -- Level 126
+            "Cognitive Appropriation",     -- Level 121
+            "Psychological Appropriation", -- Level 116
+            "Ideological Appropriation",   -- Level 111
+            "Psychic Appropriation",       -- Level 106
+            "Intellectual Appropriation",  -- Level 101
+            "Mental Appropriation",        -- Level 96
         },
         --Unused table, temporarily removed - was causing conflicts while resolving MagicNuke action maps (will revisit nukes later)
         -- ['ChromaNuke'] = {
         --- Chromatic Lowest Nuke - Normal -- >=LVL73
-        -- "Polycascading Assault",
-        -- "Polyfluorescent Assault",
-        -- "Polyrefractive Assault",
-        -- "Phantasmal Assault",
-        -- "Arcane Assault",
-        -- "Spectral Assault",
-        -- "Polychaotic Assault",
-        -- "Multichromatic Assault",
-        -- "Polychromatic Assault",
+        --     "Polycascading Assault",   -- Level 113
+        --     "Polyfluorescent Assault", -- Level 108
+        --     "Polyrefractive Assault",  -- Level 103
+        --     "Phantasmal Assault",      -- Level 98
+        --     "Arcane Assault",          -- Level 93
+        --     "Spectral Assault",        -- Level 88
+        --     "Polychaotic Assault",     -- Level 83
+        --     "Multichromatic Assault",  -- Level 78
+        --     "Polychromatic Assault",   -- Level 73
         -- },
         ['CripSlowSpell'] = {
             --- Slow Cripple Combo Spell - Beginning @ Level 88
-            "Constraining Coil",
-            "Constraining Helix",
-            "Undermining Helix",
-            "Diminishing Helix",
-            "Attenuating Helix",
-            "Curtailing Helix",
-            "Inhibiting Helix",
+            "Inhibiting Helix",   -- Level 123
+            "Constraining Coil",  -- Level 113
+            "Constraining Helix", -- Level 108
+            "Undermining Helix",  -- Level 103
+            "Diminishing Helix",  -- Level 98
+            "Attenuating Helix",  -- Level 93
+            "Curtailing Helix",   -- Level 88
         },
         ['PetSpell'] = {
-            "Arkahn's Animation",
-            "Flariton's Animation",
-            "Constance's Animation",
-            "Omica's Animation",
-            "Nureya's Animation",
-            "Gordianus' Animation",
-            "Xorlex's Animation",
-            "Seronvall's Animation",
-            "Novak's Animation",
-            "Yozan's Animation",
-            "Erradien's Animation",
-            "Ellowind's Animation",
-            "Salik's Animation",
-            "Aeldorb's Animation",
-            "Zumaik's Animation",
-            "Kintaz's Animation",
-            "Yegoreff's Animation",
-            "Aanya's Animation",
-            "Boltran's Animation",
-            "Uleen's Animation",
-            "Sagar's Animation",
-            "Sisna's Animation",
-            "Shalee's Animation",
-            "Kilan's Animation",
-            "Mircyl's Animation",
-            "Juli's Animation",
-            "Pendril's Animation",
+            "Arkahn's Animation",    -- Level 126
+            "Flariton's Animation",  -- Level 121
+            "Constance's Animation", -- Level 116
+            "Omica's Animation",     -- Level 111
+            "Nureya's Animation",    -- Level 106
+            "Gordianus' Animation",  -- Level 101
+            "Xorlex's Animation",    -- Level 96
+            "Seronvall's Animation", -- Level 91
+            "Novak's Animation",     -- Level 86
+            "Yozan's Animation",     -- Level 81
+            "Erradien's Animation",  -- Level 76
+            "Ellowind's Animation",  -- Level 71
+            "Salik's Animation",     -- Level 66
+            "Aeldorb's Animation",   -- Level 62
+            "Zumaik's Animation",    -- Level 55
+            "Kintaz's Animation",    -- Level 48
+            "Yegoreff's Animation",  -- Level 41
+            "Aanya's Animation",     -- Level 37
+            "Boltran's Animation",   -- Level 31
+            "Uleen's Animation",     -- Level 29
+            "Sagar's Animation",     -- Level 22
+            "Sisna's Animation",     -- Level 17
+            "Shalee's Animation",    -- Level 14
+            "Kilan's Animation",     -- Level 9
+            "Mircyl's Animation",    -- Level 7
+            "Juli's Animation",      -- Level 2
+            "Pendril's Animation",   -- Level 1
         },
         ['PetBuffSpell'] = {
-            "Empowered Minion IV",
-            "Infused Minion",
-            "Empowered Minion",
-            "Invigorated Minion",
+            "Empowered Minion IV", -- Level 128
+            "Invigorated Minion",  -- Level 117
+            "Infused Minion",      -- Level 107
+            "Empowered Minion",    -- Level 97
         },
         ['MezAESpell'] = {
-            "Mesmerizing Wave XV",
-            "Neutralizing Wave",
-            "Perplexing Wave",
-            "Deadening Wave",
-            "Slackening Wave",
-            "Peaceful Wave",
-            "Serene Wave",
-            "Ensorcelling Wave",
-            "Quelling Wave",
-            "Wake of Subdual",
-            "Wake of Felicity",
-            "Bliss of the Nihil",
-            "Fascination",
-            "Mesmerization",
-            "Bewildering Wave",
-            "Stupefying Wave",
+            "Mesmerizing Wave XV", -- Level 129
+            "Stupefying Wave",     -- Level 124
+            "Bewildering Wave",    -- Level 119
+            "Neutralizing Wave",   -- Level 114
+            "Perplexing Wave",     -- Level 109
+            "Deadening Wave",      -- Level 104
+            "Slackening Wave",     -- Level 99
+            "Peaceful Wave",       -- Level 94
+            "Serene Wave",         -- Level 89
+            "Ensorcelling Wave",   -- Level 84
+            "Quelling Wave",       -- Level 79
+            "Wake of Subdual",     -- Level 74
+            "Wake of Felicity",    -- Level 69
+            "Bliss of the Nihil",  -- Level 65
+            "Fascination",         -- Level 52
+            "Mesmerization",       -- Level 16
         },
         ['MezAESpellFast'] = {
-            "Vexing Glance",
-            "Confounding Glance",
-            "Neutralizing Glance",
-            "Perplexing Glance",
-            "Slackening Glance",
+            "Vexing Glance",       -- Level 124
+            "Confounding Glance",  -- Level 119
+            "Neutralizing Glance", -- Level 114
+            "Perplexing Glance",   -- Level 109
+            "Slackening Glance",   -- Level 99
         },
         ['MezPBAESpell'] = {
-            "Docility XII",
-            "Neutralize",
-            "Perplex",
-            "Bafflement",
-            "Disorientation",
-            "Confusion",
-            "Serenity",
-            "Docility",
-            "Visions of Kirathas",
-            "Dreams of Veldyn",
-            "Circle of Dreams",
-            "Word of Morell",
-            "Entrancing Lights",
-            "Bewilderment",
-            "Wonderment",
+            "Docility XII",        -- Level 128
+            "Wonderment",          -- Level 123
+            "Neutralize",          -- Level 113
+            "Perplex",             -- Level 108
+            "Bafflement",          -- Level 103
+            "Disorientation",      -- Level 98
+            "Confusion",           -- Level 93
+            "Serenity",            -- Level 88
+            "Docility",            -- Level 83
+            "Visions of Kirathas", -- Level 78
+            "Dreams of Veldyn",    -- Level 73
+            "Bewilderment",        -- Level 72
+            "Circle of Dreams",    -- Level 68
+            "Word of Morell",      -- Level 62
+            "Entrancing Lights",   -- Level 30
         },
         ['MezSpell'] = {
-            "Mesmerize XX",
-            "Flummox",
-            "Addle",
-            "Deceive",
-            "Delude",
-            "Bewilder",
-            "Confound",
-            "Mislead",
-            "Baffle",
-            "Befuddle",
-            "Mystify",
-            "Bewilderment",
-            "Euphoria",
-            "Felicity",
-            "Bliss",
-            "Sleep",
-            "Apathy",
-            "Ancient: Eternal Rapture",
-            "Rapture",
-            "Glamour of Kintaz",
-            "Enthrall",
-            "Mesmerize",
+            "Mesmerize XX",             -- Level 126
+            "Flummox",                  -- Level 121
+            "Addle",                    -- Level 116
+            "Deceive",                  -- Level 111
+            "Delude",                   -- Level 106
+            "Bewilder",                 -- Level 101
+            "Confound",                 -- Level 96
+            "Mislead",                  -- Level 92
+            "Baffle",                   -- Level 87
+            "Befuddle",                 -- Level 82
+            "Mystify",                  -- Level 77
+            "Bewilderment",             -- Level 72
+            "Euphoria",                 -- Level 69
+            "Felicity",                 -- Level 67
+            "Bliss",                    -- Level 64
+            "Sleep",                    -- Level 63
+            "Apathy",                   -- Level 61
+            "Ancient: Eternal Rapture", -- Level 60
+            "Rapture",                  -- Level 59
+            "Glamour of Kintaz",        -- Level 54
+            "Enthrall",                 -- Level 13
+            "Mesmerize",                -- Level 2
         },
         ['MezSpellFast'] = {
-            "Deceiving Flash",
-            "Deluding Flash",
-            "Bewildering Flash",
-            "Confounding Flash",
-            "Misleading Flash",
-            "Baffling Flash",
-            "Befuddling Flash",
-            "Mystifying Flash",
-            "Perplexing Flash",
-            "Addling Flash",
-            "Flummoxing Flash",
+            "Flummoxing Flash",  -- Level 122
+            "Addling Flash",     -- Level 117
+            "Deceiving Flash",   -- Level 112
+            "Deluding Flash",    -- Level 107
+            "Bewildering Flash", -- Level 102
+            "Confounding Flash", -- Level 97
+            "Misleading Flash",  -- Level 91
+            "Baffling Flash",    -- Level 86
+            "Befuddling Flash",  -- Level 81
+            "Mystifying Flash",  -- Level 76
+            "Perplexing Flash",  -- Level 71
         },
         ['BlurSpell'] = {
-            "Memory Flux",
-            "Reoccurring Amnesia",
-            "Memory Blur",
+            "Memory Flux",         -- Level 55
+            "Reoccurring Amnesia", -- Level 45
+            "Memory Blur",         -- Level 10
         },
         ['AEBlurSpell'] = {
-            "Blanket of Forgetfulness",
-            "Mind Wipe",
+            "Blanket of Forgetfulness", -- Level 46
+            "Mind Wipe",                -- Level 36
         },
         ['CalmSpell'] = {
             ---Calm Spell -- >= LVL1
-            "Quiet Mind XIII",
-            "Docile Mind",
-            "Still Mind",
-            "Serene Mind",
-            "Mollified Mind",
-            "Pacified Mind",
-            "Quiescent Mind",
-            "Halcyon Mind",
-            "Bucolic Mind",
-            "Hushed Mind",
-            "Silent Mind",
-            "Quiet Mind",
-            "Placate",
-            "Pacification",
-            "Pacify",
-            "Calm",
-            "Soothe",
-            "Lull",
+            "Quiet Mind XIII", -- Level 127
+            "Docile Mind",     -- Level 122
+            "Still Mind",      -- Level 117
+            "Serene Mind",     -- Level 112
+            "Mollified Mind",  -- Level 107
+            "Pacified Mind",   -- Level 102
+            "Quiescent Mind",  -- Level 97
+            "Halcyon Mind",    -- Level 92
+            "Bucolic Mind",    -- Level 87
+            "Hushed Mind",     -- Level 82
+            "Silent Mind",     -- Level 77
+            "Quiet Mind",      -- Level 72
+            "Placate",         -- Level 67
+            "Pacification",    -- Level 62
+            "Pacify",          -- Level 35
+            "Calm",            -- Level 18
+            "Soothe",          -- Level 6
+            "Lull",            -- Level 1
         },
         ['FearSpell'] = {
             ---Fear Spell * Var Name:, string outer >= LVL3
-            "Anxiety Attack",
-            "Jitterskin",
-            "Phobia",
-            "Trepidation",
-            "Invoke Fear",
-            "Chase the Moon",
-            "Fear",
+            "Anxiety Attack", -- Level 67
+            "Jitterskin",     -- Level 62
+            "Phobia",         -- Level 57
+            "Trepidation",    -- Level 56
+            "Invoke Fear",    -- Level 35
+            "Chase the Moon", -- Level 16
+            "Fear",           -- Level 3
         },
         ['RootSpell'] = {
-            "Greater Fetter",
-            "Fetter",
-            "Paralyzing Earth",
-            "Immobilize",
-            "Instill",
-            "Root",
+            "Greater Fetter",   -- Level 61
+            "Fetter",           -- Level 58
+            "Paralyzing Earth", -- Level 45
+            "Immobilize",       -- Level 39
+            "Instill",          -- Level 25
+            "Root",             -- Level 6
         },
     },
     ['RotationOrder'] = {

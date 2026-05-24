@@ -84,231 +84,219 @@ local _ClassConfig = {
     },
     ['AbilitySets']     = {
         ['SelfHPBuff'] = {
-            "Shielding XXIII",
-            "Shield of Memories",
-            "Shield of Shadow",
-            "Shield of Restless Ice",
-            "Shield of Scales",
-            "Shield of the Pellarus",
-            "Shield of the Dauntless",
-            "Shield of Bronze",
-            "Shield of Dreams",
-            "Shield of the Void",
-            "Bulwark of the Crystalwing",
-            "Shield of the Crystalwing",
-            "Ether Shield",
-            "Shield of Maelin",
-            "Shield of the Arcane",
-            "Shield of the Magi",
-            "Arch Shielding",
-            "Greater Shielding",
-            "Major Shielding",
-            "Shielding",
-            "Lesser Shielding",
+            "Shielding XXIII",         -- Level 126
+            "Shield of Memories",      -- Level 121
+            "Shield of Shadow",        -- Level 116
+            "Shield of Restless Ice",  -- Level 111
+            "Shield of Scales",        -- Level 106
+            "Shield of the Pellarus",  -- Level 101
+            "Shield of the Dauntless", -- Level 96
+            "Shield of Bronze",        -- Level 91
+            "Shield of Dreams",        -- Level 86
+            "Shield of the Void",      -- Level 81
+            "Shield of Maelin",        -- Level 64
+            "Shield of the Arcane",    -- Level 61
+            "Shield of the Magi",      -- Level 54
+            "Arch Shielding",          -- Level 41
+            "Greater Shielding",       -- Level 33
+            "Major Shielding",         -- Level 24
+            "Shielding",               -- Level 16
+            "Lesser Shielding",        -- Level 8
         },
         ['Levitate'] = {
-            "Dead Men Floating",
+            "Dead Men Floating", -- Level 45
         },
         ['SelfRune1'] = {
-            "Wraithskin XIII",
-            "Golemskin",
-            "Carrion Skin",
-            "Frozen Skin",
-            "Ashen Skin",
-            "Deadskin",
-            "Zombieskin",
-            "Ghoulskin",
-            "Grimskin",
-            "Corpseskin",
-            "Shadowskin",
-            "Wraithskin",
-            "Dull Pain",
-            "Force Shield",
-            "Manaskin",
-            "Diamondskin",
-            "Steelskin",
-            "Leatherskin",
-            "Shieldskin",
+            "Wraithskin XIII", -- Level 128
+            "Golemskin",       -- Level 123
+            "Carrion Skin",    -- Level 118
+            "Frozen Skin",     -- Level 113
+            "Ashen Skin",      -- Level 108
+            "Deadskin",        -- Level 103
+            "Zombieskin",      -- Level 98
+            "Ghoulskin",       -- Level 93
+            "Grimskin",        -- Level 88
+            "Corpseskin",      -- Level 83
+            "Shadowskin",      -- Level 78
+            "Wraithskin",      -- Level 73
+            "Dull Pain",       -- Level 69
+            "Force Shield",    -- Level 63
+            "Manaskin",        -- Level 52
+            "Diamondskin",     -- Level 43
+            "Steelskin",       -- Level 32
+            "Leatherskin",     -- Level 22
+            "Shieldskin",      -- Level 14
         },
         ['SelfSpellShield1'] = {
-            "Shield of Fate VII",
-            "Shield of Inescapability",
-            "Shield of Inevitability",
-            "Shield of Destiny",
-            "Shield of Order",
-            "Shield of Consequence",
-            "Shield of Fate",
+            "Shield of Fate VII",       -- Level 127
+            "Shield of Inescapability", -- Level 122
+            "Shield of Inevitability",  -- Level 117
+            "Shield of Destiny",        -- Level 112
+            "Shield of Order",          -- Level 107
+            "Shield of Consequence",    -- Level 102
+            "Shield of Fate",           -- Level 97
         },
         ['FDSpell'] = {
             -- Fd Spell
-            "Death Peace",
+            "Death Peace", -- Level 60
         },
         ['CharmSpell'] = {
             -- Charm Spells >= 20
-            "Enslave Death",
-            "Thrall of Bones",
-            "Cajole Undead",
-            "Beguile Undead",
-            "Dominate Undead",
+            "Enslave Death",   -- Level 60
+            "Thrall of Bones", -- Level 54
+            "Cajole Undead",   -- Level 47
+            "Beguile Undead",  -- Level 31
+            "Dominate Undead", -- Level 18
         },
         ---DPS
         ['AllianceSpell'] = {
             -- Alliance Spells
-            "Malevolent Covariance",
-            "Malevolent Conjunction",
-            "Malevolent Coalition",
-            "Malevolent Covenant",
-            "Malevolent Alliance",
+            "Malevolent Covariance",  -- Level 122
+            "Malevolent Conjunction", -- Level 117
+            "Malevolent Coalition",   -- Level 114
+            "Malevolent Covenant",    -- Level 107
+            "Malevolent Alliance",    -- Level 102
         },
         ['DichoDot'] = {
             ---DichoSpell >= LVL101
-            "Ecliptic Paroxysm",
-            "Composite Paroxysm",
-            "Dissident Paroxysm",
-            "Dichotomic Paroxysm",
-            "Reciprocal Paroxysm",
+            "Reciprocal Paroxysm", -- Level 121
+            "Ecliptic Paroxysm",   -- Level 116
+            "Composite Paroxysm",  -- Level 111
+            "Dissident Paroxysm",  -- Level 106
+            "Dichotomic Paroxysm", -- Level 101
         },
         ['SwarmPet'] = {
             ---SwarmPet >= LVL85
-            "Call Raging Skeleton X",
-            "Call Ravening Skeleton",
-            "Call Roiling Skeleton",
-            "Call Riotous Skeleton",
-            "Call Reckless Skeleton",
-            "Call Remorseless Skeleton",
-            "Call Relentless Skeleton",
-            "Call Ruthless Skeleton",
-            "Call Ruinous Skeleton",
-            "Call Rumbling Skeleton",
-            "Call Skeleton Thrall",
-            "Call Skeleton Mass",
-            "Call Skeleton Horde",
-            "Call Skeleton Army",
-            "Call Skeleton Mob",
-            "Call Skeleton Throng",
-            "Call Skeleton Host",
-            "Call Skeleton Crush",
-            "Call Skeleton Swarm",
+            "Call Raging Skeleton X",    -- Level 130
+            "Call Ravening Skeleton",    -- Level 125
+            "Call Roiling Skeleton",     -- Level 120
+            "Call Riotous Skeleton",     -- Level 115
+            "Call Reckless Skeleton",    -- Level 110
+            "Call Remorseless Skeleton", -- Level 105
+            "Call Relentless Skeleton",  -- Level 100
+            "Call Ruthless Skeleton",    -- Level 95
+            "Call Ruinous Skeleton",     -- Level 90
+            "Call Rumbling Skeleton",    -- Level 85
         },
         ['Lifetap'] = {
             ---HealthTaps >= LVL1
-            "Soulrip VII",
-            "Drain Essence XXIII",
-            "Soullash",
-            "Extort Essence",
-            "Soulflay",
-            "Maraud Essence",
-            "Soulgouge",
-            "Draw Essence",
-            "Soulsiphon",
-            "Consume Essence",
-            "Soulrend",
-            "Hemorrhage Essence",
-            "Plunder Essence",
-            "Bleed Essence",
-            "Divert Essence",
-            "Drain Essence",
-            "Siphon Essence",
-            "Drain Life",
-            -- [] =["Ancient: Touch of Orshilak",
-            "Soulspike",
-            "Touch of Mujaki",
-            "Touch of Night",
-            "Deflux",
-            "Drain Soul",
-            "Drain Spirit",
-            "Spirit Tap",
-            "Siphon Life",
-            "Lifedraw",
-            "Lifespike",
-            "Lifetap",
+            "Soulrip VII",         -- Level 128
+            "Drain Essence XXIII", -- Level 126
+            "Soullash",            -- Level 123
+            "Extort Essence",      -- Level 121
+            "Soulflay",            -- Level 118
+            "Maraud Essence",      -- Level 116
+            "Soulgouge",           -- Level 113
+            "Draw Essence",        -- Level 111
+            "Soulsiphon",          -- Level 108
+            "Consume Essence",     -- Level 106
+            "Soulrend",            -- Level 103
+            "Hemorrhage Essence",  -- Level 101
+            "Plunder Essence",     -- Level 96
+            "Bleed Essence",       -- Level 91
+            "Divert Essence",      -- Level 86
+            "Drain Essence",       -- Level 81
+            "Siphon Essence",      -- Level 76
+            "Drain Life",          -- Level 71
+            -- "Ancient: Touch of Orshilak", -- Level 70
+            "Soulspike",           -- Level 67
+            "Touch of Mujaki",     -- Level 61
+            "Touch of Night",      -- Level 59
+            "Deflux",              -- Level 54
+            "Drain Soul",          -- Level 48
+            "Drain Spirit",        -- Level 39
+            "Spirit Tap",          -- Level 26
+            "Siphon Life",         -- Level 20
+            "Lifedraw",            -- Level 12
+            "Lifespike",           -- Level 3
+            "Lifetap",             -- Level 1
         },
         ['DurationTap'] = {
             ---DurationTap >= LVL9
-            "Sharosh's Grasp",
-            "Helmsbane's Grasp",
-            "The Protector's Grasp",
-            "Tserrina's Grasp",
-            "Bomoda's Grasp",
-            "Plexipharia's Grasp",
-            "Halstor's Grasp",
-            "Ivrikdal's Grasp",
-            "Arachne's Grasp",
-            "Fellid's Grasp",
-            "Visziaj's Grasp",
-            "Dyn`leth's Grasp",
-            "Fang of Death",
-            "Night's Beckon",
-            "Saryrn's Kiss",
-            "Vexing Mordinia",
-            "Bond of Death",
-            "Auspice",
-            "Vampiric Curse",
-            "Leech",
+            "Sharosh's Grasp",       -- Level 127
+            "Helmsbane's Grasp",     -- Level 122
+            "The Protector's Grasp", -- Level 117
+            "Tserrina's Grasp",      -- Level 112
+            "Bomoda's Grasp",        -- Level 107
+            "Plexipharia's Grasp",   -- Level 102
+            "Halstor's Grasp",       -- Level 97
+            "Ivrikdal's Grasp",      -- Level 92
+            "Arachne's Grasp",       -- Level 87
+            "Fellid's Grasp",        -- Level 82
+            "Visziaj's Grasp",       -- Level 77
+            "Dyn`leth's Grasp",      -- Level 72
+            "Fang of Death",         -- Level 68
+            "Night's Beckon",        -- Level 65
+            "Saryrn's Kiss",         -- Level 62
+            "Vexing Mordinia",       -- Level 57
+            "Bond of Death",         -- Level 49
+            "Auspice",               -- Level 45
+            "Vampiric Curse",        -- Level 29
+            "Leech",                 -- Level 9
         },
         ['GroupLeech'] = {
             ---GroupLeech >= LVL60
-            "Dark Leech VIII",
-            "Ghastly Leech",
-            "Twilight Leech",
-            "Frozen Leech",
-            "Ashen Leech",
-            "Dark Leech",
-            "Night Stalker",
-            "Zevfeer's Theft of Vitae",
+            "Dark Leech VIII",          -- Level 126
+            "Ghastly Leech",            -- Level 121
+            "Twilight Leech",           -- Level 120
+            "Frozen Leech",             -- Level 115
+            "Ashen Leech",              -- Level 110
+            "Dark Leech",               -- Level 100
+            "Night Stalker",            -- Level 65
+            "Zevfeer's Theft of Vitae", -- Level 60
         },
         ['ManaDrain'] = {
             --Mana Drain with Group Mana Recourse
-            "Mind Wrack XIV",
-            "Mind Disintegrate",
-            "Mind Atrophy",
-            "Mind Erosion",
-            "Mind Exorciation",
-            "Mind Extraction",
-            "Mind Strip",
-            "Mind Abrasion",
-            "Thought Flay",
-            "Mind Decomposition",
-            "Mental Vivisection",
-            "Mind Dissection",
-            "Mind Flay",
-            "Mind Wrack",
+            "Mind Wrack XIV",     -- Level 129
+            "Mind Disintegrate",  -- Level 124
+            "Mind Atrophy",       -- Level 119
+            "Mind Erosion",       -- Level 114
+            "Mind Excoriation",   -- Level 109
+            "Mind Extraction",    -- Level 104
+            "Mind Strip",         -- Level 99
+            "Mind Abrasion",      -- Level 94
+            "Thought Flay",       -- Level 89
+            "Mind Decomposition", -- Level 84
+            "Mental Vivisection", -- Level 79
+            "Mind Dissection",    -- Level 74
+            "Mind Flay",          -- Level 70
+            "Mind Wrack",         -- Level 58
         },
         ['PoisonNuke1'] = {
             ---PoisonNuke >=LVL21
-            "Schisming Venin",
-            "Necrotizing Venin",
-            "Embalming Venin",
-            "Searing Venin",
-            "Effluvial Venin",
-            "Liquefying Venin",
-            "Dissolving Venin",
-            "Blighted Venin",
-            "Withering Venin",
-            "Ruinous Venin",
-            "Venin",
-            "Acikin",
-            "Neurotoxin",
-            "Torbas' Venom Blast",
-            "Torbas' Poison Blast",
-            "Torbas' Acid Blast",
-            "Shock of Poison",
+            "Schisming Venin",      -- Level 126
+            "Necrotizing Venin",    -- Level 121
+            "Embalming Venin",      -- Level 116
+            "Searing Venin",        -- Level 111
+            "Effluvial Venin",      -- Level 106
+            "Liquefying Venin",     -- Level 101
+            "Dissolving Venin",     -- Level 96
+            "Blighted Venin",       -- Level 86
+            "Withering Venin",      -- Level 81
+            "Ruinous Venin",        -- Level 76
+            "Venin",                -- Level 71
+            "Acikin",               -- Level 66
+            "Neurotoxin",           -- Level 61
+            "Torbas' Venom Blast",  -- Level 54
+            "Torbas' Poison Blast", -- Level 49
+            "Torbas' Acid Blast",   -- Level 32
+            "Shock of Poison",      -- Level 21
         },
         ['PoisonNuke2'] = {
             ---PoisonNuke2  >=LVL 75 (DD Increase chance)
-            "Call for Blood XIII",
-            "Decree for Blood",
-            "Proclamation for Blood",
-            "Assert for Blood",
-            "Refute for Blood",
-            "Impose for Blood",
-            "Impel for Blood",
-            --"Provocation for Blood",
-            "Compel for Blood",
-            "Exigency for Blood",
-            "Supplication of Blood",
-            "Demand for Blood",
-            "Call for Blood",
+            "Call for Blood XIII",    -- Level 130
+            "Decree for Blood",       -- Level 125
+            "Proclamation for Blood", -- Level 120
+            "Assert for Blood",       -- Level 115
+            "Refute for Blood",       -- Level 110
+            "Impose for Blood",       -- Level 105
+            "Impel for Blood",        -- Level 100
+            -- "Provocation for Blood", -- Level 95
+            "Compel for Blood",       -- Level 90
+            "Exigency for Blood",     -- Level 85
+            "Supplication of Blood",  -- Level 80
+            "Demand for Blood",       -- Level 75
+            "Call for Blood",         -- Level 68
         },
         ['FireNuke'] = {
             ---Fire Nuke, undead conversion and short stun, 90+
@@ -324,485 +312,485 @@ local _ClassConfig = {
         },
         ['SearingDot'] = {
             ---FireDot1 >= LVL80
-            "Searing Shadow XI",
-            "Raging Shadow",
-            "Scalding Shadow",
-            "Broiling Shadow",
-            "Burning Shadow",
-            "Smouldering Shadow",
-            "Coruscating Shadow",
-            "Blazing Shadow",
-            "Blistering Shadow",
-            "Scorching Shadow",
-            "Searing Shadow",
+            "Searing Shadow XI",  -- Level 130
+            "Raging Shadow",      -- Level 125
+            "Scalding Shadow",    -- Level 120
+            "Broiling Shadow",    -- Level 115
+            "Burning Shadow",     -- Level 110
+            "Smouldering Shadow", -- Level 105
+            "Coruscating Shadow", -- Level 100
+            "Blazing Shadow",     -- Level 95
+            "Blistering Shadow",  -- Level 90
+            "Scorching Shadow",   -- Level 85
+            "Searing Shadow",     -- Level 80
         },
         ['DreadDot'] = {
             ---FireDot2 >= LVL10
-            "Dread Pyre XIII",
-            "Pyre of Illandrin",
-            "Pyre of Va Xakra",
-            "Pyre of Klraggek",
-            "Pyre of the Shadewarden",
-            "Pyre of Jorobb",
-            "Pyre of Marnek",
-            "Pyre of Hazarak",
-            "Pyre of Nos",
-            "Soul Reaper's Pyre",
-            "Reaver's Pyre",
-            "Ashengate Pyre",
-            "Dread Pyre",
-            "Night Fire",
-            "Funeral Pyre of Kelador",
-            "Pyrocruor",
-            "Ignite Blood",
-            "Boil Blood",
-            "Heat Blood",
+            "Dread Pyre XIII",         -- Level 129
+            "Pyre of Illandrin",       -- Level 124
+            "Pyre of Va Xakra",        -- Level 119
+            "Pyre of Klraggek",        -- Level 114
+            "Pyre of the Shadewarden", -- Level 109
+            "Pyre of Jorobb",          -- Level 104
+            "Pyre of Marnek",          -- Level 99
+            "Pyre of Hazarak",         -- Level 94
+            "Pyre of Nos",             -- Level 89
+            "Soul Reaper's Pyre",      -- Level 84
+            "Reaver's Pyre",           -- Level 79
+            "Ashengate Pyre",          -- Level 74
+            "Dread Pyre",              -- Level 70
+            "Night Fire",              -- Level 65
+            "Funeral Pyre of Kelador", -- Level 60
+            "Pyrocruor",               -- Level 58
+            "Ignite Blood",            -- Level 47
+            "Boil Blood",              -- Level 28
+            "Heat Blood",              -- Level 10
         },
         ['DreadDot2'] = {
             ---FireDot2 >= LVL10
-            "Dread Pyre XIII",
-            "Pyre of Illandrin",
-            "Pyre of Va Xakra",
-            "Pyre of Klraggek",
-            "Pyre of the Shadewarden",
-            "Pyre of Jorobb",
-            "Pyre of Marnek",
-            "Pyre of Hazarak",
-            "Pyre of Nos",
-            "Soul Reaper's Pyre",
-            "Reaver's Pyre",
-            "Ashengate Pyre",
-            "Dread Pyre",
-            "Night Fire",
-            "Funeral Pyre of Kelador",
-            "Pyrocruor",
-            "Ignite Blood",
-            "Boil Blood",
-            "Heat Blood",
+            "Dread Pyre XIII",         -- Level 129
+            "Pyre of Illandrin",       -- Level 124
+            "Pyre of Va Xakra",        -- Level 119
+            "Pyre of Klraggek",        -- Level 114
+            "Pyre of the Shadewarden", -- Level 109
+            "Pyre of Jorobb",          -- Level 104
+            "Pyre of Marnek",          -- Level 99
+            "Pyre of Hazarak",         -- Level 94
+            "Pyre of Nos",             -- Level 89
+            "Soul Reaper's Pyre",      -- Level 84
+            "Reaver's Pyre",           -- Level 79
+            "Ashengate Pyre",          -- Level 74
+            "Dread Pyre",              -- Level 70
+            "Night Fire",              -- Level 65
+            "Funeral Pyre of Kelador", -- Level 60
+            "Pyrocruor",               -- Level 58
+            "Ignite Blood",            -- Level 47
+            "Boil Blood",              -- Level 28
+            "Heat Blood",              -- Level 10
         },
         ['FlashDot'] = {
             ---FireDot3 >= LVL88 (QuickDOT)
-            "Marith's Flashblaze",
-            "Arcanaforged's Flashblaze",
-            "Thall Va Kelun's Flashblaze",
-            "Otatomik's Flashblaze",
-            "Azeron's Flashblaze",
-            "Mazub's Flashblaze",
-            "Osalur's Flashblaze",
-            "Brimtav's Flashblaze",
-            "Tenak's Flashblaze",
+            "Marith's Flashblaze",         -- Level 128
+            "Arcanaforged's Flashblaze",   -- Level 123
+            "Thall Va Kelun's Flashblaze", -- Level 118
+            "Otatomik's Flashblaze",       -- Level 113
+            "Azeron's Flashblaze",         -- Level 108
+            "Mazub's Flashblaze",          -- Level 103
+            "Osalur's Flashblaze",         -- Level 98
+            "Brimtav's Flashblaze",        -- Level 93
+            "Tenak's Flashblaze",          -- Level 88
         },
         ['MoriDot'] = {
             ---FireDot4 >= LVL73 DOT
-            "Pyre of Mori XIX",
-            "Pyre of the Abandoned",
-            "Pyre of the Neglected",
-            "Pyre of the Wretched",
-            "Pyre of the Fereth",
-            "Pyre of the Lost",
-            "Pyre of the Forsaken",
-            "Pyre of the Piq'a",
-            "Pyre of the Bereft",
-            "Pyre of the Forgotten",
-            "Pyre of the Lifeless",
-            "Pyre of the Fallen",
+            "Pyre of Mori XIX",      -- Level 128
+            "Pyre of the Abandoned", -- Level 123
+            "Pyre of the Neglected", -- Level 118
+            "Pyre of the Wretched",  -- Level 113
+            "Pyre of the Fereth",    -- Level 108
+            "Pyre of the Lost",      -- Level 103
+            "Pyre of the Forsaken",  -- Level 98
+            "Pyre of the Piq'a",     -- Level 93
+            "Pyre of the Bereft",    -- Level 88
+            "Pyre of the Forgotten", -- Level 83
+            "Pyre of the Lifeless",  -- Level 78
+            "Pyre of the Fallen",    -- Level 73
         },
         ['WoundDot'] = {
             ---Magic1 >= LVL51 SlowDot
-            "Necrotizing Wounds VIII",
-            "Putrefying Wounds",
-            "Infected Wounds",
-            "Septic Wounds",
-            "Cytotoxic Wounds",
-            "Mortiferous Wounds",
-            "Pernicious Wounds",
-            "Necrotizing Wounds",
-            "Splirt",
-            "Splart",
-            "Splort",
-            "Splurt",
+            "Necrotizing Wounds VIII", -- Level 130
+            "Putrefying Wounds",       -- Level 125
+            "Infected Wounds",         -- Level 120
+            "Septic Wounds",           -- Level 115
+            "Cytotoxic Wounds",        -- Level 110
+            "Mortiferous Wounds",      -- Level 105
+            "Pernicious Wounds",       -- Level 100
+            "Necrotizing Wounds",      -- Level 95
+            "Splirt",                  -- Level 90
+            "Splart",                  -- Level 85
+            "Splort",                  -- Level 80
+            "Splurt",                  -- Level 51
         },
         ['HorrorDot'] = {
             ---Magic2 >=LVL67 DOT
-            "Horror XV",
-            "Extermination",
-            "Extinction",
-            "Oblivion",
-            "Inevitable End",
-            "Annihilation",
-            "Termination",
-            "Doom",
-            "Demise",
-            "Mortal Coil",
-            "Anathema of Life",
-            "Curse of Mortality",
-            "Ancient: Curse of Mori",
-            "Dark Nightmare",
-            "Horror",
+            "Horror XV",              -- Level 127
+            "Extermination",          -- Level 122
+            "Extinction",             -- Level 117
+            "Oblivion",               -- Level 112
+            "Inevitable End",         -- Level 107
+            "Annihilation",           -- Level 102
+            "Termination",            -- Level 97
+            "Doom",                   -- Level 92
+            "Demise",                 -- Level 87
+            "Mortal Coil",            -- Level 82
+            "Anathema of Life",       -- Level 77
+            "Curse of Mortality",     -- Level 72
+            "Ancient: Curse of Mori", -- Level 70
+            "Dark Nightmare",         -- Level 67
+            "Horror",                 -- Level 63
         },
         ['HorrorDot2'] = {
             ---Magic2 >=LVL67 DOT
-            "Horror XV",
-            "Extermination",
-            "Extinction",
-            "Oblivion",
-            "Inevitable End",
-            "Annihilation",
-            "Termination",
-            "Doom",
-            "Demise",
-            "Mortal Coil",
-            "Anathema of Life",
-            "Curse of Mortality",
-            "Ancient: Curse of Mori",
-            "Dark Nightmare",
-            "Horror",
+            "Horror XV",              -- Level 127
+            "Extermination",          -- Level 122
+            "Extinction",             -- Level 117
+            "Oblivion",               -- Level 112
+            "Inevitable End",         -- Level 107
+            "Annihilation",           -- Level 102
+            "Termination",            -- Level 97
+            "Doom",                   -- Level 92
+            "Demise",                 -- Level 87
+            "Mortal Coil",            -- Level 82
+            "Anathema of Life",       -- Level 77
+            "Curse of Mortality",     -- Level 72
+            "Ancient: Curse of Mori", -- Level 70
+            "Dark Nightmare",         -- Level 67
+            "Horror",                 -- Level 63
         },
         ['DeconDot'] = {
             ---Magic3 >=LVL87 QuickDot
-            "Xirrim's Swift Deconstruction",
-            "Blevak's Swift Deconstruction",
-            "Xetheg's Swift Deconstruction",
-            "Lexelan's Swift Deconstruction",
-            "Adalora's Swift Deconstruction",
-            "Marmat's Swift Deconstruction",
-            "Itkari's Swift Deconstruction",
-            "Hral's Swift Deconstruction",
-            "Ninavero's Swift Deconstruction",
+            "Xirrim's Swift Deconstruction",   -- Level 127
+            "Blevak's Swift Deconstruction",   -- Level 122
+            "Xetheg's Swift Deconstruction",   -- Level 117
+            "Lexelan's Swift Deconstruction",  -- Level 112
+            "Adalora's Swift Deconstruction",  -- Level 107
+            "Marmat's Swift Deconstruction",   -- Level 102
+            "Itkari's Swift Deconstruction",   -- Level 97
+            "Hral's Swift Deconstruction",     -- Level 92
+            "Ninavero's Swift Deconstruction", -- Level 87
         },
         ['ScourgeDot'] = {
             ---Magic4 >=LVL 97 DOT
-            "Scourge of Eternity", -- Level 123 TOB
-            "Scourge of Destiny",
-            "Scourge of Fates",
+            "Scourge of Eternity",      -- Level 123, TOB
+            "Scourge of Destiny",       -- Level 108
+            "Scourge of Fates",         -- Level 97
         },
-        ['ComboDot'] = { ---Combines GripDot and DecayDot
-            "Goremand's Grip of Decay",
-            "Fleshrot's Grip of Decay",
-            "Danvid's Grip of Decay",
-            "Mourgis' Grip of Decay",
-            "Livianus' Grip of Decay",
+        ['ComboDot'] = {                ---Combines GripDot and DecayDot
+            "Goremand's Grip of Decay", -- Level 125
+            "Fleshrot's Grip of Decay", -- Level 120
+            "Danvid's Grip of Decay",   -- Level 115
+            "Mourgis' Grip of Decay",   -- Level 110
+            "Livianus' Grip of Decay",  -- Level 104
         },
         ['DecayDot'] = {
             ---Decay Line of Disease Spells >=LVL56 Slow DOT
-            "Pustim's Decay",
-            "Goremand's Decay",
-            "Fleshrot's Decay",
-            "Danvid's Decay",
-            "Mourgis' Decay",
-            "Livianus' Decay",
-            "Wuran's Decay",
-            "Ulork's Decay",
-            "Folasar's Decay",
-            "Megrima's Decay",
-            "Eranon's Decay",
-            "Severan's Rot",
-            "Chaos Plague",
-            "Dark Plague",
-            "Cessation of Cor",
+            "Pustim's Decay",   -- Level 126
+            "Goremand's Decay", -- Level 121
+            "Fleshrot's Decay", -- Level 116
+            "Danvid's Decay",   -- Level 111
+            "Mourgis' Decay",   -- Level 106
+            "Livianus' Decay",  -- Level 101
+            "Wuran's Decay",    -- Level 96
+            "Ulork's Decay",    -- Level 91
+            "Folasar's Decay",  -- Level 86
+            "Megrima's Decay",  -- Level 81
+            "Eranon's Decay",   -- Level 76
+            "Severan's Rot",    -- Level 71
+            "Chaos Plague",     -- Level 66
+            "Dark Plague",      -- Level 61
+            "Cessation of Cor", -- Level 56
         },
         ['GripDot'] = {
             ---Grip Line of Disease Spells =LVL1 HAS DEBUFF
-            "Grip of Pustim",
-            "Grip of Quietus",
-            "Grip of Zorglim",
-            "Grip of Kraz",
-            "Grip of Jabaum",
-            "Grip of Zalikor",
-            "Grip of Zargo",
-            "Grip of Mori",
-            "Plague",
-            "Asystole",
-            "Scourge",
-            -- "Infectious Cloud",
-            "Heart Flutter",
-            "Disease Cloud",
+            "Grip of Pustim",  -- Level 126
+            "Grip of Quietus", -- Level 116
+            "Grip of Zorglim", -- Level 111
+            "Grip of Kraz",    -- Level 106
+            "Grip of Jabaum",  -- Level 101
+            "Grip of Zalikor", -- Level 96
+            "Grip of Zargo",   -- Level 91
+            "Grip of Mori",    -- Level 67
+            "Plague",          -- Level 52
+            "Asystole",        -- Level 40
+            "Scourge",         -- Level 35
+            -- "Infectious Cloud", -- Level 15
+            "Heart Flutter",   -- Level 13
+            "Disease Cloud",   -- Level 1
         },
         ['SwiftDiseaseDot'] = {
             ---Sickness Life of Disease Spells >=LVL89 QuickDOT
-            "Wremms's Swift Sickness",
-            "Ogna's Swift Sickness",
-            "Diabo Tatrua's Swift Sickness",
-            "Lairsaf's Swift Sickness",
-            "Hoshkar's Swift Sickness",
-            "Ilsaria's Swift Sickness",
-            "Bora's Swift Sickness",
-            "Prox's Swift Sickness",
-            "Rilfed's Swift Sickness",
+            "Wremm's Swift Sickness",        -- Level 129
+            "Ogna's Swift Sickness",         -- Level 124
+            "Diabo Tatrua's Swift Sickness", -- Level 119
+            "Lairsaf's Swift Sickness",      -- Level 114
+            "Hoshkar's Swift Sickness",      -- Level 109
+            "Ilsaria's Swift Sickness",      -- Level 104
+            "Bora's Swift Sickness",         -- Level 99
+            "Prox's Swift Sickness",         -- Level 94
+            "Rilfed's Swift Sickness",       -- Level 89
         },
         ['SwiftPoisonDot'] = {
             ---Poison1 >= LVL86 (QuickDOT)
-            "Lherre's Swift Venom",
-            "Dotal's Swift Venom",
-            "Xenacious' Swift Venom",
-            "Vilefang's Swift Venom",
-            "Nexona's Swift Venom",
-            "Serisaria's Swift Venom",
-            "Slaunk's Swift Venom",
-            "Hyboram's Swift Venom",
-            "Burlabis' Swift Venom",
+            "Lherre's Swift Venom",    -- Level 126
+            "Dotal's Swift Venom",     -- Level 121
+            "Xenacious' Swift Venom",  -- Level 116
+            "Vilefang's Swift Venom",  -- Level 111
+            "Nexona's Swift Venom",    -- Level 106
+            "Serisaria's Swift Venom", -- Level 101
+            "Slaunk's Swift Venom",    -- Level 96
+            "Hyboram's Swift Venom",   -- Level 91
+            "Burlabis' Swift Venom",   -- Level 86
         },
         ['VenomDot'] = {
             ---Poison2 >=LVL1 (DOT)
-            "Silkwhisper Venom",
-            "Luggald Venom",
-            "Hemorrhagic Venom",
-            "Crystal Crawler Venom",
-            "Polybiad Venom",
-            "Glistenwing Venom",
-            "Binaesa Venom",
-            "Naeya Venom",
-            "Argendev's Venom",
-            "Slitheren Venom",
-            "Venonscale Venom",
-            "Vakk`dra's Sickly Mists",
-            "Blood of Thule",
-            "Envenomed Bolt",
-            "Chilling Embrace",
-            "Venom of the Snake",
-            "Poison Bolt",
+            "Silkwhisper Venom",       -- Level 130
+            "Luggald Venom",           -- Level 125
+            "Hemorrhagic Venom",       -- Level 120
+            "Crystal Crawler Venom",   -- Level 115
+            "Polybiad Venom",          -- Level 110
+            "Glistenwing Venom",       -- Level 105
+            "Binaesa Venom",           -- Level 100
+            "Naeya Venom",             -- Level 95
+            "Argendev's Venom",        -- Level 90
+            "Slitheren Venom",         -- Level 85
+            "Venonscale Venom",        -- Level 80
+            "Vakk`dra's Sickly Mists", -- Level 74
+            "Blood of Thule",          -- Level 65
+            "Envenomed Bolt",          -- Level 50
+            "Chilling Embrace",        -- Level 36
+            "Venom of the Snake",      -- Level 34
+            "Poison Bolt",             -- Level 4
         },
         ['VenomDot2'] = {
             ---Poison2 >=LVL1 (DOT)
-            "Silkwhisper Venom",
-            "Luggald Venom",
-            "Hemorrhagic Venom",
-            "Crystal Crawler Venom",
-            "Polybiad Venom",
-            "Glistenwing Venom",
-            "Binaesa Venom",
-            "Naeya Venom",
-            "Argendev's Venom",
-            "Slitheren Venom",
-            "Venonscale Venom",
-            "Vakk`dra's Sickly Mists",
-            "Blood of Thule",
-            "Envenomed Bolt",
-            "Chilling Embrace",
-            "Venom of the Snake",
-            "Poison Bolt",
+            "Silkwhisper Venom",       -- Level 130
+            "Luggald Venom",           -- Level 125
+            "Hemorrhagic Venom",       -- Level 120
+            "Crystal Crawler Venom",   -- Level 115
+            "Polybiad Venom",          -- Level 110
+            "Glistenwing Venom",       -- Level 105
+            "Binaesa Venom",           -- Level 100
+            "Naeya Venom",             -- Level 95
+            "Argendev's Venom",        -- Level 90
+            "Slitheren Venom",         -- Level 85
+            "Venonscale Venom",        -- Level 80
+            "Vakk`dra's Sickly Mists", -- Level 74
+            "Blood of Thule",          -- Level 65
+            "Envenomed Bolt",          -- Level 50
+            "Chilling Embrace",        -- Level 36
+            "Venom of the Snake",      -- Level 34
+            "Poison Bolt",             -- Level 4
         },
         ['HazeDot'] = {
             ---Poison3 >= LVL79 DOT
-            "Khrosik's Pallid Haze",
-            "Uncia's Pallid Haze",
-            "Zelnithak's Pallid Haze",
-            "Dracnia's Pallid Haze",
-            "Bomoda's Pallid Haze",
-            "Plexipharia's Pallid Haze",
-            "Halstor's Pallid Haze",
-            "Ivrikdal's Pallid Haze",
-            "Arachne's Pallid Haze",
-            "Fellid's Pallid Haze",
-            "Visziaj's Pallid Haze",
-            "Chaos Venom",
+            "Khrosik's Pallid Haze",     -- Level 129
+            "Uncia's Pallid Haze",       -- Level 124
+            "Zelnithak's Pallid Haze",   -- Level 119
+            "Dracnia's Pallid Haze",     -- Level 114
+            "Bomoda's Pallid Haze",      -- Level 109
+            "Plexipharia's Pallid Haze", -- Level 104
+            "Halstor's Pallid Haze",     -- Level 99
+            "Ivrikdal's Pallid Haze",    -- Level 94
+            "Arachne's Pallid Haze",     -- Level 89
+            "Fellid's Pallid Haze",      -- Level 84
+            "Visziaj's Pallid Haze",     -- Level 79
+            "Chaos Venom",               -- Level 70
         },
         ['PutrefactionDot'] = {
             ---Corruption1 >= LVL77
-            "Putrefaction XI",
-            "Deterioration",
-            "Decomposition",
-            "Miasma",
-            "Effluvium",
-            "Liquefaction",
-            "Dissolution",
-            "Mortification",
-            "Fetidity",
-            "Putrescence",
-            "Putrefaction",
+            "Putrefaction XI", -- Level 127
+            "Deterioration",   -- Level 122
+            "Decomposition",   -- Level 117
+            "Miasma",          -- Level 112
+            "Effluvium",       -- Level 107
+            "Liquefaction",    -- Level 102
+            "Dissolution",     -- Level 97
+            "Mortification",   -- Level 92
+            "Fetidity",        -- Level 87
+            "Putrescence",     -- Level 82
+            "Putrefaction",    -- Level 77
         },
         ['CripplingTap'] = {
             -- >= LVL56 Crippling Claudication
-            "Crippling Paraplegia",
-            "Crippling Incapacity",
-            "Crippling Claudication",
+            "Crippling Paraplegia",   -- Level 106
+            "Crippling Incapacity",   -- Level 96
+            "Crippling Claudication", -- Level 56
         },
         ['ChaoticDebuff'] = {
             -- >= LVL93
             -- Chaotic Contgion
-            "Chaotic Fetor",
-            "Chaotic Acridness",
-            "Chaotic Miasma",
-            "Chaotic Effluvium",
-            "Chaotic Liquefaction",
-            "Chaotic Corruption",
-            "Chaotic Contagion",
+            "Chaotic Fetor",        -- Level 123
+            "Chaotic Acridness",    -- Level 118
+            "Chaotic Miasma",       -- Level 113
+            "Chaotic Effluvium",    -- Level 108
+            "Chaotic Liquefaction", -- Level 103
+            "Chaotic Corruption",   -- Level 98
+            "Chaotic Contagion",    -- Level 93
         },
         ['SnareDot'] = {
             -- LVL4 -> <= LVL70
-            "Clinging Darkness XIX",
-            "Afflicted Darkness",
-            "Harrowing Darkness",
-            "Tormenting Darkness",
-            "Gnawing Darkness",
-            "Grasping Darkness",
-            "Clutching Darkness",
-            "Viscous Darkness",
-            "Tenuous Darkness",
-            "Clawing Darkness",
-            "Auroral Darkness",
-            "Coruscating Darkness",
-            "Desecrating Darkness",
-            "Embracing Darkness",
-            "Devouring Darkness",
-            "Cascading Darkness",
-            "Scent of Darkness",
-            "Dooming Darkness",
-            "Engulfing Darkness",
-            "Clinging Darkness",
+            "Clinging Darkness XIX", -- Level 129
+            "Afflicted Darkness",    -- Level 124
+            "Harrowing Darkness",    -- Level 119
+            "Tormenting Darkness",   -- Level 114
+            "Gnawing Darkness",      -- Level 109
+            "Grasping Darkness",     -- Level 104
+            "Clutching Darkness",    -- Level 99
+            "Viscous Darkness",      -- Level 94
+            "Tenuous Darkness",      -- Level 89
+            "Clawing Darkness",      -- Level 84
+            "Auroral Darkness",      -- Level 79
+            "Coruscating Darkness",  -- Level 74
+            "Desecrating Darkness",  -- Level 68
+            "Embracing Darkness",    -- Level 63
+            "Devouring Darkness",    -- Level 59
+            "Cascading Darkness",    -- Level 47
+            "Scent of Darkness",     -- Level 37
+            "Dooming Darkness",      -- Level 27
+            "Engulfing Darkness",    -- Level 11
+            "Clinging Darkness",     -- Level 4
         },
         ['ScentDebuff'] = {
             -- line needed till >= LVL10 <= LVL85
-            "Scent of Dusk XIII",
-            "Scent of The Realm",
-            "Scent of The Grave",
-            "Scent of Mortality",
-            "Scent of Extinction",
-            "Scent of Dread",
-            "Scent of Nightfall",
-            "Scent of Doom",
-            "Scent of Gloom",
-            "Scent of Afterlight",
-            "Scent of Twilight",
-            "Scent of Midnight",
-            "Scent of Terris",
-            "Scent of Darkness",
-            "Scent of Shadow",
-            "Scent of Dusk",
+            "Scent of Dusk XIII",  -- Level 127
+            "Scent of The Realm",  -- Level 122
+            "Scent of The Grave",  -- Level 117
+            "Scent of Mortality",  -- Level 112
+            "Scent of Extinction", -- Level 107
+            "Scent of Dread",      -- Level 97
+            "Scent of Nightfall",  -- Level 92
+            "Scent of Doom",       -- Level 87
+            "Scent of Gloom",      -- Level 82
+            "Scent of Afterlight", -- Level 77
+            "Scent of Twilight",   -- Level 72
+            "Scent of Midnight",   -- Level 68
+            "Scent of Terris",     -- Level 52
+            "Scent of Darkness",   -- Level 37
+            "Scent of Shadow",     -- Level 21
+            "Scent of Dusk",       -- Level 10
         },
         ['LichSpell'] = {
             -- LichForm Spell
-            "Otherside XX",
-            "Realmside",
-            "Lunaside",
-            "Gloomside",
-            "Contraside",
-            "Forgottenside",
-            "Forsakenside",
-            "Shadowside",
-            "Darkside",
-            "Netherside",
-            "Spectralside",
-            "Otherside",
-            "Dark Possession",
-            "Grave Pact",
-            "Seduction of Saryrn",
-            "Arch Lich",
-            "Demi Lich",
-            "Lich",
-            "Call of Bones",
-            "Allure of Death",
-            "Dark Pact",
+            "Otherside XX",        -- Level 129
+            "Realmside",           -- Level 124
+            "Lunaside",            -- Level 119
+            "Gloomside",           -- Level 114
+            "Contraside",          -- Level 109
+            "Forgottenside",       -- Level 104
+            "Forsakenside",        -- Level 99
+            "Shadowside",          -- Level 94
+            "Darkside",            -- Level 89
+            "Netherside",          -- Level 84
+            "Spectralside",        -- Level 79
+            "Otherside",           -- Level 74
+            "Dark Possession",     -- Level 70
+            "Grave Pact",          -- Level 70
+            "Seduction of Saryrn", -- Level 64
+            "Arch Lich",           -- Level 60
+            "Demi Lich",           -- Level 56
+            "Lich",                -- Level 48
+            "Call of Bones",       -- Level 31
+            "Allure of Death",     -- Level 18
+            "Dark Pact",           -- Level 6
         },
         ['BestowBuff'] = {
-            "Bestow Undeath X",
-            "Bestow Ruin",
-            "Bestow Rot",
-            "Bestow Dread",
-            "Bestow Relife",
-            "Bestow Doom",
-            "Bestow Mortality",
-            "Bestow Decay",
-            "Bestow Unlife",
-            "Bestow Undeath",
+            "Bestow Undeath X", -- Level 128
+            "Bestow Ruin",      -- Level 123
+            "Bestow Rot",       -- Level 118
+            "Bestow Dread",     -- Level 113
+            "Bestow Relife",    -- Level 108
+            "Bestow Doom",      -- Level 103
+            "Bestow Mortality", -- Level 98
+            "Bestow Decay",     -- Level 93
+            "Bestow Unlife",    -- Level 88
+            "Bestow Undeath",   -- Level 83
         },
         ['RogPetSpell'] = {
-            "Dark Assassin XVI",
-            "Merciless Assassin",
-            "Unrelenting Assassin",
-            "Restless Assassin",
-            "Reliving Assassin",
-            "Restless Assassin",
-            "Revived Assassin",
-            "Unearthed Assassin",
-            "Reborn Assassin",
-            "Raised Assassin",
-            "Unliving Murderer",
-            "Noxious Servant",
-            "Putrescent Servant",
-            "Dark Assassin",
-            "Saryrn's Companion",
-            "Minion of Shadows",
+            "Dark Assassin XVI",    -- Level 130
+            "Merciless Assassin",   -- Level 125
+            "Unrelenting Assassin", -- Level 120
+            "Restless Assassin",    -- Level 115
+            "Restless Assassin",    -- Level 115
+            "Reliving Assassin",    -- Level 110
+            "Revived Assassin",     -- Level 105
+            "Unearthed Assassin",   -- Level 100
+            "Reborn Assassin",      -- Level 95
+            "Raised Assassin",      -- Level 90
+            "Unliving Murderer",    -- Level 85
+            "Noxious Servant",      -- Level 80
+            "Putrescent Servant",   -- Level 75
+            "Dark Assassin",        -- Level 70
+            "Saryrn's Companion",   -- Level 63
+            "Minion of Shadows",    -- Level 53
         },
         ['WarPetSpell'] = {
-            "Rasivimun's Shade",
-            "Margator's Shade",
-            "Luclin's Conqueror",
-            "Tserrina's Shade",
-            "Adalora's Shade",
-            "Miktokla's Shade",
-            "Zalifur's Shade",
-            "Vak`Ridel's Shade",
-            "Aziad's Shade",
-            "Bloodreaper's Shade",
-            "Relamar's Shade",
-            "Riza`farr's Shadow",
-            "Lost Soul",
-            "Child of Bertoxxulous",
-            "Emissary of Thule",
-            "Servant of Bones",
-            "Invoke Death",
-            "Cackling Bones",
-            "Malignant Dead",
-            "Invoke Shadow",
-            "Summon Dead",
-            "Haunting Corpse",
-            "Animate Dead",
-            "Restless Bones",
-            "Convoke Shadow",
-            "Bone Walk",
-            "Leering Corpse",
-            "Cavorting Bones",
+            "Rasvimun's Shade",      -- Level 127
+            "Margator's Shade",      -- Level 122
+            "Luclin's Conqueror",    -- Level 117
+            "Tserrina's Shade",      -- Level 112
+            "Adalora's Shade",       -- Level 107
+            "Miktokla's Shade",      -- Level 102
+            "Zalifur's Shade",       -- Level 97
+            "Vak`Ridel's Shade",     -- Level 92
+            "Aziad's Shade",         -- Level 87
+            "Bloodreaper's Shade",   -- Level 82
+            "Relamar's Shade",       -- Level 77
+            "Riza`farr's Shadow",    -- Level 72
+            "Lost Soul",             -- Level 67
+            "Child of Bertoxxulous", -- Level 65
+            "Emissary of Thule",     -- Level 59
+            "Servant of Bones",      -- Level 56
+            "Invoke Death",          -- Level 48
+            "Cackling Bones",        -- Level 44
+            "Malignant Dead",        -- Level 39
+            "Invoke Shadow",         -- Level 33
+            "Summon Dead",           -- Level 29
+            "Haunting Corpse",       -- Level 24
+            "Animate Dead",          -- Level 20
+            "Restless Bones",        -- Level 16
+            "Convoke Shadow",        -- Level 12
+            "Bone Walk",             -- Level 8
+            "Leering Corpse",        -- Level 4
+            "Cavorting Bones",       -- Level 1
         },
         ['PetBuff'] = {
-            "Necrotize Ally X",
-            "Instill Ally",
-            "Inspire Ally",
-            "Incite Ally",
-            "Infuse Ally",
-            "Imbue Ally",
+            "Necrotize Ally X", -- Level 130
+            "Instill Ally",     -- Level 125
+            "Inspire Ally",     -- Level 120
+            "Incite Ally",      -- Level 115
+            "Infuse Ally",      -- Level 110
+            "Imbue Ally",       -- Level 105
             --The below spells deal PBAE damage on fade and should not be casually used (later spells drop this effect)
-            --"Sanction Ally",
-            --"Empower Ally",
-            --"Energize Ally",
-            --"Necrotize Ally",
+            -- "Sanction Ally",  -- Level 100
+            -- "Empower Ally",   -- Level 95
+            -- "Energize Ally",  -- Level 90
+            -- "Necrotize Ally", -- Level 85
         },
         ['PetHaste'] = {
-            "Sigil of Death XV",
-            "Sigil of Putrefaction",
-            "Sigil of Undeath",
-            "Sigil of Decay",
-            "Sigil of the Arcron",
-            "Sigil of the Doomscale",
-            "Sigil of the Sundered",
-            "Sigil of the Preternatural",
-            "Sigil of the Moribund",
-            "Sigil of the Aberrant",
-            "Sigil of the Unnatural",
-            "Glyph of Darkness",
-            "Rune of Death",
-            "Augmentation of Death",
-            "Augment Death",
-            "Intensify Death",
-            "Focus Death",
+            "Sigil of Death XV",          -- Level 127
+            "Sigil of Putrefaction",      -- Level 122
+            "Sigil of Undeath",           -- Level 117
+            "Sigil of Decay",             -- Level 112
+            "Sigil of the Arcron",        -- Level 107
+            "Sigil of the Doomscale",     -- Level 102
+            "Sigil of the Sundered",      -- Level 97
+            "Sigil of the Preternatural", -- Level 92
+            "Sigil of the Moribund",      -- Level 87
+            "Sigil of the Aberrant",      -- Level 77
+            "Sigil of the Unnatural",     -- Level 72
+            "Glyph of Darkness",          -- Level 67
+            "Rune of Death",              -- Level 62
+            "Augmentation of Death",      -- Level 55
+            "Augment Death",              -- Level 35
+            "Intensify Death",            -- Level 23
+            "Focus Death",                -- Level 11
         },
         ['PetHealSpell'] = {
-            "Chilling Renewal XVI",
-            "Bracing Revival",
-            "Frigid Salubrity",
-            "Icy Revival",
-            "Algid Renewal",
-            "Icy Mending",
-            "Algid Mending",
-            "Chilled Mending",
-            "Gelid Mending",
-            "Icy Stitches",
-            "Wintry Revival",
-            "Chilling Renewal",
-            "Dark Salve",
-            "Touch of Death",
-            "Renew Bones",
-            "Mend Bones",
+            "Chilling Renewal XVI", -- Level 128
+            "Bracing Revival",      -- Level 123
+            "Frigid Salubrity",     -- Level 118
+            "Icy Revival",          -- Level 113
+            "Algid Renewal",        -- Level 108
+            "Icy Mending",          -- Level 103
+            "Algid Mending",        -- Level 98
+            "Chilled Mending",      -- Level 93
+            "Gelid Mending",        -- Level 88
+            "Icy Stitches",         -- Level 83
+            "Wintry Revival",       -- Level 78
+            "Chilling Renewal",     -- Level 73
+            "Dark Salve",           -- Level 69
+            "Touch of Death",       -- Level 64
+            "Renew Bones",          -- Level 26
+            "Mend Bones",           -- Level 7
         },
         ['FleshBuff'] = {
             "Flesh to Toxin",  -- Level 119
@@ -1372,14 +1360,14 @@ local _ClassConfig = {
             {
                 name = "Dead Man Floating",
                 type = "AA",
-                load_cond = function(self) return Config:GetSettings('DoLevitate') and Casting.CanUseAA("Dead Man Floating") end,
+                load_cond = function(self) return Config:GetSetting('DoLevitate') and Casting.CanUseAA("Dead Man Floating") end,
                 active_cond = function(self, aaName) return Casting.IHaveBuff(aaName) end,
                 cond = function(self, aaName) return Casting.SelfBuffAACheck(aaName) end,
             },
             {
                 name = "Levitate",
                 type = "Spell",
-                load_cond = function(self) return Config:GetSettings('DoLevitate') and not Casting.CanUseAA("Dead Man Floating") end,
+                load_cond = function(self) return Config:GetSetting('DoLevitate') and not Casting.CanUseAA("Dead Man Floating") end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell) return Casting.SelfBuffCheck(spell) end,
             },

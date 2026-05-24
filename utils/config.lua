@@ -1270,14 +1270,16 @@ Config.DefaultConfig                                     = {
         ConfigType = "Advanced",
     },
     -- Common/Under the Hood
-    ['UseExactSpellNames']         = {
-        DisplayName = "Use Exact Spell Names",
+    ['SpellRetryCountBeta']        = {
+        DisplayName = "Spell Retry Count",
         Group = "Abilities",
         Header = "Common",
         Category = "Under the Hood",
         Index = 1,
-        Tooltip = "This will cause RGMercs to use '/cast =<Spell>' which , must be supported by your MQ version but will avoid things like 'Bane' casting 'Bane of Nife' instead.",
-        Default = true,
+        Tooltip = "The amount of times to try to recast a spell, AA, or item due to a fizzle, interrupt, or similar.",
+        Default = 2,
+        Min = 0,
+        Max = 5,
         ConfigType = "Advanced",
     },
     ['CastReadyDelayFact']         = {

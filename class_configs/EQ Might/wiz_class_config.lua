@@ -102,7 +102,7 @@ return {
         ['BigFireNuke'] = {                  -- Level 51-70, Long Cast, Heavy Damage
             "Ether Flame",                   -- Level 70
             "Ancient: Core Fire",            -- Level 68
-            "Corona Flare",                  -- Level 67 EQM Custom
+            "Corona Flare",                  -- Level 67
             "Ancient: Strike of Chaos",      -- Level 65
             "White Fire",                    -- Level 65
             "Strike of Solusek",             -- Level 65

@@ -79,14 +79,14 @@ local _ClassConfig = {
     ['AbilitySets']   = {
         ['StandDisc'] = {             -- Timer 1
             "Final Stand Discipline", -- Level 71
-            "Shelter Me Discipline",  -- Level 69
+            "Shelter Me Discipline",  -- Level 69 EQM Custom
             -- "Stonewall Discipline", -- Level 65
             "Defensive Discipline",   -- Level 55
             "Evasive Discipline",     -- Level 52
         },
         ['StanceDisc'] = {
-            "Myrmidon Stance Discipline", -- Level 61
-            "Warrior Stance Discipline",  -- Level 40
+            "Myrmidon Stance Discipline", -- Level 61 EQM Custom
+            "Warrior Stance Discipline",  -- Level 40 EQM Custom
         },
         ['Fortitude'] = {                 -- Timer 3
             "Fortitude Discipline",       -- Level 59
@@ -99,7 +99,7 @@ local _ClassConfig = {
             "Vortex Blade",    -- Level 74
             "Cyclone Blade",   -- Level 67
             "Whirlwind Blade", -- Level 61
-            "Mayhem Blade",    -- Level 45
+            "Mayhem Blade",    -- Level 45 EQM Custom
         },
         ['AddHate'] = {
             "Ancient: Chaos Cry",    -- Level 65
@@ -125,7 +125,7 @@ local _ClassConfig = {
             "Savage Onslaught Discipline", -- Level 68
         },
         ['StrikeDisc'] = {
-            "Mighty Blow Discipline",   -- Level 66
+            "Mighty Blow Discipline",   -- Level 66 EQM Custom
             "Fellstrike Discipline",    -- Level 58
             "Mighty Strike Discipline", -- Level 54
         },
@@ -136,23 +136,23 @@ local _ClassConfig = {
         --     "Shocking Defense Discipline", -- Level 70
         -- },
         ['Protective'] = {
-            "Protective Discipline",            -- Level 69
-            "Protective Surge Discipline",      -- Level 45
+            "Protective Discipline",            -- Level 69 EQM Custom
+            "Protective Surge Discipline",      -- Level 45 EQM Custom
         },
         ['HealingDisc'] = {                     --EQM Custom, 2m duration, 5m reuse, hp regen
-            "Lifebloom Will Discipline",        -- Level 70
-            "Rejuvenating Will Discipline",     -- Level 68
-            "Healing Determination Discipline", -- Level 66
+            "Lifebloom Will Discipline",        -- Level 70 EQM Custom
+            "Rejuvenating Will Discipline",     -- Level 68 EQM Custom
+            "Healing Determination Discipline", -- Level 66 EQM Custom
             "Healing Will Discipline",          -- Level 59
         },
         ['Revitalize'] = {
-            "Steely Revitalize",      -- Level 69
-            "Iron Revitalize",        -- Level 65
-            "Hardened Revitalize",    -- Level 55
-            "Revitalize",             -- Level 44
+            "Steely Revitalize",      -- Level 69 EQM Custom
+            "Iron Revitalize",        -- Level 65 EQM Custom
+            "Hardened Revitalize",    -- Level 55 EQM Custom
+            "Revitalize",             -- Level 44 EQM Custom
         },
         ['BattlecryHeal'] = {         -- EQM Custom, restores HP/End for group, 8m reuse
-            "Invigorating Battlecry", -- Level 63
+            "Invigorating Battlecry", -- Level 63 EQM Custom
         },
     },
     ['AASets']        = {

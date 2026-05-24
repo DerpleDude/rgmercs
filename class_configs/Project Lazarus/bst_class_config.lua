@@ -50,8 +50,8 @@ return {
     ['AbilitySets']       = {
         ['SwarmPet'] = {
             -- Swarm Pet
-            "Reptilian Venom",  -- Level 68
-            "Amphibious Toxin", -- Level 62
+            "Reptilian Venom",  -- Level 68 Laz Custom
+            "Amphibious Toxin", -- Level 62 Laz Custom
         },
         ['Icelance1'] = {
             -- Lance 1 Timer 7 Ice Nuke Fast Cast
@@ -136,11 +136,11 @@ return {
             "Arag's Celerity",    -- Level 63
             "Sha's Ferocity",     -- Level 59
             "Omakin's Alacrity",  -- Level 55
-            "Bond of The Wild",   -- Level 52
+            "Bond of the Wild",   -- Level 52
             "Yekan's Quickening", -- Level 37
         },
         ['PetSlowProc'] = {
-            "Spirit of Sha", -- Level 70
+            "Spirit of Sha", -- Level 70 Laz Custom
         },
         ['PetGrowl'] = {
             "Growl of the Panther", -- Level 69
@@ -164,7 +164,7 @@ return {
         },
         ['ManaRegenBuff'] = {
             --Mana/Hp/End Regen Buff*
-            "Spiritual Rejuvenation", -- Level 70
+            "Spiritual Rejuvenation", -- Level 70 Laz Custom
             "Spiritual Ascendance",   -- Level 69
             "Spiritual Dominion",     -- Level 64
             "Spiritual Purity",       -- Level 59

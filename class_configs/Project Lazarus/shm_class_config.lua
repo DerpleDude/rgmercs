@@ -152,7 +152,7 @@ local _ClassConfig = {
             "Quickness",            -- Level 26
         },
         ['Unification'] = { -- Many buffs combined: 75 Sta, 50 sta cap, 7% evasion, 5% damage
-            "Talisman of Unification", -- Level 70
+            "Talisman of Unification", -- Level 70 Laz Custom
         },
         ['LowLvlStaBuff'] = {
             -- Low Level Stamina Buff --- I guess this may be okay for tanks (but largely a raid thing). Need to scrub which levels. Not currently used.
@@ -279,7 +279,7 @@ local _ClassConfig = {
             "Minor Healing",              -- Level 1
         },
         ['GroupHeal'] = { -- Laz specific, some taken from cleric, some custom
-            "Word of Reconstitution", -- Level 70
+            "Word of Reconstitution", -- Level 70 Laz Custom
             "Word of Redemption",     -- Level 65
             "Word of Restoration",    -- Level 62
             "Word of Vigor",          -- Level 56
@@ -291,7 +291,7 @@ local _ClassConfig = {
             "Ghost of Renewal", -- Level 70
         },
         ['SnareHot'] = {
-            "Transcendent Torpor", -- Level 70
+            "Transcendent Torpor", -- Level 70 Laz Custom
             "Torpor",              -- Level 60
             "Stoicism",            -- Level 44
         },
@@ -319,7 +319,7 @@ local _ClassConfig = {
         -- },
         ['TwinHealNuke'] = {
             -- Nuke the MA Not the assist target - Levels 70
-            "Frostfall Boon", -- Level 70
+            "Frostfall Boon", -- Level 70 Laz Custom
         },
         ['PoisonNuke'] = {
             -- Poison Nuke LVL34 +
@@ -376,12 +376,12 @@ local _ClassConfig = {
         },
         ['PetSpell'] = { --We need to add handling for commune to get the mammoth/etc
             -- Pet Spell - 32+
-            "Commune with the Wild", -- Level 70
+            "Commune with the Wild", -- Level 70 Laz Custom
             "Farrel's Companion",    -- Level 67
             "True Spirit",           -- Level 61
             "Spirit of the Howler",  -- Level 55
             "Frenzied Spirit",       -- Level 45
-            "Guardian spirit",       -- Level 41
+            "Guardian Spirit",       -- Level 41
             "Vigilant Spirit",       -- Level 37
             "Companion Spirit",      -- Level 32
         },

@@ -236,8 +236,8 @@ local _ClassConfig = {
         },
         ['DivineBuff'] = {
             --Divine Buffs REQUIRES extra spell slot because of the 90s recast
-            "Divine Incursion",    -- Level 69
-            "Divine Interaction",  -- Level 65
+            "Divine Incursion",    -- Level 69 EQM Custom
+            "Divine Interaction",  -- Level 65 EQM Custom
             "Divine Intervention", -- Level 60
             "Death Pact",          -- Level 51
         },
@@ -346,9 +346,9 @@ local _ClassConfig = {
             "Strike",                 -- Level 1
         },
         ['QuickNuke'] = {             -- Might specific
-            "Verdict of Ascension",   -- Level 69
-            "Verdict of Radiance",    -- Level 65
-            "Verdict of Light",       -- Level 60
+            "Verdict of Ascension",   -- Level 69 EQM Custom
+            "Verdict of Radiance",    -- Level 65 EQM Custom
+            "Verdict of Light",       -- Level 60 EQM Custom
         },
         -- ['HammerPet'] = {
         --     "Unswerving Hammer of Retribution", -- Level 68

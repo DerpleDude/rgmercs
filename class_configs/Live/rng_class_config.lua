@@ -283,556 +283,553 @@ local _ClassConfig = {
     },
     ['AbilitySets']       = {
         ['ArrowOpener'] = {
-            "Concealed Shot",
-            "Stealthy Shot",
-            "Silent Shot",
+            "Concealed Shot", -- Level 125
+            "Stealthy Shot",  -- Level 111
+            "Silent Shot",    -- Level 103
         },
         ['PullOpener'] = {
-            "Deadfall",
-            "Heartpierce",
-            "Heartrend",
-            "Heartrip",
-            "Heartspike",
+            "Heartspike",  -- Level 98
+            "Heartrip",    -- Level 93
+            "Heartrend",   -- Level 88
+            "Heartpierce", -- Level 83
+            "Deadfall",    -- Level 78
         },
         ['CalledShotsArrow'] = {
-            "Called Shots IX",
-            "Called Shots",
-            "Announced Shots",
-            "Forecasted Shots",
-            "Anticipated Shots",
-            "Foreseen Shots",
-            "Marked Shots",
-            "Claimed Shots",
-            "Inevitable Shots",
+            "Called Shots IX",   -- Level 126
+            "Inevitable Shots",  -- Level 121
+            "Claimed Shots",     -- Level 116
+            "Marked Shots",      -- Level 111
+            "Foreseen Shots",    -- Level 106
+            "Anticipated Shots", -- Level 101
+            "Forecasted Shots",  -- Level 96
+            "Announced Shots",   -- Level 91
+            "Called Shots",      -- Level 86
         },
         ['FocusedArrows'] = {
-            "Focused Hail of Arrows XII",
-            "Focused Frenzy of Arrows",
-            "Focused Storm of Arrows",
-            "Focused Tempest of Arrows",
-            "Focused Arrow Swarm",
-            "Focused Rain of Arrows",
-            "Focused Arrowrain",
-            "Focused Arrowgale",
-            "Focused Blizzard of Arrows",
-            "Focused Whirlwind of Arrows",
+            "Focused Hail of Arrows XII",  -- Level 130
+            "Focused Frenzy of Arrows",    -- Level 125
+            "Focused Whirlwind of Arrows", -- Level 120
+            "Focused Blizzard of Arrows",  -- Level 115
+            "Focused Arrowgale",           -- Level 110
+            "Focused Arrowrain",           -- Level 105
+            "Focused Rain of Arrows",      -- Level 100
+            "Focused Arrow Swarm",         -- Level 95
+            "Focused Tempest of Arrows",   -- Level 90
+            "Focused Storm of Arrows",     -- Level 85
         },
         ['DichoSpell'] = {
-            "Dichotomic Fusillade",
-            "Dissident Fusillade",
-            "Composite Fusillade",
-            "Ecliptic Fusillade",
-            "Reciprocal Fusillade",
+            "Reciprocal Fusillade", -- Level 121
+            "Ecliptic Fusillade",   -- Level 116
+            "Composite Fusillade",  -- Level 111
+            "Dissident Fusillade",  -- Level 106
+            "Dichotomic Fusillade", -- Level 101
         },
         ['SummerNuke'] = {
-            "Summer's Dew XII",
-            "Summer's Deluge",
-            "Summer's Torrent",
-            "Summer's Viridity",
-            "Summer's Mist",
-            "Summer's Storm",
-            "Summer's Squall",
-            "Summer's Gale",
-            "Summer's Cyclone",
-            "Summer's Tempest",
-            "Summer's Sleet",
+            "Summer's Dew XII",  -- Level 129
+            "Summer's Deluge",   -- Level 124
+            "Summer's Torrent",  -- Level 119
+            "Summer's Sleet",    -- Level 114
+            "Summer's Tempest",  -- Level 109
+            "Summer's Cyclone",  -- Level 104
+            "Summer's Gale",     -- Level 99
+            "Summer's Squall",   -- Level 94
+            "Summer's Storm",    -- Level 89
+            "Summer's Mist",     -- Level 84
+            "Summer's Viridity", -- Level 79
         },
         ['SwarmDot'] = {
-            "Spitestinger Swarm",
-            "Stinging Swarm",
-            "Swarm of Pain",
-            "Drones of Doom",
-            "Fire Swarm",
-            "Drifting Death",
-            "Locust Swarm",
-            "Wasp Swarm",
-            "Hornet Swarm",
-            "Beetle Swarm",
-            "Scarab Swarm",
-            "Vespid Swarm",
-            "Dreadbeetle Swarm",
-            "Blisterbeetle Swarm",
-            "Bonecrawler Swarm",
-            "Ice Burrower Swarm",
-            "Bloodbeetle Swarm",
-            "Hotaria Swarm",
+            "Spitestinger Swarm",  -- Level 126
+            "Hotaria Swarm",       -- Level 121
+            "Bloodbeetle Swarm",   -- Level 116
+            "Ice Burrower Swarm",  -- Level 111
+            "Bonecrawler Swarm",   -- Level 106
+            "Blisterbeetle Swarm", -- Level 101
+            "Dreadbeetle Swarm",   -- Level 96
+            "Vespid Swarm",        -- Level 91
+            "Scarab Swarm",        -- Level 86
+            "Beetle Swarm",        -- Level 81
+            "Hornet Swarm",        -- Level 76
+            "Wasp Swarm",          -- Level 71
+            "Locust Swarm",        -- Level 67
+            "Drifting Death",      -- Level 62
+            "Fire Swarm",          -- Level 55
+            "Drones of Doom",      -- Level 54
+            "Swarm of Pain",       -- Level 40
+            "Stinging Swarm",      -- Level 25
         },
         ['ShortSwarmDot'] = {
-            "Swarm of Spitemidges",
-            "Swarm of Fernflies",
-            "Swarm of Bloodflies",
-            "Swarm of Hyperboreads",
-            "Swarm of Glistenwings",
-            "Swarm of Vespines",
-            "Swarm of Sand Wasps",
-            "Swarm of Hornets",
-            "Swarm of Bees",
+            "Swarm of Spitemidges",  -- Level 128
+            "Swarm of Fernflies",    -- Level 123
+            "Swarm of Bloodflies",   -- Level 118
+            "Swarm of Hyperboreads", -- Level 113
+            "Swarm of Glistenwings", -- Level 103
+            "Swarm of Vespines",     -- Level 98
+            "Swarm of Sand Wasps",   -- Level 93
+            "Swarm of Hornets",      -- Level 88
+            "Swarm of Bees",         -- Level 83
         },
         ['UnityBuff'] = {
-            "Bosquetender's Unity",
-            "Copsestalker's Unity",
-            "Wildstalker's Unity",
+            "Wildstalker's Unity",  -- Level 110
+            "Copsestalker's Unity", -- Level 105
+            "Bosquetender's Unity", -- Level 100
         },
         ['Protectionbuff'] = {
-            "Protection of the Grove",
-            "Force of Nature",
-            "Warder's Protection",
-            "Protection of the Wild",
-            "Protection of the Minohten",
-            "Protection of the Kirkoten",
-            "Protection of the Paw",
-            "Protection of the Vale",
-            "Protection of the Copse",
-            "Protection of the Bosque",
-            "Protection of the Forest",
-            "Protection of the Woodlands",
-            "Protection of the Wakening Land",
-            "Protection of the Valley",
+            "Protection of the Grove",         -- Level 130
+            "Protection of the Valley",        -- Level 120
+            "Protection of the Wakening Land", -- Level 115
+            "Protection of the Woodlands",     -- Level 110
+            "Protection of the Forest",        -- Level 105
+            "Protection of the Bosque",        -- Level 100
+            "Protection of the Copse",         -- Level 95
+            "Protection of the Vale",          -- Level 90
+            "Protection of the Paw",           -- Level 85
+            "Protection of the Kirkoten",      -- Level 80
+            "Protection of the Minohten",      -- Level 75
+            "Protection of the Wild",          -- Level 65
+            "Warder's Protection",             -- Level 60
+            "Force of Nature",                 -- Level 48
         },
         ['ShoutBuff'] = {
-            "Shout of the Grovestalker",
-            "Shout of the Fernstalker",
-            "Shout of the Predator",
-            "Shout of the Bosquestalker",
-            "Shout of the Copsestalker",
-            "Shout of the Wildstalker",
-            "Shout of the Arbor Stalker",
-            "Shout of the Dusksage Stalker",
+            "Shout of the Grovestalker",     -- Level 129
+            "Shout of the Fernstalker",      -- Level 124
+            "Shout of the Dusksage Stalker", -- Level 119
+            "Shout of the Arbor Stalker",    -- Level 114
+            "Shout of the Wildstalker",      -- Level 109
+            "Shout of the Copsestalker",     -- Level 104
+            "Shout of the Bosquestalker",    -- Level 100
+            "Shout of the Predator",         -- Level 98
         },
         ['AggroBuff'] = {
-            "Devastating Blades XII",
-            "Devastating Blades",
-            "Devastating Edges",
-            "Devastating Slashes",
-            "Devastating Impact",
-            "Devastating Swords",
-            "Devastating Steel",
-            "Devastating Velium",
-            "Devastating Barrage",
+            "Devastating Blades XII", -- Level 129
+            "Devastating Barrage",    -- Level 119
+            "Devastating Velium",     -- Level 114
+            "Devastating Steel",      -- Level 109
+            "Devastating Swords",     -- Level 104
+            "Devastating Impact",     -- Level 99
+            "Devastating Slashes",    -- Level 94
+            "Devastating Edges",      -- Level 89
+            "Devastating Blades",     -- Level 84
         },
         ['AggroReducerBuff'] = {
-            "Jolting Blades",
-            "Jolting Strikes",
-            "Jolting Swings",
-            "Jolting Edges",
-            "Jolting Impact",
-            "Jolting Shock",
-            "Jolting Swords",
-            "Jolting Steel",
-            "Jolting Velium",
-            "Jolting Luclinite",
+            "Jolting Luclinite", -- Level 117
+            "Jolting Velium",    -- Level 112
+            "Jolting Steel",     -- Level 107
+            "Jolting Swords",    -- Level 102
+            "Jolting Shock",     -- Level 97
+            "Jolting Impact",    -- Level 92
+            "Jolting Edges",     -- Level 87
+            "Jolting Swings",    -- Level 82
+            "Jolting Strikes",   -- Level 77
+            "Jolting Blades",    -- Level 54
         },
         ['AggroKick'] = {
-            "Enraging Kicks XII",
-            "Enraging Roundhouse Kicks",
-            "Enraging Axe Kicks",
-            "Enraging Wheel Kicks",
-            "Enraging Cut Kicks",
-            "Enraging Heel Kicks",
-            "Enraging Crescent Kicks",
+            "Enraging Kicks XII",        -- Level 127
+            "Enraging Roundhouse Kicks", -- Level 117
+            "Enraging Axe Kicks",        -- Level 112
+            "Enraging Wheel Kicks",      -- Level 107
+            "Enraging Cut Kicks",        -- Level 102
+            "Enraging Heel Kicks",       -- Level 97
+            "Enraging Crescent Kicks",   -- Level 92
         },
         ['ParryProcBuff'] = {
-            "Thundering Blades",
-            "Crackling Blades",
-            "Crackling Edges",
-            "Deafening Edges",
-            "Deafening Weapons",
-            "Roaring Weapons",
-            "Roaring Blades",
-            "Howling Blades",
-            "Vociferous Blades",
+            "Vociferous Blades", -- Level 120
+            "Howling Blades",    -- Level 115
+            "Roaring Blades",    -- Level 110
+            "Roaring Weapons",   -- Level 105
+            "Deafening Weapons", -- Level 100
+            "Deafening Edges",   -- Level 95
+            "Crackling Edges",   -- Level 90
+            "Crackling Blades",  -- Level 85
+            "Thundering Blades", -- Level 75
         },
         ['Eyes'] = {
-            "Eyes of the Grove",
-            "Hawk Eye",
-            "Falcon Eye",
-            "Eagle Eye",
-            "Eyes of the Owl",
-            "Eyes of the Peregrine",
-            "Eyes of the Nocturnal",
-            "Eyes of the Wolf",
-            "Eyes of the Raptor",
-            "Eyes of the Howler",
-            "Eyes of the Harrier",
-            "Eyes of the Sabertooth",
-            "Eyes of the Visionary",
-            "Eyes of the Senshali",
-            "Eyes of the Phoenix",
+            "Eyes of the Grove",      -- Level 130
+            "Eyes of the Phoenix",    -- Level 124
+            "Eyes of the Senshali",   -- Level 119
+            "Eyes of the Visionary",  -- Level 114
+            "Eyes of the Sabertooth", -- Level 109
+            "Eyes of the Harrier",    -- Level 104
+            "Eyes of the Howler",     -- Level 99
+            "Eyes of the Raptor",     -- Level 94
+            "Eyes of the Wolf",       -- Level 89
+            "Eyes of the Nocturnal",  -- Level 84
+            "Eyes of the Peregrine",  -- Level 79
+            "Eyes of the Owl",        -- Level 74
+            "Eagle Eye",              -- Level 58
+            "Falcon Eye",             -- Level 52
+            "Hawk Eye",               -- Level 11
         },
         ['GroupStrengthBuff'] = {
-            "Strength of the Grovestalker",
-            "Nature's Precision",
-            "Strength of Nature",
-            "Strength of Tunare",
-            "Strength of the Hunter",
-            "Strength of the Forest Stalker",
-            "Strength of the Gladewalker",
-            "Strength of the Tracker",
-            "Strength of the Thicket Stalker",
-            "Strength of the Gladetender",
-            "Strength of the Bosquestalker",
-            "Strength of the Copsestalker",
-            "Strength of the Wildstalker",
-            "Strength of the Arbor Stalker",
+            "Strength of the Grovestalker",    -- Level 127
+            "Strength of the Arbor Stalker",   -- Level 112
+            "Strength of the Wildstalker",     -- Level 107
+            "Strength of the Copsestalker",    -- Level 102
+            "Strength of the Bosquestalker",   -- Level 97
+            "Strength of the Gladetender",     -- Level 92
+            "Strength of the Thicket Stalker", -- Level 87
+            "Strength of the Tracker",         -- Level 82
+            "Strength of the Gladewalker",     -- Level 77
+            "Strength of the Forest Stalker",  -- Level 72
+            "Strength of the Hunter",          -- Level 67
+            "Strength of Tunare",              -- Level 62
+            "Strength of Nature",              -- Level 51
+            "Nature's Precision",              -- Level 37
         },
         ['GroupPredatorBuff'] = {
-            "Call of the Predator XVI",
-            "Mark of the Predator",
-            "Call of the Predator",
-            "Spirit of the Predator",
-            "Howl of the Predator",
-            "Snarl of the Predator",
-            "Gnarl of the Predator",
-            "Yowl of the Predator",
-            "Roar of the Predator",
-            "Cry of the Predator",
-            "Shout of the Predator",
-            "Shout of the Bosquestalker",
-            "Bellow of the Predator",
-            "Wail of the Predator",
-            "Frostroar of the Predator",
-            "Shout of the Dusksage Stalker",
-            "Shout of the Fernstalker",
+            "Call of the Predator XVI",      -- Level 127
+            "Shout of the Fernstalker",      -- Level 124
+            "Shout of the Dusksage Stalker", -- Level 119
+            "Frostroar of the Predator",     -- Level 112
+            "Wail of the Predator",          -- Level 107
+            "Bellow of the Predator",        -- Level 102
+            "Shout of the Bosquestalker",    -- Level 100
+            "Shout of the Predator",         -- Level 98
+            "Cry of the Predator",           -- Level 93
+            "Roar of the Predator",          -- Level 88
+            "Yowl of the Predator",          -- Level 83
+            "Gnarl of the Predator",         -- Level 78
+            "Snarl of the Predator",         -- Level 73
+            "Howl of the Predator",          -- Level 69
+            "Spirit of the Predator",        -- Level 64
+            "Call of the Predator",          -- Level 60
+            "Mark of the Predator",          -- Level 56
         },
         ['GroupEnrichmentBuff'] = {
-            "Arbor Stalker's Enrichment",
-            "Copsestalker's Enrichment",
-            "Wildstalker's Enrichment",
-            "Fernstalker's Enrichment",
+            "Fernstalker's Enrichment",   -- Level 125
+            "Arbor Stalker's Enrichment", -- Level 115
+            "Wildstalker's Enrichment",   -- Level 110
+            "Copsestalker's Enrichment",  -- Level 105
         },
         ['Rathe'] = {
-            "Cloak of Underbrush",
-            "Cloak of Needlespikes",
-            "Cloak of Bloodbarbs",
-            "Cloak of Rimespurs",
-            "Cloak of Needlebarbs",
-            "Cloak of Nettlespears",
-            "Cloak of Spurs",
-            "Cloak of Burrs",
-            "Cloak of Quills",
-            "Cloak of Feathers",
-            "Cloak of Scales",
-            "Guard of the Earth",
-            "Call of the Rathe",
-            "Call of Earth",
-            "Riftwind's Protection",
+            "Cloak of Underbrush",   -- Level 127
+            "Cloak of Needlespikes", -- Level 122
+            "Cloak of Bloodbarbs",   -- Level 117
+            "Cloak of Rimespurs",    -- Level 112
+            "Cloak of Needlebarbs",  -- Level 107
+            "Cloak of Nettlespears", -- Level 102
+            "Cloak of Spurs",        -- Level 97
+            "Cloak of Burrs",        -- Level 92
+            "Cloak of Quills",       -- Level 87
+            "Cloak of Feathers",     -- Level 82
+            "Cloak of Scales",       -- Level 77
+            "Guard of the Earth",    -- Level 67
+            "Call of the Rathe",     -- Level 62
+            "Call of Earth",         -- Level 50
+            "Riftwind's Protection", -- Level 29
         },
         ['BowDisc'] = {
-            "Trueshot Discipline",
-            "Aimshot Discipline",
-            "Sureshot Discipline",
-            "Pureshot Discipline",
+            "Pureshot Discipline", -- Level 100
+            "Sureshot Discipline", -- Level 85
+            "Aimshot Discipline",  -- Level 80
+            "Trueshot Discipline", -- Level 55
         },
         ['MeleeDisc'] = {
-            "Grovestalker's Discipline",
-            "Fernstalker's Discipline",
-            "Dusksage Stalker's Discipline",
-            "Bosquestalker's Discipline",
-            "Copsestalker's Discipline",
-            "Wildstalker's Discipline",
-            "Arbor Stalker's Discipline",
+            "Grovestalker's Discipline",     -- Level 130
+            "Fernstalker's Discipline",      -- Level 125
+            "Dusksage Stalker's Discipline", -- Level 120
+            "Arbor Stalker's Discipline",    -- Level 115
+            "Wildstalker's Discipline",      -- Level 110
+            "Copsestalker's Discipline",     -- Level 105
+            "Bosquestalker's Discipline",    -- Level 100
         },
         ['DefenseDisc'] = {
-            "Weapon Shield Discipline",
+            "Weapon Shield Discipline", -- Level 60
         },
         ['Fireboon'] = {
-            "Fernflash Boon",
-            "Lunarflare Boon",
-            "Pyroclastic Boon",
-            "Skyfire Boon",
-            "Wildfire Boon",
-            "Ashcloud Boon",
+            "Fernflash Boon",   -- Level 123
+            "Lunarflare Boon",  -- Level 118
+            "Pyroclastic Boon", -- Level 113
+            "Skyfire Boon",     -- Level 108
+            "Wildfire Boon",    -- Level 103
+            "Ashcloud Boon",    -- Level 98
         },
         ['Firenuke'] = {
-            "Volcanic Ash XVIII",
-            "Flame Lick",
-            "Burst of Fire",
-            "Ignite",
-            "Flaming Arrow",
-            "Burning Arrow",
-            "Call of Flame",
-            "FireStrike",
-            "Brushfire",
-            "Sylvan Burn",
-            "Ancient: Burning Chaos",
-            "Hearth Embers",
-            "Scorched Earth",
-            "Volcanic Ash",
-            "Galvanic Ash",
-            "Cataclysm Ash",
-            "Burning Ash",
-            "Beastwood Ash",
-            "Vileoak Ash",
-            "Wildfire Ash",
-            "Skyfire Ash",
-            "Pyroclastic Ash",
-            "Lunarflare Ash",
+            "Volcanic Ash XVIII",     -- Level 128
+            "Lunarflare Ash",         -- Level 118
+            "Pyroclastic Ash",        -- Level 113
+            "Skyfire Ash",            -- Level 108
+            "Wildfire Ash",           -- Level 103
+            "Vileoak Ash",            -- Level 98
+            "Beastwood Ash",          -- Level 93
+            "Burning Ash",            -- Level 88
+            "Cataclysm Ash",          -- Level 83
+            "Galvanic Ash",           -- Level 78
+            "Volcanic Ash",           -- Level 73
+            "Scorched Earth",         -- Level 70
+            "Hearth Embers",          -- Level 69
+            "Sylvan Burn",            -- Level 65
+            "Ancient: Burning Chaos", -- Level 65
+            "Brushfire",              -- Level 64
+            "FireStrike",             -- Level 52
+            "Call of Flame",          -- Level 49
+            "Burning Arrow",          -- Level 39
+            "Flaming Arrow",          -- Level 29
+            "Ignite",                 -- Level 19
+            "Burst of Fire",          -- Level 14
+            "Flame Lick",             -- Level 3
         },
         ['Iceboon'] = {
-            "Frostsquall Boon",
-            "Nocturnal Boon",
-            "Mistral Boon",
-            "Windshear Boon",
-            "Windgale Boon",
-            "Windblast Boon",
+            "Frostsquall Boon", -- Level 122
+            "Nocturnal Boon",   -- Level 117
+            "Mistral Boon",     -- Level 112
+            "Windshear Boon",   -- Level 107
+            "Windgale Boon",    -- Level 102
+            "Windblast Boon",   -- Level 97
         },
         ['Icenuke'] = {
-            "Frozen Wind XVIII",
-            "Gelid Wind",
-            "Coagulated Wind",
-            "Restless Wind",
-            "Frigid Wind",
-            "Frozen Wind", -- lvl 102. Spell ID: 43478
-            "Bitter Wind",
-            "Biting Wind",
-            "Windwhip Bite",
-            "Rimefall Bite",
-            "Icefall Chill",
-            "Ancient North Wind",
-            "Frost Wind",
-            "Frozen Wind", -- lvl 63. Spell ID: 3418
-            "Icewind",
+            "Frozen Wind XVIII",   -- Level 127
+            "Gelid Wind",          -- Level 122
+            "Coagulated Wind",     -- Level 117
+            "Restless Wind",       -- Level 112
+            "Frigid Wind",         -- Level 107
+            "Bitter Wind",         -- Level 97
+            "Biting Wind",         -- Level 87
+            "Windwhip Bite",       -- Level 82
+            "Rimefall Bite",       -- Level 77
+            "Icefall Chill",       -- Level 72
+            "Ancient: North Wind", -- Level 70
+            "Frost Wind",          -- Level 68
+            "Frozen Wind",         -- Level 63, lvl 102. Spell ID: 43478
+            "Frozen Wind",         -- Level 63, lvl 63. Spell ID: 3418
+            "Icewind",             -- Level 52
         },
         ['Heartshot'] = {
-            "Heartshot",
-            "Heartsting",
-            "Heartsting",
-            "Heartslice",
-            "Heartslash",
-            "Heartsplit",
-            "Heartcleave",
-            "Heartsunder",
-            "Heartruin",
+            "Heartruin",   -- Level 120
+            "Heartsunder", -- Level 115
+            "Heartcleave", -- Level 110
+            "Heartsplit",  -- Level 105
+            "Heartslash",  -- Level 95
+            "Heartslice",  -- Level 90
+            "Heartsting",  -- Level 80
+            "Heartsting",  -- Level 80
+            "Heartshot",   -- Level 75
         },
         ['EndRegenDisc'] = {
-            "Hiatus V",
-            "Second Wind",
-            "Third Wind",
-            "Fourth Wind",
-            "Respite",
-            "Reprieve",
-            "Rest",
-            "Breather",
-            "Hiatus",
-            "Relax",
-            "Night's Calming",
-            "Convalesce",
+            "Hiatus V",        -- Level 126
+            "Convalesce",      -- Level 121
+            "Night's Calming", -- Level 116
+            "Relax",           -- Level 111
+            "Hiatus",          -- Level 106
+            "Breather",        -- Level 101
+            "Rest",            -- Level 96
+            "Reprieve",        -- Level 91
+            "Respite",         -- Level 86
         },
         ['Coat'] = {
-            "Underbrush Coat",
-            "Thistlecoat",
-            "Barbcoat",
-            "Bramblecoat",
-            "Spikecoat",
-            "Thorncoat",
-            "Bladecoat",
-            "Briarcoat",
-            "Spinecoat",
-            "Quillcoat",
-            "Burrcoat",
-            "Spurcoat",
-            "Nettlespear Coat",
-            "Needlebarb Coat",
-            "Rimespur Coat",
-            "Moonthorn Coat",
-            "Needlespike Coat",
+            "Underbrush Coat",  -- Level 128
+            "Needlespike Coat", -- Level 123
+            "Moonthorn Coat",   -- Level 118
+            "Rimespur Coat",    -- Level 113
+            "Needlebarb Coat",  -- Level 108
+            "Nettlespear Coat", -- Level 103
+            "Spurcoat",         -- Level 98
+            "Burrcoat",         -- Level 93
+            "Quillcoat",        -- Level 88
+            "Spinecoat",        -- Level 83
+            "Briarcoat",        -- Level 68
+            "Bladecoat",        -- Level 63
+            "Thorncoat",        -- Level 60
+            "Spikecoat",        -- Level 42
+            "Bramblecoat",      -- Level 34
+            "Barbcoat",         -- Level 30
+            "Thistlecoat",      -- Level 13
         },
         ['Mask'] = {
-            "Mask of the Stalker",
+            "Mask of the Stalker", -- Level 65
         },
         ['Hunt'] = {
-            "Consumed by the Hunt X",
-            "Engulfed by the Hunt",
-            "Steeled by the Hunt",
-            "Provoked by the Hunt",
-            "Spurred by the Hunt",
-            "Energized by the Hunt",
-            "Inspired by the Hunt",
-            "Galvanized by the Hunt",
-            "Invigorated by the Hunt",
-            "Consumed by the Hunt",
+            "Consumed by the Hunt X",  -- Level 130
+            "Engulfed by the Hunt",    -- Level 125
+            "Steeled by the Hunt",     -- Level 120
+            "Provoked by the Hunt",    -- Level 115
+            "Spurred by the Hunt",     -- Level 110
+            "Energized by the Hunt",   -- Level 105
+            "Inspired by the Hunt",    -- Level 100
+            "Galvanized by the Hunt",  -- Level 95
+            "Invigorated by the Hunt", -- Level 90
+            "Consumed by the Hunt",    -- Level 75
         },
         ['Heal'] = {
-            "Lifespring",
-            "Elizerain Spring",
-            "Darkflow Spring",
-            "Meltwater Spring",
-            "Wellspring",
-            "Cloudfont",
-            "Cloudburst",
-            "Purespring",
-            "Purefont",
-            "Oceangreen Aquifer",
-            "Dragonscale Aquifer",
-            "Sunderock Springwater",
-            "Sylvan Water",
-            "Sylvan Light",
-            "Chloroblast",
-            "Greater Healing",
-            "Light Healing",
-            "Healing",
-            "Minor Healing",
-            "Salve",
+            "Lifespring",            -- Level 126
+            "Elizerain Spring",      -- Level 121
+            "Darkflow Spring",       -- Level 116
+            "Meltwater Spring",      -- Level 111
+            "Wellspring",            -- Level 106
+            "Cloudfont",             -- Level 101
+            "Cloudburst",            -- Level 96
+            "Purespring",            -- Level 91
+            "Purefont",              -- Level 86
+            "Oceangreen Aquifer",    -- Level 81
+            "Dragonscale Aquifer",   -- Level 76
+            "Sunderock Springwater", -- Level 71
+            "Sylvan Water",          -- Level 67
+            "Sylvan Light",          -- Level 65
+            "Chloroblast",           -- Level 62
+            "Greater Healing",       -- Level 44
+            "Healing",               -- Level 32
+            "Light Healing",         -- Level 20
+            "Minor Healing",         -- Level 8
+            "Salve",                 -- Level 1
         },
-        ['Fastheal'] = { -- 30s recast. ToT
-            "Desperate Deluge IX",
-            "Desperate Quenching",
-            "Desperate Geyser",
-            "Desperate Meltwater",
-            "Desperate Dewcloud",
-            "Desperate Dousing",
-            "Desperate Drenching",
-            "Desperate Downpour",
-            "Desperate Deluge", -- lvl 89
+        ['Fastheal'] = {             -- 30s recast. ToT
+            "Desperate Deluge IX",   -- Level 129
+            "Desperate Quenching",   -- Level 124
+            "Desperate Geyser",      -- Level 119
+            "Desperate Meltwater",   -- Level 114
+            "Desperate Dewcloud",    -- Level 109
+            "Desperate Dousing",     -- Level 104
+            "Desperate Drenching",   -- Level 99
+            "Desperate Downpour",    -- Level 94
+            "Desperate Deluge",      -- Level 89, lvl 89
         },
         ['Totheal'] = {
-            "Lifespring",
-            "Elizerain Spring",
-            "Darkflow Spring",
-            "Meltwater Spring", -- lvl 111
-            "Wellspring",
-            "Cloundfont",
-            "Cloudburst",
+            "Lifespring",       -- Level 126
+            "Elizerain Spring", -- Level 121
+            "Darkflow Spring",  -- Level 116
+            "Meltwater Spring", -- Level 111, lvl 111
+            "Wellspring",       -- Level 106
+            "Cloudfont",        -- Level 101
+            "Cloudburst",       -- Level 96
         },
         ['RegenSpells'] = {
-            "Grovestalker's Vigor",
-            "Fernstalker's Vigor",
-            "Dusksage Stalker's Vigor",
-            "Arbor Stalker's Vigor",
-            "Wildstalker's Vigor",
-            "Copsestalker's Vigor",
-            "Bosquestalker's Vigor",
-            "Gladewalker's Vigor",
-            "Stalker's Vigor",
-            "Hunter's Vigor",
-            "Regrowth",
-            "Chloroplast",
+            "Grovestalker's Vigor",     -- Level 128
+            "Fernstalker's Vigor",      -- Level 123
+            "Dusksage Stalker's Vigor", -- Level 118
+            "Arbor Stalker's Vigor",    -- Level 113
+            "Wildstalker's Vigor",      -- Level 108
+            "Copsestalker's Vigor",     -- Level 103
+            "Bosquestalker's Vigor",    -- Level 98
+            "Gladewalker's Vigor",      -- Level 93
+            "Stalker's Vigor",          -- Level 88
+            "Hunter's Vigor",           -- Level 68
+            "Regrowth",                 -- Level 64
+            "Chloroplast",              -- Level 55
         },
         ['SnareSpells'] = {
-            "Snare",
-            "Tangling Weeds",
-            "Ensnare",
-            "Earthen Embrace",
-            "Earthen Shackles",
+            "Earthen Shackles", -- Level 69
+            "Earthen Embrace",  -- Level 61
+            "Ensnare",          -- Level 51
+            "Snare",            -- Level 6
+            "Tangling Weeds",   -- Level 5
         },
         ['FireFist'] = {
-            "Nature's Precision",
-            "Wolf Form",
-            "Greater Wolf Form",
-            "Feral Form",
-            "Firefist",
+            "Feral Form",         -- Level 64
+            "Greater Wolf Form",  -- Level 56
+            "Wolf Form",          -- Level 48
+            "Nature's Precision", -- Level 37
+            "Firefist",           -- Level 17
         },
         ['DsBuff'] = {
-            "Shield of Underbrush",
-            "Shield of Thistles",
-            "Shield of Brambles",
-            "Shield of Spikes",
-            "Shield of Thorns",
-            "Shield of Briar",
-            "Shield of Needles",
-            "Shield of Spurs",
-            "Shield of DrySpines",
-            "Shield of Nettlespikes",
-            "Shield of Bramblespikes",
-            "Shield of Nettlespines",
-            "Shield of Nettlespears",
-            "Shield of Needlebarbs",
-            "Shield of Rimespurs",
-            "Shield of Shadethorns",
-            "Shield of Needlespikes",
+            "Shield of Underbrush",    -- Level 126
+            "Shield of Needlespikes",  -- Level 121
+            "Shield of Shadethorns",   -- Level 116
+            "Shield of Rimespurs",     -- Level 111
+            "Shield of Needlebarbs",   -- Level 106
+            "Shield of Nettlespears",  -- Level 101
+            "Shield of Nettlespines",  -- Level 96
+            "Shield of Bramblespikes", -- Level 91
+            "Shield of Nettlespikes",  -- Level 86
+            "Shield of DrySpines",     -- Level 81
+            "Shield of Spurs",         -- Level 76
+            "Shield of Needles",       -- Level 71
+            "Shield of Briar",         -- Level 66
+            "Shield of Thorns",        -- Level 62
+            "Shield of Spikes",        -- Level 58
+            "Shield of Brambles",      -- Level 43
+            "Shield of Thistles",      -- Level 24
         },
         ['SkinLike'] = {
-            "Skin Like Wood",
-            "Skin Like Rock",
-            "Skin Like Steel",
-            "Skin Like Diamond",
-            "Skin Like Nature",
-            "Natureskin",
+            "Natureskin",        -- Level 65
+            "Skin Like Nature",  -- Level 59
+            "Skin Like Diamond", -- Level 54
+            "Skin Like Steel",   -- Level 38
+            "Skin Like Rock",    -- Level 21
+            "Skin Like Wood",    -- Level 7
         },
         ['MoveSpells'] = {
-            "Spirit of Falcons",
-            "Spirit of Eagle",
-            "Pack Shrew",
-            "Spirit of the Shrew",
-            "Spirit of Wolf",
+            "Spirit of Falcons",   -- Level 85
+            "Spirit of Eagle",     -- Level 65
+            "Pack Shrew",          -- Level 49
+            "Spirit of the Shrew", -- Level 41
+            "Spirit of Wolf",      -- Level 28
         },
         ['Alliance'] = {
-            "Bosquestalker's Alliance",
-            "Wildstalker's Covenant",
-            "Arbor Stalker's Coalition",
-            "Dusksage Stalker's Conjunction",
-            "Fernstalker's Covariance",
+            "Fernstalker's Covariance",       -- Level 123
+            "Dusksage Stalker's Conjunction", -- Level 118
+            "Arbor Stalker's Coalition",      -- Level 113
+            "Wildstalker's Covenant",         -- Level 108
+            "Bosquestalker's Alliance",       -- Level 103
         },
         ['Cloak'] = {
-            "Ro's Burning Cloak VI",
-            "Shalowain's Crucible Cloak",
-            "Luclin's Darkfire Cloak",
-            "Outrider's Ever-Burning Cloak",
-            "Lavastorm Cloak",
-            "Ro's Burning Cloak",
+            "Ro's Burning Cloak VI",         -- Level 128
+            "Shalowain's Crucible Cloak",    -- Level 123
+            "Luclin's Darkfire Cloak",       -- Level 117
+            "Outrider's Ever-Burning Cloak", -- Level 112
+            "Lavastorm Cloak",               -- Level 107
+            "Ro's Burning Cloak",            -- Level 97
         },
         ['Veil'] = {
-            "Shadowveil",
-            "Duskveil",
-            "Frostveil",
-            "Vaporous Veil",
-            "Shimmering Veil",
-            "Arbor Veil",
-            "Veil of Alaris",
-            "Nature Veil",
+            "Shadowveil",      -- Level 125
+            "Duskveil",        -- Level 116
+            "Frostveil",       -- Level 111
+            "Vaporous Veil",   -- Level 106
+            "Shimmering Veil", -- Level 101
+            "Arbor Veil",      -- Level 96
+            "Veil of Alaris",  -- Level 91
+            "Nature Veil",     -- Level 66
         },
         ['JoltingKicks'] = {
-            "Jolting Kicks XII",
-            "Jolting Frontkicks",
-            "Jolting Hook Kicks",
-            "Jolting Crescent Kicks",
-            "Jolting Heel Kicks",
-            "Jolting Cut Kicks",
-            "Jolting Wheel Kicks",
-            "Jolting Axe Kicks",
-            "Jolting Roundhouse Kicks",
-            "Jolting Drop Kicks",
-            "Jolting Kicks",
+            "Jolting Kicks XII",        -- Level 127
+            "Jolting Drop Kicks",       -- Level 122
+            "Jolting Roundhouse Kicks", -- Level 117
+            "Jolting Axe Kicks",        -- Level 112
+            "Jolting Wheel Kicks",      -- Level 107
+            "Jolting Cut Kicks",        -- Level 102
+            "Jolting Heel Kicks",       -- Level 97
+            "Jolting Crescent Kicks",   -- Level 92
+            "Jolting Hook Kicks",       -- Level 87
+            "Jolting Frontkicks",       -- Level 82
+            "Jolting Kicks",            -- Level 72
         },
         ['AEBlades'] = {
-            "Storm of Blades VII",
-            "Storm of Blades",
-            "Squall Of Blades",
-            "Gale of Blades",
-            "Blizzard of Blades",
-            "Tempest of Blades",
-            "Maelstrom of Blades",
+            "Storm of Blades VII", -- Level 126
+            "Maelstrom of Blades", -- Level 121
+            "Tempest of Blades",   -- Level 116
+            "Blizzard of Blades",  -- Level 111
+            "Gale of Blades",      -- Level 106
+            "Squall Of Blades",    -- Level 101
+            "Storm of Blades",     -- Level 96
         },
         ['FocusedBlades'] = {
-            "Focused Storm of Blades",
-            "Focused Squall of Blades",
-            "Focused Gale of Blades",
-            "Focused Blizzard of Blades",
-            "Focused Tempest of Blades",
-            "Focused Maelstrom of Blades",
+            "Focused Maelstrom of Blades", -- Level 124
+            "Focused Tempest of Blades",   -- Level 119
+            "Focused Blizzard of Blades",  -- Level 114
+            "Focused Gale of Blades",      -- Level 109
+            "Focused Squall of Blades",    -- Level 103
+            "Focused Storm of Blades",     -- Level 98
         },
         ['ReflexSlashHeal'] = {
-            "Reflexive Bladespurs",
-            "Reflexive Nettlespears",
-            "Reflexive Rimespurs",
-            "Reflexive Needlespikes",
+            "Reflexive Needlespikes", -- Level 121
+            "Reflexive Rimespurs",    -- Level 111
+            "Reflexive Nettlespears", -- Level 105
+            "Reflexive Bladespurs",   -- Level 100
         },
         ['AEArrows'] = {
-            "Frenzy of Arrows",
-            "Whirlwind of Arrows",
-            "Blizzard of Arrows",
-            "Gale of Arrows",
-            "Cyclone of Arrows",
-            "Rain of Arrows",
-            "Squall of Arrows",
-            "Arrow Swarm",
-            "Swarm of Arrows",
-            "Tempest of Arrows",
-            "Fusillade of Arrows",
-            "Storm of Arrows",
-            "Barrage of Arrows",
-            "Arc of Arrows",
-            "Hail of Arrows",
+            "Frenzy of Arrows",    -- Level 124
+            "Whirlwind of Arrows", -- Level 119
+            "Blizzard of Arrows",  -- Level 114
+            "Gale of Arrows",      -- Level 109
+            "Cyclone of Arrows",   -- Level 104
+            "Rain of Arrows",      -- Level 100
+            "Squall of Arrows",    -- Level 99
+            "Arrow Swarm",         -- Level 95
+            "Swarm of Arrows",     -- Level 94
+            "Tempest of Arrows",   -- Level 90
+            "Fusillade of Arrows", -- Level 89
+            "Storm of Arrows",     -- Level 85
+            "Barrage of Arrows",   -- Level 84
+            "Arc of Arrows",       -- Level 79
+            "Hail of Arrows",      -- Level 68
         },
     },
     -- These are handled differently from normal rotations in that we try to make some intelligent decisions about which spells to use instead

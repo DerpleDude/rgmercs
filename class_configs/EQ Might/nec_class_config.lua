@@ -95,7 +95,7 @@ local _ClassConfig = {
             "Minor Shielding",      -- Level 1
         },
         ['SelfRune'] = {
-            "WraithSkin",   -- Level 71
+            "Wraithskin",   -- Level 71
             "Dull Pain",    -- Level 69
             "Force Shield", -- Level 63
             "Manaskin",     -- Level 52
@@ -132,7 +132,7 @@ local _ClassConfig = {
         },
         ['DurationTap'] = {
             "Dyn`leth's Grasp",       -- Level 71
-            "Ancient: Chiasa's Kiss", -- Level 68
+            "Ancient: Chiasa's Kiss", -- Level 68 EQM Custom
             -- "Fang of Death",         -- Level 68
             -- "Night's Beckon",        -- Level 65
             -- "Saryrn's Kiss",         -- Level 62
@@ -218,7 +218,7 @@ local _ClassConfig = {
             -- "Chaos Venom",     -- Level 70 (worse than corath venom)
             "Corath Venom",       -- Level 69
             "Blood of Thule",     -- Level 65
-            "Virulent Bolt",      -- Level 59
+            "Virulent Bolt",      -- Level 59 EQM Custom
             "Envenomed Bolt",     -- Level 50
             "Chilling Embrace",   -- Level 36
             "Venom of the Snake", -- Level 34
@@ -228,7 +228,7 @@ local _ClassConfig = {
             -- "Chaos Venom",     -- Level 70 (worse than corath venom)
             "Corath Venom",       -- Level 69
             "Blood of Thule",     -- Level 65
-            "Virulent Bolt",      -- Level 59
+            "Virulent Bolt",      -- Level 59 EQM Custom
             "Envenomed Bolt",     -- Level 50
             "Chilling Embrace",   -- Level 36
             "Venom of the Snake", -- Level 34
@@ -347,10 +347,10 @@ local _ClassConfig = {
         --     "Ignite Bones", -- Level 42
         -- },
         ['Minionskin'] = {        --EQM Custom: HP/Regen/mitigation (May need to block druid HP buff line on pet)
-            "Major Minionskin",   -- Level 66
-            "Greater Minionskin", -- Level 56
-            "Minionskin",         -- Level 43
-            "Lesser Minionskin",  -- Level 30
+            "Major Minionskin",   -- Level 66 EQM Custom
+            "Greater Minionskin", -- Level 56 EQM Custom
+            "Minionskin",         -- Level 43 EQM Custom
+            "Lesser Minionskin",  -- Level 30 EQM Custom
         },
     },
     ['AASets']          = {

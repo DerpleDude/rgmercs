@@ -179,7 +179,7 @@ return {
         --     "Resolution",        -- Level 60
         -- },
         ['Brells'] = {
-            "Brell's Vibrant Barricade",   -- Level 70
+            "Brell's Vibrant Barricade",   -- Level 70 Laz Custom
             "Brell's Brawny Bulwark",      -- Level 69
             "Brell's Stalwart Shield",     -- Level 65
             "Brell's Mountainous Barrier", -- Level 60
@@ -210,8 +210,8 @@ return {
         ['ArmorSelfBuff'] = {
             --- Self Buff Armor Line Ac/Hp/Mana regen
             "Armor of the Champion", -- Level 69
-            "Armor of the Crusader", -- Level 64
-            "Armor of the Divine",   -- Level 60
+            "Armor of the Crusader", -- Level 64 Laz Custom
+            "Armor of the Divine",   -- Level 60 Laz Custom
         },
         ['SymbolBuff'] = {
             "Jeron's Mark",      -- Level 68
@@ -286,7 +286,7 @@ return {
             "Remove Minor Curse",   -- Level 19
         },
         ['ForgeDisc'] = {
-            "Hallowforge Discipline", -- Level 70
+            "Hallowforge Discipline", -- Level 70 Laz Custom
             "Holyforge Discipline",   -- Level 55
         },
         ['RezSpell'] = {
@@ -299,14 +299,14 @@ return {
             "Sacred Word",  -- Level 41, does damage
         },
         ['BlockDisc'] = {
-            "Rampart Discipline",    -- Level 70
+            "Rampart Discipline",    -- Level 70 Laz Custom
             "Deflection Discipline", -- Level 59
         },
         ['SancDisc'] = {
             "Sanctification Discipline", -- Level 60
         },
         ['TwinHealNuke'] = {
-            "Justice of Marr", -- Level 71
+            "Justice of Marr", -- Level 71 Laz Custom
         },
         ['GuardDisc'] = {
             "Guard of Righteousness", -- Level 69

@@ -207,7 +207,7 @@ local _ClassConfig = {
             "Syvelian's Anti-Magic Aria", -- Level 40
         },
         ['ResistSong'] = {
-            "Verse of Veeshan", -- Level 70
+            "Verse of Veeshan", -- Level 70 Laz Custom
             "Psalm of Veeshan", -- Level 63
         },
         ['MezSong'] = {
@@ -238,10 +238,10 @@ local _ClassConfig = {
             "Thousand Blades", -- Level 69
         },
         ['StormBlade'] = {
-            "Storm Blade Flourish", -- Level 69
+            "Storm Blade Flourish", -- Level 69 Laz Custom
         },
         ['SpellAbsorbSong'] = {
-            "Echoes of the Past", -- Level 70
+            "Echoes of the Past", -- Level 70 Laz Custom
         },
         ['ResistDebuff'] = {
             "Harmony of Sound", -- Level 65

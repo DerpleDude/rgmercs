@@ -94,7 +94,7 @@ local _ClassConfig = {
             "Ward of Bedazzlement", -- Level 65
         },
         ['NdtBuff'] = {
-            "Boon of the Legion",  -- Level 67
+            "Boon of the Legion",  -- Level 67 Laz Custom
             "Night's Dark Terror", -- Level 63
             "Boon of the Garou",   -- Level 40
         },
@@ -188,7 +188,7 @@ local _ClassConfig = {
             "Languid Pace",    -- Level 9
         },
         ['Dispel'] = {
-            "Abashi's Disempowerment", -- Level 70
+            "Abashi's Disempowerment", -- Level 70 Laz Custom
             "Recant Magic",            -- Level 53
             "Pillage Enchantment",     -- Level 42
             "Nullify Magic",           -- Level 28
@@ -319,7 +319,7 @@ local _ClassConfig = {
         --     "Root",             -- Level 6
         -- },
         ['HasteManaCombo'] = {
-            "Unified Alacrity", -- Level 71
+            "Unified Alacrity", -- Level 71 Laz Custom
         },
         ['ColoredNuke'] = {
             "Colored Chaos", -- Level 69
