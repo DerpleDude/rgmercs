@@ -147,7 +147,7 @@ return {
         },
         ['QuickUndeadNuke'] = {
             -- Undead Quick Nuke with chance to snare and reduce AC
-            "Burial Rites", -- Level 70 EQM Custom
+            "Burial Rites", -- Level 70
             "Last Rites",   -- Level 68 - Timer 7
         },
         ['DDProc'] = {
@@ -171,7 +171,7 @@ return {
             "Desist",                  -- Level 13 - Not Timer 5, filler
         },
         ['StunTimer4'] = {
-            "Sacred Force",    -- Level 70 EQM Custom
+            "Sacred Force",    -- Level 70
             "Force of Piety",  -- Level 66
             "Force of Akilae", -- Level 62
             "Force",           -- Level 52 - Not Timer 4, filler
@@ -196,7 +196,7 @@ return {
         --     "Resolution",        -- Level 60
         -- },
         ['Brells'] = {
-            "Ancient: Brell's Brawny Bulwark", -- Level 70
+            "Ancient: Brell's Brawny Bulwark", -- Level 70 EQM Custom
             "Brell's Brawny Bulwark",          -- Level 70
             "Brell's Stalwart Shield",         -- Level 65
             "Brell's Mountainous Barrier",     -- Level 60
@@ -249,7 +249,7 @@ return {
         },
         ['TouchHeal'] = {
             -- Target Light Heal
-            "Sacred Touch",     -- Level 70 EQM Custom
+            "Sacred Touch",     -- Level 70
             "Touch of Piety",   -- Level 66
             "Touch of Nife",    -- Level 61
             "Superior Healing", -- Level 57
@@ -339,11 +339,11 @@ return {
         },
         ['GuardDisc'] = {
             "Armor of Righteousness",     -- Level 71
-            "Ancient: Guard of Chivalry", -- Level 68
+            "Ancient: Guard of Chivalry", -- Level 68 EQM Custom
             "Guard of Righteousness",     -- Level 67
             "Guard of Humility",          -- Level 61
             "Guard of Piety",             -- Level 56
-            "Squire Guard",               -- Level 40
+            "Squire Guard",               -- Level 40 EQM Custom
         },
         ['ACBuff'] = {
             "Bulwark of Piety", -- Level 69
@@ -353,11 +353,11 @@ return {
         },
         ['BladeDisc'] = {
             "Whirlwind Blade", -- Level 65
-            "Mayhem Blade",    -- Level 52
+            "Mayhem Blade",    -- Level 52 EQM Custom
         },
         ['Protective'] = {
-            "Protective Discipline",       -- Level 69
-            "Protective Surge Discipline", -- Level 45
+            "Protective Discipline",       -- Level 69 EQM Custom
+            "Protective Surge Discipline", -- Level 45 EQM Custom
         },
         ['SelfHeal'] = {                   -- EQM Custom Zero-Casttime Self-heal
             "Blessed Mantle Heal",         -- Level 66 EQM Custom

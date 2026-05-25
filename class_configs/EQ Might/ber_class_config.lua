@@ -71,7 +71,7 @@ return {
             "Cleaving Anger Discipline", -- Level 65
         },
         ['CryDisc'] = {
-            "Ancient: Cry of Sullon",    -- Level 68
+            "Ancient: Cry of Sullon",    -- Level 68 EQM Custom
             "Battle Cry of the Mastruq", -- Level 65
             "Ancient: Cry of Chaos",     -- Level 65
             "War Cry of Dravel",         -- Level 64
@@ -100,22 +100,22 @@ return {
             "Unpredictable Rage Discipline",    -- Level 66
         },
         ['HealingDisc'] = {                     --EQM Custom, 2m duration, 5m reuse, hp regen
-            "Lifebloom Will Discipline",        -- Level 70
-            "Rejuvenating Will Discipline",     -- Level 68
-            "Healing Determination Discipline", -- Level 66
+            "Lifebloom Will Discipline",        -- Level 70 EQM Custom
+            "Rejuvenating Will Discipline",     -- Level 68 EQM Custom
+            "Healing Determination Discipline", -- Level 66 EQM Custom
             "Healing Will Discipline",          -- Level 59
         },
         ['Scream'] = {                          -- Throwing/Archery Dmg taken debuff
             "Unsettling Scream",                -- Level 71
         },
         ['Revitalize'] = {
-            "Steely Revitalize",      -- Level 69
-            "Iron Revitalize",        -- Level 65
-            "Hardened Revitalize",    -- Level 55
-            "Revitalize",             -- Level 44
+            "Steely Revitalize",      -- Level 69 EQM Custom
+            "Iron Revitalize",        -- Level 65 EQM Custom
+            "Hardened Revitalize",    -- Level 55 EQM Custom
+            "Revitalize",             -- Level 44 EQM Custom
         },
         ['BattlecryHeal'] = {         -- EQM Custom, restores HP/End for group, 8m reuse
-            "Invigorating Battlecry", -- Level 63
+            "Invigorating Battlecry", -- Level 63 EQM Custom
         },
     },
     ['AASets']        = {

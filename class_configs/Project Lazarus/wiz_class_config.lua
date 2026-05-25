@@ -139,7 +139,7 @@ return {
             "Elnerick's Electrical Rending", -- Level 60
         },
         ['StunSpell'] = {
-            "Telakemara",       -- Level 70
+            "Telakemara",       -- Level 70 Laz Custom
             "Telekara",         -- Level 70
             "Telaka",           -- Level 65
             "Telekin",          -- Level 61

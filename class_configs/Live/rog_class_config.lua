@@ -48,8 +48,8 @@ return {
     },
     ['AbilitySets']   = {
         ['Reflex'] = {
-            "Conditioned Reflexes",
-            "Practiced Reflexes",
+            "Practiced Reflexes",   -- Level 115
+            "Conditioned Reflexes", -- Level 97
         },
         ['ThiefBuff'] = {
             "Thief's Sight",  -- Level 117
@@ -163,24 +163,24 @@ return {
         },
         ['EndRegen'] = {
             --Timer 13, can't be used in combat
+            "Breather",    -- Level 101
+            "Rest",        -- Level 96
+            "Reprieve",    -- Level 91
+            "Respite",     -- Level 86
+            "Fourth Wind", -- Level 82
+            "Third Wind",  -- Level 77
             "Second Wind", -- Level 72
-            "Third Wind",
-            "Fourth Wind",
-            "Respite",
-            "Reprieve",
-            "Rest",
-            "Breather", --Level 101
         },
         ['CombatEndRegen'] = {
             --Timer 13, can be used in combat.
-            "Hiatus V", --Level 126
-            "Convalesce",
-            "Night's Calming",
-            "Relax",
-            "Hiatus", --Level 106
+            "Hiatus V",        -- Level 126
+            "Convalesce",      -- Level 121
+            "Night's Calming", -- Level 116
+            "Relax",           -- Level 111
+            "Hiatus",          -- Level 106
         },
         ['CADisc'] = {
-            "Counterattack Discipline",
+            "Counterattack Discipline", -- Level 53
         },
         ['EdgeDisc'] = {
             "Reckless Edge Discipline", -- Level 121
@@ -188,7 +188,7 @@ return {
             "Razor's Edge Discipline",  -- Level 92
         },
         ['AspDisc'] = {
-            "Visapehn Discipline",   -- Level 129
+            "Visaphen Discipline",   -- Level 129
             "Crinotoxin Discipline", -- Level 124
             "Exotoxin Discipline",   -- Level 119
             "Chelicerae Discipline", -- Level 114
@@ -197,11 +197,11 @@ return {
             "Aspbleeder Discipline", -- Level 99
         },
         ['AimDisc'] = {
-            "Fatal Aim Discipline IV", --  Level 130
-            "Baleful Aim Discipline",  --  Level 116
-            "Lethal Aim Discipline",   --  Level 108
-            "Fatal Aim Discipline",    --  Level 98
-            "Deadly Aim Discipline",   --  Level 68
+            "Fatal Aim Discipline IV", -- Level 130
+            "Baleful Aim Discipline",  -- Level 116
+            "Lethal Aim Discipline",   -- Level 108
+            "Fatal Aim Discipline",    -- Level 98
+            "Deadly Aim Discipline",   -- Level 68
         },
         ['MarkDisc'] = {
             "Easy Mark X",       -- Level 126
@@ -211,7 +211,7 @@ return {
             "Dim-Witted Mark",   -- Level 106
             "Wide-Eyed Mark",    -- Level 101
             "Gullible Mark",     -- Level 96
-            "Gullible Mark",     -- Level 91
+            "Gullible Mark",     -- Level 96
             "Easy Mark",         -- Level 86
         },
         ['Jugular'] = {
@@ -248,10 +248,10 @@ return {
         },
         ['Alliance'] = {
             "Poisonous Covariance",  -- Level 123
-            "Poisonous Covenant",    -- Level 118
-            "Poisonous Alliance",    -- Level 113
-            "Poisonous Coalition",   -- Level 108
-            "Poisonous Conjunction", -- Level 103
+            "Poisonous Conjunction", -- Level 118
+            "Poisonous Coalition",   -- Level 113
+            "Poisonous Covenant",    -- Level 108
+            "Poisonous Alliance",    -- Level 103
         },
         ['Knifeplay'] = {
             "Knifeplay Discipline", -- Level 98, Timer 16
@@ -267,7 +267,6 @@ return {
             "Delusion",             -- Level 94
             "Misdirection",         -- Level 89
         },
-
     },
     ['RotationOrder'] = {
         {

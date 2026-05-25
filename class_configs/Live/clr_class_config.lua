@@ -110,644 +110,644 @@ local _ClassConfig = {
         },
     },
     ['AbilitySets']       = {
-        ['WardBuff'] = {          -- Level 97+
-            "Ward of Virtue VII", -- 127
-            "Ward of Certitude",
-            "Ward of Surety",
-            "Ward of Assurance",
-            "Ward of Righteousness",
-            "Ward of Persistence",
-            "Ward of Commitment",
+        ['WardBuff'] = {             -- Level 97+
+            "Ward of Virtue VII",    -- Level 127
+            "Ward of Commitment",    -- Level 122
+            "Ward of Persistence",   -- Level 117
+            "Ward of Righteousness", -- Level 112
+            "Ward of Assurance",     -- Level 107
+            "Ward of Surety",        -- Level 102
+            "Ward of Certitude",     -- Level 97
         },
         ['HealingLight'] = {
-            "Eminent Light", -- Level 128
-            "Minor Healing",
-            "Light Healing",
-            "Healing",
-            "Greater Healing",
-            "Superior Healing",
-            "Healing Light",
-            "Divine Light",
-            "Ethereal Light",
-            "Supernal Light",
-            "Holy Light",
-            "Pious Light",
-            "Ancient: Hallowed Light",
-            "Sacred Light",
-            "Solemn Light",
-            "Devout Light",
-            "Earnest Light",
-            "Zealous Light",
-            "Reverent Light",
-            "Ardent Light",
-            "Merciful Light",
-            "Sincere Light",
-            "Fervent Light",
-            "Avowed Light",
+            "Eminent Light",           -- Level 128
+            "Avowed Light",            -- Level 123
+            "Fervent Light",           -- Level 118
+            "Sincere Light",           -- Level 113
+            "Merciful Light",          -- Level 108
+            "Ardent Light",            -- Level 103
+            "Reverent Light",          -- Level 98
+            "Zealous Light",           -- Level 93
+            "Earnest Light",           -- Level 88
+            "Devout Light",            -- Level 83
+            "Solemn Light",            -- Level 78
+            "Sacred Light",            -- Level 73
+            "Ancient: Hallowed Light", -- Level 70
+            "Pious Light",             -- Level 68
+            "Holy Light",              -- Level 65
+            "Supernal Light",          -- Level 63
+            "Ethereal Light",          -- Level 58
+            "Divine Light",            -- Level 53
+            "Healing Light",           -- Level 45
+            "Superior Healing",        -- Level 30
+            "Greater Healing",         -- Level 20
+            "Healing",                 -- Level 10
+            "Light Healing",           -- Level 4
+            "Minor Healing",           -- Level 1
         },
-        ['RemedyHeal'] = {     -- Not great until 96/RoF (Graceful)
-            -- "Remedy", No place to slot this, Ethereal used as a fallback at some level ranges
-            "Holy Remedy XIV", -- 126
-            "Ethereal Remedy",
-            "Supernal Remedy",
-            "Pious Remedy",
-            "Sacred Remedy",
-            "Solemn Remedy",
-            "Devout Remedy",
-            "Earnest Remedy",
-            "Faithful Remedy",
-            "Graceful Remedy",
-            "Spiritual Remedy",
-            "Merciful Remedy",
-            "Sincere Remedy",
-            "Guileless Remedy",
-            "Avowed Remedy",
+        ['RemedyHeal'] = {             -- Not great until 96/RoF (Graceful)
+            "Holy Remedy XIV",         -- Level 126
+            "Avowed Remedy",           -- Level 121
+            "Guileless Remedy",        -- Level 116
+            "Sincere Remedy",          -- Level 111
+            "Merciful Remedy",         -- Level 106
+            "Spiritual Remedy",        -- Level 101
+            "Graceful Remedy",         -- Level 96
+            "Faithful Remedy",         -- Level 91
+            "Earnest Remedy",          -- Level 86
+            "Devout Remedy",           -- Level 81
+            "Solemn Remedy",           -- Level 76
+            "Sacred Remedy",           -- Level 71
+            "Pious Remedy",            -- Level 66
+            "Supernal Remedy",         -- Level 61
+            "Ethereal Remedy",         -- Level 59
+            -- "Remedy",        -- Level 51, No place to slot this, Ethereal used as a fallback at some level ranges
         },
         ['RemedyHeal2'] = {
-            "Holy Remedy XIV", -- 126
-            "Graceful Remedy",
-            "Spiritual Remedy",
-            "Merciful Remedy",
-            "Sincere Remedy",
-            "Guileless Remedy",
-            "Avowed Remedy",
+            "Holy Remedy XIV",        -- Level 126
+            "Avowed Remedy",          -- Level 121
+            "Guileless Remedy",       -- Level 116
+            "Sincere Remedy",         -- Level 111
+            "Merciful Remedy",        -- Level 106
+            "Spiritual Remedy",       -- Level 101
+            "Graceful Remedy",        -- Level 96
         },
         ['Renewal'] = {               -- Level 70 +, large heal, slower cast
-            "Desperate Renewal XIII", -- 130
-            "Desperate Renewal",
-            "Frantic Renewal",
-            "Frenetic Renewal",
-            "Frenzied Renewal",
-            "Fervent Renewal",
-            "Fraught Renewal",
-            "Furial Renewal",
-            "Dire Renewal",
-            "Determined Renewal",
-            "Heroic Renewal",
+            "Desperate Renewal XIII", -- Level 130
+            "Heroic Renewal",         -- Level 125
+            "Determined Renewal",     -- Level 120
+            "Dire Renewal",           -- Level 115
+            "Furial Renewal",         -- Level 110
+            "Fraught Renewal",        -- Level 100
+            "Fervent Renewal",        -- Level 95
+            "Frenzied Renewal",       -- Level 90
+            "Frenetic Renewal",       -- Level 85
+            "Frantic Renewal",        -- Level 80
+            "Desperate Renewal",      -- Level 70
         },
-        ['Renewal2'] = { -- Level 70 +, large heal, slower cast
-            "Desperate Renewal",
-            "Frantic Renewal",
-            "Frenetic Renewal",
-            "Frenzied Renewal",
-            "Fervent Renewal",
-            "Fraught Renewal",
-            "Furial Renewal",
-            "Dire Renewal",
-            "Determined Renewal",
-            "Heroic Renewal",
+        ['Renewal2'] = {              -- Level 70 +, large heal, slower cast
+            "Heroic Renewal",         -- Level 125
+            "Determined Renewal",     -- Level 120
+            "Dire Renewal",           -- Level 115
+            "Furial Renewal",         -- Level 110
+            "Fraught Renewal",        -- Level 100
+            "Fervent Renewal",        -- Level 95
+            "Frenzied Renewal",       -- Level 90
+            "Frenetic Renewal",       -- Level 85
+            "Frantic Renewal",        -- Level 80
+            "Desperate Renewal",      -- Level 70
         },
-        ['Renewal3'] = { -- Level 70 +, large heal, slower cast
-            "Desperate Renewal",
-            "Frantic Renewal",
-            "Frenetic Renewal",
-            "Frenzied Renewal",
-            "Fervent Renewal",
-            "Fraught Renewal",
-            "Furial Renewal",
-            "Dire Renewal",
-            "Determined Renewal",
-            "Heroic Renewal",
+        ['Renewal3'] = {              -- Level 70 +, large heal, slower cast
+            "Heroic Renewal",         -- Level 125
+            "Determined Renewal",     -- Level 120
+            "Dire Renewal",           -- Level 115
+            "Furial Renewal",         -- Level 110
+            "Fraught Renewal",        -- Level 100
+            "Fervent Renewal",        -- Level 95
+            "Frenzied Renewal",       -- Level 90
+            "Frenetic Renewal",       -- Level 85
+            "Frantic Renewal",        -- Level 80
+            "Desperate Renewal",      -- Level 70
         },
         ['DichoHeal'] = {
-            "Undying Life",
-            "Dissident Blessing",
-            "Composite Blessing",
-            "Ecliptic Blessing",
-            "Reciprocal Blessing",
+            "Reciprocal Blessing",       -- Level 121
+            "Ecliptic Blessing",         -- Level 116
+            "Composite Blessing",        -- Level 111
+            "Dissident Blessing",        -- Level 106
+            "Undying Life",              -- Level 101
         },
-        ['GroupFastHeal'] = {        -- Level 98
-            "Syllable of Wellbeing", -- 128
-            "Syllable of Acceptance",
-            "Syllable of Convalescence",
-            "Syllable of Mending",
-            "Syllable of Soothing",
-            "Syllable of Invigoration",
-            "Syllable of Renewal",
+        ['GroupFastHeal'] = {            -- Level 98
+            "Syllable of Wellbeing",     -- Level 128
+            "Syllable of Acceptance",    -- Level 123
+            "Syllable of Invigoration",  -- Level 118
+            "Syllable of Soothing",      -- Level 113
+            "Syllable of Mending",       -- Level 108
+            "Syllable of Convalescence", -- Level 103
+            "Syllable of Renewal",       -- Level 98
         },
         ['GroupHealCure'] = {
-            "Word of Replenishment", -- 129
-            "Word of Restoration",   -- Poi/Dis
-            "Word of Replenishment", -- Poi/Dis/Curse
-            "Word of Vivification",
-            "Word of Vivacity",
-            "Word of Recovery",
-            "Word of Resurgence",
-            "Word of Rehabilitation",
-            "Word of Reformation",
-            "Word of Greater Reformation",
-            "Word of Greater Restoration",
-            "Word of Greater Replenishment",
-            "Word of Greater Rejuvenation",
-            "Word of Greater Vivification",
+            "Word of Greater Vivification",  -- Level 124
+            "Word of Greater Rejuvenation",  -- Level 120
+            "Word of Greater Replenishment", -- Level 115
+            "Word of Greater Restoration",   -- Level 110
+            "Word of Greater Reformation",   -- Level 105
+            "Word of Reformation",           -- Level 100
+            "Word of Rehabilitation",        -- Level 95
+            "Word of Resurgence",            -- Level 90
+            "Word of Recovery",              -- Level 85
+            "Word of Vivacity",              -- Level 80
+            "Word of Vivification",          -- Level 69
+            "Word of Replenishment",         -- Level 64
+            "Word of Replenishment",         -- Level 64, Poi/Dis/Curse
+            "Word of Restoration",           -- Level 57, Poi/Dis
         },
         ['GroupHealNoCure'] = {
             -----Group Heals No Cure Slot 5
-            "Word of Wellbeing", -- 126
-            "Word of Health",
-            "Word of Healing",
-            "Word of Vigor",
-            "Word of Restoration", -- No good NoCure in these level ranges using w/Cure... Note Word of Redemption omitted (12sec cast)
-            "Word of Replenishment",
-            "Word of Vivification",
-            "Word of Vivacity",
-            "Word of Recovery",
-            "Word of Awakening", --86, back to no cures
-            "Word of Recuperation",
-            "Word of Renewal",
-            "Word of Convalescence",
-            "Word of Mending",
-            "Word of Soothing",
-            "Word of Redress",
-            "Word of Acceptance",
+            "Word of Wellbeing",     -- Level 126
+            "Word of Acceptance",    -- Level 121
+            "Word of Redress",       -- Level 116
+            "Word of Soothing",      -- Level 111
+            "Word of Mending",       -- Level 106
+            "Word of Convalescence", -- Level 101
+            "Word of Renewal",       -- Level 96
+            "Word of Recuperation",  -- Level 91
+            "Word of Awakening",     -- Level 86, back to no cures
+            "Word of Recovery",      -- Level 85
+            "Word of Vivacity",      -- Level 80
+            "Word of Vivification",  -- Level 69
+            "Word of Replenishment", -- Level 64
+            "Word of Restoration",   -- Level 57, No good NoCure in these level ranges using w/Cure... Note Word of Redemption omitted (12sec cast)
+            "Word of Vigor",         -- Level 52
+            "Word of Healing",       -- Level 45
+            "Word of Health",        -- Level 30
         },
         ['HealNuke'] = {
             -- Heal Tank and Nuke Tanks Target -- Intervention Lines
-            "Eminent Intervention", -- Level 128
-            "Holy Intervention",
-            "Celestial Intervention",
-            "Elysian Intervention",
-            "Virtuous Intervention",
-            "Mystical Intervention",
-            "Merciful Intervention",
-            "Sincere Intervention",
-            "Atoned Intervention",
-            "Avowed Intervention",
+            "Eminent Intervention",   -- Level 128
+            "Avowed Intervention",    -- Level 123
+            "Atoned Intervention",    -- Level 118
+            "Sincere Intervention",   -- Level 113
+            "Merciful Intervention",  -- Level 108
+            "Mystical Intervention",  -- Level 103
+            "Virtuous Intervention",  -- Level 98
+            "Elysian Intervention",   -- Level 93
+            "Celestial Intervention", -- Level 88
+            "Holy Intervention",      -- Level 83
         },
         ['HealNuke2'] = {
             -- Heal Tank and Nuke Tanks Target -- Intervention Lines
-            "Eminent Intervention", -- Level 128
-            "Holy Intervention",
-            "Celestial Intervention",
-            "Elysian Intervention",
-            "Virtuous Intervention",
-            "Mystical Intervention",
-            "Merciful Intervention",
-            "Sincere Intervention",
-            "Atoned Intervention",
-            "Avowed Intervention",
+            "Eminent Intervention",   -- Level 128
+            "Avowed Intervention",    -- Level 123
+            "Atoned Intervention",    -- Level 118
+            "Sincere Intervention",   -- Level 113
+            "Merciful Intervention",  -- Level 108
+            "Mystical Intervention",  -- Level 103
+            "Virtuous Intervention",  -- Level 98
+            "Elysian Intervention",   -- Level 93
+            "Celestial Intervention", -- Level 88
+            "Holy Intervention",      -- Level 83
         },
         ['HealNuke3'] = {
             -- Heal Tank and Nuke Tanks Target -- Intervention Lines
-            "Eminent Intervention", -- Level 128
-            "Holy Intervention",
-            "Celestial Intervention",
-            "Elysian Intervention",
-            "Virtuous Intervention",
-            "Mystical Intervention",
-            "Merciful Intervention",
-            "Sincere Intervention",
-            "Atoned Intervention",
-            "Avowed Intervention",
+            "Eminent Intervention",   -- Level 128
+            "Avowed Intervention",    -- Level 123
+            "Atoned Intervention",    -- Level 118
+            "Sincere Intervention",   -- Level 113
+            "Merciful Intervention",  -- Level 108
+            "Mystical Intervention",  -- Level 103
+            "Virtuous Intervention",  -- Level 98
+            "Elysian Intervention",   -- Level 93
+            "Celestial Intervention", -- Level 88
+            "Holy Intervention",      -- Level 83
         },
         ['NukeHeal'] = {
             -- Nuke Target and Heal Tank -  Dps Heals
-            "Eminent Contravention", -- 130
-            "Holy Contravention",
-            "Celestial Contravention",
-            "Elysian Contravention",
-            "Virtuous Contravention",
-            "Ardent Contravention",
-            "Merciful Contravention",
-            "Sincere Contravention",
-            "Divine Contravention",
-            "Avowed Contravention",
+            "Eminent Contravention",   -- Level 130
+            "Avowed Contravention",    -- Level 125
+            "Divine Contravention",    -- Level 120
+            "Sincere Contravention",   -- Level 115
+            "Merciful Contravention",  -- Level 110
+            "Ardent Contravention",    -- Level 105
+            "Virtuous Contravention",  -- Level 100
+            "Elysian Contravention",   -- Level 95
+            "Celestial Contravention", -- Level 90
+            "Holy Contravention",      -- Level 85
         },
         ['NukeHeal2'] = {
             -- Nuke Target and Heal Tank -  Dps Heals
-            "Eminent Contravention", -- 130
-            "Holy Contravention",
-            "Celestial Contravention",
-            "Elysian Contravention",
-            "Virtuous Contravention",
-            "Ardent Contravention",
-            "Merciful Contravention",
-            "Sincere Contravention",
-            "Divine Contravention",
-            "Avowed Contravention",
+            "Eminent Contravention",   -- Level 130
+            "Avowed Contravention",    -- Level 125
+            "Divine Contravention",    -- Level 120
+            "Sincere Contravention",   -- Level 115
+            "Merciful Contravention",  -- Level 110
+            "Ardent Contravention",    -- Level 105
+            "Virtuous Contravention",  -- Level 100
+            "Elysian Contravention",   -- Level 95
+            "Celestial Contravention", -- Level 90
+            "Holy Contravention",      -- Level 85
         },
         ['NukeHeal3'] = {
             -- Nuke Target and Heal Tank -  Dps Heals
-            "Eminent Contravention", -- 130
-            "Holy Contravention",
-            "Celestial Contravention",
-            "Elysian Contravention",
-            "Virtuous Contravention",
-            "Ardent Contravention",
-            "Merciful Contravention",
-            "Sincere Contravention",
-            "Divine Contravention",
-            "Avowed Contravention",
+            "Eminent Contravention",   -- Level 130
+            "Avowed Contravention",    -- Level 125
+            "Divine Contravention",    -- Level 120
+            "Sincere Contravention",   -- Level 115
+            "Merciful Contravention",  -- Level 110
+            "Ardent Contravention",    -- Level 105
+            "Virtuous Contravention",  -- Level 100
+            "Elysian Contravention",   -- Level 95
+            "Celestial Contravention", -- Level 90
+            "Holy Contravention",      -- Level 85
         },
         ['ReverseDS'] = {
             -- Reverse Damage Shield Proc (LVL >=85) -- Ignoring the Mark Line
-            "Erud's Retort",
-            "Fintar's Retort",
-            "Galvos' Retort",
-            "Olsif's Retort",
-            "Vicarum's Retort",
-            "Curate's Retort",
-            "Jorlleag's Retort",
-            "Axoeviq's Retort",
-            "Hazuri's Retort",
+            "Hazuri's Retort",   -- Level 125
+            "Axoeviq's Retort",  -- Level 120
+            "Jorlleag's Retort", -- Level 115
+            "Curate's Retort",   -- Level 110
+            "Vicarum's Retort",  -- Level 105
+            "Olsif's Retort",    -- Level 100
+            "Galvos' Retort",    -- Level 95
+            "Fintar's Retort",   -- Level 90
+            "Erud's Retort",     -- Level 85
         },
         ['SelfHPBuff'] = {
             --Self Buff for Mana Regen and armor
-            "Armor of the Eminent", -- 130
-            "Armor of Protection",
-            "Blessed Armor of the Risen",
-            "Ancient: High Priest's Bulwark",
-            "Armor of the Zealot",
-            "Armor of the Pious",
-            "Armor of the Sacred",
-            "Armor of the Solemn",
-            "Armor of the Devout",
-            "Armor of the Earnest",
-            "Armor of the Zealous",
-            "Armor of the Reverent",
-            "Armor of the Ardent",
-            "Armor of the Merciful",
-            "Armor of Sincerity",
-            "Armor of Penance",
-            "Armor of the Avowed",
+            "Armor of the Eminent",           -- Level 130
+            "Armor of the Avowed",            -- Level 125
+            "Armor of Penance",               -- Level 120
+            "Armor of Sincerity",             -- Level 115
+            "Armor of the Merciful",          -- Level 110
+            "Armor of the Ardent",            -- Level 105
+            "Armor of the Reverent",          -- Level 100
+            "Armor of the Zealous",           -- Level 95
+            "Armor of the Earnest",           -- Level 90
+            "Armor of the Devout",            -- Level 85
+            "Armor of the Solemn",            -- Level 80
+            "Armor of the Sacred",            -- Level 75
+            "Armor of the Pious",             -- Level 70
+            "Armor of the Zealot",            -- Level 65
+            "Ancient: High Priest's Bulwark", -- Level 60
+            "Blessed Armor of the Risen",     -- Level 58
+            "Armor of Protection",            -- Level 34
         },
         ['GroupHealProcBuff'] = {
             ----Self buff casts group heal on AE spell damage
-            "Divine Consequence",
-            "Divine Reaction",
-            "Divine Response",
-            "Divine Contingency",
-            "Divine Rejoinder",
+            "Divine Rejoinder",   -- Level 124
+            "Divine Contingency", -- Level 118
+            "Divine Consequence", -- Level 113
+            "Divine Reaction",    -- Level 108
+            "Divine Response",    -- Level 102
         },
         ['AegoBuff'] = {
             ----Use HP Type one until Temperance at 40... Group Buff at 45 (Blessing of Temperance)
-            "Unified Hand of Aegolism XV", -- Level 130
-            "Courage",
-            "Center",
-            "Daring",
-            "Bravery",
-            "Valor",
-            "Temperance",
-            "Blessing of Temperance",
-            "Aegolism",
-            "Ancient: Gift of Aegolism",
-            "Blessing of Aegolism",
-            "Hand of Virtue",
-            "Hand of Conviction",
-            "Hand of Tenacity",
-            "Hand Of Temerity",
-            "Hand of Gallantry",
-            "Hand of Reliance",
-            "Unified Hand of Credence",
-            "Unified Hand of Certitude",
-            "Unified Hand of Surety",
-            "Unified Hand of Assurance",
-            "Unified Hand of Righteousness",
-            "Unified Hand of Persistence",
-            "Unified Hand of Infallibility",
+            "Unified Hand of Aegolism XV",   -- Level 130
+            "Unified Hand of Infallibility", -- Level 125
+            "Unified Hand of Persistence",   -- Level 120
+            "Unified Hand of Righteousness", -- Level 115
+            "Unified Hand of Assurance",     -- Level 110
+            "Unified Hand of Surety",        -- Level 105
+            "Unified Hand of Certitude",     -- Level 100
+            "Unified Hand of Credence",      -- Level 95
+            "Hand of Reliance",              -- Level 90
+            "Hand of Gallantry",             -- Level 85
+            "Hand Of Temerity",              -- Level 80
+            "Hand of Tenacity",              -- Level 75
+            "Hand of Conviction",            -- Level 70
+            "Hand of Virtue",                -- Level 65
+            "Aegolism",                      -- Level 60
+            "Ancient: Gift of Aegolism",     -- Level 60
+            "Blessing of Aegolism",          -- Level 60
+            "Blessing of Temperance",        -- Level 45
+            "Temperance",                    -- Level 40
+            "Valor",                         -- Level 32
+            "Bravery",                       -- Level 22
+            "Daring",                        -- Level 17
+            "Center",                        -- Level 7
+            "Courage",                       -- Level 1
         },
-        ['ACBuff'] = { --Sometimes single, sometimes group, used on tank before Aego or until it is rolled into Unified (Symbol)
-            "Order of the Earnest",
-            "Ward of the Earnest",
-            "Order of the Devout",
-            "Ward of the Devout",
-            "Order of the Resolute",
-            "Ward of the Resolute",
-            "Ward of the Dauntless",
-            "Ward of Valliance",
-            "Ward of Gallantry",
-            "Bulwark of Faith",
-            "Shield of Words",
-            "Armor of Faith",
-            "Guard",
-            "Spirit Armor",
-            "Holy Armor",
+        ['ACBuff'] = {                       --Sometimes single, sometimes group, used on tank before Aego or until it is rolled into Unified (Symbol)
+            "Order of the Earnest",          -- Level 90
+            "Ward of the Earnest",           -- Level 86
+            "Order of the Devout",           -- Level 85
+            "Ward of the Devout",            -- Level 81
+            "Order of the Resolute",         -- Level 80
+            "Ward of the Resolute",          -- Level 76
+            "Ward of the Dauntless",         -- Level 71
+            "Ward of Valiance",              -- Level 66
+            "Ward of Gallantry",             -- Level 61
+            "Bulwark of Faith",              -- Level 57
+            "Shield of Words",               -- Level 45
+            "Armor of Faith",                -- Level 35
+            "Guard",                         -- Level 25
+            "Spirit Armor",                  -- Level 15
+            "Holy Armor",                    -- Level 1
         },
         ['ShiningBuff'] = {
             --Tank Buff Traditionally Shining Series of Buffs
-            "Shining Rampart IX",
-            "Shining Rampart",
-            "Shining Armor",
-            "Shining Bastion",
-            "Shining Bulwark",
-            "Shining Fortress",
-            "Shining Aegis",
-            "Shining Fortitude",
-            "Shining Steel",
+            "Shining Rampart IX", -- Level 130
+            "Shining Steel",      -- Level 124
+            "Shining Fortitude",  -- Level 119
+            "Shining Aegis",      -- Level 114
+            "Shining Fortress",   -- Level 109
+            "Shining Bulwark",    -- Level 104
+            "Shining Bastion",    -- Level 99
+            "Shining Armor",      -- Level 94
+            "Shining Rampart",    -- Level 89
         },
-        ['SingleVieBuff'] = { -- Level 20-73 We don't use this once we have the group version
-            "Aegis of Vie",
-            "Panoply of Vie",
-            "Bulwark of Vie",
-            "Protection of Vie",
-            "Guard of Vie",
-            "Ward of Vie",
+        ['SingleVieBuff'] = {     -- Level 20-73 We don't use this once we have the group version
+            "Aegis of Vie",       -- Level 73
+            "Panoply of Vie",     -- Level 67
+            "Bulwark of Vie",     -- Level 62
+            "Protection of Vie",  -- Level 54
+            "Guard of Vie",       -- Level 40
+            "Ward of Vie",        -- Level 20
         },
         ['GroupVieBuff'] = {
-            "Rallied Bulwark of Vie", -- 130
-            "Rallied Aegis of Vie",
-            "Rallied Shield of Vie",
-            "Rallied Palladium of Vie",
-            "Rallied Rampart of Vie",
-            "Rallied Armor of Vie",
-            "Rallied Bastion of Vie",
-            "Rallied Greater Ward of Vie",
-            "Rallied Greater Guard of Vie",
-            "Rallied Greater Protection of Vie",
-            "Rallied Greater Aegis of Vie",
+            "Rallied Bulwark of Vie",            -- Level 130
+            "Rallied Greater Aegis of Vie",      -- Level 125
+            "Rallied Greater Protection of Vie", -- Level 115
+            "Rallied Greater Guard of Vie",      -- Level 110
+            "Rallied Greater Ward of Vie",       -- Level 105
+            "Rallied Bastion of Vie",            -- Level 100
+            "Rallied Armor of Vie",              -- Level 95
+            "Rallied Rampart of Vie",            -- Level 90
+            "Rallied Palladium of Vie",          -- Level 85
+            "Rallied Shield of Vie",             -- Level 80
+            "Rallied Aegis of Vie",              -- Level 75
         },
         ['GroupSymbolBuff'] = {
             ----Group Symbols
-            "Symbol of Transal",
-            "Symbol of Ryltan",
-            "Symbol of Pinzarn",
-            "Symbol of Naltron",
-            "Symbol of Marzin",
-            "Naltron's Mark",
-            "Marzin's Mark",
-            "Kazad's Mark",
-            "Balikor's Mark",
-            "Elushar's Mark",
-            "Kaerra's Mark",
-            "Darianna's Mark",
-            "Ealdun's Mark",
-            "Unified Hand of the Triumvirate",
-            "Unified Hand of Gezat",
-            "Unified Hand of Nonia",
-            "Unified Hand of Emra",
-            "Unified Hand of Jorlleag",
-            "Unified Hand of Assurance",
-            "Unified Hand of the Diabo",
-            "Unified Hand of Helmsbane",
+            "Unified Hand of Helmsbane",       -- Level 125
+            "Unified Hand of the Diabo",       -- Level 120
+            "Unified Hand of Jorlleag",        -- Level 115
+            "Unified Hand of Emra",            -- Level 110
+            "Unified Hand of Assurance",       -- Level 110
+            "Unified Hand of Nonia",           -- Level 105
+            "Unified Hand of Gezat",           -- Level 100
+            "Unified Hand of the Triumvirate", -- Level 95
+            "Ealdun's Mark",                   -- Level 90
+            "Darianna's Mark",                 -- Level 85
+            "Kaerra's Mark",                   -- Level 80
+            "Elushar's Mark",                  -- Level 75
+            "Balikor's Mark",                  -- Level 70
+            "Kazad's Mark",                    -- Level 63
+            "Marzin's Mark",                   -- Level 60
+            "Naltron's Mark",                  -- Level 58
+            "Symbol of Marzin",                -- Level 54
+            "Symbol of Naltron",               -- Level 41
+            "Symbol of Pinzarn",               -- Level 31
+            "Symbol of Ryltan",                -- Level 21
+            "Symbol of Transal",               -- Level 11
         },
         ['AbsorbAura'] = {
             ----Aura Buffs - Aura Name is seperate than the buff name
-            "Aura of the Pious",
-            "Aura of the Zealot",
-            "Aura of the Reverent",
-            "Aura of the Persistent",
+            "Aura of the Persistent", -- Level 119
+            "Aura of the Reverent",   -- Level 100
+            "Aura of the Pious",      -- Level 70
+            "Aura of the Zealot",     -- Level 55
         },
         ['HPAura'] = {
             ---- Aura Buff 2 - Aura Name is the same as the buff name
-            "Bastion of Divinity",
-            "Circle of Divinity",
-            "Aura of Divinity",
+            "Bastion of Divinity", -- Level 120
+            "Aura of Divinity",    -- Level 100
+            "Circle of Divinity",  -- Level 80
         },
         ['DivineBuff'] = {
             --Divine Buffs REQUIRES extra spell slot because of the 90s recast
-            "Divine Interstition", -- 127
-            "Death Pact",
-            "Divine Intervention",
-            "Divine Intercession",
-            "Divine Invocation",
-            "Divine Interposition",
-            "Divine Indemnification",
-            "Divine Imposition",
-            "Divine Intermediation",
-            "Divine Interference",
+            "Divine Interstition",    -- Level 127
+            "Divine Interference",    -- Level 122
+            "Divine Intermediation",  -- Level 112
+            "Divine Imposition",      -- Level 107
+            "Divine Indemnification", -- Level 102
+            "Divine Interposition",   -- Level 97
+            "Divine Invocation",      -- Level 92
+            "Divine Intercession",    -- Level 87
+            "Divine Intervention",    -- Level 60
+            "Death Pact",             -- Level 51
         },
         ['TwinHealNuke'] = {
-            "Unyielding Denunciation", -- 129
-            "Glorious Denunciation",
-            "Glorious Censure",
-            "Glorious Admonition",
-            "Glorious Rebuke",
-            "Glorious Judgment",
-            "Unyielding Judgment",
-            "Unyielding Censure",
-            "Unyielding Rebuke",
-            "Unyielding Admonition",
+            "Unyielding Denunciation", -- Level 129
+            "Unyielding Admonition",   -- Level 124
+            "Unyielding Rebuke",       -- Level 119
+            "Unyielding Censure",      -- Level 114
+            "Unyielding Judgment",     -- Level 109
+            "Glorious Judgment",       -- Level 104
+            "Glorious Rebuke",         -- Level 99
+            "Glorious Admonition",     -- Level 94
+            "Glorious Censure",        -- Level 89
+            "Glorious Denunciation",   -- Level 84
         },
         ['RezSpell'] = {
-            "Reviviscence",
-            "Resurrection",
-            "Restoration",
-            "Resuscitate",
-            "Renewal",
-            "Revive",
-            "Reparation",
-            "Reconstitution",
-            "Reanimation",
+            "Reviviscence",   -- Level 56
+            "Resurrection",   -- Level 47
+            "Restoration",    -- Level 42
+            "Resuscitate",    -- Level 37
+            "Renewal",        -- Level 32
+            "Revive",         -- Level 27
+            "Reparation",     -- Level 22
+            "Reconstitution", -- Level 18
+            "Reanimation",    -- Level 12
         },
         ['AERezSpell'] = {
-            "Superior Reviviscence",
-            "Eminent Reviviscence",
-            "Greater Reviviscence",
-            "Larger Reviviscence",
+            "Superior Reviviscence", -- Level 76
+            "Eminent Reviviscence",  -- Level 71
+            "Greater Reviviscence",  -- Level 66
+            "Larger Reviviscence",   -- Level 61
         },
         ['ClutchHeal'] = {
             -- 11th-17th Rejuv Spell Line Clutch Heals Require Life below 35-45% to cast
-            "Twentieth Dictum", -- 127
-            "Eleventh-Hour",
-            "Twelfth Night",
-            "Thirteenth Salve",
-            "Fourteenth Catalyst",
-            "Fifteenth Emblem",
-            "Sixteenth Serenity",
-            "Seventeenth Rejuvenation",
-            "Eighteenth Rejuvenation",
-            "Nineteenth Commandment",
+            "Twentieth Dictum",         -- Level 127
+            "Nineteenth Commandment",   -- Level 122
+            "Eighteenth Rejuvenation",  -- Level 117
+            "Seventeenth Rejuvenation", -- Level 112
+            "Sixteenth Serenity",       -- Level 107
+            "Fifteenth Emblem",         -- Level 97
+            "Fourteenth Catalyst",      -- Level 92
+            "Thirteenth Salve",         -- Level 87
+            "Twelfth Night",            -- Level 82
+            "Eleventh-Hour",            -- Level 77
         },
         ['GroupInfusionBuff'] = {
             -- Hand of Infusion Line
-            "Hand of Faithful Infusion",
-            "Hand of Graceful Infusion",
-            "Hand of Merciful Infusion",
-            "Hand of Sincere Infusion",
-            "Hand of Unyielding Infusion",
-            "Hand of Avowed Infusion",
+            "Hand of Avowed Infusion",     -- Level 124
+            "Hand of Unyielding Infusion", -- Level 119
+            "Hand of Sincere Infusion",    -- Level 114
+            "Hand of Merciful Infusion",   -- Level 109
+            "Hand of Graceful Infusion",   -- Level 99
+            "Hand of Faithful Infusion",   -- Level 94
         },
         ['SingleElixir'] = {
-            "Eminent Elixir",   -- 127
-            "Celestial Remedy", -- Level 19
-            "Celestial Health",
-            "Celestial Healing",
-            "Celestial Elixir",
-            "Supernal Elixir",
-            "Holy Elixir",
-            "Pious Elixir",
-            "Sacred Elixir",
-            "Solemn Elixir",
-            "Devout Elixir",
-            "Earnest Elixir",
+            "Eminent Elixir",    -- Level 127
+            "Earnest Elixir",    -- Level 87
+            "Devout Elixir",     -- Level 82
+            "Solemn Elixir",     -- Level 77
+            "Sacred Elixir",     -- Level 72
+            "Pious Elixir",      -- Level 67
+            "Holy Elixir",       -- Level 65
+            "Supernal Elixir",   -- Level 62
+            "Celestial Elixir",  -- Level 59
+            "Celestial Healing", -- Level 44
+            "Celestial Health",  -- Level 29
+            "Celestial Remedy",  -- Level 19
         },
         ['GroupElixir'] = {
             -- Group Hot Line - Elixirs No Cure
-            "Elixir of Absolution", -- 130
-            "Ethereal Elixir",      -- Level 59
-            "Elixir of Divinity",
-            "Elixir of Redemption",
-            "Elixir of Atonement",
-            "Elixir of Expiation",
-            "Elixir of the Ardent",
-            "Elixir of the Beneficent",
-            "Elixir of the Acquittal",
-            "Elixir of the Seas",
-            "Elixir of Wulthan",
-            "Elixir of Transcendence",
-            "Elixir of Benevolence",
-            "Elixir of Realization",
+            "Elixir of Absolution",     -- Level 130
+            "Elixir of Realization",    -- Level 125
+            "Elixir of Benevolence",    -- Level 120
+            "Elixir of Transcendence",  -- Level 115
+            "Elixir of Wulthan",        -- Level 110
+            "Elixir of the Seas",       -- Level 105
+            "Elixir of the Acquittal",  -- Level 100
+            "Elixir of the Beneficent", -- Level 95
+            "Elixir of the Ardent",     -- Level 90
+            "Elixir of Expiation",      -- Level 85
+            "Elixir of Atonement",      -- Level 80
+            "Elixir of Redemption",     -- Level 75
+            "Elixir of Divinity",       -- Level 70
+            "Ethereal Elixir",          -- Level 60
         },
         ['GroupAcquittal'] = {
             -- Group Hot Line Cure + Hot 99+
-            "Eminent Acquittal", -- 129
-            "Cleansing Acquittal",
-            "Ardent Acquittal",
-            "Merciful Acquittal",
-            "Sincere Acquittal",
-            "Devout Acquittal",
-            "Avowed Acquittal",
+            "Eminent Acquittal",   -- Level 129
+            "Avowed Acquittal",    -- Level 124
+            "Devout Acquittal",    -- Level 119
+            "Sincere Acquittal",   -- Level 114
+            "Merciful Acquittal",  -- Level 109
+            "Ardent Acquittal",    -- Level 104
+            "Cleansing Acquittal", -- Level 99
         },
         ['SpellBlessing'] = {
             -- Spell haste Blessings 15-92, defunct at 95 due to Unifieds.
             -- -- Do not add future version unless you have verified that they are not simply Symbol/Aego Unified triggers.
-            "Blessing of Piety",
-            "Blessing of Faith",
-            "Blessing of Reverence",
-            "Aura of Reverence",
-            "Blessing of Devotion",
-            "Aura of Devotion",
-            "Blessing of Purpose",
-            "Aura of Purpose",
-            "Blessing of Resolve",
-            "Aura of Resolve",
-            "Blessing of Loyalty",
-            "Aura of Loyalty",
-            "Blessing of Will",
-            "Hand of Will",
+            "Hand of Will",          -- Level 87
+            "Blessing of Will",      -- Level 86
+            "Aura of Loyalty",       -- Level 82
+            "Blessing of Loyalty",   -- Level 81
+            "Aura of Resolve",       -- Level 77
+            "Blessing of Resolve",   -- Level 76
+            "Aura of Purpose",       -- Level 72
+            "Blessing of Purpose",   -- Level 71
+            "Aura of Devotion",      -- Level 69
+            "Blessing of Devotion",  -- Level 67
+            "Aura of Reverence",     -- Level 64
+            "Blessing of Reverence", -- Level 62
+            "Blessing of Faith",     -- Level 35
+            "Blessing of Piety",     -- Level 15
         },
         ['CureAll'] = {
-            "Sanctified Blood",
-            "Expurgated Blood",
-            "Unblemished Blood",
-            "Cleansed Blood",
-            "Perfected Blood",
-            "Purged Blood",   -- does not cure corruption
-            "Purified Blood", -- does not cure curse, 5 level gap where we will use this without curing curse, but AA should cover
-            -- "Pure Blood", --Much better single cures occur after this one
+            "Sanctified Blood",  -- Level 119
+            "Expurgated Blood",  -- Level 109
+            "Unblemished Blood", -- Level 104
+            "Cleansed Blood",    -- Level 99
+            "Perfected Blood",   -- Level 94
+            "Purged Blood",      -- Level 89, does not cure corruption
+            "Purified Blood",    -- Level 84, does not cure curse, 5 level gap where we will use this without curing curse, but AA should cover
+            -- "Pure Blood",     -- Level 51, Much better single cures occur after this one
         },
         ['CureCorrupt'] = {
-            "Purge Corruption",
-            "Extricate Corruption",
-            "Nullify Corruption",
-            "Abrogate Corruption",
-            "Eradicate Corruption",
-            "Dissolve Corruption", -- group from here up
-            "Pristine Blood",      -- single target from here down
-            "Abolish Corruption",
-            "Vitiate Corruption",
-            "Expunge Corruption",
+            "Purge Corruption",     -- Level 119
+            "Extricate Corruption", -- Level 109
+            "Nullify Corruption",   -- Level 104
+            "Abrogate Corruption",  -- Level 99
+            "Eradicate Corruption", -- Level 94
+            "Dissolve Corruption",  -- Level 89, group from here up
+            "Pristine Blood",       -- Level 87, single target from here down
+            "Abolish Corruption",   -- Level 84
+            "Vitiate Corruption",   -- Level 79
+            "Expunge Corruption",   -- Level 64
         },
         ['CurePoison'] = {
-            "Antidote",
-            "Eradicate Poison",
-            "Abolish Poison",
-            "Counteract Poison",
-            "Cure Poison",
+            "Antidote",          -- Level 58
+            "Eradicate Poison",  -- Level 52
+            "Abolish Poison",    -- Level 48
+            "Counteract Poison", -- Level 22
+            "Cure Poison",       -- Level 1
         },
         ['CureDisease'] = {
-            "Eradicate Disease",
-            "Counteract Disease",
-            "Cure Disease",
+            "Eradicate Disease",  -- Level 58
+            "Counteract Disease", -- Level 28
+            "Cure Disease",       -- Level 4
         },
         ['CureCurse'] = {
-            "Eradicate Curse",
-            "Remove Greater Curse",
-            "Remove Curse",
-            "Remove Lesser Curse",
-            "Remove Minor Curse",
+            "Eradicate Curse",      -- Level 54
+            "Remove Greater Curse", -- Level 54
+            "Remove Curse",         -- Level 38
+            "Remove Lesser Curse",  -- Level 23
+            "Remove Minor Curse",   -- Level 8
         },
         ['YaulpSpell'] = {
-            "Yaulp V", -- Level 56, first rank with haste/mana regen
-            "Yaulp VI",
-            "Yaulp VII",
-            "Yaulp VIII",
-            "Yaulp IX",           -- Level 76, AA starts at 75 with Yaulp IX
+            "Yaulp IX",              -- Level 76, AA starts at 75 with Yaulp IX
+            "Yaulp VIII",            -- Level 71
+            "Yaulp VII",             -- Level 69
+            "Yaulp VI",              -- Level 65
+            "Yaulp V",               -- Level 56, first rank with haste/mana regen
         },
-        ['StunTimer6'] = {        -- Timer 6 Stun, Fast Cast, Level 63+ (with ToT Heal 88+)
-            "Sound of Vehemence", -- 128
-            "Sound of Heroism",
-            "Sound of Providence",
-            "Sound of Rebuke",
-            "Sound of Wrath",
-            "Sound of Thunder",
-            "Sound of Plangency",
-            "Sound of Fervor",
-            "Sound of Fury",
-            "Sound of Reverberance",
-            "Sound of Resonance",
-            "Sound of Zeal",
-            "Sound of Divinity",
-            "Sound of Might",
+        ['StunTimer6'] = {           -- Timer 6 Stun, Fast Cast, Level 63+ (with ToT Heal 88+)
+            "Sound of Vehemence",    -- Level 128
+            "Sound of Heroism",      -- Level 123
+            "Sound of Providence",   -- Level 118
+            "Sound of Rebuke",       -- Level 113
+            "Sound of Wrath",        -- Level 108
+            "Sound of Thunder",      -- Level 103
+            "Sound of Plangency",    -- Level 98
+            "Sound of Fervor",       -- Level 93
+            "Sound of Fury",         -- Level 88
+            "Sound of Reverberance", -- Level 83
+            "Sound of Resonance",    -- Level 78
+            "Sound of Zeal",         -- Level 73
+            "Sound of Divinity",     -- Level 68
+            "Sound of Might",        -- Level 63
             --Filler before this
-            "Tarnation",     -- Timer 4, up to Level 65
-            "Force",         -- No Timer #, up to Level 58
-            "Holy Might",    -- No Timer #, up to Level 55
+            "Tarnation",             -- Level 61, Timer 4, up to Level 65
+            "Force",                 -- Level 31, No Timer #, up to Level 58
+            "Holy Might",            -- Level 16, No Timer #, up to Level 55
         },
-        ['LowLevelStun'] = { --Adding a second stun at low levels
-            "Stun",
+        ['LowLevelStun'] = {         --Adding a second stun at low levels
+            "Stun",                  -- Level 2
         },
-        ['UndeadNuke'] = {        -- Level 4+
-            "Expunge the Undead", -- Level 129
-            "Banish the Undead",
-            "Extirpate the Undead",
-            "Obliterate the Undead",
-            "Repudiate the Undead",
-            "Eradicate the Undead",
-            "Abrogate the Undead",
-            "Abolish the Undead",
-            "Annihilate the Undead",
-            "Desolate Undead",
-            "Destroy Undead",
-            "Exile Undead",
-            "Banish Undead",
-            "Expel Undead",
-            "Dismiss Undead",
-            "Expulse Undead",
-            "Ward Undead",
+        ['UndeadNuke'] = {           -- Level 4+
+            "Expunge the Undead",    -- Level 129
+            "Banish the Undead",     -- Level 121
+            "Extirpate the Undead",  -- Level 116
+            "Obliterate the Undead", -- Level 111
+            "Repudiate the Undead",  -- Level 106
+            "Eradicate the Undead",  -- Level 101
+            "Abrogate the Undead",   -- Level 96
+            "Abolish the Undead",    -- Level 91
+            "Annihilate the Undead", -- Level 86
+            "Desolate Undead",       -- Level 68
+            "Destroy Undead",        -- Level 64
+            "Exile Undead",          -- Level 55
+            "Banish Undead",         -- Level 43
+            "Expel Undead",          -- Level 33
+            "Dismiss Undead",        -- Level 23
+            "Expulse Undead",        -- Level 13
+            "Ward Undead",           -- Level 4
         },
         ['MagicNuke'] = {
-            "Veto", -- 127
-            "Strike",
-            "Furor",
-            "Smite",
-            "Wrath",
-            "Retribution",
-            "Judgment",
-            "Condemnation",
-            "Order",
-            "Reproach",
-            "Reproval",
-            "Reprehend",
-            "Rebuke",
-            "Remonstrance",
-            "Castigation",
-            "Justice",
-            "Sanction",
-            "Injunction",
-            "Divine Writ",
-            "Decree",
+            "Veto",         -- Level 127
+            "Decree",       -- Level 122
+            "Divine Writ",  -- Level 117
+            "Injunction",   -- Level 112
+            "Sanction",     -- Level 107
+            "Justice",      -- Level 102
+            "Castigation",  -- Level 97
+            "Remonstrance", -- Level 92
+            "Rebuke",       -- Level 87
+            "Reprehend",    -- Level 82
+            "Reproval",     -- Level 72
+            "Reproach",     -- Level 67
+            "Order",        -- Level 65
+            "Condemnation", -- Level 62
+            "Judgment",     -- Level 56
+            "Retribution",  -- Level 44
+            "Wrath",        -- Level 29
+            "Smite",        -- Level 14
+            "Furor",        -- Level 5
+            "Strike",       -- Level 1
         },
         ['HammerPet'] = {
-            "Hammer of Emminence", -- 127
-            "Unswerving Hammer of Faith",
-            "Unswerving Hammer of Retribution",
-            "Unflinching Hammer of Zeal",
-            "Indomitable Hammer of Zeal",
-            "Unwavering Hammer of Zeal",
-            "Devout Hammer of Zeal",
-            "Infallible Hammer of Zeal",
-            "Infallible Hammer of Reverence",
-            "Ardent Hammer of Zeal",
-            "Unyielding Hammer of Zeal",
-            "Unyielding Hammer of Obliteration",
-            "Incorruptible Hammer of Obliteration",
-            "Unrelenting Hammer of Zeal",
+            "Hammer of Eminence",                   -- Level 127
+            "Unrelenting Hammer of Zeal",           -- Level 124
+            "Incorruptible Hammer of Obliteration", -- Level 119
+            "Unyielding Hammer of Obliteration",    -- Level 114
+            "Unyielding Hammer of Zeal",            -- Level 109
+            "Ardent Hammer of Zeal",                -- Level 104
+            "Infallible Hammer of Reverence",       -- Level 99
+            "Infallible Hammer of Zeal",            -- Level 94
+            "Devout Hammer of Zeal",                -- Level 89
+            "Unwavering Hammer of Zeal",            -- Level 84
+            "Indomitable Hammer of Zeal",           -- Level 79
+            "Unflinching Hammer of Zeal",           -- Level 74
+            "Unswerving Hammer of Retribution",     -- Level 68
+            "Unswerving Hammer of Faith",           -- Level 54
         },
         ['CompleteHeal'] = {
-            "Complete Heal",
+            "Complete Heal", -- Level 39
         },
-    }, -- end AbilitySets
+    },                       -- end AbilitySets
     ['Helpers']           = {
         DoRez = function(self, corpseId)
             local rezAction = false

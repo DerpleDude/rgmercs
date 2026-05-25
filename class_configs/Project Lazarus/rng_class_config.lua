@@ -71,9 +71,9 @@ return {
             "Skin like Wood",         -- Level 7
         },
         ['EyeBuff'] = {               -- Self Archery Buff
-            "Eyes of the Hawk",       -- Level 70
+            "Eyes of the Hawk",       -- Level 70 Laz Custom
             "Eyes of the Owl",        -- Level 65
-            "Eyes of the Eagle",      -- Level 59
+            "Eyes of the Eagle",      -- Level 59 Laz Custom
         },
         ['FireNukeT1'] = {            -- ST Fire DD, Timer 1, 30s Recast
             "Hearth Embers",          -- Level 69
@@ -117,7 +117,7 @@ return {
             "Hail of Arrows",         -- Level 65
         },
         ['FocusedHail'] = {           -- ST multihit archery attack
-            "Focused Hail of Arrows", -- Level 69
+            "Focused Hail of Arrows", -- Level 69 Laz Custom
         },
         ['Dispel'] = {
             "Nature's Balance", -- Level 69
@@ -126,7 +126,7 @@ return {
             "Cancel Magic",     -- Level 30
         },
         ['Heartshot'] = {
-            "Heartslit", -- Level 68
+            "Heartslit", -- Level 68 Laz Custom
             "Heartshot", -- Level 65
         },
         ['RegenBuff'] = {
@@ -182,7 +182,7 @@ return {
             "Shield of Thistles",  -- Level 24
         },
         ['FlameSnap'] = {
-            "Flame Snap",  -- Level 66
+            "Flame Snap",  -- Level 66 Laz Custom
         },
         ['NatureProc'] = { -- ST Hade reduction defensive proc buff
             "Nature Veil", -- Level 66

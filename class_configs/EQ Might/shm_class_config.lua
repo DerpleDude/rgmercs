@@ -151,7 +151,7 @@ local _ClassConfig = {
     ['AbilitySets']       = {
         ['GroupFocusSpell'] = {
             -- Focus Spell - Group Spells will be used on everyone
-            "Ancient: Blessing of Wunshi", -- Level 70 EQM
+            "Ancient: Blessing of Wunshi", -- Level 70 EQM Custom
             "Talisman of Wunshi",          -- Level 70 - Group
             "Focus of the Seventh",        -- Level 65 - Group
             "Khura's Focusing",            -- Level 60 - Group
@@ -276,9 +276,9 @@ local _ClassConfig = {
             -- "Spirit of the Panther",   -- Level 69, group spell == less casting, longer duration, more avail to do other things
             -- "Talisman of the Leopard", -- Level 66 EQ Might Custom, but item only currently
             -- "Spirit of the Leopard",   -- Level 61, group spell == less casting, longer duration, more avail to do other things
-            "Talisman of the Jaguar", -- Level 61
+            "Talisman of the Jaguar", -- Level 61 EQM Custom
             -- "Spirit of the Jaguar",    -- Level 57, group spell == less casting, longer duration, more avail to do other things
-            "Talisman of the Puma",   -- Level 55
+            "Talisman of the Puma",   -- Level 55 EQM Custom
             "Spirit of the Puma",     -- Level 50
         },
         ['SlowProcBuff'] = {
@@ -303,7 +303,7 @@ local _ClassConfig = {
             "Minor Healing",              -- Level 1
         },
         ['GroupRenewalHoT'] = {
-            "Ancient: Ghost of Vitality", -- Level 70
+            "Ancient: Ghost of Vitality", -- Level 70 EQM Custom
             "Ghost of Renewal",           -- Level 70
         },
         ['SnareHot'] = {
@@ -315,7 +315,7 @@ local _ClassConfig = {
             "Spiritual Serenity",     -- Level 70
             "Breath of Trushar",      -- Level 65
             "Quiescence",             -- Level 65
-            "Spiritual Rejuvenation", -- Level 62
+            "Spiritual Rejuvenation", -- Level 62 EQM Custom
         },
         ['CanniSpell'] = {
             "Ancestral Bargain",          -- Level 71
@@ -391,7 +391,7 @@ local _ClassConfig = {
             "True Spirit",          -- Level 61
             "Spirit of the Howler", -- Level 55
             "Frenzied Spirit",      -- Level 45
-            "Guardian spirit",      -- Level 41
+            "Guardian Spirit",      -- Level 41
             "Vigilant Spirit",      -- Level 37
             "Companion Spirit",     -- Level 32
         },
@@ -440,17 +440,17 @@ local _ClassConfig = {
             "Putrid Decay",       -- Level 66
         },
         ['Minionskin'] = {        --EQM Custom: HP/Regen/mitigation (May need to block druid HP buff line on pet)
-            "Major Minionskin",   -- Level 66
-            "Greater Minionskin", -- Level 56
-            "Minionskin",         -- Level 43
+            "Major Minionskin",   -- Level 66 EQM Custom
+            "Greater Minionskin", -- Level 56 EQM Custom
+            "Minionskin",         -- Level 43 EQM Custom
         },
         ['MeleeBuff'] = {
-            "Ancient: Talisman of Might", -- Level 70, Group
+            "Ancient: Talisman of Might", -- Level 70, EQM Custom - Group
             "Talisman of Might",          -- Level 70, Group
             "Spirit of Might",            -- Level 67, Single Target
         },
         ['VirulentDot'] = {               -- waiting to see where this goes for now, this is worse than some lower level dots
-            "Virulent Bolt",              -- Level 58
+            "Virulent Bolt",              -- Level 58 EQM Custom
         },
     },
     ['Helpers']           = {
@@ -705,7 +705,7 @@ local _ClassConfig = {
             end,
         },
         {
-            name = 'MeleeProcBuff',
+            name = 'ProcBuff',
             state = 1,
             steps = 1,
             targetId = function(self) return Casting.GetBuffableIDs() end,
@@ -739,7 +739,7 @@ local _ClassConfig = {
 
     },
     ['Rotations']         = {
-        ['MeleeProcBuff'] = {
+        ['ProcBuff']    = {
             {
                 name = "Legendary Armband of the Panther",
                 type = "Item",
@@ -762,6 +762,7 @@ local _ClassConfig = {
                 type = "Item",
                 load_cond = function(self) return self.Helpers.ProcBuffChoice() == "JaguarItem" end,
                 cond = function(self, itemName, target)
+                    if not Targeting.TargetIsAMelee(target) then return false end
                     return Casting.GroupBuffItemCheck(itemName, target) and Casting.AddedBuffCheck(9975, target) --Panther Rk. II
                 end,
             },
@@ -771,11 +772,12 @@ local _ClassConfig = {
                 load_cond = function(self) return self.Helpers.ProcBuffChoice() == "ProcSpell" end,
                 cond = function(self, spell, target)
                     if not Casting.CastReady(spell) then return false end                                 --avoid constant group buff checks
+                    if not Globals.Constants.GroupTargetTypes:contains(spell.TargetType() or "") and not Targeting.TargetIsAMelee(target) then return false end
                     return Casting.GroupBuffCheck(spell, target) and Casting.AddedBuffCheck(9975, target) --Panther Rk. II
                 end,
             },
         },
-        ['CombatBuff']    = {
+        ['CombatBuff']  = {
             {
                 name = "Companion's Blessing",
                 type = "AA",
@@ -814,7 +816,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Burn']          = {
+        ['Burn']        = {
             {
                 name = "Ancestral Aid",
                 type = "AA",
@@ -854,7 +856,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Malo']          = {
+        ['Malo']        = {
             {
                 name = "AEMaloSpell",
                 type = "Spell",
@@ -880,7 +882,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Slow']          = {
+        ['Slow']        = {
             {
                 name = "Tigir's Insect Swarm",
                 type = "AA",
@@ -918,7 +920,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['PutridDecay']   = {
+        ['PutridDecay'] = {
             {
                 name = "PutridDecay",
                 type = "Spell",
@@ -927,7 +929,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Cripple']       = {
+        ['Cripple']     = {
             {
                 name = "CrippleSpell",
                 type = "Spell",
@@ -936,7 +938,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['DPS']           = {
+        ['DPS']         = {
             {
                 name = "Epic",
                 type = "Item",
@@ -986,7 +988,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['DPS(AE)']       = {
+        ['DPS(AE)']     = {
             {
                 name = "PBAEPoison",
                 type = "Spell",
@@ -996,7 +998,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['PetSummon']     = {
+        ['PetSummon']   = {
             {
                 name = "Artifact of Nature Spirit",
                 type = "Item",
@@ -1024,7 +1026,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Downtime']      = {
+        ['Downtime']    = {
             {
                 name = "Communion of the Cheetah",
                 type = "AA",
@@ -1057,7 +1059,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['PetBuff']       = {
+        ['PetBuff']     = {
             {
                 name = "HasteBuff",
                 type = "Spell",
@@ -1083,7 +1085,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['GroupBuff']     = {
+        ['GroupBuff']   = {
             {
                 name = "Communion of the Cheetah",
                 type = "AA",

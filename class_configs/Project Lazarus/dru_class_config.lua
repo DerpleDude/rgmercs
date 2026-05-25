@@ -135,7 +135,7 @@ local _ClassConfig = {
             "Minor Healing",               -- Level 1
         },
         ['GroupHeal'] = {                  -- Laz specific, some taken from cleric, some custom
-            "Word of Reconstitution",      -- Level 70
+            "Word of Reconstitution",      -- Level 70 Laz Custom
             "Word of Redemption",          -- Level 65
             "Word of Restoration",         -- Level 62
             "Word of Vigor",               -- Level 56
@@ -295,7 +295,7 @@ local _ClassConfig = {
             "Spirit of Wolf",   -- Level 10
         },
         ['PetSpell'] = {
-            "Nature Wanderer's Behest", -- Level 70
+            "Nature Wanderer's Behest", -- Level 70 Laz Custom
             "Nature Walker's Behest",   -- Level 55
         },
         ['Dawnstrike'] = {              -- I think better to just spam solstice strike
@@ -327,7 +327,7 @@ local _ClassConfig = {
             "Pure Blood", -- Level 52
         },
         ['TwinHealNuke'] = {
-            "Sunburst Blessing", -- Level 70, Laz custom, description wrong, target mob
+            "Sunburst Blessing", -- Level 70, Laz Custom, description wrong, target mob
         },
         ['PBAEMagic'] = {
             "Earth Shiver", -- Level 66
@@ -355,7 +355,7 @@ local _ClassConfig = {
             "Lesser Succor", -- Level 18
         },
         ['QuickGroupHeal'] = {
-            "Moon Shadow", -- Level 70
+            "Moon Shadow", -- Level 70 Laz Custom
         },
     },
     ['AASets']            = {

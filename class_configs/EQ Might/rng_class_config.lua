@@ -165,7 +165,7 @@ return {
             "Salve",                 -- Level 1
         },
         ['SwarmDot'] = {
-            "Cloud of Wasps", -- Level 70
+            "Cloud of Wasps", -- Level 70 EQM Custom
             "Locust Swarm",   -- Level 67
             "Drifting Death", -- Level 62
             "Fire Swarm",     -- Level 55
@@ -229,7 +229,7 @@ return {
             "Jolting Kicks",  -- Level 71
         },
         ['Skals'] = {
-            "Skal's Stance Discipline", -- Level 61
+            "Skal's Stance Discipline", -- Level 61 EQM Custom
         },
         -- ['JoltProcBuff'] = {
         --     "Jolting Blades", -- Level 54

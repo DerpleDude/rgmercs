@@ -87,370 +87,370 @@ _ClassConfig    = {
         --- Nukes
         ['SwarmPet'] = {
             -- Swarm Pet* >= LVL 70
-            "Raging Servant XIII",
-            "Ravening Servant",
-            "Roiling Servant",
-            "Riotous Servant",
-            "Reckless Servant",
-            "Remorseless Servant",
-            "Relentless Servant",
-            "Ruthless Servant",
-            "Ruinous Servant",
-            "Rumbling Servant",
-            "Rancorous Servant",
-            "Rampaging Servant",
-            "Raging Servant",
-            "Rage of Zomm",
+            "Raging Servant XIII", -- Level 130
+            "Ravening Servant",    -- Level 125
+            "Roiling Servant",     -- Level 120
+            "Riotous Servant",     -- Level 115
+            "Reckless Servant",    -- Level 110
+            "Remorseless Servant", -- Level 105
+            "Relentless Servant",  -- Level 100
+            "Ruthless Servant",    -- Level 95
+            "Ruinous Servant",     -- Level 90
+            "Rumbling Servant",    -- Level 85
+            "Rancorous Servant",   -- Level 80
+            "Rampaging Servant",   -- Level 75
+            "Raging Servant",      -- Level 70
+            "Rage of Zomm",        -- Level 55
         },
         ['SpearNuke'] = {
             -- Spear Nuke* >= LVL 70
-            "Spear of Ro X",
-            "Spear of Molten Dacite",
-            "Spear of Molten Luclinite",
-            "Spear of Molten Komatiite",
-            "Spear of Molten Arcronite",
-            "Spear of Molten Shieldstone",
-            "Spear of Blistersteel",
-            "Spear of Molten Steel",
-            "Spear of Magma",
-            "Bolt of Molten Slag", -- Added for TLP without spear unlocked yet
-            "Spear of Ro",
+            "Spear of Ro X",               -- Level 130
+            "Spear of Molten Dacite",      -- Level 125
+            "Spear of Molten Luclinite",   -- Level 120
+            "Spear of Molten Komatiite",   -- Level 115
+            "Spear of Molten Arcronite",   -- Level 110
+            "Spear of Molten Shieldstone", -- Level 105
+            "Spear of Blistersteel",       -- Level 100
+            "Spear of Molten Steel",       -- Level 95
+            "Spear of Magma",              -- Level 90
+            "Bolt of Molten Slag",         -- Level 71, Added for TLP without spear unlocked yet
+            "Spear of Ro",                 -- Level 70
         },
         ['ChaoticNuke'] = {
             -- Chaotic Nuke with Beneficial Effect >= LVL69
-            "Chaotic Fire VI",
-            "Chaotic Magma",
-            "Chaotic Calamity",
-            "Chaotic Pyroclasm",
-            "Chaotic Inferno",
-            "Chaotic Fire",
-            "Fickle Magma",
-            "Fickle Flames",
-            "Fickle Flare",
-            "Fickle Blaze",
-            "Fickle Pyroclasm",
-            "Fickle Inferno",
-            "Fickle Fire",
+            "Chaotic Fire VI",   -- Level 130
+            "Chaotic Magma",     -- Level 125
+            "Chaotic Calamity",  -- Level 120
+            "Chaotic Pyroclasm", -- Level 115
+            "Chaotic Inferno",   -- Level 110
+            "Chaotic Fire",      -- Level 105
+            "Fickle Magma",      -- Level 100
+            "Fickle Flames",     -- Level 95
+            "Fickle Flare",      -- Level 90
+            "Fickle Blaze",      -- Level 85
+            "Fickle Pyroclasm",  -- Level 80
+            "Fickle Inferno",    -- Level 75
+            "Fickle Fire",       -- Level 69
         },
         -- ['FireNuke'] = {
         --     -- Fire Nuke 1 <= LVL <= 70
-        --     "Burning Sands XIV",
-        --     "Cremating Sands",
-        --     "Ravaging Sands",
-        --     "Incinerating Sands",
-        --     "Crash of Sand",
-        --     "Blistering Sands",
-        --     "Searing Sands",
-        --     "Broiling Sands",
-        --     "Blast of Sand",
-        --     "Burning Sands",
-        --     "Burst of Sand",
-        --     "Strike of Sand",
-        --     "Torrid Sands",
-        --     "Scorching Sands",
-        --     "Scalding Sands",
-        --     "Sun Vortex",
-        --     "Star Strike",
-        --     "Ancient: Nova Strike",
-        --     "Burning Sand",
-        --     "Shock of Fiery Blades",
-        --     "Char",
-        --     "Blaze",
-        --     "Shock of Flame",
-        --     "Burn",
-        --     "Burst of Flame",
+        --     "Burning Sands XIV",     -- Level 129
+        --     "Cremating Sands",       -- Level 124
+        --     "Ravaging Sands",        -- Level 118
+        --     "Incinerating Sands",    -- Level 113
+        --     "Crash of Sand",         -- Level 111
+        --     "Blistering Sands",      -- Level 108
+        --     "Searing Sands",         -- Level 103
+        --     "Broiling Sands",        -- Level 98
+        --     "Blast of Sand",         -- Level 96
+        --     "Burning Sands",         -- Level 93
+        --     "Burst of Sand",         -- Level 91
+        --     "Strike of Sand",        -- Level 86
+        --     "Torrid Sands",          -- Level 83
+        --     "Scorching Sands",       -- Level 78
+        --     "Scalding Sands",        -- Level 73
+        --     "Star Strike",           -- Level 70
+        --     "Ancient: Nova Strike",  -- Level 70
+        --     "Sun Vortex",            -- Level 65
+        --     "Burning Sand",          -- Level 62
+        --     "Shock of Fiery Blades", -- Level 60
+        --     "Char",                  -- Level 52
+        --     "Blaze",                 -- Level 31
+        --     "Shock of Flame",        -- Level 15
+        --     "Burn",                  -- Level 4
+        --     "Burst of Flame",        -- Level 1
         -- },
         -- ['FireBoltNuke'] = {
-        --     "Bolt of Flame XVIII",
-        --     "Bolt of Molten Dacite",
-        --     "Bolt of Molten Olivine",
-        --     "Bolt of Molten Komatiite",
-        --     "Bolt of Skyfire",
-        --     "Bolt of Molten Shieldstone",
-        --     "Bolt of Molten Magma",
-        --     "Bolt of Molten Steel",
-        --     "Bolt of Rhyolite",
-        --     "Bolt of Molten Scoria",
-        --     "Bolt of Molten Dross",
-        --     "Bolt of Molten Slag",
-        --     "Bolt of Jerikor",
-        --     "Firebolt of Tallon",
-        --     "Seeking Flame of Seukor",
-        --     "Scars of Sigil",
-        --     "Lava Bolt",
-        --     "Cinder Bolt",
-        --     "Bolt of Flame",
-        --     "Flame Bolt",
+        --     "Bolt of Flame XVIII",        -- Level 126
+        --     "Bolt of Molten Dacite",      -- Level 121
+        --     "Bolt of Molten Olivine",     -- Level 116
+        --     "Bolt of Molten Komatiite",   -- Level 111
+        --     "Bolt of Skyfire",            -- Level 106
+        --     "Bolt of Molten Shieldstone", -- Level 101
+        --     "Bolt of Molten Magma",       -- Level 96
+        --     "Bolt of Molten Steel",       -- Level 91
+        --     "Bolt of Rhyolite",           -- Level 86
+        --     "Bolt of Molten Scoria",      -- Level 81
+        --     "Bolt of Molten Dross",       -- Level 76
+        --     "Bolt of Molten Slag",        -- Level 71
+        --     "Bolt of Jerikor",            -- Level 66
+        --     "Firebolt of Tallon",         -- Level 61
+        --     "Seeking Flame of Seukor",    -- Level 59
+        --     "Scars of Sigil",             -- Level 54
+        --     "Lava Bolt",                  -- Level 47
+        --     "Cinder Bolt",                -- Level 33
+        --     "Bolt of Flame",              -- Level 18
+        --     "Flame Bolt",                 -- Level 5
         -- },
         -- ['MagicNuke'] = {
         --     -- Nuke 1 <= LVL <= 69
-        --     "Shock of Blades XIX",
-        --     "Shock of Memorial Steel",
-        --     "Shock of Carbide Steel",
-        --     "Shock of Burning Steel",
-        --     "Shock of Arcronite Steel",
-        --     "Shock of Darksteel",
-        --     "Shock of Blistersteel",
-        --     "Shock of Argathian Steel",
-        --     "Shock of Ethereal Steel",
-        --     "Shock of Discordant Steel",
-        --     "Shock of Cineral Steel",
-        --     "Shock of Silvered Steel",
-        --     "Blade Strike",
-        --     "Rock of Taelosia",
-        --     "Black Steel",
-        --     "Shock of Steel",
-        --     "Shock of Swords",
-        --     "Shock of Spikes",
-        --     "Shock of Blades",
+        --     "Shock of Blades XIX",       -- Level 127
+        --     "Shock of Memorial Steel",   -- Level 122
+        --     "Shock of Carbide Steel",    -- Level 117
+        --     "Shock of Burning Steel",    -- Level 112
+        --     "Shock of Arcronite Steel",  -- Level 107
+        --     "Shock of Darksteel",        -- Level 102
+        --     "Shock of Blistersteel",     -- Level 97
+        --     "Shock of Argathian Steel",  -- Level 92
+        --     "Shock of Ethereal Steel",   -- Level 87
+        --     "Shock of Discordant Steel", -- Level 82
+        --     "Shock of Cineral Steel",    -- Level 77
+        --     "Shock of Silvered Steel",   -- Level 72
+        --     "Blade Strike",              -- Level 68
+        --     "Rock of Taelosia",          -- Level 65
+        --     "Black Steel",               -- Level 63
+        --     "Shock of Steel",            -- Level 57
+        --     "Shock of Swords",           -- Level 41
+        --     "Shock of Spikes",           -- Level 23
+        --     "Shock of Blades",           -- Level 7
         -- },
         -- ['MagicBolt'] = {
         --     -- Magic Bolt Nukes
-        --     "Voidstone Bolt",
-        --     "Luclinite Bolt",
-        --     "Komatiite Bolt",
-        --     "Korascian Bolt",
-        --     "Meteoric Bolt",
-        --     "Iron Bolt",
+        --     "Voidstone Bolt", -- Level 123
+        --     "Luclinite Bolt", -- Level 118
+        --     "Komatiite Bolt", -- Level 113
+        --     "Korascian Bolt", -- Level 108
+        --     "Meteoric Bolt",  -- Level 103
+        --     "Iron Bolt",      -- Level 98
         -- },
-        ['FireDD'] = { --Mix of Fire Nukes and Bolts appropriate for use at lower levels.
-            "Scalding Sands",
-            "Burning Earth",
-            "Burning Sand",
-            "Scars of Sigil",
-            "Lava Bolt",
-            "Cinder Bolt",
-            "Bolt of Flame",
-            "Shock of Flame",
-            "Flame Bolt",
-            "Burn",
-            "Burst of Flame",
+        ['FireDD'] = {                 --Mix of Fire Nukes and Bolts appropriate for use at lower levels.
+            "Scalding Sands",          -- Level 73
+            "Burning Earth",           -- Level 69
+            "Burning Sand",            -- Level 62
+            "Scars of Sigil",          -- Level 54
+            "Lava Bolt",               -- Level 47
+            "Cinder Bolt",             -- Level 33
+            "Bolt of Flame",           -- Level 18
+            "Shock of Flame",          -- Level 15
+            "Flame Bolt",              -- Level 5
+            "Burn",                    -- Level 4
+            "Burst of Flame",          -- Level 1
         },
-        ['BigFireDD'] = { -- Longer cast time bolts we can use when mobs are at higher health.
-            "Bolt of Jerikor",
-            "Firebolt of Tallon",
-            "Seeking Flame of Seukor",
+        ['BigFireDD'] = {              -- Longer cast time bolts we can use when mobs are at higher health.
+            "Bolt of Jerikor",         -- Level 66
+            "Firebolt of Tallon",      -- Level 61
+            "Seeking Flame of Seukor", -- Level 59
         },
-        ['MagicDD'] = { -- Magic does not have any faster casts like Fire, we have only these.
-            "Blade Strike",
-            "Rock of Taelosia",
-            "Black Steel",
-            "Shock of Steel",
-            "Shock of Swords",
-            "Shock of Spikes",
-            "Shock of Blades",
+        ['MagicDD'] = {                -- Magic does not have any faster casts like Fire, we have only these.
+            "Blade Strike",            -- Level 68
+            "Rock of Taelosia",        -- Level 65
+            "Black Steel",             -- Level 63
+            "Shock of Steel",          -- Level 57
+            "Shock of Swords",         -- Level 41
+            "Shock of Spikes",         -- Level 23
+            "Shock of Blades",         -- Level 7
         },
         ['TwinCast'] = {
-            "Twincast",
+            "Twincast", -- Level 85
         },
         ['BeamNuke'] = {
             -- Beam Frontal AOE Spell*
-            "Beam of Molten Slag XII",
-            "Beam of Molten Dacite",
-            "Beam of Molten Olivine",
-            "Beam of Molten Komatiite",
-            "Beam of Molten Rhyolite",
-            "Beam of Molten Shieldstone",
-            "Beam of Brimstone",
-            "Beam of Molten Steel",
-            "Beam of Rhyolite",
-            "Beam of Molten Scoria",
-            "Beam of Molten Dross",
-            "Beam of Molten Slag",
+            "Beam of Molten Slag XII",    -- Level 127
+            "Beam of Molten Dacite",      -- Level 122
+            "Beam of Molten Olivine",     -- Level 117
+            "Beam of Molten Komatiite",   -- Level 112
+            "Beam of Molten Rhyolite",    -- Level 107
+            "Beam of Molten Shieldstone", -- Level 102
+            "Beam of Brimstone",          -- Level 97
+            "Beam of Molten Steel",       -- Level 92
+            "Beam of Rhyolite",           -- Level 87
+            "Beam of Molten Scoria",      -- Level 82
+            "Beam of Molten Dross",       -- Level 77
+            "Beam of Molten Slag",        -- Level 72
         },
         ['RainNuke'] = {
             --- Rain AOE Spell*
-            "Rain of Fire XVI",
-            "Rain of Molten Dacite",
-            "Rain of Molten Olivine",
-            "Rain of Molten Komatiite",
-            "Rain of Molten Rhyolite",
-            "Coronal Rain",
-            "Rain of Blistersteel",
-            "Rain of Molten Steel",
-            "Rain of Rhyolite",
-            "Rain of Molten Scoria",
-            "Rain of Molten Dross",
-            "Rain of Molten Slag",
-            "Rain of Jerikor",
-            "Sun Storm",
-            "Sirocco",
-            "Rain of Lava",
-            "Rain of Fire",
+            "Rain of Fire XVI",         -- Level 128
+            "Rain of Molten Dacite",    -- Level 123
+            "Rain of Molten Olivine",   -- Level 118
+            "Rain of Molten Komatiite", -- Level 113
+            "Rain of Molten Rhyolite",  -- Level 108
+            "Coronal Rain",             -- Level 103
+            "Rain of Blistersteel",     -- Level 97
+            "Rain of Molten Steel",     -- Level 92
+            "Rain of Rhyolite",         -- Level 87
+            "Rain of Molten Scoria",    -- Level 82
+            "Rain of Molten Dross",     -- Level 77
+            "Rain of Molten Slag",      -- Level 72
+            "Rain of Jerikor",          -- Level 67
+            "Sun Storm",                -- Level 62
+            "Sirocco",                  -- Level 55
+            "Rain of Lava",             -- Level 35
+            "Rain of Fire",             -- Level 17
         },
         ['MagicRainNuke'] = {
-            "Rain of Blades XVII",
-            "Rain of Kukris",
-            "Rain of Falchions",
-            "Rain of Blades",
-            "Rain of Spikes",
-            "Rain Of Swords",
-            "ManaStorm",
-            "Maelstrom of Electricity",
-            "Maelstrom of Thunder",
+            "Rain of Blades XVII",      -- Level 129
+            "Rain of Kukris",           -- Level 124
+            "Rain of Falchions",        -- Level 119
+            "Maelstrom of Thunder",     -- Level 64
+            "Maelstrom of Electricity", -- Level 60
+            "ManaStorm",                -- Level 59
+            "Rain Of Swords",           -- Level 49
+            "Rain of Spikes",           -- Level 26
+            "Rain of Blades",           -- Level 10
         },
         ['VolleyNuke'] = {
             -- Volley Nuke - Pet buff*
-            "Shock of Many XI",
-            "Fusillade of Many",
-            "Barrage of Many",
-            "Shockwave of Many",
-            "Volley of Many",
-            "Storm of Many",
-            "Salvo of Many",
-            "Strike of Many",
-            "Clash of Many",
-            "Jolt of Many",
-            "Shock of Many",
+            "Shock of Many XI",  -- Level 127
+            "Fusillade of Many", -- Level 122
+            "Barrage of Many",   -- Level 117
+            "Shockwave of Many", -- Level 112
+            "Volley of Many",    -- Level 107
+            "Storm of Many",     -- Level 102
+            "Salvo of Many",     -- Level 97
+            "Strike of Many",    -- Level 92
+            "Clash of Many",     -- Level 87
+            "Jolt of Many",      -- Level 82
+            "Shock of Many",     -- Level 77
         },
         ['SummonedNuke'] = {
             -- Unnatural Nukes >70
-            "Expunge the Unnatural",
-            "Dismantle the Unnatural",
-            "Unmend the Unnatural",
-            "Obliterate the Unnatural",
-            "Repudiate the Unnatural",
-            "Eradicate the Unnatural",
-            "Exterminate the Unnatural",
-            "Abolish the Divergent",
-            "Annihilate the Divergent",
-            "Annihilate the Anomalous",
-            "Annihilate the Aberrant",
-            "Annihilate the Unnatural",
+            "Expunge the Unnatural",     -- Level 129
+            "Dismantle the Unnatural",   -- Level 124
+            "Unmend the Unnatural",      -- Level 118
+            "Obliterate the Unnatural",  -- Level 113
+            "Repudiate the Unnatural",   -- Level 108
+            "Eradicate the Unnatural",   -- Level 103
+            "Exterminate the Unnatural", -- Level 98
+            "Abolish the Divergent",     -- Level 93
+            "Annihilate the Divergent",  -- Level 88
+            "Annihilate the Anomalous",  -- Level 83
+            "Annihilate the Aberrant",   -- Level 78
+            "Annihilate the Unnatural",  -- Level 73
         },
         ['MaloNuke'] = {
             -- Shock/Malo Combo Line
-            "Shock of Malaise VII",
-            "Memorial Steel Malosinera",
-            "Carbide Malosinetra",
-            "Blistersteel Malosenia",
-            "Darksteel Malosenete",
-            "Arcronite Malosinata",
-            "Burning Malosinara",
+            "Shock of Malaise VII",      -- Level 129
+            "Memorial Steel Malosinera", -- Level 124
+            "Carbide Malosinetra",       -- Level 119
+            "Burning Malosinara",        -- Level 114
+            "Arcronite Malosinata",      -- Level 109
+            "Darksteel Malosenete",      -- Level 104
+            "Blistersteel Malosenia",    -- Level 100
         },
         --- Buffs
         ['SelfShield'] = {
-            "Shielding XXIII",
-            "Shield of Memories",
-            "Shield of Shadow",
-            "Shield of Restless Ice",
-            "Shield of Scales",
-            "Shield of the Pellarus",
-            "Shield of the Dauntless",
-            "Shield of Bronze",
-            "Shield of Dreams",
-            "Shield of the Void",
-            "Prime Guard",
-            "Prime Shielding",
-            "Elemental Aura",
-            "Shield of Maelin",
-            "Shield of the Arcane",
-            "Shield of the Magi",
-            "Arch Shielding",
-            "Greater Shielding",
-            "Major Shielding",
-            "Shielding",
-            "Lesser Shielding",
-            "Minor Shielding",
+            "Shielding XXIII",         -- Level 126
+            "Shield of Memories",      -- Level 121
+            "Shield of Shadow",        -- Level 116
+            "Shield of Restless Ice",  -- Level 111
+            "Shield of Scales",        -- Level 106
+            "Shield of the Pellarus",  -- Level 101
+            "Shield of the Dauntless", -- Level 96
+            "Shield of Bronze",        -- Level 91
+            "Shield of Dreams",        -- Level 86
+            "Shield of the Void",      -- Level 81
+            "Prime Guard",             -- Level 76
+            "Prime Shielding",         -- Level 71
+            "Elemental Aura",          -- Level 66
+            "Shield of Maelin",        -- Level 64
+            "Shield of the Arcane",    -- Level 61
+            "Shield of the Magi",      -- Level 54
+            "Arch Shielding",          -- Level 43
+            "Greater Shielding",       -- Level 32
+            "Major Shielding",         -- Level 24
+            "Shielding",               -- Level 16
+            "Lesser Shielding",        -- Level 5
+            "Minor Shielding",         -- Level 1
         },
         ['SkinDS'] = {
             -- Use at the start of the DPS loop
-            "Searing Skin XI",
-            "Boiling Skin",
-            "Scorching Skin",
-            "Burning Skin",
-            "Blistering Skin",
-            "Coronal Skin",
-            "Infernal Skin",
-            "Molten Skin",
-            "Blazing Skin",
-            "Torrid Skin",
-            "Brimstoneskin",
-            "Searing Skin",
-            "Scorching Skin",
-            "Ancient: Veil of Pyrilonus",
-            "Pyrilen Skin",
+            "Searing Skin XI",            -- Level 128
+            "Boiling Skin",               -- Level 123
+            "Burning Skin",               -- Level 113
+            "Blistering Skin",            -- Level 108
+            "Coronal Skin",               -- Level 103
+            "Infernal Skin",              -- Level 98
+            "Molten Skin",                -- Level 93
+            "Blazing Skin",               -- Level 88
+            "Torrid Skin",                -- Level 83
+            "Brimstoneskin",              -- Level 81
+            "Searing Skin",               -- Level 78
+            "Scorching Skin",             -- Level 73
+            "Scorching Skin",             -- Level 73
+            "Ancient: Veil of Pyrilonus", -- Level 70
+            "Pyrilen Skin",               -- Level 68
         },
         ['LongDurDmgShield'] = {
             -- Preferring group buffs for ease. Included all Single target Now as well.
-            "Circle of Fireskin XVI",
-            "Circle of Forgefire Coat",
-            "Forgefire Coat",
-            "Circle of Emberweave Coat",
-            "Emberweave Coat",
-            "Circle of Igneous Skin",
-            "Igneous Coat",
-            "Circle of the Inferno",
-            "Inferno Coat",
-            "Circle of Flameweaving",
-            "Flameweave Coat",
-            "Circle of Flameskin",
-            "Flameskin",
-            "Circle of Embers",
-            "Embercoat",
-            "Circle of Dreamfire",
-            "Dreamfire Coat",
-            "Circle of Brimstoneskin",
-            "Brimstoneskin",
-            "Circle of Lavaskin",
-            "Lavaskin",
-            "Circle of Magmaskin",
-            "Magmaskin",
-            "Circle of Fireskin",
-            "Fireskin",
-            "Maelstrom of Ro",
-            "FlameShield of Ro",
-            "Aegis of Ro",
-            "Cadeau of Flame",
-            "Boon of Immolation",
-            "Shield of Lava",
-            "Barrier of Combustion",
-            "Inferno Shield",
-            "Shield of Flame",
-            "Shield of Fire",
+            "Circle of Fireskin XVI",    -- Level 126
+            "Circle of Forgefire Coat",  -- Level 124
+            "Forgefire Coat",            -- Level 121
+            "Circle of Emberweave Coat", -- Level 119
+            "Emberweave Coat",           -- Level 116
+            "Circle of Igneous Skin",    -- Level 114
+            "Igneous Coat",              -- Level 111
+            "Circle of the Inferno",     -- Level 109
+            "Inferno Coat",              -- Level 106
+            "Circle of Flameweaving",    -- Level 104
+            "Flameweave Coat",           -- Level 101
+            "Circle of Flameskin",       -- Level 99
+            "Flameskin",                 -- Level 96
+            "Circle of Embers",          -- Level 94
+            "Embercoat",                 -- Level 91
+            "Circle of Dreamfire",       -- Level 89
+            "Dreamfire Coat",            -- Level 86
+            "Circle of Brimstoneskin",   -- Level 84
+            "Brimstoneskin",             -- Level 81
+            "Circle of Lavaskin",        -- Level 79
+            "Lavaskin",                  -- Level 76
+            "Circle of Magmaskin",       -- Level 74
+            "Magmaskin",                 -- Level 71
+            "Circle of Fireskin",        -- Level 70
+            "Fireskin",                  -- Level 66
+            "Maelstrom of Ro",           -- Level 63
+            "FlameShield of Ro",         -- Level 61
+            "Aegis of Ro",               -- Level 60
+            "Cadeau of Flame",           -- Level 56
+            "Boon of Immolation",        -- Level 53
+            "Shield of Lava",            -- Level 45
+            "Barrier of Combustion",     -- Level 38
+            "Inferno Shield",            -- Level 28
+            "Shield of Flame",           -- Level 19
+            "Shield of Fire",            -- Level 7
         },
         ['ManaRegenBuff'] = {
             -- LVL58 (Transon's Phantasmal Protection) and up to avoid reagent usage
-            "Eidolic Guardian XVII",
-            "Courageous Guardian",
-            "Relentless Guardian",
-            "Restless Guardian",
-            "Burning Guardian",
-            "Praetorian Guardian",
-            "Phantasmal Guardian",
-            "Splendrous Guardian",
-            "Cognitive Guardian",
-            "Empyrean Guardian",
-            "Eidolic Guardian",
-            "Phantasmal Warden",
-            "Phantom Shield",
-            "Xegony's Phantasmal Guard",
-            "Transon's Phantasmal Protection",
+            "Eidolic Guardian XVII",           -- Level 127
+            "Courageous Guardian",             -- Level 122
+            "Relentless Guardian",             -- Level 117
+            "Restless Guardian",               -- Level 112
+            "Burning Guardian",                -- Level 107
+            "Praetorian Guardian",             -- Level 102
+            "Phantasmal Guardian",             -- Level 97
+            "Splendrous Guardian",             -- Level 92
+            "Cognitive Guardian",              -- Level 87
+            "Empyrean Guardian",               -- Level 82
+            "Eidolic Guardian",                -- Level 77
+            "Phantasmal Warden",               -- Level 72
+            "Phantom Shield",                  -- Level 68
+            "Xegony's Phantasmal Guard",       -- Level 62
+            "Transon's Phantasmal Protection", -- Level 58
         },
         ['AllianceBuff'] = {
-            "Firebound Covariance",
-            "Firebound Conjunction",
-            "Firebound Coalition",
-            "Firebound Covenant",
-            "Firebound Alliance",
+            "Firebound Covariance",  -- Level 125
+            "Firebound Conjunction", -- Level 120
+            "Firebound Coalition",   -- Level 115
+            "Firebound Covenant",    -- Level 110
+            "Firebound Alliance",    -- Level 101
         },
         ['SurgeDS1'] = {
             -- ShortDuration DS (Slot 4)
-            "Surge of Shadow",
-            "Surge of Arcanum",
-            "Surge of Shadowflares",
-            "Surge of Thaumacretion",
+            "Surge of Shadow",        -- Level 100
+            "Surge of Arcanum",       -- Level 95
+            "Surge of Shadowflares",  -- Level 90
+            "Surge of Thaumacretion", -- Level 85
         },
         ['SurgeDS2'] = {
             -- ShortDuration DS (Slot 4)
-            "Surge of Shadow",
-            "Surge of Arcanum",
-            "Surge of Shadowflares",
-            "Surge of Thaumacretion",
+            "Surge of Shadow",        -- Level 100
+            "Surge of Arcanum",       -- Level 95
+            "Surge of Shadowflares",  -- Level 90
+            "Surge of Thaumacretion", -- Level 85
         },
         ['PetAura'] = {
             -- Mage Pet Aura
-            "Arcane Distillect",
+            "Arcane Distillect", -- Level 85
         },
         --not used
         --[[ ['SingleDS'] = {
@@ -477,426 +477,426 @@ _ClassConfig    = {
         },]] --
         ['FireShroud'] = {
             -- Defensive Proc 3-6m Buff
-            "Burning Veil X",
-            "Igneous Veil",
-            "Volcanic Veil",
-            "Exothermic Veil",
-            "Skyfire Veil",
-            "Magmatic Veil",
-            "Molten Veil",
-            "Burning Veil",
-            "Burning Pyroshroud",
-            "Burning Brimbody",
-            "Burning Aura",
+            "Burning Veil X",     -- Level 129
+            "Igneous Veil",       -- Level 124
+            "Volcanic Veil",      -- Level 119
+            "Exothermic Veil",    -- Level 114
+            "Skyfire Veil",       -- Level 109
+            "Magmatic Veil",      -- Level 99
+            "Molten Veil",        -- Level 94
+            "Burning Veil",       -- Level 89
+            "Burning Pyroshroud", -- Level 84
+            "Burning Brimbody",   -- Level 79
+            "Burning Aura",       -- Level 68
         },
         ['PetBodyGuard'] = {
-            "Hulking Bodyguard X",
-            "ValorForged Bodyguard",
-            "Ophiolite Bodyguard",
-            "Pyroxenite Bodyguard",
-            "Rhyolitic Bodyguard",
-            "Shieldstone Bodyguard",
-            "Groundswell Bodyguard",
-            "Steelbound Bodyguard",
-            "Tellurian Bodyguard",
-            "Hulking Bodyguard",
+            "Hulking Bodyguard X",   -- Level 126
+            "ValorForged Bodyguard", -- Level 121
+            "Ophiolite Bodyguard",   -- Level 116
+            "Pyroxenite Bodyguard",  -- Level 115
+            "Rhyolitic Bodyguard",   -- Level 110
+            "Shieldstone Bodyguard", -- Level 105
+            "Groundswell Bodyguard", -- Level 100
+            "Steelbound Bodyguard",  -- Level 95
+            "Tellurian Bodyguard",   -- Level 90
+            "Hulking Bodyguard",     -- Level 85
         },
         ['GatherMana'] = {
-            "Gather Potential VIII",
-            "Gather Zeal",
-            "Gather Vigor",
-            "Gather Potency",
-            "Gather Capability",
-            "Gather Magnitude",
-            "Gather Capacity",
-            "Gather Potential",
+            "Gather Potential VIII", -- Level 130
+            "Gather Zeal",           -- Level 125
+            "Gather Vigor",          -- Level 120
+            "Gather Potency",        -- Level 115
+            "Gather Capability",     -- Level 110
+            "Gather Magnitude",      -- Level 100
+            "Gather Capacity",       -- Level 95
+            "Gather Potential",      -- Level 90
         },
         -- Pet Spells Pets & Spells Affecting them
         ['MeleeGuard  '] = {
-            "Shield of Fate VII",
-            "Shield of Inescapability",
-            "Shield of Inevitability",
-            "Shield of Destiny",
-            "Shield of Order",
-            "Shield of Consequence",
-            "Shield of Fate",
+            "Shield of Fate VII",       -- Level 127
+            "Shield of Inescapability", -- Level 122
+            "Shield of Inevitability",  -- Level 117
+            "Shield of Destiny",        -- Level 112
+            "Shield of Order",          -- Level 107
+            "Shield of Consequence",    -- Level 102
+            "Shield of Fate",           -- Level 97
         },
         ['DichoSpell'] = {
             -- Dicho Spell*
-            "Reciprocal Companion",
-            "Ecliptic Companion",
-            "Composite Companion",
-            "Dissident Companion",
-            "Dichotomic Companion",
+            "Reciprocal Companion", -- Level 121
+            "Ecliptic Companion",   -- Level 116
+            "Composite Companion",  -- Level 111
+            "Dissident Companion",  -- Level 106
+            "Dichotomic Companion", -- Level 101
         },
         ['PetHealSpell'] = {
             -- Pet Heal*
-            "Renewal of Magmath",
-            "Renewal of Shoru",
-            "Renewal of Iilivina ",
-            "Renewal of Evreth",
-            "Renewal of Ioulin",
-            "Renewal of Calix",
-            "Renewal of Hererra",
-            "Renewal of Sirqo",
-            "Renewal of Volark",
-            "Renewal of Cadwin",
-            "Revival of Aenro",
-            "Renewal of Aenda",
-            "Renewal of Jerikor",
-            "Planar Renewal",
-            "Transon's Elemental Renewal",
-            "Transon's Elemental Infusion",
-            "Refresh Summoning",
-            "Renew Summoning",
-            "Renew Elements",
+            "Renewal of Magmath",           -- Level 128
+            "Renewal of Shoru",             -- Level 123
+            "Renewal of Iilivina ",         -- Level 118
+            "Renewal of Evreth",            -- Level 113
+            "Renewal of Ioulin",            -- Level 108
+            "Renewal of Calix",             -- Level 103
+            "Renewal of Hererra",           -- Level 98
+            "Renewal of Sirqo",             -- Level 93
+            "Renewal of Volark",            -- Level 88
+            "Renewal of Cadwin",            -- Level 83
+            "Revival of Aenro",             -- Level 78
+            "Renewal of Aenda",             -- Level 73
+            "Renewal of Jerikor",           -- Level 69
+            "Planar Renewal",               -- Level 64
+            "Transon's Elemental Renewal",  -- Level 60
+            "Transon's Elemental Infusion", -- Level 52
+            "Refresh Summoning",            -- Level 34
+            "Renew Summoning",              -- Level 18
+            "Renew Elements",               -- Level 7
         },
         ['PetPromisedSpell'] = {
             ---Pet Promised*
-            "Promised Mending XII",
-            "Promised Reconstitution",
-            "Promised Relief",
-            "Promised Healing",
-            "Promised Alleviation",
-            "Promised Invigoration",
-            "Promised Amelioration",
-            "Promised Amendment",
-            "Promised Wardmending",
-            "Promised Rejuvenation",
-            "Promised Recovery",
+            "Promised Mending XII",    -- Level 128
+            "Promised Reconstitution", -- Level 123
+            "Promised Relief",         -- Level 118
+            "Promised Healing",        -- Level 113
+            "Promised Alleviation",    -- Level 108
+            "Promised Invigoration",   -- Level 103
+            "Promised Amelioration",   -- Level 98
+            "Promised Amendment",      -- Level 93
+            "Promised Wardmending",    -- Level 88
+            "Promised Rejuvenation",   -- Level 83
+            "Promised Recovery",       -- Level 78
         },
         ['PetStanceSpell'] = {
             ---Pet Stance*
-            "Omphacite Stance",
-            "Kanoite Stance",
-            "Pyroxene Stance",
-            "Rhyolite Stance",
-            "Shieldstone Stance",
-            "Groundswell Stance",
-            "Steelstance",
-            "Tellurian Stance",
-            "Earthen Stance",
-            "Grounded Stance",
-            "Granite Stance",
+            "Omphacite Stance",   -- Level 123
+            "Kanoite Stance",     -- Level 118
+            "Pyroxene Stance",    -- Level 113
+            "Rhyolite Stance",    -- Level 108
+            "Shieldstone Stance", -- Level 103
+            "Groundswell Stance", -- Level 98
+            "Steelstance",        -- Level 93
+            "Tellurian Stance",   -- Level 88
+            "Earthen Stance",     -- Level 83
+            "Grounded Stance",    -- Level 78
+            "Granite Stance",     -- Level 73
         },
         ['PetManaConv'] = {
-            "Valiant Symbiosis",
-            "Relentless Symbiosis",
-            "Restless Symbiosis",
-            "Burning Symbiosis",
-            "Dark Symbiosis",
-            "Phantasmal Symbiosis",
-            "Arcane Symbiosis",
-            "Spectral Symbiosis",
-            "Ethereal Symbiosis",
-            "Prime Symbiosis",
-            "Elemental Symbiosis",
-            "Elemental Simulacrum",
-            "Elemental Siphon",
-            "Elemental Draw",
+            "Valiant Symbiosis",    -- Level 122
+            "Relentless Symbiosis", -- Level 117
+            "Restless Symbiosis",   -- Level 115
+            "Burning Symbiosis",    -- Level 110
+            "Dark Symbiosis",       -- Level 105
+            "Phantasmal Symbiosis", -- Level 100
+            "Arcane Symbiosis",     -- Level 95
+            "Spectral Symbiosis",   -- Level 90
+            "Ethereal Symbiosis",   -- Level 85
+            "Prime Symbiosis",      -- Level 80
+            "Elemental Symbiosis",  -- Level 75
+            "Elemental Simulacrum", -- Level 70
+            "Elemental Siphon",     -- Level 65
+            "Elemental Draw",       -- Level 54
         },
         ['PetHaste'] = {
-            "Burnout XVII",
-            "Burnout XVI",
-            "Burnout XV",
-            "Burnout XIV",
-            "Burnout XIII",
-            "Burnout XII",
-            "Burnout XI",
-            "Burnout XI",
-            "Burnout IX",
-            "Burnout VIII",
-            "Burnout VII",
-            "Burnout VI",
-            "Elemental Fury",
-            "Burnout V",
-            "Burnout IV",
-            "Elemental Empathy",
-            "Burnout III",
-            "Burnout II",
-            "Burnout",
+            "Burnout XVII",      -- Level 126
+            "Burnout XVI",       -- Level 121
+            "Burnout XV",        -- Level 116
+            "Burnout XIV",       -- Level 111
+            "Burnout XIII",      -- Level 106
+            "Burnout XII",       -- Level 101
+            "Burnout XI",        -- Level 96
+            "Burnout XI",        -- Level 96
+            "Burnout IX",        -- Level 86
+            "Burnout VIII",      -- Level 81
+            "Burnout VII",       -- Level 76
+            "Burnout VI",        -- Level 71
+            "Elemental Fury",    -- Level 69
+            "Burnout V",         -- Level 62
+            "Burnout IV",        -- Level 55
+            "Elemental Empathy", -- Level 52
+            "Burnout III",       -- Level 47
+            "Burnout II",        -- Level 29
+            "Burnout",           -- Level 11
         },
         ['PetIceFlame'] = {
-            "Iceflame Guard XII",
-            "IceFlame Palisade",
-            "Iceflame Barricade ",
-            "Iceflame Rampart",
-            "Iceflame Keep",
-            "Iceflame Armaments",
-            "Iceflame Eminence",
-            "Iceflame Armor",
-            "Iceflame Ward",
-            "Iceflame Efflux",
-            "Iceflame Tenement",
-            "Iceflame Body",
-            "Iceflame Guard",
+            "Iceflame Guard XII",  -- Level 129
+            "IceFlame Palisade",   -- Level 124
+            "Iceflame Barricade ", -- Level 119
+            "Iceflame Rampart",    -- Level 114
+            "Iceflame Keep",       -- Level 109
+            "Iceflame Armaments",  -- Level 104
+            "Iceflame Eminence",   -- Level 99
+            "Iceflame Armor",      -- Level 94
+            "Iceflame Ward",       -- Level 89
+            "Iceflame Efflux",     -- Level 84
+            "Iceflame Tenement",   -- Level 79
+            "Iceflame Body",       -- Level 74
+            "Iceflame Guard",      -- Level 70
         },
         ['EarthPetSpell'] = {
-            "Earth Elemental XXVI",
-            "Recruitment of Earth",
-            "Conscription of Earth",
-            "Manifestation of Earth",
-            "Embodiment of Earth",
-            "Convocation of Earth",
-            "Shard of Earth",
-            "Facet of Earth",
-            "Construct of Earth",
-            "Aspect of Earth",
-            "Core of Earth",
-            "Essence of Earth",
-            "Child of Earth",
-            "Greater Vocaration: Earth",
-            "Vocarate: Earth",
-            "Greater Conjuration: Earth",
-            "Conjuration: Earth",
-            "Lesser Conjuration: Earth",
-            "Minor Conjuration: Earth",
-            "Greater Summoning: Earth",
-            "Summoning: Earth",
-            "Lesser Summoning: Earth",
-            "Minor Summoning: Earth",
-            "Elemental: Earth",
-            "Elementaling: Earth",
-            "Elementalkin: Earth",
+            "Earth Elemental XXVI",       -- Level 129
+            "Recruitment of Earth",       -- Level 124
+            "Conscription of Earth",      -- Level 119
+            "Manifestation of Earth",     -- Level 114
+            "Embodiment of Earth",        -- Level 109
+            "Convocation of Earth",       -- Level 104
+            "Shard of Earth",             -- Level 99
+            "Facet of Earth",             -- Level 94
+            "Construct of Earth",         -- Level 89
+            "Aspect of Earth",            -- Level 84
+            "Core of Earth",              -- Level 79
+            "Essence of Earth",           -- Level 74
+            "Child of Earth",             -- Level 70
+            "Greater Vocaration: Earth",  -- Level 57
+            "Vocarate: Earth",            -- Level 51
+            "Greater Conjuration: Earth", -- Level 46
+            "Conjuration: Earth",         -- Level 44
+            "Lesser Conjuration: Earth",  -- Level 39
+            "Minor Conjuration: Earth",   -- Level 34
+            "Greater Summoning: Earth",   -- Level 29
+            "Summoning: Earth",           -- Level 25
+            "Lesser Summoning: Earth",    -- Level 21
+            "Minor Summoning: Earth",     -- Level 17
+            "Elemental: Earth",           -- Level 13
+            "Elementaling: Earth",        -- Level 9
+            "Elementalkin: Earth",        -- Level 5
         },
         ['WaterPetSpell'] = {
-            "Water Elemental XXVI",
-            "Recruitment of Water",
-            "Conscription of Water",
-            "Manifestation of Water",
-            "Embodiment of Water",
-            "Convocation of Water",
-            "Shard of Water",
-            "Facet of Water",
-            "Construct of Water",
-            "Aspect of Water",
-            "Core of Water",
-            "Essence of Water",
-            "Child of Water",
-            "Servant of Marr",
-            "Greater Vocaration: Water",
-            "Vocarate: Water",
-            "Greater Conjuration: Water",
-            "Conjuration: Water",
-            "Lesser Conjuration: Water",
-            "Minor Conjuration: Water",
-            "Greater Summoning: Water",
-            "Summoning: Water",
-            "Lesser Summoning: Water",
-            "Minor Summoning: Water",
-            "Elemental: Water",
-            "Elementaling: Water",
-            "Elementalkin: Water",
+            "Water Elemental XXVI",       -- Level 127
+            "Recruitment of Water",       -- Level 122
+            "Conscription of Water",      -- Level 117
+            "Manifestation of Water",     -- Level 112
+            "Embodiment of Water",        -- Level 107
+            "Convocation of Water",       -- Level 102
+            "Shard of Water",             -- Level 97
+            "Facet of Water",             -- Level 92
+            "Construct of Water",         -- Level 87
+            "Aspect of Water",            -- Level 82
+            "Core of Water",              -- Level 77
+            "Essence of Water",           -- Level 72
+            "Child of Water",             -- Level 67
+            "Servant of Marr",            -- Level 62
+            "Greater Vocaration: Water",  -- Level 60
+            "Vocarate: Water",            -- Level 54
+            "Greater Conjuration: Water", -- Level 49
+            "Conjuration: Water",         -- Level 41
+            "Lesser Conjuration: Water",  -- Level 36
+            "Minor Conjuration: Water",   -- Level 31
+            "Greater Summoning: Water",   -- Level 26
+            "Summoning: Water",           -- Level 22
+            "Lesser Summoning: Water",    -- Level 18
+            "Minor Summoning: Water",     -- Level 14
+            "Elemental: Water",           -- Level 10
+            "Elementaling: Water",        -- Level 6
+            "Elementalkin: Water",        -- Level 2
         },
         ['AirPetSpell'] = {
-            "Air Elemental XXVI",
-            "Recruitment of Air",
-            "Conscription of Air",
-            "Manifestation of Air",
-            "Embodiment of Air",
-            "Convocation of Air",
-            "Shard of Air",
-            "Facet of Air",
-            "Construct of Air",
-            "Aspect of Air",
-            "Core of Air",
-            "Essence of Air",
-            "Child of Wind",
-            "Ward of Xegony",
-            "Greater Vocaration: Air",
-            "Vocarate: Air",
-            "Greater Conjuration: Air",
-            "Conjuration: Air",
-            "Lesser Conjuration: Air",
-            "Minor Conjuration: Air",
-            "Greater Summoning: Air",
-            "Summoning: Air",
-            "Lesser Summoning: Air",
-            "Minor Summoning: Air",
-            "Elemental: Air",
-            "Elementaling: Air",
-            "Elementalkin: Air",
+            "Air Elemental XXVI",       -- Level 126
+            "Recruitment of Air",       -- Level 121
+            "Conscription of Air",      -- Level 116
+            "Manifestation of Air",     -- Level 111
+            "Embodiment of Air",        -- Level 106
+            "Convocation of Air",       -- Level 101
+            "Shard of Air",             -- Level 96
+            "Facet of Air",             -- Level 91
+            "Construct of Air",         -- Level 86
+            "Aspect of Air",            -- Level 81
+            "Core of Air",              -- Level 76
+            "Essence of Air",           -- Level 71
+            "Child of Wind",            -- Level 66
+            "Ward of Xegony",           -- Level 61
+            "Greater Vocaration: Air",  -- Level 59
+            "Vocarate: Air",            -- Level 53
+            "Greater Conjuration: Air", -- Level 48
+            "Conjuration: Air",         -- Level 43
+            "Lesser Conjuration: Air",  -- Level 38
+            "Minor Conjuration: Air",   -- Level 33
+            "Greater Summoning: Air",   -- Level 28
+            "Summoning: Air",           -- Level 24
+            "Lesser Summoning: Air",    -- Level 20
+            "Minor Summoning: Air",     -- Level 16
+            "Elemental: Air",           -- Level 12
+            "Elementaling: Air",        -- Level 8
+            "Elementalkin: Air",        -- Level 4
         },
         ['FirePetSpell'] = {
-            "Fire Elemental XXVI",
-            "Recruitment of Fire",
-            "Conscription of Fire",
-            "Manifestation of Fire",
-            "Embodiment of Fire",
-            "Convocation of Fire",
-            "Shard of Fire",
-            "Facet of Fire",
-            "Construct of Fire",
-            "Aspect of Fire",
-            "Core of Fire",
-            "Essence of Fire",
-            "Child of Fire",
-            "Child of Ro",
-            "Greater Vocaration: Fire",
-            "Vocarate: Fire",
-            "Greater Conjuration: Fire",
-            "Conjuration: Fire",
-            "Lesser Conjuration: Fire",
-            "Minor Conjuration: Fire",
-            "Greater Summoning: Fire",
-            "Summoning: Fire",
-            "Lesser Summoning: Fire",
-            "Minor Summoning: Fire",
-            "Elemental: Fire",
-            "Elementaling: Fire",
-            "Elementalkin: Fire",
+            "Fire Elemental XXVI",       -- Level 128
+            "Recruitment of Fire",       -- Level 123
+            "Conscription of Fire",      -- Level 118
+            "Manifestation of Fire",     -- Level 113
+            "Embodiment of Fire",        -- Level 108
+            "Convocation of Fire",       -- Level 103
+            "Shard of Fire",             -- Level 98
+            "Facet of Fire",             -- Level 93
+            "Construct of Fire",         -- Level 88
+            "Aspect of Fire",            -- Level 83
+            "Core of Fire",              -- Level 78
+            "Essence of Fire",           -- Level 73
+            "Child of Fire",             -- Level 68
+            "Child of Ro",               -- Level 63
+            "Greater Vocaration: Fire",  -- Level 58
+            "Vocarate: Fire",            -- Level 52
+            "Greater Conjuration: Fire", -- Level 47
+            "Conjuration: Fire",         -- Level 42
+            "Lesser Conjuration: Fire",  -- Level 37
+            "Minor Conjuration: Fire",   -- Level 32
+            "Greater Summoning: Fire",   -- Level 27
+            "Summoning: Fire",           -- Level 23
+            "Lesser Summoning: Fire",    -- Level 19
+            "Minor Summoning: Fire",     -- Level 15
+            "Elemental: Fire",           -- Level 11
+            "Elementaling: Fire",        -- Level 7
+            "Elementalkin: Fire",        -- Level 3
         },
         ['AegisBuff'] = {
             ---Pet Aegis Shield Buff (Short Duration)*
-            "Auspice of Usira",
-            "Aegis of Valorforged",
-            "Auspice of Valia",
-            "Aegis of Rumblecrush",
-            "Auspice of Kildrukaun",
-            "Aegis of Orfur",
-            "Auspice of Esianti",
-            "Aegis of Zeklor",
-            "Aegis of Japac",
-            "Auspice of Eternity",
-            "Aegis of Nefori",
-            "Auspice of Shadows",
-            "Aegis of Kildrukaun",
-            "Aegis of Calliav",
-            "Bulwark of Calliav",
-            "Protection of Calliav",
-            "Guard of Calliav",
-            "Ward of Calliav",
+            "Aegis of Valorforged",  -- Level 124
+            "Auspice of Usira",      -- Level 122
+            "Aegis of Rumblecrush",  -- Level 119
+            "Auspice of Valia",      -- Level 117
+            "Aegis of Orfur",        -- Level 114
+            "Auspice of Kildrukaun", -- Level 112
+            "Aegis of Zeklor",       -- Level 109
+            "Auspice of Esianti",    -- Level 107
+            "Aegis of Japac",        -- Level 104
+            "Auspice of Eternity",   -- Level 102
+            "Aegis of Nefori",       -- Level 99
+            "Auspice of Shadows",    -- Level 96
+            "Aegis of Kildrukaun",   -- Level 79
+            "Aegis of Calliav",      -- Level 74
+            "Bulwark of Calliav",    -- Level 69
+            "Protection of Calliav", -- Level 64
+            "Guard of Calliav",      -- Level 58
+            "Ward of Calliav",       -- Level 46
         },
         ['PetManaNuke'] = {
             --- PetManaNuke
-            "Thaumatize Pet",
+            "Thaumatize Pet", -- Level 83
         },
         -- ['PetArmorSummon'] = {
         --     -- >=LVL71
-        --     "Grant Arcane Plate",
-        --     "Grant The Alloy's Plate",
-        --     "Grant the Centien's Plate",
-        --     "Grant Ocoenydd's Plate",
-        --     "Grant Wirn's Plate",
-        --     "Grant Thassis' Plate",
-        --     "Grant Frightforged Plate",
-        --     "Grant Manaforged Plate",
-        --     "Grant Spectral Plate",
-        --     "Summon Plate of the Prime",
-        --     "Summon Plate of the Elements",
+        --     "Grant Arcane Plate",           -- Level 127
+        --     "Grant The Alloy's Plate",      -- Level 121
+        --     "Grant the Centien's Plate",    -- Level 116
+        --     "Grant Ocoenydd's Plate",       -- Level 111
+        --     "Grant Wirn's Plate",           -- Level 106
+        --     "Grant Thassis' Plate",         -- Level 101
+        --     "Grant Frightforged Plate",     -- Level 96
+        --     "Grant Manaforged Plate",       -- Level 91
+        --     "Grant Spectral Plate",         -- Level 86
+        --     "Summon Plate of the Prime",    -- Level 76
+        --     "Summon Plate of the Elements", -- Level 71
         -- },
         -- ['PetWeaponSummon'] = {
-        --     "Grant Arcane Armaments",
-        --     "Grant Goliath's Armaments",
-        --     "Grant Shak Dathor's Armaments",
-        --     "Grant Yalrek's Armaments",
-        --     "Grant Wirn's Armaments",
-        --     "Grant Thassis' Armaments",
-        --     "Grant Frightforged Armaments",
-        --     "Grant Manaforged Armaments",
-        --     "Grant Spectral Armaments",
-        --     "Summon Ethereal Armaments",
-        --     "Summon Prime Armaments",
-        --     "Summon Elemental Armaments",
+        --     "Grant Arcane Armaments",        -- Level 128
+        --     "Grant Goliath's Armaments",     -- Level 123
+        --     "Grant Shak Dathor's Armaments", -- Level 118
+        --     "Grant Yalrek's Armaments",      -- Level 113
+        --     "Grant Wirn's Armaments",        -- Level 108
+        --     "Grant Thassis' Armaments",      -- Level 103
+        --     "Grant Frightforged Armaments",  -- Level 98
+        --     "Grant Manaforged Armaments",    -- Level 93
+        --     "Grant Spectral Armaments",      -- Level 88
+        --     "Summon Ethereal Armaments",     -- Level 83
+        --     "Summon Prime Armaments",        -- Level 78
+        --     "Summon Elemental Armaments",    -- Level 73
         -- },
         -- ['PetHeirloomSummon'] = {
-        --     "Grant Arcane Heirlooms",
-        --     "Grant Ankexfen's Heirlooms",
-        --     "Grant the Diabo's Heirlooms",
-        --     "Summon Nastel's Heirlooms",
-        --     "Summon Zabella's Heirlooms",
-        --     "Grant Enibik's Heirlooms",
-        --     "Grant Atleris' Heirlooms",
-        --     "Grant Nint's Heirlooms",
-        --     "Grant Calix's Heirlooms",
-        --     "Grant Ioulin's Heirlooms",
-        --     "Grant Crystasia's Heirlooms",
+        --     "Grant Arcane Heirlooms",      -- Level 126
+        --     "Grant Ankexfen's Heirlooms",  -- Level 121
+        --     "Grant the Diabo's Heirlooms", -- Level 116
+        --     "Grant Crystasia's Heirlooms", -- Level 111
+        --     "Grant Ioulin's Heirlooms",    -- Level 106
+        --     "Grant Calix's Heirlooms",     -- Level 101
+        --     "Grant Nint's Heirlooms",      -- Level 96
+        --     "Grant Atleris' Heirlooms",    -- Level 91
+        --     "Grant Enibik's Heirlooms",    -- Level 86
+        --     "Summon Zabella's Heirlooms",  -- Level 81
+        --     "Summon Nastel's Heirlooms",   -- Level 76
         -- },
         ['IceOrbSummon'] = {
-            "Grant Frostbound Paradox",
-            "Grant Icebound Paradox",
-            "Grant Frostrift Paradox",
-            "Grant Glacial Paradox",
-            "Summon Frigid Paradox",
-            "Summon Gelid Paradox",
-            "Summon Wintry Paradox",
+            "Grant Frostbound Paradox", -- Level 109
+            "Grant Icebound Paradox",   -- Level 99
+            "Grant Frostrift Paradox",  -- Level 94
+            "Grant Glacial Paradox",    -- Level 89
+            "Summon Frigid Paradox",    -- Level 84
+            "Summon Gelid Paradox",     -- Level 79
+            "Summon Wintry Paradox",    -- Level 74
         },
         ['FireOrbSummon'] = {
-            "Summon Molten Dacite Orb",
-            "Summon Molten Komatiite Orb",
-            "Summon Firebound Orb",
-            "Summon Blazing Orb",
-            "Summon: Molten Orb",
-            "Summon: Lava Orb",
+            "Summon Molten Dacite Orb",    -- Level 125
+            "Summon Molten Komatiite Orb", -- Level 114
+            "Summon Firebound Orb",        -- Level 102
+            "Summon Blazing Orb",          -- Level 94
+            "Summon: Molten Orb",          -- Level 69
+            "Summon: Lava Orb",            -- Level 61
         },
         ['EarthPetItemSummon'] = {
-            "Summon Arcane Servant",
-            "Summon Valorous Servant",
-            "Summon Forbearing Servant",
-            "Summon Imperative Servant",
-            "Summon Insurgent Servant",
-            "Summon Mutinous Servant",
-            "Summon Imperious Servant",
-            "Summon Exigent Servant",
+            "Summon Arcane Servant",     -- Level 128
+            "Summon Valorous Servant",   -- Level 123
+            "Summon Forbearing Servant", -- Level 118
+            "Summon Imperative Servant", -- Level 113
+            "Summon Insurgent Servant",  -- Level 108
+            "Summon Mutinous Servant",   -- Level 103
+            "Summon Imperious Servant",  -- Level 98
+            "Summon Exigent Servant",    -- Level 93
         },
         ['FirePetItemSummon'] = {
-            "Summon Arcane Minion",
-            "Summon Valorous Minion",
-            "Summon Forbearing Minion",
-            "Summon Imperative Minion",
-            "Summon Insurgent Minion",
-            "Summon Mutinous Minion",
-            "Summon Imperious Minion",
-            "Summon Exigent Minion",
+            "Summon Arcane Minion",         -- Level 130
+            "Summon Valorous Minion",       -- Level 125
+            "Summon Forbearing Minion",     -- Level 120
+            "Summon Imperative Minion",     -- Level 115
+            "Summon Insurgent Minion",      -- Level 110
+            "Summon Mutinous Minion",       -- Level 105
+            "Summon Imperious Minion",      -- Level 100
+            "Summon Exigent Minion",        -- Level 95
         },
-        ['ManaRodSummon'] = { -- Level 44 - 105
+        ['ManaRodSummon'] = {               -- Level 44 - 105
             --- ManaRodSummon - Focuses on group mana rod summon for ease.
-            "Mass Dark Transvergence",
-            "Mass Arcane Transvergence",
-            "Mass Spectral Transvergence",
-            "Mass Ethereal Transvergence",
-            "Mass Prime Transvergence",
-            "Mass Elemental Transvergence",
-            "Mass Mystical Transvergence",
-            "Modulating Rod",
+            "Mass Dark Transvergence",      -- Level 105
+            "Mass Arcane Transvergence",    -- Level 95
+            "Mass Spectral Transvergence",  -- Level 90
+            "Mass Ethereal Transvergence",  -- Level 85
+            "Mass Prime Transvergence",     -- Level 80
+            "Mass Elemental Transvergence", -- Level 75
+            "Mass Mystical Transvergence",  -- Level 56
+            "Modulating Rod",               -- Level 44
         },
         ['SelfManaRodSummon'] = {
             ---, - Focuses on self mana rod summon separate from other timers. >95
-            "Rod of Shattered Modulation",
-            "Rod of Courageous Modulation",
-            "Sickle of Umbral Modulation",
-            "Wand of Frozen Modulation",
-            "Wand of Burning Modulation",
-            "Wand of Dark Modulation",
-            "Wand of Phantasmal Modulation",
+            "Rod of Shattered Modulation",   -- Level 127
+            "Rod of Courageous Modulation",  -- Level 122
+            "Sickle of Umbral Modulation",   -- Level 117
+            "Wand of Frozen Modulation",     -- Level 112
+            "Wand of Burning Modulation",    -- Level 107
+            "Wand of Dark Modulation",       -- Level 102
+            "Wand of Phantasmal Modulation", -- Level 97
         },
         -- - Debuffs
         ['MaloDebuff'] = {
             -- line < LVL 75 @ LVL75 use the AA
-            "Malaise XVI",
-            "Malosinera",
-            "Malosinetra",
-            "Malosinara",
-            "Malosinata",
-            "Malosenete",
-            "Malosenia",
-            "Maloseneta",
-            "Malosene",
-            "Malosenea",
-            "Malosinatia",
-            "Malosinise",
-            "Malosinia",
-            "Mala",
-            "Malosini",
-            "Malosi",
-            "Malaisement",
-            "Malaise",
+            "Malaise XVI", -- Level 126
+            "Malosinera",  -- Level 121
+            "Malosinetra", -- Level 116
+            "Malosinara",  -- Level 111
+            "Malosinata",  -- Level 106
+            "Malosenete",  -- Level 101
+            "Malosenia",   -- Level 96
+            "Maloseneta",  -- Level 91
+            "Malosene",    -- Level 86
+            "Malosenea",   -- Level 81
+            "Malosinatia", -- Level 76
+            "Malosinise",  -- Level 71
+            "Malosinia",   -- Level 63
+            "Mala",        -- Level 60
+            "Malosini",    -- Level 58
+            "Malosi",      -- Level 51
+            "Malaisement", -- Level 44
+            "Malaise",     -- Level 22
         },
         ['SingleCotH'] = {
-            "Call of the Hero",
+            "Call of the Hero", -- Level 55
         },
         ['GroupCotH'] = {
-            "Call of the Heroes",
+            "Call of the Heroes", -- Level 97
         },
     },
     ['HealRotationOrder'] = {

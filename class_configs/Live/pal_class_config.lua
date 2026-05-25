@@ -132,466 +132,465 @@ local _ClassConfig = {
     ['AbilitySets']       = {
         ['CrushTimer6'] = {
             "Crush of Eminence",     -- Level 129
-            "Crush of Compunction",  -- Level 85
-            "Crush of Repentance",   -- Level 90
-            "Crush of Tides",        -- Level 95
-            "Crush of Tarew",        -- Level 100
-            "Crush of Povar",        -- Level 105
-            "Crush of E'Ci",         -- Level 110
-            "Crush of Restless Ice", -- Level 115
-            "Crush of the Umbra",    -- Level 120
             "Crush of the Heroic",   -- Level 124
+            "Crush of the Umbra",    -- Level 120
+            "Crush of Restless Ice", -- Level 115
+            "Crush of E'Ci",         -- Level 110
+            "Crush of Povar",        -- Level 105
+            "Crush of Tarew",        -- Level 100
+            "Crush of Tides",        -- Level 95
+            "Crush of Repentance",   -- Level 90
+            "Crush of Compunction",  -- Level 85
         },
         ['CrushTimer5'] = {
             "Crush of the Crying Seas X", -- Level 127
-            "Crush of the Crying Seas",   -- Level 82
-            "Crush of Marr",              -- Level 87
-            "Crush of Oseka",             -- Level 92
-            "Crush of the Iceclad",       -- Level 97
-            "Crush of the Darkened Sea",  -- Level 102
-            "Crush of the Timorous Deep", -- Level 107
-            "Crush of the Grotto",        -- Level 112
-            "Crush of the Twilight Sea",  -- Level 117
             "Crush of the Wayunder",      -- Level 122
+            "Crush of the Twilight Sea",  -- Level 117
+            "Crush of the Grotto",        -- Level 112
+            "Crush of the Timorous Deep", -- Level 107
+            "Crush of the Darkened Sea",  -- Level 102
+            "Crush of the Iceclad",       -- Level 97
+            "Crush of Oseka",             -- Level 92
+            "Crush of Marr",              -- Level 87
+            "Crush of the Crying Seas",   -- Level 82
         },
         ['TwinHealNuke'] = {
             "Brilliant Expurgation",  -- Level 130
-            "Glorious Vindication",   -- Level 85
-            "Glorious Exoneration",   -- Level 90
-            "Glorious Exculpation",   -- Level 95
-            "Glorious Expurgation",   -- Level 100
-            "Brilliant Vindication",  -- Level 105
-            "Brilliant Exoneration",  -- Level 110
-            "Brilliant Exculpation",  -- Level 115
-            "Brilliant Acquittal",    -- Level 120
             "Brilliant Denouncement", -- Level 125
+            "Brilliant Acquittal",    -- Level 120
+            "Brilliant Exculpation",  -- Level 115
+            "Brilliant Exoneration",  -- Level 110
+            "Brilliant Vindication",  -- Level 105
+            "Glorious Expurgation",   -- Level 100
+            "Glorious Exculpation",   -- Level 95
+            "Glorious Exoneration",   -- Level 90
+            "Glorious Vindication",   -- Level 85
         },
         ['TempHP'] = {
-            "Unyielding Stance",
-            "Steely Stance",
-            "Stubborn Stance",
-            "Stoic Stance",
-            "Staunch Stance",
-            "Steadfast Stance",
-            "Defiant Stance",
-            "Stormwall Stance",
-            "Adamant Stance",
-            "Unwavering Stance",
+            "Unyielding Stance", -- Level 129
+            "Unwavering Stance", -- Level 124
+            "Adamant Stance",    -- Level 119
+            "Stormwall Stance",  -- Level 114
+            "Defiant Stance",    -- Level 109
+            "Staunch Stance",    -- Level 104
+            "Steadfast Stance",  -- Level 99
+            "Stoic Stance",      -- Level 94
+            "Stubborn Stance",   -- Level 89
+            "Steely Stance",     -- Level 84
         },
         ['Preservation'] = {
             "Preservation of Quellious",    -- Level 130
-            "Ward of Tunare",               -- Level 70
-            "Sustenance of Tunare",         -- Level 80
-            "Preservation of Tunare",       -- Level 85
-            "Preservation of Marr",         -- Level 90
-            "Preservation of Oseka",        -- Level 95
-            "Preservation of the Iceclad",  -- Level 100
-            "Preservation of Rodcet",       -- Level 110
-            "Preservation of the Grotto",   -- Level 115
-            "Preservation of the Basilica", -- Level 120
             "Preservation of the Fern",     -- Level 125
+            "Preservation of the Basilica", -- Level 120
+            "Preservation of the Grotto",   -- Level 115
+            "Preservation of Rodcet",       -- Level 110
+            "Preservation of the Iceclad",  -- Level 100
+            "Preservation of Oseka",        -- Level 95
+            "Preservation of Marr",         -- Level 90
+            "Preservation of Tunare",       -- Level 85
+            "Sustenance of Tunare",         -- Level 80
+            "Ward of Tunare",               -- Level 70
         },
         ['HealNuke'] = {
-            "Denouncement IX",
-            "Denouncement",
-            "Reprimand",
-            "Ostracize",
-            "Admonish",
-            "Censure",
-            "Remonstrate",
-            "Upbraid",
-            "Chastise",
+            "Denouncement IX", -- Level 127
+            "Chastise",        -- Level 122
+            "Upbraid",         -- Level 117
+            "Remonstrate",     -- Level 112
+            "Censure",         -- Level 107
+            "Admonish",        -- Level 102
+            "Ostracize",       -- Level 97
+            "Reprimand",       -- Level 92
+            "Denouncement",    -- Level 87
         },
         ['BlessingProc'] = {
-            "Harmonious Blessing",
-            "Concordant Blessing",
-            "Confluent Blessing",
-            "Penumbral Blessing",
-            "Paradoxical Blessing",
+            "Paradoxical Blessing", -- Level 123
+            "Penumbral Blessing",   -- Level 118
+            "Confluent Blessing",   -- Level 113
+            "Concordant Blessing",  -- Level 108
+            "Harmonious Blessing",  -- Level 103
         },
         ['DebuffNuke'] = {
-            "Committal",    -- Level 126
-            "Last Rites",   -- Level 68 - Timer 7
-            "Burial Rites", -- Level 71 - Timer 7
-            "Benediction",  -- Level 76
-            "Eulogy",       -- Level 81
-            "Elegy",        -- Level 86
-            "Paean",        -- Level 91
-            "Laudation",    -- Level 96
-            "Consecration", -- Level 101
-            "Remembrance",  -- Level 106
-            "Requiem",      -- Level 111
-            "Hymnal",       -- Level 116
-            "Revelation",   -- Level 121
+            "Committal",              -- Level 126
+            "Revelation",             -- Level 121
+            "Hymnal",                 -- Level 116
+            "Requiem",                -- Level 111
+            "Remembrance",            -- Level 106
+            "Consecration",           -- Level 101
+            "Laudation",              -- Level 96
+            "Paean",                  -- Level 91
+            "Elegy",                  -- Level 86
+            "Eulogy",                 -- Level 81
+            "Benediction",            -- Level 76
+            "Burial Rites",           -- Level 71, - Timer 7
+            "Last Rites",             -- Level 68, - Timer 7
         },
-        ['SteelProc'] = {   --Proc Heal ToT
-            "Rejuvenating Steel VII",
-            "Restoring Steel",
-            "Regenerating Steel",
-            "Rejuvenating Steel",
-            "Reinvigorating Steel",
-            "Revitalizating Steel",
-            "Renewing Steel",
+        ['SteelProc'] = {             --Proc Heal ToT
+            "Rejuvenating Steel VII", -- Level 129
+            "Restoring Steel",        -- Level 124
+            "Regenerating Steel",     -- Level 119
+            "Renewing Steel",         -- Level 114
+            "Revitalizating Steel",   -- Level 109
+            "Reinvigorating Steel",   -- Level 99
+            "Rejuvenating Steel",     -- Level 94
         },
         ['FuryProc'] = {
             "Eminent Fury",   -- Level 130
-            "Divine Might",   -- Level 45, 65pt
-            "Pious Might",    -- Level 63, 150pt
-            "Holy Order",     -- Level 65, 180pt
-            "Pious Fury",     -- Level 68, 190pt
-            "Righteous Fury", -- Level 80, 268pt --For simplicity of coding and conflict prevention, once fury is rolled into DPU at 80, we will no longer use the undead proc.
-            "Devout Fury",    -- Level 85
-            "Earnest Fury",   -- Level 90
-            "Zealous Fury",   -- Level 95
-            "Reverent Fury",  -- Level 100
-            "Ardent Fury",    -- Level 105
-            "Merciful Fury",  -- Level 110
-            "Sincere Fury",   -- Level 115
-            "Wrathful Fury",  -- Level 120
             "Avowed Fury",    -- Level 125
+            "Wrathful Fury",  -- Level 120
+            "Sincere Fury",   -- Level 115
+            "Merciful Fury",  -- Level 110
+            "Ardent Fury",    -- Level 105
+            "Reverent Fury",  -- Level 100
+            "Zealous Fury",   -- Level 95
+            "Earnest Fury",   -- Level 90
+            "Devout Fury",    -- Level 85
+            "Righteous Fury", -- Level 80, 268pt --For simplicity of coding and conflict prevention, once fury is rolled into DPU at 80, we will no longer use the undead proc.
+            "Pious Fury",     -- Level 68, 190pt
+            "Holy Order",     -- Level 65, 180pt
+            "Pious Might",    -- Level 63, 150pt
+            "Divine Might",   -- Level 45, 65pt
         },
         ['UndeadProc'] = {
             --- Undead Proc Strike : does not stack with Fury Proc, will be used until Fury is available even if setting not enabled.
-            "Instrument of Nife", -- Level 26, 243pt
-            "Ward of Nife",       -- Level 62, 300pt
             "Silvered Fury",      -- Level 67, 390pt
+            "Ward of Nife",       -- Level 62, 300pt
+            "Instrument of Nife", -- Level 26, 243pt
         },
         ['Aurora'] = {
-            "Aurora of Sunlight XI",
-            "Aurora of Dawning",
-            "Aurora of Dawnlight",
-            "Aurora of Daybreak",
-            "Aurora of Splendor",
-            "Aurora of Sunrise",
-            "Aurora of Dayspring",
-            "Aurora of Morninglight",
-            "Aurora of Wakening",
-            "Aurora of Realizing",
+            "Aurora of Sunlight XI",  -- Level 130
+            "Aurora of Realizing",    -- Level 125
+            "Aurora of Dawning",      -- Level 120
+            "Aurora of Wakening",     -- Level 115
+            "Aurora of Morninglight", -- Level 110
+            "Aurora of Dayspring",    -- Level 105
+            "Aurora of Sunrise",      -- Level 100
+            "Aurora of Splendor",     -- Level 95
+            "Aurora of Daybreak",     -- Level 90
+            "Aurora of Dawnlight",    -- Level 85
         },
         ['StunTimer5'] = {
             "Force of Akera XV",          -- Level 130
-            "Desist",                     -- Level 13 - Not Timer 5, use for TLP Low Level Stun
-            "Stun",                       -- Level 28
-            "Force of Akera",             -- Level 53
-            "Ancient: Force of Chaos",    -- Level 65
-            "Ancient: Force of Jeron",    -- Level 70
-            "Force of Prexus",            -- Level 75
-            "Force of Timorous",          -- Level 80
-            "Force of the Crying Seas",   -- Level 85
-            "Force of Marr",              -- Level 90
-            "Force of Oseka",             -- Level 95
-            "Force of the Iceclad",       -- Level 100
-            "Force of the Darkened Sea",  -- Level 105
-            "Force of the Timorous Deep", -- Level 110
-            "Force of the Grotto",        -- Level 115
-            "Force of the Umbra",         -- Level 120
             "Force of the Wayunder",      -- Level 125
+            "Force of the Umbra",         -- Level 120
+            "Force of the Grotto",        -- Level 115
+            "Force of the Timorous Deep", -- Level 110
+            "Force of the Darkened Sea",  -- Level 105
+            "Force of the Iceclad",       -- Level 100
+            "Force of Oseka",             -- Level 95
+            "Force of Marr",              -- Level 90
+            "Force of the Crying Seas",   -- Level 85
+            "Force of Timorous",          -- Level 80
+            "Force of Prexus",            -- Level 75
+            "Ancient: Force of Jeron",    -- Level 70
+            "Ancient: Force of Chaos",    -- Level 65
+            "Force of Akera",             -- Level 53
+            "Stun",                       -- Level 28
+            "Desist",                     -- Level 13, - Not Timer 5, use for TLP Low Level Stun
         },
         ['StunTimer4'] = {
             "Eminent Force",   -- Level 126
-            "Cease",           -- Level 7 - Not Timer 4, use for TLP Low Level Stun
-            "Force of Akilae", -- Level 62
-            "Force of Piety",  -- Level 66
-            "Sacred Force",    -- Level 71
-            "Devout Force",    -- Level 81
-            "Solemn Force",    -- Level 83
-            "Earnest Force",   -- Level 86
-            "Zealous Force",   -- Level 91
-            "Reverent Force",  -- Level 96
-            "Ardent Force",    -- Level 101
-            "Merciful Force",  -- Level 106
-            "Sincere Force",   -- Level 111
-            "Pious Force",     -- Level 116
             "Avowed Force",    -- Level 121
+            "Pious Force",     -- Level 116
+            "Sincere Force",   -- Level 111
+            "Merciful Force",  -- Level 106
+            "Ardent Force",    -- Level 101
+            "Reverent Force",  -- Level 96
+            "Zealous Force",   -- Level 91
+            "Earnest Force",   -- Level 86
+            "Devout Force",    -- Level 81
+            "Solemn Force",    -- Level 76
+            "Sacred Force",    -- Level 71
+            "Force of Piety",  -- Level 66
+            "Force of Akilae", -- Level 62
+            "Cease",           -- Level 7, - Not Timer 4, use for TLP Low Level Stun
         },
         ['HealStun'] = {
-            "Force of Eminence",   -- Level 129
-            "Force of the Avowed", --Level 124
-            "Force of Generosity",
-            "Force of Reverence",
-            "Force of Ardency",
-            "Force of Mercy",
-            "Force of Sincerity",
+            "Force of Eminence",       -- Level 129
+            "Force of the Avowed",     -- Level 124
+            "Force of Generosity",     -- Level 119
+            "Force of Sincerity",      -- Level 114
+            "Force of Mercy",          -- Level 109
+            "Force of Ardency",        -- Level 104
+            "Force of Reverence",      -- Level 99
         },
-        ['HealWard'] = { -- Heal ToT, Ward on Self
-            "Protective Confession X",
-            "Protective Acceptance",
-            "Protective Revelation",
-            "Protective Confession",
-            "Protective Devotion",
-            "Protective Dedication",
-            "Protective Allegiance",
-            "Protective Proclamation",
-            "Protective Devotion",
-            "Protective Consecration",
+        ['HealWard'] = {               -- Heal ToT, Ward on Self
+            "Protective Confession X", -- Level 130
+            "Protective Acceptance",   -- Level 125
+            "Protective Revelation",   -- Level 120
+            "Protective Consecration", -- Level 115
+            "Protective Proclamation", -- Level 105
+            "Protective Allegiance",   -- Level 100
+            "Protective Dedication",   -- Level 95
+            "Protective Devotion",     -- Level 90
+            "Protective Devotion",     -- Level 90
+            "Protective Confession",   -- Level 85
         },
         ['Aego'] = {
-            "Hand of Austerity XVII",        -- Level 127 - Group
-            "Austerity",                     -- Level 55
-            "Blessing of Austerity",         -- Level 58 - Group
-            "Guidance",                      -- Level 65
-            "Affirmation",                   -- Level 70
-            "Sworn Protector",               -- Level 75
-            "Oathbound Protector",           -- Level 80
-            "Sworn Keeper",                  -- Level 85
-            "Oathbound Keeper",              -- Level 90
-            "Avowed Keeper",                 -- Level 92
-            "Hand of the Avowed Keeper",     -- Level 95 - Group
-            "Pledged Keeper",                -- Level 97
-            "Hand of the Pledged Keeper",    -- Level 100 - Group
-            "Stormbound Keeper",             -- Level 102
-            "Hand of the Stormbound Keeper", -- Level 105 - Group
-            "Ashbound Keeper",               -- Level 107
-            "Hand of the Ashbound Keeper",   -- Level 110 - Group
-            "Stormwall Keeper",              -- Level 112
-            "Hand of the Stormwall Keeper",  -- Level 115 - Group
-            "Shadewell Keeper",              -- Level 117
-            "Hand of the Dreaming Keeper",   -- Level 120 - Group
+            "Hand of Austerity XVII",        -- Level 127, - Group
+            "Hand of the Fernshade Keeper",  -- Level 125, - Group
             "Fernshade Keeper",              -- Level 122
-            "Hand of the Fernshade Keeper",  -- Level 125 - Group
+            "Hand of the Dreaming Keeper",   -- Level 120, - Group
+            "Shadewell Keeper",              -- Level 117
+            "Hand of the Stormwall Keeper",  -- Level 115, - Group
+            "Stormwall Keeper",              -- Level 112
+            "Hand of the Ashbound Keeper",   -- Level 110, - Group
+            "Ashbound Keeper",               -- Level 107
+            "Hand of the Stormbound Keeper", -- Level 105, - Group
+            "Stormbound Keeper",             -- Level 102
+            "Hand of the Pledged Keeper",    -- Level 100, - Group
+            "Pledged Keeper",                -- Level 97
+            "Hand of the Avowed Keeper",     -- Level 95, - Group
+            "Avowed Keeper",                 -- Level 92
+            "Oathbound Keeper",              -- Level 90
+            "Sworn Keeper",                  -- Level 85
+            "Oathbound Protector",           -- Level 80
+            "Sworn Protector",               -- Level 75
+            "Affirmation",                   -- Level 70
+            "Guidance",                      -- Level 65
+            "Blessing of Austerity",         -- Level 58, - Group
+            "Austerity",                     -- Level 55
         },
         ['Brells'] = {
-            "Brell's Mountainous Barrior XVI",
-            "Brell's Tenacious Barrier",
-            "Brell's Loamy Ward",
-            "Brell's Tellurian Rampart",
-            "Brell's Adamantine Armor",
-            "Brell's Steadfast Bulwark",
-            "Brell's Stalwart Bulwark",
-            "Brell's Blessed Bastion",
-            "Brell's Blessed Barrier",
-            "Brell's Earthen Aegis",
-            "Brell's Stony Guard",
-            "Brell's Brawny Bulwark",
-            "Brell's Stalwart Shield",
-            "Brell's Mountainous Barrier",
-            "Brell's Steadfast Aegis",
-            "Brell's Unbreakable Palisade",
+            "Brell's Mountainous Barrier XVI", -- Level 129
+            "Brell's Unbreakable Palisade",    -- Level 124
+            "Brell's Tenacious Barrier",       -- Level 119
+            "Brell's Blessed Barrier",         -- Level 114
+            "Brell's Blessed Bastion",         -- Level 109
+            "Brell's Stalwart Bulwark",        -- Level 104
+            "Brell's Steadfast Bulwark",       -- Level 99
+            "Brell's Adamantine Armor",        -- Level 94
+            "Brell's Tellurian Rampart",       -- Level 89
+            "Brell's Loamy Ward",              -- Level 84
+            "Brell's Earthen Aegis",           -- Level 79
+            "Brell's Stony Guard",             -- Level 74
+            "Brell's Brawny Bulwark",          -- Level 70
+            "Brell's Stalwart Shield",         -- Level 65
+            "Brell's Mountainous Barrier",     -- Level 60
+            "Brell's Steadfast Aegis",         -- Level 49
         },
         ['SplashHeal'] = {
-            "Splash of Eminence",
-            "Splash of Heroism",
-            "Splash of Repentance",
-            "Splash of Sanctification",
-            "Splash of Purification",
-            "Splash of Cleansing",
-            "Splash of Atonement",
-            "Splash of Depuration",
-            "Splash of Exaltation",
+            "Splash of Eminence",       -- Level 128
+            "Splash of Heroism",        -- Level 123
+            "Splash of Repentance",     -- Level 118
+            "Splash of Exaltation",     -- Level 113
+            "Splash of Depuration",     -- Level 108
+            "Splash of Atonement",      -- Level 103
+            "Splash of Cleansing",      -- Level 98
+            "Splash of Purification",   -- Level 93
+            "Splash of Sanctification", -- Level 83
         },
         ['HealTaunt'] = {
-            "Valiant Defiance",
-            "Valiant Disruption",
-            "Valiant Deflection",
-            "Valiant Defense",
-            "Valiant Diversion",
-            "Valiant Deterrence",
+            "Valiant Defiance",          -- Level 124
+            "Valiant Disruption",        -- Level 119
+            "Valiant Deterrence",        -- Level 115
+            "Valiant Diversion",         -- Level 110
+            "Valiant Defense",           -- Level 105
+            "Valiant Deflection",        -- Level 98
         },
-        ['Affirmation'] = { --- Improved Super Taunt - Gets you Aggro for X seconds and reduces other Haters generation.
-            "Unquestioned Affirmation",
-            "Unconditional Affirmation",
-            "Unending Affirmation",
-            "Unrelenting Affirmation",
-            "Undivided Affirmation",
-            "Unbroken Affirmation",
-            "Unflinching Affirmation",
-            "Unyielding Affirmation",
+        ['Affirmation'] = {              --- Improved Super Taunt - Gets you Aggro for X seconds and reduces other Haters generation.
+            "Unquestioned Affirmation",  -- Level 129
+            "Unconditional Affirmation", -- Level 124
+            "Unrelenting Affirmation",   -- Level 119
+            "Unending Affirmation",      -- Level 114
+            "Unyielding Affirmation",    -- Level 109
+            "Unflinching Affirmation",   -- Level 104
+            "Unbroken Affirmation",      -- Level 99
+            "Undivided Affirmation",     -- Level 94
         },
-        ['WaveHeal'] = { -- Group Heal
-            "Wave of Inspiriation",
-            "Wave of Regret",
-            "Wave of Bereavement",
-            "Wave of Propitiation",
-            "Wave of Expiation",
-            "Wave of Grief",
-            "Wave of Sorrow",
-            "Wave of Contrition",
-            "Wave of Penitence",
-            "Wave of Remitment",
-            "Wave of Absolution",
-            "Wave of Forgiveness",
-            "Wave of Piety",
-            "Wave of Marr",
-            "Wave of Trushar",
-            "Healing Wave of Prexus",
-            "Wave of Healing",
-            "Wave of Life",
+        ['WaveHeal'] = {                 -- Group Heal
+            "Wave of Inspiration",       -- Level 129
+            "Wave of Regret",            -- Level 124
+            "Wave of Bereavement",       -- Level 119
+            "Wave of Propitiation",      -- Level 114
+            "Wave of Expiation",         -- Level 109
+            "Wave of Grief",             -- Level 104
+            "Wave of Sorrow",            -- Level 99
+            "Wave of Contrition",        -- Level 94
+            "Wave of Penitence",         -- Level 89
+            "Wave of Remitment",         -- Level 84
+            "Wave of Absolution",        -- Level 79
+            "Wave of Forgiveness",       -- Level 74
+            "Wave of Piety",             -- Level 70
+            "Wave of Marr",              -- Level 65
+            "Wave of Trushar",           -- Level 65
+            "Healing Wave of Prexus",    -- Level 58
+            "Wave of Healing",           -- Level 55
+            "Wave of Life",              -- Level 39
         },
         ['SelfHeal'] = {
-            "Penitence IX",
-            "Penitence",
-            "Contrition",
-            "Sorrow",
-            "Grief",
-            "Exaltation",
-            "Propitiation",
-            "Culpability",
-            "Angst",
+            "Penitence IX", -- Level 129
+            "Angst",        -- Level 124
+            "Culpability",  -- Level 119
+            "Propitiation", -- Level 114
+            "Grief",        -- Level 104
+            "Sorrow",       -- Level 99
+            "Contrition",   -- Level 94
+            "Penitence",    -- Level 89
         },
         ['ReverseDS'] = {
-            "Mark of Sharash",
-            "Mark of the Saint",
-            "Mark of the Crusader",
-            "Mark of the Pious",
-            "Mark of the Pure",
-            "Mark of the Defender",
-            "Mark of the Reverent",
-            "Mark of the Exemplar",
-            "Mark of the Commander",
-            "Mark of the Jade Cohort",
-            "Mark of the Eclipsed Cohort",
-            "Mark of the Forgotten Hero",
+            "Mark of Sharosh",             -- Level 126
+            "Mark of the Forgotten Hero",  -- Level 122
+            "Mark of the Eclipsed Cohort", -- Level 119
+            "Mark of the Jade Cohort",     -- Level 114
+            "Mark of the Commander",       -- Level 104
+            "Mark of the Exemplar",        -- Level 99
+            "Mark of the Reverent",        -- Level 94
+            "Mark of the Defender",        -- Level 89
+            "Mark of the Pure",            -- Level 86
+            "Mark of the Pious",           -- Level 84
+            "Mark of the Crusader",        -- Level 81
+            "Mark of the Saint",           -- Level 79
         },
         -- ['Cleansing'] = {           -- ST HoT
-        --     "Ethereal Cleansing",   -- Level 44
-        --     "Celestial Cleansing",  -- Level 59
-        --     "Supernal Cleansing",   -- Level 64
-        --     "Pious Cleansing",      -- Level 69
-        --     "Sacred Cleansing",     -- Level 73
-        --     "Solemn Cleansing",     -- Level 78
-        --     "Devout Cleansing",     -- Level 93
-        --     "Earnest Cleansing",    -- Level 88
-        --     "Zealous Cleansing",    -- Level 93
-        --     "Reverent Cleansing",   -- Level 98
-        --     "Ardent Cleansing",     -- Level 103
-        --     "Merciful Cleansing",   -- Level 108
-        --     "Sincere Cleansing",    -- Level 113
-        --     "Forthright Cleansing", -- Level 118
         --     "Avowed Cleansing",     -- Level 123
+        --     "Forthright Cleansing", -- Level 118
+        --     "Sincere Cleansing",    -- Level 113
+        --     "Merciful Cleansing",   -- Level 108
+        --     "Ardent Cleansing",     -- Level 103
+        --     "Reverent Cleansing",   -- Level 98
+        --     "Zealous Cleansing",    -- Level 93
+        --     "Earnest Cleansing",    -- Level 88
+        --     "Devout Cleansing",     -- Level 83
+        --     "Solemn Cleansing",     -- Level 78
+        --     "Sacred Cleansing",     -- Level 73
+        --     "Pious Cleansing",      -- Level 69
+        --     "Supernal Cleansing",   -- Level 64
+        --     "Celestial Cleansing",  -- Level 59
+        --     "Ethereal Cleansing",   -- Level 44
         -- },
-        ['BurstHeal'] = { -- Smart Heal, Target or ToT
-            "Burst of Sunlight XII",
-            "Burst of Sunlight",
-            "Burst of Morrow",
-            "Burst of Dawnlight",
-            "Burst of Daybreak",
-            "Burst of Splendor",
-            "Burst of Sunrise",
-            "Burst of Dayspring",
-            "Burst of Morninglight",
-            "Burst of Wakening",
-            "Burst of Dawnbreak",
-            "Burst of Sunspring",
+        ['BurstHeal'] = {            -- Smart Heal, Target or ToT
+            "Burst of Sunlight XII", -- Level 128
+            "Burst of Sunspring",    -- Level 123
+            "Burst of Dawnbreak",    -- Level 118
+            "Burst of Wakening",     -- Level 113
+            "Burst of Morninglight", -- Level 108
+            "Burst of Dayspring",    -- Level 103
+            "Burst of Sunrise",      -- Level 98
+            "Burst of Splendor",     -- Level 93
+            "Burst of Daybreak",     -- Level 88
+            "Burst of Dawnlight",    -- Level 83
+            "Burst of Morrow",       -- Level 78
+            "Burst of Sunlight",     -- Level 73
         },
         ['ArmorSelfBuff'] = {
             "Armor of Unyielding Faith",  -- Level 128
-            "Aura of the Crusader",       -- Level 64
-            "Armor of the Champion",      -- Level 69
-            "Armor of Unrelenting Faith", -- Level 73
-            "Armor of Inexorable Faith",  -- Level 78
-            "Armor of Unwavering Faith",  -- Level 83
-            "Armor of Implacable Faith",  -- Level 88
-            "Armor of Formidable Faith",  -- Level 93
-            "Armor of Formidable Grace",  -- Level 98
-            "Armor of Formidable Spirit", -- Level 103
-            "Armor of Steadfast Faith",   -- Level 108
-            "Armor of Steadfast Grace",   -- Level 113
+            "Armor of Heroic Faith",      -- Level 123
             "Armor of Unyielding Grace",  -- Level 118
-            "Armor of Heroic Faith",      -- Level 118
+            "Armor of Steadfast Grace",   -- Level 113
+            "Armor of Steadfast Faith",   -- Level 108
+            "Armor of Formidable Spirit", -- Level 103
+            "Armor of Formidable Grace",  -- Level 98
+            "Armor of Formidable Faith",  -- Level 93
+            "Armor of Implacable Faith",  -- Level 88
+            "Armor of Unwavering Faith",  -- Level 83
+            "Armor of Inexorable Faith",  -- Level 78
+            "Armor of Unrelenting Faith", -- Level 73
+            "Armor of the Champion",      -- Level 69
+            "Aura of the Crusader",       -- Level 64
         },
         ['RighteousStrike'] = {
-            "Righteous Indignation VIII",
-            "Righteous Antipathy",
-            "Righteous Fury",
-            "Righteous Indignation",
-            "Righteous Vexation",
-            "Righteous Umbrage",
-            "Righteous Condemnation",
-            "Righteous Antipathy",
-            "Righteous Censure",
-            "Righteous Disdain",
+            "Righteous Indignation VIII", -- Level 126
+            "Righteous Disdain",          -- Level 121
+            "Righteous Censure",          -- Level 118
+            "Righteous Antipathy",        -- Level 113
+            "Righteous Antipathy",        -- Level 113
+            "Righteous Condemnation",     -- Level 108
+            "Righteous Umbrage",          -- Level 98
+            "Righteous Vexation",         -- Level 93
+            "Righteous Indignation",      -- Level 88
+            "Righteous Fury",             -- Level 80
         },
         ['Symbol'] = {
-            "Symbol of Liako",
-            "Symbol of Jeneca",
-            "Symbol of Jyleel",
-            "Symbol of Erillion",
-            "Symbol of Burim",
-            "Symbol of Niparson",
-            "Symbol of Teralov",
-            "Symbol of Sevalak",
-            "Symbol of Bthur",
-            "Symbol of Jeron",
-            "Symbol of Marzin",
-            "Symbol of Naltron",
-            "Symbol of Pinzarn",
-            "Symbol of Ryltan",
-            "Symbol of Transal",
-            "Symbol of Sevalak",
-            "Symbol of Thormir",
+            "Symbol of Thormir",              -- Level 122
+            "Symbol of Liako",                -- Level 117
+            "Symbol of Sevalak",              -- Level 112
+            "Symbol of Sevalak",              -- Level 112
+            "Symbol of Teralov",              -- Level 107
+            "Symbol of Niparson",             -- Level 102
+            "Symbol of Burim",                -- Level 97
+            "Symbol of Erillion",             -- Level 92
+            "Symbol of Jyleel",               -- Level 87
+            "Symbol of Jeneca",               -- Level 82
+            "Symbol of Bthur",                -- Level 77
+            "Symbol of Jeron",                -- Level 67
+            "Symbol of Marzin",               -- Level 63
+            "Symbol of Naltron",              -- Level 58
+            "Symbol of Pinzarn",              -- Level 46
+            "Symbol of Ryltan",               -- Level 33
+            "Symbol of Transal",              -- Level 24
         },
         ['StunTimer6'] = {                    -- Timer 6, less damage than timer 6 crush, but inlcudes stun. Has Push.
             "Lesson of Penitence XV",         -- Level 127
-            "Quellious' Word of Tranquility", -- Level 54
-            "Quellious' Word of Serenity",    -- Level 64
-            "Serene Command",                 -- Level 68
-            "Lesson of Penitence",            -- Level 72
-            "Lesson of Contrition",           -- Level 77
-            "Lesson of Compunction",          -- Level 82
-            "Lesson of Repentance",           -- Level 87
-            "Lesson of Remorse",              -- Level 92
-            "Lesson of Sorrow",               -- Level 97
-            "Lesson of Grief",                -- Level 102
-            "Lesson of Expiation",            -- Level 107
-            "Lesson of Propitiation",         -- Level 112
-            "Lesson of Guilt",                -- Level 117
             "Lesson of Remembrance",          -- Level 122
+            "Lesson of Guilt",                -- Level 117
+            "Lesson of Propitiation",         -- Level 112
+            "Lesson of Expiation",            -- Level 107
+            "Lesson of Grief",                -- Level 102
+            "Lesson of Sorrow",               -- Level 97
+            "Lesson of Remorse",              -- Level 92
+            "Lesson of Repentance",           -- Level 87
+            "Lesson of Compunction",          -- Level 82
+            "Lesson of Contrition",           -- Level 77
+            "Lesson of Penitence",            -- Level 72
+            "Serene Command",                 -- Level 68
+            "Quellious' Word of Serenity",    -- Level 64
+            "Quellious' Word of Tranquility", -- Level 54
         },
         ['Audacity'] = {                      -- Magic Resist debuff, Hate over time
-            "Impassioned Audacity",
-            "Fanatical Audacity",
-            "Ardent Audacity",
-            "Fervent Audacity",
-            "Sanctimonious Audacity",
-            "Devout Audacity",
-            "Righteous Audacity",
+            "Impassioned Audacity",           -- Level 127
+            "Fanatical Audacity",             -- Level 122
+            "Ardent Audacity",                -- Level 117
+            "Fervent Audacity",               -- Level 112
+            "Sanctimonious Audacity",         -- Level 107
+            "Devout Audacity",                -- Level 97
+            "Righteous Audacity",             -- Level 92
         },
-        ['LightHeal'] = {      --ToT Heal
-            "Eminent Light",   -- Level 127
-            "Light of Life",   -- Level 52
-            "Light of Nife",   -- Level 63
-            "Light of Order",  -- Level 65
-            "Light of Piety",  -- Level 68
-            "Gleaming Light",  -- Level 72
-            "Radiant Light",   -- Level 77
-            "Shining Light",   -- Level 82
-            "Joyous Light",    -- Level 87
-            "Brilliant Light", -- Level 92
-            "Dazzling Light",  -- Level 97
-            "Blessed Light",   -- Level 102
-            "Merciful Light",  -- Level 107
-            "Sincere Light",   -- Level 112
-            "Raptured Light",  -- Level 117
-            "Avowed Light",    -- Level 122
+        ['LightHeal'] = {                     --ToT Heal
+            "Eminent Light",                  -- Level 127
+            "Avowed Light",                   -- Level 122
+            "Raptured Light",                 -- Level 117
+            "Sincere Light",                  -- Level 112
+            "Merciful Light",                 -- Level 107
+            "Blessed Light",                  -- Level 102
+            "Dazzling Light",                 -- Level 97
+            "Brilliant Light",                -- Level 92
+            "Joyous Light",                   -- Level 87
+            "Shining Light",                  -- Level 82
+            "Radiant Light",                  -- Level 77
+            "Gleaming Light",                 -- Level 72
+            "Light of Piety",                 -- Level 68
+            "Light of Order",                 -- Level 65
+            "Light of Nife",                  -- Level 63
+            "Light of Life",                  -- Level 52
         },
         -- ['Pacify'] = {
-        --     "Assuring Words",
-        --     "Placating Words",
-        --     "Tranquil Words",
-        --     "Propitiate",
-        --     "Mollify",
-        --     "Reconcile",
-        --     "Dulcify",
-        --     "Soothe",
-        --     "Pacify",
-        --     "Calm",
-        --     "Lull",
+        --     "Assuring Words",  -- Level 121
+        --     "Tranquil Words",  -- Level 116
+        --     "Placating Words", -- Level 111
+        --     "Dulcify",         -- Level 101
+        --     "Reconcile",       -- Level 96
+        --     "Mollify",         -- Level 91
+        --     "Propitiate",      -- Level 86
+        --     "Pacify",          -- Level 49
+        --     "Calm",            -- Level 43
+        --     "Soothe",          -- Level 25
+        --     "Lull",            -- Level 10
         -- },
         ['TouchHeal'] = {
-            "Eminent Touch",
-            "Touch of Nife",
-            "Touch of Piety",
-            "Sacred Touch",
-            "Solemn Touch",
-            "Devout Touch",
-            "Earnest Touch",
-            "Zealous Touch",
-            "Reverent Touch",
-            "Ardent Touch",
-            "Merciful Touch",
-            "Sincere Touch",
-            "Soothing Touch",
-            "Avowed Touch",
+            "Eminent Touch",    -- Level 126
+            "Avowed Touch",     -- Level 121
+            "Soothing Touch",   -- Level 116
+            "Sincere Touch",    -- Level 111
+            "Merciful Touch",   -- Level 106
+            "Ardent Touch",     -- Level 101
+            "Reverent Touch",   -- Level 96
+            "Zealous Touch",    -- Level 91
+            "Earnest Touch",    -- Level 86
+            "Devout Touch",     -- Level 81
+            "Solemn Touch",     -- Level 76
+            "Sacred Touch",     -- Level 71
+            "Touch of Piety",   -- Level 66
+            "Touch of Nife",    -- Level 61
             "Superior Healing", -- Level 48
             "Healing",          -- Level 27
             "Light Healing",    -- Level 12
@@ -600,185 +599,174 @@ local _ClassConfig = {
         },
         ['Dicho'] = {
             --- Dissident Stun
-            "Dichotomic Force",
-            "Dissident Force",
-            "Composite Force",
-            "Ecliptic Force",
-            "Reciprocal Force",
+            "Reciprocal Force",         -- Level 121
+            "Ecliptic Force",           -- Level 116
+            "Composite Force",          -- Level 111
+            "Dissident Force",          -- Level 106
+            "Dichotomic Force",         -- Level 101
         },
-        ['PurityCure'] = { --- Purity Cure Poison/Diease Cure Half Power to curse
-            "Mastery: Balanced Purity",
-            "Balanced Purity",
-            "Devoted Purity",
-            "Earnest Purity",
-            "Zealous Purity",
-            "Reverent Purity",
-            "Ardent Purity",
-            "Merciful Purity",
+        ['PurityCure'] = {              --- Purity Cure Poison/Diease Cure Half Power to curse
+            "Mastery: Balanced Purity", -- Level 126
+            "Balanced Purity",          -- Level 116
+            "Merciful Purity",          -- Level 106
+            "Ardent Purity",            -- Level 101
+            "Reverent Purity",          -- Level 96
+            "Zealous Purity",           -- Level 91
+            "Earnest Purity",           -- Level 86
+            "Devoted Purity",           -- Level 81
         },
         -- ['CureCurse'] = {
-        --     "Remove Minor Curse",
-        --     "Remove Lesser Curse",
-        --     "Remove Curse",
-        --     "Remove Greater Curse",
-        --     "Eradicate Curse",
+        --     "Remove Greater Curse", -- Level 60
+        --     "Eradicate Curse",      -- Level 60
+        --     "Remove Curse",         -- Level 45
+        --     "Remove Lesser Curse",  -- Level 34
+        --     "Remove Minor Curse",   -- Level 19
         -- },
         ['CureCorrupt'] = {
-            "Mastery: Consecrate",
-            "Consecrate",
-            "Sanctify",
-            "Depurate",
-            "Expurgate",
-            "Purify",
-            "Cleanse",
-            "Cure Corruption",
+            "Mastery: Consecrate",      -- Level 126
+            "Consecrate",               -- Level 116
+            "Sanctify",                 -- Level 106
+            "Depurate",                 -- Level 101
+            "Expurgate",                -- Level 96
+            "Purify",                   -- Level 91
+            "Cleanse",                  -- Level 86
+            "Cure Corruption",          -- Level 65
         },
-        ['ForHonor'] = { --- Challenge Taunt Over time Debuff
-            "Duel for Honor",
-            "Challenge for Honor",
-            "Trial For Honor",
-            "Charge for Honor",
-            "Confrontation for Honor",
-            "Provocation for Honor",
-            "Demand for Honor",
-            "Impose for Honor",
-            "Refute for Honor",
-            "Protest for Honor",
-            "Parlay for Honor",
-            "Petition for Honor",
+        ['ForHonor'] = {                --- Challenge Taunt Over time Debuff
+            "Duel for Honor",           -- Level 127
+            "Petition for Honor",       -- Level 122
+            "Parlay for Honor",         -- Level 117
+            "Protest for Honor",        -- Level 112
+            "Refute for Honor",         -- Level 107
+            "Impose for Honor",         -- Level 102
+            "Demand for Honor",         -- Level 97
+            "Provocation for Honor",    -- Level 92
+            "Confrontation for Honor",  -- Level 87
+            "Charge for Honor",         -- Level 82
+            "Trial For Honor",          -- Level 77
+            "Challenge for Honor",      -- Level 72
         },
-        ['Piety'] = { -- Spell Resist Buff
-            "Silent Piety",
+        ['Piety'] = {                   -- Spell Resist Buff
+            "Silent Piety",             -- Level 69
         },
-        ['Remorse'] = { -- Killshot buff
-            "Penitence for the Fallen",
-            "Remorse for the Fallen",
+        ['Remorse'] = {                 -- Killshot buff
+            "Penitence for the Fallen", -- Level 120
+            "Remorse for the Fallen",   -- Level 75
         },
         ['HealAura'] = {
-            "Blessed Aura",
-            "Holy Aura",
+            "Blessed Aura", -- Level 70
+            "Holy Aura",    -- Level 55
         },
         ['UndeadNuke'] = {
             "Doctrine of Revocation",  -- Level 128
             "Doctrine of Repudiation", -- Level 121
-            "Ward Undead",             -- Level 14
-            "Expulse Undead",          -- Level 30
-            "Dismiss Undead",          -- Level 46
-            "Expel Undead",            -- Level 54
-            "Deny Undead",             -- Level 62 - Timer 7
-            "Spurn Undead",            -- Level 67 - Timer 7
-            --[] = "Wraithguard's Vengeance",  -- Level 75 - Unobtainable?
-            "Annihilate the Undead",   -- Level 86 - Res Debuff / Extra Damage
-            "Abolish the Undead",      -- Level 91 - Res Debuff / Extra Damage
-            "Doctrine of Abrogation",  -- Level 96
-            "Abrogate the Undead",     -- Level 96 - Res Debuff / Extra Damage
-            "Doctrine of Rescission",  -- Level 101
-            "Doctrine of Exculpation", -- Level 106
-            "Doctrine of Abolishment", -- Level 111
             "Doctrine of Annulment",   -- Level 116
+            "Doctrine of Abolishment", -- Level 111
+            "Doctrine of Exculpation", -- Level 106
+            "Doctrine of Rescission",  -- Level 101
+            "Doctrine of Abrogation",  -- Level 96
+            "Abrogate the Undead",     -- Level 96, - Res Debuff / Extra Damage
+            "Abolish the Undead",      -- Level 91, - Res Debuff / Extra Damage
+            "Annihilate the Undead",   -- Level 86, - Res Debuff / Extra Damage
+            -- "Wraithguard's Vengeance", -- Level 75, - Unobtainable?
+            "Spurn Undead",            -- Level 67, - Timer 7
+            "Deny Undead",             -- Level 62, - Timer 7
+            "Expel Undead",            -- Level 54
+            "Dismiss Undead",          -- Level 46
+            "Expulse Undead",          -- Level 30
+            "Ward Undead",             -- Level 14
         },
         ['AllianceNuke'] = {
-            "Holy Alliance",
-            "Stormwall Coalition",
-            "Aureate Covariance",
+            "Aureate Covariance",  -- Level 125
+            "Stormwall Coalition", -- Level 114
+            "Holy Alliance",       -- Level 104
         },
         ['EndRegen'] = {
             --Timer 13, can't be used in combat
-            "Second Wind",
-            "Third Wind",
-            "Fourth Wind",
-            "Respite",
-            "Reprieve",
-            "Rest",
-            "Breather", --Level 101
+            "Breather", -- Level 101
+            "Rest",     -- Level 96
+            "Reprieve", -- Level 91
+            "Respite",  -- Level 86
         },
         ['CombatEndRegen'] = {
             --Timer 13, can be used in combat.
-            "Hiatus V",
-            "Hiatus", --Level 106
-            "Relax",
-            "Night's Calming",
-            "Convalesce",
+            "Hiatus V",        -- Level 126
+            "Convalesce",      -- Level 121
+            "Night's Calming", -- Level 116
+            "Relax",           -- Level 111
+            "Hiatus",          -- Level 106
         },
         ['MeleeMit'] = {
-            "Impede",
-            -- "Withstand",
-            "Defy",
-            "Renounce",
-            "Reprove",
-            "Repel",
-            "Spurn",
-            "Thwart",
-            "Repudiate",
-            "Gird",
+            "Impede",    -- Level 128
+            "Gird",      -- Level 123
+            "Repudiate", -- Level 118
+            "Thwart",    -- Level 113
+            "Spurn",     -- Level 108
+            "Repel",     -- Level 103
+            "Reprove",   -- Level 98
+            "Renounce",  -- Level 93
+            "Defy",      -- Level 88
+            -- "Withstand", -- Level 83
         },
         ['ArmorDisc'] = {
             --- Armor Timer 11
-            "Armor of Eminence",
-            "Armor of Avowal",
-            "Armor of the Forthright",
-            "Armor of Sincerity",
-            "Armor of Mercy",
-            "Armor of Ardency",
-            "Armor of Reverence",
-            "Armor of Zeal",
-            "Armor of Courage",
+            "Armor of Eminence",       -- Level 128
+            "Armor of Avowal",         -- Level 123
+            "Armor of the Forthright", -- Level 118
+            "Armor of Sincerity",      -- Level 113
+            "Armor of Mercy",          -- Level 108
+            "Armor of Ardency",        -- Level 103
+            "Armor of Reverence",      -- Level 98
+            "Armor of Zeal",           -- Level 93
+            "Armor of Courage",        -- Level 88
         },
         ['Undeadburn'] = {
-            "Holyforge Discipline",
+            "Holyforge Discipline", -- Level 55
         },
         ['Penitent'] = {
             -- Penitent Armor Discipline Timer 11
-            "Avowed Penitence",
-            "Fervent Penitence",
-            "Reverent Penitence",
-            "Devout Penitence",
-            "Merciful Penitence",
-            "Sincere Penitence",
+            "Avowed Penitence",   -- Level 122
+            "Fervent Penitence",  -- Level 117
+            "Sincere Penitence",  -- Level 112
+            "Merciful Penitence", -- Level 107
+            "Devout Penitence",   -- Level 102
+            "Reverent Penitence", -- Level 97
         },
         ['Mantle'] = {
-            "Mantle of Eminence",
-            "Supernal Mantle",
-            "Mantle of the Sapphire Cohort",
-            "Kar`Zok Mantle",
-            "Skalber Mantle",
-            "Brightwing Mantle",
-            "Prominent Mantle",
-            "Exalted Mantle",
-            "Honorific Mantle",
-            "Armor of Decorum",
-            "Armor of Righteousness",
-            "Guard of Righteousness",
-            "Guard of Humility",
-            "Guard of Piety",
+            "Mantle of Eminence",            -- Level 128
+            "Supernal Mantle",               -- Level 118
+            "Mantle of the Sapphire Cohort", -- Level 113
+            "Kar`Zok Mantle",                -- Level 108
+            "Skalber Mantle",                -- Level 103
+            "Brightwing Mantle",             -- Level 98
+            "Prominent Mantle",              -- Level 93
+            "Exalted Mantle",                -- Level 88
+            "Honorific Mantle",              -- Level 83
+            "Armor of Decorum",              -- Level 78
+            "Armor of Righteousness",        -- Level 73
+            "Guard of Righteousness",        -- Level 69
+            "Guard of Humility",             -- Level 61
+            "Guard of Piety",                -- Level 56
         },
         ['Guardian'] = {
-            "Holy Guardian Discipline IV",
-            "Revered Guardian Discipline",
-            "Blessed Guardian Discipline",
-            "Holy Guardian Discipline",
+            "Holy Guardian Discipline IV", -- Level 127
+            "Revered Guardian Discipline", -- Level 117
+            "Blessed Guardian Discipline", -- Level 107
+            "Holy Guardian Discipline",    -- Level 97
         },
         ['Spellblock'] = {
-            "Sanctification Discipline",
+            "Sanctification Discipline", -- Level 60
         },
         ['Deflection'] = {
-            'Deflection Discipline',
         },
         ['ReflexStrike'] = {
             --- Reflexive Strike Heal
-            "Reflexive Resolution",
-            "Reflexive Redemption",
-            "Reflexive Righteousness",
-            "Reflexive Reverence",
+            "Reflexive Resolution",    -- Level 121
+            "Reflexive Redemption",    -- Level 111
+            "Reflexive Reverence",     -- Level 105
+            "Reflexive Righteousness", -- Level 100
         },
         ['RezSpell'] = {
-            'Resurrection',
-            'Restoration',
-            'Renewal',
-            'Revive',
-            'Reparation',
-            'Reconstitution',
-            'Reanimation',
         },
     },
     ['AASets']            = {

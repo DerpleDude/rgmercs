@@ -70,582 +70,582 @@ return {
     },
     ['AbilitySets']   = {
         ['AllianceSpell'] = {
-            "Frostbound Covariance",
-            "Frostbound Conjunction",
-            "Frostbound Coalition",
-            "Frostbound Covenant",
-            "Frostbound Alliance",
+            "Frostbound Covariance",  -- Level 122
+            "Frostbound Conjunction", -- Level 117
+            "Frostbound Coalition",   -- Level 112
+            "Frostbound Covenant",    -- Level 107
+            "Frostbound Alliance",    -- Level 102
         },
         -- ['DichoSpell'] = {
-        --     "Reciprocal Fire",
-        --     "Ecliptic Fire",
-        --     "Composite Fire",
-        --     "Dissident Fire",
-        --     "Dichotomic Fire",
+        --     "Reciprocal Fire", -- Level 121
+        --     "Ecliptic Fire",   -- Level 116
+        --     "Composite Fire",  -- Level 111
+        --     "Dissident Fire",  -- Level 106
+        --     "Dichotomic Fire", -- Level 101
         -- },
         ['IceClaw'] = {
-            "Claw of Tsikut",
-            "Claw of the Void",
-            "Claw of Gozzrem",
-            "Claw of Travenro",
-            "Claw of the Oceanlord",
-            "Claw of the Icewing",
-            "Claw of the Abyss",
-            "Glacial Claw",
-            "Claw of Selig",
-            "Claw of Selay",
-            "Claw of Vox",
-            "Claw of Frost",
-            "Claw of Ankexfen",
+            "Claw of Tsikut",        -- Level 130
+            "Claw of Ankexfen",      -- Level 125
+            "Claw of the Void",      -- Level 120
+            "Claw of Gozzrem",       -- Level 115
+            "Claw of Travenro",      -- Level 110
+            "Claw of the Oceanlord", -- Level 105
+            "Claw of the Icewing",   -- Level 100
+            "Claw of the Abyss",     -- Level 95
+            "Glacial Claw",          -- Level 90
+            "Claw of Selig",         -- Level 80
+            "Claw of Selay",         -- Level 75
+            "Claw of Vox",           -- Level 69
+            "Claw of Frost",         -- Level 61
         },
         ['FireClaw'] = {
-            "Claw of Ashenback",
-            "Claw of Ingot",
-            "Claw of the Duskflame",
-            "Claw of Sontalak",
-            "Claw of Qunard",
-            "Claw of the Flameweaver",
-            "Claw of the Flamewing",
-            "Villification of Havoc", --54s recast but same timer and purpose.
-            "Denunciation of Havoc",
-            "Malediction of Havoc",
+            "Claw of Ashenback",       -- Level 128
+            "Claw of Ingot",           -- Level 123
+            "Claw of the Duskflame",   -- Level 118
+            "Claw of Sontalak",        -- Level 113
+            "Claw of Qunard",          -- Level 108
+            "Claw of the Flameweaver", -- Level 103
+            "Claw of the Flamewing",   -- Level 98
+            "Villification of Havoc",  -- Level 94, 54s recast but same timer and purpose.
+            "Denunciation of Havoc",   -- Level 89
+            "Malediction of Havoc",    -- Level 84
         },
         ['MagicClaw'] = {
-            "Claw of Windshear",
-            "Claw of Itzal",
-            "Claw of Feshlak",
-            "Claw of Ellarr",
-            "Claw of the Indagatori",
-            "Claw of the Ashwing",
-            "Claw of the Battleforged",
+            "Claw of Windshear",        -- Level 126
+            "Claw of the Battleforged", -- Level 121
+            "Claw of Itzal",            -- Level 116
+            "Claw of Feshlak",          -- Level 111
+            "Claw of Ellarr",           -- Level 106
+            "Claw of the Indagatori",   -- Level 101
+            "Claw of the Ashwing",      -- Level 96
         },
         ['CloudburstNuke'] = {
-            "Cloudburst Strike XII",
-            "Cloudburst Lightningstrike",
-            "Cloudburst Joltstrike",
-            "Cloudburst Stormbolt",
-            "Cloudburst Thunderbolt",
-            "Cloudburst Stormstrike",
-            "Cloudburst Thunderbolt",
-            "Cloudburst Tempest",
-            "Cloudburst Storm",
-            "Cloudburst Levin",
-            "Cloudburst Bolts",
-            "Cloudburst Strike",
+            "Cloudburst Strike XII",      -- Level 127
+            "Cloudburst Lightningstrike", -- Level 122
+            "Cloudburst Joltstrike",      -- Level 117
+            "Cloudburst Stormbolt",       -- Level 112
+            "Cloudburst Stormstrike",     -- Level 102
+            "Cloudburst Thunderbolt",     -- Level 97
+            "Cloudburst Thunderbolt",     -- Level 97
+            "Cloudburst Tempest",         -- Level 92
+            "Cloudburst Storm",           -- Level 87
+            "Cloudburst Levin",           -- Level 82
+            "Cloudburst Bolts",           -- Level 77
+            "Cloudburst Strike",          -- Level 72
         },
         ['FuseNuke'] = {
-            "Ethereal Weave VII",
-            "Ethereal Twist",
-            "Ethereal Confluence",
-            "Ethereal Braid",
-            "Ethereal Fuse",
-            "Ethereal Weave",
-            "Ethereal Plait",
+            "Ethereal Weave VII",  -- Level 130
+            "Ethereal Plait",      -- Level 125
+            "Ethereal Twist",      -- Level 120
+            "Ethereal Confluence", -- Level 115
+            "Ethereal Braid",      -- Level 110
+            "Ethereal Fuse",       -- Level 105
+            "Ethereal Weave",      -- Level 100
         },
         ['FireEtherealNuke'] = {
-            "Ether Fire XIII",
-            "Ethereal Immolation",
-            "Ethereal Ignition",
-            "Ethereal Brand",
-            "Ethereal Skyfire",
-            "Ethereal Skyblaze",
-            "Ethereal Incandescence",
-            "Ethereal Blaze",
-            "Ethereal Inferno",
-            "Ethereal Combustion",
-            "Ethereal Incineration",
-            "Ethereal Conflagration",
-            "Ether Flame",
+            "Ethereal Fire XIII",     -- Level 130
+            "Ethereal Immolation",    -- Level 125
+            "Ethereal Ignition",      -- Level 120
+            "Ethereal Brand",         -- Level 115
+            "Ethereal Skyfire",       -- Level 110
+            "Ethereal Skyblaze",      -- Level 105
+            "Ethereal Incandescence", -- Level 100
+            "Ethereal Blaze",         -- Level 95
+            "Ethereal Inferno",       -- Level 90
+            "Ethereal Combustion",    -- Level 85
+            "Ethereal Incineration",  -- Level 80
+            "Ethereal Conflagration", -- Level 75
+            "Ether Flame",            -- Level 70
         },
         ['IceEtherealNuke'] = {
-            "Ethereal Ice XI",
-            "Lunar Ice Comet",
-            "Restless Ice Comet",
-            "Ethereal Icefloe",
-            "Ethereal Rimeblast",
-            "Ethereal Hoarfrost",
-            "Ethereal Frost",
-            "Ethereal Glaciation",
-            "Ethereal Iceblight",
-            "Ethereal Rime",
-            "Ethereal Freeze",
+            "Ethereal Ice XI",     -- Level 129
+            "Ethereal Freeze",     -- Level 124
+            "Lunar Ice Comet",     -- Level 119
+            "Restless Ice Comet",  -- Level 114
+            "Ethereal Icefloe",    -- Level 109
+            "Ethereal Rimeblast",  -- Level 104
+            "Ethereal Hoarfrost",  -- Level 99
+            "Ethereal Frost",      -- Level 94
+            "Ethereal Glaciation", -- Level 89
+            "Ethereal Iceblight",  -- Level 84
+            "Ethereal Rime",       -- Level 79
         },
         ['MagicEtherealNuke'] = {
-            "Ethereal Barrage VIII",
-            "Ethereal Mortar",
-            "Ethereal Blast",
-            "Ethereal Volley",
-            "Ethereal Flash",
-            "Ethereal Salvo",
-            "Ethereal Barrage",
-            "Ethereal Blitz",
+            "Ethereal Barrage VIII", -- Level 127
+            "Ethereal Blitz",        -- Level 122
+            "Ethereal Mortar",       -- Level 117
+            "Ethereal Blast",        -- Level 112
+            "Ethereal Volley",       -- Level 107
+            "Ethereal Flash",        -- Level 102
+            "Ethereal Salvo",        -- Level 97
+            "Ethereal Barrage",      -- Level 92
         },
         ['ChaosNuke'] = {
-            "Chaos Flame XIII",
-            "Chaos Inferno",
-            "Chaos Burn",
-            "Chaos Scintillation",
-            "Chaos Incandescence",
-            "Chaos Blaze",
-            "Chaos Char",
-            "Chaos Combustion",
-            "Chaos Conflagration",
-            "Chaos Immolation",
-            "Chaos Flame",
+            "Chaos Flame XIII",    -- Level 128
+            "Chaos Inferno",       -- Level 113
+            "Chaos Burn",          -- Level 108
+            "Chaos Scintillation", -- Level 103
+            "Chaos Incandescence", -- Level 99
+            "Chaos Blaze",         -- Level 94
+            "Chaos Char",          -- Level 89
+            "Chaos Combustion",    -- Level 84
+            "Chaos Conflagration", -- Level 79
+            "Chaos Immolation",    -- Level 74
+            "Chaos Flame",         -- Level 70
         },
         ['VortexNuke'] = {
             -- NOTE: ${Spell[${VortexNuke}].ResistType} can be used to determine which resist type is getting debuffed
-            "Chromospheric Vortex",
-            "Shadebright Vortex",
-            "Thaumaturgic Vortex",
-            "Stormjolt Vortex",
-            "Shocking Vortex",
+            "Chromospheric Vortex", -- Level 123
+            "Shadebright Vortex",   -- Level 118
+            "Thaumaturgic Vortex",  -- Level 113
+            "Stormjolt Vortex",     -- Level 108
+            "Shocking Vortex",      -- Level 103
             -- Hoarfrost Vortex has a Fire Debuff
-            "Hoarfrost Vortex",
+            "Hoarfrost Vortex",     -- Level 100
             -- Ether Vortex has a Cold Debuff
-            "Ether Vortex",
+            "Ether Vortex",         -- Level 98
             -- Incandescent Vortex has a Magic Debuff
-            "Incandescent Vortex",
+            "Incandescent Vortex",  -- Level 96
             -- Frost Vortex has a Fire Debuff
-            "Frost Vortex",
+            "Frost Vortex",         -- Level 95
             -- Power Vortex has a Cold Debuff
-            "Power Vortex",
+            "Power Vortex",         -- Level 93
             -- Flame Vortex has a Magic Debuff
-            "Flame Vortex",
+            "Flame Vortex",         -- Level 91
             -- Ice Vortex has a Fire Debuff
-            "Ice Vortex",
+            "Ice Vortex",           -- Level 90
             -- Mana Vortex has a Cold Debuff
-            "Mana Vortex",
+            "Mana Vortex",          -- Level 88
             -- Fire Vortex has a Magic Debuff
-            "Fire Vortex",
+            "Fire Vortex",          -- Level 86
         },
         ['WildNuke'] = {
-            "Wildmagic Strike XII",
-            "Wildspell Strike",
-            "Wildflame Strike",
-            "Wildscorch Strike",
-            "Wildflash Strike",
-            "Wildflash Barrage",
-            "Wildether Barrage",
-            "Wildspark Barrage",
-            "Wildmana Barrage",
-            "Wildmagic Blast",
-            "Wildmagic Burst",
-            "Wildmagic Strike",
+            "Wildmagic Strike XII", -- Level 126
+            "Wildspell Strike",     -- Level 121
+            "Wildflame Strike",     -- Level 116
+            "Wildscorch Strike",    -- Level 111
+            "Wildflash Strike",     -- Level 106
+            "Wildflash Barrage",    -- Level 101
+            "Wildether Barrage",    -- Level 96
+            "Wildspark Barrage",    -- Level 91
+            "Wildmana Barrage",     -- Level 86
+            "Wildmagic Blast",      -- Level 81
+            "Wildmagic Burst",      -- Level 76
+            "Wildmagic Strike",     -- Level 71
         },
         ['WildNuke2'] = {
-            "Wildmagic Strike XII",
-            "Wildspell Strike",
-            "Wildflame Strike",
-            "Wildscorch Strike",
-            "Wildflash Strike",
-            "Wildflash Barrage",
-            "Wildether Barrage",
-            "Wildspark Barrage",
-            "Wildmana Barrage",
-            "Wildmagic Blast",
-            "Wildmagic Burst",
-            "Wildmagic Strike",
+            "Wildmagic Strike XII", -- Level 126
+            "Wildspell Strike",     -- Level 121
+            "Wildflame Strike",     -- Level 116
+            "Wildscorch Strike",    -- Level 111
+            "Wildflash Strike",     -- Level 106
+            "Wildflash Barrage",    -- Level 101
+            "Wildether Barrage",    -- Level 96
+            "Wildspark Barrage",    -- Level 91
+            "Wildmana Barrage",     -- Level 86
+            "Wildmagic Blast",      -- Level 81
+            "Wildmagic Burst",      -- Level 76
+            "Wildmagic Strike",     -- Level 71
         },
         ['FireNuke'] = {
-            "Teknaz's Fire",
-            "Kindleheart's Fire",
-            "The Diabo's Fire",
-            "Dagarn's Fire",
-            "Dragoflux's Fire",
-            "Narendi's Fire",
-            "Gosik's Fire",
-            "Daevan's Fire",
-            "Lithara's Fire",
-            "Klixcxyk's Fire",
-            "Inizen's Fire",
-            "Sothgar's Flame",
+            "Teknaz's Fire",                 -- Level 130
+            "Kindleheart's Fire",            -- Level 125
+            "The Diabo's Fire",              -- Level 120
+            "Dagarn's Fire",                 -- Level 115
+            "Dragoflux's Fire",              -- Level 110
+            "Narendi's Fire",                -- Level 105
+            "Gosik's Fire",                  -- Level 100
+            "Daevan's Fire",                 -- Level 95
+            "Lithara's Fire",                -- Level 90
+            "Klixcxyk's Fire",               -- Level 85
+            "Inizen's Fire",                 -- Level 80
+            "Sothgar's Flame",               -- Level 75
             --Not used above this
-            "Spark of Fire",
-            "Draught of Ro",
-            "Draught of Fire",
-            "Conflagration",
-            "Inferno Shock",
-            "Flame Shock",
-            "Fire Bolt",
-            "Shock of Fire",
+            "Spark of Fire",                 -- Level 66
+            "Draught of Ro",                 -- Level 62
+            "Draught of Fire",               -- Level 51
+            "Conflagration",                 -- Level 43
+            "Inferno Shock",                 -- Level 26
+            "Flame Shock",                   -- Level 15
+            "Fire Bolt",                     -- Level 5
+            "Shock of Fire",                 -- Level 4
         },
-        ['BigFireNuke'] = { -- Level 51-70, Long Cast, Heavy Damage
-            "Ancient: Core Fire",
-            "Corona Flare",
-            "Ancient: Strike of Chaos",
-            "White Fire",
-            "Strike of Solusek",
-            "Garrison's Superior Sundering",
-            "Sunstrike",
+        ['BigFireNuke'] = {                  -- Level 51-70, Long Cast, Heavy Damage
+            "Ancient: Core Fire",            -- Level 70
+            "Corona Flare",                  -- Level 70
+            "Ancient: Strike of Chaos",      -- Level 65
+            "White Fire",                    -- Level 65
+            "Strike of Solusek",             -- Level 65
+            "Garrison's Superior Sundering", -- Level 60
+            "Sunstrike",                     -- Level 60
         },
         ['IceNuke'] = {
-            "Glacial Cascade XII",
-            "Glacial Ice Cascade",
-            "Tundra Ice Cascade",
-            "Restless Ice Cascade",
-            "Icefloe Cascade",
-            "Rimeblast Cascade",
-            "Hoarfrost Cascade",
-            "Rime Cascade",
-            "Glacial Cascade",
-            "Icesheet Cascade",
-            "Glacial Collapse",
-            "Icefall Avalanche",
-            "Spark of Ice",
-            "Black Ice",
-            "Draught of E`ci",
-            "Draught of Ice",
-            "Ice Comet",
-            "Ice Shock",
-            "Frost Shock",
-            "Shock of Ice",
-            "Blast of Cold",
+            "Glacial Cascade XII",         -- Level 129
+            "Glacial Ice Cascade",         -- Level 124
+            "Tundra Ice Cascade",          -- Level 119
+            "Restless Ice Cascade",        -- Level 114
+            "Icefloe Cascade",             -- Level 109
+            "Rimeblast Cascade",           -- Level 104
+            "Hoarfrost Cascade",           -- Level 99
+            "Rime Cascade",                -- Level 94
+            "Glacial Cascade",             -- Level 89
+            "Icesheet Cascade",            -- Level 84
+            "Glacial Collapse",            -- Level 79
+            "Icefall Avalanche",           -- Level 74
+            "Spark of Ice",                -- Level 69
+            "Black Ice",                   -- Level 65
+            "Draught of E`ci",             -- Level 64
+            "Draught of Ice",              -- Level 57
+            "Ice Comet",                   -- Level 49
+            "Ice Shock",                   -- Level 34
+            "Frost Shock",                 -- Level 24
+            "Shock of Ice",                -- Level 8
+            "Blast of Cold",               -- Level 1
         },
-        ['BigIceNuke'] = { -- Level 60-70, Timed with great Ratio or High Cast Time/Damage
-            "Gelidin Comet",
-            "Ice Meteor",
-            "Ancient: Destruction of Ice", --13s T1
-            "Ice Spear of Solist",         --13s T2
+        ['BigIceNuke'] = {                 -- Level 60-70, Timed with great Ratio or High Cast Time/Damage
+            "Gelidin Comet",               -- Level 69
+            "Ice Meteor",                  -- Level 64
+            "Ancient: Destruction of Ice", -- Level 60, 13s T1
+            "Ice Spear of Solist",         -- Level 60, 13s T2
         },
         ['MagicNuke'] = {
-            "Lightning Helix XII",
-            "Lightning Cyclone",
-            "Lightning Maelstrom",
-            "Lightning Roar",
-            "Lightning Tempest",
-            "Lightning Storm",
-            "Lightning Squall",
-            "Lightning Swarm",
-            "Lightning Helix",
-            "Ribbon Lightning",
-            "Rolling Lightning",
-            "Ball Lightning",
-            "Spark of Lightning",
-            "Draught of Lightning",
-            "Voltaic Draught",
-            "Rend",
-            "Lightning Shock",
-            "Garrison's Mighty Mana Shock",
-            "Shock of Lightning",
+            "Lightning Helix XII",           -- Level 128
+            "Lightning Cyclone",             -- Level 123
+            "Lightning Maelstrom",           -- Level 118
+            "Lightning Roar",                -- Level 113
+            "Lightning Tempest",             -- Level 108
+            "Lightning Squall",              -- Level 98
+            "Lightning Swarm",               -- Level 93
+            "Lightning Helix",               -- Level 88
+            "Ribbon Lightning",              -- Level 83
+            "Rolling Lightning",             -- Level 78
+            "Ball Lightning",                -- Level 73
+            "Spark of Lightning",            -- Level 68
+            "Draught of Lightning",          -- Level 63
+            "Voltaic Draught",               -- Level 54
+            "Rend",                          -- Level 47
+            "Lightning Shock",               -- Level 37
+            "Lightning Storm",               -- Level 23
+            "Garrison's Mighty Mana Shock",  -- Level 18
+            "Shock of Lightning",            -- Level 10
         },
-        ['BigMagicNuke'] = { -- Level 60-68, High Cast Time/Damage
-            "Thundaka",
-            "Shock of Magic",
-            "Agnarr's Thunder",
-            "Elnerick's Electrical Rending",
+        ['BigMagicNuke'] = {                 -- Level 60-68, High Cast Time/Damage
+            "Thundaka",                      -- Level 68
+            "Shock of Magic",                -- Level 65
+            "Agnarr's Thunder",              -- Level 63
+            "Elnerick's Electrical Rending", -- Level 60
         },
         ['StunSpell'] = {
-            "Telaka XIX",
-            "Teladaka",
-            "Teladaja",
-            "Telajaga",
-            "Telanata",
-            "Telanara",
-            "Telanaga",
-            "Telanama",
-            "Telakama",
-            "Telajara",
-            "Telajasz",
-            "Telakisz",
-            "Telekara",
-            "Telaka",
-            "Telekin",
-            "Markar's Discord",
-            "Markar's Clash",
-            "Tishan's Clash",
+            "Telaka XIX",       -- Level 130
+            "Teladaka",         -- Level 125
+            "Teladaja",         -- Level 120
+            "Telajaga",         -- Level 115
+            "Telanata",         -- Level 110
+            "Telanara",         -- Level 105
+            "Telanaga",         -- Level 100
+            "Telanama",         -- Level 95
+            "Telakama",         -- Level 90
+            "Telajara",         -- Level 85
+            "Telajasz",         -- Level 80
+            "Telakisz",         -- Level 75
+            "Telekara",         -- Level 70
+            "Telaka",           -- Level 65
+            "Telekin",          -- Level 64
+            "Markar's Discord", -- Level 56
+            "Markar's Clash",   -- Level 47
+            "Tishan's Clash",   -- Level 19
         },
         ['SelfHPBuff'] = {
-            "Shielding XXIII",
-            "Shield of Memories",
-            "Shield of Shadow",
-            "Shield of Restless Ice",
-            "Shield of Scales",
-            "Shield of the Pellarus",
-            "Shield of the Dauntless",
-            "Shield of Bronze",
-            "Shield of Dreams",
-            "Shield of the Void",
-            "Bulwark of the Crystalwing",
-            "Shield of the Crystalwing",
-            "Ether Shield",
-            "Shield of Maelin",
-            "Shield of the Arcane",
-            "Shield of the Magi",
-            "Arch Shielding",
-            "Greater Shielding",
-            "Major Shielding",
-            "Shielding",
-            "Lesser Shielding",
-            "Minor Shielding",
+            "Shielding XXIII",            -- Level 126
+            "Shield of Memories",         -- Level 121
+            "Shield of Shadow",           -- Level 116
+            "Shield of Restless Ice",     -- Level 111
+            "Shield of Scales",           -- Level 106
+            "Shield of the Pellarus",     -- Level 101
+            "Shield of the Dauntless",    -- Level 96
+            "Shield of Bronze",           -- Level 91
+            "Shield of Dreams",           -- Level 86
+            "Shield of the Void",         -- Level 81
+            "Bulwark of the Crystalwing", -- Level 76
+            "Shield of the Crystalwing",  -- Level 71
+            "Ether Shield",               -- Level 66
+            "Shield of Maelin",           -- Level 64
+            "Shield of the Arcane",       -- Level 61
+            "Shield of the Magi",         -- Level 54
+            "Arch Shielding",             -- Level 44
+            "Greater Shielding",          -- Level 33
+            "Major Shielding",            -- Level 23
+            "Shielding",                  -- Level 15
+            "Lesser Shielding",           -- Level 6
+            "Minor Shielding",            -- Level 1
         },
         ['SelfSpellShield1'] = {
-            "Shield of Fate VII",
-            "Shield of Inescapability",
-            "Shield of Inevitability",
-            "Shield of Destiny",
-            "Shield of Order",
-            "Shield of Consequence",
-            "Shield of Fate",
+            "Shield of Fate VII",       -- Level 127
+            "Shield of Inescapability", -- Level 122
+            "Shield of Inevitability",  -- Level 117
+            "Shield of Destiny",        -- Level 112
+            "Shield of Order",          -- Level 107
+            "Shield of Consequence",    -- Level 102
+            "Shield of Fate",           -- Level 97
         },
         ['FamiliarBuff'] = {
-            "Greater Familiar",
-            "Familiar",
-            "Lesser Familiar",
-            "Minor Familiar",
+            "Greater Familiar", -- Level 60
+            "Familiar",         -- Level 54
+            "Lesser Familiar",  -- Level 45
+            "Minor Familiar",   -- Level 25
         },
         ['SelfRune1'] = {
-            "Aegis of Feish",
-            "Aegis of Remembrance",
-            "Aegis of the Umbra",
-            "Aegis of the Crystalwing",
-            "Armor of Wirn",
-            "Armor of the Codex",
-            "Armor of the Stonescale",
-            "Armor of the Crystalwing",
-            "Dermis of the Crystalwing",
-            "Squamae of the Crystalwing",
-            "Laminae of the Crystalwing",
-            "Scales of the Crystalwing",
-            "Ether Skin",
-            "Force Shield",
+            "Aegis of Feish",             -- Level 126
+            "Aegis of Remembrance",       -- Level 121
+            "Aegis of the Umbra",         -- Level 116
+            "Aegis of the Crystalwing",   -- Level 113
+            "Armor of Wirn",              -- Level 108
+            "Armor of the Codex",         -- Level 103
+            "Armor of the Stonescale",    -- Level 98
+            "Armor of the Crystalwing",   -- Level 93
+            "Dermis of the Crystalwing",  -- Level 88
+            "Squamae of the Crystalwing", -- Level 83
+            "Laminae of the Crystalwing", -- Level 78
+            "Scales of the Crystalwing",  -- Level 73
+            "Ether Skin",                 -- Level 68
+            "Force Shield",               -- Level 63
         },
         ['Dispel'] = {
-            "Annul Magic",
-            "Nullify Magic",
-            "Cancel Magic",
+            "Annul Magic",   -- Level 53
+            "Nullify Magic", -- Level 34
+            "Cancel Magic",  -- Level 11
         },
         ['TwincastSpell'] = {
-            "Twincast",
+            "Twincast", -- Level 85
         },
         ['GambitSpell'] = {
-            "Contemplative Gambit",
-            "Anodyne Gambit",
-            "Idyllic Gambit",
-            "Musing Gambit",
-            "Quiescent Gambit",
-            "Bucolic Gambit",
+            "Contemplative Gambit", -- Level 125
+            "Anodyne Gambit",       -- Level 120
+            "Idyllic Gambit",       -- Level 115
+            "Musing Gambit",        -- Level 110
+            "Quiescent Gambit",     -- Level 104
+            "Bucolic Gambit",       -- Level 99
         },
         ['PetSpell'] = {
-            "Kindleheart's Pyroblade",
-            "Diabo Xi Fer's Pyroblade",
-            "Ricartine's Pyroblade",
-            "Virnax's Pyroblade",
-            "Yulin's Pyroblade",
-            "Mul's Pyroblade",
-            "Burnmaster's Pyroblade",
-            "Lithara's Pyroblade",
-            "Daveron's Pyroblade",
-            "Euthanos' Flameblade",
-            "Ethantis's Burning Blade",
-            "Solist's Frozen Sword",
-            "Flaming Sword of Xuzl",
+            "Kindleheart's Pyroblade",  -- Level 124
+            "Diabo Xi Fer's Pyroblade", -- Level 119
+            "Ricartine's Pyroblade",    -- Level 114
+            "Virnax's Pyroblade",       -- Level 109
+            "Yulin's Pyroblade",        -- Level 104
+            "Mul's Pyroblade",          -- Level 99
+            "Burnmaster's Pyroblade",   -- Level 94
+            "Lithara's Pyroblade",      -- Level 89
+            "Daveron's Pyroblade",      -- Level 84
+            "Euthanos' Flameblade",     -- Level 79
+            "Ethantis's Burning Blade", -- Level 74
+            "Solist's Frozen Sword",    -- Level 69
+            "Flaming Sword of Xuzl",    -- Level 59
         },
         ['RootSpell'] = {
-            "Greater Fetter",
-            "Fetter",
-            "Paralyzing Earth",
-            "Immobilize",
-            "Instill",
-            "Root",
+            "Greater Fetter",   -- Level 61
+            "Fetter",           -- Level 58
+            "Paralyzing Earth", -- Level 48
+            "Immobilize",       -- Level 39
+            "Instill",          -- Level 17
+            "Root",             -- Level 3
         },
         ['SnareSpell'] = {
-            "Atol's Concussive Shackles",
-            "Atol's Spectral Shackles",
-            "Bonds of Force",
+            "Atol's Concussive Shackles", -- Level 93
+            "Atol's Spectral Shackles",   -- Level 51
+            "Bonds of Force",             -- Level 27
         },
         ['EvacSpell'] = {
-            "Evacuate",
-            "Lesser Evacuate",
+            "Evacuate",        -- Level 57
+            "Lesser Evacuate", -- Level 18
         },
         ['HarvestSpell'] = {
-            "Harvest XIII",
-            "Contemplative Harvest",
-            "Shadow Harvest",
-            "Quiet Harvest",
-            "Musing Harvest",
-            "Quiescent Harvest",
-            "Bucolic Harvest",
-            "Placid Harvest",
-            "Soothing Harvest",
-            "Serene Harvest",
-            "Tranquil Harvest",
-            "Patient Harvest",
-            "Harvest",
+            "Harvest XIII",          -- Level 127
+            "Contemplative Harvest", -- Level 122
+            "Shadow Harvest",        -- Level 117
+            "Quiet Harvest",         -- Level 112
+            "Musing Harvest",        -- Level 107
+            "Quiescent Harvest",     -- Level 102
+            "Bucolic Harvest",       -- Level 97
+            "Placid Harvest",        -- Level 92
+            "Soothing Harvest",      -- Level 87
+            "Serene Harvest",        -- Level 82
+            "Tranquil Harvest",      -- Level 77
+            "Patient Harvest",       -- Level 72
+            "Harvest",               -- Level 32
         },
         ['JoltSpell'] = {
-            "Mindfreeze X",
-            "Spinalfreeze",
-            "Cerebrumfreeze",
-            "Neurofreeze",
-            "Cortexfreeze",
-            "Synapsefreeze",
-            "Skullfreeze",
-            "Thoughtfreeze",
-            "Brainfreeze",
-            "Mindfreeze",
-            "Concussive Flash",
-            "Concussive Burst",
-            "Concussive Blast",
-            "Ancient: Greater Concussion",
-            "Concussion",
+            "Mindfreeze X",                -- Level 127
+            "Spinalfreeze",                -- Level 122
+            "Cerebrumfreeze",              -- Level 117
+            "Neurofreeze",                 -- Level 112
+            "Cortexfreeze",                -- Level 107
+            "Synapsefreeze",               -- Level 102
+            "Skullfreeze",                 -- Level 97
+            "Thoughtfreeze",               -- Level 92
+            "Brainfreeze",                 -- Level 87
+            "Mindfreeze",                  -- Level 82
+            "Concussive Flash",            -- Level 81
+            "Concussive Burst",            -- Level 76
+            "Concussive Blast",            -- Level 71
+            "Ancient: Greater Concussion", -- Level 60
+            "Concussion",                  -- Level 37
         },
         -- Lure Spells
         ['IceLureNuke'] = {
-            "Lure of Frost",
-            "Lure of Ice",
-            "Icebane",
-            "Rimelure",
-            "Voidfrost Lure",
-            "Glacial Lure",
-            "Frigid Lure",
-            "Lure of Isaz",
-            "Lure of the Wastes",
-            "Lure of the Depths",
-            "Lure of Travenro",
-            "Lure of Restless Ice",
-            "Lure of the Cold Moon",
-            "Lure of Winter Memories",
+            "Lure of Winter Memories", -- Level 121
+            "Lure of the Cold Moon",   -- Level 116
+            "Lure of Restless Ice",    -- Level 111
+            "Lure of Travenro",        -- Level 106
+            "Lure of the Depths",      -- Level 101
+            "Lure of the Wastes",      -- Level 96
+            "Frigid Lure",             -- Level 91
+            "Glacial Lure",            -- Level 86
+            "Voidfrost Lure",          -- Level 81
+            "Lure of Isaz",            -- Level 76
+            "Rimelure",                -- Level 71
+            "Icebane",                 -- Level 66
+            "Lure of Ice",             -- Level 60
+            "Lure of Frost",           -- Level 52
         },
         ['FireLureNuke'] = {
-            "Enticement of Flame",
-            "Lure of Flame",
-            "Lure of Ro",
-            "Firebane",
-            "Lavalure",
-            "Pyrolure",
-            "Flarelure",
-            "Flamelure",
-            "Blazelure",
-            "MagmaLure",
-            "PlasmaLure",
-            "Lure of Qunard",
-            "Lure of Sontalak",
-            "Lure of Fyrthek",
-            "Lure of the Arcanaforged",
+            "Lure of the Arcanaforged", -- Level 123
+            "Lure of Fyrthek",          -- Level 118
+            "Lure of Sontalak",         -- Level 113
+            "Lure of Qunard",           -- Level 108
+            "PlasmaLure",               -- Level 103
+            "MagmaLure",                -- Level 98
+            "Blazelure",                -- Level 93
+            "Flamelure",                -- Level 88
+            "Flarelure",                -- Level 83
+            "Pyrolure",                 -- Level 78
+            "Lavalure",                 -- Level 73
+            "Firebane",                 -- Level 68
+            "Lure of Ro",               -- Level 62
+            "Lure of Flame",            -- Level 55
+            "Enticement of Flame",      -- Level 44
         },
         ['MagicLureNuke'] = {
-            "Lure of Lightning",
-            "Lure of Thunder",
-            "Lightningbane",
-            "Permeating Ether",
+            "Permeating Ether",  -- Level 97
+            "Lightningbane",     -- Level 67
+            "Lure of Thunder",   -- Level 61
+            "Lure of Lightning", -- Level 58
         },
         ['StunMagicNuke'] = {
-            "Leap of Lightning XIV",
-            "Leap of Stormjolts",
-            "Leap of Stormbolts",
-            "Leap of Static Sparks",
-            "Leap of Plasma",
-            "Leap of Corposantum",
-            "Leap of Static Jolts",
-            "Leap of Static Bolts",
-            "Leap of Sparks",
-            "Leap of Levinsparks",
-            "Leap of Shocking Bolts",
-            "Spark of Thunder",
-            "Draught of Thunder",
-            "Draught of Jiva",
-            "Force Strike",
-            "Thunder Strike",
-            "Force Snap",
-            "Lightning Bolt",
+            "Leap of Lightning XIV",  -- Level 129
+            "Leap of Levinsparks",    -- Level 117
+            "Leap of Stormjolts",     -- Level 107
+            "Leap of Stormbolts",     -- Level 102
+            "Leap of Static Sparks",  -- Level 97
+            "Leap of Plasma",         -- Level 92
+            "Leap of Corposantum",    -- Level 87
+            "Leap of Static Jolts",   -- Level 82
+            "Leap of Static Bolts",   -- Level 77
+            "Leap of Shocking Bolts", -- Level 73
+            "Leap of Sparks",         -- Level 72
+            "Spark of Thunder",       -- Level 68
+            "Draught of Thunder",     -- Level 63
+            "Draught of Jiva",        -- Level 55
+            "Force Strike",           -- Level 41
+            "Thunder Strike",         -- Level 28
+            "Force Snap",             -- Level 17
+            "Lightning Bolt",         -- Level 16
         },
         -- Rain Spells Listed here are used Primarily for TLP Mode.
         -- Magic Rain - Only have 3 of them so Not Sustainable.
         ['IceRain'] = {
-            "Frost Storm XVII",
-            "Icestrike",
-            "Frost Storm",
-            "Tears of Prexus",
-            "Tears of Marr",
-            "Gelid Rains",
-            "Icicle Deluge",
-            "Icicle Storm",
-            "Icicle Torrent",
-            "Hail Torrent",
-            "Frost Torrent",
-            "Tamagrist Torrent",
-            "Darkwater Torrent",
-            "Frostbite Torrent",
-            "Coldburst Torrent",
-            "Hypothermic Torrent",
-            "Rimeclaw Torrent",
+            "Frost Storm XVII",    -- Level 130
+            "Rimeclaw Torrent",    -- Level 125
+            "Hypothermic Torrent", -- Level 120
+            "Coldburst Torrent",   -- Level 115
+            "Frostbite Torrent",   -- Level 110
+            "Darkwater Torrent",   -- Level 105
+            "Tamagrist Torrent",   -- Level 100
+            "Frost Torrent",       -- Level 95
+            "Hail Torrent",        -- Level 90
+            "Icicle Torrent",      -- Level 85
+            "Icicle Storm",        -- Level 80
+            "Icicle Deluge",       -- Level 75
+            "Gelid Rains",         -- Level 70
+            "Tears of Marr",       -- Level 65
+            "Tears of Prexus",     -- Level 58
+            "Frost Storm",         -- Level 41
+            "Icestrike",           -- Level 6
         },
         ['FireRain'] = {
-            "Tears of Ashbark",
-            "Firestorm",
-            "Lava Storm",
-            "Tears of Solusek",
-            "Tears of Ro",
-            "Tears of the Sun",
-            "Tears of the Betrayed",
-            "Tears of the Forsaken",
-            "Tears of the Pyrilen",
-            "Tears of Flame",
-            "Tears of Daevan",
-            "Tears of Gosik",
-            "Tears of Narendi",
-            "Tears of Dragoflux",
-            "Tears of Wildfire",
-            "Tears of Night Fire",
-            "Tears of the Rescued",
+            "Tears of Ashbark",      -- Level 130
+            "Tears of the Rescued",  -- Level 125
+            "Tears of Night Fire",   -- Level 116
+            "Tears of Wildfire",     -- Level 111
+            "Tears of Dragoflux",    -- Level 106
+            "Tears of Narendi",      -- Level 101
+            "Tears of Gosik",        -- Level 96
+            "Tears of Daevan",       -- Level 91
+            "Tears of Flame",        -- Level 86
+            "Tears of the Pyrilen",  -- Level 81
+            "Tears of the Forsaken", -- Level 76
+            "Tears of the Betrayed", -- Level 71
+            "Tears of the Sun",      -- Level 66
+            "Tears of Ro",           -- Level 61
+            "Tears of Solusek",      -- Level 55
+            "Lava Storm",            -- Level 32
+            "Firestorm",             -- Level 12
         },
         ['FireLureRain'] = {
-            "Volcanic Eruption XIV",
-            "Volcanic Burst",
-            "Tears of Arlyxir",
-            "Meteor Storm",
-            "Volcanic Eruption",
-            "Pyroclastic Eruption",
-            "Magmatic Eruption",
-            "Magmatic Downpour",
-            "Magmatic Outburst",
-            "Magmatic Vent",
-            "Magmatic Burst",
-            "Magmatic Explosion",
-            "Volcanic Downpour",
-            "Volcanic Barrage",
+            "Volcanic Eruption XIV", -- Level 129
+            "Volcanic Burst",        -- Level 124
+            "Volcanic Barrage",      -- Level 119
+            "Volcanic Downpour",     -- Level 114
+            "Magmatic Explosion",    -- Level 109
+            "Magmatic Burst",        -- Level 104
+            "Magmatic Vent",         -- Level 99
+            "Magmatic Outburst",     -- Level 94
+            "Magmatic Downpour",     -- Level 89
+            "Magmatic Eruption",     -- Level 84
+            "Pyroclastic Eruption",  -- Level 79
+            "Volcanic Eruption",     -- Level 74
+            "Meteor Storm",          -- Level 69
+            "Tears of Arlyxir",      -- Level 64
         },
-        ['SnapNuke'] = {  -- T2 Ice ~8.5s recast (shared with Cloudburst)
-            "Cold Snap XII",
-            "Frostblast", -- Level 123
-            "Chillblast",
-            "Coldburst",
-            "Flashfrost",
-            "Flashrime",
-            "Flashfreeze",
-            "Frost Snap",
-            "Freezing Snap",
-            "Gelid Snap",
-            "Rime Snap",
-            "Cold Snap",      -- Level 73
+        ['SnapNuke'] = {             -- T2 Ice ~8.5s recast (shared with Cloudburst)
+            "Cold Snap XII",         -- Level 128
+            "Frostblast",            -- Level 123
+            "Chillblast",            -- Level 118
+            "Coldburst",             -- Level 113
+            "Flashfrost",            -- Level 108
+            "Flashrime",             -- Level 103
+            "Flashfreeze",           -- Level 98
+            "Frost Snap",            -- Level 93
+            "Freezing Snap",         -- Level 88
+            "Gelid Snap",            -- Level 83
+            "Rime Snap",             -- Level 78
+            "Cold Snap",             -- Level 73
         },
-        ['AEBeam'] = {        -- T2 Frontal Fire AE
-            "Coronoa Beam X",
-            "Cremating Beam", -- Level 121
-            "Vaporizing Beam",
-            "Scorching Beam",
-            "Burning Beam",
-            "Combusting Beam",
-            "Incinerating Beam",
-            "Blazing Beam",
-            "Corona Beam",      -- Level 86
-            "Beam of Solteris", -- Level 72
+        ['AEBeam'] = {               -- T2 Frontal Fire AE
+            "Corona Beam X",         -- Level 126
+            "Cremating Beam",        -- Level 121
+            "Vaporizing Beam",       -- Level 116
+            "Scorching Beam",        -- Level 111
+            "Burning Beam",          -- Level 106
+            "Combusting Beam",       -- Level 101
+            "Incinerating Beam",     -- Level 96
+            "Blazing Beam",          -- Level 91
+            "Corona Beam",           -- Level 86
+            "Beam of Solteris",      -- Level 72
         },
-        ['PBFlame'] = {         -- T4 PB Fire AE
-            "Ring of Fire XI",
-            "Gyre of Flame",    -- Level 122
-            "Coil of Flame",
-            "Loop of Flame",
-            "Wheel of Flame",
-            "Corona of Flame",
-            "Circle of Flame",
-            "Ring of Flame",
-            "Ring of Fire",
-            "Talendor's Presence",
-            "Vsorgu's Presence",
-            "Magmaraug's Presence",
-            --"Circle of Fire", -- Level 67 Used in PBAE Mode, wouldn't be used in Modern PBAE
+        ['PBFlame'] = {              -- T4 PB Fire AE
+            "Ring of Fire XI",       -- Level 127
+            "Gyre of Flame",         -- Level 122
+            "Coil of Flame",         -- Level 117
+            "Loop of Flame",         -- Level 112
+            "Wheel of Flame",        -- Level 107
+            "Corona of Flame",       -- Level 102
+            "Circle of Flame",       -- Level 97
+            "Ring of Flame",         -- Level 92
+            "Ring of Fire",          -- Level 87
+            "Talendor's Presence",   -- Level 82
+            "Vsorug's Presence",     -- Level 77
+            "Magmaraug's Presence",  -- Level 72
+            -- "Circle of Fire",    -- Level 67, Used in PBAE Mode, wouldn't be used in Modern PBAE
         },
         ['PBTimer4'] = {
             "Circle of Thunder", -- Level 70, Magic
@@ -658,7 +658,7 @@ return {
             "Jyll's Wave of Heat", -- Level 59
         },
         ['IceJyll'] = {
-            "Jyll's Zephyr of Iced", -- Level 56
+            "Jyll's Zephyr of Ice", -- Level 56
         },
         ['MagicJyll'] = {
             "Jyll's Static Pulse", -- Level 53

@@ -151,7 +151,7 @@ local _ClassConfig = {
             "Soul Shield",                -- Level 67
             "Soul Guard",                 -- Level 61
             "Ichor Guard",                -- Level 56 Timer 5
-            "Squire Guard",               -- Level 40
+            "Squire Guard",               -- Level 40 EQM Custom
         },
         ['BlockDisc'] = {
             "Deflection Discipline", -- Level 59
@@ -182,7 +182,7 @@ local _ClassConfig = {
         },
         ['Horror'] = {                 -- HP Tap Proc
             "Shroud of the Nightborn", -- Level 71
-            "Marrowthirst Horror",     -- Level 70 EQM Added
+            "Marrowthirst Horror",     -- Level 70
             "Shroud of Discord",       -- Level 67 Buff Slot 1 <
             "Black Shroud",            -- Level 65
             "Shroud of Chaos",         -- Level 63
@@ -226,7 +226,7 @@ local _ClassConfig = {
             "Spike of Disease", -- Level 1
         },
         ['BondTap'] = {
-            "Bond of the Blacktalon", -- Level 70 EQM Added
+            "Bond of the Blacktalon", -- Level 70
             "Bond of Inruku",         -- Level 66
             "Bond of Death",          -- Level 62
             "Vampiric Curse",         -- Level 57
@@ -281,13 +281,13 @@ local _ClassConfig = {
         -- },
         ['BiteTap'] = {
             "Ancient: Bite of Muram", -- Level 70
-            "Blacktalon Bite",        -- Level 70 EQM Added
+            "Blacktalon Bite",        -- Level 70
             "Inruku's Bite",          -- Level 67
             "Ancient: Bite of Chaos", -- Level 65
             "Zevfeer's Bite",         -- Level 62
         },
         ['Terror'] = {
-            "Terror of Vergalid", -- Level 70 EQM added
+            "Terror of Vergalid", -- Level 70
             "Terror of Discord",  -- Level 67
             "Terror of Thule",    -- Level 63
             "Terror of Terris",   -- Level 59
@@ -296,7 +296,7 @@ local _ClassConfig = {
             "Terror of Darkness", -- Level 33
         },
         ['Terror2'] = {
-            "Terror of Vergalid", -- Level 70 EQM added
+            "Terror of Vergalid", -- Level 70
             "Terror of Discord",  -- Level 67
             "Terror of Thule",    -- Level 63
             "Terror of Terris",   -- Level 59
@@ -305,7 +305,7 @@ local _ClassConfig = {
             "Terror of Darkness", -- Level 33
         },
         ['Terror3'] = {
-            "Terror of Vergalid", -- Level 70 EQM added
+            "Terror of Vergalid", -- Level 70
             "Terror of Discord",  -- Level 67
             "Terror of Thule",    -- Level 63
             "Terror of Terris",   -- Level 59
@@ -350,17 +350,17 @@ local _ClassConfig = {
         },
         ['BladeDisc'] = {
             "Whirlwind Blade",    -- Level 65
-            "Mayhem Blade",       -- Level 52
+            "Mayhem Blade",       -- Level 52 EQM Custom
         },
         ['Minionskin'] = {        --EQM Custom: HP/Regen/mitigation (May need to block druid HP buff line on pet)
-            "Major Minionskin",   -- Level 66
-            "Greater Minionskin", -- Level 56
-            "Minionskin",         -- Level 43
-            "Lesser Minionskin",  -- not castable for SHD
+            "Major Minionskin",   -- Level 66 EQM Custom
+            "Greater Minionskin", -- Level 56 EQM Custom
+            "Minionskin",         -- Level 43 EQM Custom
+            "Lesser Minionskin",  -- not castable for SHD EQM Custom
         },
         ['Protective'] = {
-            "Protective Discipline",       -- Level 69
-            "Protective Surge Discipline", -- Level 45
+            "Protective Discipline",       -- Level 69 EQM Custom
+            "Protective Surge Discipline", -- Level 45 EQM Custom
         },
         ['ForPower'] = {
             "Challenge for Power", -- Level 71

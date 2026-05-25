@@ -54,619 +54,617 @@ return {
     ['AbilitySets']       = {       --TODO/Under Consideration: Add AoE Roar line, add rotation entry (tie it to Do AoE setting), swap in instead of lance 2, especially since the last lance2 is level 112
         ['SwarmPet'] = {
             "Bark at the Moon XII", -- Level 130
-            "Bestial Empathy",      -- Level 68
-            "Bark at the Moon",     -- Level 75
-            "Howl at the Moon",     -- Level 80
-            "Yowl at the Moon",     -- Level 85
-            "Shout at the Moon",    -- Level 90
-            "Scream at the Moon",   -- Level 95
-            "Yell at the Moon",     -- Level 100
-            "Cry at the Moon",      -- Level 105
-            "Roar at the Moon",     -- Level 110
-            "Bay at the Moon",      -- Level 115
-            "Bellow at the Moon",   -- Level 120
             "Shriek at the Moon",   -- Level 125
+            "Bellow at the Moon",   -- Level 120
+            "Bay at the Moon",      -- Level 115
+            "Roar at the Moon",     -- Level 110
+            "Cry at the Moon",      -- Level 105
+            "Yell at the Moon",     -- Level 100
+            "Scream at the Moon",   -- Level 95
+            "Shout at the Moon",    -- Level 90
+            "Yowl at the Moon",     -- Level 85
+            "Howl at the Moon",     -- Level 80
+            "Bark at the Moon",     -- Level 75
+            "Bestial Empathy",      -- Level 68
         },
         ['Feralgia'] = {
             -- Swarm Pet and Growl combination
             "Grimclaw's Feralgia",   -- Level 130
-            "Haergen's Feralgia",    -- Level 85
-            "Tuzil's Feralgia",      -- Level 90
-            "Yahnoa's Feralgia",     -- Level 95
-            "Kesar's Feralgia",      -- Level 100
-            "Krenk's Feralgia",      -- Level 105
-            "Akalit's Feralgia",     -- Level 110
-            "Griklor's Feralgia",    -- Level 115
-            "Ander's Feralgia",      -- Level 120
             "SingleMalt's Feralgia", -- Level 125
+            "Ander's Feralgia",      -- Level 120
+            "Griklor's Feralgia",    -- Level 115
+            "Akalit's Feralgia",     -- Level 110
+            "Krenk's Feralgia",      -- Level 105
+            "Kesar's Feralgia",      -- Level 100
+            "Yahnoa's Feralgia",     -- Level 95
+            "Tuzil's Feralgia",      -- Level 90
+            "Haergen's Feralgia",    -- Level 85
         },
         ['FrozenPoi'] = {
             -- Cold/Poison Nuke Fast Cast
             "Frozen Venom X",    -- Level 128
-            "Frozen Venom",      -- Level 84
-            "Frozen Venin",      -- Level 89
-            "Frozen Cyanin",     -- Level 94
-            "Frozen Carbomate",  -- Level 99
-            "Frozen Miasma",     -- Level 103
-            "Frozen Toxin",      -- Level 108
-            "Frozen Malignance", -- Level 113
-            "Frozen Blight",     -- Level 118
             "Frozen Creep",      -- Level 123
+            "Frozen Blight",     -- Level 118
+            "Frozen Malignance", -- Level 113
+            "Frozen Toxin",      -- Level 108
+            "Frozen Miasma",     -- Level 103
+            "Frozen Carbomate",  -- Level 99
+            "Frozen Cyanin",     -- Level 94
+            "Frozen Venin",      -- Level 89
+            "Frozen Venom",      -- Level 84
         },
         ['Maelstrom'] = {
             -- Cold/Poison/Disease Nuke Fast Cast
             "Tallongast's Maelstrom", -- Level 130
-            "Kron's Maelstrom",       -- Level 90
-            "Bale's Maelstrom",       -- Level 95
-            "Nak's Maelstrom",        -- Level 100
-            "Visoracius' Maelstrom",  -- Level 105
-            "Beramos' Maelstrom",     -- Level 110
-            "Vkjen's Maelstrom",      -- Level 115
-            "Va Xakra's Maelstrom",   -- Level 120
             "Rimeclaw's Maelstrom",   -- Level 125
+            "Va Xakra's Maelstrom",   -- Level 120
+            "Vkjen's Maelstrom",      -- Level 115
+            "Beramos' Maelstrom",     -- Level 110
+            "Visoracius' Maelstrom",  -- Level 105
+            "Nak's Maelstrom",        -- Level 100
+            "Bale's Maelstrom",       -- Level 95
+            "Kron's Maelstrom",       -- Level 90
         },
         ['PoiBite'] = {
             -- Poison Nuke Fast Cast
             "Khrosik's Bite",       -- Level 129
-            "Bite of the Empress",  -- Level 73
-            "Bite of the Borrower", -- Level 78
-            "Bite of the Vitrik",   -- Level 83
-            "Sarsez' Bite",         -- Level 88
-            "Rotsil's Bite",        -- Level 93
-            "Poantaar's Bite",      -- Level 98
-            "Kreig's Bite",         -- Level 103
-            "Mawmun's Bite",        -- Level 108
-            "Bloodmaw's Bite",      -- Level 113
-            "Zelniak's Bite",       -- Level 118
             "Mortimus' Bite",       -- Level 123
+            "Zelniak's Bite",       -- Level 118
+            "Bloodmaw's Bite",      -- Level 113
+            "Mawmun's Bite",        -- Level 108
+            "Kreig's Bite",         -- Level 103
+            "Poantaar's Bite",      -- Level 98
+            "Rotsil's Bite",        -- Level 93
+            "Sarsez' Bite",         -- Level 88
+            "Bite of the Vitrik",   -- Level 83
+            "Bite of the Borrower", -- Level 78
+            "Bite of the Empress",  -- Level 73
         },
         ['Icelance1'] = {
             -- Lance 1 Timer 7 Ice Nuke Fast Cast
-            "Frigid Lance XII",      -- Level 128 - Timer 7
-            "Blast of Frost",        -- Level 12 - Timer 7
-            "Frost Shard",           -- Level 47 - Timer 7
-            "Blizzard Blast",        -- Level 59 - Timer ???
-            "Frost Spear",           -- Level 63 - Timer 7
-            "Ancient: Frozen Chaos", -- Level 65 - Timer 7
-            "Ancient: Savage Ice",   -- Level 70 - Timer 7
-            "Jagged Torrent",        -- Level 79 - Timer 7
-            "Glacial Lance",         -- Level 89 - Timer 7
-            "Kromrif Lance",         -- Level 99 - Timer 7
-            "Frostbite Lance",       -- Level 107 - Timer 7
-            "Crystalline Lance",     -- Level 117 - Timer 7
+            "Frigid Lance XII",      -- Level 128, - Timer 7
+            "Crystalline Lance",     -- Level 117, - Timer 7
+            "Frostbite Lance",       -- Level 107, - Timer 7
+            "Kromrif Lance",         -- Level 99, - Timer 7
+            "Glacial Lance",         -- Level 89, - Timer 7
+            "Jagged Torrent",        -- Level 79, - Timer 7
+            "Ancient: Savage Ice",   -- Level 70, - Timer 7
+            "Ancient: Frozen Chaos", -- Level 65, - Timer 7
+            "Frost Spear",           -- Level 63, - Timer 7
+            "Blizzard Blast",        -- Level 59, - Timer ???
+            "Frost Shard",           -- Level 47, - Timer 7
+            "Blast of Frost",        -- Level 12, - Timer 7
         },
         ['Icelance2'] = {
             -- Lance 2 Timer 11 Ice Nuke Fast Cast
-            "Ice Spear",       -- Level 33 - Timer 11
-            "Ice Shard",       -- Level 54 - Timer 11
-            "Trushar's Frost", -- Level 65 - Timer 11
-            "Glacier Spear",   -- Level 69 - Timer 11
-            "Spiked Sleet",    -- Level 74 - Timer 11
-            "Frigid Lance",    -- Level 84 - Timer 11
-            "Frostrift Lance", -- Level 94 - Timer 11
-            "Kromtus Lance",   -- Level 102 - Timer 11
-            "Restless Lance",  -- Level 112 - Timer 11
-            "Ankexfen Lance",  -- Level 122 - Timer 11
+            "Ankexfen Lance",  -- Level 122, - Timer 11
+            "Restless Lance",  -- Level 112, - Timer 11
+            "Kromtus Lance",   -- Level 102, - Timer 11
+            "Frostrift Lance", -- Level 94, - Timer 11
+            "Frigid Lance",    -- Level 84, - Timer 11
+            "Spiked Sleet",    -- Level 74, - Timer 11
+            "Glacier Spear",   -- Level 69, - Timer 11
+            "Trushar's Frost", -- Level 65, - Timer 11
+            "Ice Shard",       -- Level 54, - Timer 11
+            "Ice Spear",       -- Level 33, - Timer 11
         },
         ['AERoar'] = {
             -- PBAE Roar Timer 11 Ice Nuke Fast Cast
             "Glacial Roar IX", -- Level 129
-            "Glacial Roar",    -- Level 89 - Timer 11
-            "Frostrift Roar",  -- Level 94 - Timer 11
-            "Kromrif Roar",    -- Level 99 - Timer 11
-            "Kromtus Roar",    -- Level 104 - Timer 11
-            "Frostbite Roar",  -- Level 109 - Timer 11
-            "Restless Roar",   -- Level 114 - Timer 11
-            "Polar Roar",      -- Level 119 - Timer 11
-            "Hoarfrost Roar",  -- Level 124 - Timer 11
+            "Hoarfrost Roar",  -- Level 124, - Timer 11
+            "Polar Roar",      -- Level 119, - Timer 11
+            "Restless Roar",   -- Level 114, - Timer 11
+            "Frostbite Roar",  -- Level 109, - Timer 11
+            "Kromtus Roar",    -- Level 104, - Timer 11
+            "Kromrif Roar",    -- Level 99, - Timer 11
+            "Frostrift Roar",  -- Level 94, - Timer 11
+            "Glacial Roar",    -- Level 89, - Timer 11
         },
         ['EndemicDot'] = {
             "Tsetsian Endemic XII",  -- Level 127
-            "Sicken",                -- Level 14
-            "Malaria",               -- Level 40
-            "Plague",                -- Level 65
-            "Festering Malady",      -- Level 70
-            "Fever Spike",           -- Level 72
-            "Fever Surge",           -- Level 77
-            "Tsetsian Endemic",      -- Level 82
-            "Shiverback Endemic",    -- Level 87
-            "Silbar's Endemic",      -- Level 92
-            "Natigo's Endemic",      -- Level 97
-            "Hemocoraxius' Endemic", -- Level 102
-            "Elkikatar's Endemic",   -- Level 107
-            "Neemzaq's Endemic",     -- Level 112
-            "Vampyric Endemic",      -- Level 117
             "Fevered Endemic",       -- Level 122
+            "Vampyric Endemic",      -- Level 117
+            "Neemzaq's Endemic",     -- Level 112
+            "Elkikatar's Endemic",   -- Level 107
+            "Hemocoraxius' Endemic", -- Level 102
+            "Natigo's Endemic",      -- Level 97
+            "Silbar's Endemic",      -- Level 92
+            "Shiverback Endemic",    -- Level 87
+            "Tsetsian Endemic",      -- Level 82
+            "Fever Surge",           -- Level 77
+            "Fever Spike",           -- Level 72
+            "Festering Malady",      -- Level 70
+            "Plague",                -- Level 65
+            "Malaria",               -- Level 40
+            "Sicken",                -- Level 14
         },
         ['BloodDot'] = {
             "Spiter Blood",        -- Level 127
-            "Tainted Breath",      -- Level 19
-            "Envenomed Breath",    -- Level 35
-            "Venom of the Snake",  -- Level 52
-            "Scorpion Venom",      -- Level 61
-            "Turepta Blood",       -- Level 65
-            "Chimera Blood",       -- Level 66
-            "Diregriffon's Bite",  -- Level 71
-            "Falrazim's Gnashing", -- Level 76
-            "Ikaav Blood",         -- Level 81
-            "Spinechiller Blood",  -- Level 90
-            "Binaesa Blood",       -- Level 91
-            "Asp Blood",           -- Level 96
-            "Glistenwing Blood",   -- Level 101
-            "Polybiad Blood",      -- Level 106
-            "Ikatiar's Blood",     -- Level 111
-            "Akhevan Blood",       -- Level 116
             "Forgebound Blood",    -- Level 121
+            "Akhevan Blood",       -- Level 116
+            "Ikatiar's Blood",     -- Level 111
+            "Polybiad Blood",      -- Level 106
+            "Glistenwing Blood",   -- Level 101
+            "Asp Blood",           -- Level 96
+            "Binaesa Blood",       -- Level 91
+            "Spinechiller Blood",  -- Level 86
+            "Ikaav Blood",         -- Level 81
+            "Falrazim's Gnashing", -- Level 76
+            "Diregriffon's Bite",  -- Level 71
+            "Chimera Blood",       -- Level 66
+            "Turepta Blood",       -- Level 65
+            "Scorpion Venom",      -- Level 61
+            "Venom of the Snake",  -- Level 52
+            "Envenomed Breath",    -- Level 35
+            "Tainted Breath",      -- Level 19
         },
         ['ColdDot'] = {
             "Shar`Drahn's Chill", -- Level 130
-            "Edoth's Chill",      -- Level 99
-            "Kirchen's Chill",    -- Level 104
-            "Ekron's Chill",      -- Level 109
-            "Endaroky's Chill",   -- Level 114
-            "Sylra Fris' Chill",  -- Level 119
             "Lazam's Chill",      -- Level 124
-
+            "Sylra Fris' Chill",  -- Level 119
+            "Endaroky's Chill",   -- Level 114
+            "Ekron's Chill",      -- Level 109
+            "Kirchen's Chill",    -- Level 104
+            "Edoth's Chill",      -- Level 99
         },
         ['SlowSpell'] = {
             -- Slow Spell
-            "Drowsy",          -- Level 20
-            "Sha's Lethargy",  -- Level 50
-            "Sha's Advantage", -- Level 60
-            "Sha's Revenge",   -- Level 65
-            "Sha's Legacy",    -- Level 70
             "Sha's Reprisal",  -- Level 87
+            "Sha's Legacy",    -- Level 70
+            "Sha's Revenge",   -- Level 65
+            "Sha's Advantage", -- Level 60
+            "Sha's Lethargy",  -- Level 50
+            "Drowsy",          -- Level 20
         },
         ['DichoSpell'] = {
             -- Dicho Spell
-            "Dichotomic Fury", -- Level 101
-            "Dissident Fury",  -- Level 106
-            "Composite Fury",  -- Level 111
-            "Ecliptic Fury",   -- Level 116
             "Reciprocal Fury", -- Level 121
+            "Ecliptic Fury",   -- Level 116
+            "Composite Fury",  -- Level 111
+            "Dissident Fury",  -- Level 106
+            "Dichotomic Fury", -- Level 101
         },
         ['HealSpell'] = {
             "Lydora's Mending",    -- Level 127
-            "Salve",               -- Level 1
-            "Minor Healing",       -- Level 6
-            "Light Healing",       -- Level 18
-            "Healing",             -- Level 28
-            "Greater Healing",     -- Level 38
-            "Spirit Salve",        -- Level 48
-            "Chloroblast",         -- Level 59
-            "Trushar's Mending",   -- Level 65
-            "Muada's Mending",     -- Level 67
-            "Minohten Mending",    -- Level 72
-            "Daria's Mending",     -- Level 77
-            "Cadmael's Mending",   -- Level 82
-            "Jorra's Mending",     -- Level 87
-            "Mending of the Izon", -- Level 92
-            "Jaerol's Mending",    -- Level 97
-            "Sabhattin's Mending", -- Level 102
-            "Deltro's Mending",    -- Level 107
-            "Bethun's Mending",    -- Level 112
-            "Korah's Mending",     -- Level 117
             "Thornhost's Mending", -- Level 122
+            "Korah's Mending",     -- Level 117
+            "Bethun's Mending",    -- Level 112
+            "Deltro's Mending",    -- Level 107
+            "Sabhattin's Mending", -- Level 102
+            "Jaerol's Mending",    -- Level 97
+            "Mending of the Izon", -- Level 92
+            "Jorra's Mending",     -- Level 87
+            "Cadmael's Mending",   -- Level 82
+            "Daria's Mending",     -- Level 77
+            "Minohten Mending",    -- Level 72
+            "Muada's Mending",     -- Level 67
+            "Trushar's Mending",   -- Level 65
+            "Chloroblast",         -- Level 59
+            "Spirit Salve",        -- Level 48
+            "Greater Healing",     -- Level 38
+            "Healing",             -- Level 28
+            "Light Healing",       -- Level 18
+            "Minor Healing",       -- Level 6
+            "Salve",               -- Level 1
         },
         ['PetHealSpell'] = {
             "Salve of Lydora",         -- Level 126
-            "Sharik's Replenishing",   -- Level 9
-            "Keshuval's Rejuvenation", -- Level 15
-            "Herikol's Soothing",      -- Level 27
-            "Yekan's Recovery",        -- Level 36
-            "Vigor of Zehkes",         -- Level 49
-            "Aid of Khurenz",          -- Level 52
-            "Sha's Restoration",       -- Level 55
-            "Healing of Sorsha",       -- Level 61
-            "Healing of Mikkily",      -- Level 66
-            "Healing of Uluanes",      -- Level 71
-            "Salve of Feldan",         -- Level 76
-            "Salve of Reshan",         -- Level 81
-            "Salve of Sevna",          -- Level 86
-            "Salve of Yubai",          -- Level 91
-            "Salve of Blezon",         -- Level 96
-            "Salve of Clorith",        -- Level 101
-            "Salve of Artikla",        -- Level 106
-            "Salve of Tobart",         -- Level 111
-            "Salve of Jaegir",         -- Level 116
             "Salve of Homer",          -- Level 121
+            "Salve of Jaegir",         -- Level 116
+            "Salve of Tobart",         -- Level 111
+            "Salve of Artikla",        -- Level 106
+            "Salve of Clorith",        -- Level 101
+            "Salve of Blezon",         -- Level 96
+            "Salve of Yubai",          -- Level 91
+            "Salve of Sevna",          -- Level 86
+            "Salve of Reshan",         -- Level 81
+            "Salve of Feldan",         -- Level 76
+            "Healing of Uluanes",      -- Level 71
+            "Healing of Mikkily",      -- Level 66
+            "Healing of Sorsha",       -- Level 61
+            "Sha's Restoration",       -- Level 55
+            "Aid of Khurenz",          -- Level 52
+            "Vigor of Zehkes",         -- Level 49
+            "Yekan's Recovery",        -- Level 36
+            "Herikol's Soothing",      -- Level 27
+            "Keshuval's Rejuvenation", -- Level 15
+            "Sharik's Replenishing",   -- Level 9
         },
         ['PetSpell'] = {
             "Spirit of Orvain",     -- Level 128
-            "Spirit of Sharik",     -- Level 8
-            "Spirit of Khaliz",     -- Level 15
-            "Spirit of Keshuval",   -- Level 21
-            "Spirit of Herikol",    -- Level 30
-            "Spirit of Yekan",      -- Level 39
-            "Spirit of Kashek",     -- Level 46
-            "Spirit of Omakin",     -- Level 54
-            "Spirit of Zehkes",     -- Level 56
-            "Spirit of Khurenz",    -- Level 58
-            "Spirit of Khati Sha",  -- Level 60
-            "Spirit of Arag",       -- Level 62
-            "Spirit of Sorsha",     -- Level 64
-            "Spirit of Alladnu",    -- Level 68
-            "Spirit of Rashara",    -- Level 70
-            "Spirit of Uluanes",    -- Level 73
-            "Spirit of Silverwing", -- Level 78
-            "Spirit of Hoshkar",    -- Level 83
-            "Spirit of Averc",      -- Level 88
-            "Spirit of Kolos",      -- Level 93
-            "Spirit of Lachemit",   -- Level 98
-            "Spirit of Avalit",     -- Level 103
-            "Spirit of Akalit",     -- Level 108
-            "Spirit of Blizzent",   -- Level 113
-            "Spirit of Panthea",    -- Level 118
             "Spirit of Shae",       -- Level 123
+            "Spirit of Panthea",    -- Level 118
+            "Spirit of Blizzent",   -- Level 113
+            "Spirit of Akalit",     -- Level 108
+            "Spirit of Avalit",     -- Level 103
+            "Spirit of Lachemit",   -- Level 98
+            "Spirit of Kolos",      -- Level 93
+            "Spirit of Averc",      -- Level 88
+            "Spirit of Hoshkar",    -- Level 83
+            "Spirit of Silverwing", -- Level 78
+            "Spirit of Uluanes",    -- Level 73
+            "Spirit of Rashara",    -- Level 70
+            "Spirit of Alladnu",    -- Level 68
+            "Spirit of Sorsha",     -- Level 64
+            "Spirit of Arag",       -- Level 62
+            "Spirit of Khati Sha",  -- Level 60
+            "Spirit of Khurenz",    -- Level 58
+            "Spirit of Zehkes",     -- Level 56
+            "Spirit of Omakin",     -- Level 54
+            "Spirit of Kashek",     -- Level 46
+            "Spirit of Yekan",      -- Level 39
+            "Spirit of Herikol",    -- Level 30
+            "Spirit of Keshuval",   -- Level 21
+            "Spirit of Khaliz",     -- Level 15
+            "Spirit of Sharik",     -- Level 8
         },
         ['PetGroupEndRegenProc'] = {
             --Pet Group End Regen Proc*
             "Fatiguing Bite VI", -- Level 128
-            "Fatiguing Bite",
-            "Exhausting Bite",
-            "Depleting Bite",
-            "Wearying Bite",
-            "Sapping Bite",
+            "Sapping Bite",      -- Level 123
+            "Wearying Bite",     -- Level 117
+            "Depleting Bite",    -- Level 112
+            "Exhausting Bite",   -- Level 107
+            "Fatiguing Bite",    -- Level 97
         },
         ['PetSpellGuard'] = {
             "Spellbreaker's Guard XI", -- Level 130
-            "Spellbreaker's Guard",
-            "Spellbreaker's Bulwark",
-            "Spellbreaker's Aegis",
-            "Spellbreaker's Rampart",
-            "Spellbreaker's Armor",
-            "Spellbreaker's Ward",
-            "Spellbreaker's Palisade",
-            "Spellbreaker's Keep",
-            "Spellbreaker's Citadel",
-            "Spellbreaker's Fortress",
-            "Spellbreaker's Synergy",
+            "Spellbreaker's Synergy",  -- Level 125
+            "Spellbreaker's Fortress", -- Level 120
+            "Spellbreaker's Citadel",  -- Level 115
+            "Spellbreaker's Keep",     -- Level 110
+            "Spellbreaker's Palisade", -- Level 105
+            "Spellbreaker's Ward",     -- Level 100
+            "Spellbreaker's Armor",    -- Level 95
+            "Spellbreaker's Rampart",  -- Level 90
+            "Spellbreaker's Aegis",    -- Level 85
+            "Spellbreaker's Bulwark",  -- Level 80
+            "Spellbreaker's Guard",    -- Level 75
         },
         ['PetSlowProc'] = {
             --Pet Slow Proc*
-            "Steeltrap Jaws",
-            "Lockfang Jaws",
-            "Fellgrip Jaws",
-            "Deadlock Jaws",
+            "Deadlock Jaws",  -- Level 90
+            "Fellgrip Jaws",  -- Level 85
+            "Lockfang Jaws",  -- Level 80
+            "Steeltrap Jaws", -- Level 75
         },
         ['PetOffenseBuff'] = {
             "Pack Leader's Aggression", -- Level 126
-            "Neivr's Aggression",
-            "Mea's Aggression",
-            "Plakt's Aggression",
-            "Sekmoset's Aggression",
-            "Virzak's Aggression",
-            "Horasug's Aggression",
-            "Panthea's Aggression",
-            "Magna's Aggression",
+            "Magna's Aggression",       -- Level 121
+            "Panthea's Aggression",     -- Level 116
+            "Horasug's Aggression",     -- Level 111
+            "Virzak's Aggression",      -- Level 106
+            "Sekmoset's Aggression",    -- Level 101
+            "Plakt's Aggression",       -- Level 96
+            "Mea's Aggression",         -- Level 91
+            "Neivr's Aggression",       -- Level 86
         },
         ['PetDefenseBuff'] = {
             "Pack Leader's Protection", -- Level 126
-            "Neivr's Protection",
-            "Mea's Protection",
-            "Plakt's Protection",
-            "Sekmoset's Protection",
-            "Virzak's Protection",
-            "Horasug's Protection",
-            "Panthea's Protection",
-            "Magna's Protection",
+            "Magna's Protection",       -- Level 121
+            "Panthea's Protection",     -- Level 116
+            "Horasug's Protection",     -- Level 111
+            "Virzak's Protection",      -- Level 106
+            "Sekmoset's Protection",    -- Level 101
+            "Plakt's Protection",       -- Level 96
+            "Mea's Protection",         -- Level 91
+            "Neivr's Protection",       -- Level 86
         },
         ['PetHaste'] = {
             --Pet Haste*
-            "Warder's Unity VI", -- Level 129, combines haste and damage proc
-            "Yekan's Quickening",
-            "Bond of The Wild",
-            "Omakin's Alacrity",
-            "Sha's Ferocity",
-            "Arag's Celerity",
-            "Growl of the Beast",
-            "Unparalleled Voracity",
-            "Peerless Penchant",
-            "Unrivaled Rapidity",
-            "Incomparable Velocity",
-            "Exceptional Velocity",
-            "Extraordinary Velocity",
-            "Tremendous Velocity",
-            "Astounding Velocity",
-            "Unsurpassed Velocity",
-            "Insatiable Voracity",
+            "Warder's Unity VI",      -- Level 129, combines haste and damage proc
+            "Insatiable Voracity",    -- Level 123
+            "Unsurpassed Velocity",   -- Level 118
+            "Astounding Velocity",    -- Level 113
+            "Tremendous Velocity",    -- Level 108
+            "Extraordinary Velocity", -- Level 98
+            "Exceptional Velocity",   -- Level 93
+            "Incomparable Velocity",  -- Level 88
+            "Unrivaled Rapidity",     -- Level 83
+            "Peerless Penchant",      -- Level 78
+            "Unparalleled Voracity",  -- Level 73
+            "Growl of the Beast",     -- Level 68
+            "Arag's Celerity",        -- Level 63
+            "Sha's Ferocity",         -- Level 59
+            "Omakin's Alacrity",      -- Level 55
+            "Bond of The Wild",       -- Level 52
+            "Yekan's Quickening",     -- Level 37
         },
         ['PetGrowl'] = {
-            "Growl of the Panther XIV", -- Level 129
-            "Growl of the Panther",
-            "Growl of the Puma",
-            "Growl of the Jaguar",
-            "Growl of the Tiger",
-            "Growl of the Lion",
-            "Growl of the Snow Leopard",
-            "Growl of the Leopard",
-            "Growl of the Sabretooth",
-            "Growl of the Lioness",
-            "Growl of the Clouded Leopard",
+            "Growl of the Panther XIV",     -- Level 129
+            "Growl of the Clouded Leopard", -- Level 119
+            "Growl of the Lioness",         -- Level 114
+            "Growl of the Sabretooth",      -- Level 109
+            "Growl of the Snow Leopard",    -- Level 99
+            "Growl of the Lion",            -- Level 94
+            "Growl of the Tiger",           -- Level 89
+            "Growl of the Jaguar",          -- Level 84
+            "Growl of the Puma",            -- Level 79
+            "Growl of the Panther",         -- Level 69
+            "Growl of the Leopard",         -- Level 61
         },
         ['PetHealProc'] = {
             --Pet Heal proc buff*
-            "Protective Warder",
-            "Sympathetic Warder",
-            "Convivial Warder",
-            "Mending Warder",
-            "Invigorating Warder",
-            "Empowering Warder",
-            "Bolstering Warder",
-            "Friendly Pet",
+            "Protective Warder",   -- Level 118
+            "Sympathetic Warder",  -- Level 113
+            "Convivial Warder",    -- Level 108
+            "Mending Warder",      -- Level 103
+            "Invigorating Warder", -- Level 98
+            "Empowering Warder",   -- Level 93
+            "Bolstering Warder",   -- Level 88
+            "Friendly Pet",        -- Level 83
         },
         ['PetDamageProc'] = {
-            "Spirit of Irdrath", -- Level 129
-            "Spirit of Shoru",
-            "Spirit of Lightning",
-            "Spirit of the Blizzard",
-            "Spirit of Inferno",
-            "Spirit of the Scorpion",
-            "Spirit of Vermin",
-            "Spirit of Wind",
-            "Spirit of the Storm",
-            "Spirit of Snow",
-            "Spirit of Flame",
-            "Spirit of Rellic",
-            "Spirit of Irionu",
-            "Spirit of Oroshar",
-            "Spirit of Lairn",
-            "Spirit of Jeswin",
-            "Spirit of Vaxztn",
-            "Spirit of Kron",
-            "Spirit of Bale",
-            "Spirit of Nak",
-            "Spirit of Visoracius",
-            "Spirit of Beramos",
-            "Spirit of Mandrikai",
-            "Spirit of Siver",
-            "Ally's Unity",
-            "Comrade's Unity",
+            "Spirit of Irdrath",      -- Level 129
+            "Spirit of Shoru",        -- Level 124
+            "Spirit of Siver",        -- Level 119
+            "Comrade's Unity",        -- Level 119
+            "Spirit of Mandrikai",    -- Level 114
+            "Ally's Unity",           -- Level 114
+            "Spirit of Beramos",      -- Level 109
+            "Spirit of Visoracius",   -- Level 104
+            "Spirit of Nak",          -- Level 99
+            "Spirit of Bale",         -- Level 94
+            "Spirit of Kron",         -- Level 89
+            "Spirit of Vaxztn",       -- Level 84
+            "Spirit of Jeswin",       -- Level 79
+            "Spirit of Lairn",        -- Level 74
+            "Spirit of Oroshar",      -- Level 70
+            "Spirit of Irionu",       -- Level 68
+            "Spirit of Rellic",       -- Level 63
+            "Spirit of Flame",        -- Level 56
+            "Spirit of Snow",         -- Level 54
+            "Spirit of the Storm",    -- Level 53
+            "Spirit of Wind",         -- Level 51
+            "Spirit of Vermin",       -- Level 46
+            "Spirit of the Scorpion", -- Level 38
+            "Spirit of Inferno",      -- Level 28
+            "Spirit of the Blizzard", -- Level 18
+            "Spirit of Lightning",    -- Level 13
         },
         ['UnityBuff'] = {
             -- --Combined ManaRegenBuff and AtkHPBuff
             "Feralist's Unity VII", -- Level 130
-            "Spiritual Unity",
-            "Stormblood's Unity",
-            "Feralist's Unity",
-            "Reclaimer's Unity",
-            "Chieftain's Unity",
-            "Wildfang's Unity",
+            "Wildfang's Unity",     -- Level 125
+            "Chieftain's Unity",    -- Level 120
+            "Reclaimer's Unity",    -- Level 115
+            "Feralist's Unity",     -- Level 110
+            "Stormblood's Unity",   -- Level 105
+            "Spiritual Unity",      -- Level 100
         },
         ['KillShotBuff'] = {
             --Pet Dmg Absorb + HoT buff*
-            "Natural Collaboration",
-            "Natural Cooperation",
-            "Natural Affiliation",
-            "Natural Cooperation",
-            "Natural Alliance",
-            "Symbiotic Alliance",
-            "Warder's Alliance",
+            "Warder's Alliance",     -- Level 121
+            "Symbiotic Alliance",    -- Level 116
+            "Natural Alliance",      -- Level 111
+            "Natural Affiliation",   -- Level 101
+            "Natural Cooperation",   -- Level 96
+            "Natural Cooperation",   -- Level 96
+            "Natural Collaboration", -- Level 91
         },
         ['RunSpeedBuff'] = {
-            "Spirit of wolf",
+            "Spirit of Tala'Tak", -- Level 79
+            -- "Pack Shrew",          -- Level 44, ].
             -- Spirit of the Shrew Is Only 30% Speed Flat So Removed it from the List as its too slow
-            --   [] = "Spirit of the Shrew"],
-            --   [] = "Pack Shrew"].
-            "Spirit of Tala'Tak",
+            -- "Spirit of the Shrew", -- Level 39, ],
+            "Spirit of wolf", -- Level 24
         },
         ['ManaRegenBuff'] = {
             "Spiritual Enlightenment XVII", -- Level 128
-            "Spiritual Light",
-            "Spiritual Radiance",
-            "Spiritual Purity",
-            "Spiritual Dominion",
-            "Spiritual Ascendance",
-            "Spiritual Enlightenment",
-            "Spiritual Epiphany",
-            "Spiritual Edification",
-            "Spiritual Enhancement",
-            "Spiritual Enrichment",
-            "Spiritual Evolution",
-            "Spiritual Elaboration",
-            "Spiritual Empowerment",
-            "Spiritual Enhancement",
-            "Spiritual Insight",
-            "Spiritual Erudition",
-            "Spiritual Enduement",
+            "Spiritual Enduement",          -- Level 123
+            "Spiritual Erudition",          -- Level 118
+            "Spiritual Insight",            -- Level 113
+            "Spiritual Empowerment",        -- Level 108
+            "Spiritual Elaboration",        -- Level 103
+            "Spiritual Evolution",          -- Level 99
+            "Spiritual Enrichment",         -- Level 94
+            "Spiritual Enhancement",        -- Level 89
+            "Spiritual Enhancement",        -- Level 89
+            "Spiritual Edification",        -- Level 84
+            "Spiritual Epiphany",           -- Level 79
+            "Spiritual Enlightenment",      -- Level 74
+            "Spiritual Ascendance",         -- Level 69
+            "Spiritual Dominion",           -- Level 64
+            "Spiritual Purity",             -- Level 59
+            "Spiritual Radiance",           -- Level 52
+            "Spiritual Light",              -- Level 41
         },
         ['AllianceDot'] = {
             -- Alliance Spell for Beastlords 100+
-            "Venomous Alliance",    -- Level 101
-            "Venomous Covenant",    -- Level 108
-            "Venomous Coalition",   -- Level 113
-            "Venomous Conjunction", -- Level 118
             "Venomous Covariance",  -- Level 123
+            "Venomous Conjunction", -- Level 118
+            "Venomous Coalition",   -- Level 113
+            "Venomous Covenant",    -- Level 108
+            "Venomous Alliance",    -- Level 101
         },
         ['PetBlockSpell'] = {
-            "Ward of Calliav",       -- Level 49
-            "Guard of Calliav",      -- Level 58
-            "Protection of Calliav", -- Level 64
-            "Feral Guard",           -- Level 69
-            "Mammoth-Hide Guard",    -- Level 71
-            "Dragonscale Guard",     -- Level 76
-            "Bulwark of Tri'Qaras",  -- Level 77
-            "Spectral Rampart",      -- Level 88
-            "Beastwood Rampart",     -- Level 93
-            "Aegis of Nefori",       -- Level 99
-            "Aegis of Japac",        -- Level 104
-            "Aegis of Zeklor",       -- Level 109
-            "Aegis of Orfur",        -- Level 114
-            "Aegis of Rumblecrush",  -- Level 119
             "Aegis of Valorforged",  -- Level 124
+            "Aegis of Rumblecrush",  -- Level 119
+            "Aegis of Orfur",        -- Level 114
+            "Aegis of Zeklor",       -- Level 109
+            "Aegis of Japac",        -- Level 104
+            "Aegis of Nefori",       -- Level 99
+            "Beastwood Rampart",     -- Level 93
+            "Spectral Rampart",      -- Level 88
+            "Bulwark of Tri'Qaras",  -- Level 77
+            "Dragonscale Guard",     -- Level 76
+            "Mammoth-Hide Guard",    -- Level 71
+            "Feral Guard",           -- Level 69
+            "Protection of Calliav", -- Level 64
+            "Guard of Calliav",      -- Level 58
+            "Ward of Calliav",       -- Level 49
         },
         ['PetBlockAuspice'] = {
-
             -- Pet Block Auspice - Timer 16
-            "Auspice of Shadows",    -- Level 96
-            "Auspice of Eternity",   -- Level 102
-            "Auspice of Esianti",    -- Level 107
-            "Auspice of Kildrukaun", -- Level 112
-            "Auspice of Valia",      -- Level 117
             "Auspice of Usira",      -- Level 122
+            "Auspice of Valia",      -- Level 117
+            "Auspice of Kildrukaun", -- Level 112
+            "Auspice of Esianti",    -- Level 107
+            "Auspice of Eternity",   -- Level 102
+            "Auspice of Shadows",    -- Level 96
         },
         ['PetHotSpell'] = {
             "Lydora's Melioration",  -- Level 127
-            "Minax's Mending",       -- Level 82
-            "Wilap's Mending",       -- Level 87
-            "Yurv's Mending",        -- Level 92
-            "Huaene's Melioration",  -- Level 97
-            "Tirik's Melioration",   -- Level 102
-            "Virzak's Melioration",  -- Level 107
-            "Kallis' Melioration",   -- Level 112
             "Cissela's Melioration", -- Level 117
+            "Kallis' Melioration",   -- Level 112
+            "Virzak's Melioration",  -- Level 107
+            "Tirik's Melioration",   -- Level 102
+            "Huaene's Melioration",  -- Level 97
+            "Yurv's Mending",        -- Level 92
+            "Wilap's Mending",       -- Level 87
+            "Minax's Mending",       -- Level 82
         },
         ['PetPromisedSpell'] = {
             "Promised Mending XII",    -- Level 128
-            "Promised Mending",        -- Level 73
-            "Promised Recovery",       -- Level 78
-            "Promised Rejuvenation",   -- Level 83
-            "Promised Wardmending",    -- Level 88
-            "Promised Amendment",      -- Level 93
-            "Promised Amelioration",   -- Level 98
-            "Promised Invigoration",   -- Level 103
-            "Promised Alleviation",    -- Level 108
-            "Promised Healing",        -- Level 113
-            "Promised Relief",         -- Level 118
             "Promised Reconstitution", -- Level 123
+            "Promised Relief",         -- Level 118
+            "Promised Healing",        -- Level 113
+            "Promised Alleviation",    -- Level 108
+            "Promised Invigoration",   -- Level 103
+            "Promised Amelioration",   -- Level 98
+            "Promised Amendment",      -- Level 93
+            "Promised Wardmending",    -- Level 88
+            "Promised Rejuvenation",   -- Level 83
+            "Promised Recovery",       -- Level 78
+            "Promised Mending",        -- Level 73
         },
         ['AvatarSpell'] = {
             -- Str Stam Dex Buff
             "Infusion of Spirit", -- Level 61
         },
         ['PetCrippleBite'] = {
-            "Dire Bite",
+            "Dire Bite", -- Level 117
         },
         ['FocusSpell'] = {
-            "Focus of Aramna", -- Level 126
-            "Inner Fire",
-            "Talisman of Tnarg",
-            "Talisman of Altuna",
-            "Talisman of Kragg",
-            "Focus of Alladnu",
+            "Focus of Aramna",        -- Level 126
+            "Focus of Skull Crusher", -- Level 121
+            "Focus of Jaegir",        -- Level 116
+            "Focus of Tobart",        -- Level 111
+            "Focus of Artikla",       -- Level 106
+            "Focus of Okasi",         -- Level 101
+            "Focus of Sanera",        -- Level 96
+            "Focus of Klar",          -- Level 91
+            "Focus of Emiq",          -- Level 86
+            "Focus of Yemall",        -- Level 81
+            "Focus of Zott",          -- Level 76
             -- Group Focus Spells
-            "Focus of Amilan",
-            "Focus of Zott",
-            "Focus of Yemall",
-            "Focus of Emiq",
-            "Focus of Klar",
-            "Focus of Sanera",
-            "Focus of Okasi",
-            "Focus of Artikla",
-            "Focus of Tobart",
-            "Focus of Jaegir",
-            "Focus of Skull Crusher",
+            "Focus of Amilan",        -- Level 71
+            "Focus of Alladnu",       -- Level 67
+            "Talisman of Kragg",      -- Level 62
+            "Talisman of Altuna",     -- Level 58
+            "Talisman of Tnarg",      -- Level 53
+            "Inner Fire",             -- Level 7
         },
         ['AtkHPBuff'] = {
-            "Spiritual Vigor XV", -- Level 127
-            "Spiritual Vigor",
-            "Spiritual Vitality",
-            "Spiritual Vim",
-            "Spiritual Vivacity",
-            "Spiritual Verve",
-            "Spiritual Valor",
-            "Spiritual Valiance",
-            "Spiritual Vindication",
-            "Spiritual Vivification",
-            "Spiritual Vibrancy",
-            "Spiritual Vehemence",
-            "Spiritual Vigor",
-            "Spiritual Valiancy",
+            "Spiritual Vigor XV",     -- Level 127
+            "Spiritual Valiancy",     -- Level 122
+            "Spiritual Vehemence",    -- Level 112
+            "Spiritual Vibrancy",     -- Level 107
+            "Spiritual Vivification", -- Level 102
+            "Spiritual Vindication",  -- Level 97
+            "Spiritual Valiance",     -- Level 92
+            "Spiritual Valor",        -- Level 87
+            "Spiritual Verve",        -- Level 82
+            "Spiritual Vivacity",     -- Level 77
+            "Spiritual Vim",          -- Level 72
+            "Spiritual Vitality",     -- Level 67
+            "Spiritual Vigor",        -- Level 62
+            "Spiritual Vigor",        -- Level 62
+            "Spiritual Strength",     -- Level 60
             --Single Target Atk+HP Buff* - Does Not Stack with Pally brells or Ranger Buff - is Middle ground Buff has HP & Atk
-            "Spiritual Brawn",
-            "Spiritual Strength",
+            "Spiritual Brawn",        -- Level 42
         },
         ['AtkBuff'] = {
             -- - Single Ferocity
-            "Savagery",                  -- Level 60
-            "Ferocity",                  -- Level 65
-            "Ferocity of Irionu",        -- Level 70
-            "Ruthless Ferocity",         -- Level 75
-            "Vicious Ferocity",          -- Level 80
-            "Savage Ferocity",           -- Level 85
-            "Callous Ferocity",          -- Level 90
-            "Brutal Ferocity",           -- Level 92
+            "Shared Merciless Ferocity", -- Level 100
             -- Group Ferocity
             "Shared Brutal Ferocity",    -- Level 95
-            "Shared Merciless Ferocity", -- Level 100
+            "Brutal Ferocity",           -- Level 92
+            "Callous Ferocity",          -- Level 90
+            "Savage Ferocity",           -- Level 85
+            "Vicious Ferocity",          -- Level 80
+            "Ruthless Ferocity",         -- Level 75
+            "Ferocity of Irionu",        -- Level 70
+            "Ferocity",                  -- Level 65
+            "Savagery",                  -- Level 60
         },
         ['EndRegenDisc'] = {
-            "Hiatus V", -- Level 126
-            "Respite",
-            "Reprieve",
-            "Rest",
-            "Breather",
-            "Hiatus",
-            "Relax",
-            "Night's Calming",
-            "Convalesce",
+            "Hiatus V",        -- Level 126
+            "Convalesce",      -- Level 121
+            "Night's Calming", -- Level 116
+            "Relax",           -- Level 111
+            "Hiatus",          -- Level 106
+            "Breather",        -- Level 101
+            "Rest",            -- Level 96
+            "Reprieve",        -- Level 91
+            "Respite",         -- Level 86
         },
         ['Maul'] = {
             -- Maul Disc - This is Used with Beastlord Synergy Buffs
             "Harrow XII", -- Level 129
-            "Rake",
-            "Harrow",
-            "Foray",
-            "Rush",
-            "Barrage",
-            "Pummel",
-            "Maul",
-            "Mangle",
-            "Batter",
-            "Clobber",
-            "Wallop",
+            "Wallop",     -- Level 124
+            "Clobber",    -- Level 119
+            "Batter",     -- Level 114
+            "Mangle",     -- Level 109
+            "Maul",       -- Level 104
+            "Pummel",     -- Level 100
+            "Barrage",    -- Level 95
+            "Rush",       -- Level 90
+            "Foray",      -- Level 85
+            "Harrow",     -- Level 80
+            "Rake",       -- Level 70
         },
         ['SingleClaws'] = {
             --Single target claws*
-            "Focused Clamor of Claws",
+            "Focused Clamor of Claws", -- Level 98
         },
         ['BestialBuffDisc'] = {
             "Bestial Vivisection VI", -- Level 126
-            "Bestial Vivisection",
-            "Bestial Rending",
-            "Bestial Evulsing",
-            "Bestial Savagery",
-            "Bestial Fierceness",
+            "Bestial Fierceness",     -- Level 116
+            "Bestial Savagery",       -- Level 106
+            "Bestial Evulsing",       -- Level 96
+            "Bestial Rending",        -- Level 91
+            "Bestial Vivisection",    -- Level 86
         },
         ['AEClaws'] = {
             "Flurry of Claws IX", -- Level 127
-            "Flurry of Claws",
-            "Tumult of Claws",
-            "Clamor of Claws",
-            "Tempest of Claws",
-            "Storm of Claws",
-            "Maelstrom of Claws",
-            "Eruption of Claws",
-            "Barrage of Claws",
+            "Barrage of Claws",   -- Level 122
+            "Eruption of Claws",  -- Level 117
+            "Maelstrom of Claws", -- Level 112
+            "Storm of Claws",     -- Level 107
+            "Tempest of Claws",   -- Level 102
+            "Clamor of Claws",    -- Level 97
+            "Tumult of Claws",    -- Level 92
+            "Flurry of Claws",    -- Level 87
         },
         ['FuryDisc'] = {
             --HHE Burn Disc* - Dicho/Dissident Replace this @ 101 outside of burns
-            "Nature's Fury",
-            "Kolos' Fury",
-            "Ruaabri's Fury",
+            "Ruaabri's Fury", -- Level 98
+            "Kolos' Fury",    -- Level 93
+            "Nature's Fury",  -- Level 88
         },
         ['DmgModDisc'] = {
             --All Skills Damage Modifier*
-            "Bestial Fury Discipline",
-            "Empathic Fury",
-            "Savage Fury",
-            "Savage Rage",
-            "Savage Rancor",
+            "Savage Rancor",           -- Level 104
+            "Savage Rage",             -- Level 99
+            "Savage Fury",             -- Level 94
+            "Empathic Fury",           -- Level 69
+            "Bestial Fury Discipline", -- Level 60
         },
         ['EndRegenProcDisc'] = {
-            "Reflexive Rending",
-            "Reflexive Sundering",
-            "Reflexive Riving",
-            "Reflexive Slashing", -- Level 124
+            "Reflexive Slashing",  -- Level 124
+            "Reflexive Riving",    -- Level 114
+            "Reflexive Sundering", -- Level 105
+            "Reflexive Rending",   -- Level 100
         },
         ['VinDisc'] = {
             -- Vindication Disc
-            "Al`ele's Vindication",
-            "Venon's Vindication",
-            "Ikatiar's Vindication",
-            "Kejaan's Vindication",
-            "Ikatiar's Vindication",
             "Xanathan's Vindication", -- Level 125
+            "Kejaan's Vindication",   -- Level 120
+            "Ikatiar's Vindication",  -- Level 115
+            "Ikatiar's Vindication",  -- Level 115
+            "Venon's Vindication",    -- Level 110
+            "Al`ele's Vindication",   -- Level 102
         },
     },
     ['HealRotationOrder'] = {

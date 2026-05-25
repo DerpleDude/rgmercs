@@ -92,7 +92,7 @@ local function openLogFile()
 	end
 end
 
----@param plainOutput? bool The log message with color codes stripped.
+---@param plainOutput? boolean True to strip color codes from the trace.
 function actions.getCallStack(plainOutput)
 	local info = debug.getinfo(4, "Snl")
 

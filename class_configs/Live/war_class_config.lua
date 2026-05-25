@@ -76,221 +76,221 @@ local _ClassConfig = {
     },
     ['AbilitySets']   = {
         ['StandDisc'] = {
-            "Final Stand Discipline VI",
-            "Climactic Stand",
-            "Resolute Stand",
-            "Ultimate Stand Discipline",
-            "Culminating Stand Discipline",
-            "Last Stand Discipline",
-            "Final Stand Discipline",
-            --[] = "Stonewall Discipline",
-            "Defensive Discipline",
+            "Final Stand Discipline VI",    -- Level 128
+            "Climactic Stand",              -- Level 123
+            "Resolute Stand",               -- Level 118
+            "Ultimate Stand Discipline",    -- Level 113
+            "Culminating Stand Discipline", -- Level 108
+            "Last Stand Discipline",        -- Level 98
+            "Final Stand Discipline",       -- Level 72
+            -- "Stonewall Discipline",      -- Level 65
+            "Defensive Discipline",         -- Level 55
         },
         ['Fortitude'] = {
-            "Fortitude Discipline",
+            "Fortitude Discipline", -- Level 59
         },
         ['AbsorbDisc'] = {
-            "Finish the Fight",
-            "Pain Doesn't Hurt",
-            "No Time to Bleed",
+            "Finish the Fight",  -- Level 112
+            "Pain Doesn't Hurt", -- Level 102
+            "No Time to Bleed",  -- Level 96
         },
         ['Flash'] = {
-            "Flash of Anger",
+            "Flash of Anger", -- Level 87
         },
         ['ShieldHit'] = {
-            "Shield Sunder",
-            "Shield Break",
-            "Shield Topple",
-            "Shield Splinter",
-            "Shield Rupture",
-            "Shield Split",
+            "Shield Split",    -- Level 125
+            "Shield Rupture",  -- Level 120
+            "Shield Splinter", -- Level 115
+            "Shield Sunder",   -- Level 110
+            "Shield Break",    -- Level 104
+            "Shield Topple",   -- Level 83
         },
         ['GroupACBuff'] = {
-            "Field Armorer X",
-            "Field Bulwark",
-            "Full Moon's Champion",
-            "Paragon Champion",
-            "Field Champion",
-            "Field Protector",
-            "Field Guardian",
-            "Field Defender",
-            "Field Outfitter",
-            "Field Armorer",
+            "Field Armorer X",      -- Level 130
+            "Field Bulwark",        -- Level 125
+            "Full Moon's Champion", -- Level 120
+            "Paragon Champion",     -- Level 115
+            "Field Champion",       -- Level 110
+            "Field Protector",      -- Level 105
+            "Field Guardian",       -- Level 100
+            "Field Defender",       -- Level 95
+            "Field Outfitter",      -- Level 90
+            "Field Armorer",        -- Level 85
         },
         ['GroupDodgeBuff'] = {
-            "Commanding Voice",
+            "Commanding Voice", -- Level 68
         },
         ['DefenseACBuff'] = {
-            "Bracing Defense X",
-            "Vigorous Defense",
-            "Primal Defense",
-            "Courageous Defense",
-            "Resolute Defense",
-            "Stout Defense",
-            "Steadfast Defense",
-            "Stalwart Defense",
-            "Staunch Defense",
-            "Bracing Defense",
+            "Bracing Defense X",  -- Level 130
+            "Vigorous Defense",   -- Level 125
+            "Primal Defense",     -- Level 120
+            "Courageous Defense", -- Level 115
+            "Resolute Defense",   -- Level 110
+            "Stout Defense",      -- Level 105
+            "Steadfast Defense",  -- Level 100
+            "Stalwart Defense",   -- Level 95
+            "Staunch Defense",    -- Level 90
+            "Bracing Defense",    -- Level 85
         },
         ['DichoShield'] = {
-            "Reciprocal Shield",
-            "Ecliptic Shield",
-            "Composite Shield",
-            "Dissident Shield",
-            "Dichotomic Shield",
+            "Reciprocal Shield", -- Level 121
+            "Ecliptic Shield",   -- Level 116
+            "Composite Shield",  -- Level 111
+            "Dissident Shield",  -- Level 106
+            "Dichotomic Shield", -- Level 101
         },
-        ['AERoar'] = { --does not appear to be worthwhile, very limited level range and low hate value
-            "Roar of Challenge",
-            "Rallying Roar",
+        ['AERoar'] = {           --does not appear to be worthwhile, very limited level range and low hate value
+            "Roar of Challenge", -- Level 93
+            "Rallying Roar",     -- Level 88
         },
         ['SelfBuffAE'] = {
-            "Wade into Battle",
-            "Wade into Conflict",
+            "Wade into Conflict", -- Level 119
+            "Wade into Battle",   -- Level 99
         },
         ['SelfBuffSingle'] = {
-            "Determined Reprisal",
+            "Determined Reprisal", -- Level 97
         },
         ['HealHateAE'] = {
-            "Paradoxical Expanse",
-            "Penumbral Expanse",
-            "Confluent Expanse",
-            "Concordant Expanse",
-            "Harmonious Expanse",
+            "Paradoxical Expanse", -- Level 122
+            "Penumbral Expanse",   -- Level 117
+            "Confluent Expanse",   -- Level 112
+            "Concordant Expanse",  -- Level 107
+            "Harmonious Expanse",  -- Level 102
         },
         ['HealHateSingle'] = {
-            "Paradoxical Precision",
-            "Penumbral Precision",
-            "Confluent Precision",
-            "Concordant Precision",
-            "Harmonious Precision",
+            "Paradoxical Precision", -- Level 123
+            "Penumbral Precision",   -- Level 118
+            "Confluent Precision",   -- Level 113
+            "Concordant Precision",  -- Level 108
+            "Harmonious Precision",  -- Level 103
         },
         ['AEBlades'] = {
-            "Cyclone Blades XIV",
-            "Tempest Blades",
-            "Dragonstrike Blades",
-            "Stormstrike Blades",
-            "Stormwheel Blades",
-            "Cyclonic Blades",
-            "Wheeling Blades",
-            "Maelstrom Blade",
-            "Whorl Blade",
-            "Vortex Blade",
-            "Cyclone Blade",
-            "Whirlwind Blade",
-            "Hurricane Blades",
-            "Spiraling Blades",
+            "Cyclone Blades XIV",  -- Level 127
+            "Spiraling Blades",    -- Level 124
+            "Hurricane Blades",    -- Level 119
+            "Tempest Blades",      -- Level 114
+            "Dragonstrike Blades", -- Level 109
+            "Stormstrike Blades",  -- Level 104
+            "Stormwheel Blades",   -- Level 99
+            "Cyclonic Blades",     -- Level 94
+            "Wheeling Blades",     -- Level 89
+            "Maelstrom Blade",     -- Level 84
+            "Whorl Blade",         -- Level 79
+            "Vortex Blade",        -- Level 74
+            "Cyclone Blade",       -- Level 69
+            "Whirlwind Blade",     -- Level 61
         },
         ['AddHate1'] = {
-            "Bazu Roar X",
-            "Mortimus' Roar",
-            "Namdrows' Roar",
-            "Kragek's Roar",
-            "Kluzen's Roar",
-            "Cyclone Roar",
-            "Krondal's Roar",
-            "Grendlaen Roar",
-            "Bazu Roar",
-            "Ancient: Chaos Cry",
-            "Bazu Bluster",
-            "Bazu Bellow",
-            "Bellow of the Mastruq",
-            "Incite",
-            "Berate",
-            "Bellow",
-            "Provoke",
+            "Bazu Roar X",           -- Level 126
+            "Mortimus' Roar",        -- Level 121
+            "Namdrows' Roar",        -- Level 116
+            "Kragek's Roar",         -- Level 111
+            "Kluzen's Roar",         -- Level 106
+            "Cyclone Roar",          -- Level 101
+            "Krondal's Roar",        -- Level 96
+            "Grendlaen Roar",        -- Level 91
+            "Bazu Roar",             -- Level 86
+            "Bazu Bluster",          -- Level 81
+            "Bazu Bellow",           -- Level 69
+            "Ancient: Chaos Cry",    -- Level 65
+            "Bellow of the Mastruq", -- Level 65
+            "Incite",                -- Level 63
+            "Berate",                -- Level 56
+            "Bellow",                -- Level 52
+            "Provoke",               -- Level 20
         },
         ['AddHate2'] = {
-            "Harassing Shout VII",
-            "Distressing Shout",
-            "Twilight Shout",
-            "Oppressing Shout",
-            "Burning Shout",
-            "Tormenting Shout",
-            "Harassing Shout",
+            "Harassing Shout VII", -- Level 128
+            "Distressing Shout",   -- Level 123
+            "Twilight Shout",      -- Level 118
+            "Oppressing Shout",    -- Level 113
+            "Burning Shout",       -- Level 108
+            "Tormenting Shout",    -- Level 103
+            "Harassing Shout",     -- Level 98
         },
         ['AbsorbTaunt'] = {
-            "Provoke XIX",
-            "Infuriate",
-            "Bristle",
-            "Aggravate",
-            "Slander",
-            "Insult",
-            "Ridicule",
-            "Scorn",
-            "Scoff",
-            "Jeer",
-            "Sneer",
-            "Scowl",
-            "Mock",
+            "Provoke XIX", -- Level 128
+            "Infuriate",   -- Level 123
+            "Bristle",     -- Level 118
+            "Aggravate",   -- Level 113
+            "Slander",     -- Level 108
+            "Insult",      -- Level 103
+            "Ridicule",    -- Level 98
+            "Scorn",       -- Level 95
+            "Scoff",       -- Level 90
+            "Jeer",        -- Level 85
+            "Sneer",       -- Level 80
+            "Scowl",       -- Level 75
+            "Mock",        -- Level 70
         },
         ['StrikeDisc'] = {
-            "Opportunistic Strike IX",
-            "Decisive Strike",
-            "Precision Strike",
-            "Cunning Strike",
-            "Calculated Strike",
-            "Vital Strike",
-            "Strategic Strike",
-            "Opportunistic Strike",
-            "Exploitive Strike",
+            "Opportunistic Strike IX", -- Level 129
+            "Decisive Strike",         -- Level 124
+            "Exploitive Strike",       -- Level 119
+            "Precision Strike",        -- Level 114
+            "Cunning Strike",          -- Level 109
+            "Calculated Strike",       -- Level 104
+            "Vital Strike",            -- Level 93
+            "Strategic Strike",        -- Level 88
+            "Opportunistic Strike",    -- Level 78
         },
         ['EndRegen'] = {
-            "Hiatus V",
-            "Convalesce",
-            "Night's Calming",
-            "Hiatus",
-            "Breather",
-            "Rest",
-            "Reprieve",
-            "Respite",
-            "Fourth Wind",
-            "Third Wind",
-            "Second Wind",
+            "Hiatus V",        -- Level 126
+            "Convalesce",      -- Level 121
+            "Night's Calming", -- Level 116
+            "Hiatus",          -- Level 106
+            "Breather",        -- Level 101
+            "Rest",            -- Level 96
+            "Reprieve",        -- Level 91
+            "Respite",         -- Level 86
+            "Fourth Wind",     -- Level 82
+            "Third Wind",      -- Level 77
+            "Second Wind",     -- Level 72
         },
         ['AuraBuff'] = {
-            "Champion's Aura",
-            "Myrmidon's Aura",
+            "Champion's Aura", -- Level 70
+            "Myrmidon's Aura", -- Level 55
         },
         ['Attention'] = {
-            "Unquestioned Attention",
-            "Unending Attention",
-            "Unyielding Attention",
-            "Unflinching Attention",
-            "Unbroken Attention",
-            "Undivided Attention",
-            "Unrelenting Attention",
-            "Unconditional Attention",
+            "Unquestioned Attention",  -- Level 127
+            "Unconditional Attention", -- Level 122
+            "Unrelenting Attention",   -- Level 117
+            "Unending Attention",      -- Level 112
+            "Unyielding Attention",    -- Level 107
+            "Unflinching Attention",   -- Level 102
+            "Unbroken Attention",      -- Level 97
+            "Undivided Attention",     -- Level 92
         },
         ['AggroPet'] = {
-            "Phantom Aggressor",
+            "Phantom Aggressor", -- Level 100
         },
         ['Onslaught'] = {
-            "Savage Onslaught Discipline",
-            "Brutal Onslaught Discipline",
-            "Brightfeld's Onslaught Discipline",
+            "Brightfeld's Onslaught Discipline", -- Level 117
+            "Brutal Onslaught Discipline",       -- Level 74
+            "Savage Onslaught Discipline",       -- Level 68
         },
         ['RuneShield'] = {
-            "Warrior's Auspice VII",
-            "Warrior's Auspice",
-            "Warrior's Bulwark",
-            "Warrior's Bastion",
-            "Warrior's Rampart",
-            "Warrior's Aegis",
-            "Warrior's Resolve",
+            "Warrior's Auspice VII", -- Level 129
+            "Warrior's Resolve",     -- Level 124
+            "Warrior's Aegis",       -- Level 119
+            "Warrior's Rampart",     -- Level 114
+            "Warrior's Bastion",     -- Level 109
+            "Warrior's Bulwark",     -- Level 104
+            "Warrior's Auspice",     -- Level 99
         },
         ['TongueDisc'] = {
-            "Razor Tongue Discipline",
-            "Biting Tongue Discipline",
-            "Barbed Tongue Discipline",
+            "Razor Tongue Discipline",  -- Level 122
+            "Biting Tongue Discipline", -- Level 107
+            "Barbed Tongue Discipline", -- Level 94
         },
         ['ChargeDisc'] = {
-            "Charge Discipline",
+            "Charge Discipline", -- Level 53
         },
         ['OffensiveDisc'] = {
-            "Offensive Discipline",
+            "Offensive Discipline", -- Level 97
         },
         ['MightyStrike'] = {
-            "Mighty Strike Discipline",
+            "Mighty Strike Discipline", -- Level 54
         },
     },
     ['Helpers']       = {

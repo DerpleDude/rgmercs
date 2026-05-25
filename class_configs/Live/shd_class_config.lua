@@ -142,611 +142,609 @@ local _ClassConfig = {
     },
     ['AbilitySets']   = {
         ['Mantle'] = {
-            "Waxwork Mantle",
-            "Ichor Guard", -- Level 56, Timer 5
-            "Soul Guard",
-            "Soul Shield",
-            "Soul Carapace",
-            "Umbral Carapace",
-            "Malarian Mantle",
-            "Gorgon Mantle",
-            "Recondite Mantle",
-            "Bonebrood Mantle",
-            "Doomscale Mantle",
-            "Krellnakor Mantle",
-            "Restless Mantle",
-            "Fyrthek Mantle",
-            "Geomimus Mantle",
+            "Waxwork Mantle",    -- Level 128
+            "Geomimus Mantle",   -- Level 123
+            "Fyrthek Mantle",    -- Level 118
+            "Restless Mantle",   -- Level 113
+            "Krellnakor Mantle", -- Level 108
+            "Doomscale Mantle",  -- Level 103
+            "Bonebrood Mantle",  -- Level 98
+            "Recondite Mantle",  -- Level 93
+            "Gorgon Mantle",     -- Level 88
+            "Malarian Mantle",   -- Level 83
+            "Umbral Carapace",   -- Level 78
+            "Soul Carapace",     -- Level 73
+            "Soul Shield",       -- Level 69
+            "Soul Guard",        -- Level 61
+            "Ichor Guard",       -- Level 56, Timer 5
         },
         ['Carapace'] = {
             -- Added to mantle because we won't use carapace until it becomes Timer 11
-            -- "Soul Carapace", -- Level 73, Timer 5
-            -- "Umbral Carapace",
-            -- "Malarian Carapace", -- much worse than Malarian Mantle and shares a timer
-            "Gorgon Carapace", -- Level 88, Timer 11 from here on
-            "Sholothian Carapace",
-            "Grelleth's Carapace",
-            "Vizat's Carapace",
-            "Tylix's Carapace",
-            "Cadcane's Carapace",
-            "Xetheg's Carapace",
-            "Kanghammer's Carapace",
+            "Kanghammer's Carapace", -- Level 123
+            "Xetheg's Carapace",     -- Level 118
+            "Cadcane's Carapace",    -- Level 113
+            "Tylix's Carapace",      -- Level 108
+            "Vizat's Carapace",      -- Level 103
+            "Grelleth's Carapace",   -- Level 98
+            "Sholothian Carapace",   -- Level 93
+            "Gorgon Carapace",       -- Level 88, Timer 11 from here on
+            -- "Malarian Carapace",  -- Level 83, much worse than Malarian Mantle and shares a timer
+            -- "Umbral Carapace",    -- Level 78
+            -- "Soul Carapace",      -- Level 73, Timer 5
         },
         ['EndRegen'] = {
             --Timer 13, can't be used in combat
-            "Respite", --Level 86
-            "Reprieve",
-            "Rest",
-            "Breather", --Level 101
+            "Breather", -- Level 101
+            "Rest",     -- Level 96
+            "Reprieve", -- Level 91
+            "Respite",  -- Level 86
         },
         ['CombatEndRegen'] = {
             --Timer 13, can be used in combat.
-            "Hiatus V",
-            "Hiatus", --Level 106
-            "Relax",
-            "Night's Calming",
-            "Convalesce",
+            "Hiatus V",        -- Level 126
+            "Convalesce",      -- Level 121
+            "Night's Calming", -- Level 116
+            "Relax",           -- Level 111
+            "Hiatus",          -- Level 106
         },
         ['Blade'] = {
-            "Gouging Blade VIII",
-            "Incapacitating Blade",
-            "Grisly Blade",
-            "Gouging Blade",
-            "Gashing Blade",
-            "Lacerating Blade",
-            "Wounding Blade",
-            "Rending Blade",
+            "Gouging Blade VIII",   -- Level 127
+            "Incapacitating Blade", -- Level 122
+            "Grisly Blade",         -- Level 117
+            "Rending Blade",        -- Level 112
+            "Wounding Blade",       -- Level 107
+            "Lacerating Blade",     -- Level 102
+            "Gashing Blade",        -- Level 97
+            "Gouging Blade",        -- Level 92
         },
         ['Crimson'] = {
-            "Crimson Blade VIII",
-            "Crimson Blade",
-            "Scarlet Blade",
-            "Carmine Blade",
-            "Claret Blade",
-            "Cerise Blade",
-            "Sanguine Blade",
-            "Incarnadine Blade",
+            "Crimson Blade VIII", -- Level 130
+            "Incarnadine Blade",  -- Level 125
+            "Sanguine Blade",     -- Level 120
+            "Cerise Blade",       -- Level 115
+            "Claret Blade",       -- Level 110
+            "Carmine Blade",      -- Level 105
+            "Scarlet Blade",      -- Level 100
+            "Crimson Blade",      -- Level 95
         },
         ['MeleeMit'] = {
-            "Impede",
+            "Impede",    -- Level 128
+            "Gird",      -- Level 123
+            "Repudiate", -- Level 118
+            "Thwart",    -- Level 113
+            "Spurn",     -- Level 108
+            "Repel",     -- Level 103
+            "Reprove",   -- Level 98
+            "Renounce",  -- Level 93
+            "Defy",      -- Level 88
             -- "Withstand", -- Level 83, extreme endurance problems until 86 when we have Respite and Bard Regen Song gives endurance
-            "Defy",
-            "Renounce",
-            "Reprove",
-            "Repel",
-            "Spurn",
-            "Thwart",
-            "Repudiate",
-            "Gird",
         },
         ['Deflection'] = { 'Deflection Discipline', },
         ['LeechCurse'] = { 'Leechcurse Discipline', },
         ['UnholyAura'] = { 'Unholy Aura Discipline', },
-
         ['Guardian'] = {
-            "Unholy Guardian Discipline IV",
-            "Corrupted Guardian Discipline",
-            "Cursed Guardian Discipline",
-            "Unholy Guardian Discipline",
+            "Unholy Guardian Discipline IV", -- Level 127
+            "Corrupted Guardian Discipline", -- Level 117
+            "Cursed Guardian Discipline",    -- Level 107
+            "Unholy Guardian Discipline",    -- Level 97
         },
-
         ['PetSpell'] = {
-            "Minion of Telthel",
-            "Leering Corpse",
-            "Bone Walk",
-            "Convoke Shadow",
-            "Restless Bones",
-            "Animate Dead",
-            "Summon Dead",
-            "Malignant Dead",
-            "Cackling Bones",
-            "Invoke Death",
-            "Son of Decay",
-            "Maladroit Minion",
-            "Minion of Sebilis",
-            "Minion of Fear",
-            "Minion of Sholoth",
-            "Minion of Grelleth",
-            "Minion of Vizat",
-            "Minion of T`Vem",
-            "Minion of Drendar",
-            "Minion of Itzal",
-            "Minion of Fandrel",
+            "Minion of Telthel",  -- Level 128
+            "Minion of Fandrel",  -- Level 123
+            "Minion of Itzal",    -- Level 118
+            "Minion of Drendar",  -- Level 113
+            "Minion of T`Vem",    -- Level 108
+            "Minion of Vizat",    -- Level 103
+            "Minion of Grelleth", -- Level 98
+            "Minion of Sholoth",  -- Level 93
+            "Minion of Fear",     -- Level 88
+            "Minion of Sebilis",  -- Level 83
+            "Maladroit Minion",   -- Level 78
+            "Son of Decay",       -- Level 68
+            "Invoke Death",       -- Level 64
+            "Cackling Bones",     -- Level 58
+            "Malignant Dead",     -- Level 52
+            "Summon Dead",        -- Level 46
+            "Animate Dead",       -- Level 38
+            "Restless Bones",     -- Level 30
+            "Convoke Shadow",     -- Level 22
+            "Bone Walk",          -- Level 14
+            "Leering Corpse",     -- Level 7
         },
         ['PetHaste'] = {
-            "Gift of Telthel",
-            "Gift of Fandrel",
-            "Gift of Itzal",
-            "Gift of Drendar",
-            "Gift of T`Vem",
-            "Gift of Lutzen",
-            "Gift of Urash",
-            "Gift of Dyalgem",
-            "Expatiate Death",
-            "Amplify Death",
-            "Rune of Decay",
-            "Augmentation of Death",
-            "Augment Death",
-            "Strengthen Death",
+            "Gift of Telthel",           -- Level 128
+            "Gift of Fandrel",           -- Level 123
+            "Gift of Itzal",             -- Level 118
+            "Gift of Drendar",           -- Level 113
+            "Gift of T`Vem",             -- Level 108
+            "Gift of Lutzen",            -- Level 103
+            "Gift of Urash",             -- Level 93
+            "Gift of Dyalgem",           -- Level 88
+            "Expatiate Death",           -- Level 78
+            "Amplify Death",             -- Level 73
+            "Rune of Decay",             -- Level 69
+            "Augmentation of Death",     -- Level 64
+            "Augment Death",             -- Level 60
+            "Strengthen Death",          -- Level 29
         },
-        ['Shroud'] = { --Some Shrouds listed under the Horror Line as HP/Mana Proc Choice was shroud vs. mental in buff slot 1 at lower levels.
-            "Shroud of Elonik",
-            "Shroud of the Nightborn",
-            "Shroud of the Gloomborn",
-            "Shroud of the Blightborn",
-            "Shroud of the Plagueborne",
-            "Shroud of the Shadeborne",
-            "Shroud of the Darksworn",
-            "Shroud of the Doomscale",
-            "Shroud of the Krellnakor",
-            "Shroud of the Restless",
-            "Shroud of Zelinstein",
-            "Shroud of Rimeclaw",
+        ['Shroud'] = {                   --Some Shrouds listed under the Horror Line as HP/Mana Proc Choice was shroud vs. mental in buff slot 1 at lower levels.
+            "Shroud of Elonik",          -- Level 127
+            "Shroud of Rimeclaw",        -- Level 122
+            "Shroud of Zelinstein",      -- Level 117
+            "Shroud of the Restless",    -- Level 112
+            "Shroud of the Krellnakor",  -- Level 107
+            "Shroud of the Doomscale",   -- Level 102
+            "Shroud of the Darksworn",   -- Level 97
+            "Shroud of the Shadeborne",  -- Level 92
+            "Shroud of the Plagueborne", -- Level 87
+            "Shroud of the Blightborn",  -- Level 82
+            "Shroud of the Gloomborn",   -- Level 77
+            "Shroud of the Nightborn",   -- Level 72
         },
-        ['Horror'] = {                -- HP Tap Proc
-            "Husk Devourer's Horror", -- Level 126
-            "Shroud of Death",        -- Level 55
-            "Shroud of Chaos",        -- Level 63
-            "Black Shroud",           -- Level 65
-            "Shroud of Discord",      -- Level 67 -- Buff Slot 1 <
-            "Marrowthirst Horror",    -- Level 71 -- Buff Slot 2 >
-            "Soulthirst Horror",      -- Level 76
-            "Mindshear Horror",       -- Level 81
-            "Amygdalan Horror",       -- Level 86
-            "Sholothian Horror",      -- Level 91
-            "Grelleth's Horror",      -- Level 96
-            "Vizat's Horror",         -- Level 101
-            "Tylix's Horror",         -- Level 106
-            "Cadcane's Horror",       -- Level 111
-            "Brightfeld's Horror",    -- Level 116
-            "Mortimus' Horror",       -- Level 121
+        ['Horror'] = {                   -- HP Tap Proc
+            "Husk Devourer's Horror",    -- Level 126
+            "Mortimus' Horror",          -- Level 121
+            "Brightfeld's Horror",       -- Level 116
+            "Cadcane's Horror",          -- Level 111
+            "Tylix's Horror",            -- Level 106
+            "Vizat's Horror",            -- Level 101
+            "Grelleth's Horror",         -- Level 96
+            "Sholothian Horror",         -- Level 91
+            "Amygdalan Horror",          -- Level 86
+            "Mindshear Horror",          -- Level 81
+            "Soulthirst Horror",         -- Level 76
+            "Marrowthirst Horror",       -- Level 71, -- Buff Slot 2 >
+            "Shroud of Discord",         -- Level 67, -- Buff Slot 1 <
+            "Black Shroud",              -- Level 65
+            "Shroud of Chaos",           -- Level 63
+            "Shroud of Death",           -- Level 55
         },
-        ['Mental'] = {                -- Mana Tap Proc
-            "Mental Horror VIII",     -- Level 126
-            "Mental Retchedness",     -- Level 121
-            "Mental Anguish",         -- Level 116
-            "Mental Torment",         -- Level 111
-            "Mental Fright",          -- Level 106
-            "Mental Dread",           -- Level 101
-            "Mental Terror",          -- Level 96 --Buff Slot 2 <
-            "Mental Horror",          -- Level 65 --Buff Slot 1 >
-            "Mental Corruption",      -- Level 52
+        ['Mental'] = {                   -- Mana Tap Proc
+            "Mental Horror VIII",        -- Level 126
+            "Mental Wretchedness",       -- Level 121
+            "Mental Anguish",            -- Level 116
+            "Mental Torment",            -- Level 111
+            "Mental Fright",             -- Level 106
+            "Mental Dread",              -- Level 101
+            "Mental Terror",             -- Level 96, --Buff Slot 2 <
+            "Mental Horror",             -- Level 65, --Buff Slot 1 >
+            "Mental Corruption",         -- Level 52
         },
         ['Skin'] = {
-            "Spitetangle's Skin",
-            "Decrepit Skin", -- Level 70
-            "Umbral Skin",
-            "Malarian Skin",
-            "Gorgon Skin",
-            "Sholothian Skin",
-            "Grelleth's Skin",
-            "Vizat's Skin",
-            "Tylix's Skin",
-            "Cadcane's Skin",
-            "Xenacious' Skin",
-            "Krizad's Skin",
+            "Spitetangle's Skin", -- Level 130
+            "Krizad's Skin",      -- Level 125
+            "Xenacious' Skin",    -- Level 120
+            "Cadcane's Skin",     -- Level 115
+            "Tylix's Skin",       -- Level 110
+            "Vizat's Skin",       -- Level 105
+            "Grelleth's Skin",    -- Level 100
+            "Sholothian Skin",    -- Level 95
+            "Gorgon Skin",        -- Level 90
+            "Malarian Skin",      -- Level 85
+            "Umbral Skin",        -- Level 80
+            "Decrepit Skin",      -- Level 70
         },
         ['SelfDS'] = {
-            "Banshee Skin VIII",
-            "Banshee Aura",
-            "Banshee Skin",
-            "Ghoul Skin",
-            "Zombie Skin",
-            "Helot Skin",
-            "Specter Skin",
-            "Tekuel Skin",
-            "Goblin Skin",
+            "Banshee Skin VIII", -- Level 126
+            "Goblin Skin",       -- Level 121
+            "Tekuel Skin",       -- Level 116
+            "Specter Skin",      -- Level 111
+            "Helot Skin",        -- Level 106
+            "Zombie Skin",       -- Level 96
+            "Ghoul Skin",        -- Level 91
+            "Banshee Skin",      -- Level 86
+            "Banshee Aura",      -- Level 54
         },
         ['Demeanor'] = {
-            "Ruthless Demeanor",
-            "Remorseless Demeanor",
-            "Impenitent Demeanor",
+            "Ruthless Demeanor",    -- Level 130
+            "Impenitent Demeanor",  -- Level 120
+            "Remorseless Demeanor", -- Level 75
         },
         ['HealBurn'] = {
-            "Harmonious Disruption", -- Level 103
-            "Concordant Disruption",
-            "Confluent Disruption",
-            "Penumbral Disruption",
-            "Paradoxical Disruption",
+            "Paradoxical Disruption", -- Level 123
+            "Penumbral Disruption",   -- Level 118
+            "Confluent Disruption",   -- Level 113
+            "Concordant Disruption",  -- Level 108
+            "Harmonious Disruption",  -- Level 103
         },
         ['CloakHP'] = {
-            "Drape of Spite",
-            "Cloak of the Akheva",
-            "Cloak of Luclin",
-            "Cloak of Discord",
-            "Cloak of Corruption",
-            "Drape of Corruption",
-            "Drape of Korafax",
-            "Drape of Fear",
-            "Drape of the Sepulcher",
-            "Drape of the Fallen",
-            "Drape of the Wrathforged",
-            "Drape of the Magmaforged",
-            "Drape of the Iceforged",
-            "Drape of the Akheva",
-            "Drape of the Ankexfen",
+            "Drape of Spite",           -- Level 129
+            "Drape of the Ankexfen",    -- Level 124
+            "Drape of the Akheva",      -- Level 119
+            "Drape of the Iceforged",   -- Level 114
+            "Drape of the Magmaforged", -- Level 109
+            "Drape of the Wrathforged", -- Level 104
+            "Drape of the Fallen",      -- Level 99
+            "Drape of the Sepulcher",   -- Level 94
+            "Drape of Fear",            -- Level 89
+            "Drape of Korafax",         -- Level 84
+            "Drape of Corruption",      -- Level 79
+            "Cloak of Corruption",      -- Level 74
+            "Cloak of Discord",         -- Level 70
+            "Cloak of Luclin",          -- Level 65
+            "Cloak of the Akheva",      -- Level 60
         },
         ['Covenant'] = {
-            "Telthel's Convenant",
-            "Grim Covenant",
-            "Venril's Covenant",
-            "Gixblat's Covenant",
-            "Worag's Covenant",
-            "Falhotep's Covenant",
-            "Livio's Covenant",
-            "Helot Covenant",
-            "Syl`Tor Covenant",
-            "Aten Ha Ra's Covenant",
-            "Kar's Covenant",
+            "Telthel's Covenant",    -- Level 128
+            "Kar's Covenant",        -- Level 123
+            "Aten Ha Ra's Covenant", -- Level 118
+            "Syl`Tor Covenant",      -- Level 113
+            "Helot Covenant",        -- Level 108
+            "Livio's Covenant",      -- Level 103
+            "Falhotep's Covenant",   -- Level 98
+            "Worag's Covenant",      -- Level 93
+            "Gixblat's Covenant",    -- Level 88
+            "Venril's Covenant",     -- Level 83
+            "Grim Covenant",         -- Level 78
         },
         ['CallAtk'] = {
-            "Call of Darkness X",
-            "Call of Darkness",
-            "Call of Dusk",
-            "Call of Shadow",
-            "Call of Gloomhaze",
-            "Call of Nightfall",
-            "Call of Twilight",
-            "Penumbral Call",
-            "Call of Blight",
+            "Call of Darkness X", -- Level 129
+            "Call of Blight",     -- Level 124
+            "Penumbral Call",     -- Level 119
+            "Call of Twilight",   -- Level 114
+            "Call of Nightfall",  -- Level 109
+            "Call of Gloomhaze",  -- Level 99
+            "Call of Shadow",     -- Level 94
+            "Call of Dusk",       -- Level 89
+            "Call of Darkness",   -- Level 54
         },
         ['AETaunt'] = {
-            "Dread Gaze XIII",
-            "Dread Gaze", -- Level 69
-            "Vilify",
-            "Revile",
-            "Burst of Spite",
-            "Loathing",
-            "Abhorrence",
-            "Disgust",
-            "Revulsion",
-            "Contempt",
-            "Antipathy",
-            "Animus",
+            "Dread Gaze XIII", -- Level 129
+            "Animus",          -- Level 124
+            "Antipathy",       -- Level 119
+            "Contempt",        -- Level 114
+            "Revulsion",       -- Level 109
+            "Disgust",         -- Level 104
+            "Abhorrence",      -- Level 94
+            "Loathing",        -- Level 89
+            "Burst of Spite",  -- Level 84
+            "Revile",          -- Level 79
+            "Vilify",          -- Level 74
+            "Dread Gaze",      -- Level 69
         },
         ['PoisonDot'] = {
-            "Blood of Lherre",
-            "Blood of Pain", -- Level 41
-            "Blood of Hate",
-            "Blood of Discord",
-            "Blood of Inruku",
-            "Blood of the Blacktalon",
-            "Blood of the Blackwater",
-            "Blood of Laarthik",
-            "Blood of Malthiasiss",
-            "Blood of Korum",
-            "Blood of Ralstok",
-            "Blood of Bonemaw",
-            "Blood of Drakus",
-            "Blood of Ikatiar",
-            "Blood of Tearc",
-            "Blood of Shoru",
+            "Blood of Lherre",         -- Level 127
+            "Blood of Shoru",          -- Level 122
+            "Blood of Tearc",          -- Level 117
+            "Blood of Ikatiar",        -- Level 112
+            "Blood of Drakus",         -- Level 107
+            "Blood of Bonemaw",        -- Level 102
+            "Blood of Ralstok",        -- Level 97
+            "Blood of Korum",          -- Level 92
+            "Blood of Malthiasiss",    -- Level 87
+            "Blood of Laarthik",       -- Level 82
+            "Blood of the Blackwater", -- Level 77
+            "Blood of the Blacktalon", -- Level 72
+            "Blood of Inruku",         -- Level 68
+            "Blood of Discord",        -- Level 66
+            "Blood of Hate",           -- Level 63
+            "Blood of Pain",           -- Level 41
         },
         ['CorruptionDot'] = {
-            "Insidious Blight IX",
-            "Vitriolic Blight",
-            "Unscrupulous Blight",
-            "Nefarious Blight",
-            "Duplicitous Blight",
-            "Deceitful Blight",
-            "Surreptitious Blight",
-            "Perfidious Blight",
-            "Insidious Blight", -- Level 89
+            "Insidious Blight IX",  -- Level 129
+            "Vitriolic Blight",     -- Level 124
+            "Unscrupulous Blight",  -- Level 119
+            "Nefarious Blight",     -- Level 114
+            "Duplicitous Blight",   -- Level 109
+            "Deceitful Blight",     -- Level 104
+            "Surreptitious Blight", -- Level 99
+            "Perfidious Blight",    -- Level 94
+            "Insidious Blight",     -- Level 89
         },
         ['SpearNuke'] = {
-            "Spear of Wremm",
-            "Spike of Disease", -- Level 1
-            "Spear of Disease",
-            "Spear of Pain",
-            "Spear of Plague",
-            "Spear of Decay",
-            "Miasmic Spear",
-            "Spear of Muram",
-            "Rotroot Spear",
-            "Rotmarrow Spear",
-            "Malarian Spear",
-            "Gorgon Spear",
-            "Spear of Sholoth",
-            "Spear of Grelleth",
-            "Spear of Vizat",
-            "Spear of Tylix",
-            "Spear of Cadcane",
-            "Spear of Bloodwretch",
-            "Spear of Lazam",
+            "Spear of Wremm",       -- Level 129
+            "Spear of Lazam",       -- Level 124
+            "Spear of Bloodwretch", -- Level 119
+            "Spear of Cadcane",     -- Level 114
+            "Spear of Tylix",       -- Level 109
+            "Spear of Vizat",       -- Level 104
+            "Spear of Grelleth",    -- Level 99
+            "Spear of Sholoth",     -- Level 94
+            "Gorgon Spear",         -- Level 89
+            "Malarian Spear",       -- Level 84
+            "Rotmarrow Spear",      -- Level 79
+            "Rotroot Spear",        -- Level 74
+            "Spear of Muram",       -- Level 69
+            "Miasmic Spear",        -- Level 65
+            "Spear of Decay",       -- Level 64
+            "Spear of Plague",      -- Level 54
+            "Spear of Pain",        -- Level 48
+            "Spear of Disease",     -- Level 34
+            "Spike of Disease",     -- Level 1
         },
         ['BondTap'] = {
-            "Bond of the Devourer",
-            "Bond of Tatalros",
-            "Bond of Bynn",
-            "Bond of Vulak",
-            "Bond of Xalgoz",
-            "Bond of Bonemaw",
-            "Bond of Ralstok",
-            "Bond of Korum",
-            "Bond of Malthiasiss",
-            "Bond of Laarthik",
-            "Bond of the Blackwater",
-            "Bond of the Blacktalon",
-            "Bond of Inruku",
-            "Bond of Death",
-            "Vampiric Curse", -- Level 57
+            "Bond of the Devourer",   -- Level 126
+            "Bond of Tatalros",       -- Level 121
+            "Bond of Bynn",           -- Level 116
+            "Bond of Vulak",          -- Level 111
+            "Bond of Xalgoz",         -- Level 106
+            "Bond of Bonemaw",        -- Level 101
+            "Bond of Ralstok",        -- Level 96
+            "Bond of Korum",          -- Level 91
+            "Bond of Malthiasiss",    -- Level 86
+            "Bond of Laarthik",       -- Level 81
+            "Bond of the Blackwater", -- Level 76
+            "Bond of the Blacktalon", -- Level 71
+            "Bond of Inruku",         -- Level 66
+            "Bond of Death",          -- Level 62
+            "Vampiric Curse",         -- Level 57
         },
         ['DireTap'] = {
-            "Dire Implication X",
-            "Dire Implication", -- Level 85
-            "Dire Accusation",
-            "Dire Allegation",
-            "Dire Insinuation",
-            "Dire Declaration",
-            "Dire Testimony",
-            "Dire Indictment",
-            "Dire Censure",
-            "Dire Rebuke",
+            "Dire Implication X", -- Level 130
+            "Dire Rebuke",        -- Level 125
+            "Dire Censure",       -- Level 120
+            "Dire Indictment",    -- Level 115
+            "Dire Testimony",     -- Level 110
+            "Dire Declaration",   -- Level 105
+            "Dire Insinuation",   -- Level 100
+            "Dire Allegation",    -- Level 95
+            "Dire Accusation",    -- Level 90
+            "Dire Implication",   -- Level 85
         },
         ['LifeTap'] = {
-            "Touch of Bonesplinter",
-            "Touch of Flariton",
-            "Touch of Txiki",
-            "Touch of Drendar",
-            "Touch of T`Vem",
-            "Touch of Lutzen",
-            "Touch of Falsin",
-            "Touch of Urash",
-            "Touch of Falsin",
-            "Touch of Dyalgem",
-            "Touch of Tharoff",
-            "Touch of Kildrukaun",
-            "Touch of Severan",
-            "Touch of the Devourer",
-            "Touch of Inruku",
-            "Touch of Innoruuk",
-            "Touch of Volatis",
-            "Drain Soul",
-            "Drain Spirit",
-            "Spirit Tap",
-            "Siphon Life",
-            "Life Leech",
-            "Lifedraw",
-            "Lifespike", -- Level 15
-            "Lifetap",   -- Level 8
+            "Touch of Bonesplinter", -- Level 130
+            "Touch of Flariton",     -- Level 125
+            "Touch of Txiki",        -- Level 120
+            "Touch of Drendar",      -- Level 115
+            "Touch of T`Vem",        -- Level 110
+            "Touch of Lutzen",       -- Level 105
+            "Touch of Falsin",       -- Level 100
+            "Touch of Falsin",       -- Level 100
+            "Touch of Urash",        -- Level 95
+            "Touch of Dyalgem",      -- Level 90
+            "Touch of Tharoff",      -- Level 85
+            "Touch of Kildrukaun",   -- Level 80
+            "Touch of Severan",      -- Level 75
+            "Touch of the Devourer", -- Level 70
+            "Touch of Inruku",       -- Level 67
+            "Touch of Innoruuk",     -- Level 65
+            "Touch of Volatis",      -- Level 62
+            "Drain Soul",            -- Level 60
+            "Drain Spirit",          -- Level 57
+            "Spirit Tap",            -- Level 55
+            "Siphon Life",           -- Level 51
+            "Life Leech",            -- Level 47
+            "Lifedraw",              -- Level 29
+            "Lifespike",             -- Level 15
+            "Lifetap",               -- Level 8
         },
         ['LifeTap2'] = {
-            "Touch of Bonesplinter",
-            "Touch of Flariton",
-            "Touch of Txiki",
-            "Touch of Drendar",
-            "Touch of T`Vem",
-            "Touch of Lutzen",
-            "Touch of Falsin",
-            "Touch of Urash",
-            "Touch of Falsin",
-            "Touch of Dyalgem",
-            "Touch of Tharoff",
-            "Touch of Kildrukaun",
-            "Touch of Severan",
-            "Touch of the Devourer",
-            "Touch of Inruku",
-            "Touch of Innoruuk",
-            "Touch of Volatis",
-            "Drain Soul",
-            "Drain Spirit",
-            "Spirit Tap",
-            "Siphon Life",
-            "Life Leech",
-            "Lifedraw",
-            "Lifespike",
-            "Lifetap",    -- Level 8
+            "Touch of Bonesplinter",    -- Level 130
+            "Touch of Flariton",        -- Level 125
+            "Touch of Txiki",           -- Level 120
+            "Touch of Drendar",         -- Level 115
+            "Touch of T`Vem",           -- Level 110
+            "Touch of Lutzen",          -- Level 105
+            "Touch of Falsin",          -- Level 100
+            "Touch of Falsin",          -- Level 100
+            "Touch of Urash",           -- Level 95
+            "Touch of Dyalgem",         -- Level 90
+            "Touch of Tharoff",         -- Level 85
+            "Touch of Kildrukaun",      -- Level 80
+            "Touch of Severan",         -- Level 75
+            "Touch of the Devourer",    -- Level 70
+            "Touch of Inruku",          -- Level 67
+            "Touch of Innoruuk",        -- Level 65
+            "Touch of Volatis",         -- Level 62
+            "Drain Soul",               -- Level 60
+            "Drain Spirit",             -- Level 57
+            "Spirit Tap",               -- Level 55
+            "Siphon Life",              -- Level 51
+            "Life Leech",               -- Level 47
+            "Lifedraw",                 -- Level 29
+            "Lifespike",                -- Level 15
+            "Lifetap",                  -- Level 8
         },
-        ['AELifeTap'] = { --Lifetap/Hate up to 30 targets, level 98+
-            "Insidious Deflection VII",
-            "Insidious Repudiation",
-            "Insidious Renunciation",
-            "Insidious Rejection",
-            "Insidious Denial",
-            "Deceitful Deflection",
-            "Insidious Deflection",
+        ['AELifeTap'] = {               --Lifetap/Hate up to 30 targets, level 98+
+            "Insidious Deflection VII", -- Level 128
+            "Insidious Repudiation",    -- Level 123
+            "Insidious Renunciation",   -- Level 118
+            "Insidious Rejection",      -- Level 113
+            "Insidious Denial",         -- Level 108
+            "Deceitful Deflection",     -- Level 103
+            "Insidious Deflection",     -- Level 98
         },
         ['MaxHPTap'] = {
-            "Rending of Ulnaa",
-            "Touch of Mortimus",
-            "Touch of Namdrows",
-            "Touch of Zlandicar",
-            "Touch of Hemofax",
-            "Touch of Holmein",
-            "Touch of Klonda",
-            "Touch of Piqiorn",
-            "Touch of Iglum",
-            "Touch of Lanys",
-            "Touch of the Soulbleeder",
-            "Touch of the Wailing Three",
-            "Touch of Draygun", -- Level 69
+            "Rending of Ulnaa",           -- Level 130
+            "Touch of Mortimus",          -- Level 125
+            "Touch of Namdrows",          -- Level 120
+            "Touch of Zlandicar",         -- Level 115
+            "Touch of Hemofax",           -- Level 110
+            "Touch of Holmein",           -- Level 105
+            "Touch of Klonda",            -- Level 100
+            "Touch of Piqiorn",           -- Level 95
+            "Touch of Iglum",             -- Level 90
+            "Touch of Lanys",             -- Level 85
+            "Touch of the Soulbleeder",   -- Level 80
+            "Touch of the Wailing Three", -- Level 75
+            "Touch of Draygun",           -- Level 69
         },
         ['BiteTap'] = {
-            "Wremm's Bite",
-            "Zevfeer's Bite", -- Level 62
-            "Inruku's Bite",
-            "Ancient: Bite of Muram",
-            "Blacktalon Bite",
-            "Blackwater Bite",
-            "Laarthik's Bite",
-            "Malthiasiss's Bite",
-            "Korum's Bite",
-            "Ralstok's Bite",
-            "Bonemaw's Bite",
-            "Xalgoz's Bite",
-            "Vulak's Bite",
-            "Cruor's Bite",
-            "Charka's Bite",
+            "Wremm's Bite",           -- Level 126
+            "Charka's Bite",          -- Level 121
+            "Cruor's Bite",           -- Level 116
+            "Vulak's Bite",           -- Level 111
+            "Xalgoz's Bite",          -- Level 106
+            "Bonemaw's Bite",         -- Level 101
+            "Ralstok's Bite",         -- Level 96
+            "Korum's Bite",           -- Level 91
+            "Malthiasiss's Bite",     -- Level 86
+            "Laarthik's Bite",        -- Level 81
+            "Blackwater Bite",        -- Level 76
+            "Blacktalon Bite",        -- Level 71
+            "Ancient: Bite of Muram", -- Level 70
+            "Inruku's Bite",          -- Level 67
+            "Zevfeer's Bite",         -- Level 62
         },
         ['ForPower'] = {
-            "Duel for Power",
-            "Challenge for Power", -- Level 72
-            "Trial for Power",
-            "Charge for Power",
-            "Confrontation for Power",
-            "Provocation for Power",
-            "Demand for Power",
-            "Impose for Power",
-            "Refute for Power",   -- TBL - 107
-            "Protest for Power",  -- TOV - 112
-            "Parlay for Power",   -- TOL - 117
-            "Petition for Power", -- LS - 122
+            "Duel for Power",          -- Level 127
+            "Petition for Power",      -- Level 122, LS - 122
+            "Parlay for Power",        -- Level 117, TOL - 117
+            "Protest for Power",       -- Level 112, TOV - 112
+            "Refute for Power",        -- Level 107, TBL - 107
+            "Impose for Power",        -- Level 102
+            "Demand for Power",        -- Level 97
+            "Provocation for Power",   -- Level 92
+            "Confrontation for Power", -- Level 87
+            "Charge for Power",        -- Level 82
+            "Trial for Power",         -- Level 77
+            "Challenge for Power",     -- Level 72
         },
         ['Terror'] = {
-            "Terror of Telthel",
-            "Terror of Darkness", -- Level 33
-            "Terror of Shadows",  -- Level 42
-            "Terror of Death",
-            "Terror of Terris",
-            "Terror of Thule",
-            "Terror of Discord",
-            "Terror of Vergalid",
-            "Terror of the Soulbleeder",
-            "Terror of Jelvalak",
-            "Terror of Rerekalen",
-            "Terror of Desalin",
-            "Terror of Poira",
-            "Terror of Narus",
-            "Terror of Kra`Du",
-            "Terror of Mirenilla",
-            "Terror of Ander",
-            "Terror of Tarantis",
+            "Terror of Telthel",         -- Level 126
+            "Terror of Tarantis",        -- Level 121
+            "Terror of Ander",           -- Level 116
+            "Terror of Mirenilla",       -- Level 111
+            "Terror of Kra`Du",          -- Level 106
+            "Terror of Narus",           -- Level 101
+            "Terror of Poira",           -- Level 96
+            "Terror of Desalin",         -- Level 91
+            "Terror of Rerekalen",       -- Level 86
+            "Terror of Jelvalak",        -- Level 81
+            "Terror of the Soulbleeder", -- Level 76
+            "Terror of Vergalid",        -- Level 71
+            "Terror of Discord",         -- Level 67
+            "Terror of Thule",           -- Level 63
+            "Terror of Terris",          -- Level 59
+            "Terror of Death",           -- Level 53
+            "Terror of Shadows",         -- Level 42
+            "Terror of Darkness",        -- Level 33
         },
         ['Terror2'] = {
-            "Terror of Telthel",
-            "Terror of Darkness",
-            "Terror of Shadows",
-            "Terror of Death",
-            "Terror of Terris",
-            "Terror of Thule",
-            "Terror of Discord",
-            "Terror of Vergalid",
-            "Terror of the Soulbleeder",
-            "Terror of Jelvalak",
-            "Terror of Rerekalen",
-            "Terror of Desalin",
-            "Terror of Poira",
-            "Terror of Narus",
-            "Terror of Kra`Du",
-            "Terror of Mirenilla",
-            "Terror of Ander",
-            "Terror of Tarantis",
+            "Terror of Telthel",         -- Level 126
+            "Terror of Tarantis",        -- Level 121
+            "Terror of Ander",           -- Level 116
+            "Terror of Mirenilla",       -- Level 111
+            "Terror of Kra`Du",          -- Level 106
+            "Terror of Narus",           -- Level 101
+            "Terror of Poira",           -- Level 96
+            "Terror of Desalin",         -- Level 91
+            "Terror of Rerekalen",       -- Level 86
+            "Terror of Jelvalak",        -- Level 81
+            "Terror of the Soulbleeder", -- Level 76
+            "Terror of Vergalid",        -- Level 71
+            "Terror of Discord",         -- Level 67
+            "Terror of Thule",           -- Level 63
+            "Terror of Terris",          -- Level 59
+            "Terror of Death",           -- Level 53
+            "Terror of Shadows",         -- Level 42
+            "Terror of Darkness",        -- Level 33
         },
         ['TempHP'] = {
-            "Unyielding Stance",
-            "Unwavering Stance",
-            "Adamant Stance",
-            "Stormwall Stance",
-            "Defiant Stance",
-            "Staunch Stance",
-            "Steadfast Stance",
-            "Stoic Stance",
-            "Stubborn Stance",
-            "Steely Stance", -- Level 84
+            "Unyielding Stance", -- Level 129
+            "Unwavering Stance", -- Level 124
+            "Adamant Stance",    -- Level 119
+            "Stormwall Stance",  -- Level 114
+            "Defiant Stance",    -- Level 109
+            "Staunch Stance",    -- Level 104
+            "Steadfast Stance",  -- Level 99
+            "Stoic Stance",      -- Level 94
+            "Stubborn Stance",   -- Level 89
+            "Steely Stance",     -- Level 84
         },
         ['Dicho'] = {
+            "Reciprocal Fang", -- Level 121
+            "Ecliptic Fang",   -- Level 116
+            "Composite Fang",  -- Level 111
+            "Dissident Fang",  -- Level 106
             "Dichotomic Fang", -- Level 101
-            "Dissident Fang",
-            "Composite Fang",
-            "Ecliptic Fang",
-            "Reciprocal Fang",
         },
         ['PowerTapAC'] = {
-            "Torrent of Pain IX",
-            "Torrent of Desolation",
-            "Torrent of Melancholy",
-            "Torrent of Anguish",
-            "Torrent of Suffering",
-            "Torrent of Misery",
-            "Torrent of Agony", -- Level 100
-            "Theft of Agony",
-            "Theft of Pain",
-            "Aura of Pain",
-            "Torrent of Pain",
-            "Shroud of Pain",
-            "Scream of Pain",
+            "Torrent of Pain IX",    -- Level 130
+            "Torrent of Desolation", -- Level 125
+            "Torrent of Melancholy", -- Level 120
+            "Torrent of Anguish",    -- Level 115
+            "Torrent of Suffering",  -- Level 110
+            "Torrent of Misery",     -- Level 105
+            "Torrent of Agony",      -- Level 100
+            "Theft of Agony",        -- Level 70
+            "Theft of Pain",         -- Level 68
+            "Aura of Pain",          -- Level 63
+            "Torrent of Pain",       -- Level 56
+            "Shroud of Pain",        -- Level 50
+            "Scream of Pain",        -- Level 23
         },
         ['PowerTapAtk'] = {
-            "Theft of Hate",
-            "Aura of Hate",
-            "Torrent of Hate",
-            "Shroud of Hate",
-            "Scream of Hate",
+            "Theft of Hate",   -- Level 70
+            "Aura of Hate",    -- Level 65
+            "Torrent of Hate", -- Level 54
+            "Shroud of Hate",  -- Level 35
+            "Scream of Hate",  -- Level 15
         },
         ['SnareDot'] = {
-            "Festering Darkness XI",
-            "Clinging Darkness", -- Level 11
-            "Engulfing Darkness",
-            "Dooming Darkness",
-            "Cascading Darkness",
-            "Festering Darkness",
-            "Despairing Darkness",
-            "Suppurating Darkness",
-            "Smoldering Darkness",
-            "Spreading Darkness",
-            "Putrefying Darkness",
-            "Pestilent Darkness",
-            "Virulent Darkness",
-            "Vitriolic Darkness",
+            "Festering Darkness XI", -- Level 127
+            "Vitriolic Darkness",    -- Level 122
+            "Virulent Darkness",     -- Level 117
+            "Pestilent Darkness",    -- Level 112
+            "Putrefying Darkness",   -- Level 107
+            "Spreading Darkness",    -- Level 102
+            "Smoldering Darkness",   -- Level 97
+            "Suppurating Darkness",  -- Level 92
+            "Despairing Darkness",   -- Level 87
+            "Festering Darkness",    -- Level 61
+            "Cascading Darkness",    -- Level 59
+            "Dooming Darkness",      -- Level 44
+            "Engulfing Darkness",    -- Level 20
+            "Clinging Darkness",     -- Level 11
         },
         ['Acrimony'] = {
-            "Unquestioned Acrimony",
-            "Undivided Acrimony",
-            "Unbroken Acrimony",
-            "Unflinching Acrimony",
-            "Unyielding Acrimony",
-            "Unending Acrimony",
-            "Unrelenting Acrimony",
-            "Unconditional Acrimony",
+            "Unquestioned Acrimony",  -- Level 129
+            "Unconditional Acrimony", -- Level 124
+            "Unrelenting Acrimony",   -- Level 119
+            "Unending Acrimony",      -- Level 114
+            "Unyielding Acrimony",    -- Level 109
+            "Unflinching Acrimony",   -- Level 104
+            "Unbroken Acrimony",      -- Level 99
+            "Undivided Acrimony",     -- Level 94
         },
         ['SpiteStrike'] = {
-            "Spite of Ronak",
-            "Spite of Kra`Du",
-            "Spite of Mirenilla",
+            "Spite of Mirenilla", -- Level 114
+            "Spite of Kra`Du",    -- Level 109
+            "Spite of Ronak",     -- Level 99
         },
         ['ReflexStrike'] = {
-            "Reflexive Resentment",
-            "Reflexive Rancor",
-            "Reflexive Revulsion",
-            "Reflexive Retribution",
+            "Reflexive Retribution", -- Level 125
+            "Reflexive Resentment",  -- Level 112
+            "Reflexive Revulsion",   -- Level 104
+            "Reflexive Rancor",      -- Level 100
         },
         ['DireDot'] = {
-            "Dire Constriction XI",
-            "Dire Constriction", -- Level 85
-            "Dire Restriction",
-            "Dire Stenosis",
-            "Dire Stricture",
-            "Dire Strangulation",
-            "Dire Coarctation",
-            "Dire Convulsion",
-            "Dire Seizure",
-            "Dire Squelch",
-            "Dark Constriction",
-            "Asystole",
-            "Heart Flutter",
-            "Disease Cloud",
+            "Dire Constriction XI", -- Level 130
+            "Dire Squelch",         -- Level 125
+            "Dire Seizure",         -- Level 120
+            "Dire Convulsion",      -- Level 115
+            "Dire Coarctation",     -- Level 110
+            "Dire Strangulation",   -- Level 105
+            "Dire Stricture",       -- Level 100
+            "Dire Stenosis",        -- Level 95
+            "Dire Restriction",     -- Level 90
+            "Dire Constriction",    -- Level 85
+            "Dark Constriction",    -- Level 66
+            "Asystole",             -- Level 60
+            "Heart Flutter",        -- Level 36
+            "Disease Cloud",        -- Level 5
         },
         ['AllianceNuke'] = {
-            "Bloodletting Coalition",
-            "Bloodletting Alliance",
-            "Bloodletting Covenant",
-            "Bloodletting Conjunction",
-            "Bloodletting Covariance",
+            "Bloodletting Covariance",  -- Level 124
+            "Bloodletting Conjunction", -- Level 119
+            "Bloodletting Coalition",   -- Level 114
+            "Bloodletting Covenant",    -- Level 109
+            "Bloodletting Alliance",    -- Level 104
         },
         ['InfluenceDisc'] = {
-            "Insolent Influence",
-            "Impudent Influence",
-            "Impenitent Influence",
-            "Impertinent Influence",
-            "Ignominious Influence",
-            "Incensive Influence",
+            "Incensive Influence",   -- Level 122
+            "Ignominious Influence", -- Level 117
+            "Impertinent Influence", -- Level 115
+            "Impenitent Influence",  -- Level 110
+            "Impudent Influence",    -- Level 102
+            "Insolent Influence",    -- Level 97
         },
-        ['HateBuff'] = {         --9 minute reuse makes these somewhat ridiculous to gem on the fly.
-            "Voice of Thule",    -- level 60, 12% hate
-            "Voice of Terris",   -- level 55, 10% hate
-            "Voice of Death",    -- level 50, 6% hate
-            "Voice of Shadows",  -- level 46, 4% hate
-            "Voice of Darkness", -- level 39, 2% hate
+        ['HateBuff'] = {             --9 minute reuse makes these somewhat ridiculous to gem on the fly.
+            "Voice of Thule",        -- Level 65, 12% hate
+            "Voice of Terris",       -- Level 60, 10% hate
+            "Voice of Death",        -- Level 55, 6% hate
+            "Voice of Shadows",      -- Level 46, 4% hate
+            "Voice of Darkness",     -- Level 39, 2% hate
         },
     },
     ['Helpers']       = {

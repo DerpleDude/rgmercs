@@ -84,7 +84,7 @@ return {
         },
         ['BloodDot'] = {
             -- Poison DoT Instant Cast
-            "Diregriffon's Bite", -- Level 70 EQM
+            "Diregriffon's Bite", -- Level 70
             "Chimera Blood",      -- Level 66
             "Turepta Blood",      -- Level 65
             "Scorpion Venom",     -- Level 61
@@ -113,7 +113,7 @@ return {
             "Salve",             -- Level 1
         },
         ['PetHealSpell'] = {
-            "Healing of Uluanes",      -- Level 70 EQM Custom
+            "Healing of Uluanes",      -- Level 70
             "Healing of Mikkily",      -- Level 66
             "Healing of Sorsha",       -- Level 61
             "Sha's Restoration",       -- Level 55
@@ -146,7 +146,7 @@ return {
             "Arag's Celerity",       -- Level 63
             "Sha's Ferocity",        -- Level 59
             "Omakin's Alacrity",     -- Level 55
-            "Bond of The Wild",      -- Level 52
+            "Bond of the Wild",      -- Level 52
             "Yekan's Quickening",    -- Level 37
         },
         ['PetGrowl'] = {
@@ -178,7 +178,7 @@ return {
             "Spiritual Light",      -- Level 41
         },
         ['PetBlockSpell'] = {
-            "Mammoth-Hide Guard",    -- Level 70 EQM
+            "Mammoth-Hide Guard",    -- Level 70
             "Feral Guard",           -- Level 69
             "Protection of Calliav", -- Level 64
             "Guard of Calliav",      -- Level 58
@@ -190,7 +190,7 @@ return {
         },
         ['FocusSpell'] = {
             -- Single target Talismans ( Like Focus)
-            "Focus of Amilan",    -- Level 70 EQM Group
+            "Focus of Amilan",    -- Level 70 Group
             "Focus of Alladnu",   -- Level 67
             "Talisman of Kragg",  -- Level 62
             "Talisman of Altuna", -- Level 58
@@ -216,17 +216,17 @@ return {
             "Bestial Fury Discipline", -- Level 60
         },
         ['ProtDisc'] = {
-            "Skal's Stance Discipline",     -- Level 61
+            "Skal's Stance Discipline",     -- Level 61 EQM Custom
             "Protective Spirit Discipline", -- Level 55
         },
         -- ['VigorBuff'] = {
         --     "Feral Vigor",
         -- },
         ['Minionskin'] = {        --EQM Custom: HP/Regen/mitigation (May need to block druid HP buff line on pet)
-            "Major Minionskin",   -- Level 66
-            "Greater Minionskin", -- Level 56
-            "Minionskin",         -- Level 43
-            "Lesser Minionskin",  -- Level 30
+            "Major Minionskin",   -- Level 66 EQM Custom
+            "Greater Minionskin", -- Level 56 EQM Custom
+            "Minionskin",         -- Level 43 EQM Custom
+            "Lesser Minionskin",  -- Level 30 EQM Custom
         },
         ['Rake'] = {
             "Rake", -- Level 67

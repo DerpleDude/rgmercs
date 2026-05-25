@@ -102,7 +102,7 @@ local _ClassConfig = {
             "Mock", -- Level 65
         },
         ['EndRegen'] = {
-            "Third Wind Discipline", -- Level 70, also does HP
+            "Third Wind Discipline", -- Level 70, also does HP Laz Custom
             "Second Wind",           -- Level 65
         },
         ['AuraBuff'] = {
@@ -125,7 +125,7 @@ local _ClassConfig = {
             "Throat Jab", -- Level 69
         },
         ['Flaunt'] = {
-            "Flaunt", -- Level 70
+            "Flaunt", -- Level 70 Laz Custom
         },
         ['ShockDisc'] = { -- Timer 7, defensive stun proc
             "Shocking Defense Discipline", -- Level 70

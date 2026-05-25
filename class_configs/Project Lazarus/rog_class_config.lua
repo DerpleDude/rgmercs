@@ -48,7 +48,7 @@ return {
     },
     ['AbilitySets']   = {
         ['ThiefBuff'] = {
-            "Brigand's Gaze", -- Level 70
+            "Brigand's Gaze", -- Level 70 Laz Custom
             "Thief's Eyes",   -- Level 65
         },
         ['Kinesthetics'] = {
@@ -80,7 +80,7 @@ return {
             "Pinpoint Vulnerability", -- Level 69, on Laz
         },
         ['EndRegen'] = {
-            "Third Wind Discipline", -- Level 70
+            "Third Wind Discipline", -- Level 70 Laz Custom
             -- "Second Wind",        -- Level 65
         },
         ['CADisc'] = {

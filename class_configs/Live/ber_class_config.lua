@@ -50,282 +50,281 @@ return {
     },
     ['AbilitySets']   = {
         ['EndRegen'] = {
-            "Hiatus V", -- 126
-            "Second Wind",
-            "Third Wind",
-            "Fourth Wind",
-            "Respite",
-            "Reprieve",
-            "Rest",
-            "Breather",
-            "Hiatus",
-            "Relax",
-            "Night's Calming",
-            "Convalesce",
+            "Hiatus V",        -- Level 126
+            "Convalesce",      -- Level 121
+            "Night's Calming", -- Level 116
+            "Relax",           -- Level 111
+            "Hiatus",          -- Level 106
+            "Breather",        -- Level 101
+            "Rest",            -- Level 96
+            "Reprieve",        -- Level 91
+            "Respite",         -- Level 86
+            "Fourth Wind",     -- Level 82
+            "Third Wind",      -- Level 77
+            "Second Wind",     -- Level 72
         },
         ['BerAura'] = {
-            "Aura of Rage",
-            "Bloodlust Aura",
+            "Bloodlust Aura", -- Level 70
+            "Aura of Rage",   -- Level 55
         },
         ['Dicho'] = {
-            "Dichotomic Rage",
-            "Dissident Rage",
-            "Composite Rage",
-            "Ecliptic Rage",
-            "Reciprocal Rage",
+            "Reciprocal Rage", -- Level 121
+            "Ecliptic Rage",   -- Level 116
+            "Composite Rage",  -- Level 111
+            "Dissident Rage",  -- Level 106
+            "Dichotomic Rage", -- Level 101
         },
         ['Dfrenzy'] = {
-            "Obliterating Frenzy III", -- 127
-            "Eviscerating Frenzy",
-            "Oppressing Frenzy",
-            "Overpowering Frenzy",
-            "Overwhelming Frenzy",
-            "Conquering Frenzy",
-            "Vanquishing Frenzy",
-            "Demolishing Frenzy",
-            "Mangling Frenzy",
-            "Vindicating Frenzy",
+            "Obliterating Frenzy", -- Level 127
+            "Eviscerating Frenzy", -- Level 121
+            "Oppressing Frenzy",   -- Level 116
+            "Vindicating Frenzy",  -- Level 111
+            "Mangling Frenzy",     -- Level 106
+            "Demolishing Frenzy",  -- Level 101
+            "Vanquishing Frenzy",  -- Level 96
+            "Conquering Frenzy",   -- Level 91
+            "Overwhelming Frenzy", -- Level 86
+            "Overpowering Frenzy", -- Level 81
         },
         ['Bfrenzy'] = {
-            "Augmented Frenzy VII", -- 129
-            "Torrid Frenzy",
-            "Steel Frenzy",
-            "Augmented Frenzy",
-            "Stormwild Frenzy",
-            "Fighting Frenzy",
-            "Combat Frenzy",
-            "Restless Frenzy",
-            "Battle Frenzy",
-            "Amplified Frenzy",
-            "Fearless Frenzy",
-            "Buttressed Frenzy",
-            "Blinding Frenzy",
-            "Heightened Frenzy",
-            -- "Desperate Frenzy",
-            "Magnified Frenzy",
-            "Bolstered Frenzy",
+            "Augmented Frenzy VII", -- Level 129
+            -- "Desperate Frenzy",  -- Level 125
+            "Heightened Frenzy",    -- Level 124
+            "Blinding Frenzy",      -- Level 120
+            "Buttressed Frenzy",    -- Level 119
+            "Restless Frenzy",      -- Level 115
+            "Magnified Frenzy",     -- Level 114
+            "Torrid Frenzy",        -- Level 110
+            "Bolstered Frenzy",     -- Level 109
+            "Stormwild Frenzy",     -- Level 105
+            "Amplified Frenzy",     -- Level 104
+            "Fearless Frenzy",      -- Level 100
+            "Augmented Frenzy",     -- Level 99
+            "Steel Frenzy",         -- Level 95
+            "Fighting Frenzy",      -- Level 90
+            "Combat Frenzy",        -- Level 85
+            "Battle Frenzy",        -- Level 80
         },
         ['Dvolley'] = {
-            "Obliterating Volley", -- 130
-            "Rage Volley",
-            "Destroyer's Volley",
-            "Annihilator's Volley",
-            "Decimator's Volley",
-            "Eradicator's Volley",
-            "Savage Volley",
-            "Sundering Volley",
-            "Brutal Volley",
-            "Demolishing Volley",
-            "Mangling Volley",
-            "Vindicating Volley",
-            "Pulverizing Volley",
-            "Eviscerating Volley",
+            "Obliterating Volley",  -- Level 130
+            "Eviscerating Volley",  -- Level 124
+            "Pulverizing Volley",   -- Level 119
+            "Vindicating Volley",   -- Level 114
+            "Mangling Volley",      -- Level 109
+            "Demolishing Volley",   -- Level 104
+            "Brutal Volley",        -- Level 99
+            "Sundering Volley",     -- Level 94
+            "Savage Volley",        -- Level 89
+            "Eradicator's Volley",  -- Level 84
+            "Decimator's Volley",   -- Level 79
+            "Annihilator's Volley", -- Level 74
+            "Destroyer's Volley",   -- Level 69
+            "Rage Volley",          -- Level 61
         },
         ['Daxethrow'] = {
-            "Obliterating Axe Throw", -- 128
-            "Maiming Axe Throw",
-            "Vigorous Axe Throw",
-            "Energetic Axe Throw",
-            "Spirited Axe Throw",
-            "Brutal Axe Throw",
-            "Demolishing Axe Throw",
-            "Mangling Axe Throw",
-            "Vindicating Axe Throw",
-            "Rending Axe Throw",
+            "Obliterating Axe Throw", -- Level 128
+            "Rending Axe Throw",      -- Level 123
+            "Maiming Axe Throw",      -- Level 118
+            "Vindicating Axe Throw",  -- Level 113
+            "Mangling Axe Throw",     -- Level 108
+            "Demolishing Axe Throw",  -- Level 103
+            "Brutal Axe Throw",       -- Level 98
+            "Spirited Axe Throw",     -- Level 93
+            "Energetic Axe Throw",    -- Level 88
+            "Vigorous Axe Throw",     -- Level 83
         },
         ['Daxeof'] = {
-            "Axe of Trung", -- 130
-            "Axe of Rallos",
-            "Axe of Graster",
-            "Axe of Illdaera",
-            "Axe of Zurel",
-            "Axe of the Aeons",
-            "Axe of Empyr",
-            "Axe of Derakor",
-            "Axe of Xin Diabo",
-            "Axe of Orrak",
+            "Axe of Trung",     -- Level 130
+            "Axe of Orrak",     -- Level 125
+            "Axe of Xin Diabo", -- Level 120
+            "Axe of Derakor",   -- Level 115
+            "Axe of Empyr",     -- Level 107
+            "Axe of the Aeons", -- Level 102
+            "Axe of Zurel",     -- Level 100
+            "Axe of Illdaera",  -- Level 95
+            "Axe of Graster",   -- Level 90
+            "Axe of Rallos",    -- Level 85
         },
         ['Phantom'] = {
-            "Phantom Assailant",
+            "Phantom Assailant", -- Level 100
         },
         ['Alliance'] = {
-            "Demolisher's Alliance,",
-            "Mangler's Covenant",
-            "Vindicator's Coalition",
-            "Conqueror's Conjunction",
-            "Eviscerator's Covariance",
-
+            "Eviscerator's Covariance", -- Level 125
+            "Conqueror's Conjunction",  -- Level 120
+            "Vindicator's Coalition",   -- Level 115
+            "Mangler's Covenant",       -- Level 110
+            "Demolisher's Alliance",    -- Level 105
         },
         ['CheapShot'] = {
-            "Slap in the Face IX", -- 128
-            "Slap in the Face",
-            "Kick in the Teeth",
-            "Punch in The Throat",
-            "Kick in the Shins",
-            "Sucker Punch",
-            "Rabbit Punch",
-            "Swift Punch",
+            "Slap in the Face IX", -- Level 128
+            "Swift Punch",         -- Level 117
+            "Rabbit Punch",        -- Level 112
+            "Sucker Punch",        -- Level 107
+            "Kick in the Shins",   -- Level 102
+            "Punch in The Throat", -- Level 97
+            "Kick in the Teeth",   -- Level 92
+            "Slap in the Face",    -- Level 87
         },
         ['AESlice'] = {
-            "Arcblade",
-            "Arcslice",
-            "Arcsteel",
-            "Arcslash",
-            "Arcshear",
-            "Arcscale",
+            "Arcscale", -- Level 124
+            "Arcshear", -- Level 119
+            "Arcslash", -- Level 114
+            "Arcsteel", -- Level 109
+            "Arcslice", -- Level 104
+            "Arcblade", -- Level 99
         },
         ['AEVicious'] = {
-            "Vicous Spiral VII", -- 127
-            "Vicious Spiral",
-            "Vicious Cyclone",
-            "Vicious Cycle",
-            "Vicious Revolution",
-            "Vicious Whirl",
+            "Vicious Spiral VII", -- Level 127
+            "Vicious Whirl",      -- Level 117
+            "Vicious Revolution", -- Level 112
+            "Vicious Cycle",      -- Level 107
+            "Vicious Cyclone",    -- Level 102
+            "Vicious Spiral",     -- Level 97
         },
         ['FrenzyBoost'] = {
-            "Augmented Frenzy VII", -- 129
-            "Augmented Frenzy",
-            "Amplified Frenzy",
-            "Bolstered Frenzy",
-            "Magnified Frenzy",
-            "Buttressed Frenzy",
-            "Heightened Frenzy",
+            "Augmented Frenzy VII", -- Level 129
+            "Heightened Frenzy",    -- Level 124
+            "Buttressed Frenzy",    -- Level 119
+            "Magnified Frenzy",     -- Level 114
+            "Bolstered Frenzy",     -- Level 109
+            "Amplified Frenzy",     -- Level 104
+            "Augmented Frenzy",     -- Level 99
         },
         ['RageStrike'] = {
-            "Festering Rage VII", -- 127
-            "Roiling Rage",
-            "Festering Rage",
-            "Bubbling Rage",
-            "Smoldering Rage",
-            "Seething Rage",
-            "Frothing Rage",
+            "Festering Rage VII", -- Level 127
+            "Roiling Rage",       -- Level 122
+            "Frothing Rage",      -- Level 117
+            "Seething Rage",      -- Level 112
+            "Smoldering Rage",    -- Level 107
+            "Bubbling Rage",      -- Level 102
+            "Festering Rage",     -- Level 98
         },
         ['SharedBuff'] = {
-            "Shared Bloodlust X", -- 130
-            "Shared Barbarism",
-            "Shared Bloodlust",
-            "Shared Brutality",
-            "Shared Savagery",
-            "Shared Viciousness",
-            "Shared Cruelty",
-            "Shared Ruthlessness",
-            "Shared Atavism",
-            "Shared Violence",
+            "Shared Bloodlust X",  -- Level 130
+            "Shared Barbarism",    -- Level 125
+            "Shared Violence",     -- Level 120
+            "Shared Atavism",      -- Level 115
+            "Shared Ruthlessness", -- Level 110
+            "Shared Cruelty",      -- Level 105
+            "Shared Viciousness",  -- Level 100
+            "Shared Savagery",     -- Level 95
+            "Shared Brutality",    -- Level 90
+            "Shared Bloodlust",    -- Level 85
         },
         ['PrimaryBurnDisc'] = {
-            "Berserking Discipline",
-            "Sundering Discipline",
-            "Brutal Discipline",
+            "Brutal Discipline",     -- Level 100
+            "Sundering Discipline",  -- Level 95
+            "Berserking Discipline", -- Level 75
         },
         ['CleavingDisc'] = {
-            "Cleaving Rage Discipline",
-            "Cleaving Anger Discipline",
-            "Cleaving Acrimony Discipline",
+            "Cleaving Acrimony Discipline", -- Level 86
+            "Cleaving Anger Discipline",    -- Level 65
+            "Cleaving Rage Discipline",     -- Level 54
         },
         ['FlurryDisc'] = {
-            "Vengeful Flurry Discipline",
-            "Avenging Flurry Discipline",
+            "Avenging Flurry Discipline", -- Level 89
+            "Vengeful Flurry Discipline", -- Level 70
         },
         ['DisconDisc'] = {
-            "Disconcerting Discipline",
+            "Disconcerting Discipline", -- Level 104
         },
         ['ResolveDisc'] = {
-            "Frenzied Resolve Discipline",
+            "Frenzied Resolve Discipline", -- Level 94
         },
         ['HHEBuff'] = {
-            "Battle Cry",
-            "War Cry",
-            "Battle Cry of Dravel",
-            "War Cry of Dravel",
-            "Ancient: Cry of Chaos",
-            "Battle Cry of the Mastruq",
+            "Ancient: Cry of Chaos",     -- Level 65
+            "Battle Cry of the Mastruq", -- Level 65
+            "War Cry of Dravel",         -- Level 64
+            "Battle Cry of Dravel",      -- Level 57
+            "War Cry",                   -- Level 50
+            "Battle Cry",                -- Level 30
         },
         ['CryDmg'] = {
-            "Cry Havoc",
-            "Cry Carnage",
+            "Cry Carnage", -- Level 98
+            "Cry Havoc",   -- Level 68
         },
         ['Tendon'] = {
-            "Tendon Cleave", -- 126
-            "Tendon Slice",
-            "Tendon Shred",
-            "Tendon Cleave",
-            "Tendon Sever",
-            "Tendon Shear",
-            "Tendon Lacerate",
-            "Tendon Slash",
-            "Tendon Gash",
-            "Tendon Tear",
-            "Tendon Rupture",
-            "Tendon Rip",
+            "Tendon Slice",    -- Level 121
+            "Tendon Shred",    -- Level 116
+            "Tendon Rip",      -- Level 111
+            "Tendon Rupture",  -- Level 106
+            "Tendon Tear",     -- Level 101
+            "Tendon Gash",     -- Level 96
+            "Tendon Slash",    -- Level 91
+            "Tendon Lacerate", -- Level 86
+            "Tendon Shear",    -- Level 81
+            "Tendon Sever",    -- Level 76
+            "Tendon Cleave",   -- Level 71
+            "Tendon Cleave",   -- Level 71
         },
         ['SappingStrike'] = {
-            "Sapping Strikes",
-            "Shriveling Strikes",
-            "Draining Strikes",
+            "Draining Strikes",   -- Level 123
+            "Shriveling Strikes", -- Level 113
+            "Sapping Strikes",    -- Level 103
         },
         ['ReflexDisc'] = {
-            "Reflexive Retaliation",
-            "Instinctive Retaliation",
+            "Instinctive Retaliation", -- Level 118
+            "Reflexive Retaliation",   -- Level 113
         },
         ['RestFrenzy'] = {
-            "Desperate Frenzy",
-            "Blinding Frenzy",
-            "Restless Frenzy",
+            "Desperate Frenzy", -- Level 125
+            "Blinding Frenzy",  -- Level 120
+            "Restless Frenzy",  -- Level 115
         },
         ['RetaliationDodge'] = {
-            "Anticipatory Retaliation", -- 129
-            "Preemptive Retaliation",
-            "Primed Retaliation",
-            "Premature Retaltion",
-            "Proactive Retaliation",
-            "Prior Retaliation",
-            "Advanced Retaliation",
-            "Early Retaliation",
+            "Anticipatory Retaliation", -- Level 126
+            "Preemptive Retaliation",   -- Level 121
+            "Primed Retaliation",       -- Level 116
+            "Premature Retaliation",    -- Level 111
+            "Proactive Retaliation",    -- Level 106
+            "Prior Retaliation",        -- Level 101
+            "Advanced Retaliation",     -- Level 96
+            "Early Retaliation",        -- Level 91
         },
         ['TempleStun'] = {
-            "Temple Strike XVI", -- 128
-            "Temple Shatter",
-            "Temple Bash",
-            "Temple Blow",
-            "Temple Chop",
-            "Temple Crack",
-            "Temple Crush",
-            "Temple Demolish",
-            "Temple Shatter",
-            "Temple Slam",
-            "Temple Smash",
-            "Temple Strike",
+            "Temple Strike XVI", -- Level 128
+            "Temple Shatter",    -- Level 118
+            "Temple Shatter",    -- Level 118
+            "Temple Crack",      -- Level 113
+            "Temple Slam",       -- Level 108
+            "Temple Demolish",   -- Level 103
+            "Temple Crush",      -- Level 98
+            "Temple Smash",      -- Level 93
+            "Temple Chop",       -- Level 88
+            "Temple Bash",       -- Level 83
+            "Temple Strike",     -- Level 78
+            "Temple Blow",       -- Level 73
         },
         ['JarringStrike'] = {
-            "Jarring Strike XVI", -- 129
-            "Jarring Crash",
-            "Jarring Strike",
-            "Jarring Smash",
-            "Jarring Clash",
-            "Jarring Slam",
-            "Jarring Blow",
-            "Jarring Crush",
-            "Jarring Smite",
-            "Jarring Jolt",
-            "Jarring Shock",
-            "Jarring Impact",
+            "Jarring Strike XVI", -- Level 129
+            "Jarring Crash",      -- Level 124
+            "Jarring Impact",     -- Level 119
+            "Jarring Shock",      -- Level 114
+            "Jarring Jolt",       -- Level 109
+            "Jarring Smite",      -- Level 104
+            "Jarring Crush",      -- Level 99
+            "Jarring Blow",       -- Level 94
+            "Jarring Slam",       -- Level 89
+            "Jarring Clash",      -- Level 84
+            "Jarring Smash",      -- Level 79
+            "Jarring Strike",     -- Level 74
         },
         ['SnareDisc'] = {
-            "Tendon Slice",
-            "Tendon Shred",
-            "Tendon Rip",
-            "Tendon Rupture",
-            "Tendon Tear",
-            "Tendon Gash",
-            "Tendon Slash",
-            "Tendon Lacerate",
-            "Tendon Shear",
-            "Tendon Sever",
-            "Tendon Cleave",
-            "Crippling Strike",
-            "Leg Slice",
-            "Leg Cut",
-            "Leg Strike",
+            "Tendon Slice",     -- Level 121
+            "Tendon Shred",     -- Level 116
+            "Tendon Rip",       -- Level 111
+            "Tendon Rupture",   -- Level 106
+            "Tendon Tear",      -- Level 101
+            "Tendon Gash",      -- Level 96
+            "Tendon Slash",     -- Level 91
+            "Tendon Lacerate",  -- Level 86
+            "Tendon Shear",     -- Level 81
+            "Tendon Sever",     -- Level 76
+            "Tendon Cleave",    -- Level 71
+            "Crippling Strike", -- Level 67
+            "Leg Slice",        -- Level 54
+            "Leg Cut",          -- Level 32
+            "Leg Strike",       -- Level 8
         },
     },
     ['RotationOrder'] = {
