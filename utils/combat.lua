@@ -910,7 +910,7 @@ function Combat.AutoCampCheck(tempConfig, bCalledFromInsideEvent)
 
     local distanceToCamp = Math.GetDistance(me.Y(), me.X(), tempConfig.AutoCampY, tempConfig.AutoCampX)
 
-    if distanceToCamp >= 400 then
+    if distanceToCamp >= 400 and not Config:GetSetting('DoPull') then
         Comms.PrintGroupMessage("I'm over 400 units from camp, not returning!")
         Core.DoCmd("/rgl campoff")
         return
