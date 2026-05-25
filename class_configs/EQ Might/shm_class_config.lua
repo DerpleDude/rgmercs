@@ -705,7 +705,7 @@ local _ClassConfig = {
             end,
         },
         {
-            name = 'MeleeProcBuff',
+            name = 'ProcBuff',
             state = 1,
             steps = 1,
             targetId = function(self) return Casting.GetBuffableIDs() end,
@@ -739,7 +739,7 @@ local _ClassConfig = {
 
     },
     ['Rotations']         = {
-        ['MeleeProcBuff'] = {
+        ['ProcBuff']    = {
             {
                 name = "Legendary Armband of the Panther",
                 type = "Item",
@@ -762,6 +762,7 @@ local _ClassConfig = {
                 type = "Item",
                 load_cond = function(self) return self.Helpers.ProcBuffChoice() == "JaguarItem" end,
                 cond = function(self, itemName, target)
+                    if not Targeting.TargetIsAMelee(target) then return false end
                     return Casting.GroupBuffItemCheck(itemName, target) and Casting.AddedBuffCheck(9975, target) --Panther Rk. II
                 end,
             },
@@ -771,11 +772,12 @@ local _ClassConfig = {
                 load_cond = function(self) return self.Helpers.ProcBuffChoice() == "ProcSpell" end,
                 cond = function(self, spell, target)
                     if not Casting.CastReady(spell) then return false end                                 --avoid constant group buff checks
+                    if not Globals.Constants.GroupTargetTypes:contains(spell.TargetType() or "") and not Targeting.TargetIsAMelee(target) then return false end
                     return Casting.GroupBuffCheck(spell, target) and Casting.AddedBuffCheck(9975, target) --Panther Rk. II
                 end,
             },
         },
-        ['CombatBuff']    = {
+        ['CombatBuff']  = {
             {
                 name = "Companion's Blessing",
                 type = "AA",
@@ -814,7 +816,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Burn']          = {
+        ['Burn']        = {
             {
                 name = "Ancestral Aid",
                 type = "AA",
@@ -854,7 +856,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Malo']          = {
+        ['Malo']        = {
             {
                 name = "AEMaloSpell",
                 type = "Spell",
@@ -880,7 +882,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Slow']          = {
+        ['Slow']        = {
             {
                 name = "Tigir's Insect Swarm",
                 type = "AA",
@@ -918,7 +920,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['PutridDecay']   = {
+        ['PutridDecay'] = {
             {
                 name = "PutridDecay",
                 type = "Spell",
@@ -927,7 +929,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Cripple']       = {
+        ['Cripple']     = {
             {
                 name = "CrippleSpell",
                 type = "Spell",
@@ -936,7 +938,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['DPS']           = {
+        ['DPS']         = {
             {
                 name = "Epic",
                 type = "Item",
@@ -986,7 +988,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['DPS(AE)']       = {
+        ['DPS(AE)']     = {
             {
                 name = "PBAEPoison",
                 type = "Spell",
@@ -996,7 +998,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['PetSummon']     = {
+        ['PetSummon']   = {
             {
                 name = "Artifact of Nature Spirit",
                 type = "Item",
@@ -1024,7 +1026,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Downtime']      = {
+        ['Downtime']    = {
             {
                 name = "Communion of the Cheetah",
                 type = "AA",
@@ -1057,7 +1059,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['PetBuff']       = {
+        ['PetBuff']     = {
             {
                 name = "HasteBuff",
                 type = "Spell",
@@ -1083,7 +1085,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['GroupBuff']     = {
+        ['GroupBuff']   = {
             {
                 name = "Communion of the Cheetah",
                 type = "AA",

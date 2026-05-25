@@ -24,7 +24,7 @@ setmetatable(Module, { __index = Base, })
 Module.TempSettings                = {}
 Module.TempSettings.CampZoneId     = 0
 Module.TempSettings.LastCmd        = ""
-Module.TempSettings.StuckAtTime    = 0
+Module.TempSettings.NavWasActive   = false
 
 Module.Constants                   = {}
 Module.Constants.GGHZones          = Set.new({ "poknowledge", "potranquility", "stratos", "guildlobby", "moors", "crescent", "guildhalllrg_int", "guildhall", })
@@ -681,6 +681,7 @@ function Module:GiveTime()
     end
 
     if Globals.PauseMain and not Config:GetSetting('RunMovePaused') then
+        Module.TempSettings.NavWasActive = false -- stop monitoring; resume starts a fresh stuck window
         return
     end
 
@@ -818,11 +819,8 @@ end
 function Module:IAmStuck()
     Movement:StoreLastMove()
     local Nav = mq.TLO.Navigation
-    local stuck = Nav.Active() and not Nav.Paused() and Movement:GetSecondsSinceLastNav() >= Config:GetSetting('AttemptToFixStuckTimer') and
-        (
-            (Nav.Velocity() == 0) or
-            (Movement:GetTimeSinceLastPositionChange() >= Config:GetSetting('AttemptToFixStuckTimer'))
-        )
+    local stuck = Nav.Active() and not Nav.Paused() and
+        Movement:GetTimeSinceLastPositionChange() >= Config:GetSetting('AttemptToFixStuckTimer')
 
     local lastNav, _ = Movement:GetLastNavCmd()
 
@@ -848,92 +846,128 @@ end
 function Module:CheckStuck()
     local Nav = mq.TLO.Navigation
 
+    -- nav not running: reset episode tracking and bail.
     if not Nav.Active() then
-        Module.TempSettings.StuckAtTime = 0 -- not stuck
+        Module.TempSettings.NavWasActive = false
         return
     end
 
-    -- are we stuck?
-    if not self:IAmStuck() then
-        Module.TempSettings.StuckAtTime = 0 -- not stuck
+    -- new nav episode (inactive->active, or first sight of an already-running nav): drop any pre-nav idle time and give it a fresh window before judging.
+    -- Keeps us from false-firing on someone else's nav.
+    if not Module.TempSettings.NavWasActive then
+        Module.TempSettings.NavWasActive = true
+        Movement:ResetPositionChangeTimer()
         return
     end
 
-    if Config:GetSetting('AttemptToFixStuck') and self:IAmStuck() then
-        if Nav.Active() and mq.TLO.MoveTo.Moving() then
-            Logger.log_warning("\awWARNING:\ax Navigation appears to be trying to MoveTo and Nav at the same time. Stopping MoveTo to attempt to fix stuck.")
-            Movement:StopMoveTo()
-        end
-        if Module.TempSettings.StuckAtTime == 0 then
-            Module.TempSettings.StuckAtTime = Globals.GetTimeSeconds()
-        end
+    if not self:IAmStuck() then return end
 
-        if ((Globals.GetTimeSeconds() - Module.TempSettings.StuckAtTime) >= Config:GetSetting('AttemptToFixStuckTimer')) or Movement:GetTimeSinceLastPositionChange() >= Config:GetSetting('AttemptToFixStuckTimer') then
-            Logger.log_warning("\awWARNING:\ax Navigation appears to be stuck")
-            -- is autosize loaded?
-            ---@diagnostic disable-next-line: undefined-field
-            if mq.TLO.Plugin("MQ2AutoSize").IsLoaded() and mq.TLO.AutoSize ~= nil then
-                Logger.log_warning("\awWARNING:\ax Attempting to unstick via MQ2AutoSize and Toggling Nav Pause")
-                ---@diagnostic disable-next-line: undefined-field
-                local startingSize = mq.TLO.AutoSize.SizeSelf()
-                ---@diagnostic disable-next-line: undefined-field
-                local startingToggleEnabled = mq.TLO.AutoSize.Enabled()
-                ---@diagnostic disable-next-line: undefined-field
-                local startingToggleSelf = mq.TLO.AutoSize.ResizeSelf()
+    if not Config:GetSetting('AttemptToFixStuck') then return end
 
-                if not Nav.Paused() then
-                    Logger.log_debug("\awWARNING:\ax Pausing Nav to unstick")
-                    Movement:DoNav(true, "pause 1")
-                    Movement:StopMoveTo()
-                    mq.delay(500)
+    -- can't move a CC'd character; don't thrash the nav trying.
+    if mq.TLO.Me.Stunned() or mq.TLO.Me.Mezzed() or mq.TLO.Me.Rooted() then
+        Movement:ResetPositionChangeTimer()
+        return
+    end
 
-                    if Nav.Paused() then
-                        Movement:DoNav(true, "pause 2")
-                    end
+    if mq.TLO.MoveTo.Moving() then
+        Logger.log_warning("\awWARNING:\ax Navigation appears to be trying to MoveTo and Nav at the same time. Stopping MoveTo to attempt to fix stuck.")
+        Movement:StopMoveTo()
+    end
 
-                    if not Nav.Paused() and not self:IAmStuck() then
-                        Logger.log_warning("\agUnstuck successful!\ax Resuming Navigation.")
-                        return
-                    end
-                end
+    Logger.log_warning("\awWARNING:\ax Navigation appears to be stuck")
+    self:AttemptUnstick()
+    Movement:ResetPositionChangeTimer() -- cooldown: one full timer before re-attempting
+end
 
-                if not startingToggleEnabled then
-                    Logger.log_debug("\awWARNING:\ax Enabling AutoSize to unstick")
-                    Core.DoCmd("/squelch /autosize on")
-                end
+--- Waits up to ms for nav to start moving again, polling stuck state.
+---@param ms number Max milliseconds to wait.
+---@return boolean True if no longer stuck.
+function Module:WaitForUnstuck(ms)
+    mq.delay(ms, function() return not self:IAmStuck() end)
+    return not self:IAmStuck()
+end
 
-                if not startingToggleSelf then
-                    Logger.log_debug("\awWARNING:\ax Enabling AutoSize Self to unstick")
-                    Core.DoCmd("/squelch /autosize self on")
-                end
+--- Tries each unstick strategy in order, stopping at the first that gets us moving again.
+---@return boolean True if any strategy succeeded.
+function Module:AttemptUnstick()
+    local unstuck = self:UnstickViaPauseToggle() or self:UnstickViaStepBack() or self:UnstickViaAutoSize()
+    if unstuck then
+        Logger.log_warning("\agUnstuck successful!\ax Resuming Navigation.")
+    else
+        Logger.log_warning("\arStill stuck.\ax Tried everything I've got - I'll keep trying.")
+    end
+    return unstuck
+end
 
-                local cycleSizes = { startingSize * 2, 1, startingSize * 1.5, 1, startingSize * 3, 1, }
-                for _, size in ipairs(cycleSizes) do
-                    Logger.log_debug("\awWARNING:\ax Setting size to %d to unstick", size)
-                    Core.DoCmd("/squelch /autosize sizeself %d", size)
+--- Toggles nav pause off and back on to nudge MQ2Nav pathing state
+---@return boolean True if no longer stuck after resuming.
+function Module:UnstickViaPauseToggle()
+    Movement:SetNavPaused(true)
+    mq.delay(300)
+    Movement:SetNavPaused(false)
+    return self:WaitForUnstuck(2000)
+end
 
-                    mq.delay("2s", function()
-                        return not self:IAmStuck()
-                    end)
+--- Steps backward briefly to peel off geometry, then resumes nav.
+---@return boolean True if no longer stuck after resuming.
+function Module:UnstickViaStepBack()
+    Movement:SetNavPaused(true)
+    Core.DoCmd("/keypress back hold")
+    mq.delay(500)
+    Core.DoCmd("/keypress back")
+    Movement:SetNavPaused(false)
+    return self:WaitForUnstuck(2000)
+end
 
-                    if not self:IAmStuck() then
-                        Logger.log_warning("\agUnstuck successful!\ax Resuming Navigation.")
-                        break
-                    end
-                end
-                Core.DoCmd("/squelch /autosize sizeself %d", startingSize) -- ensure we end back at starting size
-                if not startingToggleSelf then
-                    Core.DoCmd("/squelch /autosize self off")
-                end
-                if not startingToggleEnabled then
-                    Core.DoCmd("/squelch /autosize off")
-                end
-                Module.TempSettings.StuckAtTime = 0
-            else
-                Logger.log_warning("\awWARNING:\ax MQ2AutoSize not loaded, cannot unstuck.")
-            end
+--- Cycles MQ2AutoSize (if loaded) self-size to change the collision hitbox and pop off geometry.
+---@return boolean True if no longer stuck, false if plugin absent or all sizes fail.
+function Module:UnstickViaAutoSize()
+    ---@diagnostic disable-next-line: undefined-field
+    if not (mq.TLO.Plugin("MQ2AutoSize").IsLoaded() and mq.TLO.AutoSize ~= nil) then
+        Logger.log_warning("\awWARNING:\ax MQ2AutoSize not loaded, cannot unstick via resize.")
+        return false
+    end
+
+    Logger.log_warning("\awWARNING:\ax Attempting to unstick via MQ2AutoSize resize cycle")
+    ---@diagnostic disable-next-line: undefined-field
+    local startingSize = mq.TLO.AutoSize.SizeSelf()
+    ---@diagnostic disable-next-line: undefined-field
+    local startingToggleEnabled = mq.TLO.AutoSize.Enabled()
+    ---@diagnostic disable-next-line: undefined-field
+    local startingToggleSelf = mq.TLO.AutoSize.ResizeSelf()
+
+    -- the resize needs nav running so the freed hitbox lets it move off again.
+    Movement:SetNavPaused(false)
+
+    if not startingToggleEnabled then
+        Logger.log_debug("\awWARNING:\ax Enabling AutoSize to unstick")
+        Core.DoCmd("/squelch /autosize on")
+    end
+    if not startingToggleSelf then
+        Logger.log_debug("\awWARNING:\ax Enabling AutoSize Self to unstick")
+        Core.DoCmd("/squelch /autosize self on")
+    end
+
+    local unstuck = false
+    for _, size in ipairs({ startingSize * 2, 1, startingSize * 1.5, 1, startingSize * 3, 1, }) do
+        Logger.log_debug("\awWARNING:\ax Setting size to %d to unstick", size)
+        Core.DoCmd("/squelch /autosize sizeself %d", size)
+        if self:WaitForUnstuck(2000) then
+            unstuck = true
+            break
         end
     end
+
+    Core.DoCmd("/squelch /autosize sizeself %d", startingSize) -- restore starting size
+    if not startingToggleSelf then
+        Core.DoCmd("/squelch /autosize self off")
+    end
+    if not startingToggleEnabled then
+        Core.DoCmd("/squelch /autosize off")
+    end
+
+    return unstuck
 end
 
 return Module

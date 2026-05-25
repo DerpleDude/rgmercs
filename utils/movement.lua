@@ -292,10 +292,27 @@ function Movement:GetTimeSinceLastMove()
 end
 
 --- Returns seconds since the last actual position change, ignoring
---- combat state — useful for detecting true standing still.
+--- combat state - useful for detecting true standing still.
 ---@return number Seconds since coordinates last changed by more than 1 unit.
 function Movement:GetTimeSinceLastPositionChange()
     return Globals.GetTimeSeconds() - (self.LastMove.TimeAtPositionChange or 0)
+end
+
+--- Resets the position-change clock to now, so stuck detection starts a
+--- fresh window. Used to drop pre-nav idle time at the start of a nav
+--- episode and as a cooldown after an unstick attempt.
+function Movement:ResetPositionChangeTimer()
+    self.LastMove.TimeAtPositionChange = Globals.GetTimeSeconds()
+end
+
+--- Deterministically pauses or resumes navigation, no-op if already in the
+--- desired state. /nav pause is a toggle, so we check state first to avoid
+--- flipping the wrong way.
+---@param shouldPause boolean True to pause nav, false to resume.
+function Movement:SetNavPaused(shouldPause)
+    if mq.TLO.Navigation.Paused() == shouldPause then return end
+    Core.DoCmd("/squelch /nav pause")
+    mq.delay(200, function() return mq.TLO.Navigation.Paused() == shouldPause end)
 end
 
 --- Snapshots current position, heading, sitting state, and timestamps

@@ -1270,8 +1270,8 @@ Config.DefaultConfig                                     = {
         ConfigType = "Advanced",
     },
     -- Common/Under the Hood
-    ['SpellRetryCountBeta']        = {
-        DisplayName = "Spell Retry Count",
+    ['CastRetryCountBeta']         = {
+        DisplayName = "Cast Retry Count",
         Group = "Abilities",
         Header = "Common",
         Category = "Under the Hood",

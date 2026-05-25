@@ -322,7 +322,6 @@ local _ClassConfig = {
             "Talisman of the Lynx",         -- Level 81
             "Talisman of the Cougar",       -- Level 76
             "Talisman of the Panther",      -- Level 71
-            -- Below Level 71 This is a single target buff and will be keyed off of the MA
             "Spirit of the Panther",        -- Level 69
             "Spirit of the Leopard",        -- Level 61
             "Spirit of the Jaguar",         -- Level 57
@@ -1064,13 +1063,14 @@ local _ClassConfig = {
         },
         {
             name = 'ProcBuff',
-            timer = 10,
             state = 1,
             steps = 1,
             load_cond = function(self) return self:GetResolvedActionMapItem('MeleeProcBuff') end,
-            targetId = function(self) return { Core.GetMainAssistId(), } or {} end,
+            targetId = function(self) return Casting.GetBuffableIDs() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and (not Core.IsModeActive('Heal') or Core.OkayToNotHeal())
+                local downtime = combat_state == "Downtime" and Casting.OkayToBuff()
+                local combat = combat_state == "Combat"
+                return (downtime or combat) and (not Core.IsModeActive('Heal') or Core.OkayToNotHeal())
             end,
         },
         {
@@ -1110,6 +1110,7 @@ local _ClassConfig = {
                 type = "Spell",
                 load_cond = function(self) return not Core.GetResolvedActionMapItem('DichoSpell') end,
                 cond = function(self, spell, target)
+                    if (spell.TargetType() or ""):lower() ~= "group v2" and not Targeting.TargetIsAMelee(target) then return false end
                     if not Casting.CastReady(spell) then return false end --avoid constant group buff checks
                     return Casting.GroupBuffCheck(spell, target)
                 end,

@@ -146,12 +146,12 @@ local _ClassConfig = {
         },
         ['HasteBuff'] = {
             -- Haste Buff - 26 - 64
-            "Talisman of Celerity", -- Level 64
-            "Swift Like the Wind",  -- Level 63
-            "Celerity",             -- Level 56
-            "Quickness",            -- Level 26
+            "Talisman of Celerity",    -- Level 64
+            "Swift Like the Wind",     -- Level 63
+            "Celerity",                -- Level 56
+            "Quickness",               -- Level 26
         },
-        ['Unification'] = { -- Many buffs combined: 75 Sta, 50 sta cap, 7% evasion, 5% damage
+        ['Unification'] = {            -- Many buffs combined: 75 Sta, 50 sta cap, 7% evasion, 5% damage
             "Talisman of Unification", -- Level 70 Laz Custom
         },
         ['LowLvlStaBuff'] = {
@@ -220,16 +220,16 @@ local _ClassConfig = {
             "Idol of Malos", -- Level 70
         },
         ['MaloSpell'] = {
-            "Malos",       -- Level 65
-            "Malosinia",   -- Level 63
-            "Malo",        -- Level 60
-            "Malosini",    -- Level 57
+            "Malos",           -- Level 65
+            "Malosinia",       -- Level 63
+            "Malo",            -- Level 60
+            "Malosini",        -- Level 57
             --Below this these spells are considered by many to be a waste of mana, but the user can elect to turn this off.
-            "Malosi",      -- Level 48
-            "Malaisement", -- Level 32
-            "Malaise",     -- Level 18
+            "Malosi",          -- Level 48
+            "Malaisement",     -- Level 32
+            "Malaise",         -- Level 18
         },
-        ['AESlowSpell'] = { --Often considered a waste of mana in group situations, user option.
+        ['AESlowSpell'] = {    --Often considered a waste of mana in group situations, user option.
             "Tigir's Insects", -- Level 58
         },
         ['SlowSpell'] = {
@@ -245,15 +245,14 @@ local _ClassConfig = {
             "Cloud of Grummus",  -- Level 61
             "Plague of Insects", -- Level 54
         },
-        ['CrippleSpell'] = {   -- needs to be added to spell list and have entries made
-            "Crippling Spasm", -- Level 66
-            "Cripple",         -- Level 53, Starts to become worth it, depending on target
-            "Incapacitate",    -- Level 41, Likely not worth
-            "Listless Power",  -- Level 29, Definitely not worth
+        ['CrippleSpell'] = {     -- needs to be added to spell list and have entries made
+            "Crippling Spasm",   -- Level 66
+            "Cripple",           -- Level 53, Starts to become worth it, depending on target
+            "Incapacitate",      -- Level 41, Likely not worth
+            "Listless Power",    -- Level 29, Definitely not worth
         },
         ['MeleeProcBuff'] = {
             "Talisman of the Panther", -- Level 71
-            -- Below Level 70 This is a single target buff and will be keyed off of the MA
             "Spirit of the Panther",   -- Level 69
             "Spirit of the Leopard",   -- Level 61
             "Spirit of the Jaguar",    -- Level 57
@@ -278,13 +277,13 @@ local _ClassConfig = {
             "Light Healing",              -- Level 9
             "Minor Healing",              -- Level 1
         },
-        ['GroupHeal'] = { -- Laz specific, some taken from cleric, some custom
-            "Word of Reconstitution", -- Level 70 Laz Custom
-            "Word of Redemption",     -- Level 65
-            "Word of Restoration",    -- Level 62
-            "Word of Vigor",          -- Level 56
-            "Word of Healing",        -- Level 50
-            "Word of Health",         -- Level 40
+        ['GroupHeal'] = {                 -- Laz specific, some taken from cleric, some custom
+            "Word of Reconstitution",     -- Level 70 Laz Custom
+            "Word of Redemption",         -- Level 65
+            "Word of Restoration",        -- Level 62
+            "Word of Vigor",              -- Level 56
+            "Word of Healing",            -- Level 50
+            "Word of Health",             -- Level 40
         },
         ['GroupRenewalHoT'] = {
             --This seems entirely not worth using since they were given direct group heals
@@ -295,7 +294,7 @@ local _ClassConfig = {
             "Torpor",              -- Level 60
             "Stoicism",            -- Level 44
         },
-        ['SingleHot'] = { -- some elixirs given to shm/dru on laz
+        ['SingleHot'] = {          -- some elixirs given to shm/dru on laz
             "Spiritual Serenity",  -- Level 70
             "Breath of Trushar",   -- Level 65
             "Quiescence",          -- Level 65
@@ -333,14 +332,14 @@ local _ClassConfig = {
         ['ColdNuke'] = {
             --- ColdNuke - Level 4+
             -- "Dire Avalanche", -- Level 70, In resources but not scribable I think?
-            "Ice Age",           -- Level 69
-            "Velium Strike",     -- Level 64
-            "Ice Strike",        -- Level 54
-            "Blizzard Blast",    -- Level 44
-            "Winter's Roar",     -- Level 33
-            "Frost Strike",      -- Level 23
-            "Spirit Strike",     -- Level 14
-            "Frost Rift",        -- Level 4
+            "Ice Age",        -- Level 69
+            "Velium Strike",  -- Level 64
+            "Ice Strike",     -- Level 54
+            "Blizzard Blast", -- Level 44
+            "Winter's Roar",  -- Level 33
+            "Frost Strike",   -- Level 23
+            "Spirit Strike",  -- Level 14
+            "Frost Rift",     -- Level 4
         },
         ['CurseDot'] = {
             -- Curse Dot 1 Stacking: Curse - Long Dot(30s) - Level 34+
@@ -363,18 +362,18 @@ local _ClassConfig = {
         },
         ['UltorDot'] = {
             ---, Stacking: Breath of Ultor - Long Dot(84s) - Level 4+
-            "Breath of Wunshi",    -- Level 67
-            "Breath of Ultor",     -- Level 64
-            "Pox of Bertoxxulous", -- Level 59
-            "Plague",              -- Level 49
-            "Scourge",             -- Level 31
-            "Affliction",          -- Level 19
-            "Sicken",              -- Level 4
+            "Breath of Wunshi",      -- Level 67
+            "Breath of Ultor",       -- Level 64
+            "Pox of Bertoxxulous",   -- Level 59
+            "Plague",                -- Level 49
+            "Scourge",               -- Level 31
+            "Affliction",            -- Level 19
+            "Sicken",                -- Level 4
         },
-        ['AEDot'] = { -- do homework for Laz
-            "Blood of Yoppa", -- Level 70
+        ['AEDot'] = {                -- do homework for Laz
+            "Blood of Yoppa",        -- Level 70
         },
-        ['PetSpell'] = { --We need to add handling for commune to get the mammoth/etc
+        ['PetSpell'] = {             --We need to add handling for commune to get the mammoth/etc
             -- Pet Spell - 32+
             "Commune with the Wild", -- Level 70 Laz Custom
             "Farrel's Companion",    -- Level 67
@@ -391,13 +390,13 @@ local _ClassConfig = {
         -- },
         ['CurePoison'] = {
             -- "Eradicate Poison", -- Level 56
-            "Counteract Poison",   -- Level 26
-            "Cure Poison",         -- Level 2
+            "Counteract Poison", -- Level 26
+            "Cure Poison",       -- Level 2
         },
         ['CureDisease'] = {
             -- "Eradicate Disease", -- Level 52
-            "Counteract Disease",   -- Level 22
-            "Cure Disease",         -- Level 1
+            "Counteract Disease", -- Level 22
+            "Cure Disease",       -- Level 1
         },
         ['CureCurse'] = {
             -- "Eradicate Curse",   -- Level 54
@@ -419,7 +418,7 @@ local _ClassConfig = {
             "Regeneration", -- Level 23
         },
         ['ShrinkSpell'] = {
-            "Shrink", -- Level 15
+            "Shrink",       -- Level 15
         },
         ['PutridDecay'] = { -- Level 66 Poi/Dis resist debuff
             "Putrid Decay", -- Level 66
@@ -612,14 +611,15 @@ local _ClassConfig = {
             end,
         },
         {
-            name = 'CombatBuff',
-            timer = 10,
+            name = 'ProcBuff',
             state = 1,
             steps = 1,
             load_cond = function(self) return self:GetResolvedActionMapItem('MeleeProcBuff') end,
             targetId = function(self) return Casting.GetBuffableIDs() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and (not Core.IsModeActive('Heal') or Core.OkayToNotHeal())
+                local downtime = combat_state == "Downtime" and Casting.OkayToBuff()
+                local combat = combat_state == "Combat"
+                return (downtime or combat) and (not Core.IsModeActive('Heal') or Core.OkayToNotHeal())
             end,
         },
         {
@@ -644,12 +644,13 @@ local _ClassConfig = {
 
     },
     ['Rotations']         = {
-        ['CombatBuff'] = {
+        ['ProcBuff'] = {
             {
                 name = "MeleeProcBuff",
                 type = "Spell",
                 cond = function(self, spell, target)
                     if not Casting.CastReady(spell) then return false end --avoid constant group buff checks
+                    if (spell.TargetType() or ""):lower() ~= "group v2" and not Targeting.TargetIsAMelee(target) then return false end
                     return Casting.GroupBuffCheck(spell, target)
                 end,
             },
