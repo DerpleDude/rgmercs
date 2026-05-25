@@ -187,7 +187,7 @@ local _ClassConfig = {
         },
         ['CureSong'] = {
             -- "Aria of Innocence", -- Level 52, curse only, and only 2 x 2 counters
-            "Aria of Asceticism",   -- Level 45, poison/disease Only
+            "Aria of Asceticism", -- Level 45, poison/disease Only
         },
         ['CharmSong'] = {
             "Voice of the Vampire",       -- Level 70
@@ -752,7 +752,7 @@ local _ClassConfig = {
                 type = "AA",
                 cond = function(self, aaName)
                     if not Config:GetSetting('UseFading') then return false end
-                    return self.Helpers.UnwantedAggroCheck(self)
+                    return mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') and self.Helpers.UnwantedAggroCheck(self)
                     --I wanted to use XTAggroCount here but it doesn't include your current target in the number it returns and I don't see a good workaround. For Loop it is.
                 end,
             },
