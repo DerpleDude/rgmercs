@@ -358,6 +358,10 @@ local _ClassConfig = {
         ['PetHealSpell'] = {
             "Renewal of Lucifer", -- Level 68 EQM Custom
         },
+        ['ColdDot'] = {
+            "Chillgrave", -- Level 69 EQM Custom
+            "Frostgrave", -- Level 63 EQ Custom
+        },
     },
     ['AASets']        = {
         ['ManaRestore'] = {
@@ -958,6 +962,15 @@ local _ClassConfig = {
                 end,
             },
             {
+                name = "ColdDot",
+                type = "Spell",
+                load_cond = function() return Config:GetSetting("DoColdDot") end,
+                cond = function(self, spell, target)
+                    if Config:GetSetting('DotNamedOnly') and not Globals.AutoTargetIsNamed then return false end
+                    return Casting.DotSpellCheck(spell) and Casting.HaveManaToDot()
+                end,
+            },
+            {
                 name = "Trinket of Suffocation",
                 type = "Item",
                 load_cond = function() return mq.TLO.Me.Level() >= 68 and mq.TLO.FindItem("=Trinket of Suffocation")() end,
@@ -1113,6 +1126,7 @@ local _ClassConfig = {
                 { name = "SpellProcBuff",    cond = function(self) return Config:GetSetting('DoProcBuff') end, },
                 { name = "Dispel",           cond = function(self) return Config:GetSetting('DoDispel') end, },
                 { name = "MagicNuke",        cond = function(self) return Config:GetSetting('DoNuke') end, },
+                { name = "ColdDot",          cond = function(self) return Config:GetSetting('DoColdDot') end, },
                 { name = "StrangleDot",      cond = function(self) return Config:GetSetting('DoStrangleDot') end, },
                 { name = "MindDot",          cond = function(self) return Config:GetSetting('DoMindDot') end, },
                 { name = "PetHealSpell",     cond = function(self) return Config:GetSetting('DoPetHealSpell') end, },
@@ -1403,12 +1417,22 @@ local _ClassConfig = {
             RequiresLoadoutChange = true,
             Default = true,
         },
+        ['DoColdDot']          = {
+            DisplayName = "Do Cold Dot",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "Over Time",
+            Index = 103,
+            Tooltip = "Use your grave (cold) line of dots.",
+            RequiresLoadoutChange = true,
+            Default = true,
+        },
         ['DotNamedOnly']       = {
             DisplayName = "Only Dot Named",
             Group = "Abilities",
             Header = "Damage",
             Category = "Over Time",
-            Index = 103,
+            Index = 104,
             Tooltip = "Any selected dot above will only be used on a named mob.",
             Default = true,
         },

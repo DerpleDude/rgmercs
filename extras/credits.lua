@@ -20,5 +20,6 @@ return {
         "Nunno",
         "No_Songs_For_You",
         "Zat",
+        "aspire",
     },
 }

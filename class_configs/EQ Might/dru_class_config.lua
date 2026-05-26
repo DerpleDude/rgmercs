@@ -385,6 +385,10 @@ local _ClassConfig = {
             "Permafrost Grip",          -- Level 68 EQM Custom
             "Ancient: Permafrost Veil", -- Level 60 EQM Custom
         },
+        ['ColdDot'] = {
+            "Chillgrave", -- Level 69 EQM Custom
+            "Frostgrave", -- Level 63 EQ Custom
+        },
     },
     ['AASets']            = {
         ['FireDebuffAA'] = {
@@ -620,6 +624,15 @@ local _ClassConfig = {
                 name = "FlameLickDot",
                 type = "Spell",
                 load_cond = function() return Config:GetSetting('DoFlameLickDot') end,
+                cond = function(self, spell, target)
+                    if Config:GetSetting('DotNamedOnly') and not Globals.AutoTargetIsNamed then return false end
+                    return Casting.DotSpellCheck(spell) and Casting.HaveManaToDot()
+                end,
+            },
+            {
+                name = "ColdDot",
+                type = "Spell",
+                load_cond = function() return Config:GetSetting('DoColdDot') end,
                 cond = function(self, spell, target)
                     if Config:GetSetting('DotNamedOnly') and not Globals.AutoTargetIsNamed then return false end
                     return Casting.DotSpellCheck(spell) and Casting.HaveManaToDot()
@@ -1025,6 +1038,7 @@ local _ClassConfig = {
                 { name = "PBAEMagic",      cond = function(self) return Config:GetSetting('DoPBAE') end, },
                 { name = "IceRain",        cond = function(self) return Config:GetSetting('DoRain') end, },
                 { name = "FlameLickDot",   cond = function(self) return Config:GetSetting('DoFlameLickDot') end, },
+                { name = "ColdDot",        cond = function(self) return Config:GetSetting('DoColdDot') end, },
                 { name = "SwarmDot",       cond = function(self) return Config:GetSetting('DoSwarmDot') end, },
                 { name = "VengeanceDot",   cond = function(self) return Config:GetSetting('DoVengeanceDot') end, },
                 -- { name = "BurstDS",      cond = function(self) return Config:GetSetting('DoBurstDS') end, },
@@ -1299,12 +1313,22 @@ local _ClassConfig = {
             Default = false,
             RequiresLoadoutChange = true,
         },
+        ['DoColdDot']         = {
+            DisplayName = "Do Cold Dot",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "Over Time",
+            Index = 104,
+            Tooltip = "Use your grave (cold) line of dots.",
+            RequiresLoadoutChange = true,
+            Default = true,
+        },
         ['DotNamedOnly']      = {
             DisplayName = "Only Dot Named",
             Group = "Abilities",
             Header = "Damage",
             Category = "Over Time",
-            Index = 104,
+            Index = 105,
             Tooltip = "Any selected dot above will only be used on a named mob.",
             Default = true,
             FAQ = "Why am I not using my dots?",

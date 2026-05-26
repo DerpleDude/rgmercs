@@ -166,6 +166,7 @@ local _ClassConfig = {
             "McVaxius' Berserker Crescendo", -- Level 42
             "Vilia's Verses of Celerity",    -- Level 36
             "Anthem de Arms",                -- Level 10
+            "Chant of Battle",               -- Level 1
         },
         ['SlowSong'] = {
             "Requiem of Time",          -- Level 64
