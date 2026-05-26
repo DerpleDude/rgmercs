@@ -356,6 +356,7 @@ local _ClassConfig = {
             "McVaxius' Berserker Crescendo",    -- Level 42, Base Game
             "Vilia's Verses of Celerity",       -- Level 36, Base Game
             "Anthem de Arms",                   -- Level 10, Base Game
+            "Chant of Battle",                  -- Level 1, Base Game
         },
         ['FireBuffSong'] = {
             -- CasterAriaSong - Level Range 72+
