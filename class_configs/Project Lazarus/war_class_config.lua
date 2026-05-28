@@ -78,12 +78,12 @@ local _ClassConfig = {
             "Defensive Discipline", -- Level 55
             "Evasive Discipline",   -- Level 52
         },
-        ['Fortitude'] = { -- Timer 3
+        ['Fortitude'] = {           -- Timer 3
             "Fortitude Discipline", -- Level 59
             "Furious Discipline",   -- Level 56
         },
-        ['GroupACBuff'] = { -- Has Commanding Voice (Dodge Buff) baked in
-            "Field Armorer", -- Level 65
+        ['GroupACBuff'] = {         -- Has Commanding Voice (Dodge Buff) baked in
+            "Field Armorer",        -- Level 65
         },
         ['AEBlades'] = {
             "Vortex Blade",    -- Level 69
@@ -125,9 +125,9 @@ local _ClassConfig = {
             "Throat Jab", -- Level 69
         },
         ['Flaunt'] = {
-            "Flaunt", -- Level 70 Laz Custom
+            "Flaunt",                      -- Level 70 Laz Custom
         },
-        ['ShockDisc'] = { -- Timer 7, defensive stun proc
+        ['ShockDisc'] = {                  -- Timer 7, defensive stun proc
             "Shocking Defense Discipline", -- Level 70
         },
     },
@@ -270,6 +270,17 @@ local _ClassConfig = {
                 return combat_state == "Combat" and Casting.BurnCheck()
             end,
         },
+        {
+            name = 'Buffs',
+            state = 1,
+            steps = 1,
+            targetId = function(self)
+                return mq.TLO.Target.ID() == Globals.AutoTargetID and { Globals.AutoTargetID, } or { mq.TLO.Me.ID(), }
+            end,
+            cond = function(self, combat_state)
+                return combat_state == "Combat" or (combat_state == "Downtime" and Casting.OkayToBuff())
+            end,
+        },
         { --Non-threat combat actions
             name = 'Combat',
             state = 1,
@@ -291,23 +302,6 @@ local _ClassConfig = {
                 end,
                 cond = function(self, discSpell)
                     return not mq.TLO.Me.Aura(1).ID()
-                end,
-            },
-            {
-                name = "GroupACBuff",
-                type = "Disc",
-                active_cond = function(self, discSpell)
-                    return Casting.IHaveBuff(discSpell)
-                end,
-                cond = function(self, discSpell)
-                    return Casting.SelfBuffCheck(discSpell)
-                end,
-            },
-            {
-                name = "Infused by Rage",
-                type = "AA",
-                cond = function(self, aaName)
-                    return Core.IsTanking() and Casting.SelfBuffAACheck(aaName)
                 end,
             },
         },
@@ -395,6 +389,13 @@ local _ClassConfig = {
             {
                 name = "AreaTaunt",
                 type = "AA",
+            },
+            {
+                name = "Rampage",
+                type = "AA",
+                cond = function(self, aaName, target)
+                    return Config:GetSetting("DoAEDamage")
+                end,
             },
         },
         ['EmergencyDefenses'] = {
@@ -528,6 +529,15 @@ local _ClassConfig = {
                 end,
             },
             {
+                name = "Rampage",
+                type = "AA",
+                load_cond = function(self) return not (Core.IsTanking() and Config:GetSetting('DoAETaunt')) end,
+                cond = function(self, aaName, target)
+                    if not Config:GetSetting("DoAEDamage") then return false end
+                    return Combat.AETargetCheck(true)
+                end,
+            },
+            {
                 name = "Rage of Rallos Zek",
                 type = "AA",
             },
@@ -553,6 +563,23 @@ local _ClassConfig = {
                 name = "Intensity of the Resolute",
                 type = "AA",
                 load_cond = function(self) return Config:GetSetting('DoVetAA') end,
+            },
+        },
+        ['Buffs'] = {
+            {
+                name = "GroupACBuff",
+                type = "Disc",
+                cond = function(self, discSpell)
+                    return Casting.SelfBuffCheck(discSpell)
+                end,
+            },
+            {
+                name = "Infused by Rage",
+                type = "AA",
+                load_cond = function(self) return Core.IsTanking() end,
+                cond = function(self, aaName)
+                    return Casting.SelfBuffAACheck(aaName)
+                end,
             },
         },
         ['Combat'] = {
@@ -600,14 +627,6 @@ local _ClassConfig = {
             {
                 name = "Throat",
                 type = "Disc",
-            },
-            {
-                name = "Rampage",
-                type = "AA",
-                cond = function(self, aaName, target)
-                    if not Config:GetSetting("DoAEDamage") or Config:GetSetting('UseRampage') == 1 then return false end
-                    return (Config:GetSetting('UseRampage') == 3 or (Config:GetSetting('UseRampage') == 2 and Casting.BurnCheck())) and Combat.AETargetCheck(true)
-                end,
             },
             {
                 name = "Call of Challenge",
@@ -695,21 +714,6 @@ local _ClassConfig = {
         },
 
         -- AE Damage
-        ['UseRampage']      = {
-            DisplayName = "Rampage Use:",
-            Group = "Abilities",
-            Header = "Damage",
-            Category = "AE",
-            Index = 105,
-            Tooltip = "Use Rampage 1-Never 2-Burns 3-Always",
-            Type = "Combo",
-            ComboOptions = { 'Never', 'Burns Only', 'All Combat', },
-            Default = 3,
-            Min = 1,
-            Max = 3,
-            ConfigType = "Advanced",
-        },
-
         --Hate Tools
         ['DoAETaunt']       = {
             DisplayName = "Do AE Taunts",
@@ -718,7 +722,8 @@ local _ClassConfig = {
             Category = "Hate Tools",
             Index = 101,
             Tooltip = "Use AE hatred Discs and AA (see FAQ for specifics).",
-            Default = false,
+            RequiresLoadoutChange = true,
+            Default = true,
         },
 
         --Defenses

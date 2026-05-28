@@ -358,6 +358,18 @@ local _ClassConfig = {
                 return combat_state == "Combat" and mq.TLO.Me.PctHPs() > Config:GetSetting('EmergencyLockout')
             end,
         },
+        { --Actions that establish or maintain hatred
+            name = 'AEHateTools',
+            state = 1,
+            steps = 1,
+            timer = 1, -- Don't check this more often than once a second to avoid blowing every ability at once (aggro takes time to update)
+            doFullRotation = true,
+            load_cond = function() return Core.IsTanking() and Config:GetSetting('DoAETaunt') end,
+            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
+            cond = function(self, combat_state)
+                return combat_state == "Combat" and mq.TLO.Me.PctHPs() > Config:GetSetting('EmergencyLockout')
+            end,
+        },
         { --Defensive actions triggered by low HP
             name = 'EmergencyDefenses',
             state = 1,
@@ -399,6 +411,17 @@ local _ClassConfig = {
                 return combat_state == "Combat" and Casting.BurnCheck() and mq.TLO.Me.PctHPs() > Config:GetSetting('EmergencyLockout')
             end,
         },
+        {
+            name = 'Buffs',
+            state = 1,
+            steps = 1,
+            targetId = function(self)
+                return mq.TLO.Target.ID() == Globals.AutoTargetID and { Globals.AutoTargetID, } or { mq.TLO.Me.ID(), }
+            end,
+            cond = function(self, combat_state)
+                return combat_state == "Combat" or (combat_state == "Downtime" and Casting.OkayToBuff())
+            end,
+        },
         { --DPS and Utility discs
             name = 'Combat',
             state = 1,
@@ -428,73 +451,6 @@ local _ClassConfig = {
                     return not mq.TLO.Me.Aura(1).ID()
                 end,
             },
-            {
-                name = "GroupACBuff",
-                type = "Disc",
-                active_cond = function(self, discSpell)
-                    return Casting.IHaveBuff(discSpell)
-                end,
-                cond = function(self, discSpell)
-                    return Casting.SelfBuffCheck(discSpell)
-                end,
-            },
-            {
-                name = "GroupDodgeBuff",
-                type = "Disc",
-                active_cond = function(self, discSpell)
-                    return Casting.IHaveBuff(discSpell)
-                end,
-                cond = function(self, discSpell)
-                    return Casting.SelfBuffCheck(discSpell)
-                end,
-            },
-            {
-                name = "DefenseACBuff",
-                type = "Disc",
-                active_cond = function(self, discSpell)
-                    return mq.TLO.Me.ActiveDisc.ID() == discSpell.ID()
-                end,
-                cond = function(self, discSpell)
-                    return Core.IsTanking() and Casting.NoDiscActive()
-                end,
-            },
-            {
-                name = "Brace for Impact",
-                type = "AA",
-                cond = function(self, aaName, target)
-                    return Casting.SelfBuffAACheck(aaName)
-                end,
-            },
-            {
-                name = "HealHateAE",
-                type = "Disc",
-                cond = function(self, discSpell, target)
-                    if not Config:GetSetting('DoAETaunt') or Config:GetSetting('SafeAETaunt') then return false end
-                    return Core.IsTanking() and Casting.SelfBuffCheck(discSpell)
-                end,
-            },
-            {
-                name = "HealHateSingle",
-                type = "Disc",
-                cond = function(self, discSpell, target)
-                    if Config:GetSetting('DoAETaunt') and not Config:GetSetting('SafeAETaunt') then return false end
-                    return Core.IsTanking() and Casting.SelfBuffCheck(discSpell)
-                end,
-            },
-            {
-                name = "Infused by Rage",
-                type = "AA",
-                cond = function(self, aaName)
-                    return Core.IsTanking() and Casting.SelfBuffAACheck(aaName)
-                end,
-            },
-            {
-                name = "Blade Guardian",
-                type = "AA",
-                cond = function(self, aaName)
-                    return Casting.SelfBuffAACheck(aaName)
-                end,
-            },
             { --Charm Click, name function stops errors in rotation window when slot is empty
                 name_func = function() return mq.TLO.Me.Inventory("Charm").Name() or "CharmClick(Missing)" end,
                 type = "Item",
@@ -502,6 +458,38 @@ local _ClassConfig = {
                     if not Config:GetSetting('DoCharmClick') or not Casting.ItemHasClicky(itemName) then return false end
                     return Casting.SelfBuffItemCheck(itemName)
                 end,
+            },
+        },
+        ['HateTools(AggroTarget)'] = {
+            {
+                name = "Attention",
+                type = "Disc",
+            },
+            {
+                name = "Blast of Anger",
+                type = "AA",
+            },
+            {
+                name = "Taunt",
+                type = "Ability",
+                cond = function(self, abilityName, target)
+                    return Targeting.GetTargetDistance(target) < 30
+                end,
+            },
+            {
+                name = "AbsorbTaunt",
+                type = "Disc",
+            },
+            {
+                name = "AddHate1",
+                type = "Disc",
+                cond = function(self, discSpell)
+                    return Casting.DetSpellCheck(discSpell)
+                end,
+            },
+            {
+                name = "AddHate2",
+                type = "Disc",
             },
         },
         ['HateTools(AutoTarget)'] = {
@@ -534,6 +522,23 @@ local _ClassConfig = {
             {
                 name = "AddHate2",
                 type = "Disc",
+            },
+        },
+        ['AEHateTools'] = {
+            {
+                name = "Area Taunt",
+                type = "AA",
+            },
+            {
+                name = "SelfBuffAE",
+                type = "Disc",
+            },
+            {
+                name = "Rampage",
+                type = "AA",
+                cond = function(self, aaName, target)
+                    return Config:GetSetting("DoAEDamage")
+                end,
             },
         },
         ['EmergencyDefenses'] = {
@@ -682,6 +687,60 @@ local _ClassConfig = {
                 end,
             },
         },
+        ['Buffs'] = {
+            {
+                name = "GroupACBuff",
+                type = "Disc",
+                cond = function(self, discSpell)
+                    return Casting.SelfBuffCheck(discSpell)
+                end,
+            },
+            {
+                name = "GroupDodgeBuff",
+                type = "Disc",
+                cond = function(self, discSpell)
+                    return Casting.SelfBuffCheck(discSpell)
+                end,
+            },
+            {
+                name = "DefenseACBuff",
+                type = "Disc",
+                load_cond = function(self) return Core.IsTanking() end,
+                cond = function(self, discSpell)
+                    return Casting.NoDiscActive()
+                end,
+            },
+            {
+                name = "Brace for Impact",
+                type = "AA",
+                cond = function(self, aaName, target)
+                    return Casting.SelfBuffAACheck(aaName)
+                end,
+            },
+            {
+                name = "HealHateAE",
+                type = "Disc",
+                load_cond = function(self) return Core.IsTanking() and Config:GetSetting('DoAETaunt') end,
+                cond = function(self, discSpell, target)
+                    return Casting.SelfBuffCheck(discSpell)
+                end,
+            },
+            {
+                name = "HealHateSingle",
+                type = "Disc",
+                load_cond = function(self) return Core.IsTanking() and not Config:GetSetting('DoAETaunt') end,
+                cond = function(self, discSpell, target)
+                    return Casting.SelfBuffCheck(discSpell)
+                end,
+            },
+            {
+                name = "Blade Guardian",
+                type = "AA",
+                cond = function(self, aaName)
+                    return Casting.SelfBuffAACheck(aaName)
+                end,
+            },
+        },
         ['Burn'] = {
             {
                 name = "Spire of the Warlord",
@@ -736,20 +795,9 @@ local _ClassConfig = {
                 type = "AA",
             },
             {
-                name = "SelfBuffAE",
-                type = "Disc",
-                cond = function(self, discSpell)
-                    if not Config:GetSetting('DoAETaunt') or Config:GetSetting('SafeAETaunt') then return false end
-                    return Core.IsTanking()
-                end,
-            },
-            {
                 name = "SelfBuffSingle",
                 type = "Disc",
-                cond = function(self, discSpell)
-                    if Config:GetSetting('DoAETaunt') and not Config:GetSetting('SafeAETaunt') then return false end
-                    return Core.IsTanking()
-                end,
+                load_cond = function(self) return Core.IsTanking() and not Config:GetSetting('DoAETaunt') end,
             },
             {
                 name = "TongueDisc",
@@ -805,6 +853,7 @@ local _ClassConfig = {
             {
                 name = "Rampage",
                 type = "AA",
+                load_cond = function(self) return not (Core.IsTanking() and Config:GetSetting('DoAETaunt')) end,
                 cond = function(self, aaName, target)
                     if not Config:GetSetting("DoAEDamage") then return false end
                     return Combat.AETargetCheck(true)
@@ -920,7 +969,8 @@ local _ClassConfig = {
             Category = "Hate Tools",
             Index = 101,
             Tooltip = "Use AE hatred Discs and AA.",
-            Default = false,
+            Default = true,
+            RequiresLoadoutChange = true,
             FAQ = "Why am I using AE damage when there are mezzed mobs around?",
             Answer = "It is not currently possible to properly determine Mez status without direct Targeting. If you are mezzing, consider turning this option off.",
         },
