@@ -72,10 +72,7 @@ Module.DefaultConfig = {
         Type = "Custom",
         Default = {},
         Scope = "server",
-        OnChange = function()
-            Modules.ModuleList["Named"].LastZoneID = -1
-            Modules.ModuleList["Named"]:RefreshAutoTargetProfile()
-        end,
+        OnChange = function() Modules:ExecModule("Named", "InvalidateNamedList") end,
         FAQ = "Can I add my own named NPCs and immunity flags to RGMercs?",
         Answer = "Open the Named module tab and add your current target via the Custom Named List editor. " ..
             "Each row's Flags combo toggles Named, elemental immunity flags (Fire/Cold/Magic/Poison/Disease), and status immunity flags (Slow/Snare/Stun). " ..
@@ -355,6 +352,13 @@ function Module:GetImmuneFlags(cleanName)
         if self:HasStatusImmunity(cleanName, effect) then statusImmunities[effect] = true end
     end
     return elementalImmunities, statusImmunities
+end
+
+--- Invalidates the cached named list (forcing a rebuild next access) and refreshes the
+--- auto-target immunity profile immediately. Called from OnChange when the list or UseImmuneData changes.
+function Module:InvalidateNamedList()
+    self.LastZoneID = -1
+    self:RefreshAutoTargetProfile()
 end
 
 --- Refreshes Globals.AutoTargetElementalImmunities / AutoTargetStatusImmunities against the current auto-target.

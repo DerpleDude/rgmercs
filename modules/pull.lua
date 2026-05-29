@@ -239,7 +239,7 @@ Module.DefaultConfig                   = {
         Tooltip = "",
         Type = "Custom",
         Default = {},
-        OnChange = function() Modules.ModuleList["Pull"]:FlagPullListUpdated() end,
+        OnChange = function() Modules:ExecModule("Pull", "FlagPullListUpdated") end,
         FAQ = "I only want to attack a specific set of mobs in my pull mode, how do I set this up?",
         Answer = "In the Pull Allow List (found on your Pull module tab), you will find a button to add your target to that list.\n\n" ..
             "Alternatively, you can use /rgl pullallow <mobname> or /rgl pullallowrm <mobname> or <List#> to adjust this list from the command line.\n\n" ..
@@ -251,7 +251,7 @@ Module.DefaultConfig                   = {
         Tooltip = "",
         Type = "Custom",
         Default = {},
-        OnChange = function() Modules.ModuleList["Pull"]:FlagPullListUpdated() end,
+        OnChange = function() Modules:ExecModule("Pull", "FlagPullListUpdated") end,
         FAQ = "I want to avoid pulling a specific mob (or mobs) in my pull mode, can I do that?",
         Answer = "In the Pull Deny List (found on your Pull module tab), you will find a button to add your target to that list.\n\n" ..
             "Alternatively, you can use /rgl pulldeny <mobname> or /rgl pulldenyrm <mobname> or <List#> to adjust this list from the command line.\n\n" ..
@@ -264,7 +264,7 @@ Module.DefaultConfig                   = {
         Type = "Custom",
         Default = {},
         Scope = "server",
-        OnChange = function() Modules.ModuleList["Pull"]:FlagPullListUpdated() end,
+        OnChange = function() Modules:ExecModule("Pull", "FlagPullListUpdated") end,
     },
     ['PullDenyListShared']                     = {
         DisplayName = "Shared Deny List",
@@ -273,7 +273,7 @@ Module.DefaultConfig                   = {
         Type = "Custom",
         Default = {},
         Scope = "server",
-        OnChange = function() Modules.ModuleList["Pull"]:FlagPullListUpdated() end,
+        OnChange = function() Modules:ExecModule("Pull", "FlagPullListUpdated") end,
     },
     ['UseSharedPullLists']                     = {
         DisplayName = "Use Shared Pull Lists",
@@ -281,7 +281,7 @@ Module.DefaultConfig                   = {
         Tooltip = "",
         Type = "Custom",
         Default = false,
-        OnChange = function() Modules.ModuleList["Pull"]:FlagPullListUpdated() end,
+        OnChange = function() Modules:ExecModule("Pull", "FlagPullListUpdated") end,
     },
     ['PullSafeZones']                          = {
         DisplayName = "SafeZones",
