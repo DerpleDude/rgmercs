@@ -1,14 +1,14 @@
 local mq           = require('mq')
-local ItemManager  = require("utils.item_manager")
-local Config       = require('utils.config')
-local Globals      = require("utils.globals")
-local Core         = require("utils.core")
-local Ui           = require("utils.ui")
-local Targeting    = require("utils.targeting")
-local Casting      = require("utils.casting")
-local Logger       = require("utils.logger")
 local Set          = require('mq.set')
+local Casting      = require("utils.casting")
 local Combat       = require("utils.combat")
+local Config       = require('utils.config')
+local Core         = require("utils.core")
+local Globals      = require("utils.globals")
+local ItemManager  = require("utils.item_manager")
+local Logger       = require("utils.logger")
+local Targeting    = require("utils.targeting")
+local Ui           = require("utils.ui")
 
 --todo: add a LOT of tooltips or scrap them entirely. Hopefully the former.
 local Tooltips     = {

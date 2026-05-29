@@ -1,12 +1,12 @@
 local mq      = require('mq')
-local Config  = require('utils.config')
-local Globals = require('utils.globals')
 local Comms   = require("utils.comms")
-local Modules = require("utils.modules")
+local Config  = require('utils.config')
 local DanNet  = require('lib.dannet.helpers')
+local Globals = require('utils.globals')
 local Logger  = require("utils.logger")
-local Strings = require("utils.strings")
 local LuaFS   = require('lfs')
+local Modules = require("utils.modules")
+local Strings = require("utils.strings")
 
 local Core    = { _version = '1.0', _name = "Core", _author = 'Derple', }
 Core.__index  = Core

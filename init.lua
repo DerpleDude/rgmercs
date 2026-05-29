@@ -36,17 +36,17 @@ end
 local Binds = require('utils.binds')
 require('utils.event_handlers')
 
-local Core        = require("utils.core")
-local ClassLoader = require('utils.classloader')
-local Targeting   = require("utils.targeting")
-local Combat      = require("utils.combat")
-local Casting     = require("utils.casting")
-local Events      = require("utils.events")
-local Ui          = require("utils.ui")
-local Comms       = require("utils.comms")
-local Movement    = require("utils.movement")
 local Set         = require('mq.set')
+local Casting     = require("utils.casting")
+local ClassLoader = require('utils.classloader')
+local Combat      = require("utils.combat")
+local Comms       = require("utils.comms")
+local Core        = require("utils.core")
+local Events      = require("utils.events")
 local Globals     = require("utils.globals")
+local Movement    = require("utils.movement")
+local Targeting   = require("utils.targeting")
+local Ui          = require("utils.ui")
 
 -- Initialize class-based modules
 local Modules     = require("utils.modules")
@@ -69,12 +69,12 @@ local initPctComplete = 0
 local initMsg         = "Initializing RGMercs..."
 
 -- UI --
+local ConsoleUI       = require("ui.console")
+local HudUI           = require("ui.hud")
+local LoaderUI        = require("ui.loader")
+local OptionsUI       = require("ui.options")
 local SimpleUI        = require("ui.simple")
 local StandardUI      = require("ui.standard")
-local OptionsUI       = require("ui.options")
-local ConsoleUI       = require("ui.console")
-local LoaderUI        = require("ui.loader")
-local HudUI           = require("ui.hud")
 local TargetUI        = require("ui.target")
 
 local function Alive()

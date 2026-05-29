@@ -1,12 +1,12 @@
 local mq           = require('mq')
-local Config       = require('utils.config')
-local Ui           = require("utils.ui")
 local Comms        = require("utils.comms")
-local Logger       = require("utils.logger")
-local Strings      = require("utils.strings")
+local Config       = require('utils.config')
 local Globals      = require("utils.globals")
-local Tables       = require("utils.tables")
+local Logger       = require("utils.logger")
 local Modules      = require("utils.modules")
+local Strings      = require("utils.strings")
+local Tables       = require("utils.tables")
+local Ui           = require("utils.ui")
 
 local Base         = { _version = '1.0', _name = "RGMercsBaseBaseClass", _author = 'Derple', }
 Base.__index       = Base

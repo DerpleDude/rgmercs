@@ -12,12 +12,12 @@
 -- If anything leaks and mercs misbehaves, `/lua run rgmercs` to reload. Output goes straight to
 -- the console via printf (not the RGMercs logger), so it shows regardless of log level.
 
-local Config       = require('utils.config')
 local Comms        = require('utils.comms')
+local Config       = require('utils.config')
+local DBManagement = require('utils.db_management')
 local Globals      = require('utils.globals')
 local Modules      = require('utils.modules')
 local OptionsUI    = require('ui.options')
-local DBManagement = require('utils.db_management')
 
 local M = {}
 

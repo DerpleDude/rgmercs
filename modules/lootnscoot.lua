@@ -1,15 +1,15 @@
 -- Sample Basic Class Module
 local mq              = require('mq')
-local Config          = require('utils.config')
-local Globals         = require('utils.globals')
-local Core            = require("utils.core")
-local Combat          = require("utils.combat")
-local Casting         = require("utils.casting")
-local Comms           = require("utils.comms")
-local Logger          = require("utils.logger")
 local Actors          = require("actors")
-local Events          = require("utils.events")
 local Base            = require("modules.base")
+local Casting         = require("utils.casting")
+local Combat          = require("utils.combat")
+local Comms           = require("utils.comms")
+local Config          = require('utils.config')
+local Core            = require("utils.core")
+local Events          = require("utils.events")
+local Globals         = require('utils.globals')
+local Logger          = require("utils.logger")
 local Ui              = require('utils.ui')
 
 -- Server name formatted for LNS to recognize

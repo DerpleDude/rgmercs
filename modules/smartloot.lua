@@ -1,15 +1,15 @@
 -- SmartLoot Integration Module
 local mq        = require('mq')
-local Config    = require('utils.config')
-local Globals   = require("utils.globals")
-local Core      = require("utils.core")
-local Casting   = require("utils.casting")
-local Targeting = require("utils.targeting")
-local Ui        = require("utils.ui")
-local Logger    = require("utils.logger")
-local Events    = require("utils.events")
 local Set       = require("mq.Set")
 local Base      = require("modules.base")
+local Casting   = require("utils.casting")
+local Config    = require('utils.config')
+local Core      = require("utils.core")
+local Events    = require("utils.events")
+local Globals   = require("utils.globals")
+local Logger    = require("utils.logger")
+local Targeting = require("utils.targeting")
+local Ui        = require("utils.ui")
 
 local Module    = { _version = '1.0', _name = "SmartLoot", _author = 'andude2, Algar', }
 Module.__index  = Module

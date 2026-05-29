@@ -4,14 +4,14 @@
 -- so it is not patched over.
 
 local mq        = require('mq')
+local Casting   = require("utils.casting")
+local Combat    = require("utils.combat")
 local Config    = require('utils.config')
+local Core      = require("utils.core")
 local Globals   = require("utils.globals")
+local Logger    = require("utils.logger")
 local Modules   = require("utils.modules")
 local Targeting = require("utils.targeting")
-local Casting   = require("utils.casting")
-local Core      = require("utils.core")
-local Logger    = require("utils.logger")
-local Combat    = require("utils.combat")
 
 return {
     _version          = "2.0 - Live",

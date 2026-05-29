@@ -1,6 +1,6 @@
-local Modules           = require("utils.modules")
 local Config            = require('utils.config')
 local Globals           = require("utils.globals")
+local Modules           = require("utils.modules")
 local Strings           = require("utils.strings")
 local mq                = require 'mq'
 

@@ -1,13 +1,13 @@
 local mq        = require('mq')
-local Config    = require('utils.config')
-local Globals   = require('utils.globals')
-local Core      = require("utils.core")
-local Targeting = require("utils.targeting")
 local Casting   = require("utils.casting")
+local Combat    = require("utils.combat")
+local Config    = require('utils.config')
+local Core      = require("utils.core")
+local Globals   = require('utils.globals')
 local Logger    = require("utils.logger")
 local Movement  = require("utils.movement")
 local Strings   = require("utils.strings")
-local Combat    = require("utils.combat")
+local Targeting = require("utils.targeting")
 
 return {
     _version              = "2.1 - EQ Might",

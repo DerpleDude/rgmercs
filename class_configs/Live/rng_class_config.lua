@@ -9,15 +9,15 @@
 -- towards the top of the list.
 
 local mq        = require('mq')
-local Config    = require('utils.config')
-local Globals   = require("utils.globals")
-local Core      = require("utils.core")
-local Modules   = require("utils.modules")
-local Targeting = require("utils.targeting")
-local Movement  = require("utils.movement")
 local Casting   = require("utils.casting")
-local Strings   = require("utils.strings")
+local Config    = require('utils.config')
+local Core      = require("utils.core")
+local Globals   = require("utils.globals")
 local Logger    = require("utils.logger")
+local Modules   = require("utils.modules")
+local Movement  = require("utils.movement")
+local Strings   = require("utils.strings")
+local Targeting = require("utils.targeting")
 
 local Tooltips  = {
     ArrowOpener         = "Spell Line: Archery Attack with High Crit Chance when not in Combat. Consumes a 50 range CLASS 3 Wood Silver Tip Arrow when cast.",

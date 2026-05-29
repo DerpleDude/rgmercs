@@ -6,8 +6,8 @@ if not ok then
     printf("\arDB: failed to load lsqlite3: %s", tostring(sqlite))
     error(string.format("DB: failed to load lsqlite3: %s", tostring(sqlite)))
 end
-local Logger              = require('utils.logger')
 local Files               = require('utils.files')
+local Logger              = require('utils.logger')
 local ScrollingPlotBuffer = require('utils.scrolling_plot_buffer')
 
 local DB                  = { _version = '1.0', _name = "DB", _author = 'Derple', }

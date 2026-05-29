@@ -1,13 +1,13 @@
 local mq            = require('mq')
+local Icons         = require('mq.ICONS')
+local Base          = require("modules.base")
 local Config        = require('utils.config')
-local Globals       = require("utils.globals")
 local Core          = require("utils.core")
-local Ui            = require("utils.ui")
+local Globals       = require("utils.globals")
 local Logger        = require("utils.logger")
 local Signatures    = require('utils.signatures')
-local Icons         = require('mq.ICONS')
+local Ui            = require("utils.ui")
 local Zep           = require('Zep')
-local Base          = require("modules.base")
 local CHANNEL_COLOR = IM_COL32(215, 154, 66)
 
 local Module        = { _version = '0.1a', _name = "Debug", _author = 'Derple', }

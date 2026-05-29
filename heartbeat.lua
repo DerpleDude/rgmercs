@@ -27,9 +27,9 @@ local Logger = require('utils.logger')
 Logger.set_log_level(Config:GetSetting('LogLevel') or 3)
 Logger.set_log_to_file(Config:GetSetting('LogToFile') or false)
 
+local Comms     = require('utils.comms')
 local Core      = require('utils.core')
 local Globals   = require('utils.globals')
-local Comms     = require('utils.comms')
 local Ui        = require('utils.ui')
 
 Globals.Logger  = Logger

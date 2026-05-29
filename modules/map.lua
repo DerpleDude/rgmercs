@@ -1,6 +1,6 @@
 local ImGui    = require('ImGui')
-local MapUI    = require("ui.map")
 local Base     = require("modules.base")
+local MapUI    = require("ui.map")
 
 local Module   = { _version = '1.0', _name = "Map", _author = 'Derple', }
 Module.__index = Module

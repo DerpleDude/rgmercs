@@ -1,16 +1,16 @@
 local mq                        = require('mq')
+local Icons                     = require('mq.ICONS')
+local Set                       = require("mq.Set")
+local ImAnim                    = require('ImAnim')
 local ImGui                     = require('ImGui')
+local Comms                     = require('utils.comms')
 local Config                    = require('utils.config')
+local DBManagement              = require('utils.db_management')
 local Globals                   = require("utils.globals")
 local Logger                    = require('utils.logger')
-local Ui                        = require('utils.ui')
-local Icons                     = require('mq.ICONS')
 local Modules                   = require('utils.modules')
-local Comms                     = require('utils.comms')
-local DBManagement              = require('utils.db_management')
 local Tables                    = require('utils.tables')
-local ImAnim                    = require('ImAnim')
-local Set                       = require("mq.Set")
+local Ui                        = require('utils.ui')
 
 local OptionsUI                 = { _version = '1.0', _name = "OptionsUI", _author = 'Derple', 'Algar', }
 OptionsUI.__index               = OptionsUI

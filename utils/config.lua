@@ -1,12 +1,12 @@
 local mq       = require('mq')
-local Modules  = require("utils.modules")
-local Tables   = require("utils.tables")
-local Strings  = require("utils.strings")
-local Logger   = require("utils.logger")
-local Comms    = require("utils.comms")
 local Set      = require("mq.Set")
+local Comms    = require("utils.comms")
 local Files    = require("utils.files")
 local Globals  = require("utils.globals")
+local Logger   = require("utils.logger")
+local Modules  = require("utils.modules")
+local Strings  = require("utils.strings")
+local Tables   = require("utils.tables")
 
 local Config   = {
     _version    = '2.1.4',

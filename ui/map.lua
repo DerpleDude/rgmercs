@@ -1,9 +1,9 @@
 local mq              = require('mq')
+local Icons           = require('mq.ICONS')
 local ImGui           = require('ImGui')
 local Config          = require('utils.config')
-local Ui              = require('utils.ui')
 local Modules         = require('utils.modules')
-local Icons           = require('mq.ICONS')
+local Ui              = require('utils.ui')
 
 local MapUI           = { _version = '1.0', _name = "MapUI", _author = 'Derple', }
 MapUI.__index         = MapUI

@@ -1,15 +1,15 @@
 -- Sample Performance Monitor Class Module
 local mq                  = require('mq')
+local ImPlot              = require('ImPlot')
+local Base                = require("modules.base")
+local Comms               = require("utils.comms")
 local Config              = require('utils.config')
 local Globals             = require("utils.globals")
-local Ui                  = require("utils.ui")
-local Comms               = require("utils.comms")
-local Modules             = require("utils.modules")
 local Logger              = require("utils.logger")
-local Strings             = require("utils.strings")
-local ImPlot              = require('ImPlot')
+local Modules             = require("utils.modules")
 local ScrollingPlotBuffer = require('utils.scrolling_plot_buffer')
-local Base                = require("modules.base")
+local Strings             = require("utils.strings")
+local Ui                  = require("utils.ui")
 
 local Module              = { _version = '0.1a', _name = "Perf", _author = 'Derple', }
 Module.__index            = Module

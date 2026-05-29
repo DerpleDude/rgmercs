@@ -1,12 +1,12 @@
 -- Drag Module
 local mq        = require('mq')
+local Base      = require("modules.base")
+local Comms     = require("utils.comms")
 local Config    = require('utils.config')
 local Core      = require("utils.core")
-local Targeting = require("utils.targeting")
-local Logger    = require("utils.logger")
-local Comms     = require("utils.comms")
 local DanNet    = require('lib.dannet.helpers')
-local Base      = require("modules.base")
+local Logger    = require("utils.logger")
+local Targeting = require("utils.targeting")
 
 local Module    = { _version = '0.1a', _name = "Drag", _author = 'Derple', }
 Module.__index  = Module

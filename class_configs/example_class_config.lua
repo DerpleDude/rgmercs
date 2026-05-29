@@ -4,15 +4,15 @@
 -- Please not that modules are accessed differently (Through the Exec function in the Modules util). Ask in Discord for help with that one if you need that access!
 -- Reference: https://www.lua.org/pil/8.1.html
 local mq           = require('mq')
-local ItemManager  = require("utils.item_manager")
-local Config       = require('utils.config')
-local Globals      = require("utils.globals")
-local Core         = require("utils.core")
-local Ui           = require("utils.ui")
-local Targeting    = require("utils.targeting")
-local Casting      = require("utils.casting")
-local Logger       = require("utils.logger")
 local Set          = require('mq.set')
+local Casting      = require("utils.casting")
+local Config       = require('utils.config')
+local Core         = require("utils.core")
+local Globals      = require("utils.globals")
+local ItemManager  = require("utils.item_manager")
+local Logger       = require("utils.logger")
+local Targeting    = require("utils.targeting")
+local Ui           = require("utils.ui")
 
 -- Tooltips: 100% optional. Most configs don't have them.
 -- They are niceties to explain rotation entries in the UI.

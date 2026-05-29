@@ -1,11 +1,11 @@
 local mq              = require('mq')
+local Casting         = require("utils.casting")
 local Config          = require('utils.config')
+local Core            = require("utils.core")
 local Globals         = require("utils.globals")
 local Logger          = require("utils.logger")
-local Core            = require("utils.core")
 local Modules         = require("utils.modules")
 local Targeting       = require("utils.targeting")
-local Casting         = require("utils.casting")
 
 -- Provide a valid aura name to check as they are named differently then the spells
 -- -- Only use the first word(s) of the aura name, they are all unique (enough)

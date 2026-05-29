@@ -1,8 +1,8 @@
 local mq                   = require('mq')
 local Set                  = require("mq.set")
+local Globals              = require("utils.globals")
 local Logger               = require("utils.logger")
 local Strings              = require("utils.strings")
-local Globals              = require("utils.globals")
 
 local Comms                = { _version = '1.0', _name = "Comms", _author = 'Derple', }
 Comms.__index              = Comms

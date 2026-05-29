@@ -1,5 +1,5 @@
-local Globals  = require("utils.globals")
 local Base     = require("modules.base")
+local Globals  = require("utils.globals")
 
 local Module   = { _version = '0.1a', _name = "Contributors", _author = 'Derple', }
 Module.__index = Module

@@ -4,13 +4,13 @@
 -- so it is not patched over.
 
 local mq        = require('mq')
-local Config    = require('utils.config')
-local Globals   = require("utils.globals")
-local Targeting = require("utils.targeting")
 local Casting   = require("utils.casting")
-local Core      = require("utils.core")
-local Logger    = require("utils.logger")
 local Combat    = require("utils.combat")
+local Config    = require('utils.config')
+local Core      = require("utils.core")
+local Globals   = require("utils.globals")
+local Logger    = require("utils.logger")
+local Targeting = require("utils.targeting")
 
 return {
     _version          = "2.0 - Project Lazarus",

@@ -1,9 +1,9 @@
 local mq                     = require('mq')
+local Icons                  = require('mq.ICONS')
 local ImGui                  = require('ImGui')
 local Config                 = require('utils.config')
 local Globals                = require("utils.globals")
 local Ui                     = require('utils.ui')
-local Icons                  = require('mq.ICONS')
 
 local SimpleUI               = { _version = '1.0', _name = "SimpleUI", _author = 'Derple', }
 SimpleUI.__index             = SimpleUI

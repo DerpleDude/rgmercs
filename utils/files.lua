@@ -1,6 +1,6 @@
 local mq      = require('mq')
-local Logger  = require("utils.logger")
 local lfs     = require("lfs")
+local Logger  = require("utils.logger")
 
 local Files   = { _version = '1.0', _name = "Files", _author = 'Derple', }
 Files.__index = Files

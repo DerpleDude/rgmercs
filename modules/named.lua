@@ -1,17 +1,17 @@
 -- Sample Named Class Module
 local mq           = require('mq')
+local Icons        = require('mq.ICONS')
+local Base         = require("modules.base")
 local Config       = require('utils.config')
 local Core         = require("utils.core")
 local Globals      = require("utils.globals")
 local Logger       = require("utils.logger")
 local Modules      = require("utils.modules")
+local NamedDefault = require("namedlist.named_default")
+local NamedEQMight = require("namedlist.named_eqmight")
 local Strings      = require("utils.strings")
 local Targeting    = require("utils.targeting")
 local Ui           = require("utils.ui")
-local Icons        = require('mq.ICONS')
-local NamedDefault = require("namedlist.named_default")
-local NamedEQMight = require("namedlist.named_eqmight")
-local Base         = require("modules.base")
 
 local Module       = { _version = '1.1', _name = "Named", _author = 'Derple, Algar, Grimmier', }
 Module.__index     = Module

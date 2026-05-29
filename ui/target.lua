@@ -1,10 +1,10 @@
 local mq         = require('mq')
+local Icons      = require('mq.ICONS')
 local ImGui      = require('ImGui')
 local Config     = require('utils.config')
 local Globals    = require('utils.globals')
-local Ui         = require('utils.ui')
-local Icons      = require('mq.ICONS')
 local Targeting  = require('utils.targeting')
+local Ui         = require('utils.ui')
 
 local Colors     = Globals.Constants.BasicColors
 

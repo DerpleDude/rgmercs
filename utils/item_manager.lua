@@ -1,9 +1,9 @@
 local mq            = require('mq')
-local Targeting     = require("utils.targeting")
-local Movement      = require("utils.movement")
 local Config        = require("utils.config")
 local Core          = require("utils.core")
 local Logger        = require("utils.logger")
+local Movement      = require("utils.movement")
+local Targeting     = require("utils.targeting")
 
 local ItemManager   = { _version = '1.0', _name = "Trade", _author = 'Derple', }
 

@@ -1,7 +1,7 @@
-local Config  = require('utils.config')
 local Comms   = require('utils.comms')
-local Modules = require('utils.modules')
+local Config  = require('utils.config')
 local Logger  = require('utils.logger')
+local Modules = require('utils.modules')
 
 local DBManagement = { _version = '1.0', _name = "DBManagement", _author = 'Derple', 'Algar', }
 

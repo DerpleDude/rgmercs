@@ -1,8 +1,8 @@
 --- @type Mq
 local mq                     = require('mq')
-local Strings                = require("utils.strings")
 local Console                = require("utils.console")
 local Globals                = require("utils.globals")
+local Strings                = require("utils.strings")
 
 local actions                = {}
 local logDir                 = mq.TLO.MacroQuest.Path("Logs")()

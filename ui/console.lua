@@ -1,9 +1,9 @@
-local Console             = require('utils.console')
-local Config              = require('utils.config')
-local Globals             = require("utils.globals")
-local Ui                  = require('utils.ui')
 local Icons               = require('mq.ICONS')
+local Config              = require('utils.config')
+local Console             = require('utils.console')
+local Globals             = require("utils.globals")
 local Logger              = require("utils.logger")
+local Ui                  = require('utils.ui')
 
 local ConsoleUI           = { _version = '1.0', _name = "ConsoleUI", _author = 'Derple', }
 ConsoleUI.__index         = ConsoleUI

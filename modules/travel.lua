@@ -1,12 +1,12 @@
 -- Sample Basic Class Module
 local mq        = require('mq')
-local Globals   = require('utils.globals')
-local Ui        = require("utils.ui")
+local Base      = require("modules.base")
 local Comms     = require("utils.comms")
 local Core      = require("utils.core")
-local Targeting = require("utils.targeting")
+local Globals   = require('utils.globals')
 local Logger    = require("utils.logger")
-local Base      = require("modules.base")
+local Targeting = require("utils.targeting")
+local Ui        = require("utils.ui")
 
 local Module    = { _version = '0.1a', _name = "Travel", _author = 'Derple', }
 Module.__index  = Module

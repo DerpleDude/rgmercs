@@ -1,11 +1,11 @@
 local mq           = require('mq')
+local Casting      = require("utils.casting")
 local Combat       = require('utils.combat')
 local Config       = require('utils.config')
-local Globals      = require("utils.globals")
 local Core         = require("utils.core")
-local Targeting    = require("utils.targeting")
-local Casting      = require("utils.casting")
+local Globals      = require("utils.globals")
 local Logger       = require("utils.logger")
+local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
     _version              = "2.2 - Project Lazarus",

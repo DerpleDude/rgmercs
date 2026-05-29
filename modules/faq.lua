@@ -1,13 +1,13 @@
 -- Sample FAQ Class Module
 local mq            = require('mq')
+local Base          = require("modules.base")
+local Binds         = require("utils.binds")
 local Config        = require('utils.config')
 local Globals       = require('utils.globals')
-local Ui            = require('utils.ui')
 local Logger        = require("utils.logger")
-local Binds         = require("utils.binds")
 local Modules       = require("utils.modules")
 local Tables        = require("utils.tables")
-local Base          = require("modules.base")
+local Ui            = require('utils.ui')
 
 local Module        = { _version = '0.1a', _name = "FAQ", _author = 'Grimmier', }
 Module.__index      = Module

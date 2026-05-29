@@ -1,9 +1,9 @@
 local mq       = require('mq')
-local ImGui    = require('ImGui')
 local ImAnim   = require('ImAnim')
-local ImagesUI = require('ui.images')
+local ImGui    = require('ImGui')
 local Config   = require('utils.config')
 local Globals  = require('utils.globals')
+local ImagesUI = require('ui.images')
 local Ui       = require("utils.ui")
 
 -- seed the rng

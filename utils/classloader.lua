@@ -1,10 +1,10 @@
 local mq          = require('mq')
-local Core        = require("utils.core")
 local Config      = require('utils.config')
-local Globals     = require('utils.globals')
-local Modules     = require("utils.modules")
+local Core        = require("utils.core")
 local Files       = require("utils.files")
+local Globals     = require('utils.globals')
 local Logger      = require("utils.logger")
+local Modules     = require("utils.modules")
 local Tables      = require("utils.tables")
 
 local ClassLoader = { _version = '0.1', _name = "ClassLoader", _author = 'Derple', }

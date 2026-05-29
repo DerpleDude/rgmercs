@@ -1,6 +1,6 @@
 local mq            = require("mq")
-local Logger        = require("utils.logger")
 local Globals       = require("utils.globals")
+local Logger        = require("utils.logger")
 
 local Modules       = { _version = '0.1a', _author = 'Derple', }
 Modules.__index     = Modules

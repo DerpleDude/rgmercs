@@ -1,14 +1,14 @@
 local mq         = require('mq')
 local Set        = require("mq.Set")
-local Config     = require("utils.config")
-local Globals    = require("utils.globals")
-local Combat     = require("utils.combat")
-local Core       = require("utils.core")
-local Logger     = require("utils.logger")
 local Casting    = require("utils.casting")
+local Combat     = require("utils.combat")
+local Config     = require("utils.config")
+local Core       = require("utils.core")
+local Globals    = require("utils.globals")
+local Logger     = require("utils.logger")
+local Modules    = require("utils.modules")
 local Strings    = require("utils.strings")
 local Targeting  = require("utils.targeting")
-local Modules    = require("utils.modules")
 
 local Rotation   = { _version = '1.0', _name = "Rotation", _author = 'Derple', }
 Rotation.__index = Rotation

@@ -1,10 +1,10 @@
 local mq           = require('mq')
+local Casting      = require("utils.casting")
 local Combat       = require('utils.combat')
 local Config       = require('utils.config')
 local Core         = require("utils.core")
-local Targeting    = require("utils.targeting")
-local Casting      = require("utils.casting")
 local Logger       = require("utils.logger")
+local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
     _version              = "2.1 - Live",

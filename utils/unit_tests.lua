@@ -1,8 +1,8 @@
 ---@diagnostic disable: duplicate-set-field
-local Logger    = require("utils.logger")
 local Combat    = require("utils.combat")
-local Targeting = require("utils.targeting")
 local Globals   = require("utils.globals")
+local Logger    = require("utils.logger")
+local Targeting = require("utils.targeting")
 
 local UnitTests = {}
 

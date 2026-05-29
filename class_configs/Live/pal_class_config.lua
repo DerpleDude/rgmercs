@@ -1,14 +1,14 @@
 local mq           = require('mq')
-local Config       = require('utils.config')
-local Globals      = require('utils.globals')
-local Core         = require("utils.core")
-local Targeting    = require("utils.targeting")
-local Ui           = require("utils.ui")
+local Set          = require('mq.set')
 local Casting      = require("utils.casting")
+local Combat       = require("utils.combat")
+local Config       = require('utils.config')
+local Core         = require("utils.core")
+local Globals      = require('utils.globals')
 local ItemManager  = require("utils.item_manager")
 local Logger       = require("utils.logger")
-local Set          = require('mq.set')
-local Combat       = require("utils.combat")
+local Targeting    = require("utils.targeting")
+local Ui           = require("utils.ui")
 
 local _ClassConfig = {
     _version              = "2.0 - Live",

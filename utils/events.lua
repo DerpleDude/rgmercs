@@ -1,10 +1,10 @@
 local mq       = require('mq')
-local Config   = require('utils.config')
-local Globals  = require('utils.globals')
-local Core     = require("utils.core")
-local Modules  = require("utils.modules")
-local Logger   = require("utils.logger")
 local Comms    = require("utils.comms")
+local Config   = require('utils.config')
+local Core     = require("utils.core")
+local Globals  = require('utils.globals')
+local Logger   = require("utils.logger")
+local Modules  = require("utils.modules")
 
 local Events   = { _version = '1.0', _name = "Events", _author = 'Derple', }
 
