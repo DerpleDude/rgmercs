@@ -3890,6 +3890,10 @@ end
 --- @param listName string The setting name of the zone-keyed list.
 --- @param zoneKey string? Optional zone short name (lowercase). Defaults to current zone.
 function Config:ZoneListAdd(name, listName, zoneKey)
+    if not name or name == "" then
+        Logger.log_error("\ar%s Add: this command requires a valid argument!", listName)
+        return
+    end
     zoneKey = zoneKey or (mq.TLO.Zone.ShortName() or ""):lower()
     local list = self:GetSetting(listName) or {}
     list[zoneKey] = list[zoneKey] or {}

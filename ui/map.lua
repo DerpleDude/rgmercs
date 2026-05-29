@@ -291,11 +291,11 @@ function MapUI:RenderCanvas(canvasWidth, canvasHeight)
     local spawnRadius = math.max(Config:GetSetting('TargetRadius'), 100)
     local npcsMaxRenderCount = math.max(Config:GetSetting('MaxMapNPCsToRender'), 40)
     local allowedNames = {}
-    for _, name in ipairs((Config:GetSetting('PullAllowList', true) or {})[mq.TLO.Zone.ShortName() or ""] or {}) do
+    for _, name in ipairs((Config:GetSetting(Modules.ModuleList["Pull"]:ActivePullList('PullAllowList'), true) or {})[(mq.TLO.Zone.ShortName() or ""):lower()] or {}) do
         allowedNames[name] = true
     end
     local deniedNames = {}
-    for _, name in ipairs((Config:GetSetting('PullDenyList', true) or {})[mq.TLO.Zone.ShortName() or ""] or {}) do
+    for _, name in ipairs((Config:GetSetting(Modules.ModuleList["Pull"]:ActivePullList('PullDenyList'), true) or {})[(mq.TLO.Zone.ShortName() or ""):lower()] or {}) do
         deniedNames[name] = true
     end
     local allowColor = ImGui.GetColorU32(ImVec4(0.30, 1.00, 0.45, 1.0))
