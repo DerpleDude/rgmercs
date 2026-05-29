@@ -873,13 +873,14 @@ end
 
 function Module:RenderMobList(displayName, settingName)
     if ImGui.CollapsingHeader(string.format("Pull %s", displayName)) then
-        if mq.TLO.Target() and Targeting.TargetIsType("NPC") then
-            ImGui.PushID("##_small_btn_allow_target_" .. settingName)
-            if ImGui.SmallButton(string.format("Add Target To %s", displayName)) then
-                self:AddMobToList(settingName, mq.TLO.Target.CleanName())
-            end
-            ImGui.PopID()
+        local invalidTarget = not (mq.TLO.Target() and Targeting.TargetIsType("NPC"))
+        ImGui.BeginDisabled(invalidTarget)
+        ImGui.PushID("##_small_btn_allow_target_" .. settingName)
+        if ImGui.SmallButton(invalidTarget and "Select an NPC to Add" or string.format("Add Target To %s", displayName)) then
+            self:AddMobToList(settingName, mq.TLO.Target.CleanName())
         end
+        ImGui.PopID()
+        ImGui.EndDisabled()
 
         if ImGui.BeginTable("settingName", 4, bit32.bor(ImGuiTableFlags.Borders)) then
             ImGui.TableSetupColumn('Id', (ImGuiTableColumnFlags.WidthFixed), 40.0)

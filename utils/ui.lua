@@ -27,7 +27,6 @@ local Ui                           = { _version = '1.0', _name = "Ui", _author =
 
 Ui.__index                         = Ui
 Ui.ConfigFilter                    = ""
-Ui.ShowDownNamed                   = false
 
 Ui.TempSettings                    = {
     SortedXT              = {},
@@ -1785,71 +1784,6 @@ function Ui.RenderTableData(tableName, tableColumns, tableFlags, sortFn, rowFn)
         sortFn(sort_specs)
 
         rowFn()
-
-        ImGui.EndTable()
-    end
-end
-
---- Renders a table of named creatures in the current zone with distance and loc.
-function Ui.RenderZoneNamed()
-    Ui.ShowDownNamed, _ = Ui.RenderOptionToggle("ShowDown", "Show Downed Named", Ui.ShowDownNamed)
-
-    if ImGui.BeginTable("Zone Named", 5, bit32.bor(ImGuiTableFlags.Borders, ImGuiTableFlags.Resizable)) then
-        ImGui.TableSetupColumn('Name', (ImGuiTableColumnFlags.WidthFixed), 250.0)
-        ImGui.TableSetupColumn('Up', (ImGuiTableColumnFlags.WidthFixed), 20.0)
-        ImGui.TableSetupColumn('Distance', (ImGuiTableColumnFlags.WidthFixed), 60.0)
-        ImGui.TableSetupColumn('Loc', (ImGuiTableColumnFlags.WidthFixed), 160.0)
-        ImGui.TableSetupColumn('Immunities', (ImGuiTableColumnFlags.WidthStretch), 1.0)
-        ImGui.TableHeadersRow()
-
-        local namedList = Modules:ExecModule("Named", "GetNamedList")
-        for _, named in ipairs(namedList) do
-            local namedSpawn = named.Spawn
-            local spawnExists = namedSpawn and namedSpawn()
-
-            if spawnExists and namedSpawn.PctHPs() > 0 then
-                ImGui.TableNextColumn()
-                local _, clicked = ImGui.Selectable(string.format("%s##%d", named.Name, namedSpawn.ID()), false)
-                if clicked then
-                    namedSpawn.DoTarget()
-                end
-                ImGui.TableNextColumn()
-                ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.ConditionPassColor)
-                Ui.RenderText(Icons.FA_SMILE_O)
-                ImGui.PopStyleColor()
-                ImGui.TableNextColumn()
-                Ui.RenderText(tostring(math.ceil(named.Distance)))
-                ImGui.TableNextColumn()
-                Ui.NavEnabledLoc(named.Loc)
-                ImGui.TableNextColumn()
-                if named.Immunities and named.Immunities ~= "" then
-                    local availW = ImGui.GetContentRegionAvail()
-                    local textW = ImGui.CalcTextSize(named.Immunities)
-                    Ui.RenderText(named.Immunities)
-                    if textW > availW and ImGui.IsItemHovered() then
-                        ImGui.SetTooltip(named.Immunities)
-                    end
-                end
-            elseif spawnExists or Ui.ShowDownNamed then
-                ImGui.TableNextColumn()
-                Ui.RenderText(named.Name)
-                ImGui.TableNextColumn()
-                ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.ConditionFailColor)
-                Ui.RenderText(Icons.FA_FROWN_O)
-                ImGui.PopStyleColor()
-                ImGui.TableNextColumn()
-                ImGui.TableNextColumn()
-                ImGui.TableNextColumn()
-                if named.Immunities and named.Immunities ~= "" then
-                    local availW = ImGui.GetContentRegionAvail()
-                    local textW = ImGui.CalcTextSize(named.Immunities)
-                    Ui.RenderText(named.Immunities)
-                    if textW > availW and ImGui.IsItemHovered() then
-                        ImGui.SetTooltip(named.Immunities)
-                    end
-                end
-            end
-        end
 
         ImGui.EndTable()
     end
