@@ -912,7 +912,7 @@ local _ClassConfig = {
                 cond = function(self, spell)
                     return Config:GetSetting('DoLich') and Casting.SelfBuffCheck(spell) and
                         (not Config:GetSetting('DoUnity') or not Casting.AAReady("Mortifier's Unity")) and
-                        mq.TLO.Me.PctHPs() > Config:GetSetting('StopLichHP') and mq.TLO.Me.PctMana() < Config:GetSetting('StartLichMana')
+                        mq.TLO.Me.PctHPs() > Config:GetSetting('StopLichHP') and mq.TLO.Me.PctMana() <= Config:GetSetting('StartLichMana')
                 end,
             },
             {
