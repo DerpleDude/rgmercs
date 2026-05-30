@@ -2158,7 +2158,7 @@ function Casting.RunCastLoop(opts)
         end)
         if mq.TLO.Me.Casting() then
             Logger.log_verbose("\ayRunCastLoop(): Started to cast: %s - waiting to finish", actionName)
-            Casting.WaitCastFinish(targetId, bAllowDead, spellRange)
+            Casting.WaitCastFinish(targetId, bAllowDead, spellRange, castTime)
         end
         if Globals.StopCast then
             Logger.log_verbose("\atRunCastLoop(): Canceled casting %s due to stopcast command.", actionName)
@@ -2411,9 +2411,11 @@ end
 --- Polls Me.Casting every 20 ms until it clears, up to a timeout derived from cast time plus 20x ping plus 1 second. While waiting, StopCasts the spell if the target dies or leaves range (beyond 110% of spellRange); every 200 ms prods the pet to attack if combat is active and HP is below PetEngagePct; every 500 ms runs MA auto-target and tank aggro scans; prints a group message and force-stops if the timeout expires.
 --- @param targetId number|nil The target to check while waiting.
 --- @param bAllowDead boolean Whether to allow the target to be dead.
---- @param spellRange number The max range of the spell
-function Casting.WaitCastFinish(targetId, bAllowDead, spellRange) --I am not vested in the math below, I simply converted the existing entry from sec to ms
-    local maxWaitOrig = ((mq.TLO.Me.Casting.MyCastTime() or 0) + ((mq.TLO.EverQuest.Ping() * 20) + 1000))
+--- @param spellRange number The max range of the spell.
+--- @param castTime number|nil The length of the spell's cast.
+function Casting.WaitCastFinish(targetId, bAllowDead, spellRange, castTime)
+    if not castTime then castTime = mq.TLO.Me.Casting.MyCastTime() or 0 end
+    local maxWaitOrig = castTime + ((mq.TLO.EverQuest.Ping() * 20) + 1000)
     local maxWait = maxWaitOrig
 
     while mq.TLO.Me.Casting() do

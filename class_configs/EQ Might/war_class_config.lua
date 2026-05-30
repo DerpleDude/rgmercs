@@ -109,6 +109,9 @@ local _ClassConfig = {
             "Bellow",                -- Level 52
             "Provoke",               -- Level 20
         },
+        ['AddHate2'] = {             --different timer on EQM
+            "Bazu Bellow",           -- Level 69
+        },
         ['AbsorbTaunt'] = {
             "Mock", -- Level 70
         },
@@ -375,6 +378,13 @@ local _ClassConfig = {
                 end,
             },
             {
+                name = "AddHate2",
+                type = "Disc",
+                cond = function(self, discSpell)
+                    return Casting.DetSpellCheck(discSpell)
+                end,
+            },
+            {
                 name = "Grappling Strike",
                 type = "AA",
             },
@@ -414,6 +424,13 @@ local _ClassConfig = {
             },
             {
                 name = "AddHate",
+                type = "Disc",
+                cond = function(self, discSpell)
+                    return Casting.DetSpellCheck(discSpell)
+                end,
+            },
+            {
+                name = "AddHate2",
                 type = "Disc",
                 cond = function(self, discSpell)
                     return Casting.DetSpellCheck(discSpell)

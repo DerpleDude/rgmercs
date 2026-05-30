@@ -750,6 +750,47 @@ Module.LogicBlocks                            = {
     },
 
     {
+        name = "Target Height",
+        cond = function(self, target, peerData, height, negate)
+            local threshold = tonumber(height)
+            if not threshold then
+                Logger.log_verbose("\ayClicky: \arTarget Height condition has an invalid height value: \at'%s'\ar - skipping.", tostring(height))
+                return false
+            end
+
+            local spawn = target
+            if (not spawn or not spawn()) and peerData and peerData.ID
+                and peerData.ZoneId == Globals.CurZoneId and peerData.InstanceId == Globals.CurInstanceId then
+                spawn = mq.TLO.Spawn(peerData.ID)
+            end
+
+            if not spawn or not spawn() then
+                return false
+            end
+
+            local targetHeight = spawn.Height() or 0
+
+            Logger.log_super_verbose("\ayClicky: \ayClicky: \awTarget Height condition check on \at%s\aw, height(\a-t%.1f\aw) %s threshold(\a-t%.1f\aw)",
+                spawn.CleanName() or "None", targetHeight, negate and "<=" or ">=", threshold)
+
+            if negate then
+                return targetHeight <= threshold
+            else
+                return targetHeight >= threshold
+            end
+        end,
+        cond_targets = Module.NonCombatTargetTypes,
+        tooltip = "Only use when the target's height is at or over (under) this value. (Optional Negate)",
+        render_header_text = function(self, cond)
+            return string.format("%s height is at or %s %s", cond.target or "Self", cond.args[2] and "under" or "over", cond.args[1] or "0")
+        end,
+        args = {
+            { name = "Height", type = "string",  default = "2.2", },
+            { name = "Negate", type = "boolean", default = false, },
+        },
+    },
+
+    {
         name = "Target Is Not Immune To ...",
         cond = function(self, target, peerData, checkSlow, checkSnare, checkStun)
             return (checkSlow and not Casting.SlowImmuneTarget(target)) or
