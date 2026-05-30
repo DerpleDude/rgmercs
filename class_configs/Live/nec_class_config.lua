@@ -1021,8 +1021,8 @@ local _ClassConfig = {
                 name = "ManaDrain",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    return not Casting.IHaveBuff(spell.Name() .. " Recourse") and
-                        (mq.TLO.Target.PctMana() or -1) > 0 and mq.TLO.Group.LowMana(40)() > 2
+                    if not spell or not spell() then return false end
+                    return Casting.IHaveBuff(spell.Name() .. " Recourse") and (mq.TLO.Target.PctMana() or -1) > 0 and mq.TLO.Group.LowMana(40)() > 2
                 end,
             },
             {
@@ -1546,7 +1546,7 @@ local _ClassConfig = {
             Tooltip = "1 = War, 2 = Rog",
             Type = "Combo",
             ComboOptions = { 'War', 'Rog', },
-            Default = 2,
+            Default = function() return Core.GetResolvedActionMapItem('RogPetSpell') and 2 or 1 end,
             Min = 1,
             Max = 2,
             RequiresLoadoutChange = true,

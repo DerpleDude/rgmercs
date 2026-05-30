@@ -866,7 +866,7 @@ function Module:GetRotations()
                 end
             end
             self.TempSettings.RotationTable[rname] = Tables.ConcatTables(self.TempSettings.RotationTable[rname],
-                Modules:ExecModule("Clickies", "GetClickiesForRotation", rname) or {})
+                Modules:ExecModule("Clickies", "GetClickiesForRotations", "During Rotation", rname) or {})
         end
     end
 
@@ -889,7 +889,7 @@ function Module:GetRotations()
                 end
             end
             self.TempSettings.HealRotationTable[rname] = Tables.ConcatTables(self.TempSettings.HealRotationTable[rname],
-                Modules:ExecModule("Clickies", "GetClickiesForHealRotation", rname) or {})
+                Modules:ExecModule("Clickies", "GetClickiesForRotations", "During Heal Rotation", rname) or {})
         end
     end
 

@@ -2073,7 +2073,7 @@ function Module:CheckForAbort(pullID, bNavigating)
 
     -- ignore distance and time if this is a manually requested pull
     if pullID ~= self.TempSettings.TargetSpawnID then
-        if spawn.Distance() > Config:GetSetting("MaxPathRange") then
+        if (spawn.Distance() or 0) > Config:GetSetting("MaxPathRange") then
             Logger.log_debug("PULL:\ar ALERT: Aborting mob moved out of spawn distance \ax")
             return true
         end
@@ -2806,11 +2806,7 @@ function Module:GiveTime()
 
     self:SetLastPullOrCombatEndedTimer()
     self.TempSettings.TargetSpawnID = 0
-    if (self:IsPullMode("Normal") or self:IsPullMode("Chain"))
-        and campData.returnToCamp
-        and Math.GetDistanceSquared(mq.TLO.Me.X(), mq.TLO.Me.Y(),
-            campData.campSettings.AutoCampX, campData.campSettings.AutoCampY)
-            > math.max(Config:GetSetting('AutoCampRadius') ^ 2, 200 ^ 2) then
+    if (self:IsPullMode("Normal") or self:IsPullMode("Chain")) and campData.returnToCamp and Math.GetDistanceSquared(mq.TLO.Me.X(), mq.TLO.Me.Y(), campData.campSettings.AutoCampX, campData.campSettings.AutoCampY) > math.max(Config:GetSetting('AutoCampRadius') ^ 2, 200 ^ 2) then
         self:SetPullState(PullStates.PULL_WAITING_SHOULDPULL, "Awaiting return to camp")
     else
         self:SetPullState(PullStates.PULL_IDLE, "")

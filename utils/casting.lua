@@ -2414,8 +2414,7 @@ end
 --- @param spellRange number The max range of the spell.
 --- @param castTime number|nil The length of the spell's cast.
 function Casting.WaitCastFinish(targetId, bAllowDead, spellRange, castTime)
-    if not castTime then castTime = mq.TLO.Me.Casting.MyCastTime() or 0 end
-    local maxWaitOrig = castTime + ((mq.TLO.EverQuest.Ping() * 20) + 1000)
+    local maxWaitOrig = (castTime or 5000) + ((mq.TLO.EverQuest.Ping() * 20) + 1000)
     local maxWait = maxWaitOrig
 
     while mq.TLO.Me.Casting() do
@@ -2461,6 +2460,7 @@ function Casting.WaitCastFinish(targetId, bAllowDead, spellRange, castTime)
             Logger.log_debug(msg)
             Comms.PrintGroupMessage(msg)
 
+            --Algarnote: Consider re-adding this, but i'm not sure this is the place where we need to be doing it (we are in the while casting loop here, i think gem freeze will have no casting active)
             --Core.DoCmd("/alt act 511")
             mq.TLO.Me.StopCast()
             return

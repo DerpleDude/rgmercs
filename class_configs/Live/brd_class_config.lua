@@ -174,21 +174,23 @@ local _ClassConfig = {
             "Song of the Storm",              -- Level 61, DoN (not the same song line, but is a HP decrease proc)
         },
         ['SprySonataSong'] = {
-            "Boberstler's Spry Sonata", -- Level 128, SoR
-            "Dhakka's Spry Sonata",     -- Level 123, LS
-            "Xetheg's Spry Sonata",     -- Level 118, ToL
-            "Kellek's Spry Sonata",     -- Level 113, ToV
-            "Kluzen's Spry Sonata",     -- Level 108, RoS
-            "Doben's Spry Sonata",      -- Level 98, RoF
-            "Terasal's Spry Sonata",    -- Level 93, VoA
-            "Sionachie's Spry Sonata",  -- Level 88, HoT
-            "Dance of the Dragorn",     -- Level 83, SoD
-            "Coldcrow's Spry Sonata",   -- Level 78, SoF
-            "Aviak's Wondrous Warble",  -- Level 73, TBS
+            "Boberstler's Spry Sonata",  -- Level 128, SoR
+            "Dhakka's Spry Sonata",      -- Level 123, LS
+            "Xetheg's Spry Sonata",      -- Level 118, ToL
+            "Kellek's Spry Sonata",      -- Level 113, ToV
+            "Kluzen's Spry Sonata",      -- Level 108, RoS
+            "Doben's Spry Sonata",       -- Level 98, RoF
+            "Terasal's Spry Sonata",     -- Level 93, VoA
+            "Sionachie's Spry Sonata",   -- Level 88, HoT
+            "Dance of the Dragorn",      -- Level 83, SoD
+            "Coldcrow's Spry Sonata",    -- Level 78, SoF
+            "Aviak's Wondrous Warble",   -- Level 73, TBS
+            "Niv's Harmonic",            -- Level 58, RoK
+            "Psalm of Mystic Shielding", -- Level 41, Base Game
         },
         ['CrescendoSong'] = {
             "Alliana's Lively Crescendo",    -- Level 129, SoR
-            "Regar's Lively Crescendo",      -- Level 124, . LS
+            "Regar's Lively Crescendo",      -- Level 124, LS
             "Zelinstein's Lively Crescendo", -- Level 119, ToL
             "Zburator's Lively Crescendo",   -- Level 114, ToV
             "Jembel's Lively Crescendo",     -- Level 109, RoS

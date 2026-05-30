@@ -2122,70 +2122,12 @@ function Module.GetConditionTarget(cond, targetSpawn, clickyPeerName)
     return nil
 end
 
-function Module:GetClickiesForRotation(rotationName)
+function Module:GetClickiesForRotations(clickyCombatState, rotationName)
     local result   = {}
     local clickies = Config:GetSetting('Clickies') or {}
 
     for _, clicky in ipairs(clickies) do
-        if clicky.combat_state == "During Rotation"
-            and clicky.rotation_name == rotationName
-            and clicky.itemName:len() > 0
-            and (clicky.enabled == nil or clicky.enabled == true)
-        then
-            local itemName   = clicky.itemName
-            local conditions = clicky.conditions or {}
-
-            table.insert(result, {
-                name = itemName,
-                type = "Item",
-                from_clicky = true,
-                cond = function(caller, itemName, targetSpawn)
-                    if not Casting.ItemReady(itemName) then return false end
-                    local buffCheckPassed = true
-
-                    if targetSpawn.ID() == mq.TLO.Me.ID() then
-                        buffCheckPassed = Casting.SelfBuffItemCheck(clicky.itemName)
-                    elseif targetSpawn.ID() == mq.TLO.Me.Pet.ID() then
-                        ---@diagnostic disable-next-line: cast-local-type
-                        buffCheckPassed = mq.TLO.Me.Pet.ID() > 0 and Casting.PetBuffItemCheck(clicky.itemName)
-                    elseif targetSpawn.Type() == "PC" then
-                        ---@diagnostic disable-next-line: cast-local-type
-                        buffCheckPassed = Casting.GroupBuffItemCheck(clicky.itemName, targetSpawn)
-                    else ---@diagnostic disable-next-line: cast-local-type
-                        buffCheckPassed = Casting.DetItemCheck(clicky.itemName, targetSpawn)
-                    end
-
-                    if not buffCheckPassed then return false end
-
-                    local condTarget = nil
-                    local condPeer = nil
-                    for _, cond in ipairs(conditions) do
-                        local condBlock = self:GetLogicBlockByType(cond.type)
-                        if condBlock then
-                            if condBlock.cond_targets then
-                                condTarget, condPeer = Module.GetConditionTarget(cond, targetSpawn, clicky.mercs_peer_name)
-                            end
-                            ---@diagnostic disable-next-line: deprecated
-                            if not Core.SafeCallFunc("Rotation Clicky :: Test clicky Condition", condBlock.cond, caller, condTarget, condPeer and condPeer.Data, unpack(cond.args or {})) then
-                                return false
-                            end
-                        end
-                    end
-                    return true
-                end,
-            })
-        end
-    end
-
-    return result
-end
-
-function Module:GetClickiesForHealRotation(rotationName)
-    local result   = {}
-    local clickies = Config:GetSetting('Clickies') or {}
-
-    for _, clicky in ipairs(clickies) do
-        if clicky.combat_state == "During Heal Rotation"
+        if clicky.combat_state == clickyCombatState
             and clicky.rotation_name == rotationName
             and clicky.itemName:len() > 0
             and (clicky.enabled == nil or clicky.enabled == true)
