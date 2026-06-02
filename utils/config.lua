@@ -1267,14 +1267,14 @@ Config.DefaultConfig                                     = {
         ConfigType = "Advanced",
     },
     -- Common/Under the Hood
-    ['CastRetryCountBeta']         = {
+    ['CastRetryCount']             = {
         DisplayName = "Cast Retry Count",
         Group = "Abilities",
         Header = "Common",
         Category = "Under the Hood",
         Index = 1,
-        Tooltip = "The amount of times to try to recast a spell, AA, or item due to a fizzle, interrupt, or similar.",
-        Default = 2,
+        Tooltip = "The amount of times to try to recast a spell, AA, or item due to a fizzle, interrupt, or similar. Note that queued actions already have a retry built-in.",
+        Default = 0,
         Min = 0,
         Max = 5,
         ConfigType = "Advanced",
