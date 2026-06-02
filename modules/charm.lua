@@ -640,6 +640,8 @@ function Module:GiveTime()
 
 	if not Core.IsCharming() then return end
 
+	if mq.TLO.Navigation.Active() or mq.TLO.MoveTo.Moving() then return end
+
 	-- dead... whoops
 	if mq.TLO.Me.Hovering() then return end
 

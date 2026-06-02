@@ -1591,6 +1591,20 @@ function Casting.SongReady(songSpell, skipGemTimer)
     return Casting.CastCheck(songSpell)
 end
 
+--- A bard may fire an instant action while a song's cast window is open.
+---@param castTimeMs number?
+---@return boolean
+function Casting.CanActMidSong(castTimeMs)
+    return Core.MyClassIs("BRD") and (castTimeMs or -1) == 0
+end
+
+---@param castTimeMs number?
+---@return boolean
+function Casting.MoveBlocksCast(castTimeMs)
+    if Core.MyClassIs("brd") then return false end
+    return mq.TLO.Me.Moving() and (castTimeMs or -1) > 0
+end
+
 --- Checks CombatAbilityReady for the disc's ranked name, then runs CastCheck allowing movement and, for bards with an instant-cast disc (0 cast time), allowing an open casting window.
 --- @param discSpell MQSpell The name of the discipline spell to check.
 --- @return boolean Returns true if the discipline is ready, false otherwise.
@@ -1603,9 +1617,7 @@ function Casting.DiscReady(discSpell)
 
     if not ready then return false end
 
-    local allowCastWindow = Core.MyClassIs("BRD") and (discSpell.MyCastTime() or -1) == 0
-
-    return Casting.CastCheck(discSpell, true, allowCastWindow)
+    return Casting.CastCheck(discSpell, true)
 end
 
 --- Verifies AltAbilityReady is true for the named AA and then runs CastCheck against the AA's associated spell to confirm mana/endurance/movement/control conditions are met.
@@ -1657,7 +1669,7 @@ function Casting.ItemReady(itemName)
 
     local clicky = mq.TLO.FindItem("=" .. itemName).Clicky
     local levelCheck = me.Level() >= (clicky.RequiredLevel() or 0)
-    local movingCheck = Core.MyClassIs("brd") or not (me.Moving() and (clicky.CastTime() or -1) > 0)
+    local movingCheck = not Casting.MoveBlocksCast(clicky.CastTime())
     local controlCheck = not (me.Stunned() or me.Feared() or me.Charmed() or me.Mezzed())
 
     Logger.log_verbose("ItemReady for %s: LevelCheck(%s) MovingCheck(%s) ControlCheck(%s)", itemName, Strings.BoolToColorString(levelCheck),
@@ -1671,14 +1683,13 @@ end
 --- (adjusted for med regen ticks), and control state.
 ---@param spell MQSpell The spell whose cost and cast time to evaluate.
 ---@param bAllowMove boolean? Skip the movement check if true.
----@param bAllowCast boolean? Skip the casting-window check if true.
 ---@return boolean True if all pre-cast conditions are met.
-function Casting.CastCheck(spell, bAllowMove, bAllowCast)
+function Casting.CastCheck(spell, bAllowMove)
     if not spell or not spell() then return false end
 
     local me = mq.TLO.Me
-    local castingCheck = bAllowCast or (not (me.Casting() or mq.TLO.Window("CastingWindow").Open()))
-    local movingCheck = bAllowMove or Core.MyClassIs("brd") or not (me.Moving() and (spell.MyCastTime() or -1) > 0)
+    local castingCheck = Casting.CanActMidSong(spell.MyCastTime()) or (not (me.Casting() or mq.TLO.Window("CastingWindow").Open()))
+    local movingCheck = bAllowMove or not Casting.MoveBlocksCast(spell.MyCastTime())
 
     local currentMana = me.CurrentMana()
     local currentEnd = me.CurrentEndurance()
@@ -1726,7 +1737,7 @@ function Casting.UseSpell(spellName, targetId, bAllowMem, bAllowDead, retryCount
         return false
     end
 
-    if me.Moving() then
+    if Casting.MoveBlocksCast(spell.MyCastTime()) then
         Logger.log_debug("\ayUseSpell(): \arCan't cast %s - I am moving", spellName)
         return false
     end
@@ -1964,6 +1975,11 @@ function Casting.UseSong(songName, targetId, bAllowMem, retryCount)
 
             if scanTimer % 500 == 0 then
                 Casting.RescanCombatTargets()
+                Modules:ExecModule("Class", "DoMidSongEngage", targetId)
+            end
+
+            if scanTimer % 100 == 0 then
+                Modules:ExecModule("Class", "DoMidSongActions", targetId)
             end
 
             mq.delay(20)
@@ -2037,8 +2053,7 @@ function Casting.UseDisc(discSpell, targetId)
     local discName = discSpell.RankName.Name()
     local castTime = discSpell.MyCastTime() or 0
 
-    local allowCastWindow = Core.MyClassIs("BRD") and castTime == 0
-    if (mq.TLO.Window("CastingWindow").Open() or me.Casting()) and not allowCastWindow then
+    if (mq.TLO.Window("CastingWindow").Open() or me.Casting()) and not Casting.CanActMidSong(castTime) then
         Logger.log_debug("\ayUseDisc(): \arCan't use %s - Casting Window Open", discName)
         return false
     end
@@ -2142,6 +2157,12 @@ function Casting.RunCastLoop(opts)
     local castTime = opts.castTime or 0
     local retryCount = opts.retryCount or Config:GetSetting('CastRetryCount')
 
+    -- bard firing a 0-cast action mid-song: fire-and-return so we don't wait on or clip the in-progress song.
+    if castTime == 0 and (mq.TLO.Window("CastingWindow").Open() or mq.TLO.Me.Casting()) then
+        Core.DoCmd(cmd)
+        return
+    end
+
     -- give a small delay for when we need to rely on an action changing to "not ready" to detect success, this is data from the server. values tested on laz/might numerous times
     local floor = math.max(300, 3 * (mq.TLO.EverQuest.Ping() or 0))
     local delay = castTime < floor and floor or castTime
@@ -2206,8 +2227,7 @@ function Casting.UseAA(aaName, targetId, bAllowDead, retryCount)
         return false
     end
 
-    local allowCastWindow = Core.MyClassIs("BRD") and (aaSpell.MyCastTime() or -1) == 0
-    if (mq.TLO.Window("CastingWindow").Open() or me.Casting()) and not allowCastWindow then
+    if (mq.TLO.Window("CastingWindow").Open() or me.Casting()) and not Casting.CanActMidSong(aaSpell.MyCastTime()) then
         Logger.log_debug("\ayUseAA(): \arCan't cast %s - Casting Window Open", aaName)
         return false
     end
@@ -2317,8 +2337,7 @@ function Casting.UseItem(itemName, targetId, bAllowDead, retryCount)
     local itemSpell = item.Spell
     local targetType = itemSpell and itemSpell.TargetType()
 
-    local allowCastWindow = Core.MyClassIs("BRD") and castTime == 0
-    if (mq.TLO.Window("CastingWindow").Open() or me.Casting()) and not allowCastWindow then
+    if (mq.TLO.Window("CastingWindow").Open() or me.Casting()) and not Casting.CanActMidSong(castTime) then
         Logger.log_debug("\ayUseItem(): \arCan't use %s - Casting Window Open", itemName)
         return false
     end

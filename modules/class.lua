@@ -66,6 +66,7 @@ Module.TempSettings.CureChecksStale          = false
 Module.TempSettings.ImmuneTargets            = {}
 Module.TempSettings.RotationClickies         = Set.new({})
 Module.TempSettings.RotationAAs              = Set.new({})
+Module.TempSettings.MidSongFireable          = {}
 
 Module.FAQ                                   = {
     {
@@ -813,6 +814,77 @@ function Module:IsCharming()
         return false
     end
     return self.ClassConfig.ModeChecks.IsCharming()
+end
+
+--- Runs the main-loop engage step mid-song, gated to the combat target so it never re-targets off a mez/charm/cure victim.
+---@param targetId number The song's target (UseSong's targetId).
+function Module:DoMidSongEngage(targetId)
+    if (Globals.AutoTargetID or 0) <= 0 or targetId ~= Globals.AutoTargetID then return end
+
+    if not Globals.BackOffFlag then
+        Combat.FindBestAutoTarget(Combat.OkToEngagePreValidateId)
+    end
+
+    if Combat.OkToEngage(Globals.AutoTargetID) then
+        Combat.EngageTarget(Globals.AutoTargetID)
+    end
+end
+
+--- Whether a midSong-flagged entry is a fireable instant; errors once per zone when it isn't.
+---@param entry table
+---@return boolean
+function Module:MidSongAllowed(entry)
+    local cached = self.TempSettings.MidSongFireable[entry]
+    if cached ~= nil then return cached end
+
+    local entryType = (entry.type or ""):lower()
+    local castTime = 0
+    local instantType = true
+
+    if entryType == "disc" then
+        local discSpell = self.ResolvedActionMap[entry.name]
+        castTime = discSpell and discSpell.MyCastTime() or 0
+    elseif entryType == "aa" then
+        local aaName = self.ResolvedActionMap[entry.name] or entry.name
+        castTime = aaName and (mq.TLO.Me.AltAbility(aaName).Spell.MyCastTime() or 0) or 0
+    elseif entryType == "item" or entryType == "clickyitem" then
+        local itemName = entryType == "clickyitem" and (entry.name and Config:GetSetting(entry.name)) or self.ResolvedActionMap[entry.name] or entry.name
+        local item = itemName and mq.TLO.FindItem("=" .. itemName)
+        castTime = (item and item()) and ((item.Clicky() and item.Clicky.CastTime()) or item.CastTime() or 0) or 0
+    elseif entryType ~= "ability" then
+        instantType = false -- song/spell would start a song; customfunc excluded as a conservative default
+    end
+
+    local fireable = instantType and (castTime or 0) == 0
+    self.TempSettings.MidSongFireable[entry] = fireable
+    if not fireable then
+        Logger.log_error("\arMidSong: '%s' (type %s) isn't instant - it can't fire mid-song; remove its midSong flag.", entry.name or "?", entry.type or "nil")
+    end
+    return fireable
+end
+
+--- Fires the midSong-flagged instant rotation entries through ExecEntry in fire-and-return mode, so a singing bard's instants go off without clipping the song.
+---@param targetId number The song's target (the combat autotarget).
+function Module:DoMidSongActions(targetId)
+    local combat_state = Combat.GetCachedCombatState()
+    local enabledRotations = Config:GetSetting('EnabledRotations') or {}
+    local enabledEntries = Config:GetSetting('EnabledRotationEntries') or {}
+
+    for _, r in ipairs(self.TempSettings.RotationStates) do
+        if r.midSong and enabledRotations[r.name] ~= false then
+            if Core.SafeCallFunc("MidSong rotation cond " .. r.name, r.cond, self, combat_state) then
+                for _, entry in ipairs(self:GetRotationTable(r.name)) do
+                    if entry.midSong and enabledEntries[entry.name] ~= false and self:MidSongAllowed(entry) then
+                        Core.SafeCallFunc("MidSong entry " .. entry.name, function()
+                            if Rotation.TestConditionForEntry(self, self.ResolvedActionMap, entry, targetId) then
+                                Rotation.ExecEntry(self, entry, targetId, self.ResolvedActionMap, false)
+                            end
+                        end)
+                    end
+                end
+            end
+        end
+    end
 end
 
 ---@return boolean
@@ -1752,6 +1824,7 @@ function Module:OnZone()
     end
     Module.TempSettings.ImmuneTargets = {}   -- clear list of slow/snare/stun immune mobs
     Module.TempSettings.QueuedAbilities = {} -- clear queued actions
+    Module.TempSettings.MidSongFireable = {} -- re-check (and re-warn) mid-song eligibility each zone
 end
 
 function Module:DoGetState()

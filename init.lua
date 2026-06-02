@@ -397,6 +397,7 @@ local function Main()
             Globals.AutoTargetID = 0
             Globals.AutoTargetIsNamed = false
             Globals.AggroTargetID = 0
+            Globals.CombatNavTargetId = 0
             Globals.SetForcedTargetId(0)
         end
         mq.delay(100)
@@ -454,6 +455,7 @@ local function Main()
             Targeting.ForceBurnTargetID = 0
             Globals.LastPulledID        = 0
             Globals.AutoTargetID        = 0
+            Globals.CombatNavTargetId   = 0
             Globals.IgnoredTargetIDs    = Set.new({})
             Globals.LastBurnCheck       = false
             Modules:ExecModule("Pull", "SetLastPullOrCombatEndedTimer")

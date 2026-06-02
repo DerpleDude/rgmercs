@@ -62,7 +62,7 @@ mq.event("CantSee", "You cannot see your target.", function()
                             end
 
                             Logger.log_debug("CantSee: Can't See target (%s [%d]). Naving to %d away.", target.CleanName() or "", target.ID(), desiredDistance)
-                            Movement:NavInCombat(target.ID(), desiredDistance, false, true)
+                            Movement:NavInCombat(target.ID(), desiredDistance, false, true, true)
                         end
                     end
                 end
@@ -177,7 +177,7 @@ local function tooFarHandler()
                         else
                             local navDist = maxRange * 0.7
                             Logger.log_debug("TooFar: Too Far from Target (%s [%d]). Naving to %d away.", target.CleanName() or "", target.ID() or 0, navDist)
-                            Movement:NavInCombat(target.ID(), navDist, false, true)
+                            Movement:NavInCombat(target.ID(), navDist, false, true, true)
                         end
                     else
                         Logger.log_debug("TooFar event detected, but we are not ok to engage or autoengage is disabled.")

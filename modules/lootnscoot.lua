@@ -213,6 +213,8 @@ function Module:GiveTime()
 
 	if not Core.OkayToNotHeal() or mq.TLO.Me.Invis() or Casting.IAmFeigning() then return end
 
+	if Combat.CombatNavActive() then return end
+
 	if not self:CheckChaseTargetInRange() then
 		Logger.log_super_verbose("\ay::LOOT:: \arAborted!\ax Chase Target too far away.")
 		return

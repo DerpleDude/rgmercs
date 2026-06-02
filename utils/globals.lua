@@ -20,6 +20,7 @@ Globals.AutoTargetIsNamed                  = false
 Globals.AutoTargetElementalImmunities      = {}
 Globals.AutoTargetStatusImmunities         = {}
 Globals.ForceCombatID                 = 0
+Globals.CombatNavTargetId             = 0
 Globals.LastPulledID                  = 0
 Globals.CurrentState                  = "None"
 Globals.IgnoredTargetIDs              = Set.new({})

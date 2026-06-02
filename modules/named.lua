@@ -236,14 +236,16 @@ function Module:CheckZoneNamed()
 
     for _, spawn in ipairs(namedSpawns) do
         local name = spawn.CleanName()
-        table.insert(tmpTbl, {
-            Name      = name,
-            Spawn     = spawn,
-            Distance  = spawn and spawn.Distance() or 9999,
-            Loc       = spawn and spawn.LocYXZ() or "0,0,0",
-            Immunities = self:ImmunitySummary(self.NamedList[name]),
-        })
-        upNameds[name] = true
+        if name then
+            table.insert(tmpTbl, {
+                Name      = name,
+                Spawn     = spawn,
+                Distance  = spawn and spawn.Distance() or 9999,
+                Loc       = spawn and spawn.LocYXZ() or "0,0,0",
+                Immunities = self:ImmunitySummary(self.NamedList[name]),
+            })
+            upNameds[name] = true
+        end
     end
 
     for name, entry in pairs(self.NamedList) do

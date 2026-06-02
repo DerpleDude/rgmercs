@@ -845,6 +845,7 @@ local _ClassConfig = {
             name = 'Downtime',
             state = 1,
             steps = 1,
+            midSong = true,
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
                 return combat_state == "Downtime" and not mq.TLO.Me.Invis()
@@ -854,6 +855,7 @@ local _ClassConfig = {
             name = 'Emergency',
             state = 1,
             steps = 1,
+            midSong = true,
             doFullRotation = true,
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
@@ -885,6 +887,7 @@ local _ClassConfig = {
             name = 'Burn',
             state = 1,
             steps = 4,
+            midSong = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and Casting.BurnCheck()
@@ -894,6 +897,7 @@ local _ClassConfig = {
             name = 'Combat',
             state = 1,
             steps = 1,
+            midSong = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat"
@@ -915,34 +919,42 @@ local _ClassConfig = {
             {
                 name = "Quick Time",
                 type = "AA",
+                midSong = true,
             },
             {
                 name = "Funeral Dirge",
                 type = "AA",
+                midSong = true,
             },
             {
                 name = "Spire of the Minstrels",
                 type = "AA",
+                midSong = true,
             },
             {
                 name = "Bladed Song",
                 type = "AA",
+                midSong = true,
             },
             {
                 name = "ThousandBlades",
                 type = "Disc",
+                midSong = true,
             },
             {
                 name = "Song of Stone",
                 type = "AA",
+                midSong = true,
             },
             {
                 name = "Flurry of Notes",
                 type = "AA",
+                midSong = true,
             },
             {
                 name = "Dance of Blades",
                 type = "AA",
+                midSong = true,
             },
             { --Chest Click, name function stops errors in rotation window when slot is empty
                 name_func = function() return mq.TLO.Me.Inventory("Chest").Name() or "ChestClick(Missing)" end,
@@ -955,14 +967,17 @@ local _ClassConfig = {
             {
                 name = "Cacophony",
                 type = "AA",
+                midSong = true,
             },
             {
                 name = "Frenzied Kicks",
                 type = "AA",
+                midSong = true,
             },
             {
                 name = "Intensity of the Resolute",
                 type = "AA",
+                midSong = true,
                 load_cond = function(self) return Config:GetSetting('DoVetAA') end,
             },
         },
@@ -993,18 +1008,6 @@ local _ClassConfig = {
             },
         },
         ['Combat'] = {
-            -- Kludge that addresses bards not attempting to start attacking until after a song completes
-            -- Uncomment if you'd like to occasionally start attacking earlier than normal
-            --[[{
-                name = "Force Attack",
-                type = "AA",
-                cond = function(self, itemName)
-                    local mytar = mq.TLO.Target
-                    if not mq.TLO.Me.Combat() and mytar() and mytar.Distance() < 50 then
-                        Core.DoCmd("/keypress AUTOPRIM")
-                    end
-                end,
-            },]]
             {
                 name = "Epic",
                 type = "Item",
@@ -1016,6 +1019,7 @@ local _ClassConfig = {
             {
                 name = "Fierce Eye",
                 type = "AA",
+                midSong = true,
                 load_cond = function(self) return Config:GetSetting('UseFierceEye') > 1 end,
                 cond = function(self, aaName)
                     return (Config:GetSetting('UseFierceEye') == 3 or (Config:GetSetting('UseFierceEye') == 2 and Casting.BurnCheck()))
@@ -1024,6 +1028,7 @@ local _ClassConfig = {
             {
                 name = "ReflexStrike",
                 type = "Disc",
+                midSong = true,
                 tooltip = Tooltips.ReflexStrike,
                 cond = function(self, discSpell)
                     local pct = Config:GetSetting('GroupManaPct')
@@ -1033,6 +1038,7 @@ local _ClassConfig = {
             {
                 name = "Boastful Bellow",
                 type = "AA",
+                midSong = true,
                 load_cond = function(self) return Config:GetSetting('UseBellow') > 1 end,
                 cond = function(self, aaName, target)
                     return ((Config:GetSetting('UseBellow') == 3 and mq.TLO.Me.PctEndurance() > Config:GetSetting('SelfEndPct')) or (Config:GetSetting('UseBellow') == 2 and Casting.BurnCheck())) and
@@ -1042,6 +1048,7 @@ local _ClassConfig = {
             {
                 name = "Vainglorious Shout",
                 type = "AA",
+                midSong = true,
                 load_cond = function(self) return Config:GetSetting('UseShout') > 1 end,
                 cond = function(self, aaName, target)
                     if not Config:GetSetting('DoAEDamage') then return false end
@@ -1052,6 +1059,7 @@ local _ClassConfig = {
             {
                 name = "Rallying Solo", --Rallying Call theoretically possible but problematic, needs own rotation akin to Focused Paragon, etc
                 type = "AA",
+                midSong = true,
                 load_cond = function(self) return Casting.CanUseAA('Rallying Solo') end,
                 cond = function(self, aaName)
                     return (mq.TLO.Me.PctEndurance() < 30 or mq.TLO.Me.PctMana() < 30)
@@ -1060,7 +1068,19 @@ local _ClassConfig = {
             {
                 name = "Intimidation",
                 type = "Ability",
+                midSong = true,
                 load_cond = function(self) return Casting.AARank("Intimidation") > 1 end,
+            },
+            {
+                name = "Selo's Sonata",
+                type = "AA",
+                midSong = true,
+                targetId = function(self) return { mq.TLO.Me.ID(), } end,
+                load_cond = function(self) return Config:GetSetting('UseRunBuff') and Casting.CanUseAA("Selo's Sonata") end,
+                cond = function(self, aaName)
+                    --refresh slightly before expiry for better uptime
+                    return (mq.TLO.Me.Buff(mq.TLO.AltAbility(aaName).Spell.Trigger(1)).Duration.TotalSeconds() or 0) < 30
+                end,
             },
         },
         ['CombatSongs'] = {
@@ -1359,10 +1379,10 @@ local _ClassConfig = {
             {
                 name = "Selo's Sonata",
                 type = "AA",
+                midSong = true,
                 targetId = function(self) return { mq.TLO.Me.ID(), } end,
                 load_cond = function(self) return Config:GetSetting('UseRunBuff') and Casting.CanUseAA("Selo's Sonata") end,
                 cond = function(self, aaName)
-                    if not Config:GetSetting('UseRunBuff') then return false end
                     --refresh slightly before expiry for better uptime
                     return (mq.TLO.Me.Buff(mq.TLO.AltAbility(aaName).Spell.Trigger(1)).Duration.TotalSeconds() or 0) < 30
                 end,
@@ -1406,6 +1426,7 @@ local _ClassConfig = {
             {
                 name = "Armor of Experience",
                 type = "AA",
+                midSong = true,
                 load_cond = function(self) return Config:GetSetting('DoVetAA') end,
                 cond = function(self, aaName)
                     return mq.TLO.Me.PctHPs() < 35
@@ -1414,6 +1435,7 @@ local _ClassConfig = {
             {
                 name = "Fading Memories",
                 type = "AA",
+                midSong = true,
                 load_cond = function(self) return Config:GetSetting('UseFading') and Casting.CanUseAA('Fading Memories') end,
                 cond = function(self, aaName)
                     return mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') and self.Helpers.UnwantedAggroCheck(self)
@@ -1423,6 +1445,7 @@ local _ClassConfig = {
             {
                 name = "Hymn of the Last Stand",
                 type = "AA",
+                midSong = true,
                 load_cond = function(self) return Casting.CanUseAA('Hymn of the Last Stand') end,
                 cond = function(self, aaName)
                     return mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart')
@@ -1431,6 +1454,7 @@ local _ClassConfig = {
             {
                 name = "Shield of Notes",
                 type = "AA",
+                midSong = true,
                 load_cond = function(self) return Casting.CanUseAA('Shield of Notes') end,
                 cond = function(self, aaName)
                     return mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart')

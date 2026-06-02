@@ -124,7 +124,7 @@ function Combat.EngageTarget(autoTargetId)
                     Logger.log_verbose("EngageTarget(): Target is too far! %d>%d attempting to nav to it.", target.Distance3D(),
                         target.MaxRangeTo())
 
-                    Movement:NavInCombat(autoTargetId, Targeting.GetTargetMaxRangeTo(target), false)
+                    Movement:NavInCombat(autoTargetId, Targeting.GetTargetMaxRangeTo(target), false, false, true)
                 else
                     Logger.log_verbose("EngageTarget(): Target is in range moving to combat")
                     if mq.TLO.Navigation.Active() then
@@ -703,6 +703,11 @@ function Combat.FindBestAutoTarget(validateFn)
             end
         end
     end
+end
+
+---@return boolean
+function Combat.CombatNavActive()
+    return mq.TLO.Navigation.Active() and Globals.CombatNavTargetId > 0 and Globals.CombatNavTargetId == Globals.AutoTargetID
 end
 
 --- Validates if it is acceptable to engage with a target based on its ID.
