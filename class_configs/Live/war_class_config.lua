@@ -367,7 +367,7 @@ local _ClassConfig = {
             load_cond = function() return Core.IsTanking() and Config:GetSetting('DoAETaunt') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and mq.TLO.Me.PctHPs() > Config:GetSetting('EmergencyLockout')
+                return combat_state == "Combat" and Combat.AETauntCheck(true) and mq.TLO.Me.PctHPs() > Config:GetSetting('EmergencyLockout')
             end,
         },
         { --Defensive actions triggered by low HP
