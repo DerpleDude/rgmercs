@@ -2114,6 +2114,19 @@ function Module:IsPullState(state)
     return self.TempSettings.PullState == PullStates[state]
 end
 
+-- True when we're standing idle during a pull hold and below our med-stop level on a stat our class uses.
+---@return boolean
+function Module:ShouldSitToMed()
+    local me = mq.TLO.Me
+    if not me.Standing() or me.Moving() then return false end
+
+    local needHP = me.PctHPs() < Config:GetSetting('HPMedPctStop')
+    local needMana = me.MaxMana() > 0 and me.PctMana() < Config:GetSetting('ManaMedPctStop')
+    local needEndurance = not Globals.Constants.RGCasters:contains(me.Class.ShortName()) and me.PctEndurance() < Config:GetSetting('EndMedPctStop')
+
+    return needHP or needMana or needEndurance
+end
+
 ---@param state number
 ---@param reason string
 function Module:SetPullState(state, reason)
@@ -2302,11 +2315,10 @@ function Module:GiveTime()
             Logger.log_verbose("PULL:GiveTime() - GroupWatch Failed")
             Module:StopNavAfterFailedMovingCheck()
             self:SetPullState(PullStates.PULL_GROUPWATCH_WAIT, groupReason)
-            local me = mq.TLO.Me
-            if me.Standing() and not me.Moving() and (me.PctHPs() < Config:GetSetting('HPMedPctStop') or me.PctMana() < Config:GetSetting('ManaMedPctStop') or me.PctEndurance() < Config:GetSetting('EndMedPctStop')) then
+            if self:ShouldSitToMed() then
                 Logger.log_verbose(
                     "PULL:GiveTime() - We are waiting for GroupWatch and we are below med stop levels, lets sit down ourselves! Note: Does not interface with medstate.")
-                me.Sit()
+                mq.TLO.Me.Sit()
             end
             return
         end
@@ -2318,9 +2330,10 @@ function Module:GiveTime()
             Logger.log_verbose("PULL:GiveTime() - PeerWatch Failed")
             Module:StopNavAfterFailedMovingCheck()
             self:SetPullState(PullStates.PULL_PEERWATCH_WAIT, peerReason)
-            local me = mq.TLO.Me
-            if me.Standing() and not me.Moving() and (me.PctHPs() < Config:GetSetting('HPMedPctStop') or me.PctMana() < Config:GetSetting('ManaMedPctStop') or me.PctEndurance() < Config:GetSetting('EndMedPctStop')) then
-                me.Sit()
+            if self:ShouldSitToMed() then
+                Logger.log_verbose(
+                    "PULL:GiveTime() - We are waiting for PeerWatch and we are below med stop levels, lets sit down ourselves! Note: Does not interface with medstate.")
+                mq.TLO.Me.Sit()
             end
             return
         end
