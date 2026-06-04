@@ -1979,7 +1979,7 @@ function Casting.UseSong(songName, targetId, bAllowMem, retryCount)
             end
 
             if scanTimer % 100 == 0 then
-                Modules:ExecModule("Class", "DoMidSongActions", targetId)
+                Modules:ExecModule("Class", "DoMidSongActions")
             end
 
             mq.delay(20)

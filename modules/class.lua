@@ -863,9 +863,11 @@ function Module:MidSongAllowed(entry)
     return fireable
 end
 
---- Fires the midSong-flagged instant rotation entries through ExecEntry in fire-and-return mode, so a singing bard's instants go off without clipping the song.
----@param targetId number The song's target (the combat autotarget).
-function Module:DoMidSongActions(targetId)
+--- Fires the midSong-flagged instant rotation entries at the combat auto-target via ExecEntry in fire-and-return mode, so a singing bard's instants go off without clipping the song.
+function Module:DoMidSongActions()
+    local autoTargetId = Globals.AutoTargetID
+    if autoTargetId == 0 or mq.TLO.Target.ID() ~= autoTargetId then return end
+
     local combat_state = Combat.GetCachedCombatState()
     local enabledRotations = Config:GetSetting('EnabledRotations') or {}
     local enabledEntries = Config:GetSetting('EnabledRotationEntries') or {}
@@ -876,8 +878,8 @@ function Module:DoMidSongActions(targetId)
                 for _, entry in ipairs(self:GetRotationTable(r.name)) do
                     if entry.midSong and enabledEntries[entry.name] ~= false and self:MidSongAllowed(entry) then
                         Core.SafeCallFunc("MidSong entry " .. entry.name, function()
-                            if Rotation.TestConditionForEntry(self, self.ResolvedActionMap, entry, targetId) then
-                                Rotation.ExecEntry(self, entry, targetId, self.ResolvedActionMap, false)
+                            if Rotation.TestConditionForEntry(self, self.ResolvedActionMap, entry, autoTargetId) then
+                                Rotation.ExecEntry(self, entry, autoTargetId, self.ResolvedActionMap, false)
                             end
                         end)
                     end
