@@ -63,8 +63,9 @@ return {
         ['FlurryDisc'] = {
             "Vengeful Flurry Discipline", -- Level 70
         },
-        ['RageDisc'] = {
-            -- "Blind Rage Discipline", -- Level 58
+        ['RageDisc'] = {                  -- cleaving preferred, crit... lots of damage mod already (incuding ward of might)
+            -- "Burning Rage Discipline", -- Level 60
+            -- "Blind Rage Discipline",   -- Level 58
             "Cleaving Rage Discipline", -- Level 54
         },
         ['AngerDisc'] = {
@@ -72,8 +73,8 @@ return {
         },
         ['CryDisc'] = {
             "Ancient: Cry of Sullon",    -- Level 68 EQM Custom
+            "Ancient: Cry of Chaos",     -- Level 66
             "Battle Cry of the Mastruq", -- Level 65
-            "Ancient: Cry of Chaos",     -- Level 65
             "War Cry of Dravel",         -- Level 64
             "Battle Cry of Dravel",      -- Level 57
             "War Cry",                   -- Level 50
@@ -115,6 +116,7 @@ return {
             "Revitalize",             -- Level 44 EQM Custom
         },
         ['BattlecryHeal'] = {         -- EQM Custom, restores HP/End for group, 8m reuse
+            "Rousing Battlecry",      -- Level 68 EQM Custom
             "Invigorating Battlecry", -- Level 63 EQM Custom
         },
     },

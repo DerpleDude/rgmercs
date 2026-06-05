@@ -129,8 +129,11 @@ local _ClassConfig = {
         },
         ['StrikeDisc'] = {
             "Mighty Blow Discipline",   -- Level 66 EQM Custom
-            "Fellstrike Discipline",    -- Level 58
+            -- "Fellstrike Discipline",    -- Level 58, dmg mod (not crit) -- I *think* Mighty Strike will be better here, especially with all the dmg mod buffs out there (incl ward of might)
             "Mighty Strike Discipline", -- Level 54
+        },
+        ['Steelwrath'] = {
+            "Steelwrath Discipline", -- Level 68 EQM Custom
         },
         ['Throat'] = {
             "Throat Jab", -- Level 71
@@ -155,6 +158,7 @@ local _ClassConfig = {
             "Revitalize",             -- Level 44 EQM Custom
         },
         ['BattlecryHeal'] = {         -- EQM Custom, restores HP/End for group, 8m reuse
+            "Rousing Battlecry",      -- Level 68 EQM Custom
             "Invigorating Battlecry", -- Level 63 EQM Custom
         },
     },
@@ -197,7 +201,7 @@ local _ClassConfig = {
         end,
         BurnDiscCheck = function(self)
             if mq.TLO.Me.ActiveDisc.Name() == "Fortitude Discipline" or mq.TLO.Me.PctHPs() < Config:GetSetting('EmergencyStart') then return false end
-            local burnDisc = { "Onslaught", "StrikeDisc", "ChargeDisc", }
+            local burnDisc = { "Onslaught", "StrikeDisc", "Steelwrath", }
             for _, buffName in ipairs(burnDisc) do
                 local resolvedDisc = self:GetResolvedActionMapItem(buffName)
                 if resolvedDisc and resolvedDisc.RankName() == mq.TLO.Me.ActiveDisc.Name() then return false end
@@ -380,9 +384,6 @@ local _ClassConfig = {
             {
                 name = "AddHate2",
                 type = "Disc",
-                cond = function(self, discSpell)
-                    return Casting.DetSpellCheck(discSpell)
-                end,
             },
             {
                 name = "Grappling Strike",
@@ -432,9 +433,6 @@ local _ClassConfig = {
             {
                 name = "AddHate2",
                 type = "Disc",
-                cond = function(self, discSpell)
-                    return Casting.DetSpellCheck(discSpell)
-                end,
             },
             {
                 name = "Grappling Strike",
@@ -530,6 +528,7 @@ local _ClassConfig = {
                 name = "Protective",
                 type = "Disc",
                 cond = function(self, discSpell, target)
+                    if not Core.IsTanking() then return false end
                     return self.Helpers.DefenseBuffCheck(self)
                 end,
             },
@@ -586,23 +585,31 @@ local _ClassConfig = {
             {
                 name = "Onslaught",
                 type = "Disc",
+                load_cond = function(self) return not Core.IsTanking() end,
                 cond = function(self, discSpell)
-                    return not Core.IsTanking() and self.Helpers.BurnDiscCheck(self)
+                    return self.Helpers.BurnDiscCheck(self)
                 end,
             },
             {
                 name = "StrikeDisc",
                 type = "Disc",
+                load_cond = function(self) return not Core.IsTanking() end,
                 cond = function(self, discSpell)
-                    return not Core.IsTanking() and self.Helpers.BurnDiscCheck(self)
+                    return self.Helpers.BurnDiscCheck(self)
+                end,
+            },
+            {
+                name = "Steelwrath",
+                type = "Disc",
+                load_cond = function(self) return not Core.IsTanking() end,
+                cond = function(self, discSpell)
+                    return self.Helpers.BurnDiscCheck(self)
                 end,
             },
             {
                 name = "Vehement Rage",
                 type = "AA",
-                cond = function(self, aaName)
-                    return not Core.IsTanking()
-                end,
+                load_cond = function(self) return not Core.IsTanking() end,
             },
             {
                 name = "Rampage",

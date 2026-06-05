@@ -215,6 +215,9 @@ return {
             "Empathic Fury",           -- Level 69
             "Bestial Fury Discipline", -- Level 60
         },
+        ['BestialRageDisc'] = {        -- Warden alt: crit instead of damage mod (Ward of Might has dmg mod)
+            "Bestial Rage Discipline", -- Level 60 EQM Custom
+        },
         ['ProtDisc'] = {
             "Skal's Stance Discipline",     -- Level 61 EQM Custom
             "Protective Spirit Discipline", -- Level 55
@@ -392,6 +395,13 @@ return {
                 type = "AA",
             },
             {
+                name = "BestialRageDisc",
+                type = "Disc",
+                cond = function(self, discSpell)
+                    return Core.IsWarden()
+                end,
+            },
+            {
                 name = "Group Bestial Alignment",
                 type = "AA",
                 cond = function(self, aaName)
@@ -414,7 +424,7 @@ return {
                 name = "DmgModDisc",
                 type = "Disc",
                 cond = function(self, discSpell)
-                    return not self.Helpers.DmgModActive(self)
+                    return not Core.IsWarden() and not self.Helpers.DmgModActive(self)
                 end,
             },
             {

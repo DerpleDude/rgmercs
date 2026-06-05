@@ -362,6 +362,9 @@ local _ClassConfig = {
             "Protective Discipline",       -- Level 69 EQM Custom
             "Protective Surge Discipline", -- Level 45 EQM Custom
         },
+        ['Steelwrath'] = {
+            "Steelwrath Discipline", -- Level 68 EQM Custom
+        },
         ['ForPower'] = {
             "Challenge for Power", -- Level 71
         },
@@ -861,6 +864,14 @@ local _ClassConfig = {
                     return Casting.NoDiscActive()
                 end,
             },
+            { -- for DPS mode
+                name = "Steelwrath",
+                type = "Disc",
+                load_cond = function(self) return not Core.IsTanking() end,
+                cond = function(self)
+                    return Casting.NoDiscActive()
+                end,
+            },
             {
                 name = "Harm Touch",
                 type = "AA",
@@ -908,8 +919,8 @@ local _ClassConfig = {
             {
                 name = "Protective",
                 type = "Disc",
+                load_cond = function(self) return Core.IsTanking() end,
                 cond = function(self, discSpell, target)
-                    if not Core.IsTanking() then return false end
                     return Casting.NoDiscActive()
                 end,
             },
@@ -917,8 +928,8 @@ local _ClassConfig = {
                 name = "Mantle",
                 type = "Disc",
                 tooltip = Tooltips.Mantle,
+                load_cond = function(self) return Core.IsTanking() end,
                 cond = function(self, discSpell, target)
-                    if not Core.IsTanking() then return false end
                     return Casting.NoDiscActive() and Casting.DiscOnCoolDown('Protective')
                 end,
             },

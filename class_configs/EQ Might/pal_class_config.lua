@@ -359,8 +359,11 @@ return {
             "Protective Discipline",       -- Level 69 EQM Custom
             "Protective Surge Discipline", -- Level 45 EQM Custom
         },
-        ['SelfHeal'] = {                   -- EQM Custom Zero-Casttime Self-heal
-            "Blessed Mantle Heal",         -- Level 66 EQM Custom
+        ['Steelwrath'] = {
+            "Steelwrath Discipline", -- Level 68 EQM Custom
+        },
+        ['SelfHeal'] = {             -- EQM Custom Zero-Casttime Self-heal
+            "Blessed Mantle Heal",   -- Level 66 EQM Custom
         },
         ['SpellResistBuff'] = {
             "Silent Piety",        -- Level 69
@@ -994,13 +997,21 @@ return {
                     return Casting.SelfBuffCheck(spell)
                 end,
             },
-            { -- for DPS mode
+            {
                 name = "ForgeDisc",
                 type = "Disc",
                 load_cond = function(self) return not Core.IsTanking() end,
                 cond = function(self, discSpell, target)
                     if not Targeting.TargetBodyIs(target, "Undead") then return false end
                     return Globals.AutoTargetIsNamed and Casting.NoDiscActive()
+                end,
+            },
+            {
+                name = "Steelwrath",
+                type = "Disc",
+                load_cond = function(self) return not Core.IsTanking() end,
+                cond = function(self, discSpell, target)
+                    return Casting.NoDiscActive()
                 end,
             },
         },

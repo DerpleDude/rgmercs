@@ -81,6 +81,12 @@ function Core.OnMight()
     return Globals.CurServer:lower() == "eq might" or Globals.CurServer:lower() == "project might"
 end
 
+--- Returns true if a Ward of Might buff is active.
+---@return boolean True if the Ward of Might buff is active.
+function Core.IsWarden()
+    return (mq.TLO.Me.Buff("Ward of Might").ID() or 0) > 0
+end
+
 --- Formats and executes an MQ command, logging it at debug level.
 ---@param cmd string Format string for the command.
 ---@param ... any Arguments for the format string.

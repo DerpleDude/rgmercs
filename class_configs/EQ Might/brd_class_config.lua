@@ -258,6 +258,9 @@ local _ClassConfig = {
         ['ThousandBlades'] = {
             "Thousand Blades", -- Level 69
         },
+        ['Steelwrath'] = {
+            "Steelwrath Discipline", -- Level 67 EQM Custom
+        },
         ['ProcSong'] = {
             "Storm Blade",       -- Level 69
             "Song of the Storm", -- Level 61
@@ -502,6 +505,17 @@ local _ClassConfig = {
                 name = "ThousandBlades",
                 type = "Disc",
                 midSong = true,
+                cond = function(self, discSpell, target)
+                    return Casting.NoDiscActive()
+                end,
+            },
+            {
+                name = "Steelwrath",
+                type = "Disc",
+                midSong = true,
+                cond = function(self, discSpell, target)
+                    return Casting.NoDiscActive()
+                end,
             },
             {
                 name = "OoW_Chest",
