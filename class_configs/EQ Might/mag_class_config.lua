@@ -793,7 +793,7 @@ _ClassConfig    = {
                 name = "Turn Summoned",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    return Targeting.TargetBodyIs(target, "Undead Pet")
+                    return Targeting.IsSummoned(target)
                 end,
             },
         },

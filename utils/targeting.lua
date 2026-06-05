@@ -83,6 +83,11 @@ function Targeting.TargetBodyIs(target, type)
     return targetBody:lower() == type:lower()
 end
 
+-- Returns true if the proper body type for magician/druid anti-summoned spells
+function Targeting.IsSummoned(target)
+    return Targeting.TargetBodyIs(target, "Undead Pet") or Targeting.TargetBodyIs(target, "Construct")
+end
+
 --- Returns true if target's class short name is in classTable (string or array).
 ---@param classTable string|table Class short name or array of them to check.
 ---@param target MQTarget The spawn to test; defaults to current target.

@@ -1216,7 +1216,7 @@ local _ClassConfig = {
                 type = "Spell",
                 cond = function(self, spell, target)
                     return Casting.DetSpellCheck(spell) and not Targeting.TargetBodyIs(target, "Undead") and
-                        not Targeting.TargetBodyIs(target, "Undead Pet")
+                        not Targeting.IsSummoned(target)
                 end,
             },
             {

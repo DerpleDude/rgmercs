@@ -74,30 +74,30 @@ _ClassConfig    = {
             "Spear of Ro", -- Level 70
         },
         ['ChaoticNuke'] = {
-            "Fickle Fire", -- Level 69
+            "Fickle Fire",             -- Level 69
         },
-        ['FireDD'] = { --Mix of Fire Nukes and Bolts appropriate for use at lower levels.
-            "Burning Sand",   -- Level 62
-            "Scars of Sigil", -- Level 54
-            "Lava Bolt",      -- Level 47
-            "Cinder Bolt",    -- Level 33
-            "Bolt of Flame",  -- Level 18
-            "Shock of Flame", -- Level 15
-            "Flame Bolt",     -- Level 5
-            "Burn",           -- Level 4
-            "Burst of Flame", -- Level 1
+        ['FireDD'] = {                 --Mix of Fire Nukes and Bolts appropriate for use at lower levels.
+            "Burning Sand",            -- Level 62
+            "Scars of Sigil",          -- Level 54
+            "Lava Bolt",               -- Level 47
+            "Cinder Bolt",             -- Level 33
+            "Bolt of Flame",           -- Level 18
+            "Shock of Flame",          -- Level 15
+            "Flame Bolt",              -- Level 5
+            "Burn",                    -- Level 4
+            "Burst of Flame",          -- Level 1
         },
-        ['BigFireDD'] = { -- Longer cast time bolts we can use when mobs are at higher health.
+        ['BigFireDD'] = {              -- Longer cast time bolts we can use when mobs are at higher health.
             "Bolt of Jerikor",         -- Level 66
             "Firebolt of Tallon",      -- Level 61
             "Seeking Flame of Seukor", -- Level 59
         },
-        ['MagicDD'] = { -- Magic does not have any faster casts like Fire, we have only these.
-            "Rock of Taelosia", -- Level 65
-            "Shock of Steel",   -- Level 57
-            "Shock of Swords",  -- Level 41
-            "Shock of Spikes",  -- Level 23
-            "Shock of Blades",  -- Level 7
+        ['MagicDD'] = {                -- Magic does not have any faster casts like Fire, we have only these.
+            "Rock of Taelosia",        -- Level 65
+            "Shock of Steel",          -- Level 57
+            "Shock of Swords",         -- Level 41
+            "Shock of Spikes",         -- Level 23
+            "Shock of Blades",         -- Level 7
         },
         ['QuickMagicDD'] = {
             "Blade Strike", -- Level 68
@@ -721,7 +721,7 @@ _ClassConfig    = {
                 name = "Turn Summoned",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    return Targeting.TargetBodyIs(target, "Undead Pet")
+                    return Targeting.IsSummoned(target)
                 end,
             },
             {
@@ -759,7 +759,7 @@ _ClassConfig    = {
                 name = "Turn Summoned",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    return Targeting.TargetBodyIs(target, "Undead Pet")
+                    return Targeting.IsSummoned(target)
                 end,
             },
             {

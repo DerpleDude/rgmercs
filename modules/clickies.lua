@@ -833,7 +833,7 @@ Module.LogicBlocks                            = {
         name = "Target Body Type Is ...",
         cond = function(self, target, peerData, checkUndead, checkSummoned)
             return (checkUndead and Targeting.TargetBodyIs(target, "Undead")) or
-                (checkSummoned and Targeting.TargetBodyIs(target, "Undead Pet"))
+                (checkSummoned and Targeting.IsSummoned(target))
         end,
         tooltip = "Only use when the target body type matches this criteria.",
         render_header_text = function(self, cond)
@@ -2093,7 +2093,8 @@ function Module:GiveTime()
                                 self.TempSettings.ClickyState[clicky.itemName].lastUsed = Globals.GetTimeSeconds()
                                 break --ensure we stop after we process a single clicky to allow rotations to continue
                             else
-                                Logger.log_verbose("\ayClicky: \awItem \am%s\aw Clicky: \at%s\ar checks failed, not using!\aw BuffCheck(%s), DistanceCheck(%s), ItemReady(%s), ElementCheck(%s)",
+                                Logger.log_verbose(
+                                    "\ayClicky: \awItem \am%s\aw Clicky: \at%s\ar checks failed, not using!\aw BuffCheck(%s), DistanceCheck(%s), ItemReady(%s), ElementCheck(%s)",
                                     item.Name(), item.Clicky.Spell.RankName.Name(), Strings.BoolToColorString(buffCheckPassed), Strings.BoolToColorString(distanceCheckPassed),
                                     Strings.BoolToColorString(readyCheckPassed), Strings.BoolToColorString(elementCheckPassed))
                             end

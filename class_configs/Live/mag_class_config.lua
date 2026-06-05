@@ -1361,7 +1361,7 @@ _ClassConfig    = {
                 name = "Turn Summoned",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    return Targeting.TargetBodyIs(target, "Undead Pet")
+                    return Targeting.IsSummoned(target)
                 end,
             },
             {
@@ -1369,7 +1369,7 @@ _ClassConfig    = {
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoSummonedNuke') end,
                 cond = function(self, spell, target)
-                    return Targeting.TargetBodyIs(target, "Undead Pet")
+                    return Targeting.IsSummoned(target)
                 end,
             },
             {
@@ -1388,7 +1388,7 @@ _ClassConfig    = {
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoSummonedNuke') end,
                 cond = function(self, spell, target)
-                    return Targeting.TargetBodyIs(target, "Undead Pet")
+                    return Targeting.IsSummoned(target)
                 end,
             },
             {
@@ -1417,7 +1417,7 @@ _ClassConfig    = {
                 name = "Turn Summoned",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    return Targeting.TargetBodyIs(target, "Undead Pet")
+                    return Targeting.IsSummoned(target)
                 end,
             },
         },
