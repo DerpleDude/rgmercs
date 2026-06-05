@@ -20,6 +20,10 @@ local _ClassConfig = {
     ['Modes']         = {
         'Default',
     },
+    ['PetPosition']   = {
+        SummonAA   = function() return Casting.CanUseAA("Summon Companion") and "Summon Companion" end,
+        RelocateAA = function() return Casting.CanUseAA("Companion's Relocation") and "Companion's Relocation" end,
+    },
     ['Themes']        = {
         ['Default'] = {
             { element = ImGuiCol.TitleBgActive,    color = { r = 0.05, g = 0.45, b = 0.50, a = 0.8, }, },

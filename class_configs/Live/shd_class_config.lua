@@ -86,6 +86,13 @@ local _ClassConfig = {
         'Tank',
         'DPS',
     },
+    ['PetPosition']   = {
+        SummonAA   = function() return Casting.CanUseAA("Summon Companion") and "Summon Companion" end,
+        RelocateAA = function()
+            local cdAA = mq.TLO.Me.AltAbility("Companion's Discipline")
+            return (cdAA and cdAA.Rank() or 0) >= 4 and "Companion's Discipline"
+        end,
+    },
     ['Themes']        = {
         ['Tank'] = {
             { element = ImGuiCol.TitleBgActive,    color = { r = 0.5, g = 0.05, b = 0.05, a = .8, }, },

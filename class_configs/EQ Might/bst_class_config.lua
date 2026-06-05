@@ -13,6 +13,10 @@ return {
     ['Modes']             = {
         'DPS',
     },
+    ['PetPosition']       = {
+        SummonAA   = function() return Casting.CanUseAA("Summon Companion") and "Summon Companion" end,
+        RelocateAA = function() return Casting.CanUseAA("Companion's Relocation") and "Companion's Relocation" end,
+    },
     ['ModeChecks']        = {
         IsHealing = function() return Config:GetSetting('DoHeals') end,
         IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,

@@ -853,6 +853,8 @@ end
 ---@param targetId number The ID of the target to attack.
 ---@param sendSwarm boolean Whether to send a swarm attack or not.
 function Combat.PetAttack(targetId, sendSwarm)
+    if Globals.BackOffFlag then return end
+
     local pet = mq.TLO.Me.Pet
 
     local target = mq.TLO.Spawn(targetId)

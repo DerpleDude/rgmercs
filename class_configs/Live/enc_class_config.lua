@@ -40,6 +40,13 @@ local _ClassConfig    = {
         'Default',
         'ModernEra', --Different DPS rotation, meant for ~90+ (and may not come fully online until 105ish)
     },
+    ['PetPosition']   = {
+        SummonAA   = function() return Casting.CanUseAA("Summon Companion") and "Summon Companion" end,
+        RelocateAA = function()
+            local cdAA = mq.TLO.Me.AltAbility("Companion's Discipline")
+            return (cdAA and cdAA.Rank() or 0) >= 5 and "Companion's Discipline"
+        end,
+    },
     ['Themes']        = {
         ['Default'] = {
             { element = ImGuiCol.TitleBgActive,    color = { r = 0.05, g = 0.45, b = 0.50, a = 0.8, }, },

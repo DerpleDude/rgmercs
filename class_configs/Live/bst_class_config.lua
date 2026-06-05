@@ -16,6 +16,13 @@ return {
     ['ModeChecks']        = {
         IsHealing = function() return true end,
     },
+    ['PetPosition']       = {
+        SummonAA   = function() return Casting.CanUseAA("Summon Companion") and "Summon Companion" end,
+        RelocateAA = function()
+            local cdAA = mq.TLO.Me.AltAbility("Companion's Discipline")
+            return (cdAA and cdAA.Rank() or 0) >= 4 and "Companion's Discipline"
+        end,
+    },
     ['Themes']            = {
         ['DPS'] = {
             { element = ImGuiCol.TitleBgActive,    color = { r = 0.50, g = 0.28, b = 0.03, a = 0.8, }, },

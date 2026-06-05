@@ -20,6 +20,10 @@ local _ClassConfig = {
         'Heal',
         'Hybrid',
     },
+    ['PetPosition']       = {
+        SummonAA   = function() return Casting.CanUseAA("Summon Companion") and "Summon Companion" end,
+        RelocateAA = function() return Casting.CanUseAA("Companion's Relocation") and "Companion's Relocation" end,
+    },
     ['Cures']             = {
         GetCureSpells = function(self)
             --(re)initialize the table for loadout changes

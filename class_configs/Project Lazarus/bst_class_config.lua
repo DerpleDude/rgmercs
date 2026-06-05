@@ -16,6 +16,10 @@ return {
     ['ModeChecks']        = {
         IsHealing = function() return Config:GetSetting('DoHeals') end,
     },
+    ['PetPosition']       = {
+        SummonAA   = function() return Casting.CanUseAA("Summon Companion") and "Summon Companion" end,
+        RelocateAA = function() return Casting.CanUseAA("Companion's Relocation") and "Companion's Relocation" end,
+    },
     ['Themes']            = {
         ['DPS'] = {
             { element = ImGuiCol.TitleBgActive,    color = { r = 0.50, g = 0.28, b = 0.03, a = 0.8, }, },

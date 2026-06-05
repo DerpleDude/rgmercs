@@ -19,6 +19,13 @@ local _ClassConfig = {
         'Heal',
         'Hybrid',
     },
+    ['PetPosition']       = {
+        SummonAA   = function() return Casting.CanUseAA("Summon Companion") and "Summon Companion" end,
+        RelocateAA = function()
+            local cdAA = mq.TLO.Me.AltAbility("Companion's Discipline")
+            return (cdAA and cdAA.Rank() or 0) >= 4 and "Companion's Discipline"
+        end,
+    },
     ['Cures']             = {
         -- this code is slightly ineffecient (we could just check for CureSpell once), but adding corruption or more options would have us change it back to this
         -- -- since it is only run at startup, i'm fine with it. - Algar 8/29/25

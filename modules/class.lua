@@ -1616,6 +1616,52 @@ function Module:QueueAbility(type, name, targetId)
     })
 end
 
+function Module:PositionPet()
+    local petPos = self.ClassConfig.PetPosition
+    if not petPos then return end
+
+    if mq.TLO.Me.Moving() or mq.TLO.Me.Casting() then return end
+
+    local targetId = Globals.AutoTargetID
+    if targetId == 0 then return end
+
+    if (Globals.GetTimeSeconds() - (self.TempSettings.LastPetPosCheck or 0)) < 1 then return end
+    self.TempSettings.LastPetPosCheck = Globals.GetTimeSeconds()
+
+    local pet = mq.TLO.Me.Pet
+    if (pet.ID() or 0) == 0 or not pet.Combat() or (pet.Target.ID() or 0) ~= targetId then return end
+
+    local target = mq.TLO.Spawn(targetId)
+    if not target() then return end
+
+    local myHeading = mq.TLO.Me.Heading.DegreesCCW() or 0
+    local headingDelta = math.abs(myHeading - (self.TempSettings.LastPetPosHeading or myHeading))
+    self.TempSettings.LastPetPosHeading = myHeading
+    if headingDelta > 180 then headingDelta = 360 - headingDelta end
+    if headingDelta > 5 then return end
+
+    local frontArc = 180
+    local targetFacing = target.Heading.DegreesCCW() or 0
+    local inFrontArc = function(y, x)
+        local diff = (((target.HeadingToLoc(y, x).DegreesCCW() or 0) - targetFacing + 540) % 360) - 180
+        return math.abs(diff) < frontArc / 2
+    end
+
+    if not inFrontArc(pet.Y(), pet.X()) then return end
+
+    local ability
+    if inFrontArc(mq.TLO.Me.Y(), mq.TLO.Me.X()) then
+        ability = petPos.RelocateAA()
+    else
+        ability = petPos.SummonAA()
+    end
+
+    if not ability or not Casting.AAReady(ability) then return end
+
+    Logger.log_debug("PositionPet: pet in %s's front arc, using %s.", target.CleanName() or "target", ability)
+    Casting.UseAA(ability)
+end
+
 function Module:GiveTime()
     local combat_state = Combat.GetCachedCombatState()
 
@@ -1735,6 +1781,10 @@ function Module:GiveTime()
                 end
             end
         end
+    end
+
+    if combat_state == "Combat" and Config:GetSetting('DoPetPositioningBeta') then
+        self:PositionPet()
     end
 
     -- stop singing after pause so we can take over again (if we are active, we will stop our own songs). If paused, allow user to manage their own songs.

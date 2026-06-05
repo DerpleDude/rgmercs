@@ -343,6 +343,10 @@ Binds.Handlers    = {
                 Globals.BackOffFlag = false
             end
 
+            if Globals.BackOffFlag and Config:GetSetting('DoPetCommands') and mq.TLO.Me.Pet.ID() > 0 then
+                Core.DoCmd("/squelch /pet back off")
+            end
+
             Logger.log_info("\ayBackoff \awset to: %s", Strings.BoolToColorString(Globals.BackOffFlag))
         end,
     },

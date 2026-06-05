@@ -87,6 +87,10 @@ local _ClassConfig = {
         'Tank',
         'DPS',
     },
+    ['PetPosition']   = {
+        SummonAA   = function() return Casting.CanUseAA("Summon Companion") and "Summon Companion" end,
+        RelocateAA = function() return Casting.CanUseAA("Companion's Relocation") and "Companion's Relocation" end,
+    },
     ['Themes']        = {
         ['Tank'] = {
             { element = ImGuiCol.TitleBgActive,    color = { r = 0.5, g = 0.05, b = 0.05, a = .8, }, },
@@ -171,14 +175,14 @@ local _ClassConfig = {
             "Augment Death",         -- Level 60
             "Strengthen Death",      -- Level 29
         },
-        ['Horror'] = {           -- HP Tap Proc
-            "Shroud of Discord", -- Level 67, -- Buff Slot 1 <
-            "Shroud of Chaos",   -- Level 63
-            "Shroud of Death",   -- Level 55
+        ['Horror'] = {               -- HP Tap Proc
+            "Shroud of Discord",     -- Level 67, -- Buff Slot 1 <
+            "Shroud of Chaos",       -- Level 63
+            "Shroud of Death",       -- Level 55
         },
-        ['Mental'] = {           -- Mana Tap Proc
-            "Mental Horror",     -- Level 65, --Buff Slot 1 >
-            "Mental Corruption", -- Level 52
+        ['Mental'] = {               -- Mana Tap Proc
+            "Mental Horror",         -- Level 65, --Buff Slot 1 >
+            "Mental Corruption",     -- Level 52
         },
         ['Skin'] = {
             "Decrepit Skin", -- Level 70

@@ -18,6 +18,13 @@ _ClassConfig    = {
         'DPS',
         'PetTank',
     },
+    ['PetPosition']       = {
+        SummonAA   = function() return Casting.CanUseAA("Summon Companion") and "Summon Companion" end,
+        RelocateAA = function()
+            local cdAA = mq.TLO.Me.AltAbility("Companion's Discipline")
+            return (cdAA and cdAA.Rank() or 0) >= 4 and "Companion's Discipline"
+        end,
+    },
     ['OnModeChange']      = function(self, mode)
         if mode == "PetTank" then
             Core.DoCmd("/pet taunt on")
