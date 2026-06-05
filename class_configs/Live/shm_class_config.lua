@@ -1529,7 +1529,7 @@ local _ClassConfig = {
             {
                 name = "SingleRegenBuff",
                 type = "Spell",
-                load_cond = function(self) return not Core.GetResolvedActionMapItem('GroupRegenBuff') end,
+                load_cond = function(self) return Config:GetSetting('DoRegenBuff') and not Core.GetResolvedActionMapItem('GroupRegenBuff') end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell, target)
                     return (Targeting.TargetIsATank(target) or Targeting.TargetIsMyself(target)) and Casting.GroupBuffCheck(spell, target)
@@ -1538,7 +1538,7 @@ local _ClassConfig = {
             {
                 name = "GroupRegenBuff",
                 type = "Spell",
-                load_cond = function(self) return Config:GetSetting('DoGroupRegen') and not Core.GetResolvedActionMapItem('DichoSpell') end,
+                load_cond = function(self) return Config:GetSetting('DoRegenBuff') and not Core.GetResolvedActionMapItem('DichoSpell') end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell, target)
                     return Casting.GroupBuffCheck(spell, target)
@@ -1644,7 +1644,7 @@ local _ClassConfig = {
                 -- Utility
                 { name = "CanniSpell",        cond = function(self) return Config:GetSetting('DoSpellCanni') end, },   -- 23 - ???
                 { name = "GroupRenewalHoT",   cond = function(self) return Config:GetSetting('DoHealOverTime') end, }, -- 44-125 Heal
-                { name = "SingleRegenBuff",   cond = function(self) return not Core.GetResolvedActionMapItem('GroupRegenBuff') end, },
+                { name = "SingleRegenBuff",   cond = function(self) return Config:GetSetting('DoRegenBuff') and not Core.GetResolvedActionMapItem('GroupRegenBuff') end, },
                 { name = "TempHPBuff",        cond = function(self) return Config:GetSetting('DoTempHP') end, },       -- 81-125
                 { name = "CureSpell",         cond = function(self) return Config:GetSetting('MemCureSpell') end, },
 
@@ -1706,7 +1706,7 @@ local _ClassConfig = {
                 -- Utility, Filler
                 { name = "CanniSpell",        cond = function(self) return Config:GetSetting('DoSpellCanni') end, },   -- 23 - ???
                 { name = "GroupRenewalHoT",   cond = function(self) return Config:GetSetting('DoHealOverTime') end, }, -- 44-125 Heal
-                { name = "SingleRegenBuff",   cond = function(self) return not Core.GetResolvedActionMapItem('GroupRegenBuff') end, },
+                { name = "SingleRegenBuff",   cond = function(self) return Config:GetSetting('DoRegenBuff') and not Core.GetResolvedActionMapItem('GroupRegenBuff') end, },
                 { name = "TempHPBuff",        cond = function(self) return Config:GetSetting('DoTempHP') end, },       -- 81-125
                 { name = "TwinHealNuke",      cond = function(self) return Config:GetSetting('DoTwinHealNuke') end, }, -- 85-125
                 { name = "CureSpell",         cond = function(self) return Config:GetSetting('MemCureSpell') end, },
@@ -2002,14 +2002,15 @@ local _ClassConfig = {
             Default = true,
             ConfigType = "Advanced",
         },
-        ['DoGroupRegen']        = {
-            DisplayName = "Group Regen Buff",
+        ['DoRegenBuff']         = {
+            DisplayName = "Regen Buff",
             Group = "Abilities",
             Header = "Buffs",
             Category = "Group",
             Index = 105,
-            Tooltip = "Use your Group Regen buff.",
+            Tooltip = "Use your Regen buff (best of single or group versions).",
             Default = true,
+            RequiresLoadoutChange = true,
             FAQ = "Why am I spamming my Group Regen buff?",
             Answer = "Certain Shaman and Druid group regen buffs report cross-stacking. You should deselect the option on one of the PCs if they are grouped together.",
         },

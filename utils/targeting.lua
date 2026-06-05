@@ -85,7 +85,12 @@ end
 
 -- Returns true if the proper body type for magician/druid anti-summoned spells
 function Targeting.IsSummoned(target)
-    return Targeting.TargetBodyIs(target, "Undead Pet") or Targeting.TargetBodyIs(target, "Construct")
+    if not target then target = mq.TLO.Target end
+    if not target or not target() then return false end
+
+    local targetBody = target.Body() and target.Body.Name() or "none"
+
+    return targetBody:lower() == "construct" or targetBody:lower() == "undead pet"
 end
 
 --- Returns true if target's class short name is in classTable (string or array).
