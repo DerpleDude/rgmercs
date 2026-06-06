@@ -863,7 +863,7 @@ function Combat.PetAttack(targetId, sendSwarm)
     if pet.ID() == 0 then return end
 
     if Config:GetSetting('DoPetCommands') and (not pet.Combat() or pet.Target.ID() ~= targetId) and (targetId == Globals.ForceTargetID or targetId == Globals.AutoTargetID or Targeting.TargetIsType("npc", target)) then
-        Core.DoCmd("/squelch /pet attack %d", targetId)
+        Core.DoCmd("/multiline ; /squelch /pet back off ; /timed 1 /squelch /pet attack")
         if sendSwarm then
             Core.DoCmd("/squelch /pet swarm")
         end
