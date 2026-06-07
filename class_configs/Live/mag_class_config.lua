@@ -1,12 +1,13 @@
-local mq        = require('mq')
-local Casting   = require("utils.casting")
-local Comms     = require("utils.comms")
-local Config    = require('utils.config')
-local Core      = require("utils.core")
-local DanNet    = require('lib.dannet.helpers')
-local Globals   = require("utils.globals")
-local Logger    = require("utils.logger")
-local Targeting = require("utils.targeting")
+local mq          = require('mq')
+local Casting     = require("utils.casting")
+local Comms       = require("utils.comms")
+local Config      = require('utils.config')
+local Core        = require("utils.core")
+local DanNet      = require('lib.dannet.helpers')
+local Globals     = require("utils.globals")
+local ItemManager = require("utils.item_manager")
+local Logger      = require("utils.logger")
+local Targeting   = require("utils.targeting")
 
 _ClassConfig    = {
     _version              = "1.3 - Live",
@@ -1074,15 +1075,11 @@ _ClassConfig    = {
 
             Logger.log_debug("Sending the %s to our bags.", mq.TLO.Cursor())
 
+            local itemId = mq.TLO.Cursor.ID()
             if scope == "group" then
-                local delay = Config:GetSetting('AIGroupDelay')
-                Comms.PrintGroupMessage("%s summoned, issuing autoinventory command momentarily.", mq.TLO.Cursor())
-                mq.delay(delay)
-                Core.DoGroupOrRaidCmd("/autoinventory")
+                ItemManager.BroadcastQueueAutoInv(itemId)
             elseif scope == "personal" then
-                local delay = Config:GetSetting('AISelfDelay')
-                mq.delay(delay)
-                Core.DoCmd("/autoinventory")
+                ItemManager.QueueAutoInv(itemId)
             else
                 Logger.log_debug("Invalid scope sent: (%s). Item handling aborted.", scope)
                 return false
@@ -1894,29 +1891,6 @@ _ClassConfig    = {
             Category = "Class Config Clickies",
             Tooltip = "Click your chest item",
             Default = mq.TLO.MacroQuest.BuildName() ~= "Emu",
-        },
-        ['AISelfDelay']    = {
-            DisplayName = "Autoinv Delay (Self)",
-            Group = "Items",
-            Header = "Item Summoning",
-            Category = "Item Summoning",
-            Tooltip = "Delay in ms before /autoinventory after summoning, adjust if you notice items left on cursors regularly.",
-            Default = 50,
-            Min = 1,
-            Max = 250,
-            FAQ = "Why do I always have items stuck on the cursor?",
-            Answer = "You can adjust the delay before autoinventory by adjusting the item summoning delay settings.\n" ..
-                "Increase the delay if you notice items left on cursors regularly.",
-        },
-        ['AIGroupDelay']   = {
-            DisplayName = "Autoinv Delay (Group)",
-            Group = "Items",
-            Header = "Item Summoning",
-            Category = "Item Summoning",
-            Tooltip = "Delay in ms before /autoinventory after summoning, adjust if you notice items left on cursors regularly.",
-            Default = 150,
-            Min = 1,
-            Max = 500,
         },
         ['DoMalo']         = {
             DisplayName = "Cast Malo",

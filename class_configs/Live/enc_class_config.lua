@@ -3,6 +3,7 @@ local Casting         = require("utils.casting")
 local Config          = require('utils.config')
 local Core            = require("utils.core")
 local Globals         = require("utils.globals")
+local ItemManager     = require("utils.item_manager")
 local Logger          = require("utils.logger")
 local Modules         = require("utils.modules")
 local Targeting       = require("utils.targeting")
@@ -987,8 +988,7 @@ local _ClassConfig    = {
             end
 
             Logger.log_debug("Sending the %s to our bags.", mq.TLO.Cursor())
-            mq.delay(150)
-            Core.DoCmd("/autoinventory")
+            ItemManager.QueueAutoInv(mq.TLO.Cursor.ID())
         end,
         AuraCheck = function() -- remove undesired auras to stop spam conditions... this will only be triggered if we have already identified we are missing a desired aura
             if Casting.CanUseAA("Auroria Mastery") then

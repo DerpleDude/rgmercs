@@ -44,6 +44,7 @@ local Comms       = require("utils.comms")
 local Core        = require("utils.core")
 local Events      = require("utils.events")
 local Globals     = require("utils.globals")
+local ItemManager = require("utils.item_manager")
 local Movement    = require("utils.movement")
 local Targeting   = require("utils.targeting")
 local Ui          = require("utils.ui")
@@ -385,6 +386,7 @@ local function Main()
     Config.Db:updateTelemetryGraphs()
 
     Comms.HeartbeatWatchdog()
+    ItemManager.ServiceAutoInv()
 
     if mq.TLO.Zone.ID() ~= Globals.CurZoneId or mq.TLO.Me.Instance() ~= Globals.CurInstanceId then
         if notifyZoning then
@@ -624,6 +626,11 @@ local script_actor = Comms.Actors.register('RGMercs', function(message)
         --Logger.log_debug("Received Heartbeat from \am%s\aw: \ag%s", msg.From, Strings.TableToString(msg.Data))
         Logger.log_debug("Received Command from \am%s\aw: \ag%s", msg.From, msg.Data.cmd or "nil")
         Core.DoCmd(msg.Data.cmd)
+        return
+    end
+
+    if msg.Event == "QueueAutoInv" then
+        ItemManager.QueueAutoInv(msg.Data and msg.Data.itemId)
         return
     end
 

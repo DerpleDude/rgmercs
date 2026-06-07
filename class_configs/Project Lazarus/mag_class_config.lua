@@ -1,13 +1,14 @@
-local mq        = require('mq')
-local Casting   = require("utils.casting")
-local Combat    = require("utils.combat")
-local Comms     = require("utils.comms")
-local Config    = require('utils.config')
-local Core      = require("utils.core")
-local DanNet    = require('lib.dannet.helpers')
-local Globals   = require("utils.globals")
-local Logger    = require("utils.logger")
-local Targeting = require("utils.targeting")
+local mq          = require('mq')
+local Casting     = require("utils.casting")
+local Combat      = require("utils.combat")
+local Comms       = require("utils.comms")
+local Config      = require('utils.config')
+local Core        = require("utils.core")
+local DanNet      = require('lib.dannet.helpers')
+local Globals     = require("utils.globals")
+local ItemManager = require("utils.item_manager")
+local Logger      = require("utils.logger")
+local Targeting   = require("utils.targeting")
 
 _ClassConfig    = {
     _version          = "1.4 - Project Lazarus",
@@ -452,15 +453,11 @@ _ClassConfig    = {
 
             Logger.log_debug("Sending the %s to our bags.", mq.TLO.Cursor())
 
+            local itemId = mq.TLO.Cursor.ID()
             if scope == "group" then
-                local delay = Config:GetSetting('AIGroupDelay')
-                Comms.PrintGroupMessage("%s summoned, issuing autoinventory command momentarily.", mq.TLO.Cursor())
-                mq.delay(delay)
-                Core.DoGroupOrRaidCmd("/autoinventory")
+                ItemManager.BroadcastQueueAutoInv(itemId)
             elseif scope == "personal" then
-                local delay = Config:GetSetting('AISelfDelay')
-                mq.delay(delay)
-                Core.DoCmd("/autoinventory")
+                ItemManager.QueueAutoInv(itemId)
             else
                 Logger.log_debug("Invalid scope sent: (%s). Item handling aborted.", scope)
                 return false
@@ -1075,28 +1072,6 @@ _ClassConfig    = {
             Tooltip = "Use Frantic Flames during burns.",
             RequiresLoadoutChange = true, --this setting is used as a load condition
             Default = true,
-        },
-        ['AISelfDelay']    = {
-            DisplayName = "Autoinv Delay (Self)",
-            Group = "Items",
-            Header = "Item Summoning",
-            Category = "Item Summoning",
-            Index = 107,
-            Tooltip = "Delay in ms before /autoinventory after summoning, adjust if you notice items left on cursors regularly.",
-            Default = 50,
-            Min = 1,
-            Max = 250,
-        },
-        ['AIGroupDelay']   = {
-            DisplayName = "Autoinv Delay (Group)",
-            Group = "Items",
-            Header = "Item Summoning",
-            Category = "Item Summoning",
-            Index = 108,
-            Tooltip = "Delay in ms before /autoinventory after summoning, adjust if you notice items left on cursors regularly.",
-            Default = 150,
-            Min = 1,
-            Max = 500,
         },
         ['DoMalo']         = {
             DisplayName = "Cast Malo",

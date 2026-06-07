@@ -5,6 +5,7 @@ local Config       = require('utils.config')
 local Core         = require("utils.core")
 local DanNet       = require('lib.dannet.helpers')
 local Globals      = require("utils.globals")
+local ItemManager  = require("utils.item_manager")
 local Logger       = require("utils.logger")
 local Targeting    = require("utils.targeting")
 
@@ -461,9 +462,7 @@ local _ClassConfig = {
 
             Logger.log_debug("Sending the %s to our bags.", mq.TLO.Cursor())
 
-            Comms.PrintGroupMessage("%s summoned, issuing autoinventory command momentarily.", mq.TLO.Cursor())
-            mq.delay(Config:GetSetting("AICrystalDelay"))
-            Core.DoGroupCmd("/autoinventory")
+            ItemManager.BroadcastQueueAutoInv(mq.TLO.Cursor.ID())
         end,
     },
     ['Rotations']     = {
@@ -1413,17 +1412,6 @@ local _ClassConfig = {
             Tooltip = "Summon Sanguine Mind Crystals (Health Restore) for the group.",
             RequiresLoadoutChange = true, -- this is a load condition
             Default = true,
-        },
-        ['AICrystalDelay']     = {
-            DisplayName = "Crystal Autoinv Delay",
-            Group = "Items",
-            Header = "Item Summoning",
-            Category = "Item Summoning",
-            Index = 103,
-            Tooltip = "Delay in ms before /autoinventory after summoning, adjust if you notice items left on cursors regularly.",
-            Default = 150,
-            Min = 1,
-            Max = 500,
         },
     },
     ['ClassFAQ']      = {
