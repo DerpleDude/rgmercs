@@ -988,6 +988,8 @@ function Module:GetRotations()
             return nil
         end
         if not spell or not spell() then return nil end
+        -- Beneficial spells (self/group buffs) are never cast at the mob, so a target's immunity can't gate them even if they carry a resist type.
+        if spell.Beneficial() then return nil end
         local rt = spell.ResistType and spell.ResistType()
         return Globals.Constants.ResistTypesSet:contains(rt) and rt or nil
     end
