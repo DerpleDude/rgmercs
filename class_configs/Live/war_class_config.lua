@@ -472,9 +472,6 @@ local _ClassConfig = {
             {
                 name = "Taunt",
                 type = "Ability",
-                cond = function(self, abilityName, target)
-                    return Targeting.GetTargetDistance(target) < 30
-                end,
             },
             {
                 name = "AbsorbTaunt",
@@ -505,7 +502,7 @@ local _ClassConfig = {
                 name = "Taunt",
                 type = "Ability",
                 cond = function(self, abilityName, target)
-                    return Targeting.GetTargetDistance(target) < 30
+                    return Targeting.LostAutoTargetAggro()
                 end,
             },
             {

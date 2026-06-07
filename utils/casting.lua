@@ -1637,7 +1637,7 @@ function Casting.AAReady(aaName)
     return Casting.CastCheck(aaSpell)
 end
 
---- Verifies Me.AbilityReady is true for the named combat ability, then confirms the target is within maximum melee range (or that the ability is "taunt", which has special range behavior in EQ).
+--- Verifies Me.AbilityReady is true for the named combat ability, then confirms the target is within maximum melee range.
 --- @param abilityName string The name of the ability to check.
 --- @param target MQSpawn|nil The intended target of the ability.
 --- @return boolean True if the ability is ready, false otherwise.
@@ -1651,7 +1651,7 @@ function Casting.AbilityReady(abilityName, target)
 
     if not ready then return false end
 
-    return Targeting.GetTargetDistance(target) <= Targeting.GetTargetMaxRangeTo(target) or abilityName:lower() == "taunt"
+    return Targeting.GetTargetDistance(target) <= Targeting.GetTargetMaxRangeTo(target)
 end
 
 --- Checks ItemHasClicky, Me.ItemReady (off cooldown), required level,

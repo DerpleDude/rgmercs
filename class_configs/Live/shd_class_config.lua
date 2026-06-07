@@ -1221,9 +1221,6 @@ local _ClassConfig = {
                 name = "Taunt",
                 type = "Ability",
                 tooltip = Tooltips.Taunt,
-                cond = function(self, abilityName, target)
-                    return Targeting.GetTargetDistance(target) < 30
-                end,
             },
             {
                 name = "Terror",
@@ -1298,7 +1295,7 @@ local _ClassConfig = {
                 type = "Ability",
                 tooltip = Tooltips.Taunt,
                 cond = function(self, abilityName, target)
-                    return mq.TLO.Me.TargetOfTarget.ID() ~= mq.TLO.Me.ID() and target.ID() > 0 and Targeting.GetTargetDistance(target) < 30
+                    return Targeting.LostAutoTargetAggro()
                 end,
             },
             {

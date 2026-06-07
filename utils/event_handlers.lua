@@ -20,16 +20,22 @@ mq.event("CantSee", "You cannot see your target.", function()
     if Globals.BackOffFlag then return end
     if Globals.PauseMain then return end
     local target = mq.TLO.Target
+    local pullPulling = Modules:ExecModule("Pull", "IsPullState", "PULL_PULLING")
+    local pullReturn = Modules:ExecModule("Pull", "IsPullState", "PULL_RETURN_TO_CAMP")
+
+    -- Ignore a can't-see on a transient target swap (aggro tool/mez/charm); only reposition while pulling or for our actual engagement target.
+    if not pullPulling and not pullReturn and Globals.AutoTargetID > 0 and (target.ID() or 0) ~= Globals.AutoTargetID then return end
+
     if mq.TLO.Stick.Active() then
         Movement:DoStickCmd("off")
         Movement:ClearLastStickTimer()
     end
 
-    if Modules:ExecModule("Pull", "IsPullState", "PULL_PULLING") then
+    if pullPulling then
         Logger.log_debug("CantSee: \ayWe are in Pull_State PULLING and Cannot see our target!")
         Movement:DoNav(false, "id %d distance=%d lineofsight=on log=off", target.ID() or 0, (target.Distance3D() or 0) * 0.5)
         mq.delay("2s", function() return mq.TLO.Navigation.Active() end)
-    elseif Modules:ExecModule("Pull", "IsPullState", "PULL_RETURN_TO_CAMP") then
+    elseif pullReturn then
         Logger.log_debug("CantSee event detected, but we are pulling and currently returning to camp.")
     else
         if Config:GetSetting('HandleCantSeeTarget') then
@@ -139,19 +145,25 @@ local function tooFarHandler()
     if Globals.BackOffFlag then return end
     if Globals.PauseMain then return end
 
+    local target = mq.TLO.Target
+    local pullPulling = Modules:ExecModule("Pull", "IsPullState", "PULL_PULLING")
+    local pullReturn = Modules:ExecModule("Pull", "IsPullState", "PULL_RETURN_TO_CAMP")
+
+    -- Ignore a too-far on a transient target swap (aggro tool/mez/charm); only reposition while pulling or for our actual engagement target.
+    if not pullPulling and not pullReturn and Globals.AutoTargetID > 0 and (target.ID() or 0) ~= Globals.AutoTargetID then return end
+
     if mq.TLO.Stick.Active() then
         Movement:DoStickCmd("off")
         Movement:ClearLastStickTimer()
     end
-    local target = mq.TLO.Target
 
-    if Modules:ExecModule("Pull", "IsPullState", "PULL_PULLING") then
+    if pullPulling then
         Logger.log_debug("TooFar: \ayWe are in Pull_State PULLING and too far from our target! target(%s) targetDistance(%d)",
             Targeting.GetTargetCleanName(),
             Targeting.GetTargetDistance())
         Movement:DoNav(false, "id %d distance=%d lineofsight=on log=off", target.ID() or 0, (target.Distance3D() or 0) * 0.7)
         mq.delay("2s", function() return mq.TLO.Navigation.Active() end)
-    elseif Modules:ExecModule("Pull", "IsPullState", "PULL_RETURN_TO_CAMP") then
+    elseif pullReturn then
         Logger.log_debug("CantSee event detected, but we are pulling and currently returning to camp.")
     else
         if Config:GetSetting('HandleTooFar') then

@@ -353,12 +353,9 @@ local _ClassConfig = {
             },
         },
         ['HateTools(AggroTarget)'] = {
-            { --more valuable on laz because we have less hate tools and no other hatelist + 1 abilities
+            {
                 name = "Taunt",
                 type = "Ability",
-                cond = function(self, abilityName, target)
-                    return Targeting.GetTargetDistance(target) < 30
-                end,
             },
             {
                 name = "Xeno's Faceguard",
@@ -395,11 +392,11 @@ local _ClassConfig = {
             },
         },
         ['HateTools(AutoTarget)'] = {
-            { --more valuable on laz because we have less hate tools and no other hatelist + 1 abilities
+            {
                 name = "Taunt",
                 type = "Ability",
                 cond = function(self, abilityName, target)
-                    return Targeting.LostAutoTargetAggro() and Targeting.GetTargetDistance(target) < 30
+                    return Targeting.LostAutoTargetAggro()
                 end,
             },
             { --8min reuse, save for we still can't get a mob back after trying to taunt, try not to use it on the pull

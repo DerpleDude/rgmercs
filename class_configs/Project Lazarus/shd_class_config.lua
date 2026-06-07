@@ -679,13 +679,10 @@ local _ClassConfig = {
             },
         },
         ['HateTools(AggroTarget)'] = {
-            { --more valuable on laz because we have less hate tools and no other hatelist + 1 abilities
+            {
                 name = "Taunt",
                 type = "Ability",
                 tooltip = Tooltips.Taunt,
-                cond = function(self, abilityName, target)
-                    return Targeting.GetTargetDistance(target) < 30
-                end,
             },
             { --pull does not work on Laz, it is just a hate tool
                 name = "Hate's Attraction",
@@ -705,12 +702,12 @@ local _ClassConfig = {
             },
         },
         ['HateTools(AutoTarget)'] = {
-            { --more valuable on laz because we have less hate tools and no other hatelist + 1 abilities
+            {
                 name = "Taunt",
                 type = "Ability",
                 tooltip = Tooltips.Taunt,
                 cond = function(self, abilityName, target)
-                    return Targeting.LostAutoTargetAggro() and Targeting.GetTargetDistance(target) < 30
+                    return Targeting.LostAutoTargetAggro()
                 end,
             },
 
