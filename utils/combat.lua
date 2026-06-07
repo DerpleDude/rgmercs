@@ -285,17 +285,32 @@ function Combat.PickBestSpawn(hpPref, spawn, bucket)
     end
 end
 
-local function processFallbackSpawn(spawn, checkNamed, radius, namedPref, hpPref, primaryTarget)
+--- Returns true if spawn matches the named/trash preference (no preference matches anything).
+---@param spawnIsNamed boolean Whether the spawn is considered named.
+---@param namedPref    {prefNamed:boolean,prefTrash:boolean} Named targeting preference flags.
+---@return boolean True if the spawn is the preferred type.
+function Combat.IsPreferredType(spawnIsNamed, namedPref)
+    return (not namedPref.prefNamed and not namedPref.prefTrash)
+        or (namedPref.prefNamed and spawnIsNamed)
+        or (namedPref.prefTrash and not spawnIsNamed)
+end
+
+local function processFallbackSpawn(spawn, checkNamed, radius, namedPref, hpPref, primaryTarget, fallbackTarget)
     if not spawn or not spawn() then return end
     if Targeting.IsTempPet(spawn) then return end
     if (spawn.CleanName() or ""):find("Guard") then return end
     if Config:GetSetting('SafeTargeting') and Targeting.IsSpawnFightingStranger(spawn, radius) then return end
     local spawnIsNamed = checkNamed and Targeting.IsNamed(spawn) or false
-    if namedPref.prefNamed and not spawnIsNamed then return end -- want named, this is trash: skip
-    if namedPref.prefTrash and spawnIsNamed then return end     -- want trash, this is named: skip
-    Logger.log_verbose("MATargetScan FallbackScan Found: %s -- id %d", spawn.CleanName(), spawn.ID())
-    Combat.PickBestSpawn(hpPref, spawn, primaryTarget)
-    primaryTarget.found = true
+
+    if Combat.IsPreferredType(spawnIsNamed, namedPref) then
+        Logger.log_verbose("MATargetScan FallbackScan Found: %s -- id %d", spawn.CleanName(), spawn.ID())
+        Combat.PickBestSpawn(hpPref, spawn, primaryTarget)
+        primaryTarget.found = true
+    else
+        -- preferred type not available: stash as fallback in case it's the only type left
+        Logger.log_verbose("MATargetScan FallbackScan found non-preferred target: %s -- id %d", spawn.CleanName(), spawn.ID())
+        Combat.PickBestSpawn(hpPref, spawn, fallbackTarget)
+    end
 end
 
 --- Scans nearby spawns matching search and updates the primaryTarget bucket as a fallback when XTargets yield nothing.
@@ -305,11 +320,12 @@ end
 ---@param namedPref     {prefNamed:boolean,prefTrash:boolean} Named targeting preference flags.
 ---@param hpPref        {prefLow:boolean,prefHigh:boolean}   HP targeting preference flags.
 ---@param primaryTarget {hp:number,id:number,found:boolean}  Primary target bucket, mutated in place.
-function Combat.FallbackScan(search, checkNamed, radius, namedPref, hpPref, primaryTarget)
+---@param fallbackTarget {hp:number,id:number,name:string}  Non-preferred-type bucket, mutated in place.
+function Combat.FallbackScan(search, checkNamed, radius, namedPref, hpPref, primaryTarget, fallbackTarget)
     local count = mq.TLO.SpawnCount(search)()
     Logger.log_verbose("MATargetScan FallbackScan: %s ===> %d", search, count)
     for i = 1, count do
-        processFallbackSpawn(mq.TLO.NearestSpawn(i, search), checkNamed, radius, namedPref, hpPref, primaryTarget)
+        processFallbackSpawn(mq.TLO.NearestSpawn(i, search), checkNamed, radius, namedPref, hpPref, primaryTarget, fallbackTarget)
     end
 end
 
@@ -357,9 +373,7 @@ function Combat.ProcessXTarget(xtSpawn, radius, namedPref, hpPref, immediate, pr
     end
 
     local spawnIsNamed = Targeting.IsNamed(xtSpawn)
-    local wantThisSpawn = (not namedPref.prefNamed and not namedPref.prefTrash)
-        or (namedPref.prefNamed and spawnIsNamed)
-        or (namedPref.prefTrash and not spawnIsNamed)
+    local wantThisSpawn = Combat.IsPreferredType(spawnIsNamed, namedPref)
 
     if wantThisSpawn then
         if immediate then
@@ -410,8 +424,12 @@ function Combat.MATargetScan(radius, zradius)
         elseif Config:GetSetting('AreaScanFallback') then
             -- We didn't find anything to kill yet so spawn search
             Logger.log_verbose("MATargetScan Falling back on Spawn Searching")
-            Combat.FallbackScan(aggroSearch, true, radius, namedPref, hpPref, primaryTarget)
-            Combat.FallbackScan(aggroSearchPet, false, radius, namedPref, hpPref, primaryTarget)
+            Combat.FallbackScan(aggroSearch, true, radius, namedPref, hpPref, primaryTarget, fallbackTarget)
+            Combat.FallbackScan(aggroSearchPet, false, radius, namedPref, hpPref, primaryTarget, fallbackTarget)
+            if not primaryTarget.found and fallbackTarget.id > 0 then
+                Logger.log_verbose("MATargetScan \agArea scan found only non-preferred type, falling back to: %d", fallbackTarget.id)
+                primaryTarget.id = fallbackTarget.id
+            end
         end
     end
 
