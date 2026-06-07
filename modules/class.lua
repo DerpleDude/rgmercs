@@ -1625,20 +1625,14 @@ function Module:PositionPet()
     local targetId = Globals.AutoTargetID
     if targetId == 0 then return end
 
-    if (Globals.GetTimeSeconds() - (self.TempSettings.LastPetPosCheck or 0)) < 1 then return end
-    self.TempSettings.LastPetPosCheck = Globals.GetTimeSeconds()
-
     local pet = mq.TLO.Me.Pet
     if (pet.ID() or 0) == 0 or not pet.Combat() or (pet.Target.ID() or 0) ~= targetId then return end
 
     local target = mq.TLO.Spawn(targetId)
     if not target() then return end
 
-    local myHeading = mq.TLO.Me.Heading.DegreesCCW() or 0
-    local headingDelta = math.abs(myHeading - (self.TempSettings.LastPetPosHeading or myHeading))
-    self.TempSettings.LastPetPosHeading = myHeading
-    if headingDelta > 180 then headingDelta = 360 - headingDelta end
-    if headingDelta > 5 then return end
+    if (Globals.GetTimeSeconds() - (self.TempSettings.LastPetPosCheck or 0)) < 0.25 then return end
+    self.TempSettings.LastPetPosCheck = Globals.GetTimeSeconds()
 
     local frontArc = 180
     local targetFacing = target.Heading.DegreesCCW() or 0
@@ -1651,6 +1645,12 @@ function Module:PositionPet()
 
     local ability
     if inFrontArc(mq.TLO.Me.Y(), mq.TLO.Me.X()) then
+        -- Relocate flings the pet in our faced direction, so don't fire mid-turn or it lands off-target.
+        local myHeading = mq.TLO.Me.Heading.DegreesCCW() or 0
+        local headingDelta = math.abs(myHeading - (self.TempSettings.LastPetPosHeading or myHeading))
+        self.TempSettings.LastPetPosHeading = myHeading
+        if headingDelta > 180 then headingDelta = 360 - headingDelta end
+        if headingDelta > 5 then return end
         ability = petPos.RelocateAA()
     else
         ability = petPos.SummonAA()
