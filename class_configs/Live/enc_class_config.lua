@@ -876,6 +876,12 @@ local _ClassConfig    = {
             "Root",             -- Level 6
         },
     },
+    ['Mez']           = {
+        { type = "Spell", name = "TwinCastMez", cond = function() return Config:GetSetting('TwincastMez') > 1 end, },
+        { type = "Spell", name = "MezSpell", cond = function() return Config:GetSetting('TwincastMez') == 1 end, },
+        { type = "Spell", name = "MezAESpell", },
+        { type = "AA",    name = "Beam of Slumber", cond = function() return Config:GetSetting('DoAAMez') end, },
+    },
     ['RotationOrder'] = {
         {
             name = 'Downtime',
@@ -915,7 +921,7 @@ local _ClassConfig    = {
             load_cond = function() return Config:GetSetting('DoTash') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.OkayToDebuff()
+                return combat_state == "Combat" and Casting.OkayToDebuff() and Core.OkayToNotMez(3)
             end,
         },
         { --Slow and Tash separated so we use both before we start DPS
@@ -925,7 +931,7 @@ local _ClassConfig    = {
             load_cond = function() return Config:GetSetting('DoSlow') or Config:GetSetting('DoCripple') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.OkayToDebuff()
+                return combat_state == "Combat" and Casting.OkayToDebuff() and Core.OkayToNotMez(3)
             end,
         },
         {
@@ -935,7 +941,7 @@ local _ClassConfig    = {
             load_cond = function() return Config:GetSetting('DoDispel') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.OkayToDebuff()
+                return combat_state == "Combat" and Casting.OkayToDebuff() and Core.OkayToNotMez(3)
             end,
         },
         {
@@ -944,7 +950,7 @@ local _ClassConfig    = {
             steps = 3,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.BurnCheck()
+                return combat_state == "Combat" and Casting.BurnCheck() and Core.OkayToNotMez()
             end,
         },
         { --AA Stuns, Runes, etc, moved from previous home in DPS
@@ -964,7 +970,7 @@ local _ClassConfig    = {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat"
+                return combat_state == "Combat" and Core.OkayToNotMez()
             end,
         },
         {
@@ -974,7 +980,7 @@ local _ClassConfig    = {
             load_cond = function() return Core.IsModeActive("ModernEra") end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat"
+                return combat_state == "Combat" and Core.OkayToNotMez()
             end,
         },
     },

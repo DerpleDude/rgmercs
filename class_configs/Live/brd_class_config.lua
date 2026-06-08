@@ -830,6 +830,11 @@ local _ClassConfig = {
             },
         },
     },
+    ['Mez']           = {
+        { type = "AA",   name = "Dirge of the Sleepwalker", cond = function() return Config:GetSetting('DoAAMez') end, },
+        { type = "Song", name = "MezSong", },
+        { type = "Song", name = "MezAESong", },
+    },
     ['RotationOrder'] = {
         {
             name = 'Enduring Breath',
@@ -869,7 +874,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting("DoSTSlow") or Config:GetSetting("DoAESlow") or Config:GetSetting("DoDispel") end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.OkayToDebuff()
+                return combat_state == "Combat" and Casting.OkayToDebuff() and Core.OkayToNotMez(3)
             end,
         },
         {
@@ -880,7 +885,7 @@ local _ClassConfig = {
             doFullRotation = true,
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
-                return not (combat_state == "Downtime" and mq.TLO.Me.Invis()) and not Globals.InMedState
+                return not (combat_state == "Downtime" and mq.TLO.Me.Invis()) and not Globals.InMedState and Core.OkayToNotMez(3)
             end,
         },
         {
@@ -890,7 +895,7 @@ local _ClassConfig = {
             midSong = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.BurnCheck()
+                return combat_state == "Combat" and Casting.BurnCheck() and Core.OkayToNotMez()
             end,
         },
         {
@@ -900,7 +905,7 @@ local _ClassConfig = {
             midSong = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat"
+                return combat_state == "Combat" and Core.OkayToNotMez()
             end,
         },
         {
@@ -910,7 +915,7 @@ local _ClassConfig = {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat"
+                return combat_state == "Combat" and Core.OkayToNotMez()
             end,
         },
     },

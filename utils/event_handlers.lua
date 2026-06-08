@@ -459,9 +459,13 @@ end)
 
 mq.event('ImmuneMez', "Your target cannot be mesmerized#*#", function()
     Casting.SetLastCastResult(Globals.Constants.CastResults.CAST_IMMUNE)
-    local target = mq.TLO.Target
-    Modules:ExecModule("Mez", "AddImmuneTarget", target.ID(),
-        { id = target.ID(), name = target.CleanName(), lvl = target.Level(), body = target.Body(), reason = "IMMUNE", })
+    -- credit the mob we actually cast mez on; the live Target may already be restored to something else
+    local immuneId = Modules:ExecModule("Mez", "GetMezAttemptId")
+    if not immuneId or immuneId == 0 then immuneId = mq.TLO.Target.ID() end
+    local spawn = mq.TLO.Spawn(immuneId)
+    if not spawn() then return end
+    Modules:ExecModule("Mez", "AddImmuneTarget", immuneId,
+        { id = immuneId, name = spawn.CleanName(), lvl = spawn.Level(), body = spawn.Body(), reason = "IMMUNE", })
 end)
 
 mq.event('ImmuneCharm', "Your target cannot be charmed#*#", function()

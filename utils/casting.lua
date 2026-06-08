@@ -2526,6 +2526,25 @@ function Casting.WaitCastReady(spell, maxWait, ignoreCombat)
     mq.delay(pingDelay)
 end
 
+--- Generic blocking wait: polls pollFn every ~20 ms (pumping events to stay responsive) until it returns true, abortFn returns true, or maxWaitMs elapses; ability-agnostic sibling to WaitCastReady for callers needing a custom ready/abort condition.
+---@param pollFn fun():boolean Returns true when the wait should end successfully.
+---@param maxWaitMs number Maximum time to wait, in milliseconds.
+---@param abortFn fun():boolean|nil Optional; returns true to abort the wait early.
+function Casting.WaitForReady(pollFn, maxWaitMs, abortFn)
+    local remaining = maxWaitMs or 0
+    while remaining > 0 do
+        if pollFn() then return end
+        if abortFn and abortFn() then return end
+        mq.delay(20)
+        mq.doevents()
+        Events.DoEvents()
+        remaining = remaining - 20
+        if (remaining % 1000) == 0 then
+            Logger.log_verbose("WaitForReady: waiting... %dms left", remaining)
+        end
+    end
+end
+
 --- Polls Me.SpellInCooldown every 100 ms until the global spell cooldown (the "gem lockout" between casts) has cleared, processing events each iteration to keep the system responsive.
 --- @param logPrefix string|nil: An optional prefix to be used in log messages.
 function Casting.WaitGlobalCoolDown(logPrefix)

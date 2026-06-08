@@ -339,6 +339,12 @@ local _ClassConfig = {
             "Gather Mana",
         },
     },
+    ['Mez']           = {
+        { type = "AA",    name = "Stasis",          cond = function() return Globals.AutoTargetIsNamed end, },
+        { type = "Spell", name = "MezSpell", },
+        { type = "Spell", name = "MezAESpell", },
+        { type = "AA",    name = "Beam of Slumber", cond = function() return Config:GetSetting('DoAAMez') end, },
+    },
     ['RotationOrder'] = {
         {
             name = 'Downtime',
@@ -378,7 +384,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting('DoTash') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.OkayToDebuff()
+                return combat_state == "Combat" and Casting.OkayToDebuff() and Core.OkayToNotMez(3)
             end,
         },
         { --Slow and Tash separated so we use both before we start DPS
@@ -388,7 +394,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting('DoSlow') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.OkayToDebuff()
+                return combat_state == "Combat" and Casting.OkayToDebuff() and Core.OkayToNotMez(3)
             end,
         },
         {
@@ -398,7 +404,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting('DoDispel') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.OkayToDebuff()
+                return combat_state == "Combat" and Casting.OkayToDebuff() and Core.OkayToNotMez(3)
             end,
         },
         {
@@ -427,7 +433,7 @@ local _ClassConfig = {
             steps = 3,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.BurnCheck()
+                return combat_state == "Combat" and Casting.BurnCheck() and Core.OkayToNotMez()
             end,
         },
         {
@@ -437,7 +443,7 @@ local _ClassConfig = {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat"
+                return combat_state == "Combat" and Core.OkayToNotMez()
             end,
         },
         {
@@ -447,7 +453,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting('DoArcanumWeave') and Casting.CanUseAA("Acute Focus of Arcanum") end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and not mq.TLO.Me.Buff("Focus of Arcanum")()
+                return combat_state == "Combat" and not mq.TLO.Me.Buff("Focus of Arcanum")() and Core.OkayToNotMez()
             end,
         },
     },
@@ -957,6 +963,11 @@ local _ClassConfig = {
             --     name = "Phantasmal Opponent",
             --     type = "AA",
             -- },
+            {
+                name = "Nightmare Stasis",
+                type = "AA",
+                cond = function(self, aaName, target) return Globals.AutoTargetIsNamed end,
+            },
             {
                 name = "Tarnished Skeleton Key",
                 type = "Item",

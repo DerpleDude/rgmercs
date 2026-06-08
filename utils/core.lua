@@ -245,17 +245,18 @@ end
 ---@param ignoreBuffPopulation boolean? If true, don't wait for buff population.
 function Core.SetTarget(targetId, ignoreBuffPopulation)
     if targetId == 0 then return end
-
-    local maxWaitBuffs = ((mq.TLO.EverQuest.Ping() * 2) + 500)
-
     if targetId == mq.TLO.Target.ID() then return end
+
+    local maxWaitBuffs = (mq.TLO.EverQuest.Ping() * 2) + 500
     Logger.log_debug("SetTarget(): Setting Target: %d (buffPopWait: %d)", targetId, ignoreBuffPopulation and 0 or maxWaitBuffs)
-    if mq.TLO.Target.ID() ~= targetId then
-        mq.TLO.Spawn(targetId).DoTarget()
-        mq.delay(10, function() return mq.TLO.Target.ID() == targetId end)
-        local targetBuffsPopulated = (mq.TLO.Target() and mq.TLO.Target.BuffsPopulated() or false)
-        mq.delay(maxWaitBuffs, function() return (ignoreBuffPopulation or targetBuffsPopulated) end)
+
+    mq.TLO.Spawn(targetId).DoTarget()
+    mq.delay(10, function() return mq.TLO.Target.ID() == targetId end)
+
+    if not ignoreBuffPopulation then
+        mq.delay(maxWaitBuffs, function() return mq.TLO.Target.BuffsPopulated() or false end)
     end
+
     Logger.log_debug("SetTarget(): Set Target to: %d (buffsPopulated: %s)", targetId, Strings.BoolToColorString(mq.TLO.Target.BuffsPopulated() ~= nil))
 
     Modules:ExecAll("OnTargetChange", targetId)
@@ -418,6 +419,16 @@ function Core.OkayToNotHeal()
         return false
     end
     return (mq.TLO.Group.Injured(Config:GetSetting('BigHealPoint'))() or 0) == 0
+end
+
+--- Returns true if the character can safely skip mezzing this frame for a rotation restricted at the given
+--- Mez Priority level. True when not in mez mode, Mez Priority is below that level, or no mob still needs locking.
+---@param restrictAtLevel number? Mez Priority at which this rotation should yield: 2 (Higher) for Burn/DPS, 3 (Highest) for Debuffs. Defaults to 2.
+---@return boolean True if it is safe to perform non-mez actions (e.g. DPS).
+function Core.OkayToNotMez(restrictAtLevel)
+    if not Core.IsMezzing() then return true end
+    if Config:GetSetting('MezPriority') < (restrictAtLevel or 2) then return true end
+    return not Modules:ExecModule("Mez", "NeedToMez")
 end
 
 --- Returns the resolved (ranked) spell/item/AA for action from the class module.
