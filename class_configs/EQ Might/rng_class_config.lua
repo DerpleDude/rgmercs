@@ -248,6 +248,11 @@ return {
             cond = function(self, target) return Targeting.BigHealsNeeded(target) end,
         },
     },
+    ['Charm']             = {
+        ['Assist'] = {
+            { name = "Taunt", type = "Ability", },
+        },
+    },
     ['HealRotations']     = {
         ['BigHealPoint'] = {
             {
@@ -301,7 +306,7 @@ return {
             load_cond = function() return Config:GetSetting('DoSnare') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Core.OkayToNotHeal() and not Globals.AutoTargetIsNamed and
+                return combat_state == "Combat" and Core.CombatActionsCheck() and not Globals.AutoTargetIsNamed and
                     Targeting.GetXTHaterCount() <= Config:GetSetting('SnareCount')
             end,
         },

@@ -71,11 +71,10 @@ local _ClassConfig = {
     end,
 
     ['ModeChecks']    = {
-        CanMez     = function() return true end,
-        CanCharm   = function() return true end,
-        IsMezzing  = function() return Config:GetSetting('MezOn') end,
-        IsCuring   = function() return Config:GetSetting('UseCure') end,
-        IsCharming = function() return Config:GetSetting('CharmOn') and mq.TLO.Pet.ID() == 0 end,
+        CanMez    = function() return true end,
+        CanCharm  = function() return true end,
+        IsMezzing = function() return Config:GetSetting('MezOn') end,
+        IsCuring  = function() return Config:GetSetting('UseCure') end,
     },
     ['Cures']         = {
         CureNow = function(self, type, targetId)
@@ -835,6 +834,11 @@ local _ClassConfig = {
         { type = "Song", name = "MezSong", },
         { type = "Song", name = "MezAESong", },
     },
+    ['Charm']         = {
+        ['Abilities'] = {
+            { name = "CharmSong", type = "Song", },
+        },
+    },
     ['RotationOrder'] = {
         {
             name = 'Enduring Breath',
@@ -874,7 +878,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting("DoSTSlow") or Config:GetSetting("DoAESlow") or Config:GetSetting("DoDispel") end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.OkayToDebuff() and Core.OkayToNotMez(3)
+                return combat_state == "Combat" and Casting.OkayToDebuff() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -885,7 +889,7 @@ local _ClassConfig = {
             doFullRotation = true,
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
-                return not (combat_state == "Downtime" and mq.TLO.Me.Invis()) and not Globals.InMedState and Core.OkayToNotMez(3)
+                return not (combat_state == "Downtime" and mq.TLO.Me.Invis()) and not Globals.InMedState and Core.CombatActionsCheck()
             end,
         },
         {
@@ -895,7 +899,7 @@ local _ClassConfig = {
             midSong = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.BurnCheck() and Core.OkayToNotMez()
+                return combat_state == "Combat" and Casting.BurnCheck() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -905,7 +909,7 @@ local _ClassConfig = {
             midSong = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Core.OkayToNotMez()
+                return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
         {
@@ -915,7 +919,7 @@ local _ClassConfig = {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Core.OkayToNotMez()
+                return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
     },

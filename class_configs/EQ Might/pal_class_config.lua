@@ -596,12 +596,21 @@ return {
             },
         },
     },
+    ['Charm']             = {
+        ['Assist'] = {
+            { name = "Taunt",            type = "Ability", },
+            { name = "StunTimer5",       type = "Spell", },
+            { name = "StunTimer4",       type = "Spell", },
+            { name = "Xeno's Faceguard", type = "Item",    load_cond = function(self) return mq.TLO.FindItem("=Xeno's Faceguard")() end, },
+            { name = "Disruption",       type = "AA", },
+        },
+    },
     ['RotationOrder']     = {
         { --Self Buffs
             name = 'Downtime',
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
-                return combat_state == "Downtime" and Casting.OkayToBuff() and Core.OkayToNotHeal() and Casting.AmIBuffable()
+                return combat_state == "Downtime" and Casting.OkayToBuff() and Core.CombatActionsCheck() and Casting.AmIBuffable()
             end,
         },
         {
@@ -610,7 +619,7 @@ return {
             steps = 1,
             targetId = function(self) return Casting.GetBuffableIDs() end,
             cond = function(self, combat_state)
-                return combat_state == "Downtime" and Casting.OkayToBuff() and Core.OkayToNotHeal()
+                return combat_state == "Downtime" and Casting.OkayToBuff() and Core.CombatActionsCheck()
             end,
         },
         { --Actions to lock down xtarg haters
@@ -707,7 +716,7 @@ return {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 if mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') then return false end
-                return combat_state == "Combat" and Casting.BurnCheck() and Core.OkayToNotHeal()
+                return combat_state == "Combat" and Casting.BurnCheck() and Core.CombatActionsCheck()
             end,
         },
         { --Stun or damage enemies per your settings
@@ -732,7 +741,7 @@ return {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 if mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') then return false end
-                return combat_state == "Combat" and Core.OkayToNotHeal()
+                return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
     },

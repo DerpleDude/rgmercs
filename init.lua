@@ -395,12 +395,15 @@ local function Main()
             Config.TempSettings.NoLevZone = false
             Globals.ForceCombatID = 0
             Globals.IgnoredTargetIDs = Set.new({})
+            Globals.CharmedPetIDs = Set.new({})
+            Globals.LooseCharms = {}
             Globals.LastCachedBuffUpdate = {}
             Globals.AutoTargetID = 0
             Globals.AutoTargetIsNamed = false
             Globals.AggroTargetID = 0
             Globals.CombatNavTargetId = 0
             Globals.SetForcedTargetId(0)
+            Globals.ForceCharmID = 0
         end
         mq.delay(100)
         Globals.CurZoneId = mq.TLO.Zone.ID()

@@ -470,26 +470,34 @@ end)
 
 mq.event('ImmuneCharm', "Your target cannot be charmed#*#", function()
     Casting.SetLastCastResult(Globals.Constants.CastResults.CAST_IMMUNE)
-    local target = mq.TLO.Target
-    Modules:ExecModule("Charm", "AddImmuneTarget", target.ID(),
-        { id = target.ID(), name = target.CleanName(), lvl = target.Level(), body = target.Body(), reason = "IMMUNE", })
+    -- credit the mob we actually cast charm on; the live Target may already be restored to something else
+    local immuneId = Modules:ExecModule("Charm", "GetCharmAttemptId")
+    if not immuneId or immuneId == 0 then immuneId = mq.TLO.Target.ID() end
+    local spawn = mq.TLO.Spawn(immuneId)
+    if not spawn() then return end
+    Modules:ExecModule("Charm", "AddImmuneTarget", immuneId,
+        { id = immuneId, name = spawn.CleanName(), lvl = spawn.Level(), body = spawn.Body(), reason = "IMMUNE", })
 end)
 
 mq.event('ImmuneCharm2', "This NPC cannot be charmed#*#", function()
     Casting.SetLastCastResult(Globals.Constants.CastResults.CAST_IMMUNE)
-    local target = mq.TLO.Target
-    Modules:ExecModule("Charm", "AddImmuneTarget", target.ID(),
-        { id = target.ID(), name = target.CleanName(), lvl = target.Level(), body = target.Body(), reason = "IMMUNE", })
+    local immuneId = Modules:ExecModule("Charm", "GetCharmAttemptId")
+    if not immuneId or immuneId == 0 then immuneId = mq.TLO.Target.ID() end
+    local spawn = mq.TLO.Spawn(immuneId)
+    if not spawn() then return end
+    Modules:ExecModule("Charm", "AddImmuneTarget", immuneId,
+        { id = immuneId, name = spawn.CleanName(), lvl = spawn.Level(), body = spawn.Body(), reason = "IMMUNE", })
 end)
 
 mq.event('LvlHighCharm', "Your target is too high of a level for your charm spell.#*#", function()
     Casting.SetLastCastResult(Globals.Constants.CastResults.CAST_IMMUNE)
     Logger.log_debug("\awNOTICE:\ax Target is to \aoHigh Level\ax to Charm with this spell!")
-    local target = mq.TLO.Target
-
-    Modules:ExecModule("Charm", "CharmLvlToHigh", target.Level())
-    Modules:ExecModule("Charm", "AddImmuneTarget", target.ID(),
-        { id = target.ID(), name = target.CleanName(), lvl = target.Level(), body = target.Body(), reason = "HIGH_LVL", })
+    local immuneId = Modules:ExecModule("Charm", "GetCharmAttemptId")
+    if not immuneId or immuneId == 0 then immuneId = mq.TLO.Target.ID() end
+    local spawn = mq.TLO.Spawn(immuneId)
+    if not spawn() then return end
+    Modules:ExecModule("Charm", "AddImmuneTarget", immuneId,
+        { id = immuneId, name = spawn.CleanName(), lvl = spawn.Level(), body = spawn.Body(), reason = "HIGH_LVL", })
 end)
 -- [ END CAST RESULT HANDLERS ] --
 

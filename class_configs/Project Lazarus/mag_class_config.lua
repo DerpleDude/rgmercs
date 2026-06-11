@@ -297,6 +297,26 @@ _ClassConfig      = {
             "Small Modulation Shard",
         },
     },
+    ['Charm']         = {
+        ['Assist'] = {
+            {
+                name = "Malosinete",
+                type = "AA",
+                load_cond = function() return Config:GetSetting('DoMalo') and Casting.CanUseAA("Malosinete") end,
+                cond = function(self, aaName, target)
+                    return Casting.DetAACheck(aaName, target)
+                end,
+            },
+            {
+                name = "MaloDebuff",
+                type = "Spell",
+                load_cond = function() return Config:GetSetting('DoMalo') and not Casting.CanUseAA("Malosinete") end,
+                cond = function(self, spell, target)
+                    return Casting.DetSpellCheck(spell, target)
+                end,
+            },
+        },
+    },
     ['RotationOrder'] = { -- TODO: Add emergency rotation, shared health, etc
         {
             name = 'PetSummon',

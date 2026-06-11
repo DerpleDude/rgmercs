@@ -229,6 +229,11 @@ return {
         --     "Resistant Discipline", -- Level 51
         -- },
     },
+    ['Charm']             = {
+        ['Assist'] = {
+            { name = "Taunt", type = "Ability", },
+        },
+    },
     ['HealRotationOrder'] = {
         { -- configured as a backup healer, will not cast in the mainpoint
             name = 'BigHealPoint',
@@ -291,7 +296,7 @@ return {
             load_cond = function() return Config:GetSetting('DoSnare') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Core.OkayToNotHeal() and not Globals.AutoTargetIsNamed and
+                return combat_state == "Combat" and Core.CombatActionsCheck() and not Globals.AutoTargetIsNamed and
                     Targeting.GetXTHaterCount() <= Config:GetSetting('SnareCount')
             end,
         },

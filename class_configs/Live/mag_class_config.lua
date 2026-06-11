@@ -913,6 +913,26 @@ _ClassConfig      = {
     ['HealRotationOrder'] = {
 
     },
+    ['Charm']             = {
+        ['Assist'] = {
+            {
+                name = "Malaise",
+                type = "AA",
+                load_cond = function() return Casting.CanUseAA("Malaise") end,
+                cond = function(self, aaName, target)
+                    return Casting.DetAACheck(aaName, target)
+                end,
+            },
+            {
+                name = "MaloDebuff",
+                type = "Spell",
+                load_cond = function() return not Casting.CanUseAA("Malaise") end,
+                cond = function(self, spell, target)
+                    return Casting.DetSpellCheck(spell, target)
+                end,
+            },
+        },
+    },
     ['RotationOrder']     = {
         {
             name = 'PetSummon',

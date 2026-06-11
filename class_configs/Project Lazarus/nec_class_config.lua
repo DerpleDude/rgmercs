@@ -13,8 +13,7 @@ local _ClassConfig = {
         'DPS',
     },
     ['ModeChecks']      = {
-        CanCharm   = function() return true end,
-        IsCharming = function() return (Config:GetSetting('CharmOn') and mq.TLO.Pet.ID() == 0) end,
+        CanCharm = function() return true end,
     },
     ['PetPosition']     = {
         SummonAA = function() return Casting.CanUseAA("Summon Companion") and "Summon Companion" end,
@@ -312,6 +311,12 @@ local _ClassConfig = {
             "Wake the Dead",
         },
     },
+    ['Charm']           = {
+        ['Abilities'] = {
+            { name = "Dire Charm", type = "AA", },
+            { name = "CharmSpell", type = "Spell", },
+        },
+    },
     ['RotationOrder']   = {
         {
             name = 'PetSummon',
@@ -343,7 +348,7 @@ local _ClassConfig = {
             targetId = function(self) return { Core.GetMainAssistId(), } or {} end,
             cond = function(self, combat_state)
                 local downtime = combat_state == "Downtime" and Casting.OkayToBuff()
-                local burning = combat_state == "Combat" and Casting.BurnCheck() and not Casting.IAmFeigning()
+                local burning = combat_state == "Combat" and Casting.BurnCheck() and not Casting.IAmFeigning() and Core.CombatActionsCheck()
                 return downtime or burning
             end,
         },
@@ -365,7 +370,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting('ScentDebuffUse') == 2 end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and not Casting.IAmFeigning() and Casting.OkayToDebuff()
+                return combat_state == "Combat" and not Casting.IAmFeigning() and Casting.OkayToDebuff() and Core.CombatActionsCheck()
             end,
         },
         { -- On Laz, this hits slightly different resists, and in different slots, it is a choice.
@@ -375,7 +380,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting('ScentDebuffUse') == 3 end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and not Casting.IAmFeigning() and Casting.OkayToDebuff()
+                return combat_state == "Combat" and not Casting.IAmFeigning() and Casting.OkayToDebuff() and Core.CombatActionsCheck()
             end,
         },
         { --Keep things from running
@@ -386,7 +391,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 if mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') then return false end
-                return combat_state == "Combat" and not Globals.AutoTargetIsNamed and Targeting.GetXTHaterCount() <= Config:GetSetting('SnareCount')
+                return combat_state == "Combat" and not Globals.AutoTargetIsNamed and Targeting.GetXTHaterCount() <= Config:GetSetting('SnareCount') and Core.CombatActionsCheck()
             end,
         },
         {
@@ -396,7 +401,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and
-                    Casting.BurnCheck() and not Casting.IAmFeigning()
+                    Casting.BurnCheck() and not Casting.IAmFeigning() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -406,7 +411,7 @@ local _ClassConfig = {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and not Casting.IAmFeigning() and Targeting.MobNotLowHP(Targeting.GetAutoTarget())
+                return combat_state == "Combat" and not Casting.IAmFeigning() and Targeting.MobNotLowHP(Targeting.GetAutoTarget()) and Core.CombatActionsCheck()
             end,
         },
         {
@@ -415,7 +420,7 @@ local _ClassConfig = {
             steps = 1,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and not Casting.IAmFeigning() and Targeting.MobHasLowHP(Targeting.GetAutoTarget())
+                return combat_state == "Combat" and not Casting.IAmFeigning() and Targeting.MobHasLowHP(Targeting.GetAutoTarget()) and Core.CombatActionsCheck()
             end,
         },
         {
@@ -434,7 +439,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting('DoArcanumWeave') and Casting.CanUseAA("Acute Focus of Arcanum") end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and not Casting.IAmFeigning() and not mq.TLO.Me.Buff("Focus of Arcanum")()
+                return combat_state == "Combat" and not Casting.IAmFeigning() and not mq.TLO.Me.Buff("Focus of Arcanum")() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -913,7 +918,7 @@ local _ClassConfig = {
             -- cond = function(self) return true end, --Code kept here for illustration, if there is no condition to check, this line is not required
             spells = {
                 { name = "PetHealSpell", cond = function(self) return Config:GetSetting('DoPetHealSpell') end, },
-                { name = "CharmSpell",   cond = function(self) return Config:GetSetting('CharmOn') end, },
+                { name = "CharmSpell",   cond = function(self, spell) return Config:GetSetting('CharmOn') and Core.IsSelectedCharmSpell(spell) end, },
                 { name = "SnareDot",     cond = function(self) return Config:GetSetting('DoSnare') and not Casting.CanUseAA("Encroaching Darkness") end, },
                 { name = "ScentDebuff",  cond = function(self) return Config:GetSetting('ScentDebuffUse') == 2 and not Casting.CanUseAA("Scent of Terris") end, },
                 { name = "ScentDebuff2", cond = function(self) return Config:GetSetting('ScentDebuffUse') == 3 end, },

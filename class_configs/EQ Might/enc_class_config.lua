@@ -12,11 +12,10 @@ local _ClassConfig = {
     _version          = "1.5 - EQ Might",
     _author           = "Derple, Grimmier, Algar, Robban",
     ['ModeChecks']    = {
-        CanMez     = function() return true end,
-        CanCharm   = function() return true end,
-        IsCharming = function() return Config:GetSetting('CharmOn') end,
-        IsMezzing  = function() return Config:GetSetting('MezOn') end,
-        IsRezing   = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
+        CanMez    = function() return true end,
+        CanCharm  = function() return true end,
+        IsMezzing = function() return Config:GetSetting('MezOn') end,
+        IsRezing  = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
     },
     ['Modes']         = {
         'Default',
@@ -385,6 +384,20 @@ local _ClassConfig = {
         { type = "Spell", name = "MezSpell", },
         { type = "Spell", name = "MezAESpell", },
     },
+    ['Charm']         = {
+        ['Abilities'] = {
+            { name = "Dire Charm", type = "AA", },
+            { name = "CharmSpell", type = "Spell", },
+        },
+        ['PreCharm']  = {
+            { name = "TashSpell", type = "Spell", cond = function(self, spell, target) return not target.Tashed() end, },
+        },
+        ['Assist']    = {
+            { name = "SpinStunSpell", type = "Spell", cond = function(self, spell, target) return Targeting.TargetNotStunned() end, },
+            { name = "PBAEStunSpell", type = "Spell", cond = function(self, spell, target) return Targeting.TargetNotStunned() and Targeting.InSpellRange(spell, target) end, },
+            { name = "TashSpell",     type = "Spell", cond = function(self, spell, target) return Casting.DetSpellCheck(spell, target) end, },
+        },
+    },
     ['RotationOrder'] = {
         {
             name = 'Downtime',
@@ -424,7 +437,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting('DoTash') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.OkayToDebuff() and Core.OkayToNotMez(3)
+                return combat_state == "Combat" and Casting.OkayToDebuff() and Core.CombatActionsCheck()
             end,
         },
         { --Slow and Tash separated so we use both before we start DPS
@@ -434,7 +447,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting('DoSlow') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.OkayToDebuff() and Core.OkayToNotMez(3)
+                return combat_state == "Combat" and Casting.OkayToDebuff() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -444,7 +457,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting('DoCripple') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.OkayToDebuff() and Core.OkayToNotMez(3)
+                return combat_state == "Combat" and Casting.OkayToDebuff() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -454,7 +467,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting('DoDispel') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.OkayToDebuff() and Core.OkayToNotMez(3)
+                return combat_state == "Combat" and Casting.OkayToDebuff() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -484,7 +497,7 @@ local _ClassConfig = {
             steps = 3,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.BurnCheck() and Core.OkayToNotMez()
+                return combat_state == "Combat" and Casting.BurnCheck() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -494,7 +507,7 @@ local _ClassConfig = {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Core.OkayToNotMez()
+                return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
         {
@@ -1119,7 +1132,7 @@ local _ClassConfig = {
             spells = {
                 { name = "MezSpell",         cond = function(self) return Config:GetSetting('DoSTMez') end, },
                 { name = "MezAESpell",       cond = function(self) return Config:GetSetting('DoAEMez') end, },
-                { name = "CharmSpell",       cond = function(self) return Config:GetSetting('CharmOn') end, },
+                { name = "CharmSpell",       cond = function(self, spell) return Config:GetSetting('CharmOn') and Core.IsSelectedCharmSpell(spell) end, },
                 { name = "TashSpell",        cond = function(self) return Config:GetSetting('DoTash') end, },
                 { name = "SlowSpell",        cond = function(self) return Config:GetSetting('DoSlow') and not Casting.CanUseAA("Dreary Deeds") end, },
                 { name = "CrippleSpell",     cond = function(self) return Config:GetSetting('DoCripple') end, },

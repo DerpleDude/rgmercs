@@ -148,6 +148,13 @@ function Module.DoLooting()
 			break
 		end
 
+		if not Core.CombatActionsCheck() then
+			Logger.log_debug("\ay[LOOT]: Aborting Actions to respond to charm/assist/mez/heal.")
+			if mq.TLO.Window('LootWnd').Open() then mq.TLO.Window('LootWnd').DoClose() end
+			Module.TempSettings.Looting = false
+			break
+		end
+
 		if not Module:CheckChaseTargetInRange() then
 			Logger.log_debug("\ay[LOOT]: Aborting Actions due to chase target distance!")
 			Module.TempSettings.Looting = false

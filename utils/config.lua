@@ -1695,6 +1695,16 @@ Config.DefaultConfig                                     = {
         Max = 100,
         ConfigType = "Advanced",
     },
+    ['PriorityHealing']            = {
+        DisplayName = "Prioritize Healing",
+        Group = "Abilities",
+        Header = "Recovery",
+        Category = "Healing Thresholds",
+        Index = 8,
+        Default = true,
+        Tooltip = "Yield offensive rotations at the Main Heal Point instead of the Big Heal Point.",
+        ConfigType = "Advanced",
+    },
     --Recovery/Curing
     ['DoCureSpells']               = {
         DisplayName = "Do Cure Spells",
@@ -3264,7 +3274,7 @@ function Config:MakeValidSetting(module, setting, value)
         return value
     elseif type(defaultConfig[setting].Default) == 'number' then
         value = tonumber(value)
-        if not value or value > (defaultConfig[setting].Max or 999) or value < (defaultConfig[setting].Min or 0) then
+        if not value or value > (defaultConfig[setting].Max or 99999) or value < (defaultConfig[setting].Min or 0) then
             Logger.log_error("\ayError: Invalid or out-of-range value supplied for %s, falling back to previous value.", setting)
             local _, update = Config:GetUsageText(setting, true, defaultConfig)
             Logger.log_error(update)

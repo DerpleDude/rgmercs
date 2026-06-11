@@ -289,6 +289,18 @@ return {
             "Improved Familiar",
         },
     },
+    ['Charm']         = {
+        ['Assist'] = {
+            {
+                name = "StunSpell",
+                type = "Spell",
+                load_cond = function() return Config:GetSetting('DoStun') end,
+                cond = function(self, spell, target)
+                    return Casting.HaveManaToDebuff() and Targeting.TargetNotStunned() and not Casting.StunImmuneTarget(target)
+                end,
+            },
+        },
+    },
     ['Helpers']       = {
 
         RainCheck = function(target) -- I made a funny

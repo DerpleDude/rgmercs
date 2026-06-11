@@ -314,6 +314,14 @@ local _ClassConfig = {
             "Voice of Darkness", -- Level 39, 2% hate
         },
     },
+    ['Charm']         = {
+        ['Assist'] = {
+            { name = "Taunt",             type = "Ability", },
+            { name = "Hate's Attraction", type = "AA", },
+            { name = "Terror",            type = "Spell", load_cond = function(self) return Config:GetSetting('DoTerror') end, },
+            { name = "Terror2",           type = "Spell", load_cond = function(self) return Config:GetSetting('DoTerror') end, },
+        },
+    },
     ['Helpers']       = {
         --function to determine if we have enough mobs in range to use a defensive disc
         DefensiveDiscCheck = function(printDebug)

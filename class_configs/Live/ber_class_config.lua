@@ -327,6 +327,9 @@ return {
             "Leg Strike",       -- Level 8
         },
     },
+    ['Charm']         = {
+        ['Assist'] = {},
+    },
     ['RotationOrder'] = {
         -- Downtime doesn't have state because we run the whole rotation at once.
         {

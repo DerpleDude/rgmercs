@@ -671,6 +671,11 @@ return {
             return Targeting.GetTargetDistance() >= Config:GetSetting('RainDistance') and Targeting.MobNotLowHP(target)
         end,
     },
+    ['Charm']         = {
+        ['Assist'] = {
+            { name = "StunSpell", type = "Spell", cond = function(self, spell, target) return Targeting.TargetNotStunned() and not Casting.StunImmuneTarget(target) end, },
+        },
+    },
     ['RotationOrder'] = {
         -- Downtime doesn't have state because we run the whole rotation at once.
         {

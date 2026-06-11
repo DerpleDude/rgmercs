@@ -331,6 +331,13 @@ local _ClassConfig = {
             "The Silent Command", -- Level 62
         },
     },                            -- end AbilitySets
+    ['Charm']             = {
+        ['Assist'] = {
+            { name = "LowLevelStun", type = "Spell", cond = function(self, spell, target) return Targeting.TargetNotStunned() end, },
+            { name = "StunTimer6",   type = "Spell", cond = function(self, spell, target) return Targeting.TargetNotStunned() end, },
+            { name = "PBAEStun",     type = "Spell", cond = function(self, spell, target) return Targeting.TargetNotStunned() and Targeting.InSpellRange(spell, target) end, },
+        },
+    },
     ['Helpers']           = {
         DoRez = function(self, corpseId)
             local rezAction = false
@@ -517,7 +524,7 @@ local _ClassConfig = {
             name = 'Downtime',
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
-                return combat_state == "Downtime" and (not Core.IsModeActive('Heal') or Core.OkayToNotHeal()) and Casting.OkayToBuff() and Casting.AmIBuffable()
+                return combat_state == "Downtime" and (not Core.IsModeActive('Heal') or Core.CombatActionsCheck()) and Casting.OkayToBuff() and Casting.AmIBuffable()
             end,
         },
         { --Spells that should be checked on group members
@@ -526,7 +533,7 @@ local _ClassConfig = {
             steps = 1,
             targetId = function(self) return Casting.GetBuffableIDs() end,
             cond = function(self, combat_state)
-                return combat_state == "Downtime" and (not Core.IsModeActive('Heal') or Core.OkayToNotHeal()) and Casting.OkayToBuff()
+                return combat_state == "Downtime" and (not Core.IsModeActive('Heal') or Core.CombatActionsCheck()) and Casting.OkayToBuff()
             end,
         },
         {
@@ -535,7 +542,7 @@ local _ClassConfig = {
             steps = 3,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.BurnCheck() and (not Core.IsModeActive('Heal') or Core.OkayToNotHeal())
+                return combat_state == "Combat" and Casting.BurnCheck() and (not Core.IsModeActive('Heal') or Core.CombatActionsCheck())
             end,
         },
         {
@@ -548,7 +555,7 @@ local _ClassConfig = {
             cond = function(self, combat_state)
                 local downtime = combat_state == "Downtime" and Casting.OkayToBuff()
                 local combat = combat_state == "Combat"
-                return (downtime or combat) and Core.OkayToNotHeal()
+                return (downtime or combat) and Core.CombatActionsCheck()
             end,
         },
         {
@@ -562,7 +569,7 @@ local _ClassConfig = {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Core.OkayToNotHeal() and Config:GetSetting('DoAEDamage') and
+                return combat_state == "Combat" and Core.CombatActionsCheck() and Config:GetSetting('DoAEDamage') and
                     Combat.AETargetCheck(true)
             end,
         },
@@ -572,7 +579,7 @@ local _ClassConfig = {
             steps = 1,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Core.OkayToNotHeal()
+                return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
         {
@@ -581,7 +588,7 @@ local _ClassConfig = {
             steps = 1,
             targetId = function(self) return Casting.GetBuffableIDs() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Core.OkayToNotHeal()
+                return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
     },

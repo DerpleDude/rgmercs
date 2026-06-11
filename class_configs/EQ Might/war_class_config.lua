@@ -224,6 +224,15 @@ local _ClassConfig = {
             return true
         end,
     },
+    ['Charm']         = {
+        ['Assist'] = {
+            { name = "Taunt",            type = "Ability", },
+            { name = "Blast of Anger",   type = "AA", },
+            { name = "AddHate",          type = "Disc", },
+            { name = "AddHate2",         type = "Disc", },
+            { name = "Xeno's Faceguard", type = "Item", load_cond = function(self) return mq.TLO.FindItem("=Xeno's Faceguard")() end, },
+        },
+    },
     ['RotationOrder'] = {
         { --Self Buffs
             name = 'Downtime',

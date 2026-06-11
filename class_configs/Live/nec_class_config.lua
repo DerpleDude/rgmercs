@@ -24,9 +24,8 @@ local _ClassConfig = {
     },
     ['ModeChecks']      = {
         -- necro can AA Rez
-        IsRezing   = function() return Casting.CanUseAA("Convergence") and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
-        CanCharm   = function() return true end,
-        IsCharming = function() return (Config:GetSetting('CharmOn') and mq.TLO.Pet.ID() == 0) end,
+        IsRezing = function() return Casting.CanUseAA("Convergence") and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
+        CanCharm = function() return true end,
     },
     ['PetPosition']     = {
         SummonAA   = function() return Casting.CanUseAA("Summon Companion") and "Summon Companion" end,
@@ -805,6 +804,12 @@ local _ClassConfig = {
             "Flesh to Poison", -- Level 99
         },
     },
+    ['Charm']           = {
+        ['Abilities'] = {
+            { name = "Dire Charm", type = "AA", },
+            { name = "CharmSpell", type = "Spell", },
+        },
+    },
     ['RotationOrder']   = {
         -- Downtime doesn't have state because we run the whole rotation at once.
         {
@@ -858,7 +863,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting('DoScentDebuff') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and not Casting.IAmFeigning() and Casting.OkayToDebuff()
+                return combat_state == "Combat" and not Casting.IAmFeigning() and Casting.OkayToDebuff() and Core.CombatActionsCheck()
             end,
         },
         { --Keep things from running
@@ -869,7 +874,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and not Globals.AutoTargetIsNamed and Targeting.GetXTHaterCount() <= Config:GetSetting('SnareCount') and
-                    not Casting.IAmFeigning()
+                    not Casting.IAmFeigning() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -879,7 +884,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and
-                    Casting.BurnCheck() and not Casting.IAmFeigning()
+                    Casting.BurnCheck() and not Casting.IAmFeigning() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -889,7 +894,7 @@ local _ClassConfig = {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and not Casting.IAmFeigning() and Targeting.MobNotLowHP(Targeting.GetAutoTarget())
+                return combat_state == "Combat" and not Casting.IAmFeigning() and Targeting.MobNotLowHP(Targeting.GetAutoTarget()) and Core.CombatActionsCheck()
             end,
         },
         {
@@ -898,7 +903,7 @@ local _ClassConfig = {
             steps = 1,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and not Casting.IAmFeigning() and Targeting.MobHasLowHP(Targeting.GetAutoTarget())
+                return combat_state == "Combat" and not Casting.IAmFeigning() and Targeting.MobHasLowHP(Targeting.GetAutoTarget()) and Core.CombatActionsCheck()
             end,
         },
         {
@@ -1495,7 +1500,7 @@ local _ClassConfig = {
                 { name = "PoisonNuke2", },
                 { name = "FireNuke", },
                 { name = "Lifetap",      cond = function(self) return Config:GetSetting('DoLifetap') end, },
-                { name = "CharmSpell",   cond = function(self) return Config:GetSetting('CharmOn') end, },
+                { name = "CharmSpell",   cond = function(self, spell) return Config:GetSetting('CharmOn') and Core.IsSelectedCharmSpell(spell) end, },
                 { name = "SnareDot",     cond = function(self) return Config:GetSetting('DoSnare') and not Casting.CanUseAA("Enchroaching Darkness") end, },
                 { name = "ScentDebuff",  cond = function(self) return Config:GetSetting('DoScentDebuff') and not Casting.CanUseAA("Scent of Thule") end, },
                 { name = "LichSpell",    cond = function(self) return not Config:GetSetting('DoUnity') end, },

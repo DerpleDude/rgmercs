@@ -338,6 +338,18 @@ return {
             return "Fire"
         end,
     },
+    ['Charm']         = {
+        ['Assist'] = {
+            {
+                name = "StunSpell",
+                type = "Spell",
+                load_cond = function() return Config:GetSetting('DoStun') end,
+                cond = function(self, spell, target)
+                    return Casting.HaveManaToDebuff() and Targeting.TargetNotStunned() and not Casting.StunImmuneTarget(target)
+                end,
+            },
+        },
+    },
     ['RotationOrder'] = {
         -- Downtime doesn't have state because we run the whole rotation at once.
         {

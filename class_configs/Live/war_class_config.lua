@@ -328,6 +328,16 @@ local _ClassConfig = {
             return true
         end,
     },
+    ['Charm']         = {
+        ['Assist'] = {
+            { name = "Attention",      type = "Disc", },
+            { name = "Blast of Anger", type = "AA", },
+            { name = "Taunt",          type = "Ability", },
+            { name = "AbsorbTaunt",    type = "Disc", },
+            { name = "AddHate1",       type = "Disc", cond = function(self, discSpell, target) return Casting.DetSpellCheck(discSpell, target) end, },
+            { name = "AddHate2",       type = "Disc", },
+        },
+    },
     ['RotationOrder'] = {
         { --Self Buffs
             name = 'Downtime',

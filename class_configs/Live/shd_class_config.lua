@@ -788,6 +788,23 @@ local _ClassConfig = {
         --function to make sure we don't have non-hostiles in range before we use AE damage or non-taunt AE hate abilities
 
     },
+    ['Charm']         = {
+        ['Assist'] = {
+            { name = "Taunt", type = "Ability", },
+            {
+                name = "Terror",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoTerror') == 3 or (Config:GetSetting('DoTerror') == 2 and not Core.GetResolvedActionMapItem('ForPower')) end,
+            },
+            {
+                name = "Terror2",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoTerror') == 3 or (Config:GetSetting('DoTerror') == 2 and not Core.GetResolvedActionMapItem('ForPower')) end,
+            },
+            { name = "Acrimony",         type = "Disc", },
+            { name = "Veil of Darkness", type = "AA", },
+        },
+    },
     ['RotationOrder'] = {
         { --Self Buffs
             name = 'Downtime',

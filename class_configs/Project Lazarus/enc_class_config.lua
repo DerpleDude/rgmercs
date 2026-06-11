@@ -13,10 +13,9 @@ local _ClassConfig = {
     _version          = "1.4 - Project Lazarus",
     _author           = "Derple, Grimmier, Algar, Robban",
     ['ModeChecks']    = {
-        CanMez     = function() return true end,
-        CanCharm   = function() return true end,
-        IsCharming = function() return Config:GetSetting('CharmOn') end,
-        IsMezzing  = function() return Config:GetSetting('MezOn') end,
+        CanMez    = function() return true end,
+        CanCharm  = function() return true end,
+        IsMezzing = function() return Config:GetSetting('MezOn') end,
     },
     ['Modes']         = {
         'Default',
@@ -162,18 +161,18 @@ local _ClassConfig = {
             "Whirl Till You Hurl", -- Level 9
         },
         ['CharmSpell'] = {
-            "Ancient: Voice of Muram", -- Level 70
-            "True Name",               -- Level 70
-            "Compel",                  -- Level 68
-            "Command of Druzzil",      -- Level 64
-            "Beckon",                  -- Level 62
-            "Dictate",                 -- Level 60
-            "Boltran's Agacerie",      -- Level 53
-            "Ordinance",               -- Level 52
-            "Allure",                  -- Level 46
-            "Cajoling Whispers",       -- Level 37
-            "Beguile",                 -- Level 23
-            "Charm",                   -- Level 11
+            --  "Ancient: Voice of Muram", -- Level 70 3m dur/10m reuse
+            "True Name",          -- Level 70
+            "Compel",             -- Level 68
+            "Command of Druzzil", -- Level 64
+            "Beckon",             -- Level 62
+            "Dictate",            -- Level 60
+            "Boltran's Agacerie", -- Level 53
+            "Ordinance",          -- Level 52
+            "Allure",             -- Level 46
+            "Cajoling Whispers",  -- Level 37
+            "Beguile",            -- Level 23
+            "Charm",              -- Level 11
         },
         ['CrippleSpell'] = {
             -- "Synaptic Seizure", -- Level 70, In resources but not available
@@ -344,6 +343,20 @@ local _ClassConfig = {
         { type = "Spell", name = "MezAESpell", },
         { type = "AA",    name = "Beam of Slumber", cond = function() return Config:GetSetting('DoAAMez') end, },
     },
+    ['Charm']         = {
+        ['Abilities'] = {
+            { name = "Dire Charm", type = "AA", },
+            { name = "CharmSpell", type = "Spell", },
+        },
+        ['PreCharm']  = {
+            { name = "TashSpell", type = "Spell", cond = function(self, spell, target) return not target.Tashed() end, },
+        },
+        ['Assist']    = {
+            { name = "SpinStunSpell", type = "Spell", cond = function(self, spell, target) return Targeting.TargetNotStunned() end, },
+            { name = "PBAEStunSpell", type = "Spell", cond = function(self, spell, target) return Targeting.TargetNotStunned() and Targeting.InSpellRange(spell, target) end, },
+            { name = "TashSpell",     type = "Spell", cond = function(self, spell, target) return Casting.DetSpellCheck(spell, target) end, },
+        },
+    },
     ['RotationOrder'] = {
         {
             name = 'Downtime',
@@ -383,7 +396,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting('DoTash') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.OkayToDebuff() and Core.OkayToNotMez(3)
+                return combat_state == "Combat" and Casting.OkayToDebuff() and Core.CombatActionsCheck()
             end,
         },
         { --Slow and Tash separated so we use both before we start DPS
@@ -393,7 +406,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting('DoSlow') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.OkayToDebuff() and Core.OkayToNotMez(3)
+                return combat_state == "Combat" and Casting.OkayToDebuff() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -403,7 +416,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting('DoDispel') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.OkayToDebuff() and Core.OkayToNotMez(3)
+                return combat_state == "Combat" and Casting.OkayToDebuff() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -432,7 +445,7 @@ local _ClassConfig = {
             steps = 3,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.BurnCheck() and Core.OkayToNotMez()
+                return combat_state == "Combat" and Casting.BurnCheck() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -442,7 +455,7 @@ local _ClassConfig = {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Core.OkayToNotMez()
+                return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
         {
@@ -452,7 +465,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting('DoArcanumWeave') and Casting.CanUseAA("Acute Focus of Arcanum") end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and not mq.TLO.Me.Buff("Focus of Arcanum")() and Core.OkayToNotMez()
+                return combat_state == "Combat" and not mq.TLO.Me.Buff("Focus of Arcanum")() and Core.CombatActionsCheck()
             end,
         },
     },
@@ -1059,7 +1072,7 @@ local _ClassConfig = {
             spells = {
                 { name = "MezSpell",         cond = function(self) return Config:GetSetting('DoSTMez') end, },
                 { name = "MezAESpell",       cond = function(self) return Config:GetSetting('DoAEMez') end, },
-                { name = "CharmSpell",       cond = function(self) return Config:GetSetting('CharmOn') end, },
+                { name = "CharmSpell",       cond = function(self, spell) return Config:GetSetting('CharmOn') and Core.IsSelectedCharmSpell(spell) end, },
                 { name = "TashSpell",        cond = function(self) return Config:GetSetting('DoTash') end, },
                 { name = "SlowSpell",        cond = function(self) return Config:GetSetting('DoSlow') and not Casting.CanUseAA("Dreary Deeds") end, },
                 { name = "CrippleSpell",     cond = function(self) return Config:GetSetting('DoCrippleSpell') end, },
@@ -1084,8 +1097,12 @@ local _ClassConfig = {
         {
             id = 'TashSpell',
             Type = "Spell",
-            DisplayName = function() return Core.GetResolvedActionMapItem('TashSpell').RankName.Name() or "" end,
-            AbilityName = function() return Core.GetResolvedActionMapItem('TashSpell').RankName.Name() or "" end,
+            DisplayName = function()
+                local s = Core.GetResolvedActionMapItem('TashSpell'); return s and s.RankName.Name() or ""
+            end,
+            AbilityName = function()
+                local s = Core.GetResolvedActionMapItem('TashSpell'); return s and s.RankName.Name() or ""
+            end,
             AbilityRange = 200,
             cond = function(self)
                 local resolvedSpell = Core.GetResolvedActionMapItem('TashSpell')
@@ -1096,8 +1113,12 @@ local _ClassConfig = {
         {
             id = 'Dispel',
             Type = "Spell",
-            DisplayName = function() return Core.GetResolvedActionMapItem('Dispel').RankName.Name() or "" end,
-            AbilityName = function() return Core.GetResolvedActionMapItem('Dispel').RankName.Name() or "" end,
+            DisplayName = function()
+                local s = Core.GetResolvedActionMapItem('Dispel'); return s and s.RankName.Name() or ""
+            end,
+            AbilityName = function()
+                local s = Core.GetResolvedActionMapItem('Dispel'); return s and s.RankName.Name() or ""
+            end,
             AbilityRange = 200,
             cond = function(self)
                 local resolvedSpell = Core.GetResolvedActionMapItem('Dispel')

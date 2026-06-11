@@ -861,6 +861,11 @@ local _ClassConfig = {
             },
         },
     },
+    ['Charm']             = {
+        ['Assist'] = {
+            { name = "Taunt", type = "Ability", },
+        },
+    },
     ['RotationOrder']     = {
         -- Downtime doesn't have state because we run the whole rotation at once.
         {

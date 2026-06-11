@@ -11,6 +11,7 @@ local _ClassConfig = {
     _version              = "2.0 - Lazarus",
     _author               = "Algar",
     ['ModeChecks']        = {
+        CanCharm = function() return true end,
         IsHealing = function() return true end,
         IsCuring = function() return Config:GetSetting('DoCureAA') or Config:GetSetting('DoCureSpells') end,
         IsRezing = function()
@@ -371,6 +372,12 @@ local _ClassConfig = {
             "Hand of Ro",
         },
     },
+    ['Charm']             = {
+        ['Abilities'] = {
+            { name = "Dire Charm", type = "AA", },
+            { name = "CharmSpell", type = "Spell", },
+        },
+    },
     ['HealRotationOrder'] = {
         {
             name  = 'BigHealPoint',
@@ -455,7 +462,7 @@ local _ClassConfig = {
             name = 'Downtime',
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
-                return combat_state == "Downtime" and Core.OkayToNotHeal() and Casting.OkayToBuff() and Casting.AmIBuffable()
+                return combat_state == "Downtime" and Core.CombatActionsCheck() and Casting.OkayToBuff() and Casting.AmIBuffable()
             end,
         },
         {
@@ -464,7 +471,7 @@ local _ClassConfig = {
             load_cond = function(self) return Core.OnEMU() end,
             cond = function(self, combat_state)
                 if not Config:GetSetting('DoPet') or mq.TLO.Me.Pet.ID() ~= 0 then return false end
-                return combat_state == "Downtime" and (not Core.IsModeActive('Heal') or Core.OkayToNotHeal()) and Casting.OkayToPetBuff() and Casting.AmIBuffable()
+                return combat_state == "Downtime" and (not Core.IsModeActive('Heal') or Core.CombatActionsCheck()) and Casting.OkayToPetBuff() and Casting.AmIBuffable()
             end,
         },
         { --Pet Buffs if we have one, timer because we don't need to constantly check this
@@ -472,7 +479,7 @@ local _ClassConfig = {
             timer = 10,
             targetId = function(self) return mq.TLO.Me.Pet.ID() > 0 and { mq.TLO.Me.Pet.ID(), } or {} end,
             cond = function(self, combat_state)
-                return combat_state == "Downtime" and (not Core.IsModeActive('Heal') or Core.OkayToNotHeal()) and mq.TLO.Me.Pet.ID() > 0 and Casting.OkayToPetBuff()
+                return combat_state == "Downtime" and (not Core.IsModeActive('Heal') or Core.CombatActionsCheck()) and mq.TLO.Me.Pet.ID() > 0 and Casting.OkayToPetBuff()
             end,
         },
         {
@@ -481,7 +488,7 @@ local _ClassConfig = {
             steps = 1,
             targetId = function(self) return Casting.GetBuffableIDs() end,
             cond = function(self, combat_state)
-                return combat_state == "Downtime" and Core.OkayToNotHeal() and Casting.OkayToBuff()
+                return combat_state == "Downtime" and Core.CombatActionsCheck() and Casting.OkayToBuff()
             end,
         },
         {
@@ -495,7 +502,7 @@ local _ClassConfig = {
             end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Core.OkayToNotHeal() and Casting.OkayToDebuff()
+                return combat_state == "Combat" and Core.CombatActionsCheck() and Casting.OkayToDebuff()
             end,
         },
         { --Keep things from running
@@ -505,7 +512,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting('DoSnare') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Core.OkayToNotHeal() and not Globals.AutoTargetIsNamed and
+                return combat_state == "Combat" and Core.CombatActionsCheck() and not Globals.AutoTargetIsNamed and
                     Targeting.GetXTHaterCount() <= Config:GetSetting('SnareCount')
             end,
         },
@@ -516,7 +523,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and
-                    Casting.BurnCheck() and Core.OkayToNotHeal()
+                    Casting.BurnCheck() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -531,7 +538,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 if not Config:GetSetting('DoAEDamage') then return false end
-                return combat_state == "Combat" and Core.OkayToNotHeal() and Targeting.AggroCheckOkay() and Combat.AETargetCheck(true)
+                return combat_state == "Combat" and Core.CombatActionsCheck() and Targeting.AggroCheckOkay() and Combat.AETargetCheck(true)
             end,
         },
         {
@@ -541,7 +548,7 @@ local _ClassConfig = {
             load_cond = function() return mq.TLO.Me.Level() < 71 end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Core.OkayToNotHeal()
+                return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
         {
@@ -551,7 +558,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting('DoArcanumWeave') and Casting.CanUseAA("Acute Focus of Arcanum") end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Core.OkayToNotHeal() and not mq.TLO.Me.Buff("Focus of Arcanum")()
+                return combat_state == "Combat" and Core.CombatActionsCheck() and not mq.TLO.Me.Buff("Focus of Arcanum")()
             end,
         },
     },

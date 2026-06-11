@@ -46,20 +46,14 @@ Module.DefaultConfig                    = {
         Default = true,
         Tooltip = "Enables mezzing all forms of mezzing as a quick toggle, select particular actions to use below.",
     },
-    ['MezPriority']                            = {
-        DisplayName = "Mez Priority",
+    ['PriorityMez']                            = {
+        DisplayName = "Prioritize Mez",
         Group = "Abilities",
         Header = "Mez",
         Category = "Mez General",
         Index = 2,
-        Type = "Combo",
-        ComboOptions = { 'Normal', 'Higher', 'Highest', },
-        Default = 2,
-        Min = 1,
-        Max = 3,
-        Tooltip = "Normal - Weave mezzes in without restricting other actions.\n" ..
-            "Higher - Restrict most Burn and DPS rotations when a mez is needed (and we have a mez ready).\n" ..
-            "Highest - Higher, plus additionally restrict most debuff rotations and the melody rotation.",
+        Default = true,
+        Tooltip = "Hold Burn/DPS/debuff rotations while a needed mez is not yet landed.",
         ConfigType = "Advanced",
     },
     ['DoSTMez']                                = {
@@ -612,6 +606,12 @@ function Module:IsValidMezTarget(mobId)
     if self:IsPlayerPet(spawn) then
         Logger.log_debug("\ayUpdateMezList: Skipping Mob ID: %d Name: %s Level: %d as it is a player's pet.",
             spawn.ID(), spawn.CleanName(), spawn.Level() or 0)
+        return false
+    end
+
+    -- a charm pet in recovery (broken, being re-charmed) is protected; don't mez it out from under the charmer
+    if Globals.CharmedPetIDs:contains(mobId) then
+        Logger.log_debug("\ayUpdateMezList: Skipping Mob ID: %d - charm pet in recovery.", mobId)
         return false
     end
 

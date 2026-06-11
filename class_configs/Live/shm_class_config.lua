@@ -1002,13 +1002,33 @@ local _ClassConfig = {
             },
         },
     },
+    ['Charm']             = {
+        ['Assist'] = {
+            {
+                name = "Malaise",
+                type = "AA",
+                load_cond = function(self) return Config:GetSetting('DoSTMalo') and Casting.CanUseAA("Malaise") end,
+                cond = function(self, aaName, target)
+                    return Casting.DetAACheck(aaName, target)
+                end,
+            },
+            {
+                name = "MaloSpell",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoSTMalo') and not Casting.CanUseAA("Malaise") end,
+                cond = function(self, spell, target)
+                    return Casting.DetSpellCheck(spell, target)
+                end,
+            },
+        },
+    },
     ['RotationOrder']     = {
         -- Downtime doesn't have state because we run the whole rotation at once.
         {
             name = 'Downtime',
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
-                return combat_state == "Downtime" and (not Core.IsModeActive('Heal') or Core.OkayToNotHeal()) and Casting.OkayToBuff() and
+                return combat_state == "Downtime" and (not Core.IsModeActive('Heal') or Core.CombatActionsCheck()) and Casting.OkayToBuff() and
                     Casting.AmIBuffable()
             end,
         },
@@ -1016,7 +1036,7 @@ local _ClassConfig = {
             name = 'PetSummon',
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
-                return combat_state == "Downtime" and (not Core.IsModeActive('Heal') or Core.OkayToNotHeal()) and mq.TLO.Me.Pet.ID() == 0 and Casting.OkayToPetBuff() and
+                return combat_state == "Downtime" and (not Core.IsModeActive('Heal') or Core.CombatActionsCheck()) and mq.TLO.Me.Pet.ID() == 0 and Casting.OkayToPetBuff() and
                     Casting.AmIBuffable()
             end,
         },
@@ -1026,7 +1046,7 @@ local _ClassConfig = {
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
                 return combat_state == "Downtime" and
-                    (not Core.IsModeActive('Heal') or Core.OkayToNotHeal()) and Casting.OkayToBuff() and Casting.AmIBuffable()
+                    (not Core.IsModeActive('Heal') or Core.CombatActionsCheck()) and Casting.OkayToBuff() and Casting.AmIBuffable()
             end,
         },
         { --Spells that should be checked on group members
@@ -1035,7 +1055,7 @@ local _ClassConfig = {
             steps = 1,
             targetId = function(self) return Casting.GetBuffableIDs() end,
             cond = function(self, combat_state)
-                return combat_state == "Downtime" and (not Core.IsModeActive('Heal') or Core.OkayToNotHeal()) and Casting.OkayToBuff()
+                return combat_state == "Downtime" and (not Core.IsModeActive('Heal') or Core.CombatActionsCheck()) and Casting.OkayToBuff()
             end,
         },
         { --Pet Buffs if we have one, timer because we don't need to constantly check this
@@ -1043,7 +1063,7 @@ local _ClassConfig = {
             timer = 10,
             targetId = function(self) return mq.TLO.Me.Pet.ID() > 0 and { mq.TLO.Me.Pet.ID(), } or {} end,
             cond = function(self, combat_state)
-                return combat_state == "Downtime" and (not Core.IsModeActive('Heal') or Core.OkayToNotHeal()) and mq.TLO.Me.Pet.ID() > 0 and Casting.OkayToPetBuff()
+                return combat_state == "Downtime" and (not Core.IsModeActive('Heal') or Core.CombatActionsCheck()) and mq.TLO.Me.Pet.ID() > 0 and Casting.OkayToPetBuff()
             end,
         },
         {
@@ -1053,7 +1073,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting('DoSTMalo') or Config:GetSetting('DoAEMalo') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.OkayToDebuff() and (not Core.IsModeActive('Heal') or Core.OkayToNotHeal())
+                return combat_state == "Combat" and Casting.OkayToDebuff() and (not Core.IsModeActive('Heal') or Core.CombatActionsCheck())
             end,
         },
         {
@@ -1063,7 +1083,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting('DoSTSlow') or Config:GetSetting('DoAESlow') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.OkayToDebuff() and (not Core.IsModeActive('Heal') or Core.OkayToNotHeal())
+                return combat_state == "Combat" and Casting.OkayToDebuff() and (not Core.IsModeActive('Heal') or Core.CombatActionsCheck())
             end,
         },
         {
@@ -1073,7 +1093,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and Casting.BurnCheck() and
-                    (not Core.IsModeActive('Heal') or Core.OkayToNotHeal())
+                    (not Core.IsModeActive('Heal') or Core.CombatActionsCheck())
             end,
         },
         {
@@ -1085,7 +1105,7 @@ local _ClassConfig = {
             cond = function(self, combat_state)
                 local downtime = combat_state == "Downtime" and Casting.OkayToBuff()
                 local combat = combat_state == "Combat"
-                return (downtime or combat) and (not Core.IsModeActive('Heal') or Core.OkayToNotHeal())
+                return (downtime or combat) and (not Core.IsModeActive('Heal') or Core.CombatActionsCheck())
             end,
         },
         {
@@ -1095,7 +1115,7 @@ local _ClassConfig = {
             steps = 1,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and (not Core.IsModeActive('Heal') or Core.OkayToNotHeal())
+                return combat_state == "Combat" and (not Core.IsModeActive('Heal') or Core.CombatActionsCheck())
             end,
         },
         {
@@ -1105,7 +1125,7 @@ local _ClassConfig = {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and (not Core.IsModeActive('Heal') or (Config:GetSetting('DoHealDPS') and Core.OkayToNotHeal()))
+                return combat_state == "Combat" and (not Core.IsModeActive('Heal') or (Config:GetSetting('DoHealDPS') and Core.CombatActionsCheck()))
             end,
         },
     },

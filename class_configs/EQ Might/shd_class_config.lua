@@ -413,6 +413,15 @@ local _ClassConfig = {
         end,
 
     },
+    ['Charm']         = {
+        ['Assist'] = {
+            { name = "Taunt",            type = "Ability", },
+            { name = "Terror",           type = "Spell",   load_cond = function(self) return Config:GetSetting('DoTerror') end, },
+            { name = "Terror2",          type = "Spell",   load_cond = function(self) return Config:GetSetting('DoTerror') end, },
+            { name = "Terror3",          type = "Spell",   load_cond = function(self) return Config:GetSetting('DoTerror') end, },
+            { name = "Xeno's Faceguard", type = "Item",    load_cond = function(self) return mq.TLO.FindItem("=Xeno's Faceguard")() end, },
+        },
+    },
     ['RotationOrder'] = {
         { --Self Buffs
             name = 'Downtime',

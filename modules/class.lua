@@ -810,10 +810,7 @@ end
 
 ---@return boolean
 function Module:IsCharming()
-    if not self.ClassConfig or not self.ClassConfig.ModeChecks or not self.ClassConfig.ModeChecks.IsCharming then
-        return false
-    end
-    return self.ClassConfig.ModeChecks.IsCharming()
+    return self:CanCharm() and Config:GetSetting('CharmOn')
 end
 
 --- Runs the main-loop engage step mid-song, gated to the combat target so it never re-targets off a mez/charm/cure victim.

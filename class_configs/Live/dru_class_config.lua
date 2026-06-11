@@ -9,14 +9,13 @@ local _ClassConfig = {
     _version              = "1.1 - Live",
     _author               = "Derple, Grimmier",
     ['ModeChecks']        = {
-        IsHealing  = function() return true end,
-        IsCuring   = function() return Core.IsModeActive("Heal") end,
-        IsRezing   = function()
+        IsHealing = function() return true end,
+        IsCuring  = function() return Core.IsModeActive("Heal") end,
+        IsRezing  = function()
             return (Core.GetResolvedActionMapItem('RezSpell') and Targeting.GetXTHaterCount() == 0) or
                 (Casting.CanUseAA("Call of the Wild") and Config:GetSetting('DoBattleRez'))
         end,
-        CanCharm   = function() return true end,
-        IsCharming = function() return (Config:GetSetting('CharmOn') and mq.TLO.Pet.ID() == 0) end,
+        CanCharm  = function() return true end,
     },
     ['Modes']             = {
         'Heal',
@@ -935,6 +934,12 @@ local _ClassConfig = {
             },
         },
     },
+    ['Charm']             = {
+        ['Abilities'] = {
+            { name = "Dire Charm", type = "AA", },
+            { name = "CharmSpell", type = "Spell", },
+        },
+    },
     ['RotationOrder']     = {
         -- Downtime doesn't have state because we run the whole rotation at once.
         {
@@ -950,7 +955,7 @@ local _ClassConfig = {
             load_cond = function(self) return Core.OnEMU() end,
             cond = function(self, combat_state)
                 if not Config:GetSetting('DoPet') or mq.TLO.Me.Pet.ID() ~= 0 then return false end
-                return combat_state == "Downtime" and (not Core.IsModeActive('Heal') or Core.OkayToNotHeal()) and Casting.OkayToPetBuff() and Casting.AmIBuffable()
+                return combat_state == "Downtime" and (not Core.IsModeActive('Heal') or Core.CombatActionsCheck()) and Casting.OkayToPetBuff() and Casting.AmIBuffable()
             end,
         },
         {
@@ -1474,7 +1479,7 @@ local _ClassConfig = {
                 { name = "WinterFireDD",   cond = function(self) return Core.IsModeActive("Mana") end, },
                 -- [ HEAL MODE ] --
                 { name = "QuickGroupHeal", cond = function(self) return mq.TLO.Me.Level() >= 90 end, },
-                { name = "CharmSpell",     cond = function(self) return Config:GetSetting('CharmOn') end, },
+                { name = "CharmSpell",     cond = function(self, spell) return Config:GetSetting('CharmOn') and Core.IsSelectedCharmSpell(spell) end, },
                 { name = "QuickRoarDD",    cond = function(self) return true end, },
                 -- [ Fall Back ]--
                 { name = "IceRainNuke",    cond = function(self) return true end, },

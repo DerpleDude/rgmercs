@@ -177,6 +177,14 @@ local _ClassConfig = {
             return true
         end,
     },
+    ['Charm']         = {
+        ['Assist'] = {
+            { name = "Taunt",          type = "Ability", },
+            { name = "Attention",      type = "Disc", },
+            { name = "Blast of Anger", type = "AA", },
+            { name = "AddHate",        type = "Disc", },
+        },
+    },
     ['RotationOrder'] = {
         { --Self Buffs
             name = 'Downtime',

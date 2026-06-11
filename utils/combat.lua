@@ -250,6 +250,12 @@ function Combat.ValidMAXTarget(target)
         return false
     end
 
+    -- a charm pet (or one a peer is re-charming) is protected unless explicitly forced
+    if spawnId ~= Globals.ForceTargetID and spawnId ~= Globals.ForceCombatID and Globals.CharmedPetIDs:contains(spawnId) then
+        Logger.log_verbose("ValidateMATarget: Spawn ID %d is a protected charm pet", spawnId)
+        return false
+    end
+
     -- believe it or not, target can become invalid between the time we get its ID and now
     if target.ID() <= 0 then
         Logger.log_verbose("ValidateMATarget: Spawn ID %d is no longer valid", spawnId)
@@ -298,6 +304,8 @@ end
 local function processFallbackSpawn(spawn, checkNamed, radius, namedPref, hpPref, primaryTarget, fallbackTarget)
     if not spawn or not spawn() then return end
     if Targeting.IsTempPet(spawn) then return end
+    local fallbackId = spawn.ID() or 0
+    if fallbackId ~= Globals.ForceTargetID and fallbackId ~= Globals.ForceCombatID and Globals.CharmedPetIDs:contains(fallbackId) then return end
     if (spawn.CleanName() or ""):find("Guard") then return end
     if Config:GetSetting('SafeTargeting') and Targeting.IsSpawnFightingStranger(spawn, radius) then return end
     local spawnIsNamed = checkNamed and Targeting.IsNamed(spawn) or false
@@ -753,6 +761,12 @@ function Combat.OkToEngagePreValidateId(targetId)
         return false
     end
 
+    -- a charm pet (or one a peer is re-charming) is protected unless explicitly forced
+    if targetId ~= Globals.ForceTargetID and targetId ~= Globals.ForceCombatID and Globals.CharmedPetIDs:contains(targetId) then
+        Logger.log_verbose("\ayOkToEngagePrevalidate check for %s(ID: %d) - Protected charm pet --> Not Engaging", targetName, targetId)
+        return false
+    end
+
     local pcCheck = Targeting.TargetIsType("pc", target) or (Targeting.TargetIsType("pet", target) and Targeting.TargetIsType("pc", target.Master))
     local mercCheck = Targeting.TargetIsType("mercenary", target)
     if pcCheck or mercCheck then
@@ -821,6 +835,12 @@ function Combat.OkToEngage(autoTargetId)
 
     if Globals.IgnoredTargetIDs:contains(targetId) then
         Logger.log_verbose("\ayOkToEngage check for %s(ID: %d) - Target is in IgnoredTargetIDs --> Not Engaging", targetName, targetId)
+        return false
+    end
+
+    -- a charm pet (or one a peer is re-charming) is protected unless explicitly forced
+    if targetId ~= Globals.ForceTargetID and targetId ~= Globals.ForceCombatID and Globals.CharmedPetIDs:contains(targetId) then
+        Logger.log_verbose("\ayOkToEngage check for %s(ID: %d) - Protected charm pet --> Not Engaging", targetName, targetId)
         return false
     end
 
