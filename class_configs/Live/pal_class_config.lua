@@ -1041,6 +1041,16 @@ local _ClassConfig = {
                 return combat_state == "Combat" and Casting.BurnCheck() and Core.OkayToNotHeal()
             end,
         },
+        { --Non-spell actions that can be used during/between casts
+            name = 'CombatWeave',
+            state = 1,
+            steps = 1,
+            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
+            cond = function(self, combat_state)
+                if mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') then return false end
+                return combat_state == "Combat" and Core.OkayToNotHeal()
+            end,
+        },
         { --DPS Spells, includes recourse/gift maintenance
             name = 'Combat',
             state = 1,
