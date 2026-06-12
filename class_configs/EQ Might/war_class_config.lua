@@ -232,6 +232,15 @@ local _ClassConfig = {
                 return combat_state == "Downtime" and Casting.OkayToBuff() and Casting.AmIBuffable()
             end,
         },
+        {
+            name = 'GroupBuff',
+            state = 1,
+            steps = 1,
+            targetId = function(self) return Casting.GetBuffableIDs() end,
+            cond = function(self, combat_state)
+                return combat_state == "Downtime" and Casting.OkayToBuff()
+            end,
+        },
         { --Actions to lock down xtarg haters
             name = 'HateTools(AggroTarget)',
             state = 1,
@@ -351,6 +360,9 @@ local _ClassConfig = {
                     return not mq.TLO.Me.Aura(1).ID()
                 end,
             },
+        },
+        ['GroupBuff'] = { -- Added to anchor clickies to
+
         },
         ['HateTools(AggroTarget)'] = {
             {

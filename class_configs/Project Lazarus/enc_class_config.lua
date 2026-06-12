@@ -22,8 +22,8 @@ local _ClassConfig = {
         'Default',
     },
     ['PetPosition']   = {
-        SummonAA   = function() return Casting.CanUseAA("Summon Companion") and "Summon Companion" end,
-        RelocateAA = function() return Casting.CanUseAA("Companion's Relocation") and "Companion's Relocation" end,
+        SummonAA = function() return Casting.CanUseAA("Summon Companion") and "Summon Companion" end,
+        -- RelocateAA = function() return Casting.CanUseAA("Companion's Relocation") and "Companion's Relocation" end,
     },
     ['Themes']        = {
         ['Default'] = {

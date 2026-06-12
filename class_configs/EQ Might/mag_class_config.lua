@@ -699,15 +699,6 @@ _ClassConfig      = {
         },
         ['Weaves'] = {
             {
-                name = "Summon Companion",
-                type = "AA",
-                cond = function(self, aaName, target)
-                    if mq.TLO.Me.Pet.ID() == 0 then return false end
-                    local pet = mq.TLO.Me.Pet
-                    return not pet.Combat() and (pet.Distance3D() or 0) > 200
-                end,
-            },
-            {
                 name = "FireOrbItem",
                 type = "CustomFunc",
                 custom_func = function(self)

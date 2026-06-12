@@ -1622,45 +1622,56 @@ function Module:PositionPet()
     local petPos = self.ClassConfig.PetPosition
     if not petPos then return end
 
-    if mq.TLO.Me.Moving() or mq.TLO.Me.Casting() then return end
-
     local targetId = Globals.AutoTargetID
     if targetId == 0 then return end
 
     local pet = mq.TLO.Me.Pet
-    if (pet.ID() or 0) == 0 or not pet.Combat() or (pet.Target.ID() or 0) ~= targetId then return end
+    if mq.TLO.Me.Pet.ID() == 0 then return false end
 
-    local target = mq.TLO.Spawn(targetId)
-    if not target() then return end
-
-    if (Globals.GetTimeSeconds() - (self.TempSettings.LastPetPosCheck or 0)) < 0.25 then return end
-    self.TempSettings.LastPetPosCheck = Globals.GetTimeSeconds()
-
-    local frontArc = 180
-    local targetFacing = target.Heading.DegreesCCW() or 0
-    local inFrontArc = function(y, x)
-        local diff = (((target.HeadingToLoc(y, x).DegreesCCW() or 0) - targetFacing + 540) % 360) - 180
-        return math.abs(diff) < frontArc / 2
-    end
-
-    if not inFrontArc(pet.Y(), pet.X()) then return end
+    if mq.TLO.Me.Moving() or mq.TLO.Me.Casting() then return end
 
     local ability
-    if inFrontArc(mq.TLO.Me.Y(), mq.TLO.Me.X()) then
-        -- Relocate flings the pet in our faced direction, so don't fire mid-turn or it lands off-target.
-        local myHeading = mq.TLO.Me.Heading.DegreesCCW() or 0
-        local headingDelta = math.abs(myHeading - (self.TempSettings.LastPetPosHeading or myHeading))
-        self.TempSettings.LastPetPosHeading = myHeading
-        if headingDelta > 180 then headingDelta = 360 - headingDelta end
-        if headingDelta > 5 then return end
-        ability = petPos.RelocateAA()
+
+    if not pet.Combat() and (pet.Distance3D() or 0) > 200 then
+        -- pet is lagging behind, summon it
+        ability = petPos.SummonAA and petPos.SummonAA()
+        Logger.log_verbose("PositionPet: Pet is far away and we are in combat, %s is needed.", ability)
     else
-        ability = petPos.SummonAA()
+        if pet.Combat() and pet.Target.ID() == targetId then
+            -- check if pet needs reposition
+            local target = mq.TLO.Spawn(targetId)
+            if not target() then return end
+
+            if (Globals.GetTimeSeconds() - (self.TempSettings.LastPetPosCheck or 0)) < 0.25 then return end
+            self.TempSettings.LastPetPosCheck = Globals.GetTimeSeconds()
+
+            local frontArc = 180
+            local targetFacing = target.Heading.DegreesCCW() or 0
+            local inFrontArc = function(y, x)
+                local diff = (((target.HeadingToLoc(y, x).DegreesCCW() or 0) - targetFacing + 540) % 360) - 180
+                return math.abs(diff) < frontArc / 2
+            end
+
+            if not inFrontArc(pet.Y(), pet.X()) then return end
+
+            if inFrontArc(mq.TLO.Me.Y(), mq.TLO.Me.X()) then
+                -- Relocate flings the pet in our faced direction, so don't fire mid-turn or it lands off-target.
+                local myHeading = mq.TLO.Me.Heading.DegreesCCW() or 0
+                local headingDelta = math.abs(myHeading - (self.TempSettings.LastPetPosHeading or myHeading))
+                self.TempSettings.LastPetPosHeading = myHeading
+                if headingDelta > 180 then headingDelta = 360 - headingDelta end
+                if headingDelta > 5 then return end
+                ability = petPos.RelocateAA and petPos.RelocateAA()
+            else
+                ability = petPos.SummonAA and petPos.SummonAA()
+            end
+
+            Logger.log_verbose("PositionPet: pet in %s's front arc, %s is needed.", target.CleanName() or "target", ability)
+        end
     end
 
     if not ability or not Casting.AAReady(ability) then return end
-
-    Logger.log_debug("PositionPet: pet in %s's front arc, using %s.", target.CleanName() or "target", ability)
+    Logger.log_debug("PositionPet: Using %s to move my pet.", ability)
     Casting.UseAA(ability)
 end
 

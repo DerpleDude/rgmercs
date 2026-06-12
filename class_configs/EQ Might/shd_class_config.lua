@@ -438,6 +438,15 @@ local _ClassConfig = {
                 return combat_state == "Downtime" and mq.TLO.Me.Pet.ID() > 0 and Casting.OkayToPetBuff()
             end,
         },
+        {
+            name = 'GroupBuff',
+            state = 1,
+            steps = 1,
+            targetId = function(self) return Casting.GetBuffableIDs() end,
+            cond = function(self, combat_state)
+                return combat_state == "Downtime" and Casting.OkayToBuff()
+            end,
+        },
         { --Actions to lock down xtarg haters
             name = 'HateTools(AggroTarget)',
             state = 1,
@@ -650,6 +659,9 @@ local _ClassConfig = {
                     Core.DoCmd("/removebuff \"Visage of Death\"")
                 end,
             },
+        },
+        ['GroupBuff'] = { -- Added to anchor clickies to
+
         },
         ['PetSummon'] = {
             {

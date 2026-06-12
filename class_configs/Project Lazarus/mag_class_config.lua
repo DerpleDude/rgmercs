@@ -10,7 +10,7 @@ local ItemManager = require("utils.item_manager")
 local Logger      = require("utils.logger")
 local Targeting   = require("utils.targeting")
 
-_ClassConfig    = {
+_ClassConfig      = {
     _version          = "1.4 - Project Lazarus",
     _author           = "Derple, Morisato, Algar",
     ['Modes']         = {
@@ -18,8 +18,8 @@ _ClassConfig    = {
         'PBAE',
     },
     ['PetPosition']   = {
-        SummonAA   = function() return Casting.CanUseAA("Summon Companion") and "Summon Companion" end,
-        RelocateAA = function() return Casting.CanUseAA("Companion's Relocation") and "Companion's Relocation" end,
+        SummonAA = function() return Casting.CanUseAA("Summon Companion") and "Summon Companion" end,
+        -- RelocateAA = function() return Casting.CanUseAA("Companion's Relocation") and "Companion's Relocation" end,
     },
     ['Themes']        = {
         ['DPS'] = {
@@ -641,15 +641,6 @@ _ClassConfig    = {
             },
         },
         ['Weaves'] = {
-            {
-                name = "Summon Companion",
-                type = "AA",
-                cond = function(self, aaName, target)
-                    if mq.TLO.Me.Pet.ID() == 0 then return false end
-                    local pet = mq.TLO.Me.Pet
-                    return not pet.Combat() and (pet.Distance3D() or 0) > 200
-                end,
-            },
             {
                 name = "Force of Elements",
                 type = "AA",

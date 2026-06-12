@@ -416,6 +416,15 @@ local _ClassConfig = {
             end,
         },
         {
+            name = 'GroupBuff',
+            state = 1,
+            steps = 1,
+            targetId = function(self) return Casting.GetBuffableIDs() end,
+            cond = function(self, combat_state)
+                return combat_state == "Downtime" and Casting.OkayToBuff()
+            end,
+        },
+        {
             name = 'Emergency',
             state = 1,
             steps = 1,
@@ -861,6 +870,9 @@ local _ClassConfig = {
                     return Casting.NoDiscActive()
                 end,
             },
+        },
+        ['GroupBuff'] = { -- Added to anchor clickies to
+
         },
     },
     ['SpellList']     = { -- New style spell list, gemless, priority-based. Will use the first set whose conditions are met.
