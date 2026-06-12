@@ -13,7 +13,10 @@ local _ClassConfig = {
     ['ModeChecks']        = {
         IsHealing = function() return true end,
         IsCuring = function() return Config:GetSetting('DoCureAA') or Config:GetSetting('DoCureSpells') end,
-        IsRezing = function() return Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0 end,
+        IsRezing = function()
+            local rezAction = Casting.CanUseAA("Blessing of Resurrection") or mq.TLO.FindItem("=Water Sprinkler of Nem Ankh")()
+            return ((Core.GetResolvedActionMapItem('RezSpell') or rezAction) and Targeting.GetXTHaterCount() == 0) or (Config:GetSetting('DoBattleRez') and rezAction)
+        end,
     },
     ['Modes']             = {
         'Heal',
@@ -353,7 +356,7 @@ local _ClassConfig = {
                 elseif mq.TLO.FindItem("=Water Sprinkler of Nem Ankh")() and mq.TLO.Me.ItemReady("=Water Sprinkler of Nem Ankh")() then
                     rezAction = okayToRez and Casting.UseItem("Water Sprinkler of Nem Ankh", corpseId)
                 elseif not Casting.CanUseAA("Blessing of Resurrection") and Casting.SpellReady(rezSpell, true) then
-                    rezAction = okayToRez and Casting.UseSpell(rezSpell, corpseId, true, true)
+                    rezAction = okayToRez and Casting.UseSpell(rezSpell.RankName(), corpseId, true, true)
                 end
             end
 

@@ -503,7 +503,7 @@ local _ClassConfig = {
     },
     ['Helpers']       = { --used to autoinventory our crystals after summon. Crystal is a group-wide spell on Laz.
         DoRez = function(self, corpseId)
-            local rezStaff = self.ResolvedActionMap['RezStaff']
+            local rezStaff = Core.GetResolvedActionMapItem('RezStaff')
 
             if mq.TLO.Me.ItemReady(rezStaff)() then
                 if Casting.OkayToRez(corpseId) then

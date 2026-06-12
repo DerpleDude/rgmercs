@@ -12,8 +12,11 @@ local _ClassConfig = {
     _author               = "Algar, Derple",
     ['ModeChecks']        = {
         IsHealing = function() return true end,
-        IsCuring = function() return Config:GetSetting('DoCureAA') or Config:GetSetting('DoCureSpells') end,
-        IsRezing = function() return Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0 end,
+        IsCuring  = function() return Config:GetSetting('DoCureAA') or Config:GetSetting('DoCureSpells') end,
+        IsRezing  = function()
+            return (Core.GetResolvedActionMapItem('RezSpell') and Targeting.GetXTHaterCount() == 0) or
+                (Casting.CanUseAA("Call of the Wild") and Config:GetSetting('DoBattleRez'))
+        end,
     },
     ['Modes']             = {
         'Heal',
@@ -369,6 +372,7 @@ local _ClassConfig = {
             "Ancient Alliance",   -- Level 103
         },
         ['RezSpell'] = {
+            "Incarnate Anew", -- Level 59
         },
         ['RecklessHeal1'] = {
             "Reckless Mending VIII",      -- Level 130
@@ -801,6 +805,7 @@ local _ClassConfig = {
     ['Helpers']           = {
         DoRez = function(self, corpseId, ownerName)
             local rezAction = false
+            local rezSpell = Core.GetResolvedActionMapItem('RezSpell')
             local okayToRez = Casting.OkayToRez(corpseId)
             local combatState = mq.TLO.Me.CombatState():lower() or "unknown"
 
@@ -813,8 +818,8 @@ local _ClassConfig = {
             elseif combatState == "active" or combatState == "resting" then
                 if Casting.AAReady("Rejuvenation of Spirit") then
                     rezAction = okayToRez and Casting.UseAA("Rejuvenation of Spirit", corpseId, true, 1)
-                elseif not Casting.CanUseAA("Rejuvenation of Spirit") and Casting.SpellReady(mq.TLO.Spell("Incarnate Anew"), true) then
-                    rezAction = okayToRez and Casting.UseSpell("Incarnate Anew", corpseId, true, true)
+                elseif not Casting.CanUseAA("Rejuvenation of Spirit") and Casting.SpellReady(rezSpell, true) then
+                    rezAction = okayToRez and Casting.UseSpell(rezSpell.RankName(), corpseId, true, true)
                 end
             end
 

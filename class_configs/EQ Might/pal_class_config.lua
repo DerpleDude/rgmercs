@@ -15,8 +15,11 @@ return {
     ['ModeChecks']        = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
         IsHealing = function() return true end,
-        IsCuring = function() return Config:GetSetting('DoCureAA') or Config:GetSetting('DoCureSpells') end,
-        IsRezing = function() return Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0 end,
+        IsCuring  = function() return Config:GetSetting('DoCureAA') or Config:GetSetting('DoCureSpells') end,
+        IsRezing  = function()
+            local rezAction = Casting.CanUseAA("Gift of Resurrection") or Core.GetResolvedActionMapItem('RezStaff')
+            return ((Core.GetResolvedActionMapItem('RezSpell') or rezAction) and Targeting.GetXTHaterCount() == 0) or (Config:GetSetting('DoBattleRez') and rezAction)
+        end,
     },
     ['Modes']             = {
         'Tank',
@@ -416,7 +419,7 @@ return {
         DoRez = function(self, corpseId)
             local rezAction = false
             local rezSpell = Core.GetResolvedActionMapItem('RezSpell')
-            local rezStaff = self.ResolvedActionMap['RezStaff']
+            local rezStaff = Core.GetResolvedActionMapItem('RezStaff')
             local staffReady = mq.TLO.Me.ItemReady(rezStaff)()
             local okayToRez = Casting.OkayToRez(corpseId)
             local combatState = mq.TLO.Me.CombatState():lower() or "unknown"
@@ -433,7 +436,7 @@ return {
                 rezAction = okayToRez and Casting.UseItem(rezStaff, corpseId)
             elseif combatState == "active" or combatState == "resting" then
                 if Casting.SpellReady(rezSpell, true) then
-                    rezAction = okayToRez and Casting.UseSpell(rezSpell, corpseId, true, true)
+                    rezAction = okayToRez and Casting.UseSpell(rezSpell.RankName(), corpseId, true, true)
                 end
             end
 

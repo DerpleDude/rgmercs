@@ -365,7 +365,7 @@ return {
     },
     ['Helpers']       = {
         DoRez = function(self, corpseId)
-            local rezStaff = self.ResolvedActionMap['RezStaff']
+            local rezStaff = Core.GetResolvedActionMapItem('RezStaff')
 
             if mq.TLO.Me.ItemReady(rezStaff)() then
                 if Casting.OkayToRez(corpseId) then

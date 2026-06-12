@@ -10,7 +10,7 @@ local ItemManager = require("utils.item_manager")
 local Logger      = require("utils.logger")
 local Targeting   = require("utils.targeting")
 
-_ClassConfig    = {
+_ClassConfig      = {
     _version          = "1.4 - EQ Might",
     _author           = "Derple, Morisato, Algar",
     ['ModeChecks']    = {
@@ -457,7 +457,7 @@ _ClassConfig    = {
     -- Really the meat of this class.
     ['Helpers']       = {
         DoRez = function(self, corpseId)
-            local rezStaff = self.ResolvedActionMap['RezStaff']
+            local rezStaff = Core.GetResolvedActionMapItem('RezStaff')
             if mq.TLO.Me.ItemReady(rezStaff)() then
                 if Casting.OkayToRez(corpseId) then
                     return Casting.UseItem(rezStaff, corpseId)

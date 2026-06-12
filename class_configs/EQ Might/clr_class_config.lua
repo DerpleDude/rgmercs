@@ -13,7 +13,10 @@ local _ClassConfig = {
     ['ModeChecks']        = {
         IsHealing = function() return true end,
         IsCuring = function() return Config:GetSetting('DoCureAA') or Config:GetSetting('DoCureSpells') end,
-        IsRezing = function() return Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0 end,
+        IsRezing = function()
+            local rezAction = Casting.CanUseAA("Blessing of Resurrection") or mq.TLO.FindItem("=Water Sprinkler of Nem Ankh")() or Core.GetResolvedActionMapItem('RezStaff')
+            return ((Core.GetResolvedActionMapItem('RezSpell') or rezAction) and Targeting.GetXTHaterCount() == 0) or (Config:GetSetting('DoBattleRez') and rezAction)
+        end,
     },
     ['Modes']             = {
         'Heal',
@@ -371,8 +374,8 @@ local _ClassConfig = {
     ['Helpers']           = {
         DoRez = function(self, corpseId)
             local rezAction = false
-            local rezSpell = self.ResolvedActionMap['RezSpell']
-            local rezStaff = self.ResolvedActionMap['RezStaff']
+            local rezSpell = Core.GetResolvedActionMapItem('RezSpell')
+            local rezStaff = Core.GetResolvedActionMapItem('RezStaff')
             local staffReady = mq.TLO.Me.ItemReady(rezStaff)()
             local okayToRez = Casting.OkayToRez(corpseId)
             local combatState = mq.TLO.Me.CombatState():lower() or "unknown"
@@ -406,7 +409,7 @@ local _ClassConfig = {
                 elseif not Casting.CanUseAA("Blessing of Resurrection") and (combatState == "active" or combatState == "resting") then
                     -- ^ if we have BoR, just wait for it, rather than taking the time to memorize a spell
                     if Casting.SpellReady(rezSpell, true) then
-                        rezAction = okayToRez and Casting.UseSpell(rezSpell, corpseId, true, true)
+                        rezAction = okayToRez and Casting.UseSpell(rezSpell.RankName(), corpseId, true, true)
                     end
                 end
             end

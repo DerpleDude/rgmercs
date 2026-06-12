@@ -13,7 +13,10 @@ local _ClassConfig = {
     ['ModeChecks']        = {
         IsHealing = function() return true end,
         IsCuring = function() return Config:GetSetting('DoCureAA') or Config:GetSetting('DoCureSpells') end,
-        IsRezing = function() return Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0 end,
+        IsRezing = function()
+            return (Core.GetResolvedActionMapItem('RezSpell') and Targeting.GetXTHaterCount() == 0) or
+                ((Casting.CanUseAA("Call of the Wild") or mq.TLO.FindItem("=Staff of Forbidden Rites")()) and Config:GetSetting('DoBattleRez'))
+        end,
     },
     ['Modes']             = {
         'Heal',
@@ -305,6 +308,10 @@ local _ClassConfig = {
         --     "Barkspur", -- Level 70
         -- },
         ['RezSpell'] = {
+            'Incarnate Anew', -- Level 59
+            'Resuscitate',    -- Level 49 Laz Custom
+            'Revive',         -- Level 39 Laz Custom
+            'Reanimation',    -- Level 29 Laz Custom
         },
         ['CurePoison'] = {
             -- "Eradicate Poison", -- Level 58
@@ -1032,7 +1039,7 @@ local _ClassConfig = {
                 if Casting.AAReady("Rejuvenation of Spirit") then
                     rezAction = okayToRez and Casting.UseAA("Rejuvenation of Spirit", corpseId, true, 1)
                 elseif not Casting.CanUseAA("Rejuvenation of Spirit") and Casting.SpellReady(rezSpell, true) then
-                    rezAction = okayToRez and Casting.UseSpell(rezSpell, corpseId, true, true)
+                    rezAction = okayToRez and Casting.UseSpell(rezSpell.RankName(), corpseId, true, true)
                 end
             end
 

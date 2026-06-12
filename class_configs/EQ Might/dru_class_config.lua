@@ -13,7 +13,10 @@ local _ClassConfig = {
     ['ModeChecks']        = {
         IsHealing  = function() return true end,
         IsCuring   = function() return Config:GetSetting('DoCureAA') or Config:GetSetting('DoCureSpells') end,
-        IsRezing   = function() return Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0 end,
+        IsRezing   = function()
+            local rezAction = Casting.CanUseAA("Call of the Wild") or Core.GetResolvedActionMapItem('RezStaff')
+            return ((Core.GetResolvedActionMapItem('RezSpell') or rezAction) and Targeting.GetXTHaterCount() == 0) or (Config:GetSetting('DoBattleRez') and rezAction)
+        end,
         CanCharm   = function() return true end,
         IsCharming = function() return Config:GetSetting('CharmOn') end,
     },
@@ -1057,7 +1060,7 @@ local _ClassConfig = {
         DoRez = function(self, corpseId, ownerName)
             local rezAction = false
             local rezSpell = Core.GetResolvedActionMapItem('RezSpell')
-            local rezStaff = self.ResolvedActionMap['RezStaff']
+            local rezStaff = Core.GetResolvedActionMapItem('RezStaff')
             local staffReady = mq.TLO.Me.ItemReady(rezStaff)()
             local okayToRez = Casting.OkayToRez(corpseId)
             local combatState = mq.TLO.Me.CombatState():lower() or "unknown"
@@ -1072,7 +1075,7 @@ local _ClassConfig = {
                 rezAction = okayToRez and Casting.UseItem(rezStaff, corpseId)
             elseif combatState == "active" or combatState == "resting" then
                 if Casting.SpellReady(rezSpell, true) then
-                    rezAction = okayToRez and Casting.UseSpell(rezSpell, corpseId, true, true)
+                    rezAction = okayToRez and Casting.UseSpell(rezSpell.RankName(), corpseId, true, true)
                 end
             end
 

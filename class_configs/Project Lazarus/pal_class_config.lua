@@ -15,9 +15,11 @@ return {
     ['ModeChecks']        = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
         IsHealing = function() return true end,
-        IsCuring = function() return Config:GetSetting('DoCureAA') or Config:GetSetting('DoCureSpells') end,
-        IsRezing = function() return (Config:GetSetting('DoBattleRez') and not Core.IsTanking()) or Targeting.GetXTHaterCount() == 0 end,
-        --Disabling tank battle rez is not optional to prevent settings in different areas and to avoid causing more potential deaths
+        IsCuring  = function() return Config:GetSetting('DoCureAA') or Config:GetSetting('DoCureSpells') end,
+        IsRezing  = function()
+            return (Core.GetResolvedActionMapItem('RezSpell') and Targeting.GetXTHaterCount() == 0) or
+                (Casting.CanUseAA("Gift of Resurrection") and Config:GetSetting('DoBattleRez'))
+        end,
     },
     ['Modes']             = {
         'Tank',
@@ -143,9 +145,9 @@ return {
         },
         ['UndeadProc'] = {
             --- Undead Proc Strike : does not stack with Fury Proc, will be used until Fury is available even if setting not enabled.
-            "Silvered Fury",      -- Level 67, 750pt
-            "Ward of Nife",       -- Level 62, 500pt
-            "Instrument of Nife", -- Level 26, 243pt
+            "Silvered Fury",           -- Level 67, 750pt
+            "Ward of Nife",            -- Level 62, 500pt
+            "Instrument of Nife",      -- Level 26, 243pt
         },
         ['StunTimer5'] = {             -- mq.TLO.Target.ID() == target and not mq.TLO.Spawn(target).Stunned()
             "Ancient: Force of Jeron", -- Level 70
@@ -241,16 +243,16 @@ return {
         },
         ['LightHeal'] = {
             -- ToT Light Heal
-            "Light of Piety",   -- Level 68
-            "Light of Order",   -- Level 65
-            "Light of Nife",    -- Level 63
+            "Light of Piety", -- Level 68
+            "Light of Order", -- Level 65
+            "Light of Nife",  -- Level 63
             -- "Light of Life", -- Level 52, -- Currently ST heal, not a ToT
         },
         ['LightHeal2'] = {
             -- ToT Light Heal
-            "Light of Piety",   -- Level 68
-            "Light of Order",   -- Level 65
-            "Light of Nife",    -- Level 63
+            "Light of Piety", -- Level 68
+            "Light of Order", -- Level 65
+            "Light of Nife",  -- Level 63
             -- "Light of Life", -- Level 52
         },
         -- ['Pacify'] = {
@@ -290,13 +292,20 @@ return {
             "Holyforge Discipline",   -- Level 55
         },
         ['RezSpell'] = {
+            "Resurrection",   -- Level 59
+            "Restoration",    -- Level 55
+            "Renewal",        -- Level 49
+            "Revive",         -- Level 39
+            "Reparation",     -- Level 31
+            "Reconstitution", -- Level 30
+            "Reanimation",    -- Level 22
         },
         ['PBAEStun'] = {
             "The Silent Command", -- Level 65, does damage
         },
         ['AEStun'] = {            --Targeted AE
-            "Stun Command", -- Level 57, no damage
-            "Sacred Word",  -- Level 41, does damage
+            "Stun Command",       -- Level 57, no damage
+            "Sacred Word",        -- Level 41, does damage
         },
         ['BlockDisc'] = {
             "Rampart Discipline",    -- Level 70 Laz Custom
@@ -355,7 +364,7 @@ return {
             if (Config:GetSetting('DoBattleRez') or mq.TLO.Me.CombatState():lower() ~= "combat") and Casting.AAReady("Gift of Resurrection") then
                 rezAction = okayToRez and Casting.UseAA("Gift of Resurrection", corpseId, true, 1)
             elseif not Casting.CanUseAA("Gift of Resurrection") and mq.TLO.Me.CombatState():lower() ~= "combat" and Casting.SpellReady(rezSpell, true) then
-                rezAction = okayToRez and Casting.UseSpell(rezSpell, corpseId, true, true)
+                rezAction = okayToRez and Casting.UseSpell(rezSpell.RankName(), corpseId, true, true)
             end
 
             return rezAction

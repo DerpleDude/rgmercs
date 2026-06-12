@@ -24,7 +24,7 @@ local _ClassConfig = {
     },
     ['ModeChecks']      = {
         -- necro can AA Rez
-        IsRezing   = function() return Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0 end,
+        IsRezing   = function() return Casting.CanUseAA("Convergence") and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
         CanCharm   = function() return true end,
         IsCharming = function() return (Config:GetSetting('CharmOn') and mq.TLO.Pet.ID() == 0) end,
     },
