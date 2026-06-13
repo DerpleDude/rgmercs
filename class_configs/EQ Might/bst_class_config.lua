@@ -8,7 +8,7 @@ local Logger    = require("utils.logger")
 local Targeting = require("utils.targeting")
 
 return {
-    _version              = "1.6 - EQ Might",
+    _version              = "1.7 - EQ Might",
     _author               = "Derple, Algar",
     ['Modes']             = {
         'DPS',
@@ -159,6 +159,7 @@ return {
         },
         ['PetGrowl'] = {
             "Growl of the Panther", -- Level 69
+            "Growl of the Leopard", -- Level 61
         },
         ['PetDamageProc'] = {
             "Spirit of Oroshar",      -- Level 70
@@ -353,6 +354,7 @@ return {
         {
             name = 'Growl',
             targetId = function(self) return mq.TLO.Me.Pet.ID() > 0 and { mq.TLO.Me.Pet.ID(), } or {} end,
+            load_cond = function() return Core.GetResolvedActionMapItem("PetGrowl") end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and not mq.TLO.Me.Song("Growl")()
             end,
@@ -524,7 +526,7 @@ return {
                 type = "AA",
             },
         },
-        {
+        ['Growl']          = {
             {
                 name = "PetGrowl",
                 type = "Spell",
@@ -533,7 +535,7 @@ return {
                 end,
             },
         },
-        ['DPS']       = {
+        ['DPS']            = {
             {
                 name = "PetSpell",
                 type = "Spell",
@@ -571,13 +573,6 @@ return {
                 end,
             },
             {
-                name = "PoiBite",
-                type = "Spell",
-                cond = function(self, spell, target)
-                    return Casting.OkayToNuke()
-                end,
-            },
-            {
                 name = "Icelance1",
                 type = "Spell",
                 cond = function(self, spell, target)
@@ -611,7 +606,7 @@ return {
                 end,
             },
         },
-        ['Weaves']    = {
+        ['Weaves']         = {
             {
                 name = "Roar of Thunder",
                 type = "AA",
@@ -649,7 +644,7 @@ return {
                 type = "AA",
             },
         },
-        ['GroupBuff'] = {
+        ['GroupBuff']      = {
             {
                 name = "RunSpeedBuff",
                 type = "Spell",
@@ -720,7 +715,7 @@ return {
                 end,
             },
         },
-        ['PetSummon'] = {
+        ['PetSummon']      = {
             {
                 name = "Razorclaw",
                 type = "Item",
@@ -748,7 +743,7 @@ return {
                 end,
             },
         },
-        ['Downtime']  = {
+        ['Downtime']       = {
             {
                 name = "Gelid Rending",
                 type = "AA",
@@ -761,7 +756,7 @@ return {
                 end,
             },
         },
-        ['PetBuff']   = {
+        ['PetBuff']        = {
             {
                 name = "Epic",
                 type = "Item",
@@ -830,13 +825,13 @@ return {
                     return Casting.PetBuffAACheck(aaName)
                 end,
             },
-        },
-        {
-            name = "Minionskin",
-            type = "Spell",
-            cond = function(self, spell)
-                return not mq.TLO.Me.Pet.Buff(spell.Name() or "None")()
-            end,
+            {
+                name = "Minionskin",
+                type = "Spell",
+                cond = function(self, spell)
+                    return not mq.TLO.Me.Pet.Buff(spell.Name() or "None")()
+                end,
+            },
         },
     },
     ['SpellList']         = { -- New style spell list, gemless, priority-based. Will use the first set whose conditions are met.
@@ -863,7 +858,13 @@ return {
                 },
                 { name = "PetGrowl", },
                 { name = "PetBlockSpell", },
-                { name = "PetSpell",      cond = function(self) return Config:GetSetting('KeepPetMemmed') and not mq.TLO.FindItem("=Artifact of Razorclaw")() end, },
+                {
+                    name = "PetSpell",
+                    cond = function(self)
+                        return Config:GetSetting('KeepPetMemmed') and
+                            (not Config:GetSetting('UseDonorPet') or not Core.GetResolvedActionMapItem('Razorclaw'))
+                    end,
+                },
                 --filler
                 { name = "PetHaste", },
                 { name = "PetDamageProc", },

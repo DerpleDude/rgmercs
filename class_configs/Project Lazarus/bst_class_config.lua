@@ -148,6 +148,7 @@ return {
         },
         ['PetGrowl'] = {
             "Growl of the Panther", -- Level 69
+            "Growl of the Leopard", -- Level 61
         },
         ['PetDamageProc'] = {
             "Spirit of Oroshar",      -- Level 70
@@ -325,6 +326,14 @@ return {
                 local downtime = combat_state == "Downtime" and Casting.OkayToBuff()
                 local burning = combat_state == "Combat" and Casting.BurnCheck() and not Casting.IAmFeigning()
                 return downtime or burning
+            end,
+        },
+        {
+            name = 'Growl',
+            targetId = function(self) return mq.TLO.Me.Pet.ID() > 0 and { mq.TLO.Me.Pet.ID(), } or {} end,
+            load_cond = function() return Core.GetResolvedActionMapItem("PetGrowl") end,
+            cond = function(self, combat_state)
+                return combat_state == "Combat" and not mq.TLO.Me.Song("Growl")()
             end,
         },
         {
@@ -735,6 +744,15 @@ return {
                 type = "AA",
                 cond = function(self, aaName)
                     return Casting.PetBuffAACheck(aaName)
+                end,
+            },
+        },
+        ['Growl']          = {
+            {
+                name = "PetGrowl",
+                type = "Spell",
+                cond = function(self, spell)
+                    return Casting.SelfBuffCheck(spell)
                 end,
             },
         },
