@@ -271,6 +271,9 @@ _ClassConfig      = {
         ['GroupCotH'] = {
             "Call of the Heroes", -- Level 70
         },
+        ['EpicPetOrb'] = {
+            "Summon Orb", -- Level 45
+        },
         ['Bladegusts'] = {
             "Burning Bladegusts", -- Level 69 Laz Custom
         },
@@ -440,6 +443,29 @@ _ClassConfig      = {
     },
     -- Really the meat of this class.
     ['Helpers']       = {
+        DeleteEpicOrb = function(self)
+            if mq.TLO.Cursor() and mq.TLO.Cursor.ID() > 0 then
+                Core.DoCmd("/autoinventory")
+                mq.delay(50, function() return mq.TLO.Cursor() == nil end)
+            end
+            if not mq.TLO.Cursor() then
+                Core.DoCmd("/nomodkey /itemnotify \"Orb of Mastery\" leftmouseup")
+                mq.delay(50, function() return mq.TLO.Cursor() ~= nil end)
+                if mq.TLO.Cursor() then
+                    if mq.TLO.Cursor.ID() == 28034 then
+                        Core.DoCmd("/destroy")
+                        mq.delay(50, function() return mq.TLO.Cursor() == nil end)
+                        if not mq.TLO.FindItem("28034")() then
+                            return true
+                        end
+                    else
+                        Logger.log_warning("Warning: We seem to have something else on the cursor! Do you have another item named 'Orb of Mastery'? Aborting delete.")
+                    end
+                end
+            end
+            Logger.log_warning("Warning: Mage pet orb not destroyed! An error or conflict has occured.")
+            return false
+        end,
         HandleItemSummon = function(self, itemSource, scope) --scope: "personal" or "group" summons
             if not itemSource and itemSource() then return false end
             if not scope then return false end
@@ -468,10 +494,29 @@ _ClassConfig      = {
     ['Rotations']     = {
         ['PetSummon'] = {
             {
+                name = "Orb of Mastery",
+                type = "Item",
+                load_cond = function(self) return Config:GetSetting("UseEpicPet") and mq.TLO.Me.Book("Summon Orb")() end,
+                active_cond = function(self, _) return mq.TLO.Me.Pet.ID() > 0 end,
+                cond = function(self, itemName, target)
+                    return mq.TLO.FindItem("28034")() and (mq.TLO.FindItem("28034").Charges() or 0) == 1
+                end,
+                post_activate = function(self, itemName, success)
+                    if success and mq.TLO.Me.Pet.ID() > 0 then
+                        mq.delay(50)
+                        self:SetPetHold()
+                        self.Helpers.DeleteEpicOrb(self)
+                    end
+                end,
+            },
+            {
                 name_func = function(self)
                     return string.format("%sPetSpell", self.ClassConfig.DefaultConfig.PetType.ComboOptions[Config:GetSetting('PetType')])
                 end,
                 type = "Spell",
+                load_cond = function(self)
+                    return not Config:GetSetting("UseEpicPet") or not mq.TLO.Me.Book("Summon Orb")()
+                end,
                 active_cond = function(self) return mq.TLO.Me.Pet.ID() > 0 end,
                 cond = function(self, spell)
                     return Casting.ReagentCheck(spell)
@@ -843,6 +888,28 @@ _ClassConfig      = {
                 end,
             },
             {
+                name = "EpicPetOrb",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('UseEpicPet') and mq.TLO.Me.Book("Summon Orb")() end,
+                cond = function(self, spell, target)
+                    return not mq.TLO.FindItem("28034")()
+                end,
+                post_activate = function(self, spell, success)
+                    if success then
+                        Core.SafeCallFunc("Autoinventory", self.Helpers.HandleItemSummon, self, spell, "personal")
+                    end
+                end,
+            },
+            {
+                name = "Delete Used Epic Orb",
+                type = "CustomFunc",
+                load_cond = function(self) return Config:GetSetting('UseEpicPet') and mq.TLO.Me.Book("Summon Orb")() end,
+                cond = function(self)
+                    return mq.TLO.FindItem("28034")() and (mq.TLO.FindItem("28034").Charges() or 999) == 0
+                end,
+                custom_func = function(self) return self.Helpers.DeleteEpicOrb(self) end,
+            },
+            {
                 name = "FireOrbSummon",
                 type = "Spell",
                 cond = function(self, spell)
@@ -930,6 +997,7 @@ _ClassConfig      = {
                 { name = "MagicDD", },
                 { name = "QuickMagicDD", },
                 { name = "Bladegusts", },
+                { name = "EpicPetOrb",       cond = function(self) return Config:GetSetting('UseEpicPet') and mq.TLO.Me.Book("Summon Orb")() end, },
                 { name = "PBAE1",            cond = function(self) return Core.IsModeActive("PBAE") end, },
                 { name = "PBAE2",            cond = function(self) return Core.IsModeActive("PBAE") end, },
                 { name = "MaloDebuff",       cond = function(self) return Config:GetSetting('DoMalo') and not Casting.CanUseAA("Malosinete") end, },
@@ -949,6 +1017,7 @@ _ClassConfig      = {
                 { name = "SpearNuke", },
                 { name = "ChaoticNuke", },
                 { name = "SwarmPet", },
+                { name = "EpicPetOrb",       cond = function(self) return Config:GetSetting('UseEpicPet') and mq.TLO.Me.Book("Summon Orb")() end, },
                 { name = "Bladegusts", },
                 { name = "QuickMagicDD", },
                 { name = "Myriad", },
@@ -986,13 +1055,23 @@ _ClassConfig      = {
             Header = "Pet",
             Category = "Pet Summoning",
             Index = 101,
-            Tooltip = "1 = Fire, 2 = Water, 3 = Earth, 4 = Air",
+            Tooltip = "Choose the elemental to summon when not using the epic pet.",
             Type = "Combo",
             ComboOptions = { 'Fire', 'Water', 'Earth', 'Air', },
             Default = 2,
             Min = 1,
             Max = 4,
             RequiresLoadoutChange = true,
+        },
+        ['UseEpicPet']     = {
+            DisplayName = "Summon Epic Pet",
+            Group = "Abilities",
+            Header = "Pet",
+            Category = "Pet Summoning",
+            Index = 102,
+            Tooltip = "Use your Orb of Mastery to summon the epic pet.",
+            RequiresLoadoutChange = true,
+            Default = true,
         },
         ['DoPetHealSpell'] = {
             DisplayName = "Pet Heal Spell",

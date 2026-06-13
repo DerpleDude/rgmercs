@@ -500,7 +500,7 @@ _ClassConfig      = {
                             return true
                         end
                     else
-                        Logger.Log_warning("Warning: We seem to have something else on the cursor! Do you have another item named 'Orb of Mastery'? Aborting delete.")
+                        Logger.log_warning("Warning: We seem to have something else on the cursor! Do you have another item named 'Orb of Mastery'? Aborting delete.")
                     end
                 end
             end
@@ -996,7 +996,7 @@ _ClassConfig      = {
             Header = "Pet",
             Category = "Pet Summoning",
             Index = 101,
-            Tooltip = "1 = Fire, 2 = Water, 3 = Earth, 4 = Air",
+            Tooltip = "Choose the elemental to summon when not using the epic pet.",
             Type = "Combo",
             ComboOptions = { 'Fire', 'Water', 'Earth', 'Air', },
             Default = 2,
