@@ -12,13 +12,35 @@ local Modules   = require("utils.modules")
 local Strings   = require("utils.strings")
 local Tables    = require("utils.tables")
 local Targeting = require("utils.targeting")
+local Ui        = require("utils.ui")
 require('utils.datatypes')
 
 local Module   = { _version = '2.0', _name = "Mez", _author = 'Derple', 'Algar', }
 Module.__index = Module
 setmetatable(Module, { __index = Base, })
 Module.FAQ                              = {}
-Module.CommandHandlers                  = {}
+Module.CommandHandlers                  = {
+    enablemezentry = {
+        usage = "/rgl enablemezentry \"<Name>\"",
+        about = "Enables a mez ability entry by name.",
+        handler = function(self, name)
+            local enabled = Config:GetSetting('EnabledMezEntries') or {}
+            enabled[name] = true
+            Config:SetSetting('EnabledMezEntries', enabled)
+            return true
+        end,
+    },
+    disablemezentry = {
+        usage = "/rgl disablemezentry \"<Name>\"",
+        about = "Disables a mez ability entry by name.",
+        handler = function(self, name)
+            local enabled = Config:GetSetting('EnabledMezEntries') or {}
+            enabled[name] = false
+            Config:SetSetting('EnabledMezEntries', enabled)
+            return true
+        end,
+    },
+}
 
 Module.CombatState                      = "None"
 
@@ -36,6 +58,12 @@ Module.TempSettings.LastNeedToMezTime   = 0
 Module.TempSettings.LastNeedToMezResult = false
 
 Module.DefaultConfig                    = {
+    -- per-entry on/off for the Mez ability list (flat name->bool, like EnabledRotationEntries); absent = on
+    ['EnabledMezEntries']                      = {
+        DisplayName = "EnabledMezEntries",
+        Type = "Custom",
+        Default = {},
+    },
     --General
     ['MezOn']                                  = {
         DisplayName = "Enable Mezzing",
@@ -225,6 +253,42 @@ function Module:Render()
     ImGui.NewLine()
 
     if self.ModuleLoaded then
+        -- status snapshot (display only; populated each DoMez tick)
+        local status = self.TempSettings.Status
+        local crowd = status and status.crowd or 0
+        local unmezzed = status and status.unmezzed or 0
+        local crowdColor = crowd >= Config:GetSetting('MezStartCount') and Globals.Constants.Colors.ConditionMidColor or Globals.Constants.Colors.ConditionPassColor
+        local unmezzedColor = unmezzed == 0 and Globals.Constants.Colors.ConditionPassColor or Globals.Constants.Colors.ConditionFailColor
+        if ImGui.BeginTable("MezStatus", 2, bit32.bor(ImGuiTableFlags.Borders)) then
+            ImGui.TableNextColumn(); Ui.RenderText("Proximity Count")
+            ImGui.TableNextColumn(); Ui.RenderColoredText(crowdColor, "%d", crowd)
+            ImGui.TableNextColumn(); Ui.RenderText("Unmezzed")
+            ImGui.TableNextColumn(); Ui.RenderColoredText(unmezzedColor, "%d", unmezzed)
+            ImGui.TableNextColumn(); Ui.RenderText("ST Mez")
+            ImGui.TableNextColumn(); self:RenderMezReady(Config:GetSetting('DoSTMez'), status and status.stReady)
+            ImGui.TableNextColumn(); Ui.RenderText("AE Mez")
+            ImGui.TableNextColumn(); self:RenderMezReady(Config:GetSetting('DoAEMez'), status and status.aeReady)
+            ImGui.EndTable()
+        end
+        ImGui.Separator()
+
+        -- per-entry enable/disable for the class's mez list (load_cond-filtered); rotation-only columns hidden
+        if ImGui.CollapsingHeader("Mez Abilities") then
+            ImGui.Indent()
+            local list = self:GetMezAbilities()
+            if list and #list > 0 then
+                local enabled = Config:GetSetting('EnabledMezEntries') or {}
+                local resolvedMap = {}
+                for _, entry in ipairs(list) do
+                    resolvedMap[entry.name] = Modules:ExecModule("Class", "GetResolvedActionMapItem", entry.name)
+                end
+                local _, newEnabled, changed = Ui.RenderRotationTable("MezAbilities", list, resolvedMap, 0, false, enabled, true)
+                if changed then Config:SetSetting('EnabledMezEntries', newEnabled) end
+            end
+            ImGui.Unindent()
+        end
+
+        ImGui.Separator()
         -- CCEd targets
         if ImGui.CollapsingHeader("CC Target List") then
             ImGui.Indent()
@@ -275,6 +339,15 @@ function Module:Render()
             end
             ImGui.Unindent()
         end
+    end
+end
+
+-- status-cell for a mez direction: red Disabled if the toggle's off, else green Ready / red Not Ready
+function Module:RenderMezReady(enabled, ready)
+    if not enabled then
+        Ui.RenderColoredText(Globals.Constants.Colors.ConditionFailColor, "Disabled")
+    else
+        Ui.RenderColoredText(ready and Globals.Constants.Colors.ConditionPassColor or Globals.Constants.Colors.ConditionFailColor, ready and "Ready" or "Not Ready")
     end
 end
 
@@ -367,11 +440,41 @@ function Module:EntryCast(entry, spell, mezId, useAE)
     end
 end
 
--- the active mez ability list: the class config's ['Mez'] table, or the deprecated fallback
-function Module:GetMezAbilities()
+-- per-entry user toggle (defaults on; flat name->bool map)
+function Module:EntryEnabled(entry)
+    return (Config:GetSetting('EnabledMezEntries') or {})[entry.name] ~= false
+end
+
+-- centralizes the scattered `not entry.cond or entry.cond()` checks + the per-entry enable gate (mez cond is zero-arg)
+function Module:EntryActive(entry)
+    return self:EntryEnabled(entry) and (not entry.cond or entry.cond())
+end
+
+-- keep only entries whose load_cond passes (reuses the Class module's scan-time evaluator)
+function Module:FilterLoaded(list)
+    local out = {}
+    for _, entry in ipairs(list or {}) do
+        if Modules:ExecModule("Class", "LoadConditionPass", entry) then table.insert(out, entry) end
+    end
+    return out
+end
+
+-- rebuild the load_cond-filtered mez list on rescan, so a load-gated entry drops from both the cast logic and the UI
+function Module:RebuildMezAbilities()
     local classConfig = Modules:ExecModule("Class", "GetClassConfig")
-    if classConfig and classConfig.Mez then return classConfig.Mez end
-    return self:FallbackMezAbilities()
+    local list = (classConfig and classConfig.Mez) or self:FallbackMezAbilities()
+    self.TempSettings.MezAbilities = self:FilterLoaded(list)
+end
+
+-- the active mez ability list: the class config's load_cond-filtered ['Mez'] table, or the deprecated fallback
+function Module:GetMezAbilities()
+    if not self.TempSettings.MezAbilities then self:RebuildMezAbilities() end -- lazy build covers first-load ordering
+    return self.TempSettings.MezAbilities
+end
+
+-- the Class module fires this on every rescan/mode change (ExecAll); rebuild our filtered list in lockstep with rotations
+function Module:OnCombatModeChanged()
+    self:RebuildMezAbilities()
 end
 
 -- ===== DEPRECATED FALLBACK (delete once every mez class config ships a ['Mez'] table) =====
@@ -406,7 +509,7 @@ function Module:ResolveMezSpell(wantAE)
     local list = self:GetMezAbilities()
     for pass = 1, 2 do
         for _, entry in ipairs(list) do
-            if (not entry.cond or entry.cond()) and (pass == 2 or self:EntryIsGemmed(entry)) then
+            if self:EntryActive(entry) and (pass == 2 or self:EntryIsGemmed(entry)) then
                 local spell = self:EntrySpell(entry)
                 if spell and spell() and ((self:MezDelivery(spell) ~= "single") == wantAE) then return spell end
             end
@@ -447,7 +550,7 @@ function Module:MezAttempt(mezId, useAE)
     -- first ready ability in order wins; we only wait if none are ready. A per-entry `fallbackOnly`
     -- flag could be added later if a ready lower AA (e.g. Beam) shouldn't preempt waiting for a busy spell.
     for _, entry in ipairs(self:GetMezAbilities()) do
-        if not entry.cond or entry.cond() then
+        if self:EntryActive(entry) then
             local spell = self:EntrySpell(entry)
             if spell and spell() then
                 local delivery = self:MezDelivery(spell)
@@ -465,7 +568,7 @@ function Module:MezAttempt(mezId, useAE)
                         self:EntryCast(entry, spell, mezId, useAE)
                         mq.doevents('ImmuneMez')
                         return false
-                    elseif self:EntryIsGemmed(entry) and (mq.TLO.Me.GemTimer(spell.RankName() or "")() or -1) == 0 then
+                    elseif self:EntryIsGemmed(entry) and Casting.GemReady(spell) then
                         waitForGem = true
                     end
                 end
@@ -504,14 +607,14 @@ end
 -- Is any cond-passing, enabled mez ability ready now (or gemmed and just momentarily busy)? wantAE filters delivery: true=AE, false=ST, nil=either.
 function Module:MezReady(wantAE)
     for _, entry in ipairs(self:GetMezAbilities()) do
-        if not entry.cond or entry.cond() then
+        if self:EntryActive(entry) then
             local spell = self:EntrySpell(entry)
             if spell and spell() then
                 local isAE = self:MezDelivery(spell) ~= "single"
                 local enabled = (isAE and Config:GetSetting('DoAEMez')) or (not isAE and Config:GetSetting('DoSTMez'))
                 if enabled and (wantAE == nil or isAE == wantAE) then
                     if self:EntryReady(entry, spell) then return true end
-                    if self:EntryIsGemmed(entry) and (mq.TLO.Me.GemTimer(spell.RankName() or "")() or -1) == 0 then return true end
+                    if self:EntryIsGemmed(entry) and Casting.GemReady(spell) then return true end
                 end
             end
         end
@@ -522,18 +625,24 @@ end
 function Module:AEMezCheck()
     if not Config:GetSetting('DoAEMez') then return end
     if Globals.BackOffFlag then return end
-    if not self:MezReady(true) then return end
+    if not self:MezReady(true) then
+        Logger.log_verbose("AEMezCheck - no AE mez ready, skipping")
+        return
+    end
 
     local aeMezSpell = self:GetAEMezSpell()
     if not aeMezSpell or not aeMezSpell() then return end
 
     if not aeMezSpell.AERange() or aeMezSpell.AERange() == 0 then
-        Logger.log_warn("\arWarning AE Mez Spell: %s has no AERange!", aeMezSpell.RankName.Name())
+        Logger.log_warn("\arWarning AE Mez Spell: %s has no AERange!", aeMezSpell.RankName())
     end
 
     -- target the main assist's mob; the AE lands here
     Combat.FindBestAutoTarget()
-    if Globals.AutoTargetID == 0 then return end
+    if Globals.AutoTargetID == 0 then
+        Logger.log_verbose("AEMezCheck - no autotarget for the AE, skipping")
+        return
+    end
 
     -- bail if an idle (non-engaged) NPC sits in the blast we'd aggro
     if Config:GetSetting('SafeAEMez') then
@@ -542,7 +651,7 @@ function Module:AEMezCheck()
             -- point-blank AE lands on us; range isn't reliably exposed, so check MezRadius around self
             local radius = Config:GetSetting('MezRadius')
             total = mq.TLO.SpawnCount(string.format("npc radius %d targetable", radius))()
-            engaged = mq.TLO.SpawnCount(string.format("npc radius %d %s", radius, self.Constants.self.Constants.MezSpawnFilter))()
+            engaged = mq.TLO.SpawnCount(string.format("npc radius %d %s", radius, self.Constants.MezSpawnFilter))()
         else
             -- targeted / directional AE lands on the autotarget
             local center = mq.TLO.Spawn(Globals.AutoTargetID)
@@ -604,20 +713,20 @@ function Module:IsValidMezTarget(mobId)
     local spawn = mq.TLO.Spawn(mobId)
 
     if self:IsPlayerPet(spawn) then
-        Logger.log_debug("\ayUpdateMezList: Skipping Mob ID: %d Name: %s Level: %d as it is a player's pet.",
+        Logger.log_super_verbose("\ayUpdateMezList: Skipping Mob ID: %d Name: %s Level: %d as it is a player's pet.",
             spawn.ID(), spawn.CleanName(), spawn.Level() or 0)
         return false
     end
 
     -- a charm pet in recovery (broken, being re-charmed) is protected; don't mez it out from under the charmer
     if Globals.CharmedPetIDs:contains(mobId) then
-        Logger.log_debug("\ayUpdateMezList: Skipping Mob ID: %d - charm pet in recovery.", mobId)
+        Logger.log_super_verbose("\ayUpdateMezList: Skipping Mob ID: %d - charm pet in recovery.", mobId)
         return false
     end
 
     -- Is the mob ID in our mez immune list? If so, skip.
     if self:IsMezImmune(mobId) then
-        Logger.log_debug("\ayUpdateMezList: Skipping Mob ID: %d Name: %s Level: %d as it is in our immune list.",
+        Logger.log_super_verbose("\ayUpdateMezList: Skipping Mob ID: %d Name: %s Level: %d as it is in our immune list.",
             spawn.ID(), spawn.CleanName(), spawn.Level() or 0)
         return false
     end
@@ -632,19 +741,19 @@ function Module:IsValidMezTarget(mobId)
     end
 
     if spawn and not spawn.LineOfSight() then
-        Logger.log_debug("\ayUpdateMezList: Skipping Mob ID: %d Name: %s Level: %d - No LOS.", spawn.ID(),
+        Logger.log_super_verbose("\ayUpdateMezList: Skipping Mob ID: %d Name: %s Level: %d - No LOS.", spawn.ID(),
             spawn.CleanName(), spawn.Level() or 0)
         return false
     end
 
     if (spawn.PctHPs() or 0) < Config:GetSetting('MezStopHPs') then
-        Logger.log_debug("\ayUpdateMezList: Skipping Mob ID: %d Name: %s Level: %d - HPs too low.", spawn.ID(),
+        Logger.log_super_verbose("\ayUpdateMezList: Skipping Mob ID: %d Name: %s Level: %d - HPs too low.", spawn.ID(),
             spawn.CleanName(), spawn.Level() or 0)
         return false
     end
 
     if (spawn.Distance() or 999) > Config:GetSetting('MezRadius') then
-        Logger.log_debug("\ayUpdateMezList: Skipping Mob ID: %d Name: %s Level: %d - Out of Mez Radius",
+        Logger.log_super_verbose("\ayUpdateMezList: Skipping Mob ID: %d Name: %s Level: %d - Out of Mez Radius",
             spawn.ID(), spawn.CleanName(), spawn.Level() or 0)
         return false
     end
@@ -655,7 +764,8 @@ end
 function Module:UpdateMezList()
     local searchTypes = { "npc", "npcpet", }
 
-    local mezSpell = self:GetMezSpell()
+    -- the scan only needs a spell for its level range; fall back to AE so disabling the ST entry doesn't stop AE mez
+    local mezSpell = self:GetMezSpell() or self:GetAEMezSpell()
 
     if not mezSpell or not mezSpell() then
         Logger.log_verbose("\ayayUpdateMezList: No mez spell - bailing!")
@@ -664,6 +774,7 @@ function Module:UpdateMezList()
 
     -- AddCCTarget tabs the target onto each mob it adds; remember the entry target so we don't leave combat/FaceTarget on a mez mob
     local restoreTargetID = mq.TLO.Target.ID()
+    local scanned, added = 0, 0
 
     for _, searchType in ipairs(searchTypes) do
         local minLevel = Config:GetSetting('MezMinLevel')
@@ -678,24 +789,27 @@ function Module:UpdateMezList()
             Config:GetSetting('MezRadius'), Config:GetSetting('MezZRadius'), minLevel, maxLevel, self.Constants.MezSpawnFilter)
 
         local mobCount = mq.TLO.SpawnCount(searchString)()
-        Logger.log_debug("\ayUpdateMezList: Search String: '\at%s\ay' -- Count :: \am%d", searchString, mobCount)
+        Logger.log_super_verbose("\ayUpdateMezList: Search String: '\at%s\ay' -- Count :: \am%d", searchString, mobCount)
         for i = 1, mobCount do
             local spawn = mq.TLO.NearestSpawn(i, searchString)
 
             if spawn and spawn() and spawn.ID() > 0 then
-                Logger.log_debug(
+                scanned = scanned + 1
+                Logger.log_super_verbose(
                     "\ayUpdateMezList: Processing MobCount %d -- ID: %d Name: %s Level: %d BodyType: %s", i, spawn.ID(),
                     spawn.CleanName(), spawn.Level(),
                     spawn.Body.Name())
 
                 if self:IsValidMezTarget(spawn.ID()) then
-                    Logger.log_debug("\agAdding to CC List: %d -- ID: %d Name: %s Level: %d BodyType: %s", i,
+                    added = added + 1
+                    Logger.log_super_verbose("\agAdding to CC List: %d -- ID: %d Name: %s Level: %d BodyType: %s", i,
                         spawn.ID(), spawn.CleanName(), spawn.Level(), spawn.Body.Name())
                     self:AddCCTarget(spawn.ID())
                 end
             end
         end
     end
+    Logger.log_debug("\ayUpdateMezList: scanned %d, added %d to CC list", scanned, added)
 
     Targeting.SetTarget(restoreTargetID, true)
     mq.doevents()
@@ -784,8 +898,16 @@ function Module:DoMez()
     self:PruneStale()
     self:UpdateTimings()
 
-    -- nothing to do below the start threshold; let any leftover mezzes wear off
     local crowd = self:CountCrowd()
+    -- snapshot for the status panel (display only); piggybacks on the crowd scan above, no extra scan
+    self.TempSettings.Status = {
+        crowd = crowd,
+        unmezzed = self:CountUnmezzed(),
+        stReady = self:MezReady(false),
+        aeReady = self:MezReady(true),
+    }
+
+    -- nothing to do below the start threshold; let any leftover mezzes wear off
     if crowd < Config:GetSetting('MezStartCount') then return end
 
     self:UpdateMezList()
@@ -803,9 +925,12 @@ function Module:DoMez()
         self:ProcessMezList()
     else
         Logger.log_verbose("DoMez() : Skipping Mez list processing: Spell(%s) Ready(%s) TableSize(%d)", mezSpell and mezSpell() or "None",
-            mezSpell and mezSpell() and Strings.BoolToColorString(mq.TLO.Me.SpellReady(mezSpell.RankName.Name())()) or "NoSpell",
+            mezSpell and mezSpell() and Strings.BoolToColorString(mq.TLO.Me.SpellReady(mezSpell.RankName())()) or "NoSpell",
             tableSize)
     end
+
+    -- refresh after the mezzing work so the panel reflects this tick's tracker, not the pre-work snapshot
+    self.TempSettings.Status.unmezzed = self:CountUnmezzed()
 end
 
 -- ms a tracked mez must still have left to count as solidly locked (cast time + refresh lead)
@@ -844,17 +969,18 @@ end
 
 -- True when an engaged, mezzable mob in range isn't solidly locked yet (scans live, so fresh adds count); gate DPS/Burn rotations on Core.OkayToNotMez().
 function Module:NeedToMez()
-    -- throttled to ever 250ms to avoid excessive checks each rotation
+    -- throttled to every 250ms to avoid excessive checks each rotation
     if Globals.GetTimeMS() - self.TempSettings.LastNeedToMezTime < 250 then
         return self.TempSettings.LastNeedToMezResult
     end
+    self.TempSettings.LastNeedToMezTime = Globals.GetTimeMS()
 
-    local result = false
-    if self:MezReady() then -- nothing castable now (disabled or on cooldown) → don't hold DPS, and skip the scan
+    local ready = self:MezReady()
+    local crowd, anyUnmezzed = 0, false
+    if ready then -- nothing castable now (disabled or on cooldown) skips the scan, so DPS isn't held
         local castTime = self:MezRefreshThreshold()
         local radius = Config:GetSetting('MezRadius')
         local zradius = Config:GetSetting('MezZRadius')
-        local crowd, anyUnmezzed = 0, false
         for _, searchType in ipairs({ "npc", "npcpet", }) do
             local search = string.format("%s radius %d zradius %d %s", searchType, radius, zradius, self.Constants.MezSpawnFilter)
             local matches = mq.TLO.SpawnCount(search)()
@@ -870,10 +996,14 @@ function Module:NeedToMez()
                 end
             end
         end
-        result = crowd >= Config:GetSetting('MezStartCount') and anyUnmezzed
     end
+    local crowdOk = crowd >= Config:GetSetting('MezStartCount')
+    local result = ready and crowdOk and anyUnmezzed
 
-    self.TempSettings.LastNeedToMezTime = Globals.GetTimeMS()
+    Logger.log_verbose("NeedToMez - MezReady(%s) CrowdOk(%s [%d/%d]) Unmezzed(%s) => %s",
+        Strings.BoolToColorString(ready), Strings.BoolToColorString(crowdOk), crowd, Config:GetSetting('MezStartCount'),
+        Strings.BoolToColorString(anyUnmezzed), Strings.BoolToColorString(result))
+
     self.TempSettings.LastNeedToMezResult = result
     return result
 end
@@ -921,6 +1051,10 @@ function Module:GiveTime()
     self.CombatState = combat_state
 
     self:DoMez()
+end
+
+function Module:OnZone()
+    self:ResetMezStates()
 end
 
 function Module:StopAttack()

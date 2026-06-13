@@ -19,6 +19,8 @@ mq.event("CantSee", "You cannot see your target.", function()
     Logger.log_debug("CantSee: Event Detected")
     if Globals.BackOffFlag then return end
     if Globals.PauseMain then return end
+    -- Skip if a zone change isn't reconciled yet; reused spawn IDs would nav to the wrong target.
+    if mq.TLO.Zone.ID() ~= Globals.CurZoneId or mq.TLO.Me.Instance() ~= Globals.CurInstanceId then return end
     local target = mq.TLO.Target
     local pullPulling = Modules:ExecModule("Pull", "IsPullState", "PULL_PULLING")
     local pullReturn = Modules:ExecModule("Pull", "IsPullState", "PULL_RETURN_TO_CAMP")
@@ -89,6 +91,8 @@ end)
 
 mq.event("TooClose", "Your target is too close to use a ranged weapon!", function()
     Logger.log_debug("TooClose: Event Detected")
+    -- Skip if a zone change isn't reconciled yet; reused spawn IDs would nav to the wrong target.
+    if mq.TLO.Zone.ID() ~= Globals.CurZoneId or mq.TLO.Me.Instance() ~= Globals.CurInstanceId then return end
     -- Check if we're in the middle of a pull and use a backup.
     if Config:GetSetting('DoPull') and Modules:ExecModule("Pull", "IsPullState", "PULL_PULLING") then
         Logger.log_debug("TooClose: Pull Mode Detected.")
@@ -144,6 +148,8 @@ local function tooFarHandler()
     Logger.log_debug("TooFar: Event Detected")
     if Globals.BackOffFlag then return end
     if Globals.PauseMain then return end
+    -- Skip if a zone change isn't reconciled yet; reused spawn IDs would nav to the wrong target.
+    if mq.TLO.Zone.ID() ~= Globals.CurZoneId or mq.TLO.Me.Instance() ~= Globals.CurInstanceId then return end
 
     local target = mq.TLO.Target
     local pullPulling = Modules:ExecModule("Pull", "IsPullState", "PULL_PULLING")

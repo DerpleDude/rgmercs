@@ -595,7 +595,7 @@ function Module:CharmReady()
     if not self:EntryResolves(entry, spell) then return false end
     ---@cast spell MQSpell
     if self:EntryReady(entry, spell) then return true end
-    if self:EntryIsGemmed(entry) and (mq.TLO.Me.GemTimer(spell.RankName() or "")() or -1) == 0 then return true end
+    if self:EntryIsGemmed(entry) and Casting.GemReady(spell) then return true end
     return false
 end
 
@@ -631,7 +631,7 @@ function Module:CharmAttempt(charmId)
         mq.doevents('ImmuneCharm2')
         mq.doevents('LvlHighCharm')
         return false
-    elseif self:EntryIsGemmed(entry) and (mq.TLO.Me.GemTimer(spell.RankName() or "")() or -1) == 0 then
+    elseif self:EntryIsGemmed(entry) and Casting.GemReady(spell) then
         return true
     end
     return false
@@ -658,7 +658,7 @@ function Module:RunPreCharm(charmId)
         Logger.log_super_verbose("\ayRunPreCharm :: %s en=%s res=%s cond=%s", entry.name or "?", tostring(enabled), tostring(resolves), tostring(condPass))
         if enabled and condPass then
             ---@cast spell MQSpell
-            if not self:EntryReady(entry, spell) and self:EntryIsGemmed(entry) and (mq.TLO.Me.GemTimer(spell.RankName() or "")() or -1) == 0 then
+            if not self:EntryReady(entry, spell) and self:EntryIsGemmed(entry) and Casting.GemReady(spell) then
                 Logger.log_debug("\ayRunPreCharm :: %s waiting for gem", entry.name or "?")
                 Casting.WaitForReady(function() return self:EntryReady(entry, spell) end, 1500, function() return self:ShouldAbortCharmWait() end)
             end
@@ -1281,7 +1281,7 @@ function Module:Render()
                         resolvedMap[entry.name] = Modules:ExecModule("Class", "GetResolvedActionMapItem", entry.name)
                     end
                     enabled[listName] = enabled[listName] or {}
-                    local _, newEnabled, entriesChanged = Ui.RenderRotationTable("Charm" .. listName, list, resolvedMap, 0, false, enabled[listName])
+                    local _, newEnabled, entriesChanged = Ui.RenderRotationTable("Charm" .. listName, list, resolvedMap, 0, false, enabled[listName], true)
                     enabled[listName] = newEnabled
                     if entriesChanged then changed = true end
                 end

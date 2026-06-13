@@ -1591,6 +1591,13 @@ function Casting.SongReady(songSpell, skipGemTimer)
     return Casting.CastCheck(songSpell)
 end
 
+--- True if the spell's gem is off its own recast timer (it may still be briefly blocked by the global cooldown).
+---@param spell MQSpell
+---@return boolean
+function Casting.GemReady(spell)
+    return (mq.TLO.Me.GemTimer(spell.RankName() or "")() or -1) == 0
+end
+
 --- A bard may fire an instant action while a song's cast window is open.
 ---@param castTimeMs number?
 ---@return boolean
