@@ -230,7 +230,6 @@ local _ClassConfig = {
             "Mind Shatter", -- Level 70
         },
         ['MagicNuke'] = {
-            "Chromarcana",              -- Level 87
             "Ancient: Neurosis",        -- Level 70
             "Psychosis",                -- Level 68
             "Ancient: Chaos Madness",   -- Level 65

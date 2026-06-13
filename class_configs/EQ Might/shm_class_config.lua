@@ -162,6 +162,7 @@ local _ClassConfig = {
             "Talisman of Wunshi",          -- Level 70 - Group
             "Focus of the Seventh",        -- Level 65 - Group
             "Khura's Focusing",            -- Level 60 - Group
+            "Infusion of Spirit",          -- Level 49, Str/Dex/Sta, can use HP buff. Not sure if this is the final home for this one or not.
         },
         ['RunSpeedBuff'] = {
             -- Run Speed Buff
@@ -207,7 +208,9 @@ local _ClassConfig = {
         ['LowLvlStrBuff'] = {
             -- Low Level Strength Buff -- Below 68 these are only worthwhile on non-live, defiant stat caps too easily. Even then arguable.
             "Talisman of the Diaku", -- Level 64
-            "Infusion of Spirit",    -- Level 49, Str/Dex/Sta, can use HP buff
+            "Talisman of the Rhino", -- Level 58
+            "Maniacal Strength",     -- Level 57
+            "Strength",              -- Level 46
             "Tumultuous Strength",   -- Level 35
             "Raging Strength",       -- Level 28
             "Spirit Strength",       -- Level 18, Can't see this as being very worth but keeping for now.

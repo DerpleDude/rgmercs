@@ -1636,7 +1636,7 @@ function Module:PositionPet()
         -- pet is lagging behind, summon it
         ability = petPos.SummonAA and petPos.SummonAA()
         Logger.log_verbose("PositionPet: Pet is far away and we are in combat, %s is needed.", ability)
-    else
+    elseif Config:GetSetting('RepositionPet') then
         if pet.Combat() and pet.Target.ID() == targetId then
             -- check if pet needs reposition
             local target = mq.TLO.Spawn(targetId)
@@ -1796,7 +1796,7 @@ function Module:GiveTime()
         end
     end
 
-    if combat_state == "Combat" and Config:GetSetting('DoPetPositioningBeta') then
+    if combat_state == "Combat" then
         self:PositionPet()
     end
 

@@ -1159,14 +1159,14 @@ Config.DefaultConfig                                     = {
         Answer =
         "If you enable Manual Mode, it will disable all automated movement options for your character, but will still allow it to use abilities as normal. This is ideal for those who want to control their character's positioning manually, but still want to benefit from the spell and item usage of RGMercs. Please note that enabling this will also disable some features that rely on movement automation, such as handling 'cannot see target' messages or auto-facing the target in combat.",
     },
-    ['DoPetPositioningBeta']       = {
+    ['RepositionPet']              = {
         DisplayName = "Reposition Pet",
         Group = "Combat",
         Header = "Positioning",
         Category = "General Positioning",
         Index = 10,
-        Tooltip = "Use summon and move AA to reposition your pet to avoid ripostes.",
-        Default = false, --flip to true after beta period
+        Tooltip = "Use summon and move AA to reposition your pet to avoid ripostes. (We will always summon a far out-of-range pet during combat if able).",
+        Default = false,
     },
 
     -- Positioning/Tank
