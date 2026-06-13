@@ -83,6 +83,13 @@ local _ClassConfig = {
             "Legendary Dagger of Death",
             "Dagger of Death",
         },
+        ['RedDemon'] = {
+            "Artifact of the Greater Red Demon",
+            "Artifact of the Red Demon",
+        },
+        ['Thulik'] = {
+            "Artifact of Thulik",
+        },
     },
     ['AbilitySets']     = {
         ['SelfHPBuff'] = {
@@ -592,9 +599,21 @@ local _ClassConfig = {
                 end,
             },
             {
-                name = "Artifact of the Red Demon",
+                name = "RedDemon",
                 type = "Item",
-                load_cond = function(self) return Config:GetSetting("UseDonorPet") and mq.TLO.FindItem("=Artifact of the Red Demon")() end,
+                load_cond = function(self) return Config:GetSetting("DonorPetChoice") == 2 and Core.GetResolvedActionMapItem('RedDemon') end,
+                cond = function(self, _) return mq.TLO.Me.Pet.ID() == 0 end,
+                post_activate = function(self, spell, success)
+                    if success and mq.TLO.Me.Pet.ID() > 0 then
+                        mq.delay(50) -- slight delay to prevent chat bug with command issue
+                        self:SetPetHold()
+                    end
+                end,
+            },
+            {
+                name = "Thulik",
+                type = "Item",
+                load_cond = function(self) return Config:GetSetting("DonorPetChoice") == 3 and Core.GetResolvedActionMapItem('Thulik') end,
                 cond = function(self, _) return mq.TLO.Me.Pet.ID() == 0 end,
                 post_activate = function(self, spell, success)
                     if success and mq.TLO.Me.Pet.ID() > 0 then
@@ -862,10 +881,22 @@ local _ClassConfig = {
         },
         ['PetSummon']       = {
             {
-                name = "Artifact of the Red Demon",
+                name = "RedDemon",
                 type = "Item",
-                load_cond = function(self) return Config:GetSetting("UseDonorPet") and mq.TLO.FindItem("=Artifact of the Red Demon")() end,
+                load_cond = function(self) return Config:GetSetting("DonorPetChoice") == 2 and Core.GetResolvedActionMapItem('RedDemon') end,
                 active_cond = function(self, _) return mq.TLO.Me.Pet.ID() > 0 end,
+                post_activate = function(self, spell, success)
+                    if success and mq.TLO.Me.Pet.ID() > 0 then
+                        mq.delay(50) -- slight delay to prevent chat bug with command issue
+                        self:SetPetHold()
+                    end
+                end,
+            },
+            {
+                name = "Thulik",
+                type = "Item",
+                load_cond = function(self) return Config:GetSetting("DonorPetChoice") == 3 and Core.GetResolvedActionMapItem('Thulik') end,
+                cond = function(self, _) return mq.TLO.Me.Pet.ID() == 0 end,
                 post_activate = function(self, spell, success)
                     if success and mq.TLO.Me.Pet.ID() > 0 then
                         mq.delay(50) -- slight delay to prevent chat bug with command issue
@@ -878,7 +909,11 @@ local _ClassConfig = {
                     return string.format("%sPetSpell", self.ClassConfig.DefaultConfig.PetType.ComboOptions[Config:GetSetting('PetType')])
                 end,
                 type = "Spell",
-                load_cond = function(self) return not Config:GetSetting("UseDonorPet") or not mq.TLO.FindItem("=Artifact of the Red Demon")() end,
+                load_cond = function(self)
+                    local settingValue = Config:GetSetting('DonorPetChoice')
+                    return settingValue == 1 or (settingValue == 2 and not Core.GetResolvedActionMapItem('RedDemon')) or
+                        (settingValue == 3 and not Core.GetResolvedActionMapItem('Thulik'))
+                end,
                 active_cond = function(self) return mq.TLO.Me.Pet.ID() > 0 end,
                 cond = function(self, spell)
                     return Casting.ReagentCheck(spell)
@@ -1004,15 +1039,19 @@ local _ClassConfig = {
             Max = 2,
             RequiresLoadoutChange = true,
         },
-        ['UseDonorPet']       = {
-            DisplayName = "Summon Red Demon",
+        ['DonorPetChoice']    = {
+            DisplayName = "Donor Pet Choice",
             Group = "Abilities",
             Header = "Pet",
             Category = "Pet Summoning",
             Index = 102,
-            Tooltip = "Use your Artifact of the Red Demon to summon the donor rogue skeleton pet.",
-            RequiresLoadoutChange = true, -- this is a load condition
-            Default = true,
+            Tooltip = "Select the donor pet to use instead of the normal pet (if any).",
+            Type = "Combo",
+            ComboOptions = { 'Disabled', 'Red Demon', 'Thulik', },
+            Default = 1,
+            Min = 1,
+            Max = 3,
+            RequiresLoadoutChange = true,
         },
         ['DoPetHealSpell']    = {
             DisplayName = "Pet Heal Spell",

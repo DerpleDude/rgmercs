@@ -56,6 +56,10 @@ return {
             "Beast Tamer's Jerkin",
             "Savagesoul Jerkin of the Wilds",
         },
+        ['Razorclaw'] = {
+            "Artifact of Greater Razorclaw",
+            "Artifact of Razorclaw",
+        },
     },
     ['AbilitySets']       = { --TODO/Under Consideration: Add AoE Roar line, add rotation entry (tie it to Do AoE setting), swap in instead of lance 2, especially since the last lance2 is level 112
         ['SwarmPet'] = {
@@ -595,9 +599,9 @@ return {
                 end,
             },
             {
-                name = "Artifact of Razorclaw",
+                name = "Razorclaw",
                 type = "Item",
-                load_cond = function(self) return Config:GetSetting("UseDonorPet") and mq.TLO.FindItem("=Artifact of Razorclaw")() end,
+                load_cond = function(self) return Config:GetSetting("UseDonorPet") and Core.GetResolvedActionMapItem('Razorclaw') end,
                 cond = function(self, _) return mq.TLO.Me.Pet.ID() == 0 end,
                 post_activate = function(self, spell, success)
                     if success and mq.TLO.Me.Pet.ID() > 0 then
@@ -718,9 +722,9 @@ return {
         },
         ['PetSummon'] = {
             {
-                name = "Artifact of Razorclaw",
+                name = "Razorclaw",
                 type = "Item",
-                load_cond = function(self) return Config:GetSetting("UseDonorPet") and mq.TLO.FindItem("=Artifact of Razorclaw")() end,
+                load_cond = function(self) return Config:GetSetting("UseDonorPet") and Core.GetResolvedActionMapItem('Razorclaw') end,
                 active_cond = function(self, _) return mq.TLO.Me.Pet.ID() > 0 end,
                 post_activate = function(self, spell, success)
                     if success and mq.TLO.Me.Pet.ID() > 0 then
@@ -732,7 +736,7 @@ return {
             {
                 name = "PetSpell",
                 type = "Spell",
-                load_cond = function(self) return not Config:GetSetting("UseDonorPet") or not mq.TLO.FindItem("=Artifact of Razorclaw")() end,
+                load_cond = function(self) return not Config:GetSetting("UseDonorPet") or not Core.GetResolvedActionMapItem('Razorclaw') end,
                 cond = function(self, spell)
                     return mq.TLO.Me.Pet.ID() == 0
                 end,

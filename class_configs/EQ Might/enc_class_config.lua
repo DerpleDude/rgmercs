@@ -60,6 +60,11 @@ local _ClassConfig = {
             "Mindreaver's Vest of Coercion",
             "Charmweaver's Robe",
         },
+        ['Asterion'] = {
+            "Artifact of Greater Asterion",
+            "Artifact of Asterion",
+            "Lesser Artifact of Asterion",
+        },
     },
     ['AbilitySets']   = {
         --Commented any currently unused spell lines
@@ -630,9 +635,9 @@ local _ClassConfig = {
         },
         ['PetSummon']     = {
             {
-                name = "Artifact of Asterion",
+                name = "Asterion",
                 type = "Item",
-                load_cond = function(self) return Config:GetSetting("UseDonorPet") and mq.TLO.FindItem("=Artifact of Asterion")() end,
+                load_cond = function(self) return Config:GetSetting("UseDonorPet") and Core.GetResolvedActionMapItem('Asterion') end,
                 active_cond = function(self, _) return mq.TLO.Me.Pet.ID() > 0 end,
                 post_activate = function(self, spell, success)
                     if success and mq.TLO.Me.Pet.ID() > 0 then
@@ -644,9 +649,7 @@ local _ClassConfig = {
             {
                 name = "PetSpell",
                 type = "Spell",
-                load_cond = function(self)
-                    return not Config:GetSetting("UseDonorPet") or not mq.TLO.FindItem("=Artifact of Asterion")()
-                end,
+                load_cond = function(self) return not Config:GetSetting("UseDonorPet") or not Core.GetResolvedActionMapItem('Asterion') end,
                 active_cond = function(self, _) return mq.TLO.Me.Pet.ID() > 0 end,
                 post_activate = function(self, spell, success)
                     if success and mq.TLO.Me.Pet.ID() > 0 then

@@ -78,6 +78,11 @@ _ClassConfig      = {
             "Glyphwielder's Tunic of the Summoner",
             "Runemaster's Robe",
         },
+        ['Asterion'] = {
+            "Artifact of Greater Asterion",
+            "Artifact of Asterion",
+            "Lesser Artifact of Asterion",
+        },
     },
     ['AbilitySets']   = {
         --- Nukes
@@ -529,9 +534,9 @@ _ClassConfig      = {
     ['Rotations']     = {
         ['PetSummon'] = {
             {
-                name = "Artifact of Asterion",
+                name = "Asterion",
                 type = "Item",
-                load_cond = function(self) return Config:GetSetting("UseDonorPet") and mq.TLO.FindItem("=Artifact of Asterion")() end,
+                load_cond = function(self) return Config:GetSetting("UseDonorPet") and Core.GetResolvedActionMapItem('Asterion') end,
                 active_cond = function(self, _) return mq.TLO.Me.Pet.ID() > 0 end,
                 post_activate = function(self, spell, success)
                     if success and mq.TLO.Me.Pet.ID() > 0 then
@@ -576,7 +581,7 @@ _ClassConfig      = {
                 active_cond = function(self) return mq.TLO.Me.Pet.ID() > 0 end,
                 load_cond = function(self)
                     return (not Config:GetSetting("UseEpicPet") or not mq.TLO.Me.Book("Summon Orb")()) and
-                        (not Config:GetSetting("UseDonorPet") or not mq.TLO.FindItem("=Artifact of Asterion")())
+                        (not Config:GetSetting("UseDonorPet") or not Core.GetResolvedActionMapItem('Asterion'))
                 end,
                 cond = function(self, spell)
                     return Casting.ReagentCheck(spell)
@@ -584,7 +589,6 @@ _ClassConfig      = {
                 post_activate = function(self, spell, success)
                     local pet = mq.TLO.Me.Pet
                     if success and pet.ID() > 0 then
-                        Comms.PrintGroupMessage("Summoned a new %d %s pet named %s using '%s'!", pet.Level(), pet.Class.Name(), pet.CleanName(), spell.RankName())
                         mq.delay(50) -- slight delay to prevent chat bug with command issue
                         self:SetPetHold()
                     end
