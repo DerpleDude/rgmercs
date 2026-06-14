@@ -823,29 +823,27 @@ local _ClassConfig = {
         end,
     },
     ['HealRotationOrder'] = {
-        ['HealRotationOrder'] = {
-            {
-                name = 'GroupHeal',
-                state = 1,
-                steps = 1,
-                cond = function(self, target) return Targeting.GroupHealsNeeded() end,
-            },
-            {
-                name = 'BigHeal',
-                state = 1,
-                steps = 1,
-                cond = function(self, target)
-                    return Targeting.BigHealsNeeded(target) and not Targeting.TargetIsType("pet", target)
-                end,
-            },
-            {
-                name = 'MainHeal',
-                state = 1,
-                steps = 1,
-                cond = function(self, target)
-                    return Targeting.MainHealsNeeded(target)
-                end,
-            },
+        {
+            name = 'GroupHeal',
+            state = 1,
+            steps = 1,
+            cond = function(self, target) return Targeting.GroupHealsNeeded() end,
+        },
+        {
+            name = 'BigHeal',
+            state = 1,
+            steps = 1,
+            cond = function(self, target)
+                return Targeting.BigHealsNeeded(target) and not Targeting.TargetIsType("pet", target)
+            end,
+        },
+        {
+            name = 'MainHeal',
+            state = 1,
+            steps = 1,
+            cond = function(self, target)
+                return Targeting.MainHealsNeeded(target)
+            end,
         },
     },
     ['HealRotations']     = {
