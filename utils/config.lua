@@ -1042,13 +1042,14 @@ Config.DefaultConfig                                     = {
         Header = "Positioning",
         Category = "General Positioning",
         Index = 2,
-        Tooltip = "Custom arguments for /stick command. Leave blank for default (varies on class).",
+        Tooltip = "Custom arguments for /stick command, used in melee or ranged combat. Leave blank for default (varies on class).",
         Default = "",
         ConfigType = "Advanced",
         FAQ = "What are the default stick settings?",
         Answer = "   If the Stick How entry is left blank, we will use default stick settings as follows:\n" ..
             "If MA: < 10 moveback* uw >\n" ..
-            "Others: < 10** behindonce moveback uw >\n\n" ..
+            "Others: < 10** behindonce moveback uw >\n" ..
+            "Ranged (Use Ranged Stick): < <bowrangesetting> moveback uw >\n\n" ..
             "* - Optional moveback flag (if 'Moveback As Tank' is enabled).\n" ..
             "** - On larger targets this value becomes 20.",
     },

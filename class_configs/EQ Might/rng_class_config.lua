@@ -6,7 +6,6 @@ local Core      = require("utils.core")
 local Globals   = require('utils.globals')
 local Logger    = require("utils.logger")
 local Movement  = require("utils.movement")
-local Strings   = require("utils.strings")
 local Targeting = require("utils.targeting")
 
 return {
@@ -282,10 +281,9 @@ return {
             end,
         },
         {
-            name = 'Circle Nav',
+            name = 'Ranged Positioning',
             state = 1,
             steps = 1,
-            load_cond = function(self) return Config:GetSetting('NavCircle') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and not Config:GetSetting('DoMelee')
@@ -354,37 +352,68 @@ return {
 
             return false
         end,
-        combatNav = function(forceMove)
-            if not Config:GetSetting('DoMelee') then
-                if not mq.TLO.Me.AutoFire() then
-                    Core.DoCmd('/squelch face fast')
-                    Core.DoCmd('/autofire on')
+        rangedNav = function(reason)
+            if Config:GetSetting('DoMelee') then return end
+            if (Globals.AutoTargetID or 0) == 0 then return end
+
+            local bowRange = Config:GetSetting('BowRange')
+
+            if reason then
+                Logger.log_verbose("rangedNav: reason=%s dist=%d bowRange=%d stick=%s LoS=%s", reason,
+                    Targeting.GetTargetDistance(), bowRange, Config:GetSetting('UseRangedStick'), mq.TLO.Target.LineOfSight())
+            end
+
+            if not mq.TLO.Me.Moving() then
+                Core.DoCmd('/squelch /face fast')
+            end
+
+            if not mq.TLO.Me.AutoFire() then
+                Core.DoCmd('/autofire on')
+            end
+
+            -- No line of sight: sweep laterally around the target for a spot with a real (game) clear shot.
+            if reason == "cantsee" then
+                if not Movement:NavAroundCircle(mq.TLO.Target, bowRange) then
+                    -- Nav can't path (off the mesh): stick toward the target to walk back onto it.
+                    Logger.log_warn("Ranged nav: no navigable line-of-sight spot (off mesh?), falling back to a stick.")
+                    Movement:DoStickCmd("%d id %d moveback uw", bowRange, Globals.AutoTargetID)
+                    if not Config:GetSetting('UseRangedStick') then
+                        -- Loose holds nothing: run the stick only until we regain line of sight, then drop it.
+                        mq.delay(100, function() return mq.TLO.Stick.Active() end)
+                        mq.delay(3000, function() return mq.TLO.Target.ID() == 0 or mq.TLO.Target.LineOfSight() end)
+                        Movement:DoStickCmd("off")
+                        Movement:ClearLastStickTimer()
+                    end
                 end
+                return
+            end
 
-                local targetDistance = Targeting.GetTargetDistance()
-                local chaseDistance = Config:GetSetting('ChaseDistance')
-                local useChaseDistance = chaseDistance > 75 and chaseDistance < 200
-                local tooClose = targetDistance < 30
-                --- the distance of 200 could be further refined by checking actual distances based off range + ammo distance if desired.
-                local tooFar = useChaseDistance and targetDistance > chaseDistance or targetDistance > 75
-
-                Logger.log_verbose("Custom Ranger combatNav engaged. TargetDistance: %d, LOS:%s, ChaseDistance: %d, forceMove: %s, tooClose: %s, tooFar: %s", targetDistance,
-                    mq.TLO.Target.LineOfSight(), chaseDistance, Strings.BoolToColorString(forceMove), Strings.BoolToColorString(tooClose), Strings.BoolToColorString(tooFar))
-                if Config:GetSetting('NavCircle') then
-                    if tooClose or tooFar or forceMove then
-                        Movement:NavAroundCircle(mq.TLO.Target, Config:GetSetting('BowNavDistance'))
+            if Config:GetSetting('UseRangedStick') then -- Use Ranged Stick: hold bow range with a stick.
+                if reason == "toofar" or Targeting.GetTargetDistance() > bowRange + 10 then
+                    if not mq.TLO.Navigation.Active() then
+                        Movement:DoNav(true, "id %d distance=%d lineofsight=on", Globals.AutoTargetID, bowRange)
+                        Core.DoCmd('/squelch /face fast')
                     end
-                elseif tooClose then
-                    if chaseDistance < 10 then
-                        Logger.log_warning(
-                            "Custom Ranger combatNav: \arWarning! \awChase distance is %d. \ayThis may interfere with ranged combat, depending on chase target movement!",
-                            chaseDistance)
-                    end
-                    Core.DoCmd('/squelch face fast')
-                    Movement:DoStickCmd("%d moveback", Config:GetSetting('BowNavDistance'))
-                elseif tooFar or forceMove then
-                    Movement:DoNav(true, "id %d distance=%d lineofsight=on", Globals.AutoTargetID, Config:GetSetting('BowNavDistance'))
+                elseif (mq.TLO.Stick.StickTarget() or 0) ~= Globals.AutoTargetID or (mq.TLO.Stick.Status() or "off"):lower() == "off" then
                     Core.DoCmd('/squelch /face fast')
+                    local stickHow = Config:GetSetting('StickHow') or ""
+                    if #stickHow > 0 then
+                        Movement:DoStickCmd("%s", stickHow)
+                    else
+                        Movement:DoStickCmd("%d id %d moveback uw", bowRange, Globals.AutoTargetID)
+                    end
+                end
+            else -- Loose: react to the game's own range messages, one-shot, no held position.
+                if reason == "toofar" then
+                    Movement:DoNav(true, "id %d distance=%d lineofsight=on", Globals.AutoTargetID, bowRange)
+                    Core.DoCmd('/squelch /face fast')
+                elseif reason == "tooclose" then
+                    Core.DoCmd('/squelch /face fast')
+                    Movement:DoStickCmd("%d moveback uw", bowRange)
+                    mq.delay(100, function() return mq.TLO.Stick.Active() end)
+                    mq.delay(500, function() return not mq.TLO.Me.Moving() end)
+                    Movement:DoStickCmd("off")
+                    Movement:ClearLastStickTimer()
                 end
             end
         end,
@@ -392,16 +421,16 @@ return {
 
     },
     ['Rotations']         = {
-        ['Circle Nav'] = {
+        ['Ranged Positioning'] = {
             {
-                name = "Ranged Mode",
+                name = "Ranged Nav",
                 type = "CustomFunc",
                 custom_func = function(self)
-                    Core.SafeCallFunc("Ranger Custom Nav", self.Helpers.combatNav, false)
+                    Core.SafeCallFunc("Ranger Ranged Nav", self.Helpers.rangedNav)
                 end,
             },
         },
-        ['Burn']       = {
+        ['Burn']               = {
             {
                 name = "Auspice of the Hunter",
                 type = "AA",
@@ -489,7 +518,7 @@ return {
                 type = "AA",
             },
         },
-        ['Snare']      = {
+        ['Snare']              = {
             {
                 name = "Entrap",
                 type = "AA",
@@ -507,7 +536,7 @@ return {
                 end,
             },
         },
-        ['Emergency']  = {
+        ['Emergency']          = {
             {
                 name = "Cover Tracks",
                 type = "AA",
@@ -538,7 +567,7 @@ return {
                 end,
             },
         },
-        ['Combat']     = {
+        ['Combat']             = {
             {
                 name = "Epic",
                 type = "Item",
@@ -587,7 +616,7 @@ return {
                 end,
             },
         },
-        ['Weaves']     = {
+        ['Weaves']             = {
             {
                 name = "KickDisc",
                 type = "Disc",
@@ -600,7 +629,7 @@ return {
                 type = "Ability",
             },
         },
-        ['GroupBuff']  = {
+        ['GroupBuff']          = {
             {
                 name = "PredatorBuff",
                 type = "Spell",
@@ -678,7 +707,7 @@ return {
                 end,
             },
         },
-        ['Downtime']   = {
+        ['Downtime']           = {
             {
                 name = "SelfBuff",
                 type = "Spell",
@@ -765,30 +794,47 @@ return {
         },
 
         --Archery
-        ['BowNavDistance']  = {
-            DisplayName = "Bow Nav Distance",
+        ['BowRange']        = {
+            DisplayName = "Bow Range",
             Group = "Combat",
             Header = "Positioning",
             Category = "Archery",
             Index = 101,
-            Tooltip = "The distance from your target you should nav to for ranged attacks when necessary.\n" ..
-                "If Nav Circle is enabled, the distance to circle at.",
-            Default = 30,
+            Tooltip = "The preferred distance to reposition to if we are too close/far or have no LoS (also the default range for ranged stick).",
+            Default = 15,
             Min = 10,
-            Max = 200,
+            Max = 300,
             FAQ = "Why is my ranger rubber-banding, charging back and forth or changing heading constantly?",
-            Answer = "Some terrain blocks line of sight while MQ reports that the ranger has line of sight.\n" ..
-                "Reducing Bow Nav Distance to a value near the minimum or maximum may solve for some of these (not RG-Mercs) issues, as a workaround.",
+            Answer = "Some terrain blocks LoS while MQ reports that the ranger has LoS.\n" ..
+                "While we will attempt to solve this issue, manual intervention or setting adjustment may be required (Bow Range, Ranged Stick, etc).",
         },
-        ['NavCircle']       = {
-            DisplayName = "Nav Circle",
+        ['UseRangedStick']  = {
+            DisplayName = "Use Ranged Stick",
             Group = "Combat",
             Header = "Positioning",
             Category = "Archery",
             Index = 102,
-            Tooltip = "Use Nav to Circle your target while autofiring.",
+            Tooltip = "Disabled - autofire from present position, moving only if needed (too close/far, no LoS).\n" ..
+                "Enabled - use stick while autofiring. Uses Stick How setting if set, otherwise uses '<bowrangesetting> moveback uw'",
             Default = false,
-            RequiresLoadoutChange = true, -- this is a load condition
+            Warning = function()
+                if not Config:GetSetting('UseRangedStick') then return false, "" end
+                local bowRange = Config:GetSetting('BowRange')
+                if Config:GetSetting('ChaseOn') then
+                    if Config:GetSetting('ChaseDistance') < bowRange then
+                        return true, "Warning: Chase Distance is below Bow Range - chase may fight the ranged stick hold."
+                    end
+                elseif Config:GetSetting('ReturnToCamp') then
+                    if Config:GetSetting('CampHard') then
+                        return true, "Warning: Camp Hard pulls you to camp center - the ranged stick may not hold its bow range."
+                    elseif Config:GetSetting('AutoCampRadius') < bowRange then
+                        return true, "Warning: Camp Radius is below Bow Range - camp return may fight the ranged stick hold."
+                    end
+                end
+                return false, ""
+            end,
+            FAQ = "Why is my ranger rubber-banding, charging back and forth or changing heading constantly?",
+            Answer = "Turn off Use Ranged Stick (the default), so the ranger only repositions when a shot is actually refused instead of holding position.",
         },
 
         --Buffs

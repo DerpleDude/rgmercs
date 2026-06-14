@@ -44,7 +44,11 @@ mq.event("CantSee", "You cannot see your target.", function()
             local haterCount = Targeting.GetXTHaterCount()
             if Config:GetSetting('DoAutoEngage') and not mq.TLO.Me.Moving() or haterCount > 0 then
                 local helpers = Core.GetHelpers()
-                if helpers and helpers.combatNav then
+                if helpers and helpers.rangedNav then
+                    Logger.log_debug("CantSee: \ayWe are in COMBAT and Cannot see our target - using ranged positioning!")
+                    Core.SafeCallFunc("Ranger Ranged Nav", helpers.rangedNav, "cantsee")
+                elseif helpers and helpers.combatNav then
+                    -- DEPRECATED 6/26 (sunset ~8/26): legacy boolean combatNav; configs should define rangedNav(reason).
                     Logger.log_debug("CantSee: \ayWe are in COMBAT and Cannot see our target - using custom combatNav!")
                     Core.SafeCallFunc("Ranger Custom Nav", helpers.combatNav, true)
                 else
@@ -124,7 +128,10 @@ mq.event("TooClose", "Your target is too close to use a ranged weapon!", functio
             if Config:GetSetting('DoAutoEngage') and not mq.TLO.Me.Moving() and haterCount > 0 then
                 Logger.log_debug("TooCloseHandler: Pull State not detected, using Combat Nav.")
                 local helpers = Core.GetHelpers()
-                if helpers and helpers.combatNav then
+                if helpers and helpers.rangedNav then
+                    Core.SafeCallFunc("Ranger Ranged Nav", helpers.rangedNav, "tooclose")
+                elseif helpers and helpers.combatNav then
+                    -- DEPRECATED 6/26 (sunset ~8/26): legacy boolean combatNav; configs should define rangedNav(reason).
                     Core.SafeCallFunc("Ranger Custom Nav", helpers.combatNav, false)
                 else
                     Logger.log_debug("TooClose event detected, but we don't have class-specific combat nav for ranged combat!")
@@ -176,7 +183,10 @@ local function tooFarHandler()
             local helpers = Core.GetHelpers()
             local haterCount = Targeting.GetXTHaterCount()
             if Config:GetSetting('DoAutoEngage') and not mq.TLO.Me.Moving() and haterCount > 0 then
-                if helpers and helpers.combatNav then
+                if helpers and helpers.rangedNav then
+                    Core.SafeCallFunc("Ranger Ranged Nav", helpers.rangedNav, "toofar")
+                elseif helpers and helpers.combatNav then
+                    -- DEPRECATED 6/26 (sunset ~8/26): legacy boolean combatNav; configs should define rangedNav(reason).
                     Core.SafeCallFunc("Custom Nav", helpers.combatNav)
                 elseif Config:GetSetting('DoMelee') then
                     Logger.log_debug("TooFar: \ayWe are in COMBAT and too far from our target!")

@@ -224,8 +224,7 @@ function Movement:NavAroundCircle(target, radius)
     local spawn_y = target.Y()
     local spawn_z = target.Z()
 
-    local tgt_x = 0
-    local tgt_y = 0
+    local tgt_x, tgt_y
     -- We need to get the spawn's heading to _us_ based on our heading to the spawn
     -- to nav a circle around it. This is done by inverting the coordinates. E.g.,
     -- If our heading to the mob is 90 degrees CCW, their heading to us is 270 degrees CCW.
@@ -236,14 +235,17 @@ function Movement:NavAroundCircle(target, radius)
     -- Loop until we find an x,y loc ${radius} away from the mob,
     -- that we can navigate to, and is in LoS
 
-    for steps = 1, 36 do
+    -- Skip our current angle (start at +10 deg): repositioning to where we already stand can't fix a
+    -- blocked shot, and re-picking it would loop when the LoS TLO and the game's LoS disagree.
+    for steps = 1, 35 do
         -- EQ's x coordinates have an opposite number line. Positive x values are to the left of 0,
         -- negative values are to the right of 0, so we need to - our radius.
         -- EQ's unit circle starts 0 degrees at the top of the unit circle instead of the right, so
         -- the below still finds coordinates rotated counter-clockwise 90 degrees.
 
-        tgt_x = spawn_x + (-1 * radius * math.cos(tmp_degrees))
-        tgt_y = spawn_y + (radius * math.sin(tmp_degrees))
+        local rad = math.rad(tmp_degrees + steps * 10)
+        tgt_x = spawn_x + (-1 * radius * math.cos(rad))
+        tgt_y = spawn_y + (radius * math.sin(rad))
 
         Logger.log_debug("\aw%d\ax tmp_degrees \aw%d\ax tgt_x \aw%0.2f\ax tgt_y \aw%02.f\ax", steps, tmp_degrees,
             tgt_x, tgt_y)
@@ -254,9 +256,9 @@ function Movement:NavAroundCircle(target, radius)
                 -- Make sure it's a valid loc...
                 if mq.TLO.EverQuest.ValidLoc(string.format("%0.2f %0.2f %0.2f", tgt_x, tgt_y, spawn_z))() then
                     Logger.log_debug(" \ag--> Found Valid Circling Loc: %0.2f %0.2f %0.2f", tgt_x, tgt_y, spawn_z)
-                    Movement:DoNav(false, "locyxz %0.2f %0.2f %0.2f facing=backward", tgt_y, tgt_x, spawn_z)
+                    Movement:DoNav(false, "locyxz %0.2f %0.2f %0.2f", tgt_y, tgt_x, spawn_z)
                     mq.delay("2s", function() return mq.TLO.Navigation.Active() end)
-                    mq.delay("10s", function() return not mq.TLO.Navigation.Active() end)
+                    mq.delay("5s", function() return not mq.TLO.Navigation.Active() end)
                     Core.DoCmd("/squelch /face fast")
                     return true
                 else
