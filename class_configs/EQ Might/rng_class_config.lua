@@ -1012,7 +1012,7 @@ return {
             Default = 2,
             Min = 1,
             Max = 2,
-            Tooltip = "When to yield offensive rotations for healing: Ignore (never) or at the Big Heal Point.",
+            Tooltip = "When to yield offensive rotations for healing:\n1 - Ignore (never)\n2 - Big Heal Point",
             ConfigType = "Advanced",
         },
     },

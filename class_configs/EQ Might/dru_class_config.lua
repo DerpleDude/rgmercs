@@ -1473,7 +1473,7 @@ local _ClassConfig = {
             Default = 3,
             Min = 1,
             Max = 3,
-            Tooltip = "When to yield offensive rotations for healing: Ignore (never), at the Big Heal Point, or at the Main Heal Point.",
+            Tooltip = "When to yield offensive rotations for healing:\n1 - Ignore (never)\n2 - Big Heal Point\n3 - Main Heal Point",
             ConfigType = "Advanced",
         },
     },
