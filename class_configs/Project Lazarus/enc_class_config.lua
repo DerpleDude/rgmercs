@@ -801,6 +801,7 @@ local _ClassConfig = {
                 name = "Self Stasis",
                 type = "AA",
                 cond = function(self, aaName)
+                    if Config:GetSetting('CharmOn') and mq.TLO.Me.Pet.ID() > 0 then return false end
                     return mq.TLO.Me.TargetOfTarget.ID() == mq.TLO.Me.ID() and mq.TLO.Target.ID() == Globals.AutoTargetID
                 end,
                 post_activate = function(self, aaName, success)

@@ -17,8 +17,8 @@ local _ClassConfig = {
         RelocateAA = function() return Casting.CanUseAA("Companion's Relocation") and "Companion's Relocation" end,
     },
     ['ModeChecks']      = {
-        CanCharm   = function() return true end,
-        IsRezing   = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
+        CanCharm = function() return true end,
+        IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
     },
     ['Themes']          = {
         ['DPS'] = {
@@ -373,7 +373,7 @@ local _ClassConfig = {
             "Wake the Dead",
         },
     },
-    ['Charm']         = {
+    ['Charm']           = {
         ['Abilities'] = {
             { name = "Dire Charm", type = "AA", },
             { name = "CharmSpell", type = "Spell", },
@@ -508,6 +508,7 @@ local _ClassConfig = {
                 type = "AA",
                 cond = function(self, aaName, target)
                     if not Config:GetSetting('AggroFeign') then return false end
+                    if Config:GetSetting('CharmOn') and mq.TLO.Me.Pet.ID() > 0 then return false end
                     return (Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 99) or (mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') and Targeting.IHaveAggro(100))
                 end,
             },

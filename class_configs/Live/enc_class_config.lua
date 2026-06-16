@@ -1,5 +1,6 @@
 local mq              = require('mq')
 local Casting         = require("utils.casting")
+local Comms           = require("utils.comms")
 local Config          = require('utils.config')
 local Core            = require("utils.core")
 local Globals         = require("utils.globals")
@@ -1309,13 +1310,20 @@ local _ClassConfig    = {
                 end,
             },
 
-            -- { --this can be readded once we creat a post_activate to cancel the debuff you receive after
-            --     name = "Self Stasis",
-            --     type = "AA",
-            --     cond = function(self, aaName)
-            --         return mq.TLO.Me.TargetOfTarget.ID() == mq.TLO.Me.ID() and mq.TLO.Target.ID() == Globals.AutoTargetID and mq.TLO.Me.PctHPs() <= 30
-            --     end,
-            -- },
+            {
+                name = "Self Stasis",
+                type = "AA",
+                cond = function(self, aaName)
+                    if Config:GetSetting('CharmOn') and mq.TLO.Me.Pet.ID() > 0 then return false end
+                    return mq.TLO.Me.TargetOfTarget.ID() == mq.TLO.Me.ID() and mq.TLO.Target.ID() == Globals.AutoTargetID
+                end,
+                post_activate = function(self, aaName, success)
+                    if success and mq.TLO.Me.Buff("Self Stasis")() then
+                        Comms.PrintGroupMessage("We're out of combat, removing the Self Stasis buff so we can act again.")
+                        Core.DoCmd('/removebuff =Self Stasis')
+                    end
+                end,
+            },
             -- { --This can interrupt spellcasting which can just make something worse. Let us trust healers and tanks.
             --     name = "Dimensional Instability",
             --     type = "AA",
