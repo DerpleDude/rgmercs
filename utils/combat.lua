@@ -406,7 +406,7 @@ end
 ---@param zradius number The vertical radius to scan for targets.
 ---@return number Spawn id of the chosen target, or 0 if none found.
 function Combat.MATargetScan(radius, zradius)
-    local aggroSearch    = string.format("npc radius %d zradius %d targetable playerstate 4", radius, zradius)
+    local aggroSearch    = string.format("npc nopet radius %d zradius %d targetable playerstate 4", radius, zradius)
     local aggroSearchPet = string.format("npcpet radius %d zradius %d targetable playerstate 4", radius, zradius)
     local namedPriority  = Globals.Constants.ScanNamedPriority[Config:GetSetting('ScanNamedPriority')]
     local hpPriority     = Globals.Constants.ScanHPPriority[Config:GetSetting('ScanHPPriority')]
@@ -433,7 +433,9 @@ function Combat.MATargetScan(radius, zradius)
             -- We didn't find anything to kill yet so spawn search
             Logger.log_verbose("MATargetScan Falling back on Spawn Searching")
             Combat.FallbackScan(aggroSearch, true, radius, namedPref, hpPref, primaryTarget, fallbackTarget)
-            Combat.FallbackScan(aggroSearchPet, false, radius, namedPref, hpPref, primaryTarget, fallbackTarget)
+            if not primaryTarget.found and fallbackTarget.id == 0 then
+                Combat.FallbackScan(aggroSearchPet, false, radius, namedPref, hpPref, primaryTarget, fallbackTarget)
+            end
             if not primaryTarget.found and fallbackTarget.id > 0 then
                 Logger.log_verbose("MATargetScan \agArea scan found only non-preferred type, falling back to: %d", fallbackTarget.id)
                 primaryTarget.id = fallbackTarget.id
@@ -1351,16 +1353,13 @@ function Combat.AETargetCheck(printDebug, minCount)
     if not minCount then minCount = Config:GetSetting('AETargetCnt') end
 
     local haters = mq.TLO.SpawnCount("NPC xtarhater radius 80 zradius 50")()
-    local haterPets = mq.TLO.SpawnCount("NPCpet xtarhater radius 80 zradius 50")()
-    local totalHaters = haters + haterPets
-    if totalHaters < minCount or totalHaters > Config:GetSetting('MaxAETargetCnt') then return false end
+    if haters < minCount or haters > Config:GetSetting('MaxAETargetCnt') then return false end
 
     if Config:GetSetting('SafeAEDamage') then
         local npcs = mq.TLO.SpawnCount("NPC radius 80 zradius 50")()
-        local npcPets = mq.TLO.SpawnCount("NPCpet radius 80 zradius 50")()
-        if totalHaters < (npcs + npcPets) then
+        if haters < npcs then
             if printDebug then
-                Logger.log_verbose("AETargetCheck(): %d mobs in range but only %d xtarget haters, blocking AE damage actions.", npcs + npcPets, haters + haterPets)
+                Logger.log_verbose("AETargetCheck(): %d mobs in range but only %d xtarget haters, blocking AE damage actions.", npcs, haters)
             end
             return false
         end

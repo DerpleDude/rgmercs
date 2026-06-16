@@ -762,8 +762,6 @@ function Module:IsValidMezTarget(mobId)
 end
 
 function Module:UpdateMezList()
-    local searchTypes = { "npc", "npcpet", }
-
     -- the scan only needs a spell for its level range; fall back to AE so disabling the ST entry doesn't stop AE mez
     local mezSpell = self:GetMezSpell() or self:GetAEMezSpell()
 
@@ -776,36 +774,34 @@ function Module:UpdateMezList()
     local restoreTargetID = mq.TLO.Target.ID()
     local scanned, added = 0, 0
 
-    for _, searchType in ipairs(searchTypes) do
-        local minLevel = Config:GetSetting('MezMinLevel')
-        local maxLevel = Config:GetSetting('MezMaxLevel')
+    local minLevel = Config:GetSetting('MezMinLevel')
+    local maxLevel = Config:GetSetting('MezMaxLevel')
 
-        if Config:GetSetting('AutoLevelRange') and mezSpell and mezSpell() then
-            minLevel = 0
-            ---@diagnostic disable-next-line: undefined-field
-            maxLevel = mezSpell.MaxLevel()
-        end
-        local searchString = string.format("%s radius %d zradius %d range %d %d %s", searchType,
-            Config:GetSetting('MezRadius'), Config:GetSetting('MezZRadius'), minLevel, maxLevel, self.Constants.MezSpawnFilter)
+    if Config:GetSetting('AutoLevelRange') and mezSpell and mezSpell() then
+        minLevel = 0
+        ---@diagnostic disable-next-line: undefined-field
+        maxLevel = mezSpell.MaxLevel()
+    end
+    local searchString = string.format("npc radius %d zradius %d range %d %d %s",
+        Config:GetSetting('MezRadius'), Config:GetSetting('MezZRadius'), minLevel, maxLevel, self.Constants.MezSpawnFilter)
 
-        local mobCount = mq.TLO.SpawnCount(searchString)()
-        Logger.log_super_verbose("\ayUpdateMezList: Search String: '\at%s\ay' -- Count :: \am%d", searchString, mobCount)
-        for i = 1, mobCount do
-            local spawn = mq.TLO.NearestSpawn(i, searchString)
+    local mobCount = mq.TLO.SpawnCount(searchString)()
+    Logger.log_super_verbose("\ayUpdateMezList: Search String: '\at%s\ay' -- Count :: \am%d", searchString, mobCount)
+    for i = 1, mobCount do
+        local spawn = mq.TLO.NearestSpawn(i, searchString)
 
-            if spawn and spawn() and spawn.ID() > 0 then
-                scanned = scanned + 1
-                Logger.log_super_verbose(
-                    "\ayUpdateMezList: Processing MobCount %d -- ID: %d Name: %s Level: %d BodyType: %s", i, spawn.ID(),
-                    spawn.CleanName(), spawn.Level(),
-                    spawn.Body.Name())
+        if spawn and spawn() and spawn.ID() > 0 then
+            scanned = scanned + 1
+            Logger.log_super_verbose(
+                "\ayUpdateMezList: Processing MobCount %d -- ID: %d Name: %s Level: %d BodyType: %s", i, spawn.ID(),
+                spawn.CleanName(), spawn.Level(),
+                spawn.Body.Name())
 
-                if self:IsValidMezTarget(spawn.ID()) then
-                    added = added + 1
-                    Logger.log_super_verbose("\agAdding to CC List: %d -- ID: %d Name: %s Level: %d BodyType: %s", i,
-                        spawn.ID(), spawn.CleanName(), spawn.Level(), spawn.Body.Name())
-                    self:AddCCTarget(spawn.ID())
-                end
+            if self:IsValidMezTarget(spawn.ID()) then
+                added = added + 1
+                Logger.log_super_verbose("\agAdding to CC List: %d -- ID: %d Name: %s Level: %d BodyType: %s", i,
+                    spawn.ID(), spawn.CleanName(), spawn.Level(), spawn.Body.Name())
+                self:AddCCTarget(spawn.ID())
             end
         end
     end
@@ -956,13 +952,11 @@ function Module:CountCrowd()
     local radius = Config:GetSetting('MezRadius')
     local zradius = Config:GetSetting('MezZRadius')
     local count = 0
-    for _, searchType in ipairs({ "npc", "npcpet", }) do
-        local search = string.format("%s radius %d zradius %d %s", searchType, radius, zradius, self.Constants.MezSpawnFilter)
-        local matches = mq.TLO.SpawnCount(search)()
-        for i = 1, matches do
-            local spawn = mq.TLO.NearestSpawn(i, search)
-            if spawn and spawn() and not self:IsPlayerPet(spawn) then count = count + 1 end
-        end
+    local search = string.format("npc radius %d zradius %d %s", radius, zradius, self.Constants.MezSpawnFilter)
+    local matches = mq.TLO.SpawnCount(search)()
+    for i = 1, matches do
+        local spawn = mq.TLO.NearestSpawn(i, search)
+        if spawn and spawn() and not self:IsPlayerPet(spawn) then count = count + 1 end
     end
     return count
 end
@@ -981,18 +975,16 @@ function Module:NeedToMez()
         local castTime = self:MezRefreshThreshold()
         local radius = Config:GetSetting('MezRadius')
         local zradius = Config:GetSetting('MezZRadius')
-        for _, searchType in ipairs({ "npc", "npcpet", }) do
-            local search = string.format("%s radius %d zradius %d %s", searchType, radius, zradius, self.Constants.MezSpawnFilter)
-            local matches = mq.TLO.SpawnCount(search)()
-            for i = 1, matches do
-                local spawn = mq.TLO.NearestSpawn(i, search)
-                if spawn and spawn() and not self:IsPlayerPet(spawn) then
-                    crowd = crowd + 1
-                    local id = spawn.ID() or 0
-                    if id ~= Globals.AutoTargetID and not self:IsMezImmune(id) then
-                        local tracked = self.TempSettings.MezTracker[id]
-                        if not (tracked and tracked.duration > castTime) then anyUnmezzed = true end
-                    end
+        local search = string.format("npc radius %d zradius %d %s", radius, zradius, self.Constants.MezSpawnFilter)
+        local matches = mq.TLO.SpawnCount(search)()
+        for i = 1, matches do
+            local spawn = mq.TLO.NearestSpawn(i, search)
+            if spawn and spawn() and not self:IsPlayerPet(spawn) then
+                crowd = crowd + 1
+                local id = spawn.ID() or 0
+                if id ~= Globals.AutoTargetID and not self:IsMezImmune(id) then
+                    local tracked = self.TempSettings.MezTracker[id]
+                    if not (tracked and tracked.duration > castTime) then anyUnmezzed = true end
                 end
             end
         end

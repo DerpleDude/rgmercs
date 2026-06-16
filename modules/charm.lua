@@ -834,7 +834,7 @@ function Module:IsValidCharmTarget(mobId)
     local name = spawn.CleanName() or "Unknown"
 
     if not spawn() or spawn.Dead() or Targeting.TargetIsType("corpse", spawn) then return false end   -- dead/corpse
-    if (spawn.Master.Type() or "") == "PC" then return false end                                      -- already a pet
+    if (spawn.Master.Type() or "") ~= "" then return false end                                        -- already a pet (player- or NPC-owned) or charmed
     if Globals.CharmedPetIDs:contains(mobId) and not self:IsOwnKeptCharm(mobId) then return false end -- a peer's charm
     if self:IsCharmImmune(mobId) then return false end
     if self:IsMobInList("CharmDenyList", name, false) then return false end
@@ -864,7 +864,7 @@ function Module:FindCharmCandidate()
     elseif Core.MyClassIs("NEC") then
         npcType = ' body Undead'
     end
-    local searchString = string.format("npc radius %d zradius %d range %d %d targetable playerstate 4%s",
+    local searchString = string.format("npc nopet radius %d zradius %d range %d %d targetable playerstate 4%s",
         Config:GetSetting('CharmRadius'), Config:GetSetting('CharmZRadius'), minLevel, maxLevel, npcType)
 
     -- prefer any valid candidate over the group's kill target; only charm the auto-target if it's the lone option
