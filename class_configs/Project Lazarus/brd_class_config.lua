@@ -791,10 +791,10 @@ local _ClassConfig = {
                 name = "Fading Memories",
                 type = "AA",
                 midSong = true,
+                load_cond = function(self) return Config:GetSetting('UseFading') and Casting.CanUseAA('Fading Memories') end,
                 cond = function(self, aaName)
-                    if not Config:GetSetting('UseFading') then return false end
+                    if Config:GetSetting('CharmOn') and mq.TLO.Me.Pet.ID() > 0 then return false end
                     return mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') and self.Helpers.UnwantedAggroCheck(self)
-                    --I wanted to use XTAggroCount here but it doesn't include your current target in the number it returns and I don't see a good workaround. For Loop it is.
                 end,
             },
             {
