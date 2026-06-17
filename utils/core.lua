@@ -556,7 +556,6 @@ end
 
 --- Rebuilds Globals.CurrentPetBuffs from active pet buff slots if a pet exists.
 function Core.GetPetBuffTable()
-    Logger.log_debug("Pet Buff Start")
     Globals.CurrentPetBuffs = {}
 
     if mq.TLO.Me.Pet.ID() > 0 then
@@ -567,12 +566,10 @@ function Core.GetPetBuffTable()
             end
         end
     end
-    Logger.log_debug("Pet Buff Finish")
 end
 
 --- Rebuilds Globals.CurrentPetBlocked from up to 60 blocked pet buff slots.
 function Core.GetPetBlockedTable()
-    Logger.log_debug("Pet Block Start")
     Globals.CurrentPetBlocked = {}
 
     if mq.TLO.Me.Pet.ID() > 0 then
@@ -582,7 +579,6 @@ function Core.GetPetBlockedTable()
             table.insert(Globals.CurrentPetBlocked, blocked.ID())
         end
     end
-    Logger.log_debug("Pet Block Finish")
 end
 
 function Core.SetRotationEntryTooltip(tooltipLines)

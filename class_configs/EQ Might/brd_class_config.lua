@@ -1,5 +1,6 @@
 local mq           = require('mq')
 local Casting      = require("utils.casting")
+local Combat       = require('utils.combat')
 local Config       = require('utils.config')
 local Core         = require("utils.core")
 local Globals      = require('utils.globals')
@@ -490,6 +491,18 @@ local _ClassConfig = {
                 return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
+        {
+            name = 'InstantRunBuff',
+            state = 1,
+            steps = 1,
+            targetId = function(self) return Combat.GetCachedCombatState() == "Combat" and Targeting.CheckForAutoTargetID() or Casting.GetBuffableIDs() end,
+            load_cond = function(self) return Config:GetSetting('UseRunBuff') and Casting.CanUseAA("Selo's Sonata") end,
+            cond = function(self, combat_state)
+                local downtime = combat_state == "Downtime" and not mq.TLO.Me.Invis()
+                local combat = combat_state == "Combat" and Core.CombatActionsCheck()
+                return downtime or combat
+            end,
+        },
     },
     ['Rotations']     = {
         ['Burn'] = { --Order is heavy WIP
@@ -609,17 +622,6 @@ local _ClassConfig = {
                 name = "Selo's Kick",
                 type = "AA",
                 midSong = true,
-            },
-            {
-                name = "Selo's Sonata",
-                type = "AA",
-                midSong = true,
-                targetId = function(self) return { mq.TLO.Me.ID(), } end,
-                load_cond = function(self) return Config:GetSetting('UseRunBuff') and Casting.CanUseAA("Selo's Sonata") end,
-                cond = function(self, aaName)
-                    --refresh slightly before expiry for better uptime
-                    return (mq.TLO.Me.Buff(aaName).Duration.TotalSeconds() or 0) < 30
-                end,
             },
         },
         ['CombatSongs'] = {
@@ -790,17 +792,6 @@ local _ClassConfig = {
         },
         ['Downtime'] = {
             {
-                name = "Selo's Sonata",
-                type = "AA",
-                midSong = true,
-                targetId = function(self) return { mq.TLO.Me.ID(), } end,
-                load_cond = function(self) return Config:GetSetting('UseRunBuff') and Casting.CanUseAA("Selo's Sonata") end,
-                cond = function(self, aaName)
-                    --refresh slightly before expiry for better uptime
-                    return (mq.TLO.Me.Buff(aaName).Duration.TotalSeconds() or 0) < 30
-                end,
-            },
-            {
                 name = "RunBuff",
                 type = "Song",
                 targetId = function(self) return { mq.TLO.Me.ID(), } end,
@@ -872,6 +863,18 @@ local _ClassConfig = {
                 midSong = true,
                 cond = function(self, discSpell, target)
                     return Casting.NoDiscActive()
+                end,
+            },
+        },
+        ['InstantRunBuff'] = {
+            {
+                name = "Selo's Sonata",
+                type = "AA",
+                midSong = true,
+                cond = function(self, aaName, target)
+                    local combatState = Combat.GetCachedCombatState()
+                    -- if in combat, check self, out of combat, also check others
+                    return (combatState == "Combat" and (mq.TLO.Me.Buff(aaName).Duration.TotalSeconds() or 0) < 15) or (combatState == "Downtime" and Casting.GroupBuffAACheck(aaName, target))
                 end,
             },
         },

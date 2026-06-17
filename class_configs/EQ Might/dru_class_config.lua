@@ -605,9 +605,21 @@ local _ClassConfig = {
                 return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
+        {
+            name = 'InstantRunBuff',
+            state = 1,
+            steps = 1,
+            targetId = function(self) return Combat.GetCachedCombatState() == "Combat" and Targeting.CheckForAutoTargetID() or Casting.GetBuffableGroupIDs() end,
+            load_cond = function(self) return Config:GetSetting('DoMoveBuffs') and Casting.CanUseAA("Communion of the Cheetah") end,
+            cond = function(self, combat_state)
+                local downtime = combat_state == "Downtime" and not mq.TLO.Me.Invis()
+                local combat = combat_state == "Combat" and Core.CombatActionsCheck()
+                return downtime or combat
+            end,
+        },
     },
     ['Rotations']         = {
-        ['DPS']       = {
+        ['DPS']            = {
             {
                 name = "Epic",
                 type = "Item",
@@ -704,7 +716,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['DPS(AE)']   = {
+        ['DPS(AE)']        = {
             {
                 name = "PBAEMagic",
                 type = "Spell",
@@ -724,7 +736,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Burn']      = {
+        ['Burn']           = {
             {
                 name = "Improved Twincast",
                 type = "AA",
@@ -776,13 +788,13 @@ local _ClassConfig = {
                 type = "AA",
             },
         },
-        ['Emergency'] = {
+        ['Emergency']      = {
             {
                 name = "Cover Tracks",
                 type = "AA",
             },
         },
-        ['Slow']      = {
+        ['Slow']           = {
             {
                 name = "ColdSlow",
                 type = "Spell",
@@ -791,7 +803,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Debuff']    = {
+        ['Debuff']         = {
             { -- Fire Debuff AA, will use the first(best) available
                 name = "FireDebuffAA",
                 type = "AA",
@@ -825,7 +837,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Snare']     = {
+        ['Snare']          = {
             {
                 name = "Entrap",
                 type = "AA",
@@ -843,15 +855,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['GroupBuff'] = {
-            {
-                name = "Communion of the Cheetah",
-                type = "AA",
-                load_cond = function() return Config:GetSetting('DoMoveBuffs') end,
-                cond = function(self, aaName, target)
-                    return Casting.GroupBuffAACheck(aaName, target)
-                end,
-            },
+        ['GroupBuff']      = {
             {
                 name = "Flight of Eagles",
                 type = "AA",
@@ -929,15 +933,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Downtime']  = {
-            {
-                name = "Communion of the Cheetah",
-                type = "AA",
-                load_cond = function() return Config:GetSetting('DoMoveBuffs') end,
-                cond = function(self, aaName, target)
-                    return Casting.SelfBuffAACheck(aaName)
-                end,
-            },
+        ['Downtime']       = {
             {
                 name = "HealingAura",
                 type = "Spell",
@@ -971,7 +967,7 @@ local _ClassConfig = {
                 cond = function(self, spell) return Casting.SelfBuffCheck(spell) end,
             },
         },
-        ['PetSummon'] = {
+        ['PetSummon']      = {
             {
                 name = "Artifact of Nature Spirit",
                 type = "Item",
@@ -999,7 +995,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['PetBuff']   = {
+        ['PetBuff']        = {
             {
                 name = "PetHaste",
                 type = "Spell",
@@ -1011,6 +1007,18 @@ local _ClassConfig = {
                 type = "Spell",
                 cond = function(self, spell)
                     return Casting.PetBuffCheck(spell)
+                end,
+            },
+        },
+        ['InstantRunBuff'] = {
+            {
+                name = "Communion of the Cheetah",
+                type = "AA",
+                cond = function(self, aaName, target)
+                    local aaBuff = Casting.GetAASpell(aaName).Name() or ""
+                    local combatState = Combat.GetCachedCombatState()
+                    -- if in combat, check self, out of combat, also check others
+                    return (combatState == "Combat" and (mq.TLO.Me.Buff(aaBuff).Duration.TotalSeconds() or 0) < 15) or (combatState == "Downtime" and Casting.GroupBuffAACheck(aaName, target))
                 end,
             },
         },

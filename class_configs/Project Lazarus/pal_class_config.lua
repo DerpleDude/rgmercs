@@ -145,11 +145,11 @@ return {
         },
         ['UndeadProc'] = {
             --- Undead Proc Strike : does not stack with Fury Proc, will be used until Fury is available even if setting not enabled.
-            "Silvered Fury",           -- Level 67, 750pt
-            "Ward of Nife",            -- Level 62, 500pt
-            "Instrument of Nife",      -- Level 26, 243pt
+            "Silvered Fury",      -- Level 67, 750pt
+            "Ward of Nife",       -- Level 62, 500pt
+            "Instrument of Nife", -- Level 26, 243pt
         },
-        ['StunTimer5'] = {             -- mq.TLO.Target.ID() == target and not mq.TLO.Spawn(target).Stunned()
+        ['StunTimer5'] = {
             "Ancient: Force of Jeron", -- Level 70
             "Ancient: Force of Chaos", -- Level 65
             "Force of Akera",          -- Level 53
@@ -828,10 +828,6 @@ return {
         },
         ['HateTools(AggroTarget)'] = {
             {
-                name = "Taunt",
-                type = "Ability",
-            },
-            {
                 name = "Force of Disruption",
                 type = "AA",
             },
@@ -843,15 +839,12 @@ return {
                 name = "StunTimer4",
                 type = "Spell",
             },
-        },
-        ['HateTools(AutoTarget)'] = {
             {
                 name = "Taunt",
                 type = "Ability",
-                cond = function(self, abilityName, target)
-                    return Targeting.LostAutoTargetAggro()
-                end,
             },
+        },
+        ['HateTools(AutoTarget)'] = {
             { --8min reuse, save for we still can't get a mob back after trying to taunt
                 name = "Ageless Enmity",
                 type = "AA",
@@ -877,6 +870,13 @@ return {
             {
                 name = "StunTimer4",
                 type = "Spell",
+            },
+            {
+                name = "Taunt",
+                type = "Ability",
+                cond = function(self, abilityName, target)
+                    return Targeting.LostAutoTargetAggro()
+                end,
             },
         },
         ['AEHateTools'] = {
@@ -1017,11 +1017,12 @@ return {
                 end,
             },
             {
+                name = "StunTimer5",
+                type = "Spell",
+            },
+            {
                 name = "StunTimer4",
                 type = "Spell",
-                cond = function(self, spell, target)
-                    return Targeting.TargetNotStunned() and (Core.IsTanking() or not Casting.StunImmuneTarget(target))
-                end,
             },
             {
                 name = "TwinHealNuke",
@@ -1033,13 +1034,6 @@ return {
                 type = "AA",
                 cond = function(self, aaName, target)
                     return Casting.SelfBuffAACheck(aaName)
-                end,
-            },
-            {
-                name = "StunTimer5",
-                type = "Spell",
-                cond = function(self, spell, target)
-                    return Targeting.TargetNotStunned() and (Core.IsTanking() or not Casting.StunImmuneTarget(target))
                 end,
             },
             {
