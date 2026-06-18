@@ -61,23 +61,12 @@ Module.DefaultConfig   = {
 		Tooltip = "Enables looting during RGMercs-defined combat.",
 		Default = false,
 	},
-	['LootSettleTime']                         = {
-		DisplayName = "Loot Settle Time",
-		Group = "General",
-		Header = "Loot(Emu)",
-		Category = "LNS",
-		Index = 3,
-		Tooltip = "Seconds to wait after combat ends before looting, so we don't begin to loot while adds are popping.",
-		Default = 2,
-		Min = 0,
-		Max = 10,
-	},
 	['LootRespectMedState']                    = {
 		DisplayName = "Respect Med State",
 		Group = "General",
 		Header = "Loot(Emu)",
 		Category = "LNS",
-		Index = 4,
+		Index = 3,
 		Tooltip = "Hold looting if you are currently meditating.",
 		Default = false,
 	},
@@ -86,7 +75,7 @@ Module.DefaultConfig   = {
 		Group = "General",
 		Header = "Loot(Emu)",
 		Category = "LNS",
-		Index = 5,
+		Index = 4,
 		Tooltip = "The length of time in seconds that RGMercs will allow LNS to process loot actions in a single check.",
 		Default = 5,
 		Min = 1,
@@ -97,7 +86,7 @@ Module.DefaultConfig   = {
 		Group = "General",
 		Header = "Loot(Emu)",
 		Category = "LNS",
-		Index = 6,
+		Index = 5,
 		Tooltip = "If chase is on, we won't loot (and will abort looting) any corpses when the chase target is farther than this value away from us.",
 		Default = 300,
 		Min = 1,
@@ -218,8 +207,6 @@ function Module:GiveTime()
 
 	if not Config:GetSetting('DoLoot') then return end
 
-	if combat_state == "Combat" then self.TempSettings.LastCombatTime = Globals.GetTimeSeconds() end
-
 	if Globals.PauseMain then return end
 	if mq.TLO.Lua.Script('lootnscoot').Status() ~= 'RUNNING' then
 		if not suppressWarning then
@@ -252,7 +239,7 @@ function Module:GiveTime()
 	Logger.log_verbose("\ay[LOOT]: \agFound %d corpses within range.", deadCount)
 	if self.Actor == nil then self:LootMessageHandler() end
 
-	local settled = Config:GetSetting('CombatLooting') or (Globals.GetTimeSeconds() - (self.TempSettings.LastCombatTime or 0)) >= Config:GetSetting('LootSettleTime')
+	local settled = Config:GetSetting('CombatLooting') or Combat.CombatSettled(1000)
 
 	-- send actors message to loot
 	if (combat_state ~= "Combat" or Config:GetSetting('CombatLooting')) and deadCount > 0 then

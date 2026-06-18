@@ -235,39 +235,72 @@ Module.DefaultConfig   = {
 
 
     -- Camp
-    ['AutoCampRadius']   = {
+    ['AutoCampRadius']    = {
         DisplayName = "Camp Radius",
         Group = "Movement",
         Header = "Following",
         Category = "Camp",
         Index = 1,
-        Tooltip = "The distance to allow from camp before you return to it. During combat, we relax this distance slightly.",
+        Tooltip = "The distance to allow from camp before returning to it.",
         Default = 100,
         Min = 10,
         Max = 300,
         Warning = function()
-            if Config:GetSetting('AssistRange') > Config:GetSetting('AutoCampRadius') then
-                return true, "Warning: AssistRange exceeds AutoCampRadius - this might cause your characters to run out of camp to assist."
+            if Config:GetSetting('CampExceedRadius') <= Config:GetSetting('AutoCampRadius') then
+                return true, "Warning: Camp Exceed Distance is at or below Camp Radius - camp will turn off as soon as you exceed the radius."
             end
             return false, ""
         end,
         OnChange = function(self) Movement.UpdateMapRadii() end,
     },
-    ['CampHard']         = {
-        DisplayName = "Camp Hard",
+    ['CampLeashDowntime'] = {
+        DisplayName = "Leash to Camp (Downtime)",
         Group = "Movement",
         Header = "Following",
         Category = "Camp",
         Index = 2,
-        Tooltip = "Return to the exact camp location whenever possible, even if we are within the Camp Radius.",
+        Tooltip = "Return to the exact camp location outside of combat, even if we are within the Camp Radius.",
         Default = false,
     },
-    ['MaintainCampfire'] = {
-        DisplayName = "Maintain Campfire",
+    ['CampLeashCombat']   = {
+        DisplayName = "Leash to Camp (Combat)",
         Group = "Movement",
         Header = "Following",
         Category = "Camp",
         Index = 3,
+        Tooltip = "Return to the exact camp location during combat if we leave the Camp Radius.",
+        Default = false,
+        Warning = function()
+            if Config:GetSetting('AssistRange') > Config:GetSetting('AutoCampRadius') then
+                return true, "Warning: AssistRange exceeds Camp Radius - the combat leash will pull characters back from engagements past the radius."
+            end
+            return false, ""
+        end,
+    },
+    ['CampExceedRadius']  = {
+        DisplayName = "Camp Exceed Distance",
+        Group = "Movement",
+        Header = "Following",
+        Category = "Camp",
+        Index = 4,
+        Tooltip = "Turn camp off if not pulling and your current distance from the camp is greater than this value.",
+        Default = 400,
+        Min = 100,
+        Max = 2000,
+        Warning = function()
+            if Config:GetSetting('CampExceedRadius') <= Config:GetSetting('AutoCampRadius') then
+                return true, "Warning: Camp Exceed Distance is at or below Camp Radius - camp will turn off as soon as you exceed the radius."
+            end
+            return false, ""
+        end,
+        ConfigType = "Advanced",
+    },
+    ['MaintainCampfire']  = {
+        DisplayName = "Maintain Campfire",
+        Group = "Movement",
+        Header = "Following",
+        Category = "Camp",
+        Index = 5,
         Tooltip = "Official Servers: Maintain the selected Fellowship Campfire.",
         Type = "Combo",
         ComboOptions = Module.Constants.CampfireTypes,
@@ -275,12 +308,12 @@ Module.DefaultConfig   = {
         Min = 1,
         Max = #Module.Constants.CampfireTypes,
     },
-    ['DoFellow']         = {
+    ['DoFellow']          = {
         DisplayName = "Enable Fellowship Insignia",
         Group = "Movement",
         Header = "Following",
         Category = "Camp",
-        Index = 4,
+        Index = 6,
         Tooltip = "Official Servers: Use your fellowship insignia to automatically return to the zone you were camped in after death.",
         Default = false,
         ConfigType = "Advanced",
@@ -717,7 +750,7 @@ function Module:GiveTime()
         self:DoAutoCampCheck()
     end
 
-    if (Core.IsTanking() and Config:GetSetting('MovebackWhenBehind')) and Targeting.IHaveAggro(100) then
+    if Config:GetSetting('ReturnToCamp') and Config:GetSetting('CampLeashCombat') and not Combat.ShouldDoCamp() then
         self:DoCombatCampCheck()
     end
 

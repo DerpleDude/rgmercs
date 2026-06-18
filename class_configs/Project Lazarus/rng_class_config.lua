@@ -810,12 +810,8 @@ return {
                     if Config:GetSetting('ChaseDistance') < bowRange then
                         return true, "Warning: Chase Distance is below Bow Range - chase may fight the ranged stick hold."
                     end
-                elseif Config:GetSetting('ReturnToCamp') then
-                    if Config:GetSetting('CampHard') then
-                        return true, "Warning: Camp Hard pulls you to camp center - the ranged stick may not hold its bow range."
-                    elseif Config:GetSetting('AutoCampRadius') < bowRange then
-                        return true, "Warning: Camp Radius is below Bow Range - camp return may fight the ranged stick hold."
-                    end
+                elseif Config:GetSetting('ReturnToCamp') and Config:GetSetting('CampLeashCombat') and Config:GetSetting('AutoCampRadius') < bowRange then
+                    return true, "Warning: Camp Radius is below Bow Range - Leash to Camp (Combat) may fight the ranged stick hold."
                 end
                 return false, ""
             end,

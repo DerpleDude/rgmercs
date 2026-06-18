@@ -444,6 +444,7 @@ local function Main()
         end
 
         Globals.CurrentState = "Combat"
+        Globals.LastCombatTime = Globals.GetTimeMS()
         if Config:GetSetting('FaceTarget') and not Targeting.FacingTarget() and mq.TLO.Target.ID() ~= mq.TLO.Me.ID() and not mq.TLO.Me.Moving() then
             Core.DoCmd("/squelch /face fast")
         end

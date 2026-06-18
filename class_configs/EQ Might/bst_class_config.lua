@@ -1070,6 +1070,7 @@ return {
             Index = 101,
             Tooltip = "Use your Run/Move Speed buff spells or AA.",
             Default = false,
+            RequiresLoadoutChange = true,
         },
         ['DoAvatar']       = {
             DisplayName = "Do Avatar",

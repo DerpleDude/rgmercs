@@ -2002,6 +2002,7 @@ local _ClassConfig = {
             Index = 101,
             Tooltip = "Do Run Speed Spells/AAs",
             Default = true,
+            RequiresLoadoutChange = true,
             FAQ = "Why are my buffers in a run speed buff war?",
             Answer = "Many run speed spells freely stack and overwrite each other, you will need to disable Run Speed Buffs on some of the buffers.",
         },

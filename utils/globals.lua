@@ -24,6 +24,7 @@ Globals.ForceCombatID                 = 0
 Globals.CombatNavTargetId             = 0
 Globals.LastPulledID                  = 0
 Globals.CurrentState                  = "None"
+Globals.LastCombatTime                = 0
 Globals.IgnoredTargetIDs              = Set.new({})
 Globals.CharmedPetIDs                 = Set.new({})
 Globals.LooseCharms                   = {}

@@ -528,7 +528,7 @@ end)
 -- [ SUMMONED HANDLERS ] --
 
 mq.event('Summoned', "You have been summoned!", function(_)
-    if Config:GetSetting('DoAutoEngage') and not Config:GetSetting('DoMelee') and not Core.IAmMA() and Config:GetSetting('ReturnToCamp') then
+    if Config:GetSetting('DoAutoEngage') and not Config:GetSetting('DoMelee') and not Core.IsTanking() and Config:GetSetting('ReturnToCamp') then
         Comms.PrintGroupMessage("%s was just summoned -- returning to camp!", Globals.CurLoadedChar)
         Modules:ExecModule("Movement", "DoAutoCampCheck", true)
     end

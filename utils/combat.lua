@@ -28,6 +28,13 @@ function Combat.GetCachedCombatState()
     return Globals.CurrentState
 end
 
+--- Returns true once at least thresholdMs has elapsed since the last combat frame.
+---@param thresholdMs number Milliseconds to wait after combat before considering it settled.
+---@return boolean
+function Combat.CombatSettled(thresholdMs)
+    return (Globals.GetTimeMS() - Globals.LastCombatTime) >= thresholdMs
+end
+
 --- Designates the main assist from the assist list, raid, group, or self as a fallback.
 function Combat.SetMainAssist()
     local inRaid = mq.TLO.Raid.Members() > 0
@@ -932,7 +939,7 @@ function Combat.ShouldDoCamp()
         (not Core.IsTanking() and Targeting.GetAutoTargetPctHPs() > Config:GetSetting('AutoAssistAt'))
 end
 
---- Navigates back to camp if ReturnToCamp is enabled and we are outside the camp radius.
+--- Navigates back to camp out of combat if Camp is on and we are outside the camp radius.
 ---@param tempConfig           table    Camp configuration containing AutoCampX/Y/Z, CampZoneId, etc.
 ---@param bCalledFromInsideEvent? boolean True if called from within an event handler (skips doevents calls).
 function Combat.AutoCampCheck(tempConfig, bCalledFromInsideEvent)
@@ -942,10 +949,8 @@ function Combat.AutoCampCheck(tempConfig, bCalledFromInsideEvent)
 
     if mq.TLO.Me.Casting() and not Core.MyClassIs("brd") then return end
 
-    -- chasing a toon dont use camnp.
     if Config:GetSetting('ChaseOn') then return end
 
-    -- camped in a different zone.
     if tempConfig.CampZoneId ~= mq.TLO.Zone.ID() then return end
 
     -- let pulling module handle camp decisions while it is enabled.
@@ -962,13 +967,13 @@ function Combat.AutoCampCheck(tempConfig, bCalledFromInsideEvent)
 
     local distanceToCamp = Math.GetDistance(me.Y(), me.X(), tempConfig.AutoCampY, tempConfig.AutoCampX)
 
-    if distanceToCamp >= 400 and not Config:GetSetting('DoPull') then
-        Comms.PrintGroupMessage("I'm over 400 units from camp, not returning!")
+    if distanceToCamp >= Config:GetSetting('CampExceedRadius') and not Config:GetSetting('DoPull') then
+        Comms.PrintGroupMessage("I'm over %d units from camp, not returning!", Config:GetSetting('CampExceedRadius'))
         Core.DoCmd("/rgl campoff")
         return
     end
 
-    if not Config:GetSetting('CampHard') then
+    if not Config:GetSetting('CampLeashDowntime') or not Combat.CombatSettled(1000) then
         if distanceToCamp < Config:GetSetting('AutoCampRadius') then return end
     end
 
@@ -1001,44 +1006,48 @@ function Combat.AutoCampCheck(tempConfig, bCalledFromInsideEvent)
     end
 end
 
---- Navigates back to camp during combat if ReturnToCamp is enabled and we are outside the camp radius.
+--- Navigates back to camp during combat if CampLeashCombat is enabled and we are outside the camp radius.
 ---@param tempConfig table Camp configuration containing AutoCampX/Y/Z and CampZoneId.
 function Combat.CombatCampCheck(tempConfig)
     if not Config:GetSetting('ReturnToCamp') then return end
+    if not Config:GetSetting('CampLeashCombat') then return end
 
     if mq.TLO.Me.Casting() and not Core.MyClassIs("brd") then return end
 
-    -- chasing a toon dont use camnp.
     if Config:GetSetting('ChaseOn') then return end
 
-    -- camped in a different zone.
     if tempConfig.CampZoneId ~= mq.TLO.Zone.ID() then return end
 
-    local me = mq.TLO.Me
+    -- let pulling module handle camp decisions while it is enabled.
+    if Config:GetSetting('DoPull') then
+        local pullState = Modules:ExecModule("Pull", "GetPullState")
 
-    local distanceToCampSq = Math.GetDistanceSquared(me.Y(), me.X(), tempConfig.AutoCampY, tempConfig.AutoCampX)
-
-    if not Config:GetSetting('CampHard') then
-        if distanceToCampSq < Config:GetSetting('AutoCampRadius') ^ 2 then return end
+        -- if we are idle or in groupwatch waiting its possible we wandered out of camp to loot and need to come back.
+        if pullState > 2 then
+            return
+        end
     end
 
-    if distanceToCampSq > 25 then
-        local navTo = string.format("locyxz %d %d %d", tempConfig.AutoCampY, tempConfig.AutoCampX, tempConfig.AutoCampZ)
-        if mq.TLO.Navigation.PathExists(navTo)() then
-            Movement:DoNav(false, "%s", navTo)
-            mq.delay("2s", function() return mq.TLO.Navigation.Active() and mq.TLO.Navigation.Velocity() > 0 end)
-            while mq.TLO.Navigation.Active() and mq.TLO.Navigation.Velocity() > 0 do
-                mq.delay(10)
-                mq.doevents()
-                Events.DoEvents()
-            end
-        else
-            Movement:MoveToLoc(tempConfig.AutoCampY, tempConfig.AutoCampX)
-            while mq.TLO.MoveTo.Moving() and not mq.TLO.MoveTo.Stopped() do
-                mq.delay(10)
-                mq.doevents()
-                Events.DoEvents()
-            end
+    local me = mq.TLO.Me
+    local distanceToCampSq = Math.GetDistanceSquared(me.Y(), me.X(), tempConfig.AutoCampY, tempConfig.AutoCampX)
+
+    if distanceToCampSq < Config:GetSetting('AutoCampRadius') ^ 2 then return end
+
+    local navTo = string.format("locyxz %d %d %d", tempConfig.AutoCampY, tempConfig.AutoCampX, tempConfig.AutoCampZ)
+    if mq.TLO.Navigation.PathExists(navTo)() then
+        Movement:DoNav(false, "%s", navTo)
+        mq.delay("2s", function() return mq.TLO.Navigation.Active() and mq.TLO.Navigation.Velocity() > 0 end)
+        while mq.TLO.Navigation.Active() and mq.TLO.Navigation.Velocity() > 0 do
+            mq.delay(10)
+            mq.doevents()
+            Events.DoEvents()
+        end
+    else
+        Movement:MoveToLoc(tempConfig.AutoCampY, tempConfig.AutoCampX)
+        while mq.TLO.MoveTo.Moving() and not mq.TLO.MoveTo.Stopped() do
+            mq.delay(10)
+            mq.doevents()
+            Events.DoEvents()
         end
     end
 

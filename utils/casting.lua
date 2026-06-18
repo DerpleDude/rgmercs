@@ -1778,12 +1778,13 @@ function Casting.UseSpell(spellName, targetId, bAllowMem, bAllowDead, retryCount
         return false
     end
 
-    -- If we're combat casting we need to both have the same swimming status
-    if targetId == 0 or (targetSpawn() and targetSpawn.FeetWet() ~= me.FeetWet()) then
+    if targetId == 0 then
         Logger.log_debug("\ayUseSpell(): \arCasting Failed: I tried to cast a spell %s I don't have a target (%d) for it.",
             spellName, targetId)
         return false
     end
+    -- TEMP 6/26: FeetWet swim-state check disabled - a flyer flying above a pool (e.g. Hartini in Stillmoon) reports FeetWet but its feet aren't actually wet, blocking all casts. Not a verified EQ mechanic.
+    -- if targetSpawn() and targetSpawn.FeetWet() ~= me.FeetWet() then return false end
 
     if not bAllowDead and targetSpawn() and targetSpawn.Dead() then
         Logger.log_verbose("\ayUseSpell(): \arCasting Failed: I tried to cast a spell %s but my target (%d) is dead.",
@@ -2241,10 +2242,11 @@ function Casting.UseAA(aaName, targetId, bAllowDead, retryCount)
 
     local targetSpawn = mq.TLO.Spawn(targetId)
 
-    if targetSpawn() and targetSpawn.FeetWet() ~= me.FeetWet() then
-        Logger.log_debug("\ayUseAA(): \arCan't cast %s on %d - swim state mismatch", aaName, targetId)
-        return false
-    end
+    -- TEMP 6/26: FeetWet swim-state check disabled - a flyer flying above a pool (e.g. Hartini in Stillmoon) reports FeetWet but its feet aren't actually wet, blocking all casts. Not a verified EQ mechanic.
+    -- if targetSpawn() and targetSpawn.FeetWet() ~= me.FeetWet() then
+    --     Logger.log_debug("\ayUseAA(): \arCan't cast %s on %d - swim state mismatch", aaName, targetId)
+    --     return false
+    -- end
 
     if not bAllowDead and targetSpawn() and targetSpawn.Dead() then
         Logger.log_debug("\ayUseAA(): \arAbility Failed!: I tried to use %s but my target (%d) is dead.",
