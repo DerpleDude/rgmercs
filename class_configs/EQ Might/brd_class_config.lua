@@ -42,7 +42,7 @@ local Tooltips     = {
 }
 
 local _ClassConfig = {
-    _version          = "3.2 - EQ Might",
+    _version          = "3.3 - EQ Might",
     _author           = "Algar, Derple, Grimmier, Tiddliestix, SonicZentropy",
     ['Modes']         = { --other modes to reorder spell priorities may be added back in at a later date.
         'General',
@@ -118,19 +118,22 @@ local _ClassConfig = {
             "Selo's Accelerando",         -- Level 5
         },
         ['EndBreathSong'] = {
-            "Tarew's Aquatic Ayre", -- Level 16
+            "Tarew's Aquatic Ayre",      -- Level 16
         },
-        ['AriaSong'] = {
+        ['AreaAriaSong'] = {             -- AoE, standard Aria
             "Aria of the Harmoniarch",   -- Level 70 EQM Custom
             "Ancient: Call of Power",    -- Level 70
-            "Eriki's Psalm of Power",    -- Level 69
             "Yelhun's Mystic Call",      -- Level 68
-            "Echo of the Trusik",        -- Level 65
-            "Rizlona's Call of Flame",   -- Level 64 overhaste/spell damage
+            "Echo of the Trusik",        -- Level 65 overhaste/spell damage
             "Warsong of the Vah Shir",   -- Level 60 overhaste only
-            -- "Rizlona's Fire",         -- Level 53 spell damage only
             "Battlecry of the Vah Shir", -- Level 52 overhaste only
-            -- "Rizlona's Embers",       -- Level 45 spell damage only
+            "Rizlona's Embers",          -- Level 45 spell damage only
+        },
+        ['GroupAriaSong'] = {            -- Group only, also affects procs
+            "Eriki's Psalm of Power",    -- Level 69
+            "Call of the Muse",          -- Level 65
+            "Rizlona's Call of Flame",   -- Level 64 overhaste/spell damage
+            "Rizlona's Fire",            -- Level 53 spell damage only
         },
         ['ArcaneSong'] = {
             "Arcane Aria", -- Level 70
@@ -244,6 +247,7 @@ local _ClassConfig = {
         },
         ['Jonthan'] = {
             "Jonthan's Mightful Caretaker", -- Level 70
+            "Jonthan's Mightful Watcher",   -- Level 64 EQM Custom
             "Jonthan's Inspiration",        -- Level 58
             "Jonthan's Provocation",        -- Level 45
             "Jonthan's Whistling Warsong",  -- Level 7
@@ -458,7 +462,9 @@ local _ClassConfig = {
             doFullRotation = true,
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
-                return not (combat_state == "Downtime" and mq.TLO.Me.Invis()) and not Globals.InMedState and Core.CombatActionsCheck()
+                if Globals.InMedState then return false end
+                if combat_state == "Downtime" and mq.TLO.Me.Invis() then return false end
+                return Core.CombatActionsCheck()
             end,
         },
         {
@@ -663,9 +669,17 @@ local _ClassConfig = {
             },
             --failsafe/fallback to fill dead space and/or refresh charges, may adjust after more testing
             {
-                name = "AriaSong",
+                name = "AreaAriaSong",
                 type = "Song",
-                load_cond = function(self) return Config:GetSetting('UseAria') > 1 end,
+                load_cond = function(self) return Config:GetSetting('AriaChoice') == 2 end,
+                cond = function(self, songSpell)
+                    return (mq.TLO.Me.Song(songSpell.Name()).Duration.TotalSeconds() or 0) <= 6
+                end,
+            },
+            {
+                name = "GroupAriaSong",
+                type = "Song",
+                load_cond = function(self) return Config:GetSetting('AriaChoice') == 3 end,
                 cond = function(self, songSpell)
                     return (mq.TLO.Me.Song(songSpell.Name()).Duration.TotalSeconds() or 0) <= 6
                 end,
@@ -698,9 +712,17 @@ local _ClassConfig = {
         },
         ['Melody'] = {
             {
-                name = "AriaSong",
+                name = "AreaAriaSong",
                 type = "Song",
-                load_cond = function(self) return Config:GetSetting('UseAria') > 1 end,
+                load_cond = function(self) return Config:GetSetting('AriaChoice') == 2 end,
+                cond = function(self, songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseAria") and self.Helpers.RefreshBuffSong(songSpell)
+                end,
+            },
+            {
+                name = "GroupAriaSong",
+                type = "Song",
+                load_cond = function(self) return Config:GetSetting('AriaChoice') == 3 end,
                 cond = function(self, songSpell)
                     return self.Helpers.CheckSongStateUse(self, "UseAria") and self.Helpers.RefreshBuffSong(songSpell)
                 end,
@@ -874,7 +896,8 @@ local _ClassConfig = {
                 cond = function(self, aaName, target)
                     local combatState = Combat.GetCachedCombatState()
                     -- if in combat, check self, out of combat, also check others
-                    return (combatState == "Combat" and (mq.TLO.Me.Buff(aaName).Duration.TotalSeconds() or 0) < 15) or (combatState == "Downtime" and Casting.GroupBuffAACheck(aaName, target))
+                    return (combatState == "Combat" and (mq.TLO.Me.Buff(aaName).Duration.TotalSeconds() or 0) < 15) or
+                        (combatState == "Downtime" and Casting.GroupBuffAACheck(aaName, target))
                 end,
             },
         },
@@ -899,7 +922,8 @@ local _ClassConfig = {
                 { name = "RunBuff",        cond = function(self) return Config:GetSetting('UseRunBuff') and not Casting.CanUseAA("Selo's Sonata") end, },
                 { name = "EndBreathSong",  cond = function(self) return Config:GetSetting('UseEndBreath') end, },
                 -- major group buffs
-                { name = "AriaSong",       cond = function(self) return Config:GetSetting('UseAria') > 1 end, },
+                { name = "AreaAriaSong",   cond = function(self) return Config:GetSetting('AriaChoice') == 2 end, },
+                { name = "GroupAriaSong",  cond = function(self) return Config:GetSetting('AriaChoice') == 3 end, },
                 { name = "WarMarchSong",   cond = function(self) return Config:GetSetting('UseMarch') > 1 end, },
                 { name = "ProcSong",       cond = function(self) return Config:GetSetting('UseProcSong') > 1 end, },
                 { name = "ArcaneSong",     cond = function(self) return Config:GetSetting('UseArcane') > 1 end, },
@@ -1247,6 +1271,20 @@ local _ClassConfig = {
         },
 
         -- Offensive
+        ['AriaChoice']      = {
+            DisplayName = "Aria Choice:",
+            Group = "Abilities",
+            Header = "Buffs",
+            Category = "Group",
+            Index = 103,
+            Tooltip = Tooltips.AriaSong,
+            Type = "Combo",
+            ComboOptions = { 'None', 'AoE', 'Group', },
+            Default = 2,
+            Min = 1,
+            Max = 3,
+            RequiresLoadoutChange = true,
+        },
         ['UseAria']         = {
             DisplayName = "Use Aria",
             Group = "Abilities",

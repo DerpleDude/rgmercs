@@ -9,7 +9,7 @@ local Logger       = require("utils.logger")
 local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
-    _version              = "3.1 - EQ Might",
+    _version              = "3.2 - EQ Might",
     _author               = "Algar, Derple",
     ['ModeChecks']        = {
         IsHealing = function() return true end,
@@ -194,11 +194,13 @@ local _ClassConfig = {
         },
         ['LowLvlAtkBuff'] = {
             -- Low Level Attack Buff --- user under level 86. Including Harnessing of Spirit as they will have similar usecases and targets.
-            "Champion",              -- Level 70
-            "Ferine Avatar",         -- Level 65
-            "Ancient: Feral Avatar", -- Level 60
-            "Primal Avatar",         -- Level 60
-            "Harnessing of Spirit",  -- Level 46
+            "Champion",                  -- Level 70
+            "Talisman of Savage Avatar", -- Level 66 EQM Custom
+            "Ferine Avatar",             -- Level 65
+            "Talisman of Feral Avatar",  -- Level 61
+            "Primal Avatar",             -- Level 60
+            "Avatar",                    -- Level 59
+            "Harnessing of Spirit",      -- Level 46
         },
         ['LowLvlHPBuff'] = {
             "Talisman of Kragg",  -- Level 55 - Single
@@ -781,7 +783,7 @@ local _ClassConfig = {
         },
     },
     ['Rotations']         = {
-        ['ProcBuff']    = {
+        ['ProcBuff']       = {
             {
                 name = "Legendary Armband of the Panther",
                 type = "Item",
@@ -819,7 +821,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['CombatBuff']  = {
+        ['CombatBuff']     = {
             {
                 name = "Companion's Blessing",
                 type = "AA",
@@ -858,7 +860,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Burn']        = {
+        ['Burn']           = {
             {
                 name = "Ancestral Aid",
                 type = "AA",
@@ -898,7 +900,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Malo']        = {
+        ['Malo']           = {
             {
                 name = "AEMaloSpell",
                 type = "Spell",
@@ -924,7 +926,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Slow']        = {
+        ['Slow']           = {
             {
                 name = "Tigir's Insect Swarm",
                 type = "AA",
@@ -962,7 +964,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['PutridDecay'] = {
+        ['PutridDecay']    = {
             {
                 name = "PutridDecay",
                 type = "Spell",
@@ -971,7 +973,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Cripple']     = {
+        ['Cripple']        = {
             {
                 name = "CrippleSpell",
                 type = "Spell",
@@ -980,7 +982,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['DPS']         = {
+        ['DPS']            = {
             {
                 name = "Epic",
                 type = "Item",
@@ -1030,7 +1032,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['DPS(AE)']     = {
+        ['DPS(AE)']        = {
             {
                 name = "PBAEPoison",
                 type = "Spell",
@@ -1040,7 +1042,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['PetSummon']   = {
+        ['PetSummon']      = {
             {
                 name = "Artifact of Nature Spirit",
                 type = "Item",
@@ -1068,7 +1070,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Downtime']    = {
+        ['Downtime']       = {
             {
                 name = "Cannibalization",
                 type = "AA",
@@ -1093,7 +1095,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['PetBuff']     = {
+        ['PetBuff']        = {
             {
                 name = "HasteBuff",
                 type = "Spell",
@@ -1119,7 +1121,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['GroupBuff']   = {
+        ['GroupBuff']      = {
             {
                 name = "SlowProcBuff",
                 type = "Spell",
@@ -1281,7 +1283,8 @@ local _ClassConfig = {
                     local aaBuff = Casting.GetAASpell(aaName).Name() or ""
                     local combatState = Combat.GetCachedCombatState()
                     -- if in combat, check self, out of combat, also check others
-                    return (combatState == "Combat" and (mq.TLO.Me.Buff(aaBuff).Duration.TotalSeconds() or 0) < 15) or (combatState == "Downtime" and Casting.GroupBuffAACheck(aaName, target))
+                    return (combatState == "Combat" and (mq.TLO.Me.Buff(aaBuff).Duration.TotalSeconds() or 0) < 15) or
+                        (combatState == "Downtime" and Casting.GroupBuffAACheck(aaName, target))
                 end,
             },
         },

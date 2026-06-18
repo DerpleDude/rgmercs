@@ -889,7 +889,9 @@ local _ClassConfig = {
             doFullRotation = true,
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
-                return not (combat_state == "Downtime" and mq.TLO.Me.Invis()) and not Globals.InMedState and Core.CombatActionsCheck()
+                if Globals.InMedState then return false end
+                if combat_state == "Downtime" and mq.TLO.Me.Invis() then return false end
+                return Core.CombatActionsCheck()
             end,
         },
         {

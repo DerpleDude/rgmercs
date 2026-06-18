@@ -8,7 +8,7 @@ local Logger    = require("utils.logger")
 local Targeting = require("utils.targeting")
 
 return {
-    _version              = "1.7 - EQ Might",
+    _version              = "1.8 - EQ Might",
     _author               = "Derple, Algar",
     ['Modes']             = {
         'DPS',
@@ -215,7 +215,7 @@ return {
         },
         ['AtkBuff'] = {
             -- - Single Ferocity
-            "Ferocity of Irionu", -- Level 70
+            "Ferocity of Irionu", -- Level 69
             "Ferocity",           -- Level 65
             "Savagery",           -- Level 60
         },
@@ -394,6 +394,12 @@ return {
             local disc = self.ResolvedActionMap['DmgModDisc']
             return Casting.IHaveBuff("Bestial Alignment") or (disc and disc() and Casting.IHaveBuff(disc.Name()))
                 or Casting.IHaveBuff("Ferociousness")
+        end,
+        -- Irionu artifact is only Rk. 1
+        PreferAtkBuffSpell = function(self)
+            if mq.TLO.Me.Level() < 67 or not mq.TLO.FindItem("=Artifact of Irionu")() then return true end
+            local atkBuff = self.ResolvedActionMap['AtkBuff']
+            return atkBuff and atkBuff() and atkBuff.Name() == "Ferocity of Irionu" and (atkBuff.RankName.Rank() or 0) >= 2
         end,
         --function to make sure we don't have non-hostiles in range before we use AE damage or non-taunt AE hate abilities
 
@@ -656,7 +662,7 @@ return {
             {
                 name = "Artifact of Irionu",
                 type = "Item",
-                load_cond = function() return mq.TLO.Me.Level() >= 67 and mq.TLO.FindItem("=Artifact of Irionu")() end,
+                load_cond = function(self) return not self.Helpers.PreferAtkBuffSpell(self) end,
                 cond = function(self, itemName, target)
                     return Casting.GroupBuffItemCheck(itemName, target)
                 end,
@@ -664,7 +670,7 @@ return {
             {
                 name = "AtkBuff",
                 type = "Spell",
-                load_cond = function() return mq.TLO.Me.Level() < 67 or not mq.TLO.FindItem("=Artifact of Irionu")() end,
+                load_cond = function(self) return self.Helpers.PreferAtkBuffSpell(self) end,
                 cond = function(self, spell, target)
                     -- Make sure this is gemmed due to long refresh, and only use the single target versions on classes that need it.
                     if not Targeting.TargetIsAMelee(target) or not Casting.CastReady(spell) then return false end
@@ -854,7 +860,7 @@ return {
                 { name = "BloodDot",   cond = function(self) return Config:GetSetting('DoDot') end, },
                 { name = "EndemicDot", cond = function(self) return Config:GetSetting('DoDot') end, },
                 { name = "SwarmPet", },
-                { name = "AtkBuff", cond = function(self) return mq.TLO.Me.Level() < 67 or not mq.TLO.FindItem("=Artifact of Irionu")() end,
+                { name = "AtkBuff", cond = function(self) return self.Helpers.PreferAtkBuffSpell(self) end,
                 },
                 { name = "PetGrowl", },
                 { name = "PetBlockSpell", },
