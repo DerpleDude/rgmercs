@@ -54,6 +54,8 @@ Module.TempSettings.ShowFailedSpells         = false
 Module.TempSettings.ResolvingActions         = true
 Module.TempSettings.CombatModeSet            = false
 Module.TempSettings.NewCombatMode            = false
+Module.TempSettings.ForceRepackGems          = false
+Module.TempSettings.LastFastPathTime         = 0
 Module.TempSettings.CombatModeChangeTime     = 0
 Module.TempSettings.MissingSpells            = {}
 Module.TempSettings.MissingSpellsHighestOnly = true
@@ -149,14 +151,13 @@ Module.CommandHandlers                       = {
                     return true
                 end
 
-                if not self:IsModeActive(newMode) then
-                    Config:SetSetting('Mode', newModeIdx)
-                    self:SetCombatMode(newMode)
+                if self:IsModeActive(newMode) then
+                    Logger.log_info("\awMode \am%s\aw is already active.", newMode)
                     return true
                 end
 
-                Logger.log_info("\awMode successfully set to: \am%s", newMode)
-
+                Config:SetSetting('Mode', newModeIdx)
+                Logger.log_info("\awMode change to \am%s\aw requested.", newMode)
                 return true
             end,
     },
@@ -167,6 +168,17 @@ Module.CommandHandlers                       = {
             self:RescanLoadout()
 
             Logger.log_info("\awManual loadout scan initiated.")
+
+            return true
+        end,
+    },
+    reordergems = {
+        usage = "/rgl reordergems",
+        about = "Repack your spell bar into priority order, ignoring current placement.",
+        handler = function(self)
+            self:ReorderGems()
+
+            Logger.log_info("\awGem reorder initiated.")
 
             return true
         end,
@@ -465,6 +477,11 @@ function Module:RescanLoadout()
     self.TempSettings.NewCombatMode = true
 end
 
+function Module:ReorderGems()
+    self.TempSettings.ForceRepackGems = true
+    self.TempSettings.NewCombatMode = true
+end
+
 function Module:SetCombatMode(mode)
     if not Tables.TableContains(self.ClassConfig.Modes, mode) then
         Logger.log_error("\ayInvalid Mode: \am%s", mode)
@@ -478,14 +495,14 @@ function Module:SetCombatMode(mode)
         self.TempSettings.ResolvingActions = false
 
         if self.ClassConfig.SpellList then
-            self.SpellLoadOut, self.LoadOutName = Rotation.SetSpellLoadOutByPriority(self, self.ClassConfig.SpellList)
+            local forceRepack = self.TempSettings.ForceRepackGems or not self.TempSettings.CombatModeSet
+            self.SpellLoadOut, self.LoadOutName = Rotation.SetSpellLoadOutByPriority(self, self.ClassConfig.SpellList, forceRepack)
+            self.TempSettings.ForceRepackGems = false
         else
             self.SpellLoadOut = Rotation.SetSpellLoadOutByGem(self, self.ClassConfig.Spells)
             self.LoadOutName = "Default"
         end
     end
-
-    Rotation.LoadSpellLoadOut(self.SpellLoadOut)
 
     if self.ClassConfig.OnModeChange then
         self.ClassConfig.OnModeChange(self, mode)
@@ -494,6 +511,81 @@ function Module:SetCombatMode(mode)
     self.TempSettings.MissingSpells = Rotation.FindAllMissingSpells(self.ClassConfig.AbilitySets, self.TempSettings.MissingSpellsHighestOnly)
 
     Modules:ExecAll("OnCombatModeChanged")
+end
+
+function Module:ComputedLoadoutMatchesCurrent()
+    if not self.ClassConfig or not self.ClassConfig.SpellList then return false end
+
+    local now = Globals.GetTimeMS()
+    if (now - self.TempSettings.LastFastPathTime) < 1000 then return false end
+    self.TempSettings.LastFastPathTime = now
+
+    local savedMap = self.ResolvedActionMap
+    self.ResolvedActionMap = Rotation.ResolveActions(self.ClassConfig.ItemSets, self.ClassConfig.AbilitySets, self.ClassConfig.AASets)
+
+    local forceRepack = self.TempSettings.ForceRepackGems
+    local candidate = Rotation.SetSpellLoadOutByPriority(self, self.ClassConfig.SpellList, forceRepack)
+
+    local me = mq.TLO.Me
+    for gem = 1, me.NumGems() do
+        local entry = candidate[gem]
+        local computedRank = entry and entry.spell and entry.spell.RankName() or nil
+        if computedRank ~= me.Gem(gem)() then
+            self.ResolvedActionMap = savedMap
+            return false
+        end
+    end
+    return true
+end
+
+function Module:ReconcileLoadout()
+    if not self.ClassConfig or not self.SpellLoadOut then return end
+    if self.TempSettings.ResolvingActions then return end
+    if Globals.CurrentState ~= "Downtime" then return end
+    if not Combat.CombatSettled(1000) then return end
+
+    local me = mq.TLO.Me
+    if me.Feigning() then return end
+
+    local numGems = me.NumGems()
+    for gem = 1, numGems do
+        local loadoutData = self.SpellLoadOut[gem]
+        if loadoutData then
+            local desiredRank = loadoutData.spell and loadoutData.spell.RankName() or nil
+            if desiredRank and me.Gem(gem)() ~= desiredRank then
+                Logger.log_debug("\ayReconcile:\ax gem \am%d\ax mismatch (have=\at%s\ax, want=\ag%s\ax)",
+                    gem, tostring(me.Gem(gem)()), desiredRank)
+                local _, permanent = Casting.MemorizeSpell(gem, desiredRank, false, 15000)
+                if permanent then
+                    Logger.log_warning("\ayReconcile:\ar %s no longer in book; skipping gem %d.", desiredRank, gem)
+                end
+            end
+        end
+    end
+end
+
+function Module:PromptRestoreSwapSlot()
+    if not self.ClassConfig or not self.SpellLoadOut then return end
+    if Targeting.GetXTHaterCount() > 0 then return end
+
+    local me = mq.TLO.Me
+    if me.Feigning() then return end
+
+    local swapGem = Casting.UseGem
+    for gem = 1, me.NumGems() do
+        if gem ~= swapGem then
+            local entry = self.SpellLoadOut[gem]
+            local rank = entry and entry.spell and entry.spell.RankName() or nil
+            if rank and me.Gem(gem)() ~= rank then return end
+        end
+    end
+
+    local desired = self.SpellLoadOut[swapGem]
+    local desiredRank = desired and desired.spell and desired.spell.RankName() or nil
+    if not desiredRank then return end
+    if me.Gem(swapGem)() == desiredRank then return end
+
+    Casting.MemorizeSpell(swapGem, desiredRank, false, 15000)
 end
 
 function Module:OnCombatModeChanged()
@@ -651,9 +743,17 @@ function Module:Render()
 
         if ImGui.CollapsingHeader(string.format("Spell Loadout (%s)", self.LoadOutName)) then
             ImGui.Indent()
-            if ImGui.SmallButton("Reload Spells") then
-                self:RescanLoadout()
-                Logger.log_info("\awManual loadout scan initiated.")
+            if self.ClassConfig.SpellList then
+                if ImGui.SmallButton("Reorder Gems") then
+                    self:ReorderGems()
+                    Logger.log_info("\awGem reorder initiated.")
+                end
+                Ui.Tooltip("Repack your spell bar into priority order.")
+            else
+                if ImGui.SmallButton("Reload Spells") then
+                    self:RescanLoadout()
+                    Logger.log_info("\awManual loadout scan initiated.")
+                end
             end
 
             if Tables.GetTableSize(self.SpellLoadOut) > 0 then
@@ -1722,25 +1822,31 @@ function Module:GiveTime()
         return
     end
 
-    -- Main Module logic goes here.
-    if (self.TempSettings.NewCombatMode and combat_state == "Downtime") or not self.TempSettings.CombatModeSet then
-        Logger.log_debug("New Combat Mode Requested: %s", self.ClassConfig.Modes[Config:GetSetting('Mode')])
+    if self.TempSettings.NewCombatMode or not self.TempSettings.CombatModeSet then
+        local canApply = (not self.TempSettings.CombatModeSet)
+            or (combat_state == "Downtime" and Combat.CombatSettled(1000))
+            or self:ComputedLoadoutMatchesCurrent()
 
-        self:SetCombatMode(self.ClassConfig.Modes[Config:GetSetting('Mode')])
-        self:GetRotations()
-        if self:IsCuring() then
-            if self.ClassConfig.Cures and self.ClassConfig.Cures.GetCureSpells then
-                Core.SafeCallFunc("GetCureSpells", self.ClassConfig.Cures.GetCureSpells, self)
+        if canApply then
+            Logger.log_debug("New Combat Mode Requested: %s", self.ClassConfig.Modes[Config:GetSetting('Mode')])
+
+            self:SetCombatMode(self.ClassConfig.Modes[Config:GetSetting('Mode')])
+            self:GetRotations()
+            if self:IsCuring() then
+                if self.ClassConfig.Cures and self.ClassConfig.Cures.GetCureSpells then
+                    Core.SafeCallFunc("GetCureSpells", self.ClassConfig.Cures.GetCureSpells, self)
+                end
             end
-        end
-        self:SetRotationActions()
-        self.TempSettings.NewCombatMode = false
-        self.TempSettings.CombatModeSet = true
-        self.TempSettings.CombatModeChangeTime = Globals.GetTimeSeconds()
+            self:SetRotationActions()
+            self.TempSettings.NewCombatMode = false
+            self.TempSettings.CombatModeSet = true
+            self.TempSettings.CombatModeChangeTime = Globals.GetTimeSeconds()
 
-        -- update our peers about our new state.
-        Config:BroadcastConfigs()
+            Config:BroadcastConfigs()
+        end
     end
+
+    self:ReconcileLoadout()
 
     if self.CombatState ~= combat_state and combat_state == "Downtime" then
         self:ResetRotation()

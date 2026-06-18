@@ -848,7 +848,7 @@ Config.DefaultConfig                                     = {
         Group = "Abilities",
         Header = "Common",
         Category = "Common Rules",
-        Index = 7,
+        Index = 6,
         Tooltip = "Don't use spells with a fire resist type (as long as they aren't flagged in the config to ignore this check).\n" ..
             "This is a top-level setting that can be freely toggled without changing spell loadout. Refer to the Named List FAQs for more details.",
         Default = false,
@@ -863,7 +863,7 @@ Config.DefaultConfig                                     = {
         Group = "Abilities",
         Header = "Common",
         Category = "Common Rules",
-        Index = 8,
+        Index = 7,
         Tooltip = "Don't use spells with a cold resist type (as long as they aren't flagged in the config to ignore this check).\n" ..
             "This is a top-level setting that can be freely toggled without changing spell loadout. Refer to the Named List FAQs for more details.",
         Default = false,
@@ -874,7 +874,7 @@ Config.DefaultConfig                                     = {
         Group = "Abilities",
         Header = "Common",
         Category = "Common Rules",
-        Index = 9,
+        Index = 8,
         Tooltip = "Don't use spells with a magic resist type (as long as they aren't flagged in the config to ignore this check).\n" ..
             "This is a top-level setting that can be freely toggled without changing spell loadout. Refer to the Named List FAQs for more details.",
         Default = false,
@@ -885,7 +885,7 @@ Config.DefaultConfig                                     = {
         Group = "Abilities",
         Header = "Common",
         Category = "Common Rules",
-        Index = 10,
+        Index = 9,
         Tooltip = "Don't use spells with a poison resist type (as long as they aren't flagged in the config to ignore this check).\n" ..
             "This is a top-level setting that can be freely toggled without changing spell loadout. Refer to the Named List FAQs for more details.",
         Default = false,
@@ -896,7 +896,7 @@ Config.DefaultConfig                                     = {
         Group = "Abilities",
         Header = "Common",
         Category = "Common Rules",
-        Index = 11,
+        Index = 10,
         Tooltip = "Don't use spells with a disease resist type (as long as they aren't flagged in the config to ignore this check).\n" ..
             "This is a top-level setting that can be freely toggled without changing spell loadout. Refer to the Named List FAQs for more details.",
         Default = false,
@@ -907,7 +907,7 @@ Config.DefaultConfig                                     = {
         Group = "Abilities",
         Header = "Common",
         Category = "Common Rules",
-        Index = 12,
+        Index = 11,
         Tooltip = "Use immunity data shipped with RGMercs (if available) to automatically determine whether to skip a spell.\n" ..
             "Refer to the Named List FAQs for more details.",
         Default = true,
@@ -1243,29 +1243,12 @@ Config.DefaultConfig                                     = {
         Max = 999,
         ConfigType = "Advanced",
     },
-    ['LastGemRemem']               = {
-        DisplayName = "Remem After Buff:",
-        Group = "Abilities",
-        Header = "Common",
-        Category = "Common Rules",
-        Index = 5,
-        Tooltip = "Choose what do with the last gem slot after we use it to buff:\n" ..
-            "Do Nothing: Use the slot as needed for buffs, but don't rememorize anything.\n" ..
-            "Remem Previous Spell: Rememorize the spell that was in the slot before buffing, if there was one.\n" ..
-            "Remem Loadout Spell: Rememorize the spell from the current loadout, if there is one.",
-        Default = 3,
-        Min = 1,
-        Max = #Globals.Constants.LastGemRemem,
-        Type = "Combo",
-        ComboOptions = Globals.Constants.LastGemRemem,
-        ConfigType = "Advanced",
-    },
     ['IgnoreLevelCheck']           = {
         DisplayName = "Ignore Spell Level Checks",
         Group = "Abilities",
         Header = "Common",
         Category = "Common Rules",
-        Index = 6,
+        Index = 5,
         Tooltip = "Ignore checks for minimum level on spells. Used on servers that allow heals, buffs and other spells to land on PCs regardless of level.",
         Default = Globals.ServerEnv:lower() ~= "live", -- more emu servers ignore level checks than not, and all the ones we support currently do. lesser of two evils.
         ConfigType = "Advanced",

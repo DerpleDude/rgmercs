@@ -1540,6 +1540,7 @@ return {
             Default = 1,
             Min = 1,
             Max = 4,
+            RequiresLoadoutChange = true,
         },
         ['DoACBuff']          = {
             DisplayName = "Use AC Buff",

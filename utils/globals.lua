@@ -268,7 +268,6 @@ for i, v in ipairs(Globals.Constants.ConColors) do Globals.Constants.ConColorsNa
 
 Globals.Constants.SpireChoices      = { "First", "Second", "Third", "Disabled", }
 
-Globals.Constants.LastGemRemem      = { "Do Nothing", "Mem Previous Spell", "Mem Loadout Spell", }
 Globals.Constants.DebuffChoice      = { "Never", "Based on Con Color", "Always", }
 
 Globals.Constants.ScanNamedPriority = { "Named", "No Preference", "Non-Named", }

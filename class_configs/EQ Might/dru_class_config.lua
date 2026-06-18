@@ -609,7 +609,7 @@ local _ClassConfig = {
             name = 'InstantRunBuff',
             state = 1,
             steps = 1,
-            targetId = function(self) return Combat.GetCachedCombatState() == "Combat" and Targeting.CheckForAutoTargetID() or Casting.GetBuffableGroupIDs() end,
+            targetId = function(self) return Combat.GetCachedCombatState() == "Combat" and Targeting.CheckForAutoTargetID() or Casting.GetBuffableIDs() end,
             load_cond = function(self) return Config:GetSetting('DoMoveBuffs') and Casting.CanUseAA("Communion of the Cheetah") end,
             cond = function(self, combat_state)
                 local downtime = combat_state == "Downtime" and not mq.TLO.Me.Invis()
@@ -1018,7 +1018,8 @@ local _ClassConfig = {
                     local aaBuff = Casting.GetAASpell(aaName).Name() or ""
                     local combatState = Combat.GetCachedCombatState()
                     -- if in combat, check self, out of combat, also check others
-                    return (combatState == "Combat" and (mq.TLO.Me.Buff(aaBuff).Duration.TotalSeconds() or 0) < 15) or (combatState == "Downtime" and Casting.GroupBuffAACheck(aaName, target))
+                    return (combatState == "Combat" and (mq.TLO.Me.Buff(aaBuff).Duration.TotalSeconds() or 0) < 15) or
+                        (combatState == "Downtime" and Casting.GroupBuffAACheck(aaName, target))
                 end,
             },
         },

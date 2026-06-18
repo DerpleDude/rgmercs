@@ -1320,12 +1320,13 @@ end
 --- @param spell string The name of the spell to memorize.
 --- @param waitSpellReady boolean Whether to wait until the spell is ready to be memorized.
 --- @param maxWait number The maximum time to wait for the spell to be ready, in milliseconds.
---- @return boolean|nil
+--- @return boolean loaded True when the gem ended up showing the requested spell.
+--- @return boolean permanent True when the spell is no longer in the book (e.g. persona change) and a retry is pointless.
 function Casting.MemorizeSpell(gem, spell, waitSpellReady, maxWait)
     local me = mq.TLO.Me
     if me.CombatState():lower() == "combat" and Targeting.IHaveAggro(100) then
         Logger.log_warning("\atMemorizeSpell\aw():\ar %s was not memorized in slot %d due to aggro! The loadout may need manual rescan after combat.", spell, gem)
-        return false
+        return false, false
     end
     local aggressiveMem      = Config:GetSetting('AggressivelyMemorizeSpells')
     local aggressiveMemTimer = Config:GetSetting('AggressivelyMemorizeTimer') * 1000
@@ -1337,6 +1338,8 @@ function Casting.MemorizeSpell(gem, spell, waitSpellReady, maxWait)
 
     Casting.Memorizing = true
 
+    local interrupted = false
+    local permanent = false
     local startMem = Globals.GetTimeMS()
     while (me.Gem(gem)() ~= mq.TLO.Spell(spell).Name() or (waitSpellReady and not me.SpellReady(gem)())) and ((Globals.GetTimeMS() - startMem) < maxWait) do
         Logger.log_debug("\atMemorizeSpell\aw():\ay Waiting for '%s' to load in slot %d'...", spell, gem)
@@ -1345,10 +1348,12 @@ function Casting.MemorizeSpell(gem, spell, waitSpellReady, maxWait)
                 "\atMemorizeSpell\aw():\ay I was interrupted while waiting for spell '%s' to load in slot %d'! Aborting. CombatState(%s) Casting(%s) Moving(%s) Stick(%s) Nav(%s) MoveTo(%s))",
                 spell, gem, me.CombatState(), me.Casting() or "None", Strings.BoolToColorString(me.Moving()), Strings.BoolToColorString(mq.TLO.Stick.Active()),
                 Strings.BoolToColorString(mq.TLO.Navigation.Active()), Strings.BoolToColorString(mq.TLO.MoveTo.Moving()))
+            interrupted = true
             break
         end
         if not me.Book(spell)() then
             Logger.log_debug("\atMemorizeSpell\aw():\ar I was trying to memorize %s as my persona was changed, aborting.", spell)
+            permanent = true
             break
         end
 
@@ -1369,6 +1374,12 @@ function Casting.MemorizeSpell(gem, spell, waitSpellReady, maxWait)
         spell, gem, (Globals.GetTimeMS() - startMem) / 1000, maxWait / 1000)
 
     Casting.Memorizing = false
+
+    local loaded = me.Gem(gem)() == mq.TLO.Spell(spell).Name()
+    if not loaded and not interrupted and not permanent then
+        Logger.log_error("\atMemorizeSpell\aw():\ar Timed out memming '%s' in slot %d with no interrupt detected - the spell bar may be incomplete.", spell, gem)
+    end
+    return loaded, permanent
 end
 
 --- Returns true if the player owns the AA (not nil), meets the minimum level requirement (or is on the Might server), and has at least rank 1 purchased. All three gates must pass.

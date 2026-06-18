@@ -600,7 +600,7 @@ local _ClassConfig = {
             },
         },
     },
-    ['Charm']         = {
+    ['Charm']             = {
         ['Assist'] = {
             { name = "LowLevelStun", type = "Spell", cond = function(self, spell, target) return Targeting.TargetNotStunned() end, },
             { name = "StunTimer6",   type = "Spell", cond = function(self, spell, target) return Targeting.TargetNotStunned() end, },
@@ -1067,6 +1067,7 @@ local _ClassConfig = {
             Default = 1,
             Min = 1,
             Max = 4,
+            RequiresLoadoutChange = true,
         },
         ['DoACBuff']          = {
             DisplayName = "Use AC Buff",
