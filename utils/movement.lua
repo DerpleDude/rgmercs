@@ -37,7 +37,7 @@ function Movement:DoStick(targetId)
     if Config:GetSetting('StickHow'):len() > 0 then
         self:DoStickCmd("%s", Config:GetSetting('StickHow'))
     else
-        if Core.IAmMA() then
+        if Core.IsTanking() then
             self:DoStickCmd("10 id %d %s uw", targetId, Config:GetSetting('MovebackWhenTank') and "moveback" or "")
         else
             local stickDist = (mq.TLO.Spawn(targetId).Height() or 5) > 15 and 20 or 10
