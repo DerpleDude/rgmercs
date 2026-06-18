@@ -215,6 +215,14 @@ Module.CommandHandlers = {
         usage = "/rgl forcecharm <id?>",
         about = "Force-charm your target or <id>; held until in range. /rgl forcecharmclear to cancel.",
         handler = function(self, arg)
+            if not Core.CanCharm() then
+                Logger.log_error("/rgl forcecharm - your class can't charm.")
+                return true
+            end
+            if not Config:GetSetting('CharmOn') then
+                Logger.log_error("/rgl forcecharm - Charm is off.")
+                return true
+            end
             local charmId = arg and tonumber(arg)
             local s = charmId and mq.TLO.Spawn(charmId) or mq.TLO.Target
             if not (s and s() and (s.ID() or 0) > 0) then
@@ -223,10 +231,6 @@ Module.CommandHandlers = {
             end
             if not (Targeting.TargetIsType("npc", s) or Targeting.TargetIsType("npcpet", s)) then
                 Logger.log_error("/rgl forcecharm - target must be an npc.")
-                return true
-            end
-            if (mq.TLO.Me.Pet.ID() or 0) > 0 then
-                Logger.log_error("/rgl forcecharm - you already have a pet; drop it first (e.g. invis) to switch charms.")
                 return true
             end
             self:SetForceCharmId(s.ID())
@@ -771,7 +775,8 @@ end
 ---@return boolean true if id is one we intend to keep (persist pet or forcecharm)
 function Module:IsOwnKeptCharm(id)
     if id == 0 then return false end
-    if Globals.ForceCharmID == id then return true end
+    -- a forcecharm directive makes that mob the ONLY charm we keep; the held pet (if different) is dropped on break, not persisted
+    if Globals.ForceCharmID > 0 then return id == Globals.ForceCharmID end
     if Config:GetSetting('PersistCharm') and (mq.TLO.Me.Pet.ID() or 0) == id then return true end
     if Config:GetSetting('PersistCharm') and self.TempSettings.CharmTracker[id] ~= nil then return true end
     return false
@@ -779,8 +784,8 @@ end
 
 -- the single mob id we want peers to leave alone: forcecharm target, else our charmed pet (or the broken one we're re-grabbing)
 function Module:GetKeptCharmID()
-    if Globals.ForceCharmID > 0 then return Globals.ForceCharmID end
     if not Core.IsCharming() then return 0 end
+    if Globals.ForceCharmID > 0 then return Globals.ForceCharmID end
     -- always protect the charm we currently hold, from the moment we charm it - so peers never engage it, including the instant it breaks
     local petId = mq.TLO.Me.Pet.ID() or 0
     if petId > 0 and self.TempSettings.CharmTracker[petId] then return petId end
@@ -791,8 +796,10 @@ function Module:GetKeptCharmID()
     return 0
 end
 
--- our broken-but-tracked charm we're trying to re-grab (0 if none)
+-- the mob we want peers to help lock down: a forcecharm target we don't hold yet (locked pre-charm), or our broken-but-tracked charm (0 if none)
 function Module:GetLooseCharmID()
+    if not Core.IsCharming() then return 0 end
+    if Globals.ForceCharmID > 0 and (mq.TLO.Me.Pet.ID() or 0) ~= Globals.ForceCharmID then return Globals.ForceCharmID end
     for id, data in pairs(self.TempSettings.CharmTracker) do
         if data.loose then return id end
     end
@@ -1025,10 +1032,16 @@ function Module:DetectBreaks()
         if id ~= petId and not data.loose then
             local spawn = mq.TLO.Spawn(id)
             if spawn() and not spawn.Dead() and (spawn.Master.Type() or "") ~= "PC" then
-                data.loose = true
-                Logger.log_debug("\ayDetectBreaks :: charm broke on \at%s\ay (%d) - marking loose", spawn.CleanName() or "?", id)
-                Comms.HandleAnnounce(Comms.FormatChatEvent("Charm Broken", spawn.CleanName() or "?", mq.TLO.Me.DisplayName()),
-                    Config:GetSetting('CharmAnnounceGroup'), Config:GetSetting('CharmAnnounce'), Config:GetSetting('AnnounceToRaidIfInRaid'))
+                if Globals.ForceCharmID > 0 and Globals.ForceCharmID ~= id then
+                    -- a forcecharm on a different mob supersedes this one; abandon it instead of re-grabbing
+                    Logger.log_debug("\ayDetectBreaks :: charm broke on %d but forcecharm targets %d - abandoning", id, Globals.ForceCharmID)
+                    self:RemoveCCTarget(id)
+                else
+                    data.loose = true
+                    Logger.log_debug("\ayDetectBreaks :: charm broke on \at%s\ay (%d) - marking loose", spawn.CleanName() or "?", id)
+                    Comms.HandleAnnounce(Comms.FormatChatEvent("Charm Broken", spawn.CleanName() or "?", mq.TLO.Me.DisplayName()),
+                        Config:GetSetting('CharmAnnounceGroup'), Config:GetSetting('CharmAnnounce'), Config:GetSetting('AnnounceToRaidIfInRaid'))
+                end
             else
                 Logger.log_debug("\ayDetectBreaks :: tracked charm %d gone or dead - dropping", id)
                 self:RemoveCCTarget(id)
@@ -1042,11 +1055,8 @@ function Module:DoCharm()
     self:UpdateTimings()
     self:DetectBreaks()
 
-    -- a charm can't be broken on demand (only going invis drops it), so a forcecharm directive is moot while we hold a pet - clear it and bail
-    if (mq.TLO.Me.Pet.ID() or 0) > 0 then
-        if Globals.ForceCharmID > 0 then self:SetForceCharmId(0) end
-        return
-    end
+    -- pet slot full: nothing to charm until it frees (only invis or a natural break drops a charm); hold any forcecharm directive and wait
+    if (mq.TLO.Me.Pet.ID() or 0) > 0 then return end
 
     if not self:CharmReady() then return end
 
@@ -1066,7 +1076,6 @@ function Module:DoCharm()
     Logger.log_debug("\ayDoCharm :: cast on %d - pet now %d", target, mq.TLO.Me.Pet.ID() or 0)
     if (mq.TLO.Me.Pet.ID() or 0) == target then
         self:AddCCTarget(target)
-        if Globals.ForceCharmID == target then self:SetForceCharmId(0) end
     end
 end
 
@@ -1126,6 +1135,10 @@ function Module:SetForceCharmId(charmId)
     if charmId == Globals.ForceCharmID then return end
     if charmId > 0 then
         Logger.log_debug("\ayCharm: force charm set to %d", charmId)
+        -- forcecharm is now the only charm we care about; abandon any loose charm we were re-grabbing (a held pet is dropped later when it breaks)
+        for id, data in pairs(self.TempSettings.CharmTracker) do
+            if data.loose and id ~= charmId then self:RemoveCCTarget(id) end
+        end
     else
         Logger.log_debug("\ayCharm: force charm cleared from %d", Globals.ForceCharmID)
     end
@@ -1252,9 +1265,8 @@ function Module:Render()
         local tgt = mq.TLO.Target
         local validTarget = tgt() and (tgt.ID() or 0) > 0 and (Targeting.TargetIsType("npc", tgt) or Targeting.TargetIsType("npcpet", tgt))
         local buttonWidth = ImGui.GetWindowWidth() * 0.45
-        local charmButtonText = petId > 0 and "Drop Pet to Charm" or (validTarget and "Charm This Target" or "Target an NPC to Charm")
-        ImGui.BeginDisabled(not validTarget or petId > 0)
-        if ImGui.Button(charmButtonText, buttonWidth, 28) and validTarget and petId == 0 then
+        ImGui.BeginDisabled(not validTarget)
+        if ImGui.Button(validTarget and "Force Charm This Target" or "Target an NPC to Force Charm", buttonWidth, 28) and validTarget then
             self:SetForceCharmId(tgt.ID())
         end
         ImGui.EndDisabled()
