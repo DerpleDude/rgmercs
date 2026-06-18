@@ -587,6 +587,10 @@ function Combat.FindBestAutoTarget(validateFn)
         end
     end
 
+    if Globals.LastPulledID > 0 and not Combat.ValidCombatTarget(Globals.LastPulledID) then
+        Globals.LastPulledID = 0
+    end
+
     -- FollowMarkTarget causes RG to have allow RG toons focus on who the group has marked. We'll exit early if this is the case.
     if Config:GetSetting('FollowMarkTarget') then
         local markNPC = mq.TLO.Me.GroupMarkNPC(1)
