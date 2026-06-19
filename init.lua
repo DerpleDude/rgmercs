@@ -469,6 +469,8 @@ local function Main()
 
         Globals.CurrentState = "Downtime"
 
+        Targeting.ClearStuckXTargets()
+
         if Config:GetSetting('DoMed') ~= 1 then
             Casting.AutoMed()
         end

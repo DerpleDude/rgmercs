@@ -688,6 +688,17 @@ Config.DefaultConfig                                     = {
         Default = false,
         ConfigType = "Advanced",
     },
+    ['ClearStuckXTargets']         = {
+        DisplayName = "Clear Stuck XTargets",
+        Group = "Combat",
+        Header = "Targeting",
+        Category = "Targeting Behavior",
+        Index = 7,
+        Tooltip =
+        "EMU only: during downtime, use the #clearxtargets command to remove bugged corpse entries from XTarget slots. Existing xtarget assignments will be preserved and regenerated.",
+        Default = (Globals.BuildType == 'Emu'),
+        ConfigType = "Advanced",
+    },
 
     ['ScanNamedPriority']          = {
         DisplayName = "Scan Priority:",
