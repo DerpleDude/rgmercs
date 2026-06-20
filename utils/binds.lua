@@ -289,6 +289,24 @@ Binds.Handlers    = {
             Modules.ModuleList.Named:DeleteNamedFromCustomList(arg1)
         end,
     },
+    ['nameddeny'] = {
+        usage = "/rgl nameddeny [Name]",
+        about = "Marks a mob as NOT named in the current zone, suppressing the built-in default and any overlay. If no name is entered, your target's name is used.",
+        handler = function(name)
+            if not name then
+                if not mq.TLO.Target() then
+                    Logger.log_error("/rgl nameddeny - no name given and no valid target exists!")
+                    return
+                end
+                if not Targeting.TargetIsType("NPC") then
+                    Logger.log_error("/rgl nameddeny - target must be an NPC!")
+                    return
+                end
+                name = mq.TLO.Target.CleanName()
+            end
+            Modules.ModuleList.Named:DenyNamedFromCustomList(name)
+        end,
+    },
     ['immuneadd'] = {
         usage = "/rgl immuneadd <Fire|Cold|Magic|Poison|Disease|Slow|Snare|Stun> [Name]",
         about = "Flag a mob as immune to an element (Fire/Cold/Magic/Poison/Disease) or status effect (Slow/Snare/Stun) in the current zone. If no name is entered, your target's name is used.",
