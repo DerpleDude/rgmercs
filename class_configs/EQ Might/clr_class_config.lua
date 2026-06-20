@@ -762,7 +762,7 @@ local _ClassConfig = {
             {
                 name = "Artifact of Aegis",
                 type = "Item",
-                load_cond = function(self) return Config:GetSetting('DoVieBuff') and not self.Helpers.PreferAegisSpell(self) end,
+                load_cond = function(self) return Config:GetSetting('VieBuffMode') > 2 and not self.Helpers.PreferAegisSpell(self) end,
                 cond = function(self, itemName, target)
                     if not Targeting.TargetIsATank(target) then return false end
                     return Casting.GroupBuffItemCheck(itemName, target) and Casting.AddedBuffCheck(43037, target) -- Bulwark of the Pegasus
@@ -771,7 +771,7 @@ local _ClassConfig = {
             {
                 name = "SingleVieBuff",
                 type = "Spell",
-                load_cond = function(self) return Config:GetSetting('DoVieBuff') and self.Helpers.PreferAegisSpell(self) end,
+                load_cond = function(self) return Config:GetSetting('VieBuffMode') > 2 and self.Helpers.PreferAegisSpell(self) end,
                 cond = function(self, spell, target)
                     if not Targeting.TargetIsATank(target) then return false end
                     return Casting.GroupBuffCheck(spell, target) and Casting.AddedBuffCheck(43037, target) -- Bulwark of the Pegasus
@@ -997,7 +997,7 @@ local _ClassConfig = {
             {
                 name = "Artifact of Aegis",
                 type = "Item",
-                load_cond = function(self) return Config:GetSetting('DoVieBuff') and not self.Helpers.PreferAegisSpell(self) end,
+                load_cond = function(self) return Config:GetSetting('VieBuffMode') > 1 and not self.Helpers.PreferAegisSpell(self) end,
                 cond = function(self, itemName, target)
                     return Casting.GroupBuffItemCheck(itemName, target) and Casting.AddedBuffCheck(43037, target) -- Bulwark of the Pegasus
                 end,
@@ -1005,7 +1005,7 @@ local _ClassConfig = {
             {
                 name = "SingleVieBuff",
                 type = "Spell",
-                load_cond = function(self) return Config:GetSetting('DoVieBuff') and self.Helpers.PreferAegisSpell(self) end,
+                load_cond = function(self) return Config:GetSetting('VieBuffMode') > 1 and self.Helpers.PreferAegisSpell(self) end,
                 cond = function(self, spell, target)
                     return Casting.GroupBuffCheck(spell, target) and Casting.AddedBuffCheck(43037, target) -- Bulwark of the Pegasus
                 end,
@@ -1045,7 +1045,7 @@ local _ClassConfig = {
                 { name = "CureCorrupt",   cond = function(self) return Config:GetSetting('KeepCorruptMemmed') end, },
                 { name = "DivineBuff",    cond = function(self) return Config:GetSetting('DoDivineBuff') end, },
                 { name = "YaulpSpell",    cond = function(self) return Config:GetSetting('DoYaulp') and not Casting.CanUseAA("Yaulp") end, },
-                { name = "SingleVieBuff", cond = function(self) return Config:GetSetting('DoVieBuff') and self.Helpers.PreferAegisSpell(self) end, },
+                { name = "SingleVieBuff", cond = function(self) return Config:GetSetting('VieBuffMode') > 1 and self.Helpers.PreferAegisSpell(self) end, },
                 { name = "StunTimer6",    cond = function(self) return Config:GetSetting('DoTimer6Stun') end, },
                 { name = "StunTimer4",    cond = function(self) return Config:GetSetting('DoTimer4Stun') end, },
                 { name = "LowLevelStun",  cond = function(self) return Config:GetSetting('DoLLStun') and mq.TLO.Me.Level() < 59 end, },
@@ -1101,15 +1101,19 @@ local _ClassConfig = {
                 "Leaving this on in other cases is not likely to cause issue, but may cause unnecessary buff checking.",
             Default = false,
         },
-        ['DoVieBuff']         = {
+        ['VieBuffMode']       = {
             DisplayName = "Use Vie Buff",
             Group = "Abilities",
             Header = "Buffs",
             Category = "Group",
             Index = 103,
             Tooltip = "Use your Melee Damage absorb (Vie) line.",
+            Type = "Combo",
+            ComboOptions = { 'None', 'Downtime Only', 'Downtime + Combat', },
+            Default = 3,
+            Min = 1,
+            Max = 3,
             RequiresLoadoutChange = true,
-            Default = true,
         },
         ['UseAura']           = {
             DisplayName = "Aura Spell Choice:",
