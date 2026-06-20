@@ -72,6 +72,10 @@ local _ClassConfig    = {
             "Artifact of Asterion",
             "Lesser Artifact of Asterion",
         },
+        ['TashRod'] = {
+            "Legendary Rod of Tashan",
+            "Rod of Tashan",
+        },
     },
     ['AbilitySets']   = {
         --Commented any currently unused spell lines
@@ -407,12 +411,14 @@ local _ClassConfig    = {
             { name = "CharmSpell", type = "Spell", },
         },
         ['PreCharm']  = {
-            { name = "TashSpell", type = "Spell", cond = function(self, spell, target) return not target.Tashed() end, },
+            { name = "TashRod",   type = "Item",  load_cond = function(self) return self.Helpers.PreferTashItem(self) end,     cond = function(self, itemName, target) return not target.Tashed() end, },
+            { name = "TashSpell", type = "Spell", load_cond = function(self) return not self.Helpers.PreferTashItem(self) end, cond = function(self, spell, target) return not target.Tashed() end, },
         },
         ['Assist']    = {
             { name = "SpinStunSpell", type = "Spell", cond = function(self, spell, target) return Targeting.TargetNotStunned() end, },
             { name = "PBAEStunSpell", type = "Spell", cond = function(self, spell, target) return Targeting.TargetNotStunned() and Targeting.InSpellRange(spell, target) end, },
-            { name = "TashSpell",     type = "Spell", cond = function(self, spell, target) return Casting.DetSpellCheck(spell, target) end, },
+            { name = "TashRod",       type = "Item",  load_cond = function(self) return self.Helpers.PreferTashItem(self) end,     cond = function(self, itemName, target) return Casting.DetItemCheck(itemName, target) end, },
+            { name = "TashSpell",     type = "Spell", load_cond = function(self) return not self.Helpers.PreferTashItem(self) end, cond = function(self, spell, target) return Casting.DetSpellCheck(spell, target) end, },
         },
     },
     ['RotationOrder'] = {
@@ -537,6 +543,12 @@ local _ClassConfig    = {
         },
     },
     ['Helpers']       = { --used to autoinventory our crystals after summon. Crystal is a group-wide spell on Laz.
+        -- Rod clicks Echo of Tashan Rk. I; the spell casts faster
+        PreferTashItem = function(self)
+            if not Core.GetResolvedActionMapItem('TashRod') then return false end
+            local tashSpell = self.ResolvedActionMap['TashSpell']
+            return not (tashSpell and tashSpell() and tashSpell.Name() == "Echo of Tashan")
+        end,
         DoRez = function(self, corpseId)
             local rezStaff = Core.GetResolvedActionMapItem('RezStaff')
 
@@ -1135,8 +1147,17 @@ local _ClassConfig    = {
                 end,
             },
             {
+                name = "TashRod",
+                type = "Item",
+                load_cond = function(self) return self.Helpers.PreferTashItem(self) end,
+                cond = function(self, itemName, target)
+                    return Casting.DetItemCheck(itemName, target) and (not Casting.TargetHasBuff("Bite of Tashani") or Globals.AutoTargetIsNamed)
+                end,
+            },
+            {
                 name = "TashSpell",
                 type = "Spell",
+                load_cond = function(self) return not self.Helpers.PreferTashItem(self) end,
                 cond = function(self, spell, target)
                     return Casting.DetSpellCheck(spell) and (not Casting.TargetHasBuff("Bite of Tashani") or Globals.AutoTargetIsNamed)
                 end,
@@ -1187,7 +1208,7 @@ local _ClassConfig    = {
                 { name = "MezSpell",         cond = function(self) return Config:GetSetting('DoSTMez') end, },
                 { name = "MezAESpell",       cond = function(self) return Config:GetSetting('DoAEMez') end, },
                 { name = "CharmSpell",       cond = function(self, spell) return Config:GetSetting('CharmOn') and Core.IsSelectedCharmSpell(spell) end, },
-                { name = "TashSpell",        cond = function(self) return Config:GetSetting('DoTash') end, },
+                { name = "TashSpell",        cond = function(self) return Config:GetSetting('DoTash') and not self.Helpers.PreferTashItem(self) end, },
                 { name = "SlowSpell",        cond = function(self) return Config:GetSetting('DoSlow') and not Casting.CanUseAA("Dreary Deeds") end, },
                 { name = "CrippleSpell",     cond = function(self) return Config:GetSetting('DoCripple') end, },
                 { name = "SpinStunSpell",    cond = function(self) return Config:GetSetting('DoSpinStun') > 1 end, },
