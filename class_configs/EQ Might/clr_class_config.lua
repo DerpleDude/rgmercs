@@ -372,6 +372,12 @@ local _ClassConfig = {
         },
     },                          -- end AbilitySets
     ['Helpers']           = {
+        -- Artifact of Aegis is Aegis of Vie Rk. I
+        PreferAegisSpell = function(self)
+            if mq.TLO.Me.Level() < 69 or not mq.TLO.FindItem("=Artifact of Aegis")() then return true end
+            local vieBuff = self.ResolvedActionMap['SingleVieBuff']
+            return vieBuff and vieBuff() and vieBuff.Name() == "Aegis of Vie" and (vieBuff.RankName.Rank() or 0) >= 2
+        end,
         DoRez = function(self, corpseId)
             local rezAction = false
             local rezSpell = Core.GetResolvedActionMapItem('RezSpell')
@@ -742,10 +748,6 @@ local _ClassConfig = {
                 name = "Celestial Rapidity",
                 type = "AA",
             },
-            {
-                name = "Graverobber's Icon",
-                type = "Item",
-            },
         },
         ['Combat Buffs'] = {
             {
@@ -755,6 +757,24 @@ local _ClassConfig = {
                 cond = function(self, spell, target)
                     if not Targeting.TargetIsATank(target) then return false end
                     return Casting.CastReady(spell) and Casting.GroupBuffCheck(spell, target)
+                end,
+            },
+            {
+                name = "Artifact of Aegis",
+                type = "Item",
+                load_cond = function(self) return Config:GetSetting('DoVieBuff') and not self.Helpers.PreferAegisSpell(self) end,
+                cond = function(self, itemName, target)
+                    if not Targeting.TargetIsATank(target) then return false end
+                    return Casting.GroupBuffItemCheck(itemName, target) and Casting.AddedBuffCheck(43037, target) -- Bulwark of the Pegasus
+                end,
+            },
+            {
+                name = "SingleVieBuff",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoVieBuff') and self.Helpers.PreferAegisSpell(self) end,
+                cond = function(self, spell, target)
+                    if not Targeting.TargetIsATank(target) then return false end
+                    return Casting.GroupBuffCheck(spell, target) and Casting.AddedBuffCheck(43037, target) -- Bulwark of the Pegasus
                 end,
             },
         },
@@ -977,7 +997,7 @@ local _ClassConfig = {
             {
                 name = "Artifact of Aegis",
                 type = "Item",
-                load_cond = function() return Config:GetSetting('DoVieBuff') and mq.TLO.Me.Level() >= 69 and mq.TLO.FindItem("=Artifact of Aegis")() end,
+                load_cond = function(self) return Config:GetSetting('DoVieBuff') and not self.Helpers.PreferAegisSpell(self) end,
                 cond = function(self, itemName, target)
                     return Casting.GroupBuffItemCheck(itemName, target) and Casting.AddedBuffCheck(43037, target) -- Bulwark of the Pegasus
                 end,
@@ -985,9 +1005,8 @@ local _ClassConfig = {
             {
                 name = "SingleVieBuff",
                 type = "Spell",
-                load_cond = function(self) return Config:GetSetting('DoVieBuff') and (mq.TLO.Me.Level() < 69 or not mq.TLO.FindItem("=Artifact of Aegis")()) end,
+                load_cond = function(self) return Config:GetSetting('DoVieBuff') and self.Helpers.PreferAegisSpell(self) end,
                 cond = function(self, spell, target)
-                    if not Targeting.TargetIsATank(target) then return false end
                     return Casting.GroupBuffCheck(spell, target) and Casting.AddedBuffCheck(43037, target) -- Bulwark of the Pegasus
                 end,
             },
@@ -1026,7 +1045,7 @@ local _ClassConfig = {
                 { name = "CureCorrupt",   cond = function(self) return Config:GetSetting('KeepCorruptMemmed') end, },
                 { name = "DivineBuff",    cond = function(self) return Config:GetSetting('DoDivineBuff') end, },
                 { name = "YaulpSpell",    cond = function(self) return Config:GetSetting('DoYaulp') and not Casting.CanUseAA("Yaulp") end, },
-                { name = "SingleVieBuff", cond = function(self) return Config:GetSetting('DoVieBuff') end, },
+                { name = "SingleVieBuff", cond = function(self) return Config:GetSetting('DoVieBuff') and self.Helpers.PreferAegisSpell(self) end, },
                 { name = "StunTimer6",    cond = function(self) return Config:GetSetting('DoTimer6Stun') end, },
                 { name = "StunTimer4",    cond = function(self) return Config:GetSetting('DoTimer4Stun') end, },
                 { name = "LowLevelStun",  cond = function(self) return Config:GetSetting('DoLLStun') and mq.TLO.Me.Level() < 59 end, },
