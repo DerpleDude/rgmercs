@@ -1892,24 +1892,8 @@ function Module:GiveTime()
         self:RunCounterRotation()
     end
 
-    if self:IsTanking() and Config:GetSetting('MovebackWhenBehind') then
-        -- make sure nothing is behind us when tanking.
-        -- Maybe spawn search is failing us -- look through the xtarget list
-        local xtCount = mq.TLO.Me.XTarget()
-
-        for i = 1, xtCount do
-            local xtSpawn = mq.TLO.Me.XTarget(i)
-            if xtSpawn and xtSpawn.ID() > 0 and not xtSpawn.Dead() and not xtSpawn.Fleeing() and (math.ceil(xtSpawn.PctHPs() or 0)) > 0 and (xtSpawn.Aggressive() or xtSpawn.TargetType():lower() == "auto hater" or xtSpawn.ID() == Globals.ForceTargetID) and Globals.Constants.RGNotMezzedAnims:contains(xtSpawn.Animation()) and math.abs((mq.TLO.Me.Heading.Degrees() - (xtSpawn.Heading.Degrees() or 0))) < 100 then
-                Logger.log_debug("\arXT(%s) is behind us! \atTaking evasive maneuvers! \awMyHeader(\am%d\aw) ThierHeading(\am%d\aw)", xtSpawn.DisplayName() or "",
-                    mq.TLO.Me.Heading.Degrees(), (xtSpawn.Heading.Degrees() or 0))
-                if Globals.GetTimeSeconds() - Movement:GetLastStickTimer() < 0.5 then
-                    Logger.log_debug("\ayIgnoring moveback because we just stuck a second ago - let's give it some time.")
-                else
-                    Movement:DoStickCmd("moveback %d", Config:GetSetting('MovebackDistance'))
-                    Movement:SetLastStickTimer(Globals.GetTimeSeconds())
-                end
-            end
-        end
+    if self:IsTanking() and Config:GetSetting('KeepMobsInFront') and Movement:DetectMobBehind() then
+        Movement:TankReposition()
     end
 
     if combat_state == "Combat" then

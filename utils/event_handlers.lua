@@ -18,6 +18,13 @@ local Targeting   = require("utils.targeting")
 mq.event("CantSee", "You cannot see your target.", function()
     Logger.log_debug("CantSee: Event Detected")
     if Globals.BackOffFlag then return end
+    if Globals.RepositioningActive then
+        if mq.gettime() - Globals.RepositioningActiveSince > 5000 then
+            Globals.RepositioningActive = false
+        else
+            return
+        end
+    end
     if Globals.PauseMain then return end
     -- Skip if a zone change isn't reconciled yet; reused spawn IDs would nav to the wrong target.
     if mq.TLO.Zone.ID() ~= Globals.CurZoneId or mq.TLO.Me.Instance() ~= Globals.CurInstanceId then return end
@@ -154,6 +161,13 @@ end)
 local function tooFarHandler()
     Logger.log_debug("TooFar: Event Detected")
     if Globals.BackOffFlag then return end
+    if Globals.RepositioningActive then
+        if mq.gettime() - Globals.RepositioningActiveSince > 5000 then
+            Globals.RepositioningActive = false
+        else
+            return
+        end
+    end
     if Globals.PauseMain then return end
     -- Skip if a zone change isn't reconciled yet; reused spawn IDs would nav to the wrong target.
     if mq.TLO.Zone.ID() ~= Globals.CurZoneId or mq.TLO.Me.Instance() ~= Globals.CurInstanceId then return end

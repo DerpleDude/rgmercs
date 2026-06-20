@@ -366,6 +366,12 @@ function Core.IsTanking()
     return Modules:ExecModule("Class", "IsTanking")
 end
 
+--- True when a tank reposition is needed (rear hater detected, setting on, reposition can fire, and we haven't repositioned in the last 3 seconds).
+---@return boolean
+function Core.TankRepositionNeeded()
+    return Modules:ExecModule("Movement", "TankRepositionNeeded")
+end
+
 --- Returns true if the class module reports the character is in heal mode.
 ---@return boolean True if actively healing.
 function Core.IsHealing()
@@ -458,6 +464,7 @@ function Core.CombatActionsCheck()
     if Core.CharmAssistNeeded() then return false end
     if not Core.OkayToNotHeal(Config:GetSetting('HealPriority', true)) then return false end
     if not Core.OkayToNotMez(Config:GetSetting('PriorityMez')) then return false end
+    if Core.TankRepositionNeeded() then return false end
     return true
 end
 

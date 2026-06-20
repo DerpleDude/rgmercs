@@ -699,6 +699,15 @@ function Module:DoAutoCampCheck(bCalledFromInsideEvent)
     Combat.AutoCampCheck(self.TempSettings, bCalledFromInsideEvent)
 end
 
+--- True when a tank reposition is needed (rear hater detected, setting on, reposition can fire, and we haven't repositioned in the last 3 seconds).
+---@return boolean
+function Module:TankRepositionNeeded()
+    if not Config:GetSetting('KeepMobsInFront') then return false end
+    if (Globals.GetTimeSeconds() - Movement.LastReposition) < 3 then return false end
+    if not Movement:CanReposition() then return false end
+    return Movement:DetectMobBehind() ~= nil
+end
+
 function Module:DoCombatCampCheck()
     Combat.CombatCampCheck(self.TempSettings)
 end

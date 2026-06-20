@@ -475,7 +475,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 if mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') then return false end
-                return combat_state == "Combat" and Casting.BurnCheck()
+                return combat_state == "Combat" and Casting.BurnCheck() and Core.CombatActionsCheck()
             end,
         },
         { --DPS Spells, includes recourse/gift maintenance
@@ -485,7 +485,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 if mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') then return false end
-                return combat_state == "Combat"
+                return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
     },
