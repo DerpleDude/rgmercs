@@ -411,14 +411,46 @@ local _ClassConfig    = {
             { name = "CharmSpell", type = "Spell", },
         },
         ['PreCharm']  = {
-            { name = "TashRod",   type = "Item",  load_cond = function(self) return self.Helpers.PreferTashItem(self) end,     cond = function(self, itemName, target) return not target.Tashed() end, },
-            { name = "TashSpell", type = "Spell", load_cond = function(self) return not self.Helpers.PreferTashItem(self) end, cond = function(self, spell, target) return not target.Tashed() end, },
+            {
+                name = "TashRod",
+                type = "Item",
+                load_cond = function(self) return self.Helpers.PreferTashItem(self) end,
+                cond = function(self, itemName, target)
+                    return not
+                        target.Tashed()
+                end,
+            },
+            {
+                name = "TashSpell",
+                type = "Spell",
+                load_cond = function(self) return not self.Helpers.PreferTashItem(self) end,
+                cond = function(self, spell, target)
+                    return not target
+                        .Tashed()
+                end,
+            },
         },
         ['Assist']    = {
             { name = "SpinStunSpell", type = "Spell", cond = function(self, spell, target) return Targeting.TargetNotStunned() end, },
             { name = "PBAEStunSpell", type = "Spell", cond = function(self, spell, target) return Targeting.TargetNotStunned() and Targeting.InSpellRange(spell, target) end, },
-            { name = "TashRod",       type = "Item",  load_cond = function(self) return self.Helpers.PreferTashItem(self) end,     cond = function(self, itemName, target) return Casting.DetItemCheck(itemName, target) end, },
-            { name = "TashSpell",     type = "Spell", load_cond = function(self) return not self.Helpers.PreferTashItem(self) end, cond = function(self, spell, target) return Casting.DetSpellCheck(spell, target) end, },
+            {
+                name = "TashRod",
+                type = "Item",
+                load_cond = function(self) return self.Helpers.PreferTashItem(self) end,
+                cond = function(
+                    self, itemName, target)
+                    return Casting.DetItemCheck(itemName, target)
+                end,
+            },
+            {
+                name = "TashSpell",
+                type = "Spell",
+                load_cond = function(self) return not self.Helpers.PreferTashItem(self) end,
+                cond = function(
+                    self, spell, target)
+                    return Casting.DetSpellCheck(spell, target)
+                end,
+            },
         },
     },
     ['RotationOrder'] = {
@@ -816,7 +848,8 @@ local _ClassConfig    = {
                 active_cond = function(self, spell) return mq.TLO.Me.FindBuff("id " .. tostring(spell.ID()))() ~= nil end,
                 cond = function(self, spell, target)
                     if not Targeting.TargetIsATank(target) then return false end
-                    return Casting.CastReady(spell) and Casting.GroupBuffCheck(spell, target)
+                    return Casting.CastReady(spell) and
+                        Casting.GroupBuffCheck(spell, target, false, true) -- skip trigger checks, we are not worried about spells with a seperate illusion trigger
                 end,
             },
             {
@@ -826,7 +859,8 @@ local _ClassConfig    = {
                 active_cond = function(self, spell) return mq.TLO.Me.FindBuff("id " .. tostring(spell.ID()))() ~= nil end,
                 cond = function(self, spell, target)
                     if Config:GetSetting('DoTankIllusionBuff') and Targeting.TargetIsATank(target) and Core.GetResolvedActionMapItem('TankIllusionBuff') then return false end
-                    return Casting.CastReady(spell) and Casting.GroupBuffCheck(spell, target)
+                    return Casting.CastReady(spell) and
+                        Casting.GroupBuffCheck(spell, target, false, true) -- skip trigger checks, we are not worried about spells with a seperate illusion trigger
                 end,
             },
             {

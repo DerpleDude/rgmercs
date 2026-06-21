@@ -10,8 +10,6 @@ local Logger       = require("utils.logger")
 local Targeting    = require("utils.targeting")
 local Ui           = require("utils.ui")
 
-local Colors       = Globals.Constants.Colors
-
 --todo: add a LOT of tooltips or scrap them entirely. Hopefully the former.
 local Tooltips     = {
     Mantle              = "Spell Line: Melee Absorb Proc",
@@ -586,10 +584,7 @@ local _ClassConfig = {
                 load_cond = function(self) return Config:GetSetting('ProcChoice') == 1 end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
-                    local tt = Core.NewTooltip()
-                    local selfBuffCheck, reason = Casting.SelfBuffCheck(spell)
-                    tt:Add("Self Buff Check", selfBuffCheck, reason)
-                    return selfBuffCheck
+                    return Casting.SelfBuffCheck(spell)
                 end,
             },
             {
@@ -599,10 +594,7 @@ local _ClassConfig = {
                 load_cond = function(self) return Config:GetSetting('ProcChoice') == 2 end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
-                    local tt = Core.NewTooltip()
-                    local selfBuffCheck, reason = Casting.SelfBuffCheck(spell)
-                    tt:Add("Self Buff Check", selfBuffCheck, reason)
-                    return selfBuffCheck
+                    return Casting.SelfBuffCheck(spell)
                 end,
             },
             {
@@ -611,12 +603,8 @@ local _ClassConfig = {
                 tooltip = Tooltips.CloakHP,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
-                    local tt = Core.NewTooltip()
-                    local selfBuffCheck, reason = Casting.SelfBuffCheck(spell)
-                    tt:Add("Self Buff Check", selfBuffCheck, reason)
-                    return selfBuffCheck
+                    return Casting.SelfBuffCheck(spell)
                 end,
-
             },
             {
                 name = "SelfDS",
@@ -624,10 +612,7 @@ local _ClassConfig = {
                 tooltip = Tooltips.SelfDS,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
-                    local tt = Core.NewTooltip()
-                    local selfBuffCheck, reason = Casting.SelfBuffCheck(spell)
-                    tt:Add("Self Buff Check", selfBuffCheck, reason)
-                    return selfBuffCheck
+                    return Casting.SelfBuffCheck(spell)
                 end,
             },
             {
@@ -637,10 +622,7 @@ local _ClassConfig = {
                 load_cond = function(self) return Config:GetSetting("DoCallBuff") end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
-                    local tt = Core.NewTooltip()
-                    local selfBuffCheck, reason = Casting.SelfBuffCheck(spell)
-                    tt:Add("Self Buff Check", selfBuffCheck, reason)
-                    return selfBuffCheck
+                    return Casting.SelfBuffCheck(spell)
                 end,
             },
             --You'll notice my use of TotalSeconds, this is to keep as close to 100% uptime as possible on these buffs, rebuffing early to decrease the chance of them falling off in combat
@@ -652,16 +634,7 @@ local _ClassConfig = {
                 tooltip = Tooltips.Skin,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
-                    if not spell() then
-                        Core.SetRotationEntryTooltip({ { text = "Spell data not found.", color = Colors.LightRed, }, })
-                        return false
-                    end
-                    local tt = Core.NewTooltip()
-                    local stacksCheck = spell.RankName.Stacks()
-                    local durationCheck = (mq.TLO.Me.Buff(spell).Duration.TotalSeconds() or 0) < 60
-                    tt:Add("Stacks", stacksCheck)
-                    tt:Add("Duration < 60", durationCheck)
-                    return stacksCheck and durationCheck
+                    return spell.RankName.Stacks() and (mq.TLO.Me.Buff(spell).Duration.TotalSeconds() or 0) < 60
                 end,
             },
             {
@@ -671,10 +644,7 @@ local _ClassConfig = {
                 load_cond = function(self) return Casting.CanUseAA("Voice of Thule") and Config:GetSetting('DoHateBuff') end,
                 active_cond = function(self, aaName) return Casting.IHaveBuff(mq.TLO.Me.AltAbility(aaName).Spell.ID()) end,
                 cond = function(self, aaName)
-                    local tt = Core.NewTooltip()
-                    local aaCheck, reason = Casting.SelfBuffAACheck(aaName)
-                    tt:Add("Self Buff Check", aaCheck, reason)
-                    return aaCheck
+                    return Casting.SelfBuffAACheck(aaName)
                 end,
             },
             {
@@ -684,26 +654,16 @@ local _ClassConfig = {
                 load_cond = function(self) return not Casting.CanUseAA("Voice of Thule") and Config:GetSetting('DoHateBuff') end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
-                    local tt = Core.NewTooltip()
-                    local castReady = tt:Add("Cast Ready", Casting.CastReady(spell))
-                    local selfBuffCheck, reason = Casting.SelfBuffCheck(spell)
-                    tt:Add("Self Buff Check", selfBuffCheck, reason)
-                    return castReady and selfBuffCheck
+                    if not Casting.CastReady(spell) then return false end
+                    return Casting.SelfBuffCheck(spell)
                 end,
             },
             {
                 name = "Emergency Visage Cancel",
                 desc = "Removes VoD at Critical HP",
                 type = "CustomFunc",
-                load_cond = function(self) return Casting.CanUseAA("Visage of Death") end,
-                cond = function(self)
-                    local hpCritical = Config:GetSetting('HPCritical')
-                    local hasVoD = mq.TLO.Me.Buff("Visage of Death")() ~= nil
-                    local tt = Core.NewTooltip()
-                    tt:Add("HP Critical", hpCritical)
-                    tt:Add("Has VoD", hasVoD)
-                    return hpCritical and hasVoD
-                end,
+                load_cond = function(self) Casting.CanUseAA("Visage of Death") end,
+                cond = function(self) return Config:GetSetting('HPCritical') and mq.TLO.Me.Buff("Visage of Death")() end,
                 custom_func = function(self)
                     Core.DoCmd("/removebuff \"Visage of Death\"")
                 end,
@@ -733,10 +693,7 @@ local _ClassConfig = {
                 tooltip = Tooltips.PetHaste,
                 active_cond = function(self, spell) return mq.TLO.Me.PetBuff(spell.RankName())() ~= nil end,
                 cond = function(self, spell)
-                    local petBuffCheck, reason = Casting.PetBuffCheck(spell)
-                    local tt = Core.NewTooltip()
-                    tt:Add("Pet Buff Check", petBuffCheck, reason)
-                    return petBuffCheck
+                    return Casting.PetBuffCheck(spell)
                 end,
             },
             {
@@ -744,20 +701,14 @@ local _ClassConfig = {
                 type = "AA",
                 active_cond = function(self, aaName) return mq.TLO.Me.PetBuff(aaName)() ~= nil end,
                 cond = function(self, aaName)
-                    local petBuffAACheck, reason = Casting.PetBuffAACheck(aaName)
-                    local tt = Core.NewTooltip()
-                    tt:Add("Pet Buff AA Check", petBuffAACheck, reason)
-                    return petBuffAACheck
+                    return Casting.PetBuffAACheck(aaName)
                 end,
             },
             {
                 name = "Minionskin",
                 type = "Spell",
                 cond = function(self, spell)
-                    local petBuffCheck, reason = Casting.PetBuffCheck(spell)
-                    local tt = Core.NewTooltip()
-                    tt:Add("Pet Buff Check", petBuffCheck, reason)
-                    return petBuffCheck
+                    return Casting.PetBuffCheck(spell)
                 end,
             },
 
@@ -781,11 +732,7 @@ local _ClassConfig = {
                     end
                 end,
                 cond = function(self, discSpell)
-                    local noDiscActive = Casting.NoDiscActive()
-                    local discActive = not noDiscActive
-                    local tt = Core.NewTooltip()
-                    tt:Add("Another Disc Active", discActive, nil, true)
-                    return noDiscActive
+                    return Casting.NoDiscActive()
                 end,
             },
             {
@@ -793,11 +740,7 @@ local _ClassConfig = {
                 type = "Disc",
                 tooltip = Tooltips.LeechCurse,
                 cond = function(self)
-                    local noDiscActive = Casting.NoDiscActive()
-                    local discActive = not noDiscActive
-                    local tt = Core.NewTooltip()
-                    tt:Add("Another Disc Active", discActive, nil, true)
-                    return noDiscActive
+                    return Casting.NoDiscActive()
                 end,
             },
             {
@@ -805,11 +748,7 @@ local _ClassConfig = {
                 type = "Disc",
                 tooltip = Tooltips.UnholyAura,
                 cond = function(self, discSpell, target)
-                    local noDiscActive = Casting.NoDiscActive()
-                    local discActive = not noDiscActive
-                    local tt = Core.NewTooltip()
-                    tt:Add("Another Disc Active", discActive, nil, true)
-                    return noDiscActive
+                    return Casting.NoDiscActive()
                 end,
             },
             {
@@ -817,14 +756,7 @@ local _ClassConfig = {
                 desc = "Removes VoD at Critical HP",
                 type = "CustomFunc",
                 load_cond = function(self) Casting.CanUseAA("Visage of Death") end,
-                cond = function(self)
-                    local hpCritical = Config:GetSetting('HPCritical')
-                    local hasVoD = mq.TLO.Me.Buff("Visage of Death")() ~= nil
-                    local tt = Core.NewTooltip()
-                    tt:Add("HP Critical", hpCritical)
-                    tt:Add("Has VoD", hasVoD)
-                    return hpCritical and hasVoD
-                end,
+                cond = function(self) return Config:GetSetting('HPCritical') and mq.TLO.Me.Buff("Visage of Death")() end,
                 custom_func = function(self)
                     Core.DoCmd("/removebuff \"Visage of Death\"")
                 end,
@@ -836,10 +768,7 @@ local _ClassConfig = {
                 type = "Ability",
                 tooltip = Tooltips.Taunt,
                 cond = function(self, abilityName, target)
-                    local lostAggro = Targeting.LostAutoTargetAggro()
-                    local tt = Core.NewTooltip()
-                    tt:Add("Lost Auto Target Aggro", lostAggro)
-                    return lostAggro
+                    return Targeting.LostAutoTargetAggro()
                 end,
             },
             {
@@ -853,11 +782,7 @@ local _ClassConfig = {
                 tooltip = Tooltips.Terror,
                 load_cond = function(self) return Config:GetSetting('DoTerror') end,
                 cond = function(self, spell, target)
-                    local secondaryAggro = mq.TLO.Target.SecondaryPctAggro() or 0
-                    local aggroCheck = secondaryAggro > 60
-                    local tt = Core.NewTooltip()
-                    tt:Add("Secondary Aggro% > 60", aggroCheck, "(" .. secondaryAggro .. "%)")
-                    return aggroCheck
+                    return (mq.TLO.Target.SecondaryPctAggro() or 0) > 60
                 end,
             },
             {
@@ -866,11 +791,7 @@ local _ClassConfig = {
                 tooltip = Tooltips.Terror,
                 load_cond = function(self) return Config:GetSetting('DoTerror') end,
                 cond = function(self, spell, target)
-                    local secondaryAggro = mq.TLO.Target.SecondaryPctAggro() or 0
-                    local aggroCheck = secondaryAggro > 60
-                    local tt = Core.NewTooltip()
-                    tt:Add("Secondary Aggro% > 60", aggroCheck, "(" .. secondaryAggro .. "%)")
-                    return aggroCheck
+                    return (mq.TLO.Target.SecondaryPctAggro() or 0) > 60
                 end,
             },
             {
@@ -879,11 +800,7 @@ local _ClassConfig = {
                 tooltip = Tooltips.Terror,
                 load_cond = function(self) return Config:GetSetting('DoTerror') end,
                 cond = function(self, spell, target)
-                    local secondaryAggro = mq.TLO.Target.SecondaryPctAggro() or 0
-                    local aggroCheck = secondaryAggro > 80
-                    local tt = Core.NewTooltip()
-                    tt:Add("Secondary Aggro% > 80", aggroCheck, "(" .. secondaryAggro .. "%)")
-                    return aggroCheck
+                    return (mq.TLO.Target.SecondaryPctAggro() or 0) > 80
                 end,
             },
         },
@@ -908,10 +825,7 @@ local _ClassConfig = {
                 type = "Disc",
                 load_cond = function(self) return Config:GetSetting('BladeDiscUse') > 1 end,
                 cond = function(self, discSpell)
-                    local doAEDamage = Config:GetSetting('DoAEDamage')
-                    local tt = Core.NewTooltip()
-                    tt:Add("Do AE Damage", doAEDamage)
-                    return doAEDamage
+                    return Config:GetSetting('DoAEDamage')
                 end,
             },
             {
@@ -919,12 +833,7 @@ local _ClassConfig = {
                 type = "Spell",
                 tooltip = Tooltips.AETaunt,
                 cond = function(self, spell, target)
-                    local pctHPs = mq.TLO.Me.PctHPs() or 0
-                    local emergencyStart = Config:GetSetting('EmergencyStart')
-                    local hpCheck = pctHPs > emergencyStart
-                    local tt = Core.NewTooltip()
-                    tt:Add("HP% > Emergency Start", hpCheck, "(" .. pctHPs .. "% > " .. emergencyStart .. "%)")
-                    return hpCheck
+                    return mq.TLO.Me.PctHPs() > Config:GetSetting('EmergencyStart')
                 end,
             },
         },
@@ -968,10 +877,7 @@ local _ClassConfig = {
                 name = "Visage of Death",
                 type = "AA",
                 cond = function(self, aaName)
-                    local doVisage = Config:GetSetting('DoVisage')
-                    local tt = Core.NewTooltip()
-                    tt:Add("Do Visage", doVisage)
-                    return doVisage
+                    return Config:GetSetting('DoVisage')
                 end,
             },
             { -- for DPS mode
@@ -980,10 +886,7 @@ local _ClassConfig = {
                 tooltip = Tooltips.UnholyAura,
                 load_cond = function(self) return not Core.IsTanking() end,
                 cond = function(self)
-                    local discActive = not Casting.NoDiscActive()
-                    local tt = Core.NewTooltip()
-                    tt:Add("Another Disc Active", discActive, nil, true)
-                    return not discActive
+                    return Casting.NoDiscActive()
                 end,
             },
             { -- for DPS mode
@@ -991,10 +894,7 @@ local _ClassConfig = {
                 type = "Disc",
                 load_cond = function(self) return not Core.IsTanking() end,
                 cond = function(self)
-                    local discActive = not Casting.NoDiscActive()
-                    local tt = Core.NewTooltip()
-                    tt:Add("Another Disc Active", discActive, nil, true)
-                    return not discActive
+                    return Casting.NoDiscActive()
                 end,
             },
             {
@@ -1007,10 +907,7 @@ local _ClassConfig = {
                 type = "AA",
                 tooltip = Tooltips.ThoughtLeech,
                 cond = function(self, aaName, target)
-                    local doLeechTouch = Config:GetSetting('DoLeechTouch') ~= 1
-                    local tt = Core.NewTooltip()
-                    tt:Add("Do Leech Touch", doLeechTouch)
-                    return doLeechTouch
+                    return Config:GetSetting('DoLeechTouch') ~= 1
                 end,
             },
             {
@@ -1018,15 +915,8 @@ local _ClassConfig = {
                 type = "Spell",
                 tooltip = Tooltips.Skin,
                 cond = function(self, spell, target)
-                    local isTanking = Core.IsTanking()
-                    local isNamed = Globals.AutoTargetIsNamed
-                    local selfBuffCheck, reason = Casting.SelfBuffCheck(spell)
-                    local tt = Core.NewTooltip()
-                    tt:Add("Is Tanking", isTanking)
-                    tt:Add("Is Named", isNamed)
-                    tt:Add("Self Buff Check", selfBuffCheck, reason)
-                    if not isTanking or not isNamed then return false end
-                    return selfBuffCheck
+                    if not Core.IsTanking() or not Globals.AutoTargetIsNamed then return false end
+                    return Casting.SelfBuffCheck(spell)
                 end,
             },
         },
@@ -1037,14 +927,7 @@ local _ClassConfig = {
                 type = "AA",
                 load_cond = function(self) return Casting.CanUseAA("Encroaching Darkness") end,
                 cond = function(self, aaName, target)
-                    local detAACheck, reason = Casting.DetAACheck(aaName)
-                    local lowHP = Targeting.MobHasLowHP(target)
-                    local snareImmune = Casting.SnareImmuneTarget(target)
-                    local tt = Core.NewTooltip()
-                    tt:Add("Det AA Check", detAACheck, reason)
-                    tt:Add("Low HP", lowHP)
-                    tt:Add("Snare Immune", snareImmune, nil, true)
-                    return detAACheck and lowHP and not snareImmune
+                    return Casting.DetAACheck(aaName) and Targeting.MobHasLowHP(target) and not Casting.SnareImmuneTarget(target)
                 end,
             },
             {
@@ -1053,14 +936,7 @@ local _ClassConfig = {
                 tooltip = Tooltips.SnareDot,
                 load_cond = function(self) return not Casting.CanUseAA("Encroaching Darkness") end,
                 cond = function(self, spell, target)
-                    local detSpellCheck, reason = Casting.DetSpellCheck(spell)
-                    local lowHP = Targeting.MobHasLowHP(target)
-                    local snareImmune = Casting.SnareImmuneTarget(target)
-                    local tt = Core.NewTooltip()
-                    tt:Add("Det Spell Check", detSpellCheck, reason)
-                    tt:Add("Low HP", lowHP)
-                    tt:Add("Snare Immune", snareImmune, nil, true)
-                    return detSpellCheck and lowHP and not snareImmune
+                    return Casting.DetSpellCheck(spell) and Targeting.MobHasLowHP(target) and not Casting.SnareImmuneTarget(target)
                 end,
             },
         },
@@ -1070,10 +946,7 @@ local _ClassConfig = {
                 type = "Disc",
                 load_cond = function(self) return Core.IsTanking() end,
                 cond = function(self, discSpell, target)
-                    local discActive = not Casting.NoDiscActive()
-                    local tt = Core.NewTooltip()
-                    tt:Add("Another Disc Active", discActive, nil, true)
-                    return not discActive
+                    return Casting.NoDiscActive()
                 end,
             },
             {
@@ -1082,12 +955,7 @@ local _ClassConfig = {
                 tooltip = Tooltips.Mantle,
                 load_cond = function(self) return Core.IsTanking() end,
                 cond = function(self, discSpell, target)
-                    local discActive = not Casting.NoDiscActive()
-                    local protectiveOnCD = Casting.DiscOnCoolDown('Protective')
-                    local tt = Core.NewTooltip()
-                    tt:Add("Another Disc Active", discActive, nil, true)
-                    tt:Add("Protective On CD", protectiveOnCD)
-                    return not discActive and protectiveOnCD
+                    return Casting.NoDiscActive() and Casting.DiscOnCoolDown('Protective')
                 end,
             },
             {
@@ -1095,17 +963,8 @@ local _ClassConfig = {
                 type = "Item",
                 tooltip = Tooltips.Epic,
                 cond = function(self, itemName, target)
-                    local holdForNoDisc = Config:GetSetting('HoldEpicForNoDisc')
-                    local discActive = not Casting.NoDiscActive()
-                    local leechCheck = self.Helpers.LeechCheck(self)
-                    local isNamed = Globals.AutoTargetIsNamed
-                    local tt = Core.NewTooltip()
-                    tt:Add("Hold For No Disc", holdForNoDisc)
-                    tt:Add("Another Disc Active", discActive, nil, true)
-                    tt:Add("Leech Check", leechCheck)
-                    tt:Add("Is Named", isNamed)
-                    if holdForNoDisc and discActive then return false end
-                    return leechCheck or isNamed
+                    if Config:GetSetting('HoldEpicForNoDisc') and not Casting.NoDiscActive() then return false end
+                    return self.Helpers.LeechCheck(self) or Globals.AutoTargetIsNamed
                 end,
             },
         },
@@ -1116,14 +975,8 @@ local _ClassConfig = {
                 type = "AA",
                 tooltip = Tooltips.LeechTouch,
                 cond = function(self, aaName, target)
-                    local doLeechTouch = Config:GetSetting('DoLeechTouch') ~= 2
-                    local pctHPs = mq.TLO.Me.PctHPs() or 0
-                    local hpCritical = Config:GetSetting('HPCritical')
-                    local hpCheck = pctHPs <= hpCritical
-                    local tt = Core.NewTooltip()
-                    tt:Add("Do Leech Touch", doLeechTouch)
-                    tt:Add("HP% <= Critical", hpCheck, "(" .. pctHPs .. "% <= " .. hpCritical .. "%)")
-                    return doLeechTouch and hpCheck
+                    if Config:GetSetting('DoLeechTouch') == 2 then return false end
+                    return mq.TLO.Me.PctHPs() <= Config:GetSetting('HPCritical')
                 end,
             },
             {
@@ -1131,17 +984,8 @@ local _ClassConfig = {
                 type = "Spell",
                 tooltip = Tooltips.LifeTap,
                 cond = function(self, spell)
-                    local pctHPs = mq.TLO.Me.PctHPs() or 0
-                    local haveMana = Casting.HaveManaToNuke()
-                    local startLifeTap = Config:GetSetting('StartLifeTap')
-                    local emergencyStart = Config:GetSetting('EmergencyStart')
-                    local manaAndHP = haveMana and pctHPs <= startLifeTap
-                    local emergency = pctHPs <= emergencyStart
-                    local tt = Core.NewTooltip()
-                    tt:Add("Have Mana", haveMana)
-                    tt:Add("HP% <= Start", pctHPs <= startLifeTap, "(" .. pctHPs .. "% <= " .. startLifeTap .. "%)")
-                    tt:Add("Emergency", emergency, "(" .. pctHPs .. "% <= " .. emergencyStart .. "%)")
-                    return manaAndHP or emergency
+                    local myHP = mq.TLO.Me.PctHPs()
+                    return Casting.HaveManaToNuke() and myHP <= Config:GetSetting('StartLifeTap') or myHP <= Config:GetSetting('EmergencyStart')
                 end,
             },
             {
@@ -1149,17 +993,8 @@ local _ClassConfig = {
                 type = "Spell",
                 tooltip = Tooltips.LifeTap,
                 cond = function(self, spell)
-                    local pctHPs = mq.TLO.Me.PctHPs() or 0
-                    local haveMana = Casting.HaveManaToNuke()
-                    local startLifeTap = Config:GetSetting('StartLifeTap')
-                    local emergencyStart = Config:GetSetting('EmergencyStart')
-                    local manaAndHP = haveMana and pctHPs <= startLifeTap
-                    local emergency = pctHPs <= emergencyStart
-                    local tt = Core.NewTooltip()
-                    tt:Add("Have Mana", haveMana)
-                    tt:Add("HP% <= Start", pctHPs <= startLifeTap, "(" .. pctHPs .. "% <= " .. startLifeTap .. "%)")
-                    tt:Add("Emergency", emergency, "(" .. pctHPs .. "% <= " .. emergencyStart .. "%)")
-                    return manaAndHP or emergency
+                    local myHP = mq.TLO.Me.PctHPs()
+                    return Casting.HaveManaToNuke() and myHP <= Config:GetSetting('StartLifeTap') or myHP <= Config:GetSetting('EmergencyStart')
                 end,
             },
             {
@@ -1167,17 +1002,8 @@ local _ClassConfig = {
                 type = "Spell",
                 tooltip = Tooltips.LifeTap,
                 cond = function(self, spell)
-                    local pctHPs = mq.TLO.Me.PctHPs() or 0
-                    local haveMana = Casting.HaveManaToNuke()
-                    local startLifeTap = Config:GetSetting('StartLifeTap')
-                    local emergencyStart = Config:GetSetting('EmergencyStart')
-                    local manaAndHP = haveMana and pctHPs <= startLifeTap
-                    local emergency = pctHPs <= emergencyStart
-                    local tt = Core.NewTooltip()
-                    tt:Add("Have Mana", haveMana)
-                    tt:Add("HP% <= Start", pctHPs <= startLifeTap, "(" .. pctHPs .. "% <= " .. startLifeTap .. "%)")
-                    tt:Add("Emergency", emergency, "(" .. pctHPs .. "% <= " .. emergencyStart .. "%)")
-                    return manaAndHP or emergency
+                    local myHP = mq.TLO.Me.PctHPs()
+                    return Casting.HaveManaToNuke() and myHP <= Config:GetSetting('StartLifeTap') or myHP <= Config:GetSetting('EmergencyStart')
                 end,
             },
         },
@@ -1188,10 +1014,7 @@ local _ClassConfig = {
                 tooltip = Tooltips.ForPower,
                 load_cond = function(self) return Core.IsTanking() end,
                 cond = function(self, spell, target)
-                    local detSpellCheck, reason = Casting.DetSpellCheck(spell, target)
-                    local tt = Core.NewTooltip()
-                    tt:Add("Det Spell Check", detSpellCheck, reason)
-                    return detSpellCheck
+                    return Casting.DetSpellCheck(spell, target)
                 end,
             },
             {
@@ -1199,10 +1022,7 @@ local _ClassConfig = {
                 type = "Spell",
                 tooltip = Tooltips.SpearNuke,
                 cond = function(self, spell, target)
-                    local haveMana = Casting.HaveManaToNuke()
-                    local tt = Core.NewTooltip()
-                    tt:Add("Have Mana To Nuke", haveMana)
-                    return haveMana
+                    return Casting.HaveManaToNuke()
                 end,
             },
             {
@@ -1210,14 +1030,7 @@ local _ClassConfig = {
                 type = "Disc",
                 load_cond = function(self) return Config:GetSetting('BladeDiscUse') == 3 and Core.GetResolvedActionMapItem('BladeDisc') end,
                 cond = function(self, discSpell)
-                    local doAEDamage = Config:GetSetting('DoAEDamage')
-                    local pctEndurance = mq.TLO.Me.PctEndurance() or 0
-                    local manaToNuke = Config:GetSetting("ManaToNuke")
-                    local enduranceCheck = pctEndurance >= manaToNuke
-                    local tt = Core.NewTooltip()
-                    tt:Add("Do AE Damage", doAEDamage)
-                    tt:Add("Endurance% >= ManaToNuke", enduranceCheck, "(" .. pctEndurance .. "% >= " .. manaToNuke .. "%)")
-                    return doAEDamage and enduranceCheck
+                    return Config:GetSetting('DoAEDamage') and mq.TLO.Me.PctEndurance() >= Config:GetSetting("ManaToNuke") -- save endurance for emergency discs
                 end,
             },
             {
@@ -1226,17 +1039,8 @@ local _ClassConfig = {
                 tooltip = Tooltips.BondTap,
                 load_cond = function(self) return Config:GetSetting('DoBondTap') end,
                 cond = function(self, spell, target)
-                    local dotNamedOnly = Config:GetSetting('DotNamedOnly')
-                    local isNamed = Globals.AutoTargetIsNamed
-                    local haveManaToDot = Casting.HaveManaToDot()
-                    local selfBuffCheck, reason = Casting.SelfBuffCheck(spell)
-                    local tt = Core.NewTooltip()
-                    tt:Add("Named Only", dotNamedOnly)
-                    tt:Add("Is Named", isNamed)
-                    tt:Add("Have Mana To Dot", haveManaToDot)
-                    tt:Add("Self Buff Check", selfBuffCheck, reason)
-                    if dotNamedOnly and not isNamed then return false end
-                    return haveManaToDot and selfBuffCheck
+                    if Config:GetSetting('DotNamedOnly') and not Globals.AutoTargetIsNamed then return false end
+                    return Casting.HaveManaToDot() and Casting.SelfBuffCheck(spell) -- use for recourse --Casting.DotSpellCheck(spell)
                 end,
             },
             {
@@ -1245,17 +1049,8 @@ local _ClassConfig = {
                 tooltip = Tooltips.PoisonDot,
                 load_cond = function(self) return Config:GetSetting('DoPoisonDot') end,
                 cond = function(self, spell, target)
-                    local dotNamedOnly = Config:GetSetting('DotNamedOnly')
-                    local isNamed = Globals.AutoTargetIsNamed
-                    local haveManaToDot = Casting.HaveManaToDot()
-                    local dotSpellCheck, reason = Casting.DotSpellCheck(spell)
-                    local tt = Core.NewTooltip()
-                    tt:Add("Named Only", dotNamedOnly)
-                    tt:Add("Is Named", isNamed)
-                    tt:Add("Have Mana To Dot", haveManaToDot)
-                    tt:Add("Dot Spell Check", dotSpellCheck, reason)
-                    if dotNamedOnly and not isNamed then return false end
-                    return haveManaToDot and dotSpellCheck
+                    if Config:GetSetting('DotNamedOnly') and not Globals.AutoTargetIsNamed then return false end
+                    return Casting.HaveManaToDot() and Casting.DotSpellCheck(spell)
                 end,
             },
             {
@@ -1264,17 +1059,8 @@ local _ClassConfig = {
                 tooltip = Tooltips.DireDot,
                 load_cond = function(self) return Config:GetSetting('DoDireDot') end,
                 cond = function(self, spell, target)
-                    local dotNamedOnly = Config:GetSetting('DotNamedOnly')
-                    local isNamed = Globals.AutoTargetIsNamed
-                    local haveManaToDot = Casting.HaveManaToDot()
-                    local dotSpellCheck, reason = Casting.DotSpellCheck(spell)
-                    local tt = Core.NewTooltip()
-                    tt:Add("Named Only", dotNamedOnly)
-                    tt:Add("Is Named", isNamed)
-                    tt:Add("Have Mana To Dot", haveManaToDot)
-                    tt:Add("Dot Spell Check", dotSpellCheck, reason)
-                    if dotNamedOnly and not isNamed then return false end
-                    return haveManaToDot and dotSpellCheck
+                    if Config:GetSetting('DotNamedOnly') and not Globals.AutoTargetIsNamed then return false end
+                    return Casting.HaveManaToDot() and Casting.DotSpellCheck(spell)
                 end,
             },
             {
@@ -1291,12 +1077,7 @@ local _ClassConfig = {
                 name = "Companion's Blessing",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    local petPctHPs = mq.TLO.Me.Pet.PctHPs() or 999
-                    local bigHealPoint = Config:GetSetting('BigHealPoint')
-                    local hpCheck = petPctHPs <= bigHealPoint
-                    local tt = Core.NewTooltip()
-                    tt:Add("Pet HP% <= Big Heal", hpCheck, "(" .. petPctHPs .. "% <= " .. bigHealPoint .. "%)")
-                    return hpCheck
+                    return (mq.TLO.Me.Pet.PctHPs() or 999) <= Config:GetSetting('BigHealPoint')
                 end,
             },
             {
@@ -1305,10 +1086,7 @@ local _ClassConfig = {
                 tooltip = Tooltips.PowerTapAC,
                 load_cond = function(self) return Config:GetSetting('DoACTap') end,
                 cond = function(self, spell, target)
-                    local selfBuffCheck, reason = Casting.SelfBuffCheck(spell)
-                    local tt = Core.NewTooltip()
-                    tt:Add("Self Buff Check", selfBuffCheck, reason)
-                    return selfBuffCheck
+                    return Casting.SelfBuffCheck(spell)
                 end,
             },
             {
@@ -1317,10 +1095,7 @@ local _ClassConfig = {
                 tooltip = Tooltips.PowerTapAtk,
                 load_cond = function(self) return Config:GetSetting('DoAtkTap') end,
                 cond = function(self, spell, target)
-                    local selfBuffCheck, reason = Casting.SelfBuffCheck(spell)
-                    local tt = Core.NewTooltip()
-                    tt:Add("Self Buff Check", selfBuffCheck, reason)
-                    return selfBuffCheck
+                    return Casting.SelfBuffCheck(spell)
                 end,
             },
             {
@@ -1328,12 +1103,7 @@ local _ClassConfig = {
                 type = "Ability",
                 tooltip = Tooltips.Bash,
                 cond = function(self)
-                    local shieldEquipped = Core.ShieldEquipped()
-                    local canTwoHandBash = Casting.CanUseAA("2 Hand Bash")
-                    local tt = Core.NewTooltip()
-                    tt:Add("Shield Equipped", shieldEquipped)
-                    tt:Add("2H Bash AA", canTwoHandBash)
-                    return shieldEquipped or canTwoHandBash
+                    return (Core.ShieldEquipped() or Casting.CanUseAA("2 Hand Bash"))
                 end,
             },
             {
@@ -1348,18 +1118,8 @@ local _ClassConfig = {
                 name = "Equip Shield",
                 type = "CustomFunc",
                 cond = function(self, target)
-                    local shieldActive = mq.TLO.Me.Bandolier("Shield").Active()
-                    local pctHPs = mq.TLO.Me.PctHPs() or 0
-                    local equipShield = Config:GetSetting('EquipShield')
-                    local hpCheck = pctHPs <= equipShield
-                    local isNamed = Globals.AutoTargetIsNamed
-                    local namedShieldLock = Config:GetSetting('NamedShieldLock')
-                    local tt = Core.NewTooltip()
-                    tt:Add("Shield Already Active", shieldActive, nil, true)
-                    tt:Add("HP% <= Equip Shield", hpCheck, "(" .. pctHPs .. "% <= " .. equipShield .. "%)")
-                    tt:Add("Named Shield Lock", isNamed and namedShieldLock)
-                    if shieldActive then return false end
-                    return hpCheck or (isNamed and namedShieldLock)
+                    if mq.TLO.Me.Bandolier("Shield").Active() then return false end
+                    return (mq.TLO.Me.PctHPs() <= Config:GetSetting('EquipShield')) or (Globals.AutoTargetIsNamed and Config:GetSetting('NamedShieldLock'))
                 end,
                 custom_func = function(self) return ItemManager.BandolierSwap("Shield") end,
             },
@@ -1367,21 +1127,9 @@ local _ClassConfig = {
                 name = "Equip 2Hand",
                 type = "CustomFunc",
                 cond = function()
-                    local twoHandActive = mq.TLO.Me.Bandolier("2Hand").Active()
-                    local pctHPs = mq.TLO.Me.PctHPs() or 0
-                    local equip2Hand = Config:GetSetting('Equip2Hand')
-                    local hpCheck = pctHPs >= equip2Hand
-                    local activeDisc = mq.TLO.Me.ActiveDisc() or ""
-                    local noDeflection = activeDisc ~= "Deflection Discipline"
-                    local isNamed = Globals.AutoTargetIsNamed
-                    local namedShieldLock = Config:GetSetting('NamedShieldLock')
-                    local tt = Core.NewTooltip()
-                    tt:Add("2Hand Already Active", twoHandActive, nil, true)
-                    tt:Add("HP% >= Equip 2Hand", hpCheck, "(" .. pctHPs .. "% >= " .. equip2Hand .. "%)")
-                    tt:Add("No Deflection Disc", noDeflection)
-                    tt:Add("Named Shield Lock", isNamed and namedShieldLock, nil, true)
-                    if twoHandActive then return false end
-                    return hpCheck and noDeflection and not (isNamed and namedShieldLock)
+                    if mq.TLO.Me.Bandolier("2Hand").Active() then return false end
+                    return mq.TLO.Me.PctHPs() >= Config:GetSetting('Equip2Hand') and mq.TLO.Me.ActiveDisc() ~= "Deflection Discipline" and
+                        not (Globals.AutoTargetIsNamed and Config:GetSetting('NamedShieldLock'))
                 end,
                 custom_func = function(self) return ItemManager.BandolierSwap("2Hand") end,
             },

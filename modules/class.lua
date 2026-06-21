@@ -450,29 +450,6 @@ function Module:GetResolvedActionMapItem(item)
     return self.ResolvedActionMap[item]
 end
 
-function Module:SetRotationEntryTooltip(tooltipLines)
-    if not self.TempSettings.CurrentRotationStateId or not self.TempSettings.CurrentRotationEntryId then return end
-
-    Logger.log_verbose("SetRotationEntryTooltip(): Setting Rotation(%d) Entry(%d) Tooltip: %s", self.TempSettings.CurrentRotationStateId, self.TempSettings.CurrentRotationEntryId,
-        Tables.TableToString(tooltipLines))
-
-    -- get the rotation and entry
-    local rotation = self.TempSettings.CurrentRotationStateType == 1 and self.TempSettings.RotationStates[self.TempSettings.CurrentRotationStateId] or
-        self.TempSettings.HealRotationStates[self.TempSettings.CurrentRotationStateId]
-    if not rotation then return end
-
-    Logger.log_verbose("SetRotationEntryTooltip(): Found Rotation for Tooltip: %s", rotation.name)
-
-    local rotationEntries = self.TempSettings.CurrentRotationStateType == 1 and self:GetRotationTable(rotation.name) or self:GetHealRotationTable(rotation.name)
-
-    local entry = rotationEntries and rotationEntries[self.TempSettings.CurrentRotationEntryId]
-    if not entry then return end
-
-    Logger.log_verbose("SetRotationEntryTooltip(): Found Entry for Tooltip: %s", entry.name)
-
-    entry.cond_tooltip = tooltipLines
-end
-
 function Module:RescanLoadout()
     self.TempSettings.NewCombatMode = true
 end

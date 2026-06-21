@@ -581,47 +581,4 @@ function Core.GetPetBlockedTable()
     end
 end
 
-function Core.SetRotationEntryTooltip(tooltipLines)
-    Modules:ExecModule("Class", "SetRotationEntryTooltip", tooltipLines)
-end
-
--- Builds and sets a rotation entry tooltip from a compact descriptor list.
--- Each entry: { label = "Label", value = bool, detail = "...", invert = false }
---   detail : optional string shown inline in white (e.g. "(55% <= 30%)" or a reason)
---   invert : if true, colors are flipped — red=true, green=false (use for "bad when true" checks)
-function Core.BuildRotationEntryTooltip(entries)
-    local Colors = Globals.Constants.Colors
-    local lines = {}
-    for _, entry in ipairs(entries) do
-        local passColor = entry.invert and Colors.LightRed or Colors.LightGreen
-        local failColor = entry.invert and Colors.LightGreen or Colors.LightRed
-        table.insert(lines, { text = entry.label .. ": ", color = Colors.White, padAfter = 4, })
-        table.insert(lines, { text = tostring(entry.value), color = entry.value and passColor or failColor, sameLine = true, padAfter = 4, })
-        if entry.detail and entry.detail:len() > 0 then
-            local detailText = entry.detail:sub(1, 1) == "(" and entry.detail or "(" .. entry.detail .. ")"
-            table.insert(lines, { text = detailText, color = Colors.White, sameLine = true, padAfter = 4, })
-        end
-    end
-    Core.SetRotationEntryTooltip(lines)
-end
-
--- Fluent tooltip accumulator. Usage:
---   local tt = Core.NewTooltip()
---   local ok  = tt:Add("Self Buff Check", Casting.SelfBuffCheck(spell))
---   local ok2 = tt:Add("Cast Ready",      Casting.CastReady(spell))
--- tt:Add(label, value, detail?, invert?) appends the row, updates the tooltip immediately, and returns value.
--- detail : optional string shown inline in white, or a reason string from a Check function
--- invert : if true, colors flip — red=true, green=false (use for "bad when true" checks)
-function Core.NewTooltip()
-    local tt = { _entries = {}, }
-
-    function tt:Add(label, value, detail, invert)
-        table.insert(self._entries, { label = label, value = value, detail = detail, invert = invert, })
-        Core.BuildRotationEntryTooltip(self._entries)
-        return value
-    end
-
-    return tt
-end
-
 return Core

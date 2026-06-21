@@ -324,7 +324,6 @@ function Rotation.Run(caller, rotationTable, targetTable, resolvedActionMap, ste
     -- Used for bards to dynamically weave properly
     if bDoFullRotation then start_step = 1 end
     for idx, entry in ipairs(rotationTable) do
-        caller.TempSettings.CurrentRotationEntryId = idx
         if enabledRotationEntries[entry.name] ~= false then
             if idx >= start_step then
                 local tStart = string.format("%.03f", Globals.GetTimeMS())
