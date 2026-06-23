@@ -1768,6 +1768,36 @@ local _ClassConfig = {
                 return mq.TLO.Me.Gem(resolvedSpell.RankName.Name() or "")() ~= nil
             end,
         },
+        {
+            id = 'SaryrnDot',
+            Type = "Spell",
+            DisplayName = function() return Core.GetResolvedActionMapItem('SaryrnDot')() or "" end,
+            AbilityName = function() return Core.GetResolvedActionMapItem('SaryrnDot')() or "" end,
+            AbilityRange = 150,
+            cond = function(self)
+                local resolvedSpell = Core.GetResolvedActionMapItem('SaryrnDot')
+                if not resolvedSpell then return false end
+                return mq.TLO.Me.Gem(resolvedSpell.RankName.Name() or "")() ~= nil
+            end,
+        },
+        {
+            id = 'NukeSpell',
+            Type = "Spell",
+            DisplayName = function()
+                local resolved = Core.GetResolvedActionMapItem(Casting.GetFirstMapItem({ "FastPoisonNuke", "PoisonNuke", "IceNuke", }))
+                return resolved and resolved() or ""
+            end,
+            AbilityName = function()
+                local resolved = Core.GetResolvedActionMapItem(Casting.GetFirstMapItem({ "FastPoisonNuke", "PoisonNuke", "IceNuke", }))
+                return resolved and resolved() or ""
+            end,
+            AbilityRange = 150,
+            cond = function(self)
+                local resolvedSpell = Core.GetResolvedActionMapItem(Casting.GetFirstMapItem({ "FastPoisonNuke", "PoisonNuke", "IceNuke", }))
+                if not resolvedSpell then return false end
+                return mq.TLO.Me.Gem(resolvedSpell.RankName.Name() or "")() ~= nil
+            end,
+        },
     },
     ['DefaultConfig']     = {
         ['Mode']                = {
