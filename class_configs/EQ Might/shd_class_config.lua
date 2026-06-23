@@ -662,7 +662,7 @@ local _ClassConfig = {
                 name = "Emergency Visage Cancel",
                 desc = "Removes VoD at Critical HP",
                 type = "CustomFunc",
-                load_cond = function(self) Casting.CanUseAA("Visage of Death") end,
+                load_cond = function(self) return Casting.CanUseAA("Visage of Death") end,
                 cond = function(self) return Config:GetSetting('HPCritical') and mq.TLO.Me.Buff("Visage of Death")() end,
                 custom_func = function(self)
                     Core.DoCmd("/removebuff \"Visage of Death\"")
@@ -755,7 +755,7 @@ local _ClassConfig = {
                 name = "Emergency Visage Cancel",
                 desc = "Removes VoD at Critical HP",
                 type = "CustomFunc",
-                load_cond = function(self) Casting.CanUseAA("Visage of Death") end,
+                load_cond = function(self) return Casting.CanUseAA("Visage of Death") end,
                 cond = function(self) return Config:GetSetting('HPCritical') and mq.TLO.Me.Buff("Visage of Death")() end,
                 custom_func = function(self)
                     Core.DoCmd("/removebuff \"Visage of Death\"")

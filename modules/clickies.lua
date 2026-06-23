@@ -2138,14 +2138,14 @@ function Module:GiveTime()
                             if buffCheckPassed and distanceCheckPassed and readyCheckPassed and elementCheckPassed then
                                 Logger.log_verbose("\ayClicky: \awItem \am%s\aw Clicky Spell: \at%s\ag!", item.Name(), item.Clicky.Spell.RankName.Name())
                                 Casting.UseItem(item.Name(), targetId)
+                                self.TempSettings.ClickyState[clicky.itemName].lastUsed = Globals.GetTimeSeconds()
                                 clickiesUsedThisCycle = clickiesUsedThisCycle + 1
                                 if maxClickiesPerCycle > 0 and clickiesUsedThisCycle >= maxClickiesPerCycle then
                                     Logger.log_debug("\ayClicky: \a-tMax Clickies Per Cycle of \am%d\a-t reached, stopping for this cycle and picking up with %d next cycle.",
                                         maxClickiesPerCycle, self.ClickyRotationIndex)
                                     break
                                 end
-                                self.TempSettings.ClickyState[clicky.itemName].lastUsed = Globals.GetTimeSeconds()
-                                break --ensure we stop after we process a single clicky to allow rotations to continue
+                                break --yield to other modules between clicky uses
                             else
                                 Logger.log_verbose(
                                     "\ayClicky: \awItem \am%s\aw Clicky: \at%s\ar checks failed, not using!\aw BuffCheck(%s), DistanceCheck(%s), ItemReady(%s), ElementCheck(%s)",
