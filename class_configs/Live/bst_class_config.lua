@@ -725,14 +725,6 @@ return {
             end,
         },
         {
-            name = 'PetHealing',
-            state = 1,
-            steps = 1,
-            doFullRotation = true,
-            targetId = function(self) return mq.TLO.Me.Pet.ID() > 0 and { mq.TLO.Me.Pet.ID(), } or {} end,
-            cond = function(self, target) return (mq.TLO.Me.Pet.PctHPs() or 100) < Config:GetSetting('PetHealPct') end,
-        },
-        {
             name = 'Emergency',
             state = 1,
             steps = 1,
@@ -742,6 +734,14 @@ return {
                 return Targeting.GetXTHaterCount() > 0 and
                     (mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') or (Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 99))
             end,
+        },
+        {
+            name = 'PetHealing',
+            state = 1,
+            steps = 1,
+            doFullRotation = true,
+            targetId = function(self) return mq.TLO.Me.Pet.ID() > 0 and { mq.TLO.Me.Pet.ID(), } or {} end,
+            cond = function(self, target) return (mq.TLO.Me.Pet.PctHPs() or 100) < Config:GetSetting('PetHealPct') end,
         },
         {
             name = 'FocusedParagon',
@@ -978,16 +978,25 @@ return {
                 type = "AA",
             },
         },
-        ['PetHealAA'] = {
+        ['PetHealing'] = {
             {
                 name = "Mend Companion",
                 type = "AA",
+                cond = function(self, aaName, target)
+                    return (mq.TLO.Me.Pet.PctHPs() or 999) <= Config:GetSetting('BigHealPoint')
+                end,
             },
-        },
-        ['PetHealSpell'] = {
+            {
+                name = "Companion's Fortification",
+                type = "AA",
+                cond = function(self, aaName, target)
+                    return (mq.TLO.Me.Pet.PctHPs() or 999) <= Config:GetSetting('BigHealPoint')
+                end,
+            },
             {
                 name = "PetHealSpell",
                 type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoPetHealSpell') end,
             },
         },
         ['DPS'] = {
@@ -1663,7 +1672,7 @@ return {
             Header = "Recovery",
             Category = "General Healing",
             Index = 102,
-            Tooltip = "Mem and cast your Pet Heal (Salve) spell. AA Pet Heals are always used in emergencies.",
+            Tooltip = "Mem and cast your Pet Heal spell. AA Pet Heals are always used in emergencies.",
             Default = true,
             RequiresLoadoutChange = true,
         },

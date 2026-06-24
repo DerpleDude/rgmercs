@@ -942,15 +942,6 @@ _ClassConfig      = {
             end,
         },
         {
-            name = 'PetHealSpell',
-            state = 1,
-            steps = 1,
-            doFullRotation = true,
-            load_cond = function() return Config:GetSetting('DoPetHealSpell') end,
-            targetId = function(self) return mq.TLO.Me.Pet.ID() > 0 and { mq.TLO.Me.Pet.ID(), } or {} end,
-            cond = function(self, target) return (mq.TLO.Me.Pet.PctHPs() or 100) < Config:GetSetting('PetHealPct') end,
-        },
-        {
             name = 'Downtime',
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
@@ -973,6 +964,14 @@ _ClassConfig      = {
             cond = function(self, combat_state)
                 return combat_state == "Downtime" and Casting.OkayToBuff()
             end,
+        },
+        {
+            name = 'PetHealing',
+            state = 1,
+            steps = 1,
+            doFullRotation = true,
+            targetId = function(self) return mq.TLO.Me.Pet.ID() > 0 and { mq.TLO.Me.Pet.ID(), } or {} end,
+            cond = function(self, target) return (mq.TLO.Me.Pet.PctHPs() or 100) < Config:GetSetting('PetHealPct') end,
         },
         {
             name = 'Burn',
@@ -1171,10 +1170,25 @@ _ClassConfig      = {
                 end,
             },
         },
-        ['PetHealSpell'] = {
+        ['PetHealing'] = {
+            {
+                name = "Mend Companion",
+                type = "AA",
+                cond = function(self, aaName, target)
+                    return (mq.TLO.Me.Pet.PctHPs() or 999) <= Config:GetSetting('BigHealPoint')
+                end,
+            },
+            {
+                name = "Companion's Fortification",
+                type = "AA",
+                cond = function(self, aaName, target)
+                    return (mq.TLO.Me.Pet.PctHPs() or 999) <= Config:GetSetting('BigHealPoint')
+                end,
+            },
             {
                 name = "PetHealSpell",
                 type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoPetHealSpell') end,
             },
         },
         ['PetBuff'] = {
@@ -1920,6 +1934,7 @@ _ClassConfig      = {
             Group = "Abilities",
             Header = "Recovery",
             Category = "Healing Thresholds",
+            Index = 101,
             Tooltip = "Use your pet heal spell when your pet is at or below this HP percentage.",
             Default = 80,
             Min = 1,

@@ -424,6 +424,14 @@ local _ClassConfig = {
             end,
         },
         {
+            name = 'PetHealing',
+            state = 1,
+            steps = 1,
+            doFullRotation = true,
+            targetId = function(self) return mq.TLO.Me.Pet.ID() > 0 and { mq.TLO.Me.Pet.ID(), } or {} end,
+            cond = function(self, target) return (mq.TLO.Me.Pet.PctHPs() or 100) < Config:GetSetting('PetHealPct') end,
+        },
+        {
             name = 'Scent(Terris)',
             state = 1,
             steps = 1,
@@ -491,14 +499,6 @@ local _ClassConfig = {
             cond = function(self, combat_state)
                 return combat_state == "Combat" and not Casting.IAmFeigning()
             end,
-        },
-        {
-            name = 'PetHealing',
-            state = 1,
-            steps = 1,
-            doFullRotation = true,
-            targetId = function(self) return mq.TLO.Me.Pet.ID() > 0 and { mq.TLO.Me.Pet.ID(), } or {} end,
-            cond = function(self, target) return (mq.TLO.Me.Pet.PctHPs() or 100) < Config:GetSetting('PetHealPct') end,
         },
     },
     ['Rotations']       = {

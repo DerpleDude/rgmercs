@@ -857,6 +857,14 @@ local _ClassConfig = {
             end,
         },
         {
+            name = 'PetHealing',
+            state = 1,
+            steps = 1,
+            doFullRotation = true,
+            targetId = function(self) return mq.TLO.Me.Pet.ID() > 0 and { mq.TLO.Me.Pet.ID(), } or {} end,
+            cond = function(self, target) return (mq.TLO.Me.Pet.PctHPs() or 100) < Config:GetSetting('PetHealPct') end,
+        },
+        {
             name = 'Scent',
             state = 1,
             steps = 1,
@@ -905,14 +913,6 @@ local _ClassConfig = {
             cond = function(self, combat_state)
                 return combat_state == "Combat" and not Casting.IAmFeigning() and Targeting.MobHasLowHP(Targeting.GetAutoTarget()) and Core.CombatActionsCheck()
             end,
-        },
-        {
-            name = 'PetHealing',
-            state = 1,
-            steps = 1,
-            doFullRotation = true,
-            targetId = function(self) return mq.TLO.Me.Pet.ID() > 0 and { mq.TLO.Me.Pet.ID(), } or {} end,
-            cond = function(self, target) return (mq.TLO.Me.Pet.PctHPs() or 100) < Config:GetSetting('PetHealPct') end,
         },
     },
     ['Rotations']       = {
@@ -1561,8 +1561,9 @@ local _ClassConfig = {
             Header = "Recovery",
             Category = "General Healing",
             Index = 101,
-            Tooltip = "Mem and cast your Pet Heal (Salve) spell. AA Pet Heals are always used in emergencies.",
-            Default = false,
+            Tooltip = "Mem and cast your Pet Heal spell. AA Pet Heals are always used in emergencies.",
+            Default = true,
+            RequiresLoadoutChange = true,
         },
         ['PetHealPct']        = {
             DisplayName = "Pet Heal Spell HP%",
@@ -1571,8 +1572,7 @@ local _ClassConfig = {
             Category = "Healing Thresholds",
             Index = 101,
             Tooltip = "Use your pet heal spell when your pet is at or below this HP percentage.",
-
-            Default = 60,
+            Default = 80,
             Min = 1,
             Max = 99,
         },
