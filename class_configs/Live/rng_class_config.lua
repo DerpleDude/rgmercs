@@ -1424,6 +1424,10 @@ local _ClassConfig = {
                     return Casting.NoDiscActive() and not Casting.IHaveBuff(discSpell.RankName.Name() or "") and mq.TLO.Me.PctEndurance() < 30
                 end,
             },
+            {
+                name = "Kick",
+                type = "Ability",
+            },
         },
         ['DPS Buffs'] = {
             {

@@ -53,11 +53,6 @@ local _ClassConfig = {
             end
         end,
         CureNow = function(self, type, targetId)
-            if Config:GetSetting('DoCureAA') then
-                if Casting.AAReady("Radiant Cure") then
-                    return Casting.UseAA("Radiant Cure", targetId)
-                end
-            end
             local targetSpawn = mq.TLO.Spawn(targetId)
             if not targetSpawn and targetSpawn then return false, false end
 
