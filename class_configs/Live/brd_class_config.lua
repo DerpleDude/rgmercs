@@ -12,7 +12,6 @@ local Targeting    = require("utils.targeting")
 
 local Tooltips     = {
     Epic            = 'Item: Casts Epic Weapon Ability',
-    RunBuffSong     = "Song Line: Movement Speed Modifier",
     AriaSong        = "Song Line: Spell Damage Focus / Haste v3 Modifier",
     WarMarchSong    = "Song Line: Melee Haste / DS / STR/ATK Increase",
     SufferingSong   = "Song Line: Melee Proc With Damage and Aggro Reduction",
@@ -765,7 +764,7 @@ local _ClassConfig = {
                 { name = "AESlowSong",    cond = function(self) return Config:GetSetting('DoAESlow') end, },
                 { name = "DispelSong",    cond = function(self) return Config:GetSetting('DoDispel') end, },
                 { name = "CureSong",      cond = function(self) return Config:GetSetting('UseCure') end, },
-                { name = "RunBuffSong",   cond = function(self) return Config:GetSetting('UseRunBuff') and not Casting.CanUseAA("Selo's Sonata") end, },
+                { name = "RunBuffSong",   cond = function(self) return Config:GetSetting('UseRunBuff') > 1 and not Casting.CanUseAA("Selo's Sonata") end, },
                 { name = "EndBreathSong", cond = function(self) return Config:GetSetting('UseEndBreath') end, },
 
                 -- main group dps
@@ -929,7 +928,7 @@ local _ClassConfig = {
             state = 1,
             steps = 1,
             targetId = function(self) return Combat.GetCachedCombatState() == "Combat" and Targeting.CheckForAutoTargetID() or Casting.GetBuffableGroupIDs() end,
-            load_cond = function(self) return Config:GetSetting('UseRunBuff') and Casting.CanUseAA("Selo's Sonata") end,
+            load_cond = function(self) return Casting.CanUseAA("Selo's Sonata") end,
             cond = function(self, combat_state)
                 local downtime = combat_state == "Downtime" and not mq.TLO.Me.Invis()
                 local combat = combat_state == "Combat" and Core.CombatActionsCheck()
@@ -1259,6 +1258,14 @@ local _ClassConfig = {
                 end,
             },
             {
+                name = "RunBuffSong",
+                type = "Song",
+                load_cond = function(self) return Core.GetResolvedActionMapItem('RunBuffSong') and Config:GetSetting('UseRunBuff') > 1 and not Casting.CanUseAA("Selo's Sonata") end,
+                cond = function(self, songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseRunBuff") and self.Helpers.RefreshBuffSong(songSpell)
+                end,
+            },
+            {
                 name = "Jonthan",
                 type = "Song",
                 load_cond = function(self) return Core.GetResolvedActionMapItem('Jonthan') and Config:GetSetting('UseJonthan') > 1 end,
@@ -1389,16 +1396,6 @@ local _ClassConfig = {
         },
         ['Downtime'] = {
             {
-                name = "RunBuffSong",
-                type = "Song",
-                targetId = function(self) return { mq.TLO.Me.ID(), } end,
-                load_cond = function(self) return Config:GetSetting('UseRunBuff') and not Casting.CanUseAA("Selo's Sonata") end,
-                cond = function(self, songSpell)
-                    if Globals.InMedState then return false end
-                    return self.Helpers.RefreshBuffSong(songSpell)
-                end,
-            },
-            {
                 name = "BardDPSAura",
                 type = "Song",
                 load_cond = function(self) return Core.GetResolvedActionMapItem('BardDPSAura') and Config:GetSetting('UseAura') == 1 end,
@@ -1480,7 +1477,8 @@ local _ClassConfig = {
                     local aaBuff = mq.TLO.Me.AltAbility(aaName).Spell.Trigger(1)() or ""
                     local combatState = Combat.GetCachedCombatState()
                     -- if in combat, check self, out of combat, also check others
-                    return (combatState == "Combat" and (mq.TLO.Me.Buff(aaBuff).Duration.TotalSeconds() or 0) < 15) or (combatState == "Downtime" and Casting.GroupBuffAACheck(aaName, target))
+                    return (combatState == "Combat" and (mq.TLO.Me.Buff(aaBuff).Duration.TotalSeconds() or 0) < 15) or
+                    (combatState == "Downtime" and Casting.GroupBuffAACheck(aaName, target))
                 end,
             },
         },
@@ -1835,8 +1833,12 @@ local _ClassConfig = {
             Header = "Buffs",
             Category = "Group",
             Index = 101,
-            Tooltip = "Use the best runspeed buff you have available. Short Duration > Long Duration > Selo's Sonata AA",
-            Default = true,
+            Tooltip = "Song Line: Movement Speed Modifier (Does not control the Selo's AA).",
+            Type = "Combo",
+            ComboOptions = { 'Never', 'In-Combat Only', 'Always', 'Out-of-Combat Only', },
+            Default = 3,
+            Min = 1,
+            Max = 4,
             RequiresLoadoutChange = true,
         },
         ['UseEndBreath']    = {
