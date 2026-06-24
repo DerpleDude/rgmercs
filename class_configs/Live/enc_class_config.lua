@@ -475,28 +475,31 @@ local _ClassConfig    = {
             "Dyn's Dizzying Draught",   -- Level 28
             "Whirl till you hurl",      -- Level 9
         },
-        -- Normal charm line (spell group 100140090, no resist modifier). Default; the only line available below level 53.
         ['CharmSpell'] = {
-            "Charm XVII",        -- Level 127
-            "Inveigle",          -- Level 117
-            "Spellbinding",      -- Level 107
-            "Captivation",       -- Level 102
-            "Temptation",        -- Level 97
-            "Compelling Edict",  -- Level 92
-            "Deception",         -- Level 87
-            "Seduction",         -- Level 82
-            "Cajole",            -- Level 77
-            "Coax",              -- Level 72
-            -- "Ancient: Voice of Muram", -- Level 70
-            "Compel",            -- Level 68
-            "Beckon",            -- Level 62
-            "Allure",            -- Level 46
-            "Cajoling Whispers", -- Level 37
-            "Beguile",           -- Level 23
-            "Charm",             -- Level 11
+            "Charm XVII",           -- Level 127
+            "Inveigle",             -- Level 117
+            "Spellbinding",         -- Level 107
+            "Captivation",          -- Level 102
+            "Temptation",           -- Level 97
+            "Compelling Edict",     -- Level 92
+            "Deception",            -- Level 87
+            "Dominate",             -- Level 85
+            "Seduction",            -- Level 82
+            "Haunting Whispers",    -- Level 80
+            "Cajole",               -- Level 77
+            "Dyn`leth's Whispers",  -- Level 75
+            "Coax",                 -- Level 72
+            "True Name",            -- Level 70
+            "Compel",               -- Level 68
+            "Command of Druzzil",   -- Level 64
+            "Beckon",               -- Level 62
+            "Boltran's Agacerie",   -- Level 53
+            "Allure",               -- Level 46
+            "Cajoling Whispers",    -- Level 37
+            "Beguile",              -- Level 23
+            "Charm",                -- Level 11
         },
-        -- Command charm line (spell group 100140210, resist mod down to -25, carries a proc rider). Available from level 53.
-        ['CharmCommand'] = {
+        ['CharmCommand'] = {        -- chance to stun on break, later spells carry a pet buff
             "Enticer's Command XV", -- Level 130
             "Esoteric Command",     -- Level 125
             "Marvel's Command",     -- Level 120
@@ -506,25 +509,13 @@ local _ClassConfig    = {
             "Impose",               -- Level 100
             "Enforce",              -- Level 95
             "Subjugate",            -- Level 90
-            "Dominate",             -- Level 85
-            "Haunting Whispers",    -- Level 80
-            "Dyn`leth's Whispers",  -- Level 75
-            "True Name",            -- Level 70
-            "Command of Druzzil",   -- Level 64
-            "Boltran's Agacerie",   -- Level 53
         },
-        -- Demand charm line (spell group 100140700, resist mod -50, lands easiest). Available from level 104.
-        ['CharmDemand'] = {
-            "Stupefier's Demand", -- Level 124
-            "Marvel's Demand",    -- Level 119
-            "Deviser's Demand",   -- Level 114
-            "Enticer's Demand",   -- Level 104
+        ['CharmDemand'] = {         -- chance to memblur on break, later spells carry a pet buff
+            "Stupefier's Demand",   -- Level 124
+            "Marvel's Demand",      -- Level 119
+            "Deviser's Demand",     -- Level 114
+            "Enticer's Demand",     -- Level 104
         },
-        -- Short charm line (spell group 96, -1000 resist = near-guaranteed land, ~48s duration). Commented pending a setting option.
-        -- ['CharmShort'] = {
-        --     "Dictate",              -- Level 60
-        --     "Ordinance",            -- Level 52
-        -- },
         ['CrippleSpell'] = {
             "Splintered Consciousness", -- Level 86
             "Fragmented Consciousness", -- Level 81
@@ -1831,28 +1822,6 @@ local _ClassConfig    = {
                 "Disabled: We will use our standard ST Mez in Gem 1.\n" ..
                 "As ST Mez: We will use the Twincast Mez as our ST Mez in Gem 1.\n" ..
                 "As Mez and to Trigger Twincast: As above and we will also use this spell in combat to trigger the twincast effect.",
-        },
-        ['CharmSpellChoice']   = {
-            DisplayName = "Charm Spell Line:",
-            Group = "Abilities",
-            Header = "Charm",
-            Category = "Charm General",
-            Index = 101,
-            RequiresLoadoutChange = true,
-            Tooltip =
-                "Choose which charm spell line to use.\n" ..
-                "Normal: no resist modifier.\n" ..
-                "Command: -25 resist and stuns the pet when the charm breaks. Level 53+.\n" ..
-                "Demand: -50 resist and a chance to memblur the pet when the charm breaks. Level 104+.",
-            Type = "Combo",
-            ComboOptions = { 'Normal', 'Command', 'Demand', },
-            Default = 1,
-            Min = 1,
-            Max = 3,
-            FAQ = "Which charm spell line should I use?",
-            Answer =
-                "Normal works at any level. Command (level 53+) lowers the target's resist (-25) and stuns the pet when the charm breaks. " ..
-                "Demand (level 104+) lowers resist more (-50) and has a chance to memblur the pet when the charm breaks, so it stops attacking you.",
         },
         ['EmergencyStart']     = {
             DisplayName = "Emergency Start",

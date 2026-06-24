@@ -190,19 +190,16 @@ local _ClassConfig    = {
             "Whirl Till You Hurl", -- Level 9
         },
         ['CharmSpell'] = {
-            "Coax",                    -- Level 71
-            "Ancient: Voice of Muram", -- Level 70
-            "True Name",               -- Level 70
-            "Compel",                  -- Level 68
-            "Command of Druzzil",      -- Level 64
-            "Beckon",                  -- Level 62
-            "Dictate",                 -- Level 60
-            "Boltran's Agacerie",      -- Level 53
-            "Ordinance",               -- Level 52
-            "Allure",                  -- Level 46
-            "Cajoling Whispers",       -- Level 37
-            "Beguile",                 -- Level 23
-            "Charm",                   -- Level 11
+            "Coax",               -- Level 71
+            "True Name",          -- Level 70
+            "Compel",             -- Level 68
+            "Command of Druzzil", -- Level 64
+            "Beckon",             -- Level 62
+            "Boltran's Agacerie", -- Level 53
+            "Allure",             -- Level 46
+            "Cajoling Whispers",  -- Level 37
+            "Beguile",            -- Level 23
+            "Charm",              -- Level 11
         },
         ['CrippleSpell'] = {
             "Fractured Consciousness", -- Level 70
