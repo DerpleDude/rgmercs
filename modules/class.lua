@@ -868,10 +868,9 @@ end
 
 ---@return boolean
 function Module:IsTanking()
-    if not self.ClassConfig or not self.ClassConfig.ModeChecks or not self.ClassConfig.ModeChecks.IsTanking then
-        return false
-    end
-    return self.ClassConfig.ModeChecks.IsTanking()
+    local modeChecks = self.ClassConfig and self.ClassConfig.ModeChecks
+    local classTanking = modeChecks and modeChecks.IsTanking and modeChecks.IsTanking()
+    return classTanking or Core.IAmGroupMT()
 end
 
 ---@return boolean

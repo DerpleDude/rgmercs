@@ -490,7 +490,7 @@ end
 ---@param slot number XTarget slot index to reset (1–20).
 function Targeting.ResetXTSlot(slot)
     Core.DoCmd("/xtarget set %d ET", slot)
-    mq.delay(500, function() return (mq.TLO.Me.XTarget(slot).TargetType():lower() or "empty target") == "empty target" end)
+    mq.delay(500, function() return (mq.TLO.Me.XTarget(slot).TargetType() or "") == "Empty Target" end)
     Core.DoCmd("/xtarget set %d autohater", slot)
 end
 
@@ -805,7 +805,7 @@ end
 --- either aggro throttling is off, the player is the tank, or aggro is below MobMaxAggro.
 ---@return boolean True if aggro is within acceptable limits.
 function Targeting.AggroCheckOkay()
-    if not mq.TLO.Group() or (mq.TLO.Group.MainTank.ID() or 0) == mq.TLO.Me.ID() or Core.IsTanking() then return true end
+    if not mq.TLO.Group() or Core.IsTanking() then return true end
     return (mq.TLO.Target.PctAggro() or 0) < Config:GetSetting('MobMaxAggro') or not Config:GetSetting('AggroThrottling')
 end
 

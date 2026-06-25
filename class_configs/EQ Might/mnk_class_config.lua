@@ -195,7 +195,7 @@ local _ClassConfig = {
                 type = "AA",
                 load_cond = function(self) return Config:GetSetting('AggroFeign') end,
                 cond = function(self, aaName, target)
-                    if Core.IAmMA() then return false end
+                    if Core.IsTanking() then return false end
                     return (mq.TLO.Me.PctHPs() <= 40 and Targeting.IHaveAggro(100)) or (Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 99)
                 end,
             },
@@ -204,7 +204,7 @@ local _ClassConfig = {
                 type = "Ability",
                 load_cond = function(self) return Config:GetSetting('AggroFeign') end,
                 cond = function(self, abilityName)
-                    return Targeting.IHaveAggro(80) and not Core.IAmMA()
+                    return Targeting.IHaveAggro(80) and not Core.IsTanking()
                 end,
             },
             {

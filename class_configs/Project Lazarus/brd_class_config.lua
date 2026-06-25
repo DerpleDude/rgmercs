@@ -333,8 +333,8 @@ local _ClassConfig = {
             local interval = (self.TempSettings.MarchDuration or 12) - threshold
             return (Globals.GetTimeSeconds() - (self.TempSettings.LastMarchCast or 0)) >= interval
         end,
-        UnwantedAggroCheck = function(self) --Self-Explanatory. Add isTanking to this if you ever make a mode for bardtanks!
-            if Targeting.GetXTHaterCount() == 0 or Core.IAmMA() or mq.TLO.Group.Puller.ID() == mq.TLO.Me.ID() then return false end
+        UnwantedAggroCheck = function(self)
+            if Targeting.GetXTHaterCount() == 0 or Core.IsTanking() or mq.TLO.Group.Puller.ID() == mq.TLO.Me.ID() then return false end
             return Targeting.IHaveAggro(100)
         end,
         DotSongCheck = function(songSpell) --Check dot stacking, stop dotting when HP threshold is reached based on mob type, can't use utils function because we try to refresh just as the dot is ending

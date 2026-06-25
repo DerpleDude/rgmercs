@@ -217,6 +217,12 @@ function Core.IAmMA()
     return Core.GetMainAssistId() == mq.TLO.Me.ID()
 end
 
+--- Returns true if this character is set as the EQ group's Main Tank.
+---@return boolean True if this toon holds the group MT slot.
+function Core.IAmGroupMT()
+    return (mq.TLO.Group.MainTank.ID() or 0) == mq.TLO.Me.ID()
+end
+
 --- Returns the spawn ID of the configured main assist character.
 ---@return number The spawn ID, or 0 if no main assist is set or not found.
 function Core.GetMainAssistId()

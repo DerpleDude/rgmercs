@@ -370,6 +370,7 @@ end
 ---@return boolean True if the spell should be cast on the target.
 function Casting.GroupBuffCheck(spell, target, skipBlockCheck, skipTriggerCheck)
     if not (spell and spell()) then return false end
+    if not Casting.LevelCheckPass(spell, target) then return false end
     return Casting.ResolveBuffCheck(Casting.GetUseableSpellId(spell), target, skipBlockCheck, skipTriggerCheck)
 end
 
@@ -385,6 +386,7 @@ function Casting.GroupBuffAACheck(aaName, target, skipBlockCheck, skipTriggerChe
     if not Casting.CanUseAA(aaName) then return false end
     local aaSpell = mq.TLO.Me.AltAbility(aaName).Spell
     if not aaSpell or not aaSpell() then return false end
+    if not Casting.LevelCheckPass(aaSpell, target) then return false end
     return Casting.ResolveBuffCheck(aaSpell.ID(), target, skipBlockCheck, skipTriggerCheck)
 end
 
@@ -399,6 +401,7 @@ end
 function Casting.GroupBuffItemCheck(itemName, target, skipBlockCheck, skipTriggerCheck)
     local clickySpell = Casting.GetClickySpell(itemName)
     if not (clickySpell and clickySpell()) then return false end
+    if not Casting.LevelCheckPass(clickySpell, target) then return false end
     return Casting.ResolveBuffCheck(clickySpell.ID(), target, skipBlockCheck, skipTriggerCheck)
 end
 
@@ -1782,15 +1785,10 @@ function Casting.UseSpell(spellName, targetId, bAllowMem, bAllowDead, retryCount
 
     local targetSpawn = mq.TLO.Spawn(targetId)
 
-    if (not Config:GetSetting('IgnoreLevelCheck')) and targetSpawn() and Targeting.TargetIsType("pc", targetSpawn) then
-        local targetLevel = targetSpawn.Level() or 0
-        local spellLevel  = spell.Level() or 999
-
-        if not Casting.LevelCheckPass(targetLevel, spellLevel) then
-            Logger.log_error("\ayUseSpell(): \arCasting %s failed level check with target=%d and spell=%d", spellName,
-                targetLevel, spellLevel)
-            return false
-        end
+    if not Casting.LevelCheckPass(spell, targetSpawn) then
+        Logger.log_debug("\ayUseSpell(): \arCasting %s failed level check with target=%d and spell=%d", spellName,
+            targetSpawn.Level() or 0, spell.Level() or 999)
+        return false
     end
 
     if not Casting.ReagentCheck(spell) then
@@ -2281,15 +2279,10 @@ function Casting.UseAA(aaName, targetId, bAllowDead, retryCount)
         return false
     end
 
-    if not Config:GetSetting('IgnoreLevelCheck') and targetSpawn() and Targeting.TargetIsType("pc", targetSpawn) then
-        local targetLevel = targetSpawn.Level() or 0
-        local spellLevel  = aaSpell.Level() or 999
-
-        if spellLevel <= Globals.Constants.LiveLevelCap and not Casting.LevelCheckPass(targetLevel, spellLevel) then
-            Logger.log_error("\ayUseAA(): \arCasting %s(spell: %s) failed level check with target=%d and spell=%d", aaName, aaSpell.Name(),
-                targetLevel, spellLevel)
-            return false
-        end
+    if not Casting.LevelCheckPass(aaSpell, targetSpawn) then
+        Logger.log_debug("\ayUseAA(): \arCasting %s(spell: %s) failed level check with target=%d and spell=%d", aaName, aaSpell.Name(),
+            targetSpawn.Level() or 0, aaSpell.Level() or 999)
+        return false
     end
 
     Casting.ActionPrep()
@@ -2861,14 +2854,20 @@ function Casting.GetUseableSpellId(spell)
     return spellId > 0 and spellId or spell.ID()
 end
 
---- Applies EQ's buff level restriction table (Fanra's wiki) to
---- determine whether a spell of spellLevel can land on targetLevel.
----@param targetLevel number The target's level.
----@param spellLevel number The spell's level to check against the cap.
----@return boolean True if the target is high enough to receive the spell.
-function Casting.LevelCheckPass(targetLevel, spellLevel)
-    local maxSpellLevel
+--- Returns true if spell is allowed to land on target per EQ's buff-level restriction (only applies to persistent beneficial buffs on PC targets, global IgnoreLevelCheck bypasses).
+---@param spell MQSpell The spell to evaluate.
+---@param target MQSpawn|MQTarget The target spawn handle to check.
+---@return boolean True if the spell is allowed to land on target.
+function Casting.LevelCheckPass(spell, target)
+    if not spell or not spell() then return false end
+    if Config:GetSetting('IgnoreLevelCheck') then return true end
+    if (target.Type() or ""):lower() ~= "pc" then return true end
+    if not (spell.Beneficial() and (spell.Duration.TotalSeconds() or 0) > 0) then return true end
+    local spellLevel = spell.Level() or 999
+    if spellLevel > Globals.Constants.LiveLevelCap then return true end
 
+    local targetLevel = target.Level() or 0
+    local maxSpellLevel
     -- table data taken from https://everquest.fanra.info/wiki/Spells,_Songs,_Disciplines,_and_AAs#Buff_level_restrictions
     -- converted to perpetuate past the table limits. untested
     if targetLevel <= 39 then
