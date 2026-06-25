@@ -1494,7 +1494,7 @@ local _ClassConfig = {
             {
                 name = "Audacity",
                 type = "Spell",
-                load_cond = function(self) return Core.IsTanking end,
+                load_cond = function(self) return Core.IsTanking() end,
                 cond = function(self, spell, target)
                     return Casting.DetSpellCheck(spell, target)
                 end,
@@ -1593,7 +1593,7 @@ local _ClassConfig = {
                 name = "MeleeMit",
                 type = "Disc",
                 cond = function(self, discSpell)
-                    return not ((discSpell.Level() or 0) < 108 and not Casting.NoDiscActive)
+                    return not ((discSpell.Level() or 0) < 108 and not Casting.NoDiscActive())
                 end,
             },
             {

@@ -418,7 +418,7 @@ end
 --- Returns true if a shield is equipped in the offhand slot.
 ---@return boolean True if the offhand item type is "Shield".
 function Core.ShieldEquipped()
-    return mq.TLO.InvSlot("Offhand").Item.Type() and mq.TLO.InvSlot("Offhand").Item.Type() == "Shield"
+    return (mq.TLO.InvSlot("Offhand").Item.Type() or "") == "Shield"
 end
 
 --- Safe to skip healing this frame.

@@ -171,8 +171,8 @@ local _ClassConfig = {
                 type = "AA",
                 load_cond = function(self) return Config:GetSetting('AggroFeign') end,
                 cond = function(self, aaName, target)
+                    if Core.IAmMA() then return false end
                     return (mq.TLO.Me.PctHPs() <= 40 and Targeting.IHaveAggro(100)) or (Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 99)
-                        and not Core.IAmMA()
                 end,
             },
             {
@@ -342,7 +342,7 @@ local _ClassConfig = {
             AbilityName = 'Grappling Strike',
             AbilityRange = 50,
             cond = function(self)
-                return mq.TLO.Me.AltAbility('Grappling Strike')
+                return Casting.CanUseAA('Grappling Strike')
             end,
         },
     },

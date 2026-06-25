@@ -953,7 +953,7 @@ local _ClassConfig = {
                 name = "Blessing of Sanctuary",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    return target.ID() == (mq.TLO.Target.AggroHolder.ID() and not Core.GetMainAssistId())
+                    return target.ID() == (mq.TLO.Target.AggroHolder.ID() or 0) and target.ID() ~= Core.GetMainAssistId()
                 end,
             },
             {

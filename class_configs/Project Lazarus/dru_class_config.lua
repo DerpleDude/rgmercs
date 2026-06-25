@@ -886,7 +886,7 @@ local _ClassConfig = {
                 type = "Spell",
                 active_cond = function(self, spell) return Casting.AuraActiveByName(spell.BaseName()) end,
                 cond = function(self, spell)
-                    return (spell and spell() and not Casting.AuraActiveByName(spell.BaseName()))
+                    return spell() and not Casting.AuraActiveByName(spell.BaseName())
                 end,
             },
             { -- Wolf Spirit, the WolfSpiritChoice setting will determine which color you use.

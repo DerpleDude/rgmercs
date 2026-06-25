@@ -490,7 +490,7 @@ return {
                 name = "Warder's Gift",
                 type = "AA",
                 cond = function(self, aaName)
-                    return (mq.TLO.Me.Pet.PctHPs() and mq.TLO.Me.Pet.PctHPs() > 50)
+                    return (mq.TLO.Me.Pet.PctHPs() or 0) > 50
                 end,
             },
             {

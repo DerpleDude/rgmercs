@@ -90,6 +90,10 @@ _ClassConfig      = {
             "Focus of Primal Elements",
             "Staff of Elemental Essence",
         },
+        ['OoW_Chest'] = {
+            "Glyphwielder's Tunic of the Summoner",
+            "Runemaster's Robe",
+        },
     },
     ['AbilitySets']       = { --TODO: Look into new TOB item summons (Boiling Orb?)
         --- Nukes
@@ -1139,7 +1143,8 @@ _ClassConfig      = {
                 load_cond = function(self) return Config:GetSetting("UseEpicPet") and mq.TLO.Me.Book("Summon Orb")() end,
                 active_cond = function(self, _) return mq.TLO.Me.Pet.ID() > 0 end,
                 cond = function(self, itemName, target)
-                    return mq.TLO.FindItem("28034")() and (mq.TLO.FindItem("28034").Charges() or 0) == 1
+                    local orb = mq.TLO.FindItem("28034")
+                    return orb() and (orb.Charges() or 0) > 0
                 end,
                 post_activate = function(self, itemName, success)
                     if success and mq.TLO.Me.Pet.ID() > 0 then
@@ -1352,28 +1357,18 @@ _ClassConfig      = {
         },
         ['DPS PET'] = {
             {
-                name = "OowRobeName",
-                type = "CustomFunc",
-                custom_func = function(self)
-                    if not Core.IsModeActive("PetTank") then return end
-                    local oowItems = { 'Glyphwielder\'s Tunic of the Summoner', 'Runemaster\'s Robe', }
-                    for _, item in ipairs(oowItems) do
-                        if mq.TLO.FindItemCount(item)() == 1 then
-                            self.TempSettings.OowRobeBase = item
-                            return Casting.UseItem(item, mq.TLO.Me.ID())
-                        end
-                    end
-
-                    return false
+                name = "OoW_Chest",
+                type = "Item",
+                cond = function(self, spell)
+                    return Core.IsModeActive("PetTank")
                 end,
             },
             {
                 name = "PetStanceSpell",
                 type = "Spell",
                 cond = function(self, spell)
-                    return Core.IsModeActive("PetTank") and self.TempSettings.OowRobeBase ~= nil and Core.IsModeActive("PetTank") and
-                        Casting.PetBuffCheck(spell) and mq.TLO.Me.Pet.PctHPs() <= 95 and
-                        (mq.TLO.Me.PetBuff(mq.TLO.Spell(self.TempSettings.OowRobeBase).RankName.Base(1)() or "").ID()) or 0 == 0
+                    local chestBuff = Casting.GetClickySpell(Core.GetResolvedActionMapItem('OoW_Chest'))
+                    return Core.IsModeActive("PetTank") and mq.TLO.Me.Pet.PctHPs() <= 95 and Casting.PetBuffCheck(spell) and not mq.TLO.Me.PetBuff(chestBuff and chestBuff() or "")()
                 end,
             },
             {
@@ -1603,7 +1598,8 @@ _ClassConfig      = {
                 type = "CustomFunc",
                 load_cond = function(self) return Config:GetSetting('UseEpicPet') and mq.TLO.Me.Book("Summon Orb")() end,
                 cond = function(self)
-                    return mq.TLO.FindItem("28034")() and (mq.TLO.FindItem("28034").Charges() or 999) == 0
+                    local orb = mq.TLO.FindItem("28034")
+                    return orb() and (orb.Charges() or 999) == 0
                 end,
                 custom_func = function(self) return self.Helpers.DeleteEpicOrb(self) end,
             },

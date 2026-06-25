@@ -766,7 +766,7 @@ return {
                 type = "Spell",
                 active_cond = function(self, spell) return Casting.AuraActiveByName(spell.BaseName()) end,
                 cond = function(self, spell)
-                    return (spell and spell() and not Casting.AuraActiveByName(spell.BaseName()))
+                    return spell() and not Casting.AuraActiveByName(spell.BaseName())
                 end,
             },
             {
@@ -1069,7 +1069,7 @@ return {
                 name = "Disruptive Persecution",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    return (mq.TLO.Target.SecondaryPctAggro() or 999 < 60) or not Core.IsTanking()
+                    return ((mq.TLO.Target.SecondaryPctAggro() or 999) < 60) or not Core.IsTanking()
                 end,
             },
             {
@@ -1139,7 +1139,7 @@ return {
             AbilityName = function() return Casting.CanUseAA("Force of Disruption") and "Force of Disruption" or "" end,
             AbilityRange = 150,
             cond = function(self)
-                return Casting.CanUseAA("Force of Disruption") and "Force of Disruption"
+                return Casting.CanUseAA("Force of Disruption")
             end,
         },
     },

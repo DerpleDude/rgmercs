@@ -1296,7 +1296,7 @@ local _ClassConfig = {
                 load_cond = function(self) return Casting.CanUseAA("Luminary's Synergy") and Config:GetSetting('DoHealOverTime') end,
                 cond = function(self, spell, target)
                     if not Casting.CastReady(spell) then return false end
-                    return Targeting.MobHasLowHP and spell.RankName.Stacks() and (mq.TLO.Me.Song(spell).Duration.TotalSeconds() or 0) < 30
+                    return Targeting.MobHasLowHP() and spell.RankName.Stacks() and (mq.TLO.Me.Song(spell).Duration.TotalSeconds() or 0) < 30
                 end,
             },
         },

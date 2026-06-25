@@ -375,9 +375,9 @@ function Rotation.Run(caller, rotationTable, targetTable, resolvedActionMap, ste
                         if active then entryActive = true end
 
                         Logger.log_verbose("\aoDoing RunRotation(start(%d), step(%d), cur(%d)) :: TestConditionsForEntry(target(%d)) => %s",
-                            start_step, steps, idx, targetId, Strings.BoolToColorString(pass))
+                            start_step, steps, idx, targetId, Strings.BoolToColorString(pass and true or false))
 
-                        if pass == true then
+                        if pass then
                             local rStart = string.format("%.03f", Globals.GetTimeMS())
                             local res, isGroup = Rotation.ExecEntry(caller, entry, targetId, resolvedActionMap, bAllowMem)
                             local rStop = string.format("%.03f", Globals.GetTimeMS())
@@ -389,7 +389,7 @@ function Rotation.Run(caller, rotationTable, targetTable, resolvedActionMap, ste
                             Logger.log_verbose("\aoDoing RunRotation(start(%d), step(%d), cur(%d)) :: ExecEntry(target(%d)) => %s",
                                 start_step, steps, idx, targetId, Strings.BoolToColorString(res))
 
-                            if res == true then
+                            if res == true then -- Algarnote... revisit: Either make sure customfuncs all return bools, or consider relaxing this so a customfunc will count as success if ~= false
                                 entryHadSuccess = true
                                 if isGroup then break end
                             end

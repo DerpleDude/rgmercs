@@ -583,7 +583,8 @@ _ClassConfig      = {
                 load_cond = function(self) return Config:GetSetting("UseEpicPet") and not mq.TLO.FindItem("=Ornate Orb of Mastery")() end,
                 active_cond = function(self, _) return mq.TLO.Me.Pet.ID() > 0 end,
                 cond = function(self, itemName, target)
-                    return mq.TLO.FindItem("28034")() and (mq.TLO.FindItem("28034").Charges() or 0) == 1
+                    local orb = mq.TLO.FindItem("28034")
+                    return orb() and (orb.Charges() or 0) > 0
                 end,
                 post_activate = function(self, itemName, success)
                     if success and mq.TLO.Me.Pet.ID() > 0 then
@@ -896,7 +897,8 @@ _ClassConfig      = {
                 type = "CustomFunc",
                 load_cond = function(self) return Config:GetSetting('UseEpicPet') and not mq.TLO.FindItem("=Ornate Orb of Mastery")() end,
                 cond = function(self)
-                    return mq.TLO.FindItem("28034")() and (mq.TLO.FindItem("28034").Charges() or 999) == 0
+                    local orb = mq.TLO.FindItem("28034")
+                    return orb() and (orb.Charges() or 999) == 0
                 end,
                 custom_func = function(self) return self.Helpers.DeleteEpicOrb(self) end,
             },

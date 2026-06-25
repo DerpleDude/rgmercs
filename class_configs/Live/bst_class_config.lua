@@ -953,7 +953,7 @@ return {
                 name = "Warder's Gift",
                 type = "AA",
                 cond = function(self, aaName)
-                    return (mq.TLO.Me.Pet.PctHPs() and mq.TLO.Me.Pet.PctHPs() > 50)
+                    return (mq.TLO.Me.Pet.PctHPs() or 0) > 50
                 end,
             },
             {
@@ -1107,9 +1107,7 @@ return {
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoSwarmPet') end,
                 cond = function(self, spell, target)
-                    --We will let Feralgia apply swarm pets if our pet currently doesn't have its Growl Effect.
-                    local feralgia = self.ResolvedActionMap['Feralgia']
-                    return (feralgia and feralgia() and mq.TLO.Me.PetBuff(mq.TLO.Spell(feralgia).RankName.Trigger(2).ID())) and Casting.HaveManaToNuke()
+                    return Casting.HaveManaToNuke()
                 end,
             },
         },
@@ -1517,7 +1515,7 @@ return {
             AbilityName = "Sha's Reprisal",
             AbilityRange = 150,
             cond = function(self)
-                return mq.TLO.Me.AltAbility("Sha's Reprisal")
+                return Casting.CanUseAA("Sha's Reprisal")
             end,
         },
         {

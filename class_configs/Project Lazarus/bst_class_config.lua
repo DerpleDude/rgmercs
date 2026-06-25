@@ -438,7 +438,7 @@ return {
                 name = "Warder's Gift",
                 type = "AA",
                 cond = function(self, aaName)
-                    return (mq.TLO.Me.Pet.PctHPs() and mq.TLO.Me.Pet.PctHPs() > 50)
+                    return (mq.TLO.Me.Pet.PctHPs() or 0) > 50
                 end,
             },
             {
@@ -686,7 +686,7 @@ return {
                 load_cond = function(self) return Config:GetSetting('DoPetSnare') end,
                 cond = function(self, aaName, target)
                     local slowProc = self.ResolvedActionMap['PetSlowProc']
-                    return (slowProc and slowProc() and mq.TLO.Me.PetBuff(slowProc.RankName()) == nil) and Casting.PetBuffAACheck(aaName)
+                    return (slowProc and slowProc() and mq.TLO.Me.PetBuff(slowProc.RankName())() == nil) and Casting.PetBuffAACheck(aaName)
                 end,
             },
             {

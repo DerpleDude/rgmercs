@@ -663,7 +663,7 @@ local _ClassConfig = {
                 desc = "Removes VoD at Critical HP",
                 type = "CustomFunc",
                 load_cond = function(self) return Casting.CanUseAA("Visage of Death") end,
-                cond = function(self) return Config:GetSetting('HPCritical') and mq.TLO.Me.Buff("Visage of Death")() end,
+                cond = function(self) return mq.TLO.Me.PctHPs() <= Config:GetSetting('HPCritical') and mq.TLO.Me.Buff("Visage of Death")() end,
                 custom_func = function(self)
                     Core.DoCmd("/removebuff \"Visage of Death\"")
                 end,
@@ -756,7 +756,7 @@ local _ClassConfig = {
                 desc = "Removes VoD at Critical HP",
                 type = "CustomFunc",
                 load_cond = function(self) return Casting.CanUseAA("Visage of Death") end,
-                cond = function(self) return Config:GetSetting('HPCritical') and mq.TLO.Me.Buff("Visage of Death")() end,
+                cond = function(self) return mq.TLO.Me.PctHPs() <= Config:GetSetting('HPCritical') and mq.TLO.Me.Buff("Visage of Death")() end,
                 custom_func = function(self)
                     Core.DoCmd("/removebuff \"Visage of Death\"")
                 end,

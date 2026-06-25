@@ -360,17 +360,17 @@ local _ClassConfig = {
             {
                 name = "Imitate Death",
                 type = "AA",
+                load_cond = function(self) return Config:GetSetting('AggroFeign') end,
                 cond = function(self, aaName, target)
-                    if not Config:GetSetting('AggroFeign') then return false end
+                    if Core.IAmMA() then return false end
                     return (mq.TLO.Me.PctHPs() <= 40 and Targeting.IHaveAggro(100)) or (Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 99)
-                        and not Core.IAmMA()
                 end,
             },
             {
                 name = "Feign Death",
                 type = "Ability",
+                load_cond = function(self) return Config:GetSetting('AggroFeign') end,
                 cond = function(self, abilityName)
-                    if not Config:GetSetting('AggroFeign') then return false end
                     return Targeting.IHaveAggro(80) and not Core.IAmMA()
                 end,
             },
@@ -686,6 +686,7 @@ local _ClassConfig = {
             Index = 102,
             Tooltip = "Use your Feign AA when you have aggro at low health or aggro on a mob detected as a 'named' by RGMercs (see Named tab)..",
             Default = true,
+            RequiresLoadoutChange = true,
         },
         ['EmergencyStart'] = {
             DisplayName = "Emergency HP%",

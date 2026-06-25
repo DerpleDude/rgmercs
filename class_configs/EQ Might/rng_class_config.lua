@@ -549,7 +549,7 @@ return {
                 name = "Outrider's Evasion",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    return Targeting.IHaveAggro(100) and not mq.TLO.Me.ActiveDisc() == "Weapon Shield Discipline"
+                    return Targeting.IHaveAggro(100) and mq.TLO.Me.ActiveDisc() ~= "Weapon Shield Discipline"
                 end,
             },
             {
