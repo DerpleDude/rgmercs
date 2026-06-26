@@ -714,7 +714,7 @@ local _ClassConfig = {
             "Mask of the Stalker",         -- Level 60
             "Mask of the Hunter",          -- Level 60
         },
-        ['HPTypeOneGroup'] = {
+        ['HPTypeOne'] = {
             "Grovewood Blessing",         -- Level 127
             "Emberquartz Blessing",       -- Level 125
             "Luclinite Blessing",         -- Level 120
@@ -729,12 +729,18 @@ local _ClassConfig = {
             "Blessing of the Direwild",   -- Level 75
             "Blessing of Steeloak",       -- Level 70
             "Blessing of the Nine",       -- Level 65
-            "Protection of the Glades",   -- Level 60
-            "Protection of Nature",       -- Level 49
-            "Protection of Diamond",      -- Level 39
-            "Protection of Steel",        -- Level 27
-            "Protection of Rock",         -- Level 19
-            "Protection of Wood",         -- Level 9
+            "Protection of the Glades",   -- Level 60 Group (All above, also group)
+            "Natureskin",                 -- Level 57 Single
+            "Protection of Nature",       -- Level 49 Group
+            "Skin like Nature",           -- Level 46 Single
+            "Protection of Diamond",      -- Level 39 Group
+            "Skin like Diamond",          -- Level 36 Single
+            "Protection of Steel",        -- Level 27 Group
+            "Skin like Steel",            -- Level 24 Single
+            "Protection of Rock",         -- Level 19 Group
+            "Skin like Rock",             -- Level 14 Single
+            "Protection of Wood",         -- Level 9 Group
+            "Skin like Wood",             -- Level 1 Single
         },
         ['TempHPBuff'] = {
             -- Temp Health -- Focus on Tank
@@ -1324,7 +1330,7 @@ local _ClassConfig = {
                 end,
             },
             {
-                name = "HPTypeOneGroup",
+                name = "HPTypeOne",
                 type = "Spell",
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell, target)

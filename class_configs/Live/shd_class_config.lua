@@ -274,7 +274,7 @@ local _ClassConfig = {
             "Augment Death",             -- Level 60
             "Strengthen Death",          -- Level 29
         },
-        ['Shroud'] = {                   --Some Shrouds listed under the Horror Line as HP/Mana Proc Choice was shroud vs. mental in buff slot 1 at lower levels.
+        ['Shroud'] = {                   --Some Shrouds listed under the Horror Line as ProcChoice=HP buff slot 1 at lower levels.
             "Shroud of Elonik",          -- Level 127
             "Shroud of Rimeclaw",        -- Level 122
             "Shroud of Zelinstein",      -- Level 117
@@ -314,8 +314,9 @@ local _ClassConfig = {
             "Mental Fright",             -- Level 106
             "Mental Dread",              -- Level 101
             "Mental Terror",             -- Level 96, --Buff Slot 2 <
-            "Mental Horror",             -- Level 65, --Buff Slot 1 >
-            "Mental Corruption",         -- Level 52
+            -- Slot 1 procs; conflict with Shroud at lvl 72-95.
+            -- "Mental Horror",             -- Level 65, --Buff Slot 1 >
+            -- "Mental Corruption",         -- Level 52
         },
         ['Skin'] = {
             "Spitetangle's Skin", -- Level 130
@@ -1023,7 +1024,7 @@ local _ClassConfig = {
             {
                 name = "Mental",
                 type = "Spell",
-                tooltip = Tooltips.Horror,
+                tooltip = Tooltips.Mental,
                 load_cond = function(self) return Config:GetSetting('ProcChoice') == 2 end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
@@ -2332,7 +2333,7 @@ local _ClassConfig = {
             Index = 102,
             Tooltip = "Prefer HP Proc and DLU(Azia) or Mana Proc and DLU(Beza)",
             Type = "Combo",
-            ComboOptions = { 'HP Proc: Terror Line, DLU(Azia)', 'Mana Proc: Mental Line, DLU(Beza)', 'Disabled', },
+            ComboOptions = { 'HP Proc: Horror Line, DLU(Azia)', 'Mana Proc: Mental Line, DLU(Beza)', 'Disabled', },
             Default = 1,
             Min = 1,
             Max = 3,

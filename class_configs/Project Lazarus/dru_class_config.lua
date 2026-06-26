@@ -253,15 +253,22 @@ local _ClassConfig = {
             "Mask of the Hunter",  -- Level 60
             "Mask of the Stalker", -- Level 60
         },
-        ['HPTypeOneGroup'] = {
-            "Blessing of Steeloak",     -- Level 70
-            "Blessing of the Nine",     -- Level 65
-            "Protection of the Glades", -- Level 60
-            "Protection of Nature",     -- Level 49
-            "Protection of Diamond",    -- Level 39
-            "Protection of Steel",      -- Level 27
-            "Protection of Rock",       -- Level 19
-            "Protection of Wood",       -- Level 9
+        ['HPTypeOne'] = {
+            "Blessing of Steeloak",     -- Level 70 Group
+            -- "Steeloak Skin",            -- Level 68 Single
+            "Blessing of the Nine",     -- Level 65 Group
+            "Protection of the Glades", -- Level 60 Group
+            -- "Natureskin",               -- Level 57 Single
+            "Protection of Nature",     -- Level 49 Group
+            -- "Skin like Nature",         -- Level 46 Single
+            "Protection of Diamond",    -- Level 39 Group
+            -- "Skin like Diamond",        -- Level 36 Single
+            "Protection of Steel",      -- Level 27 Group
+            -- "Skin like Steel",          -- Level 24 Single
+            "Protection of Rock",       -- Level 19 Group
+            -- "Skin like Rock",           -- Level 14 Single
+            "Protection of Wood",       -- Level 9 Group
+            "Skin like Wood",           -- Level 1 Single
         },
         ['GroupRegenBuff'] = {
             "Blessing of Oak",           -- Level 69
@@ -843,7 +850,7 @@ local _ClassConfig = {
                 end,
             },
             {
-                name = "HPTypeOneGroup",
+                name = "HPTypeOne",
                 type = "Spell",
                 load_cond = function() return Config:GetSetting('DoHPBuff') end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
@@ -1034,7 +1041,7 @@ local _ClassConfig = {
                 --fallback QoL to take up extra slots
                 { name = "GroupRegenBuff", cond = function(self) return Config:GetSetting('DoGroupRegen') end, },
                 { name = "GroupDmgShield", cond = function(self) return Config:GetSetting('DoGroupDmgShield') end, },
-                { name = "HPTypeOneGroup", cond = function(self) return Config:GetSetting('DoHPBuff') end, },
+                { name = "HPTypeOne",      cond = function(self) return Config:GetSetting('DoHPBuff') end, },
             },
         },
     },

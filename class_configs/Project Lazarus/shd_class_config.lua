@@ -175,8 +175,9 @@ local _ClassConfig = {
             "Augment Death",         -- Level 60
             "Strengthen Death",      -- Level 29
         },
-        ['Horror'] = {               -- HP Tap Proc
+        ['Shroud'] = {               -- HP Tap Proc
             "Shroud of Discord",     -- Level 67, -- Buff Slot 1 <
+            "Black Shroud",          -- Level 65
             "Shroud of Chaos",       -- Level 63
             "Shroud of Death",       -- Level 55
         },
@@ -503,9 +504,9 @@ local _ClassConfig = {
                 end,
             },
             {
-                name = "Horror",
+                name = "Shroud",
                 type = "Spell",
-                tooltip = Tooltips.Horror,
+                tooltip = Tooltips.Shroud,
                 load_cond = function(self) return Config:GetSetting('ProcChoice') == 1 end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
@@ -515,7 +516,7 @@ local _ClassConfig = {
             {
                 name = "Mental",
                 type = "Spell",
-                tooltip = Tooltips.Horror,
+                tooltip = Tooltips.Mental,
                 load_cond = function(self) return Config:GetSetting('ProcChoice') == 2 end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
@@ -1221,7 +1222,7 @@ local _ClassConfig = {
             Index = 101,
             Tooltip = "Choose which proc you prefer, if any.",
             Type = "Combo",
-            ComboOptions = { 'HP Proc: Terror Line', 'Mana Proc: Mental Line,', 'Disabled', },
+            ComboOptions = { 'HP Proc: Shroud Line', 'Mana Proc: Mental Line,', 'Disabled', },
             Default = 1,
             Min = 1,
             Max = 3,

@@ -152,6 +152,7 @@ local _ClassConfig = {
             "Talisman of Wunshi",         -- Level 70, - Group
             "Focus of the Seventh",       -- Level 65, - Group
             "Khura's Focusing",           -- Level 60, - Group
+            "Focus of Spirit",            -- Level 60, - Single, added for TLP without Khura's
             "Infusion of Spirit",         -- Level 49, Str/Dex/Sta, can use HP buff. Not sure if this is the final home for this one or not.
         },
         ['RunSpeedBuff'] = {

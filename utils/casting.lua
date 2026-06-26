@@ -163,9 +163,9 @@ end
 --- spell ID to confirm not blocked, not present, and stacks.
 ---@param aaName string The AA name to check.
 ---@return boolean True if the AA buff should be cast on self.
-function Casting.SelfBuffAACheck(aaName)
+function Casting.SelfBuffAACheck(aaName, skipBlockCheck, skipTriggerCheck)
     if not Casting.CanUseAA(aaName) then return false end
-    return Casting.LocalBuffCheck(mq.TLO.Me.AltAbility(aaName).Spell.ID())
+    return Casting.LocalBuffCheck(mq.TLO.Me.AltAbility(aaName).Spell.ID(), skipBlockCheck, skipTriggerCheck)
 end
 
 --- Gets the clicky spell via GetClickySpell, then delegates to
@@ -2856,10 +2856,11 @@ end
 
 --- Returns true if spell is allowed to land on target per EQ's buff-level restriction (only applies to persistent beneficial buffs on PC targets, global IgnoreLevelCheck bypasses).
 ---@param spell MQSpell The spell to evaluate.
----@param target MQSpawn|MQTarget The target spawn handle to check.
+---@param target MQSpawn|MQTarget|nil The target spawn handle to check.
 ---@return boolean True if the spell is allowed to land on target.
 function Casting.LevelCheckPass(spell, target)
     if not spell or not spell() then return false end
+    if not target or not target() then return false end
     if Config:GetSetting('IgnoreLevelCheck') then return true end
     if (target.Type() or ""):lower() ~= "pc" then return true end
     if not (spell.Beneficial() and (spell.Duration.TotalSeconds() or 0) > 0) then return true end

@@ -1662,7 +1662,7 @@ _ClassConfig      = {
                 name = "Elemental Form",
                 type = "AA",
                 cond = function(self, aaName)
-                    return Casting.SelfBuffAACheck(aaName)
+                    return Casting.SelfBuffAACheck(aaName, false, true)
                 end,
             },
             {
