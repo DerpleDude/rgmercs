@@ -401,8 +401,6 @@ return {
             local atkBuff = self.ResolvedActionMap['AtkBuff']
             return atkBuff and atkBuff() and atkBuff.Name() == "Ferocity of Irionu" and (atkBuff.RankName.Rank() or 0) >= 2
         end,
-        --function to make sure we don't have non-hostiles in range before we use AE damage or non-taunt AE hate abilities
-
     },
     ['Rotations']         = {
         ['Burn']           = {

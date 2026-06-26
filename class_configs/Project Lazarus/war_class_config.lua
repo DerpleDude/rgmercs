@@ -138,8 +138,6 @@ local _ClassConfig = {
         },
     },
     ['Helpers']       = {
-        --function to make sure we don't have non-hostiles in range before we use AE damage or non-taunt AE hate abilities
-
         --function to determine if we have enough mobs in range to use a defensive disc
         DefensiveDiscCheck = function(printDebug)
             local xtCount = mq.TLO.Me.XTarget() or 0
@@ -175,6 +173,11 @@ local _ClassConfig = {
                 if mq.TLO.Me.Buff(buffName)() then return false end
             end
             return true
+        end,
+        shieldNeeded = function()
+            -- check for exactly 100% to help ensure the mob is targeting us, over 100% can indicate another is still targeted
+            return (mq.TLO.Me.PctHPs() <= Config:GetSetting('EquipShield')) or
+                (Config:GetSetting('NamedShieldLock') and ((Globals.AutoTargetIsNamed and Targeting.GetAutoTargetAggroPct() == 100) or Targeting.TankingXTNamed()))
         end,
     },
     ['Charm']         = {
@@ -445,26 +448,26 @@ local _ClassConfig = {
             {
                 name = "Equip Shield",
                 type = "CustomFunc",
-                active_cond = function(self, target)
-                    return mq.TLO.Me.Bandolier("Shield").Active()
-                end,
-                cond = function()
+                cond = function(self)
                     if mq.TLO.Me.Bandolier("Shield").Active() then return false end
-                    return (mq.TLO.Me.PctHPs() <= Config:GetSetting('EquipShield')) or (Globals.AutoTargetIsNamed and Config:GetSetting('NamedShieldLock'))
+                    return self.Helpers.shieldNeeded()
                 end,
-                custom_func = function(self) return ItemManager.BandolierSwap("Shield") end,
+                custom_func = function(self)
+                    ItemManager.BandolierSwap("Shield")
+                    return true
+                end,
             },
             {
                 name = "Equip DW",
                 type = "CustomFunc",
-                active_cond = function(self, target)
-                    return mq.TLO.Me.Bandolier("DW").Active()
-                end,
-                cond = function()
+                cond = function(self)
                     if mq.TLO.Me.Bandolier("DW").Active() then return false end
-                    return mq.TLO.Me.PctHPs() >= Config:GetSetting('EquipDW') and not (Globals.AutoTargetIsNamed and Config:GetSetting('NamedShieldLock'))
+                    return mq.TLO.Me.PctHPs() >= Config:GetSetting('EquipDW') and not self.Helpers.shieldNeeded()
                 end,
-                custom_func = function(self) return ItemManager.BandolierSwap("DW") end,
+                custom_func = function(self)
+                    ItemManager.BandolierSwap("DW")
+                    return true
+                end,
             },
         },
         ['Defenses'] = {
@@ -839,7 +842,7 @@ local _ClassConfig = {
             Header = "Bandolier",
             Category = "Bandolier",
             Index = 104,
-            Tooltip = "Keep Shield equipped for mobs detected as 'named' by RGMercs (see Named tab).",
+            Tooltip = "Keep Shield equipped while tanking a named.",
             Default = true,
             FAQ = "Why does my WAR switch to a Shield on puny gray named?",
             Answer = "The Shield on Named option doesn't check levels, so feel free to disable this setting (or Bandolier swapping entirely) if you are farming fodder.",

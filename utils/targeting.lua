@@ -15,6 +15,8 @@ Targeting.ForceNamed         = false
 Targeting.ForceBurnTargetID  = 0
 Targeting.SafeTargetCache    = {}
 Targeting.XTClearTime        = 0
+Targeting.TankingNamedCheckTime = 0
+Targeting.TankingNamedFound     = false
 
 Targeting.XTargetTypeKeywords = {
     ["Target's Target"]      = "targetstarget",
@@ -357,6 +359,29 @@ function Targeting.IHaveAggro(pct)
     end
 
     return false
+end
+
+--- Returns true if any XT row is a named mob we currently have aggro on; result cached 1s.
+---@return boolean True if we are the current aggro target of a named XT row.
+function Targeting.TankingXTNamed()
+    if Globals.GetTimeSeconds() - Targeting.TankingNamedCheckTime < 1 then
+        return Targeting.TankingNamedFound
+    end
+    Targeting.TankingNamedCheckTime = Globals.GetTimeSeconds()
+    Targeting.TankingNamedFound = false
+    local xtCount = mq.TLO.Me.XTarget() or 0
+    for i = 1, xtCount do
+        local xt = mq.TLO.Me.XTarget(i)
+        -- check for exactly 100% to help ensure the mob is targeting us, over 100% can indicate another is still targeted
+        if xt and xt.ID() > 0 and not xt.Dead()
+            and (xt.Aggressive() or (xt.TargetType() or ""):lower() == "auto hater")
+            and (xt.PctAggro() or 0) == 100
+            and Targeting.IsNamed(xt) then
+            Targeting.TankingNamedFound = true
+            break
+        end
+    end
+    return Targeting.TankingNamedFound
 end
 
 --- Returns a Set of spawn IDs currently hating the player on XTarget.

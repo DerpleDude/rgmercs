@@ -92,8 +92,6 @@ local _ClassConfig = {
         -- },
     },
     ['Helpers']       = {
-        --function to make sure we don't have non-hostiles in range before we use AE damage
-
     },
     ['RotationOrder'] = {
         {

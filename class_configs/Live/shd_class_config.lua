@@ -785,12 +785,16 @@ local _ClassConfig = {
             end
             return true
         end,
-        --function to make sure we don't have non-hostiles in range before we use AE damage or non-taunt AE hate abilities
-
+        shieldNeeded = function()
+            -- check for exactly 100% to help ensure the mob is targeting us, over 100% can indicate another is still targeted
+            return (mq.TLO.Me.PctHPs() <= Config:GetSetting('EquipShield')) or mq.TLO.Me.ActiveDisc.Name() == "Deflection Discipline" or
+                (mq.TLO.Me.AltAbilityTimer("Shield Flash")() or 0) >= 234000 or
+                (Config:GetSetting('NamedShieldLock') and ((Globals.AutoTargetIsNamed and Targeting.GetAutoTargetAggroPct() == 100) or Targeting.TankingXTNamed()))
+        end,
     },
     ['Charm']         = {
         ['Assist'] = {
-            { name = "Taunt", type = "Ability", },
+            { name = "Taunt",            type = "Ability", },
             {
                 name = "Terror",
                 type = "Spell",
@@ -1760,21 +1764,26 @@ local _ClassConfig = {
             {
                 name = "Equip Shield",
                 type = "CustomFunc",
-                cond = function(self, target)
+                cond = function(self)
                     if mq.TLO.Me.Bandolier("Shield").Active() then return false end
-                    return (mq.TLO.Me.PctHPs() <= Config:GetSetting('EquipShield')) or (Globals.AutoTargetIsNamed and Config:GetSetting('NamedShieldLock'))
+                    return self.Helpers.shieldNeeded()
                 end,
-                custom_func = function(self) return ItemManager.BandolierSwap("Shield") end,
+                custom_func = function(self)
+                    ItemManager.BandolierSwap("Shield")
+                    return true
+                end,
             },
             {
                 name = "Equip 2Hand",
                 type = "CustomFunc",
-                cond = function()
+                cond = function(self)
                     if mq.TLO.Me.Bandolier("2Hand").Active() then return false end
-                    return mq.TLO.Me.PctHPs() >= Config:GetSetting('Equip2Hand') and mq.TLO.Me.ActiveDisc.Name() ~= "Deflection Discipline" and
-                        (mq.TLO.Me.AltAbilityTimer("Shield Flash")() or 0) < 234000 and not (Globals.AutoTargetIsNamed and Config:GetSetting('NamedShieldLock'))
+                    return mq.TLO.Me.PctHPs() >= Config:GetSetting('Equip2Hand') and not self.Helpers.shieldNeeded()
                 end,
-                custom_func = function(self) return ItemManager.BandolierSwap("2Hand") end,
+                custom_func = function(self)
+                    ItemManager.BandolierSwap("2Hand")
+                    return true
+                end,
             },
         },
     },
@@ -2718,7 +2727,7 @@ local _ClassConfig = {
             Header = "Bandolier",
             Category = "Bandolier",
             Index = 104,
-            Tooltip = "Keep Shield equipped for mobs detected as 'named' by RGMercs (see Named tab).",
+            Tooltip = "Keep Shield equipped while tanking a named.",
             Default = true,
             FAQ = "Why does my SHD switch to a Shield on puny gray named?",
             Answer = "The Shield on Named option doesn't check levels, so feel free to disable this setting (or Bandolier swapping entirely) if you are farming fodder.",

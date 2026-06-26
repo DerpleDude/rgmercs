@@ -805,8 +805,6 @@ return {
             return Casting.IHaveBuff("Bestial Alignment") or (disc and disc() and Casting.IHaveBuff(disc.Name()))
                 or Casting.IHaveBuff("Ferociousness")
         end,
-        --function to make sure we don't have non-hostiles in range before we use AE damage or non-taunt AE hate abilities
-
     },
     ['Rotations']         = {
         ['Burn'] = {

@@ -459,7 +459,11 @@ return {
             end
             return false
         end,
-
+        shieldNeeded = function()
+            -- check for exactly 100% to help ensure the mob is targeting us, over 100% can indicate another is still targeted
+            return (mq.TLO.Me.PctHPs() <= Config:GetSetting('EquipShield')) or mq.TLO.Me.ActiveDisc() == "Deflection Discipline" or
+                (Config:GetSetting('NamedShieldLock') and ((Globals.AutoTargetIsNamed and Targeting.GetAutoTargetAggroPct() == 100) or Targeting.TankingXTNamed()))
+        end,
     },
     ['HealRotationOrder'] = {
         {
@@ -1151,21 +1155,26 @@ return {
             {
                 name = "Equip Shield",
                 type = "CustomFunc",
-                cond = function(self, target)
+                cond = function(self)
                     if mq.TLO.Me.Bandolier("Shield").Active() then return false end
-                    return (mq.TLO.Me.PctHPs() <= Config:GetSetting('EquipShield')) or (Globals.AutoTargetIsNamed and Config:GetSetting('NamedShieldLock'))
+                    return self.Helpers.shieldNeeded()
                 end,
-                custom_func = function(self) return ItemManager.BandolierSwap("Shield") end,
+                custom_func = function(self)
+                    ItemManager.BandolierSwap("Shield")
+                    return true
+                end,
             },
             {
                 name = "Equip 2Hand",
                 type = "CustomFunc",
-                cond = function()
+                cond = function(self)
                     if mq.TLO.Me.Bandolier("2Hand").Active() then return false end
-                    return mq.TLO.Me.PctHPs() >= Config:GetSetting('Equip2Hand') and mq.TLO.Me.ActiveDisc() ~= "Deflection Discipline" and
-                        not (Globals.AutoTargetIsNamed and Config:GetSetting('NamedShieldLock'))
+                    return mq.TLO.Me.PctHPs() >= Config:GetSetting('Equip2Hand') and not self.Helpers.shieldNeeded()
                 end,
-                custom_func = function(self) return ItemManager.BandolierSwap("2Hand") end,
+                custom_func = function(self)
+                    ItemManager.BandolierSwap("2Hand")
+                    return true
+                end,
             },
         },
     },
@@ -1368,7 +1377,7 @@ return {
             Header = "Bandolier",
             Category = "Bandolier",
             Index = 104,
-            Tooltip = "Keep Shield equipped for mobs detected as 'named' by RGMercs (see Named tab).",
+            Tooltip = "Keep Shield equipped while tanking a named.",
             Default = true,
         },
 

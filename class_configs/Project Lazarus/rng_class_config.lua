@@ -393,8 +393,6 @@ return {
                 end
             end
         end,
-        --function to make sure we don't have non-hostiles in range before we use AE damage or non-taunt AE hate abilities
-
     },
     ['Rotations']         = {
         ['Ranged Positioning'] = {
@@ -1004,7 +1002,7 @@ return {
             Min = 1,
             Max = 99,
         },
-        ['HealPriority']    = {
+        ['HealPriority']   = {
             DisplayName = "Healing Priority",
             Group = "Abilities",
             Header = "Recovery",

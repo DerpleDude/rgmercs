@@ -704,8 +704,6 @@ return {
             end
             return true
         end,
-        --function to make sure we don't have non-hostiles in range before we use AE damage
-
         UnwantedAggroCheck = function(self)
             if Targeting.GetXTHaterCount() == 0 or Core.IsTanking() or mq.TLO.Group.Puller.ID() == mq.TLO.Me.ID() then return false end
             return Targeting.IHaveAggro(100)
