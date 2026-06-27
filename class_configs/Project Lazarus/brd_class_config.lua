@@ -784,7 +784,7 @@ local _ClassConfig = {
                 load_cond = function(self) return Config:GetSetting('UseFading') and Casting.CanUseAA('Fading Memories') end,
                 cond = function(self, aaName)
                     if Config:GetSetting('CharmOn') and mq.TLO.Me.Pet.ID() > 0 then return false end
-                    return mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') and self.Helpers.UnwantedAggroCheck(self)
+                    return (mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') or Globals.AutoTargetIsNamed) and self.Helpers.UnwantedAggroCheck(self)
                 end,
             },
             {
@@ -821,7 +821,7 @@ local _ClassConfig = {
                     local combatState = Combat.GetCachedCombatState()
                     -- if in combat, check self, out of combat, also check others
                     return (combatState == "Combat" and (mq.TLO.Me.Buff(aaName).Duration.TotalSeconds() or 0) < 15) or
-                    (combatState == "Downtime" and Casting.GroupBuffAACheck(aaName, target))
+                        (combatState == "Downtime" and Casting.GroupBuffAACheck(aaName, target))
                 end,
             },
         },

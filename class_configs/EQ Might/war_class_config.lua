@@ -324,8 +324,8 @@ local _ClassConfig = {
                     (mq.TLO.Me.PctHPs() <= Config:GetSetting('DefenseStart') or
                         -- we have met our defense count threshold
                         self.Helpers.DefensiveDiscCheck(true) or
-                        -- we are fighting a named and we are (presumably) tanking it
-                        (Globals.AutoTargetIsNamed and Targeting.GetAutoTargetAggroPct() >= 100))
+                        -- we are fighting a named and we are tanking it
+                        Targeting.TankingXTNamed())
             end,
         },
         { --Offensive actions to temporarily boost damage dealt

@@ -545,8 +545,8 @@ local _ClassConfig = {
                     (mq.TLO.Me.PctHPs() <= Config:GetSetting('DefenseStart') or
                         -- we have met our defense count threshold
                         self.Helpers.DefensiveDiscCheck(true) or
-                        -- we are fighting a named and we are (presumably) tanking it
-                        (Globals.AutoTargetIsNamed and Targeting.GetAutoTargetAggroPct() >= 100))
+                        -- we are fighting a named and we are tanking it
+                        Targeting.TankingXTNamed())
             end,
         },
         { --Keep things from running
@@ -930,7 +930,7 @@ local _ClassConfig = {
                 type = "Spell",
                 tooltip = Tooltips.Skin,
                 cond = function(self, spell, target)
-                    if not Core.IsTanking() or not Globals.AutoTargetIsNamed then return false end
+                    if not Core.IsTanking() or not Targeting.TankingXTNamed() then return false end
                     return Casting.SelfBuffCheck(spell)
                 end,
             },
@@ -979,7 +979,7 @@ local _ClassConfig = {
                 tooltip = Tooltips.Epic,
                 cond = function(self, itemName, target)
                     if Config:GetSetting('HoldEpicForNoDisc') and not Casting.NoDiscActive() then return false end
-                    return self.Helpers.LeechCheck(self) or Globals.AutoTargetIsNamed
+                    return self.Helpers.LeechCheck(self) or Targeting.TankingXTNamed()
                 end,
             },
         },

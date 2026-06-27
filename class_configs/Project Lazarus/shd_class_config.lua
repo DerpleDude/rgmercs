@@ -458,8 +458,8 @@ local _ClassConfig = {
                     (mq.TLO.Me.PctHPs() <= Config:GetSetting('DefenseStart') or
                         -- we have met our defense count threshold
                         self.Helpers.DefensiveDiscCheck(true) or
-                        -- we are fighting a named and we are (presumably) tanking it
-                        (Globals.AutoTargetIsNamed and Targeting.GetAutoTargetAggroPct() >= 100))
+                        -- we are fighting a named and we are tanking it
+                        Targeting.TankingXTNamed())
             end,
         },
         { --Keep things from running
@@ -838,7 +838,7 @@ local _ClassConfig = {
                 tooltip = Tooltips.Terror,
                 load_cond = function(self) return Core.IsTanking() and Config:GetSetting('DoTerror') end,
                 cond = function(self, spell, target)
-                    return Globals.AutoTargetIsNamed and (Casting.CanUseAA("Cascading Theft of Defense") and not Casting.IHaveBuff("Cascading Theft of Defense"))
+                    return Targeting.TankingXTNamed() and (Casting.CanUseAA("Cascading Theft of Defense") and not Casting.IHaveBuff("Cascading Theft of Defense"))
                 end,
             },
             {
@@ -846,7 +846,7 @@ local _ClassConfig = {
                 type = "Spell",
                 tooltip = Tooltips.Skin,
                 cond = function(self, spell, target)
-                    if not Core.IsTanking() or not Globals.AutoTargetIsNamed then return false end
+                    if not Core.IsTanking() or not Targeting.TankingXTNamed() then return false end
                     return Casting.SelfBuffCheck(spell)
                         --laz specific deconflict
                         and not Casting.IHaveBuff("Necrotic Pustules")
@@ -887,7 +887,7 @@ local _ClassConfig = {
                 type = "Item",
                 tooltip = Tooltips.Epic,
                 cond = function(self, itemName, target)
-                    return self.Helpers.LeechCheck(self) or Globals.AutoTargetIsNamed
+                    return self.Helpers.LeechCheck(self) or Targeting.TankingXTNamed()
                 end,
             },
             {

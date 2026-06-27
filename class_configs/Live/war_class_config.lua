@@ -412,7 +412,7 @@ local _ClassConfig = {
             cond = function(self, combat_state)
                 --need to look at rotation and decide if it should fire during emergencies. leaning towards no
                 return combat_state == "Combat" and Core.IsTanking() and (mq.TLO.Me.PctHPs() < Config:GetSetting('EmergencyStart') or
-                    Globals.AutoTargetIsNamed or self.Helpers.DefensiveDiscCheck(true))
+                    Targeting.TankingXTNamed() or self.Helpers.DefensiveDiscCheck(true))
             end,
         },
         { --Offensive actions to temporarily boost damage dealt
