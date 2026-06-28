@@ -229,6 +229,7 @@ end
 
 function TargetUI:RenderWindow(flags)
     flags = bit32.bor(flags, ImGuiWindowFlags.NoTitleBar, Config:GetSetting('LockTargetWindow') and bit32.bor(ImGuiWindowFlags.NoMove, ImGuiWindowFlags.NoResize) or 0)
+    ImGui.SetNextWindowSize(ImVec2(540, 160), ImGuiCond.FirstUseEver)
     local open, show = ImGui.Begin(Ui.GetWindowTitle("Target"), Config:GetSetting('ShowTargetWindow'), flags)
     if show then
         self:RenderContent()

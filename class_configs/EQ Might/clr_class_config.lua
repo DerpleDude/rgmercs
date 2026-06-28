@@ -232,10 +232,6 @@ local _ClassConfig = {
             "Aura of the Pious",  -- Level 66
             "Aura of the Zealot", -- Level 55
         },
-        ['HPAura'] = {
-            ---- Aura Buff 2 - Aura Name is the same as the buff name
-            "Aura of Divinity", -- Level 100
-        },
         ['DivineBuff'] = {
             --Divine Buffs REQUIRES extra spell slot because of the 90s recast
             "Divine Incursion",    -- Level 69 EQM Custom
@@ -903,38 +899,14 @@ local _ClassConfig = {
                 end,
             },
             {
-                name = "Spirit Mastery",
-                type = "AA",
-                pre_activate = function(self, aaName) --remove the old aura if we just purchased the AA, otherwise we will be spammed because of no focus.
-                    ---@diagnostic disable-next-line: undefined-field
-                    if not Casting.AuraActiveByName("Aura of Pious Divinity") then mq.TLO.Me.Aura(1).Remove() end
-                end,
-                cond = function(self, aaName)
-                    return not Casting.AuraActiveByName("Aura of Pious Divinity")
-                end,
-            },
-            {
                 name = "AbsorbAura",
                 type = "Spell",
-                pre_activate = function(self, spell) --remove the old aura if we leveled up (or the other aura if we just changed options), otherwise we will be spammed because of no focus.
+                pre_activate = function(self, spell) --remove the old aura if we leveled up, otherwise we will be spammed because of no focus.
                     ---@diagnostic disable-next-line: undefined-field
                     if not Casting.AuraActiveByName(spell.BaseName()) then mq.TLO.Me.Aura(1).Remove() end
                 end,
                 cond = function(self, spell)
-                    if Casting.CanUseAA('Spirit Mastery') then return false end
-                    return not Casting.AuraActiveByName(spell.BaseName()) and Config:GetSetting('UseAura') == 1
-                end,
-            },
-            {
-                name = "HPAura",
-                type = "Spell",
-                pre_activate = function(self, spell) --remove the old aura if we leveled up (or the other aura if we just changed options), otherwise we will be spammed because of no focus.
-                    ---@diagnostic disable-next-line: undefined-field
-                    if not Casting.AuraActiveByName(spell.BaseName()) then mq.TLO.Me.Aura(1).Remove() end
-                end,
-                cond = function(self, spell)
-                    if Casting.CanUseAA('Spirit Mastery') then return false end
-                    return not Casting.AuraActiveByName(spell.BaseName()) and Config:GetSetting('UseAura') == 2
+                    return not Casting.AuraActiveByName(spell.BaseName())
                 end,
             },
         },
@@ -1114,19 +1086,6 @@ local _ClassConfig = {
             Min = 1,
             Max = 3,
             RequiresLoadoutChange = true,
-        },
-        ['UseAura']           = {
-            DisplayName = "Aura Spell Choice:",
-            Group = "Abilities",
-            Header = "Buffs",
-            Category = "Group",
-            Index = 104,
-            Tooltip = "Select the Aura to be used, prior to purchasing the Spirit Mastery AA.",
-            Type = "Combo",
-            ComboOptions = { 'Absorb', 'HP', 'None', },
-            Default = 1,
-            Min = 1,
-            Max = 3,
         },
         ['DoDivineBuff']      = {
             DisplayName = "Do Divine Intervetion",

@@ -856,7 +856,9 @@ end
 --- @return integer
 function Casting.MaxAuraSlots()
     if Core.OnLaz() then return 1 end
-    return Casting.AARank('Auroria Mastery') + 1
+    local auroriaSlots = Casting.AARank('Auroria Mastery')
+    local spiritSlots = Casting.CanUseAA('Spirit Mastery') and 1 or 0
+    return auroriaSlots + spiritSlots + 1
 end
 
 --- Returns true if at least one aura slot is currently empty.
