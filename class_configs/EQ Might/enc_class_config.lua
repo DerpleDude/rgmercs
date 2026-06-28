@@ -102,7 +102,7 @@ local _ClassConfig    = {
             "Quickness",           -- Level 15
         },
         ['ManaRegen'] = {
-            "Seer's Intuition",                  -- Level 71
+            -- "Seer's Intuition",               -- Level 71, not worth the hassle over the group item click
             "Ancient: Blessing of Clairvoyance", -- Level 70 EQM Custom
             "Voice of Clairvoyance",             -- Level 70
             "Clairvoyance",                      -- Level 68
@@ -578,6 +578,14 @@ local _ClassConfig    = {
             local tashSpell = self.ResolvedActionMap['TashSpell']
             return not (tashSpell and tashSpell() and tashSpell.Name() == "Echo of Tashan")
         end,
+        ManaBuffChoice = function()
+            if mq.TLO.Me.Level() >= 69 and mq.TLO.FindItem("=Legendary Timeless Belt of the Wise")() then
+                return "BeltItem"
+            elseif mq.TLO.Me.Level() >= 68 and mq.TLO.FindItem("=Ancient Artifact of Clairvoyance")() then
+                return "ArtifactItem"
+            end
+            return "ManaSpell"
+        end,
         DoRez = function(self, corpseId)
             local rezStaff = Core.GetResolvedActionMapItem('RezStaff')
 
@@ -775,9 +783,17 @@ local _ClassConfig    = {
         },
         ['GroupBuff']     = {
             {
+                name = "Legendary Timeless Belt of the Wise",
+                type = "Item",
+                load_cond = function(self) return self.Helpers.ManaBuffChoice() == "BeltItem" end,
+                cond = function(self, itemName, target)
+                    return Casting.GroupBuffItemCheck(itemName, target)
+                end,
+            },
+            {
                 name = "Ancient Artifact of Clairvoyance",
                 type = "Item",
-                load_cond = function() return mq.TLO.Me.Level() >= 68 and mq.TLO.FindItem("=Ancient Artifact of Clairvoyance")() end,
+                load_cond = function(self) return self.Helpers.ManaBuffChoice() == "ArtifactItem" end,
                 cond = function(self, itemName, target)
                     return Casting.GroupBuffItemCheck(itemName, target)
                 end,
@@ -785,7 +801,7 @@ local _ClassConfig    = {
             {
                 name = "ManaRegen",
                 type = "Spell",
-                load_cond = function() return mq.TLO.Me.Level() < 68 or not mq.TLO.FindItem("=Ancient Artifact of Clairvoyance")() end,
+                load_cond = function(self) return self.Helpers.ManaBuffChoice() == "ManaSpell" end,
                 active_cond = function(self, spell) return mq.TLO.Me.FindBuff("id " .. tostring(spell.ID()))() ~= nil end,
                 cond = function(self, spell, target)
                     if not Targeting.TargetIsACaster(target) then return false end

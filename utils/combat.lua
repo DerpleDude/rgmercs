@@ -591,24 +591,25 @@ function Combat.FindBestAutoTarget(validateFn)
         Globals.LastPulledID = 0
     end
 
-    -- FollowMarkTarget causes RG to have allow RG toons focus on who the group has marked. We'll exit early if this is the case.
+    local target = mq.TLO.Target
+    local assistTargetIsNamed = nil
+    local markedHandled = false
+
+    -- FollowMarkTarget: set candidate and route through the common validation below; far/invalid marks get cleared there.
     if Config:GetSetting('FollowMarkTarget') then
         local markNPC = mq.TLO.Me.GroupMarkNPC(1)
-        if markNPC and markNPC() and markNPC.ID() > 0 and Globals.AutoTargetID ~= markNPC.ID() then
-            Globals.AutoTargetID = markNPC.ID()
-            Globals.AutoTargetIsNamed = Targeting.IsNamed(markNPC)
-            Logger.log_debug("FindAutoTarget(): Following Marked Target: \ag%s\ax [ID: \ag%d\ax] Named(%s)", markNPC.CleanName() or "None", markNPC.ID(),
-                Strings.BoolToColorString(Globals.AutoTargetIsNamed))
-            return
+        if markNPC and markNPC() and markNPC.ID() > 0 then
+            if Globals.AutoTargetID ~= markNPC.ID() then
+                Globals.AutoTargetID = markNPC.ID()
+                Logger.log_debug("FindAutoTarget(): Following Marked Target: \ag%s\ax [ID: \ag%d\ax]", markNPC.CleanName() or "None", markNPC.ID())
+            end
+            assistTargetIsNamed = Targeting.IsNamed(markNPC)
+            markedHandled = true
         end
     end
 
-    local target = mq.TLO.Target
-    local targetValidated = false
-    local assistTargetIsNamed = nil
-
     -- Now handle normal situations where we need to choose a target because we don't have one.
-    if Core.IAmMA() then
+    if not markedHandled and Core.IAmMA() then
         Logger.log_verbose("FindAutoTarget() ==> I am MA!")
         if Globals.ForceTargetID ~= 0 then
             local forceSpawn = mq.TLO.Spawn(Globals.ForceTargetID)
@@ -670,7 +671,7 @@ function Combat.FindBestAutoTarget(validateFn)
                 end
             end
         end
-    else
+    elseif not markedHandled then
         local assistId = 0
 
         -- check if we are currently forcing a target, use it as the assistId to validate if so, clear the ForceTargetID if its dead.
@@ -696,15 +697,17 @@ function Combat.FindBestAutoTarget(validateFn)
             assistId, assistTargetIsNamed = Combat.GetMainAssistTargetID()
         end
 
-        if assistId > 0 and (validateFn == nil or validateFn(assistId)) then
-            targetValidated = true
+        if assistId > 0 then
             Globals.AutoTargetID = assistId
-        else
-            Globals.AutoTargetID = 0
-            assistTargetIsNamed = false
-            Globals.AutoTargetElementalImmunities = {}
-            Globals.AutoTargetStatusImmunities = {}
         end
+    end
+
+    -- Common validation: any AutoTargetID set above gets gated through validateFn once here. Failure zeroes and clears caches.
+    if Globals.AutoTargetID > 0 and validateFn and not validateFn(Globals.AutoTargetID) then
+        Globals.AutoTargetID = 0
+        assistTargetIsNamed = false
+        Globals.AutoTargetElementalImmunities = {}
+        Globals.AutoTargetStatusImmunities = {}
     end
 
     if Globals.AutoTargetID > 0 then
@@ -723,22 +726,20 @@ function Combat.FindBestAutoTarget(validateFn)
     Logger.log_verbose("FindAutoTarget(): FoundTargetID(%d) - Named(%s), myTargetId(%d)", Globals.AutoTargetID or 0, Strings.BoolToColorString(Globals.AutoTargetIsNamed),
         mq.TLO.Target.ID())
 
-    if Config:GetSetting('DoAutoTarget') then
-        local autoTargetId = Globals.AutoTargetID or 0
-        if autoTargetId > 0 and (targetValidated or (validateFn == nil or validateFn(autoTargetId))) then
-            if mq.TLO.Target.ID() ~= autoTargetId then
-                Targeting.SetTarget(autoTargetId)
-            end
+    if Config:GetSetting('DoAutoTarget') and Globals.AutoTargetID > 0 then
+        local autoTargetId = Globals.AutoTargetID
+        if mq.TLO.Target.ID() ~= autoTargetId then
+            Targeting.SetTarget(autoTargetId)
+        end
 
-            -- For Assist Lists, this ensures we correctly and quickly receive health percent to assist in a timely manner
-            -- For Emu, this helps correct for emu xtarget bugs
-            -- For Force Target, this makes sure a non-aggressive mob is added to our xtargets for tracking
-            -- Second dead check because targets were ocasionally dying between the validateFn and this check
-            if Config:GetSetting('UseAssistList') or Core.OnEMU() or autoTargetId == Globals.ForceTargetID then
-                if mq.TLO.Spawn(autoTargetId)() and not mq.TLO.Spawn(autoTargetId).Dead() and not Targeting.IsSpawnXTHater(autoTargetId) then
-                    Targeting.AddXTByID(1, Globals.AutoTargetID)
-                    Logger.log_verbose("FindAutoTarget(): FoundTargetID(%d) not on xt list, adding.", autoTargetId or 0)
-                end
+        -- For Assist Lists, this ensures we correctly and quickly receive health percent to assist in a timely manner
+        -- For Emu, this helps correct for emu xtarget bugs
+        -- For Force Target, this makes sure a non-aggressive mob is added to our xtargets for tracking
+        -- Second dead check because targets were ocasionally dying between the validateFn and this check
+        if Config:GetSetting('UseAssistList') or Core.OnEMU() or autoTargetId == Globals.ForceTargetID then
+            if mq.TLO.Spawn(autoTargetId)() and not mq.TLO.Spawn(autoTargetId).Dead() and not Targeting.IsSpawnXTHater(autoTargetId) then
+                Targeting.AddXTByID(1, Globals.AutoTargetID)
+                Logger.log_verbose("FindAutoTarget(): FoundTargetID(%d) not on xt list, adding.", autoTargetId or 0)
             end
         end
     end
@@ -795,8 +796,12 @@ function Combat.OkToEngagePreValidateId(targetId)
 
     if not Globals.BackOffFlag then
         if Core.IAmMA() then
-            Logger.log_verbose("OkToEngagePrevalidate check for %s(ID: %d) - I am MA, proceeding!", targetName, targetId)
-            return true
+            if Targeting.GetTargetDistance(target) <= Config:GetSetting('AssistRange') then
+                Logger.log_verbose("OkToEngagePrevalidate check for %s(ID: %d) - I am MA, proceeding!", targetName, targetId)
+                return true
+            end
+            Logger.log_verbose("OkToEngagePrevalidate check for %s(ID: %d) - I am MA but target beyond AssistRange.", targetName, targetId)
+            return false
         else -- can't check HP yet, as we haven't targeted
             local distanceCheck = Targeting.GetTargetDistance(target) < Config:GetSetting('AssistRange')
             local hostileCheck = Config:GetSetting('TargetNonAggressives') or target.Aggressive()
@@ -878,8 +883,12 @@ function Combat.OkToEngage(autoTargetId)
 
     if not Globals.BackOffFlag then
         if Core.IAmMA() then
-            Logger.log_verbose("OkToEngage check for %s(ID: %d) - I am MA, proceeding!", targetName, targetId)
-            return true
+            if Targeting.GetTargetDistance() <= Config:GetSetting('AssistRange') then
+                Logger.log_verbose("OkToEngage check for %s(ID: %d) - I am MA, proceeding!", targetName, targetId)
+                return true
+            end
+            Logger.log_verbose("OkToEngage check for %s(ID: %d) - I am MA but target beyond AssistRange.", targetName, targetId)
+            return false
         else
             local distanceCheck = Targeting.GetTargetDistance() < Config:GetSetting('AssistRange')
             local assistHPCheck = Targeting.GetTargetPctHPs() <= Config:GetSetting('AutoAssistAt')
