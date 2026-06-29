@@ -696,7 +696,7 @@ Config.DefaultConfig                                     = {
         Index = 7,
         Tooltip =
         "EMU only: during downtime, use the #clearxtargets command to remove bugged corpse entries from XTarget slots. Existing xtarget assignments will be preserved and regenerated.",
-        Default = (Globals.BuildType == 'Emu'),
+        Default = (Globals.BuildType:lower() == "emu"),
         ConfigType = "Advanced",
     },
 
@@ -961,7 +961,7 @@ Config.DefaultConfig                                     = {
         Category = "Assisting",
         Index = 8,
         Tooltip = "Allow RGMercs to issue mercenary commands. We plan to add selectable stances in a future update.",
-        Default = (Globals.BuildType ~= 'Emu'),
+        Default = (Globals.BuildType:lower() ~= "emu"),
         ConfigType = "Normal",
     },
     ['MercStance']                 = {

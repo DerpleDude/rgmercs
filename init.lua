@@ -534,7 +534,7 @@ local function Main()
         if Config:GetSetting('DoMercenary') then
             local merc = mq.TLO.Me.Mercenary
 
-            if merc() and merc.ID() then
+            if (merc.State() or ""):lower() == "active" then
                 if Combat.MercEngage() then
                     local class = merc.Class.ShortName():lower()
                     local stanceGroups = {
@@ -568,7 +568,9 @@ local function Main()
     end
 
     if Combat.ShouldDoCamp() then
-        if Config:GetSetting('DoMercenary') and mq.TLO.Me.Mercenary.ID() and (mq.TLO.Me.Mercenary.Class.ShortName() or "none"):lower() ~= "clr" and mq.TLO.Me.Mercenary.Stance():lower() ~= "passive" then
+        local merc = mq.TLO.Me.Mercenary
+        if Config:GetSetting('DoMercenary') and (merc.State() or ""):lower() == "active"
+            and (merc.Class.ShortName() or "none"):lower() ~= "clr" and merc.Stance():lower() ~= "passive" then
             Core.DoCmd("/squelch /stance passive")
         end
     end
