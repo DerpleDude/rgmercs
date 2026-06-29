@@ -1053,7 +1053,7 @@ local _ClassConfig = {
                 name = "HordeDot",
                 type = "Spell",
                 cond = function(self, spell)
-                    return Core.IsModeActive("Mana") and Casting.DotSpellCheck(spell) and Config:GetSetting('DoDot')
+                    return Casting.DotSpellCheck(spell) and Config:GetSetting('DoDot')
                 end,
             },
             {
@@ -1107,7 +1107,7 @@ local _ClassConfig = {
                 name = "WinterFireDD",
                 type = "Spell",
                 cond = function(self, spell)
-                    return Core.IsModeActive("Mana") and Casting.DetSpellCheck(spell) and Config:GetSetting('DoFire') and Casting.OkayToNuke()
+                    return Casting.DetSpellCheck(spell) and Config:GetSetting('DoFire') and Casting.OkayToNuke()
                 end,
             },
             {
