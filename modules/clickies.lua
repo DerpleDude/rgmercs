@@ -1984,6 +1984,7 @@ function Module:ValidateClickies()
         -- update the actual settings since we just mutated the temp reference above.
         Config:SetSetting('Clickies', clickies)
     end
+    return clickies
 end
 
 function Module:InsertDefaultClickies()
@@ -2012,12 +2013,11 @@ function Module:GiveTime()
     end
 
     -- Main Module logic goes here.
-    self:ValidateClickies()
+    local clickies = self:ValidateClickies()
 
     local maxClickiesPerCycle = Config:GetSetting('MaxClickiesPerCycle') or 0
     local clickiesUsedThisCycle = 0
     local startingClickyIdx = maxClickiesPerCycle > 0 and self.ClickyRotationIndex or 1
-    local clickies = Config:GetSetting('Clickies') or {}
     local numClickies = #clickies
     local moving = mq.TLO.Me.Moving() or mq.TLO.Navigation.Active() or mq.TLO.MoveTo.Moving()
     for clickyIdx = startingClickyIdx, numClickies do
@@ -2036,7 +2036,7 @@ function Module:GiveTime()
             self.TempSettings.ClickyState[clicky.itemName].itemFound = item() ~= nil
 
             Logger.log_verbose("\ayClicky: \awLooking for clicky item: \am%s \awfound: %s", clicky.itemName, Strings.BoolToColorString(item() ~= nil))
-            if item and item() and item.Clicky then
+            if item and item() and item.Clicky and itemSpell and itemSpell() then
                 if not moving or (item.Clicky.CastTime() or -1) == 0 then
                     if clicky.combat_state == "Any" or clicky.combat_state == combat_state then
                         local condTarget = nil
@@ -2075,16 +2075,17 @@ function Module:GiveTime()
 
                             if clicky.target == "Self" then
                                 target = mq.TLO.Me
-                                buffCheckPassed = Casting.SelfBuffItemCheck(clicky.itemName, nil, clicky.skipTriggerCheck)
+                                buffCheckPassed = Casting.LocalBuffCheck(itemSpell.ID(), nil, clicky.skipTriggerCheck)
                             elseif clicky.target == "Pet" then
                                 target = mq.TLO.Me.Pet
-                                buffCheckPassed = target and Casting.PetBuffItemCheck(clicky.itemName, nil, clicky.skipTriggerCheck)
+                                buffCheckPassed = target and Casting.LocalPetBuffCheck(itemSpell.ID(), nil, clicky.skipTriggerCheck)
                             elseif clicky.target == "Main Assist" then
                                 target = Core.GetMainAssistSpawn()
-                                buffCheckPassed = target and Casting.GroupBuffItemCheck(clicky.itemName, target, nil, clicky.skipTriggerCheck)
+                                buffCheckPassed = target and Casting.LevelCheckPass(itemSpell, target)
+                                    and Casting.ResolveBuffCheck(itemSpell.ID(), target, nil, clicky.skipTriggerCheck)
                             elseif clicky.target == "Auto Target" then
                                 target = Targeting.GetAutoTarget()
-                                buffCheckPassed = target and Casting.DetItemCheck(clicky.itemName, target)
+                                buffCheckPassed = target and Casting.TargetBuffCheck(itemSpell.ID(), target)
                             elseif clicky.target == "Mercs Peer" then
                                 targetPeer = Comms.GetPeerHeartbeatByName(clicky.mercs_peer_name or "")
                                 local peerFound = (targetPeer and targetPeer.Data
@@ -2099,10 +2100,11 @@ function Module:GiveTime()
                                     buffCheckPassed = false
                                 end
                             elseif clicky.target == "All Buffable" then
-                                local buffableIds = Casting.GetBuffableIDs()
-                                for _, peerId in ipairs(buffableIds) do
+                                local spellId = itemSpell.ID()
+                                for _, peerId in ipairs(Casting.GetBuffableIDs()) do
                                     local candidate = mq.TLO.Spawn(peerId)
-                                    if candidate() and Casting.GroupBuffItemCheck(clicky.itemName, candidate, nil, clicky.skipTriggerCheck) then
+                                    if candidate() and Casting.LevelCheckPass(itemSpell, candidate)
+                                        and Casting.ResolveBuffCheck(spellId, candidate, nil, clicky.skipTriggerCheck) then
                                         target = candidate
                                         buffCheckPassed = true
                                         break

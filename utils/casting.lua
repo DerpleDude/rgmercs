@@ -294,11 +294,12 @@ function Casting.ResolveBuffCheck(spellId, target, skipBlockCheck, skipTriggerCh
     if not (target and target()) then return false end
 
     local spell = mq.TLO.Spell(spellId)
+    local targetId = target.ID()
 
-    if target.ID() == mq.TLO.Me.ID() then
+    if targetId == mq.TLO.Me.ID() then
         Logger.log_verbose("ResolveBuffCheck: Target is myself, using LocalBuffCheck.")
         return Casting.LocalBuffCheck(spellId, skipBlockCheck, skipTriggerCheck)
-    elseif target.ID() == mq.TLO.Me.Pet.ID() then
+    elseif targetId == mq.TLO.Me.Pet.ID() then
         Logger.log_verbose("ResolveBuffCheck: Target is my pet, using LocalPetBuffCheck.")
         return Casting.LocalPetBuffCheck(spellId, skipBlockCheck, skipTriggerCheck)
     else
@@ -323,28 +324,28 @@ function Casting.ResolveBuffCheck(spellId, target, skipBlockCheck, skipTriggerCh
             local petBlockedList = heartbeat.Data.PetBlocked
 
             if isPet and petBuffList and (skipBlockCheck or petBlockedList) then
-                Logger.log_verbose("ResolveBuffCheck: Target(%s) ID(%d) is an actor peer pet, using ActorPetBuffCheck.", target.DisplayName(), target.ID())
-                return Casting.ActorPetBuffCheck(spellId, target, skipBlockCheck, skipTriggerCheck)
+                Logger.log_verbose("ResolveBuffCheck: Target(%s) ID(%d) is an actor peer pet, using ActorPetBuffCheck.", target.DisplayName(), targetId)
+                return Casting.ActorPetBuffCheck(spellId, target, skipBlockCheck, skipTriggerCheck, heartbeat, spell)
             end
             if buffList and songList and (skipBlockCheck or blockedList) then
-                Logger.log_verbose("ResolveBuffCheck: Target(%s) ID(%d) is an actor peer, using ActorBuffCheck.", target.DisplayName(), target.ID())
-                return Casting.ActorBuffCheck(spellId, target, skipBlockCheck, skipTriggerCheck)
+                Logger.log_verbose("ResolveBuffCheck: Target(%s) ID(%d) is an actor peer, using ActorBuffCheck.", target.DisplayName(), targetId)
+                return Casting.ActorBuffCheck(spellId, target, skipBlockCheck, skipTriggerCheck, heartbeat, spell)
             end
         end
 
-        if mq.TLO.DanNet(mq.TLO.Spawn(target.ID()).CleanName())() then
-            Logger.log_verbose("ResolveBuffCheck: Target(%s) ID(%d) is a DanNet peer, using PeerBuffCheck.", target.DisplayName(), target.ID())
+        if mq.TLO.DanNet(mq.TLO.Spawn(targetId).CleanName())() then
+            Logger.log_verbose("ResolveBuffCheck: Target(%s) ID(%d) is a DanNet peer, using PeerBuffCheck.", target.DisplayName(), targetId)
             return Casting.PeerBuffCheck(spellId, target, skipBlockCheck, skipTriggerCheck)
         end
 
         local allowTargetChange = (mq.TLO.Me.CombatState() or ""):lower() ~= "combat"
-        if allowTargetChange and target.ID() ~= mq.TLO.Target.ID() then
+        if allowTargetChange and targetId ~= mq.TLO.Target.ID() then
             local now = Globals.GetTimeSeconds()
-            if now - (Globals.LastCachedBuffUpdate[target.ID()] or 0) < Config:GetSetting('BuffTargetingInterval') then
-                Logger.log_verbose("ResolveBuffCheck: Throttled target-change for %s(ID:%d).", target.CleanName(), target.ID())
+            if now - (Globals.LastCachedBuffUpdate[targetId] or 0) < Config:GetSetting('BuffTargetingInterval') then
+                Logger.log_verbose("ResolveBuffCheck: Throttled target-change for %s(ID:%d).", target.CleanName(), targetId)
                 return false
             end
-            Globals.LastCachedBuffUpdate[target.ID()] = now
+            Globals.LastCachedBuffUpdate[targetId] = now
         end
         Logger.log_verbose("ResolveBuffCheck: Target is not myself or a DanNet peer, using TargetBuffCheck.")
         return Casting.TargetBuffCheck(spellId, target, allowTargetChange, false, skipTriggerCheck)
@@ -600,18 +601,18 @@ end
 --- @param skipBlockCheck boolean|nil whether to skip checking the peers blocked spells, this needs to be skipped for certain manual stacking checks
 --- @param skipTriggerCheck boolean|nil whether to skip a check for spell triggers, to be used for cost savings when we know the spell does not have triggers
 --- @return boolean True if the PC checking should cast the buff, false otherwise.
-function Casting.ActorBuffCheck(spellId, target, skipBlockCheck, skipTriggerCheck)
+function Casting.ActorBuffCheck(spellId, target, skipBlockCheck, skipTriggerCheck, heartbeat, spell)
     if not spellId then return false end
     if not (target and target()) then return false end
 
     local targetName = target.DisplayName()
     local targetId = target.ID()
-    local buffSpell = mq.TLO.Spell(spellId)
+    local buffSpell = spell or mq.TLO.Spell(spellId)
     local spellName = buffSpell.Name() or buffSpell()
 
     if not spellName then return false end
 
-    local heartbeat = Comms.GetPeerHeartbeatByName(targetName)
+    local heartbeat = heartbeat or Comms.GetPeerHeartbeatByName(targetName)
 
     if not heartbeat or not heartbeat.Data then
         Logger.log_error(
@@ -727,20 +728,20 @@ end
 --- @param skipBlockCheck boolean|nil whether to skip checking the peers blocked spells, this needs to be skipped for certain manual stacking checks
 --- @param skipTriggerCheck boolean|nil whether to skip a check for spell triggers, to be used for cost savings when we know the spell does not have triggers
 --- @return boolean True if the PC checking should cast the buff, false otherwise.
-function Casting.ActorPetBuffCheck(spellId, target, skipBlockCheck, skipTriggerCheck)
+function Casting.ActorPetBuffCheck(spellId, target, skipBlockCheck, skipTriggerCheck, heartbeat, spell)
     if not spellId then return false end
     if not (target and target()) then return false end
 
     local targetName = target.Master.DisplayName()
     local targetId = target.ID()
-    local buffSpell = mq.TLO.Spell(spellId)
+    local buffSpell = spell or mq.TLO.Spell(spellId)
     local spellName = buffSpell.Name() or buffSpell()
 
     if not spellName then return false end
 
     local masterName = target.Master() and target.Master.DisplayName() or nil
 
-    local heartbeat = masterName and Comms.GetPeerHeartbeatByName(masterName) or nil
+    local heartbeat = heartbeat or (masterName and Comms.GetPeerHeartbeatByName(masterName) or nil)
 
     if not heartbeat or not heartbeat.Data then
         Logger.log_error(
@@ -1756,7 +1757,7 @@ end
 --- @param retryCount number? The number of times to retry casting the spell if it fails.
 --- @return boolean success Returns true if the spell was successfully cast, false otherwise.
 --- @return boolean|nil isGroup Returns true if the spell is a group-affecting target type.
-function Casting.UseSpell(spellName, targetId, bAllowMem, bAllowDead, retryCount)
+function Casting.UseSpell(spellName, targetId, bAllowMem, bAllowDead, retryCount, noWait)
     local me = mq.TLO.Me
     if not targetId then targetId = mq.TLO.Target.ID() end
     -- Immediately send bards to the song handler.
@@ -1819,6 +1820,12 @@ function Casting.UseSpell(spellName, targetId, bAllowMem, bAllowDead, retryCount
         return false
     end
 
+    local spellRange = Casting.GetSpellRange(spell)
+    if targetId ~= me.ID() and targetSpawn() and Targeting.GetTargetDistance(targetSpawn) > spellRange then
+        Logger.log_debug("\ayUseSpell(): \arTried to cast %s on %s but they are too far away", spellName, targetSpawn.DisplayName() or "None")
+        return false
+    end
+
     if (Targeting.GetXTHaterCount() > 0 or not bAllowMem) and (not Casting.CastReady(spell) or not me.Gem(spellName)()) then
         Logger.log_debug("\ayUseSpell(): \ayI tried to cast %s but it was not ready and we are in combat - moving on.",
             spellName)
@@ -1871,9 +1878,10 @@ function Casting.UseSpell(spellName, targetId, bAllowMem, bAllowDead, retryCount
         actionName = spellName,
         targetId = targetId,
         bAllowDead = bAllowDead or false,
-        spellRange = Casting.GetSpellRange(spell),
+        spellRange = spellRange,
         castTime = castTime,
         retryCount = retryCount,
+        noWait = noWait,
     })
     if Globals.StopCast then return false end
 
@@ -1921,6 +1929,12 @@ function Casting.UseSong(songName, targetId, bAllowMem, retryCount)
 
     local targetSpawn = mq.TLO.Spawn(targetId)
 
+    local spellRange = Casting.GetSpellRange(songSpell)
+    if targetId ~= me.ID() and targetSpawn() and Targeting.GetTargetDistance(targetSpawn) > spellRange then
+        Logger.log_debug("\ayUseSong(): \arTried to cast %s on %s but they are too far away", songName, targetSpawn.DisplayName() or "None")
+        return false
+    end
+
     if (Targeting.GetXTHaterCount() > 0 or not bAllowMem) and (not Casting.CastReady(songSpell) or not me.Gem(songName)()) then
         Logger.log_debug("\ayUseSong(): I tried to sing %s but it was not ready and we are in combat - moving on.",
             songName)
@@ -1963,9 +1977,8 @@ function Casting.UseSong(songName, targetId, bAllowMem, retryCount)
 
     Core.SafeCallClassHelper("SwapInst", "SwapInst", songSpell.Skill())
 
-    retryCount = retryCount or 0
+    retryCount = retryCount or Config:GetSetting('CastRetryCount')
 
-    local spellRange = Casting.GetSpellRange(songSpell)
     local cancel = false
     local castStarted = false
     local readyCheck = function() return me.SpellReady(songName)() end
@@ -2079,7 +2092,7 @@ end
 --- @param targetId? number The ID of the target on which to use the discipline spell.
 --- @return boolean success True if we were able to fire the Disc, false otherwise.
 --- @return boolean|nil isGroup True if the disc is a group-affecting target type.
-function Casting.UseDisc(discSpell, targetId)
+function Casting.UseDisc(discSpell, targetId, noWait)
     local me = mq.TLO.Me
     if not targetId then targetId = mq.TLO.Target.ID() end
 
@@ -2096,6 +2109,15 @@ function Casting.UseDisc(discSpell, targetId)
     if me.CurrentEndurance() < discSpell.EnduranceCost() then
         Logger.log_debug("\ayUseDisc(): \arCan't use %s - insufficient endurance", discName)
         return false
+    end
+
+    local spellRange = Casting.GetSpellRange(discSpell)
+    if targetId ~= me.ID() then
+        local targetSpawn = mq.TLO.Spawn(targetId)
+        if targetSpawn() and Targeting.GetTargetDistance(targetSpawn) > spellRange then
+            Logger.log_debug("\ayUseDisc(): \arTried to cast %s on %s but they are too far away", discName, targetSpawn.DisplayName() or "None")
+            return false
+        end
     end
 
     Logger.log_debug("\ayUseDisc(): trying %s", discName)
@@ -2130,9 +2152,10 @@ function Casting.UseDisc(discSpell, targetId)
         actionName = discName,
         targetId = targetId,
         bAllowDead = true,
-        spellRange = Casting.GetSpellRange(discSpell),
+        spellRange = spellRange,
         castTime = castTime,
         retryCount = 0,
+        noWait = noWait,
     })
     if Globals.StopCast then return false end
 
@@ -2192,17 +2215,18 @@ function Casting.RunCastLoop(opts)
     local castTime = opts.castTime or 0
     local retryCount = opts.retryCount or Config:GetSetting('CastRetryCount')
 
-    -- bard firing a 0-cast action mid-song: fire-and-return so we don't wait on or clip the in-progress song.
-    if castTime == 0 and (mq.TLO.Window("CastingWindow").Open() or mq.TLO.Me.Casting()) then
+    Casting.SetLastCastResult(Globals.Constants.CastResults.CAST_RESULT_NONE)
+
+    -- Instants that opt out (noWait) or are woven mid-song fire and assume success; anything else confirms via the loop below.
+    if castTime == 0 and (opts.noWait or mq.TLO.Window("CastingWindow").Open() or mq.TLO.Me.Casting()) then
         Core.DoCmd(cmd)
+        Casting.SetLastCastResult(Globals.Constants.CastResults.CAST_SUCCESS)
         return
     end
 
     -- give a small delay for when we need to rely on an action changing to "not ready" to detect success, this is data from the server. values tested on laz/might numerous times
     local floor = math.max(300, 3 * (mq.TLO.EverQuest.Ping() or 0))
     local delay = castTime < floor and floor or castTime
-
-    Casting.SetLastCastResult(Globals.Constants.CastResults.CAST_RESULT_NONE)
 
     repeat
         Logger.log_verbose("\ayRunCastLoop(): Attempting to cast: %s", actionName)
@@ -2239,7 +2263,7 @@ end
 --- @param retryCount number? The number of times to retry if the cast fails.
 --- @return boolean success True if the AA ability was successfully used, false otherwise.
 --- @return boolean|nil isGroup True if the AA is a group-affecting target type.
-function Casting.UseAA(aaName, targetId, bAllowDead, retryCount)
+function Casting.UseAA(aaName, targetId, bAllowDead, retryCount, noWait)
     local me = mq.TLO.Me
     if not targetId then targetId = mq.TLO.Target.ID() end
 
@@ -2287,6 +2311,12 @@ function Casting.UseAA(aaName, targetId, bAllowDead, retryCount)
         return false
     end
 
+    local spellRange = Casting.GetSpellRange(aaSpell)
+    if targetId ~= me.ID() and targetSpawn() and Targeting.GetTargetDistance(targetSpawn) > spellRange then
+        Logger.log_debug("\ayUseAA(): \arTried to cast %s on %s but they are too far away", aaName, targetSpawn.DisplayName() or "None")
+        return false
+    end
+
     Casting.ActionPrep()
 
     local oldTargetId = mq.TLO.Target.ID()
@@ -2312,9 +2342,10 @@ function Casting.UseAA(aaName, targetId, bAllowDead, retryCount)
         actionName = aaName,
         targetId = targetId,
         bAllowDead = bAllowDead or false,
-        spellRange = Casting.GetSpellRange(aaSpell),
+        spellRange = spellRange,
         castTime = castTime,
         retryCount = retryCount,
+        noWait = noWait,
     })
     if Globals.StopCast then return false end
 
@@ -2373,9 +2404,10 @@ function Casting.UseItem(itemName, targetId, bAllowDead, retryCount)
         return false
     end
 
-    if targetId and targetId ~= me.ID() and (itemSpell.MyRange() or 0) > 0 then
+    local spellRange = Casting.GetSpellRange(itemSpell)
+    if targetId and targetId ~= me.ID() then
         local targetSpawn = mq.TLO.Spawn(targetId)
-        if targetSpawn and targetSpawn() and targetSpawn.Distance() > (itemSpell.MyRange() or 100) then
+        if targetSpawn and targetSpawn() and Targeting.GetTargetDistance(targetSpawn) > spellRange then
             Logger.log_debug("\ayUseItem(): \arTried to use %s on %s but they are too far away", itemName, targetSpawn and targetSpawn.DisplayName() or "None")
             return false
         end
@@ -2426,7 +2458,7 @@ function Casting.UseItem(itemName, targetId, bAllowDead, retryCount)
         targetId = targetId,
         -- default true (unlike UseAA/UseSpell) so rez clickies still fire on dead targets
         bAllowDead = bAllowDead ~= false,
-        spellRange = Casting.GetSpellRange(itemSpell),
+        spellRange = spellRange,
         castTime = castTime,
         retryCount = retryCount,
     })
@@ -2861,9 +2893,9 @@ end
 ---@param target MQSpawn|MQTarget|nil The target spawn handle to check.
 ---@return boolean True if the spell is allowed to land on target.
 function Casting.LevelCheckPass(spell, target)
+    if Config:GetSetting('IgnoreLevelCheck') then return true end
     if not spell or not spell() then return false end
     if not target or not target() then return false end
-    if Config:GetSetting('IgnoreLevelCheck') then return true end
     if (target.Type() or ""):lower() ~= "pc" then return true end
     if not (spell.Beneficial() and (spell.Duration.TotalSeconds() or 0) > 0) then return true end
     local spellLevel = spell.Level() or 999

@@ -358,6 +358,12 @@ function Module:LoadSettings()
             Default = {},
         }
 
+        self.ClassConfig.DefaultConfig['RotationEntryOrder'] = {
+            DisplayName = "RotationEntryOrder",
+            Type = "Custom",
+            Default = {},
+        }
+
         self.ClassConfig.DefaultConfig[string.format("%s_Popped", self._name)] = {
             DisplayName = self._name .. " Popped",
             Type = "Custom",
@@ -630,9 +636,15 @@ function Module:RenderRotationWithToggle(r, rotationTable)
     if ImGui.CollapsingHeader(headerText) then
         if enabledRotations[r.name] ~= false then
             ImGui.Indent()
-            self.TempSettings.ShowFailedSpells, enabledRotationEntries, enabledRotationEntriesChanged = Ui.RenderRotationTable(r.name,
+            local reordered, resetRequested
+            self.TempSettings.ShowFailedSpells, enabledRotationEntries, enabledRotationEntriesChanged, reordered, resetRequested = Ui.RenderRotationTable(r.name,
                 rotationTable[r.name],
-                self.ResolvedActionMap, r.state or 0, self.TempSettings.ShowFailedSpells, enabledRotationEntries)
+                self.ResolvedActionMap, r.state or 0, self.TempSettings.ShowFailedSpells, enabledRotationEntries, nil, r.reorderable)
+            if reordered and r.state then r.state = 1 end
+            if resetRequested then
+                if r.state then r.state = 1 end
+                self:GetRotations()
+            end
 
             if enabledRotationEntriesChanged then Config:SetSetting('EnabledRotationEntries', enabledRotationEntries) end
             ImGui.Unindent()
@@ -1040,6 +1052,17 @@ function Module:GetRotations()
         end
     end
 
+    -- apply any user-defined entry order to reorderable rotations (unmapped entries keep their built order)
+    local rotationEntryOrder = Config:GetSetting('RotationEntryOrder') or {}
+    local function applyEntryOrder(states, tables)
+        for _, rotation in ipairs(states) do
+            if rotation.reorderable then
+                Rotation.ApplyEntryOrder(tables[rotation.name], rotationEntryOrder[rotation.name])
+            end
+        end
+    end
+    applyEntryOrder(self.TempSettings.RotationStates, self.TempSettings.RotationTable)
+
     -- Do it all again for heal rotations
     self.TempSettings.HealRotationStates = {} -- clear the array for loadout rescans
     self.TempSettings.HealRotationTable = {}
@@ -1062,6 +1085,7 @@ function Module:GetRotations()
                 Modules:ExecModule("Clickies", "GetClickiesForRotations", "During Heal Rotation", rname) or {})
         end
     end
+    applyEntryOrder(self.TempSettings.HealRotationStates, self.TempSettings.HealRotationTable)
 
     -- Cache the resist type on every entry so Rotation.TestConditionForEntry can gate without per-tick lookups.
     local function deriveResistType(entry)
@@ -1933,7 +1957,7 @@ function Module:GiveTime()
                         Logger.log_verbose("\aw:::RUN ROTATION::: \am%s", r.name)
                         self.CurrentRotation = { name = r.name, state = r.state or 0, }
                         local newState = Rotation.Run(self, self:GetRotationTable(r.name), targetTable,
-                            self.ResolvedActionMap, r.steps or 0, r.state or 0, self.CombatState == "Downtime", r.doFullRotation or false, r.cond,
+                            self.ResolvedActionMap, r.steps or 0, r.state or 0, self.CombatState == "Downtime" and not r.blockMem, r.doFullRotation or false, r.cond,
                             Config:GetSetting('EnabledRotationEntries') or {})
 
                         if r.state then r.state = newState end
@@ -1954,6 +1978,8 @@ function Module:GiveTime()
             end
         end
     end
+
+    self:PromptRestoreSwapSlot()
 
     self.TempSettings.CurrentRotationStateType = 0
 end

@@ -24,6 +24,7 @@ Module.CommandHandlers = {}
 
 Module.NamedList       = {}
 Module.LastNamedCheck  = 0
+Module.LastRenderTime  = 0
 
 Module.DefNamedBase    = NamedDefault or {}
 Module.DefNamedOverlay = (Core.OnMight() and NamedEQMight) or (Core.OnLaz() and NamedLazarus) or {}
@@ -115,6 +116,7 @@ function Module:New()
 end
 
 function Module:Render()
+    self.LastRenderTime = Globals.GetTimeSeconds()
     Base.Render(self)
     self:RenderZoneNamed()
     ImGui.NewLine()
@@ -123,6 +125,7 @@ end
 
 function Module:GiveTime()
     -- Main Module logic goes here.
+    if Globals.GetTimeSeconds() - self.LastRenderTime >= 2 then return end
     if Globals.GetTimeSeconds() - self.LastNamedCheck > 1 then
         self.LastNamedCheck = Globals.GetTimeSeconds()
         self:CheckZoneNamed()
@@ -190,6 +193,8 @@ end
 --- Caches the named list in the zone
 function Module:RefreshNamedCache()
     local curZone = mq.TLO.Zone.ID()
+    if self.LastZoneID == curZone and Globals.GetTimeSeconds() - (self.LastCacheRefresh or 0) < 1 then return end
+    self.LastCacheRefresh = Globals.GetTimeSeconds()
     -- LastUserList identity catches cross-instance edits; local edits invalidate via OnChange.
     local userList = Config:GetSetting('CustomNamedList') or {}
     if self.LastZoneID ~= curZone or self.LastUserList ~= userList then
@@ -250,7 +255,7 @@ function Module:CheckZoneNamed()
     local tmpTbl = {}
 
     local namedSpawns = mq.getFilteredSpawns(function(spawn)
-        return self:IsNamed(spawn) and spawn.Type() == "NPC"
+        return spawn.Type() == "NPC" and self:IsNamed(spawn)
     end)
 
     for _, spawn in ipairs(namedSpawns) do

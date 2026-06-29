@@ -7,7 +7,6 @@ local Core         = require("utils.core")
 local Globals      = require("utils.globals")
 local ItemManager  = require('utils.item_manager')
 local Logger       = require("utils.logger")
-local Strings      = require("utils.strings")
 local Targeting    = require("utils.targeting")
 
 local Tooltips     = {
@@ -719,22 +718,45 @@ local _ClassConfig = {
             if usestate == 4 then return not inCombat end -- Out-of-Combat Only
             return false
         end,
-        RefreshBuffSong = function(songSpell) --determine how close to a buff's expiration we will resing to maintain full uptime
+        GetSongBuffer = function() --seconds of remaining duration at which a buff song is resung
+            return Config:GetSetting('SongRefresh')
+        end,
+        RefreshBuffSong = function(self, songSpell) --true once a buff song's remaining duration drops to the resing buffer (a dropped song reads 0 and resings)
             if not songSpell or not songSpell() then return false end
             local me = mq.TLO.Me
-            local threshold = Globals.CurrentState == "Combat" and Config:GetSetting('RefreshCombat') or Config:GetSetting('RefreshDT')
-            local duration = songSpell.DurationWindow() == 1 and (me.Song(songSpell.Name()).Duration.TotalSeconds() or 0) or (me.Buff(songSpell.Name()).Duration.TotalSeconds() or 0)
-            local ret = duration <= threshold
-            Logger.log_verbose("\ayRefreshBuffSong(%s) => memed(%s), duration(%d), threshold(%d), should refresh:(%s)", songSpell,
-                Strings.BoolToColorString(me.Gem(songSpell.RankName.Name())() ~= nil), duration, threshold, Strings.BoolToColorString(ret))
-            return ret
+            local remaining = songSpell.DurationWindow() == 1
+                and (me.Song(songSpell.Name()).Duration.TotalSeconds() or 0)
+                or (me.Buff(songSpell.Name()).Duration.TotalSeconds() or 0)
+            if self.TempSettings.upkeepFill then
+                local full = Config:GetSetting('SongDuration', true) or songSpell.MyDuration.TotalSeconds()
+                return remaining < full - self.Helpers.GetSongBuffer()
+            end
+            return remaining <= self.Helpers.GetSongBuffer()
         end,
-        MarchTimer = function(self) --refresh duration of warmarch based on a timer when jonthan is being used
-            local jonthan = Core.GetResolvedActionMapItem('Jonthan')
-            if not (jonthan and Config:GetSetting('UseJonthan') > 1 and (mq.TLO.Me.Song(jonthan.Name()).ID() or 0) > 0) then return nil end
-            local threshold = Globals.CurrentState == "Combat" and Config:GetSetting('RefreshCombat') or Config:GetSetting('RefreshDT')
-            local interval = (self.TempSettings.MarchDuration or 12) - threshold
+        MarchTimer = function(self) --minimum gap between War March resings
+            local interval = (self.TempSettings.MarchDuration or 12) - self.Helpers.GetSongBuffer()
             return (Globals.GetTimeSeconds() - (self.TempSettings.LastMarchCast or 0)) >= interval
+        end,
+        RefreshExpiringSong = function(self) --idle upkeep: resing the active song closest to expiring
+            local melody = self.TempSettings.RotationTable['Melody']
+            if not melody then return false end
+            local me = mq.TLO.Me
+            local pick, pickRemaining = nil, nil
+            self.TempSettings.upkeepFill = true
+            for _, entry in ipairs(melody) do
+                local songSpell = Core.GetResolvedActionMapItem(entry.name)
+                if songSpell and songSpell() and entry.cond and Core.SafeCallFunc("upkeep want", entry.cond, self, songSpell, me) then
+                    local remaining = songSpell.DurationWindow() == 1
+                        and (me.Song(songSpell.Name()).Duration.TotalSeconds() or 0)
+                        or (me.Buff(songSpell.Name()).Duration.TotalSeconds() or 0)
+                    if remaining > 0 and Casting.SongReady(songSpell) and (not pickRemaining or remaining < pickRemaining) then
+                        pick, pickRemaining = songSpell, remaining
+                    end
+                end
+            end
+            self.TempSettings.upkeepFill = false
+            if pick then return Casting.UseSong(pick.RankName(), me.ID(), false) end
+            return false
         end,
         UnwantedAggroCheck = function(self)
             if Targeting.GetXTHaterCount() == 0 or Core.IsTanking() or mq.TLO.Group.Puller.ID() == mq.TLO.Me.ID() then return false end
@@ -886,7 +908,9 @@ local _ClassConfig = {
             steps = 1,
             timer = 0,
             doFullRotation = true,
-            targetId = function(self) return { mq.TLO.Me.ID(), } end,
+            blockMem = true,
+            reorderable = true,
+            targetId = function(self) return Combat.GetCachedCombatState() == "Combat" and Targeting.CheckForAutoTargetID() or { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
                 if Globals.InMedState then return false end
                 if combat_state == "Downtime" and mq.TLO.Me.Invis() then return false end
@@ -914,19 +938,10 @@ local _ClassConfig = {
             end,
         },
         {
-            name = 'CombatSongs',
-            state = 1,
-            steps = 1,
-            doFullRotation = true,
-            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
-            cond = function(self, combat_state)
-                return combat_state == "Combat" and Core.CombatActionsCheck()
-            end,
-        },
-        {
             name = 'InstantRunBuff',
             state = 1,
             steps = 1,
+            midSong = true,
             targetId = function(self) return Combat.GetCachedCombatState() == "Combat" and Targeting.CheckForAutoTargetID() or Casting.GetBuffableGroupIDs() end,
             load_cond = function(self) return Casting.CanUseAA("Selo's Sonata") end,
             cond = function(self, combat_state)
@@ -1094,127 +1109,12 @@ local _ClassConfig = {
                 load_cond = function(self) return Casting.AARank("Intimidation") > 1 end,
             },
         },
-        ['CombatSongs'] = {
-            {
-                name = "DichoSong",
-                type = "Song",
-                load_cond = function(self) return Config:GetSetting('UseDicho') > 1 end,
-                cond = function(self, songSpell)
-                    return (Config:GetSetting('UseDicho') == 3 and (mq.TLO.Me.PctEndurance() > Config:GetSetting('SelfEndPct') or Casting.BurnCheck()))
-                        or (Config:GetSetting('UseDicho') == 2 and Casting.IHaveBuff(Casting.GetAASpell("Quick Time")))
-                end,
-            },
-            {
-                name = "InsultSong",
-                type = "Song",
-                load_cond = function(self) return Config:GetSetting('UseInsult') > 1 and (not Config:GetSetting('UseLLInsult') or not Core.GetResolvedActionMapItem('LLInsultSong')) end,
-                cond = function(self, songSpell)
-                    return (mq.TLO.Me.PctMana() > Config:GetSetting('SelfManaPct') or Casting.BurnCheck())
-                end,
-            },
-            {
-                name = "LLInsultSong",
-                type = "Song",
-                load_cond = function(self) return Config:GetSetting('UseInsult') > 1 and Config:GetSetting('UseLLInsult') and Core.GetResolvedActionMapItem('LLInsultSong') end,
-                cond = function(self, songSpell)
-                    return (mq.TLO.Me.PctMana() > Config:GetSetting('SelfManaPct') or Casting.BurnCheck())
-                end,
-            },
-            {
-                name = "FireDotSong",
-                type = "Song",
-                load_cond = function(self) return Config:GetSetting('UseFireDots') end,
-                cond = function(self, songSpell)
-                    return self.Helpers.DotSongCheck(songSpell) and
-                        -- If dot is about to wear off, recast
-                        self.Helpers.GetDetSongDuration(songSpell) <= 3
-                end,
-            },
-            {
-                name = "IceDotSong",
-                type = "Song",
-                load_cond = function(self) return Config:GetSetting('UseIceDots') end,
-                cond = function(self, songSpell)
-                    return self.Helpers.DotSongCheck(songSpell) and
-                        -- If dot is about to wear off, recast
-                        self.Helpers.GetDetSongDuration(songSpell) <= 3
-                end,
-            },
-            {
-                name = "PoisonDotSong",
-                type = "Song",
-                load_cond = function(self) return Config:GetSetting('UsePoisonDots') end,
-                cond = function(self, songSpell)
-                    return self.Helpers.DotSongCheck(songSpell) and
-                        -- If dot is about to wear off, recast
-                        self.Helpers.GetDetSongDuration(songSpell) <= 3
-                end,
-            },
-            {
-                name = "DiseaseDotSong",
-                type = "Song",
-                load_cond = function(self) return Config:GetSetting('UseDiseaseDots') end,
-                cond = function(self, songSpell)
-                    return self.Helpers.DotSongCheck(songSpell) and
-                        -- If dot is about to wear off, recast
-                        self.Helpers.GetDetSongDuration(songSpell) <= 3
-                end,
-            },
-            {
-                name = "InsultSong2",
-                type = "Song",
-                load_cond = function(self)
-                    return Config:GetSetting('UseInsult') == 3 and (not Config:GetSetting('UseLLInsult') or not Core.GetResolvedActionMapItem('LLInsultSong'))
-                end,
-                cond = function(self, songSpell)
-                    return (mq.TLO.Me.PctMana() > Config:GetSetting('SelfManaPct') or Casting.BurnCheck())
-                end,
-            },
-            {
-                name = "LLInsultSong2",
-                type = "Song",
-                load_cond = function(self) return Config:GetSetting('UseInsult') == 3 and Config:GetSetting('UseLLInsult') and Core.GetResolvedActionMapItem('LLInsultSong') end,
-                cond = function(self, songSpell)
-                    return (mq.TLO.Me.PctMana() > Config:GetSetting('SelfManaPct') or Casting.BurnCheck())
-                end,
-            },
-            {
-                name = "AllianceSong",
-                type = "Song",
-                load_cond = function(self) return Config:GetSetting('UseAlliance') end,
-                cond = function(self, songSpell)
-                    return (mq.TLO.Me.PctMana() > Config:GetSetting('SelfManaPct') or Casting.BurnCheck()) and Casting.DetSpellCheck(songSpell)
-                end,
-            },
-            --used in combat when we have nothing else to refresh rather than standing there. Initial testing good, need more to ensure this doesn't interfere with Melody.
-            {
-                name = "AriaSong",
-                type = "Song",
-                load_cond = function(self) return Core.GetResolvedActionMapItem('AriaSong') and Config:GetSetting('UseAria') > 1 end,
-                cond = function(self, songSpell)
-                    return (mq.TLO.Me.Song(songSpell.Name()).Duration.TotalSeconds() or 0) <= 18
-                end,
-            },
-            {
-                name = "WarMarchSong",
-                type = "Song",
-                load_cond = function(self) return Core.GetResolvedActionMapItem('WarMarchSong') and Config:GetSetting('UseMarch') > 1 end,
-                cond = function(self, songSpell)
-                    local marchTimer = self.Helpers.MarchTimer(self)
-                    if marchTimer ~= nil then return marchTimer end
-                    return (mq.TLO.Me.Song(songSpell.Name()).Duration.TotalSeconds() or 0) <= 18
-                end,
-                post_activate = function(self, songSpell, success)
-                    if success then self.TempSettings.LastMarchCast = Globals.GetTimeSeconds() end
-                end,
-            },
-        },
         ['Enduring Breath'] = {
             {
                 name = "EndBreathSong",
                 type = "Song",
                 cond = function(self, songSpell)
-                    return self.Helpers.RefreshBuffSong(songSpell)
+                    return self.Helpers.RefreshBuffSong(self, songSpell)
                 end,
             },
         },
@@ -1224,7 +1124,7 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return Core.GetResolvedActionMapItem('AriaSong') and Config:GetSetting('UseAria') > 1 end,
                 cond = function(self, songSpell)
-                    return self.Helpers.CheckSongStateUse(self, "UseAria") and self.Helpers.RefreshBuffSong(songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseAria") and self.Helpers.RefreshBuffSong(self, songSpell)
                 end,
             },
             {
@@ -1232,7 +1132,7 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return not Core.GetResolvedActionMapItem('AriaSong') and Config:GetSetting('LLAria') == 2 and Config:GetSetting('UseAria') > 1 end,
                 cond = function(self, songSpell)
-                    return self.Helpers.CheckSongStateUse(self, "UseAria") and self.Helpers.RefreshBuffSong(songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseAria") and self.Helpers.RefreshBuffSong(self, songSpell)
                 end,
             },
             {
@@ -1240,7 +1140,7 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return not Core.GetResolvedActionMapItem('AriaSong') and Config:GetSetting('LLAria') == 3 and Config:GetSetting('UseAria') > 1 end,
                 cond = function(self, songSpell)
-                    return self.Helpers.CheckSongStateUse(self, "UseAria") and self.Helpers.RefreshBuffSong(songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseAria") and self.Helpers.RefreshBuffSong(self, songSpell)
                 end,
             },
             {
@@ -1249,9 +1149,7 @@ local _ClassConfig = {
                 load_cond = function(self) return Core.GetResolvedActionMapItem('WarMarchSong') and Config:GetSetting('UseMarch') > 1 end,
                 cond = function(self, songSpell)
                     if not self.Helpers.CheckSongStateUse(self, "UseMarch") then return false end
-                    local marchTimer = self.Helpers.MarchTimer(self)
-                    if marchTimer ~= nil then return marchTimer end
-                    return self.Helpers.RefreshBuffSong(songSpell)
+                    return self.Helpers.MarchTimer(self) and self.Helpers.RefreshBuffSong(self, songSpell)
                 end,
                 post_activate = function(self, songSpell, success)
                     if success then self.TempSettings.LastMarchCast = Globals.GetTimeSeconds() end
@@ -1262,7 +1160,7 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return Core.GetResolvedActionMapItem('RunBuffSong') and Config:GetSetting('UseRunBuff') > 1 and not Casting.CanUseAA("Selo's Sonata") end,
                 cond = function(self, songSpell)
-                    return self.Helpers.CheckSongStateUse(self, "UseRunBuff") and self.Helpers.RefreshBuffSong(songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseRunBuff") and self.Helpers.RefreshBuffSong(self, songSpell)
                 end,
             },
             {
@@ -1270,7 +1168,7 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return Core.GetResolvedActionMapItem('Jonthan') and Config:GetSetting('UseJonthan') > 1 end,
                 cond = function(self, songSpell)
-                    return self.Helpers.CheckSongStateUse(self, "UseJonthan") and self.Helpers.RefreshBuffSong(songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseJonthan") and self.Helpers.RefreshBuffSong(self, songSpell)
                 end,
             },
             {
@@ -1278,7 +1176,7 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return Core.GetResolvedActionMapItem('ArcaneSong') and Config:GetSetting('UseArcane') > 1 end,
                 cond = function(self, songSpell)
-                    return self.Helpers.CheckSongStateUse(self, "UseArcane") and self.Helpers.RefreshBuffSong(songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseArcane") and self.Helpers.RefreshBuffSong(self, songSpell)
                 end,
             },
             {
@@ -1297,7 +1195,7 @@ local _ClassConfig = {
                 load_cond = function(self) return Core.GetResolvedActionMapItem('GroupRegenSong') and Config:GetSetting('RegenSong') == 2 end,
                 cond = function(self, songSpell)
                     local pct = Config:GetSetting('GroupManaPct')
-                    return self.Helpers.RefreshBuffSong(songSpell) and
+                    return self.Helpers.RefreshBuffSong(self, songSpell) and
                         ((Config:GetSetting('UseRegen') == 1 and (mq.TLO.Group.LowMana(pct)() or 999) >= Config:GetSetting('GroupManaCt'))
                             or (Config:GetSetting('UseRegen') > 1 and self.Helpers.CheckSongStateUse(self, "UseRegen")))
                 end,
@@ -1308,7 +1206,7 @@ local _ClassConfig = {
                 load_cond = function(self) return Core.GetResolvedActionMapItem('AreaRegenSong') and Config:GetSetting('RegenSong') == 3 end,
                 cond = function(self, songSpell)
                     local pct = Config:GetSetting('GroupManaPct')
-                    return self.Helpers.RefreshBuffSong(songSpell) and
+                    return self.Helpers.RefreshBuffSong(self, songSpell) and
                         ((Config:GetSetting('UseRegen') == 1 and (mq.TLO.Group.LowMana(pct)() or 999) >= Config:GetSetting('GroupManaCt'))
                             or (Config:GetSetting('UseRegen') > 1 and self.Helpers.CheckSongStateUse(self, "UseRegen")))
                 end,
@@ -1318,7 +1216,7 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return Core.GetResolvedActionMapItem('AmpSong') and Config:GetSetting('UseAmp') > 1 end,
                 cond = function(self, songSpell)
-                    return self.Helpers.CheckSongStateUse(self, "UseAmp") and self.Helpers.RefreshBuffSong(songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseAmp") and self.Helpers.RefreshBuffSong(self, songSpell)
                 end,
             },
             {
@@ -1326,7 +1224,7 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return Core.GetResolvedActionMapItem('SufferingSong') and Config:GetSetting('UseSuffering') > 1 end,
                 cond = function(self, songSpell)
-                    return self.Helpers.CheckSongStateUse(self, "UseSuffering") and self.Helpers.RefreshBuffSong(songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseSuffering") and self.Helpers.RefreshBuffSong(self, songSpell)
                 end,
             },
             {
@@ -1334,7 +1232,7 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return Core.GetResolvedActionMapItem('SpitefulSong') and Config:GetSetting('UseSpiteful') > 1 end,
                 cond = function(self, songSpell)
-                    return self.Helpers.CheckSongStateUse(self, "UseSpiteful") and self.Helpers.RefreshBuffSong(songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseSpiteful") and self.Helpers.RefreshBuffSong(self, songSpell)
                 end,
             },
             {
@@ -1342,7 +1240,7 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return Core.GetResolvedActionMapItem('SprySonataSong') and Config:GetSetting('UseSpry') > 1 end,
                 cond = function(self, songSpell)
-                    return self.Helpers.CheckSongStateUse(self, "UseSpry") and self.Helpers.RefreshBuffSong(songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseSpry") and self.Helpers.RefreshBuffSong(self, songSpell)
                 end,
             },
             {
@@ -1350,7 +1248,7 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return Core.GetResolvedActionMapItem('ResistSong') and Config:GetSetting('UseResist') > 1 end,
                 cond = function(self, songSpell)
-                    return self.Helpers.CheckSongStateUse(self, "UseResist") and self.Helpers.RefreshBuffSong(songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseResist") and self.Helpers.RefreshBuffSong(self, songSpell)
                 end,
             },
             {
@@ -1358,7 +1256,7 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return Core.GetResolvedActionMapItem('RecklessSong') and Config:GetSetting('UseReckless') > 1 end,
                 cond = function(self, songSpell)
-                    return self.Helpers.CheckSongStateUse(self, "UseReckless") and self.Helpers.RefreshBuffSong(songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseReckless") and self.Helpers.RefreshBuffSong(self, songSpell)
                 end,
             },
             {
@@ -1366,7 +1264,7 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return Core.GetResolvedActionMapItem('AccelerandoSong') and Config:GetSetting('UseAccelerando') > 1 end,
                 cond = function(self, songSpell)
-                    return self.Helpers.CheckSongStateUse(self, "UseAccelerando") and self.Helpers.RefreshBuffSong(songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseAccelerando") and self.Helpers.RefreshBuffSong(self, songSpell)
                 end,
             },
             {
@@ -1374,7 +1272,7 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return Core.GetResolvedActionMapItem('FireBuffSong') and Config:GetSetting('UseFireBuff') > 1 end,
                 cond = function(self, songSpell)
-                    return self.Helpers.CheckSongStateUse(self, "UseFireBuff") and self.Helpers.RefreshBuffSong(songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseFireBuff") and self.Helpers.RefreshBuffSong(self, songSpell)
                 end,
             },
             {
@@ -1382,7 +1280,7 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return Core.GetResolvedActionMapItem('ColdBuffSong') and Config:GetSetting('UseColdBuff') > 1 end,
                 cond = function(self, songSpell)
-                    return self.Helpers.CheckSongStateUse(self, "UseColdBuff") and self.Helpers.RefreshBuffSong(songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseColdBuff") and self.Helpers.RefreshBuffSong(self, songSpell)
                 end,
             },
             {
@@ -1390,8 +1288,107 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function(self) return Core.GetResolvedActionMapItem('DotBuffSong') and Config:GetSetting('UseDotBuff') > 1 end,
                 cond = function(self, songSpell)
-                    return self.Helpers.CheckSongStateUse(self, "UseDotBuff") and self.Helpers.RefreshBuffSong(songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseDotBuff") and self.Helpers.RefreshBuffSong(self, songSpell)
                 end,
+            },
+            {
+                name = "DichoSong",
+                type = "Song",
+                load_cond = function(self) return Config:GetSetting('UseDicho') > 1 end,
+                cond = function(self, songSpell, target)
+                    if target.ID() == mq.TLO.Me.ID() then return false end
+                    local qt = Casting.GetAASpell("Quick Time")
+                    return (Config:GetSetting('UseDicho') == 3 and (mq.TLO.Me.PctEndurance() > Config:GetSetting('SelfEndPct') or Casting.BurnCheck()))
+                        or (Config:GetSetting('UseDicho') == 2 and qt and qt() and mq.TLO.Me.Song(qt.Name())())
+                end,
+            },
+            {
+                name = "InsultSong",
+                type = "Song",
+                load_cond = function(self) return Config:GetSetting('UseInsult') > 1 and (not Config:GetSetting('UseLLInsult') or not Core.GetResolvedActionMapItem('LLInsultSong')) end,
+                cond = function(self, songSpell, target)
+                    if target.ID() == mq.TLO.Me.ID() then return false end
+                    return (mq.TLO.Me.PctMana() > Config:GetSetting('SelfManaPct') or Casting.BurnCheck())
+                end,
+            },
+            {
+                name = "LLInsultSong",
+                type = "Song",
+                load_cond = function(self) return Config:GetSetting('UseInsult') > 1 and Config:GetSetting('UseLLInsult') and Core.GetResolvedActionMapItem('LLInsultSong') end,
+                cond = function(self, songSpell, target)
+                    if target.ID() == mq.TLO.Me.ID() then return false end
+                    return (mq.TLO.Me.PctMana() > Config:GetSetting('SelfManaPct') or Casting.BurnCheck())
+                end,
+            },
+            {
+                name = "FireDotSong",
+                type = "Song",
+                load_cond = function(self) return Config:GetSetting('UseFireDots') end,
+                cond = function(self, songSpell, target)
+                    return target.ID() ~= mq.TLO.Me.ID() and self.Helpers.DotSongCheck(songSpell) and
+                        self.Helpers.GetDetSongDuration(songSpell) <= Config:GetSetting('SongRefresh')
+                end,
+            },
+            {
+                name = "IceDotSong",
+                type = "Song",
+                load_cond = function(self) return Config:GetSetting('UseIceDots') end,
+                cond = function(self, songSpell, target)
+                    return target.ID() ~= mq.TLO.Me.ID() and self.Helpers.DotSongCheck(songSpell) and
+                        self.Helpers.GetDetSongDuration(songSpell) <= Config:GetSetting('SongRefresh')
+                end,
+            },
+            {
+                name = "PoisonDotSong",
+                type = "Song",
+                load_cond = function(self) return Config:GetSetting('UsePoisonDots') end,
+                cond = function(self, songSpell, target)
+                    return target.ID() ~= mq.TLO.Me.ID() and self.Helpers.DotSongCheck(songSpell) and
+                        self.Helpers.GetDetSongDuration(songSpell) <= Config:GetSetting('SongRefresh')
+                end,
+            },
+            {
+                name = "DiseaseDotSong",
+                type = "Song",
+                load_cond = function(self) return Config:GetSetting('UseDiseaseDots') end,
+                cond = function(self, songSpell, target)
+                    return target.ID() ~= mq.TLO.Me.ID() and self.Helpers.DotSongCheck(songSpell) and
+                        self.Helpers.GetDetSongDuration(songSpell) <= Config:GetSetting('SongRefresh')
+                end,
+            },
+            {
+                name = "InsultSong2",
+                type = "Song",
+                load_cond = function(self)
+                    return Config:GetSetting('UseInsult') == 3 and (not Config:GetSetting('UseLLInsult') or not Core.GetResolvedActionMapItem('LLInsultSong'))
+                end,
+                cond = function(self, songSpell, target)
+                    if target.ID() == mq.TLO.Me.ID() then return false end
+                    return (mq.TLO.Me.PctMana() > Config:GetSetting('SelfManaPct') or Casting.BurnCheck())
+                end,
+            },
+            {
+                name = "LLInsultSong2",
+                type = "Song",
+                load_cond = function(self) return Config:GetSetting('UseInsult') == 3 and Config:GetSetting('UseLLInsult') and Core.GetResolvedActionMapItem('LLInsultSong') end,
+                cond = function(self, songSpell, target)
+                    if target.ID() == mq.TLO.Me.ID() then return false end
+                    return (mq.TLO.Me.PctMana() > Config:GetSetting('SelfManaPct') or Casting.BurnCheck())
+                end,
+            },
+            {
+                name = "AllianceSong",
+                type = "Song",
+                load_cond = function(self) return Config:GetSetting('UseAlliance') end,
+                cond = function(self, songSpell, target)
+                    if target.ID() == mq.TLO.Me.ID() then return false end
+                    return (mq.TLO.Me.PctMana() > Config:GetSetting('SelfManaPct') or Casting.BurnCheck()) and Casting.DetSpellCheck(songSpell)
+                end,
+            },
+            {
+                name = "Refresh Expiring Song",
+                type = "customfunc",
+                custom_func = function(self) return self.Helpers.RefreshExpiringSong(self) end,
             },
         },
         ['Downtime'] = {
@@ -1472,6 +1469,7 @@ local _ClassConfig = {
                 name = "Selo's Sonata",
                 type = "AA",
                 midSong = true,
+                noWait = true,
                 cond = function(self, aaName, target)
                     -- Selo AA triggers Accelerando or Accelerato depending on rank.
                     local aaBuff = mq.TLO.Me.AltAbility(aaName).Spell.Trigger(1)() or ""
@@ -1742,37 +1740,20 @@ local _ClassConfig = {
             Default = false,
         },
         -- Under the Hood
-        ['RefreshDT']       = {
-            DisplayName = "Downtime Threshold",
+        ['SongRefresh']     = {
+            DisplayName = "Song Refresh Timer",
             Group = "Abilities",
             Header = "Common",
             Category = "Under the Hood",
             Index = 101,
-            Tooltip =
-            "The duration threshold for refreshing a buff song outside of combat. ***WARNING: Editing this value can drastically alter your ability to maintain buff songs!*** This needs to be carefully tailored towards your song line-up.",
-            Default = 12,
-            Min = 0,
-            Max = 30,
+            Tooltip = "Resing a song or effect once its remaining duration is at or below this many seconds.",
+            Default = 4,
+            Min = 1,
+            Max = 13,
             ConfigType = "Advanced",
-            FAQ = "Why does my bard keep singing the same two songs?",
-            Answer = "You may need to adjust your Downtime Threshold value downward at lower levels/song durations.\n" ..
-                "This needs to be carefully tailored towards your song line-up.",
-        },
-        ['RefreshCombat']   = {
-            DisplayName = "Combat Threshold",
-            Group = "Abilities",
-            Header = "Common",
-            Category = "Under the Hood",
-            Index = 102,
-            Tooltip =
-            "The duration threshold for refreshing a buff song in combat. ***WARNING: Editing this value can drastically alter your ability to maintain buff songs!*** This needs to be carefully tailored towards your song line-up.",
-            Default = 6,
-            Min = 0,
-            Max = 30,
-            ConfigType = "Advanced",
-            FAQ = "Songs are dropping regularly, what can I do?",
-            Answer = "You may need to stop using so many songs! Alternatively, try tuning your Threshold values as they determine when we will try to resing a song.\n" ..
-                "This needs to be carefully tailored towards your song line-up.",
+            FAQ = "Why does my bard refresh songs before the Song Refresh Timer?",
+            Answer = "Rather than stand idle, the bard keeps singing, topping off whichever song in the Melody rotation is closest to expiring, " ..
+                "so songs refresh before reaching the Song Refresh Timer and uptime stays high.",
         },
         -- Self
         ['UseAmp']          = {

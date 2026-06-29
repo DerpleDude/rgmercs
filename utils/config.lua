@@ -1259,8 +1259,8 @@ Config.DefaultConfig                                     = {
         Header = "Common",
         Category = "Under the Hood",
         Index = 1,
-        Tooltip = "The amount of times to try to recast a spell, AA, or item due to a fizzle, interrupt, or similar. Note that queued actions already have a retry built-in.",
-        Default = 0,
+        Tooltip = "The amount of times to try to recast a spell, song, AA, or item due to a fizzle, interrupt, or similar. Note that queued actions already have a retry built-in.",
+        Default = Globals.CurLoadedClass == "BRD" and 1 or 0,
         Min = 0,
         Max = 5,
         ConfigType = "Advanced",
@@ -3345,7 +3345,11 @@ function Config:SetSetting(setting, value, tempOnly, noCallback)
             self.moduleTempSettings[settingModuleName][setting] = cleanValue
         else
             self:SettingDbWrite(settingModuleName, setting, cleanValue)
-            self.moduleTempSettings[settingModuleName][setting] = nil
+            if Config.TempSettings.SettingToScopeCache[setting] == "server" then
+                self.moduleTempSettings[settingModuleName][setting] = nil
+            else
+                self.moduleTempSettings[settingModuleName][setting] = cleanValue
+            end
         end
     else
         Logger.log_info("\ayFailed to update setting %s, invalid value supplied.", setting)
@@ -3402,6 +3406,11 @@ end
 function Config:ClearAllTempSettings()
     for module, _ in pairs(self.moduleTempSettings) do
         self.moduleTempSettings[module] = {}
+        for setting, _ in pairs(self.moduleDefaultSettings[module] or {}) do
+            if Config.TempSettings.SettingToScopeCache[setting] ~= "server" then
+                self.moduleTempSettings[module][setting] = self:SettingDbRead(module, setting)
+            end
+        end
     end
 end
 
@@ -3529,6 +3538,10 @@ function Config:RegisterModuleSettings(module, settings, defaultSettings, faq, f
         end
 
         Config.TempSettings.SettingToScopeCache[setting] = v.Scope
+
+        if v.Scope ~= "server" then
+            self.moduleTempSettings[module][setting] = resolvedSettings[setting]
+        end
     end
 
     if firstSaveRequired or settingsChanged then
@@ -3825,7 +3838,7 @@ end
 --- Moves the PC at the given index down.
 --- @param id number The index of the PC to move.
 --- @param listName string: The list to adjust.
-function Config:AssistMoveDown(id, listName)
+function Config:ListMoveDown(id, listName)
     if not id then
         Logger.log_error("\ar%s Move Down: this command requires a valid argument!", listName)
         return

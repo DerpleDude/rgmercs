@@ -43,6 +43,7 @@ Module.CommandHandlers                  = {
 }
 
 Module.CombatState                      = "None"
+Module.LastRenderTime                   = 0
 
 Module.Constants                        = {}
 Module.Constants.MezSpawnFilter         = "targetable playerstate 4"
@@ -248,6 +249,7 @@ function Module:ShouldRender()
 end
 
 function Module:Render()
+    self.LastRenderTime = Globals.GetTimeMS()
     Base.Render(self)
 
     ImGui.NewLine()
@@ -896,15 +898,20 @@ function Module:DoMez()
 
     local crowd = self:CountCrowd()
     -- snapshot for the status panel (display only); piggybacks on the crowd scan above, no extra scan
-    self.TempSettings.Status = {
-        crowd = crowd,
-        unmezzed = self:CountUnmezzed(),
-        stReady = self:MezReady(false),
-        aeReady = self:MezReady(true),
-    }
+    local renderRecently = Globals.GetTimeMS() - self.LastRenderTime < 2000
+    if renderRecently then
+        self.TempSettings.Status = {
+            crowd = crowd,
+            unmezzed = self:CountUnmezzed(),
+            stReady = self:MezReady(false),
+            aeReady = self:MezReady(true),
+        }
+    end
 
     -- nothing to do below the start threshold; let any leftover mezzes wear off
-    if crowd < Config:GetSetting('MezStartCount') then return end
+    if crowd < Config:GetSetting('MezStartCount') then
+        return
+    end
 
     self:UpdateMezList()
 
@@ -926,7 +933,9 @@ function Module:DoMez()
     end
 
     -- refresh after the mezzing work so the panel reflects this tick's tracker, not the pre-work snapshot
-    self.TempSettings.Status.unmezzed = self:CountUnmezzed()
+    if renderRecently then
+        self.TempSettings.Status.unmezzed = self:CountUnmezzed()
+    end
 end
 
 -- ms a tracked mez must still have left to count as solidly locked (cast time + refresh lead)

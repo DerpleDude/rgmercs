@@ -412,7 +412,7 @@ local function Main()
         return
     end
 
-    Core.UpdateBuffs()
+    Core.UpdateBuffs(true)
 
     Events.DoEvents()
 

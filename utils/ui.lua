@@ -1926,12 +1926,23 @@ end
 ---@return boolean showFailed The (potentially toggled) showFailed value.
 ---@return table enabledRotationEntries Updated enablement map.
 ---@return boolean changed True if any enablement setting was toggled this frame.
-function Ui.RenderRotationTable(name, rotationTable, resolvedActionMap, rotationState, showFailed, enabledRotationEntries, hideRotationCols)
+---@return boolean reordered True if an entry was reordered this frame.
+---@return boolean resetRequested True if the user reset this list to default order this frame.
+function Ui.RenderRotationTable(name, rotationTable, resolvedActionMap, rotationState, showFailed, enabledRotationEntries, hideRotationCols, reorderable)
     local enabledRotationEntriesChanged = false
     local showDebugTiming = Config:GetSetting('ShowDebugTiming')
+    local pendingSwap = nil
+    local resetRequested = false
+    local function persistRotationOrder()
+        local order = Config:GetSetting('RotationEntryOrder') or {}
+        local names = {}
+        for _, e in ipairs(rotationTable or {}) do names[#names + 1] = e.name end
+        order[name] = names
+        Config:SetSetting('RotationEntryOrder', order)
+    end
 
     -- non-rotation callers (mez/charm) drive their own resolvers, so the rotation-only Cur ("-") and always-red "Condition Met" columns are noise - let them hide both
-    local numCols = (hideRotationCols and 4 or 6) + (showDebugTiming and 1 or 0)
+    local numCols = (hideRotationCols and 4 or 6) + (showDebugTiming and 1 or 0) + (reorderable and 1 or 0)
     local resolvedColIdx = hideRotationCols and 3 or 5
 
     if ImGui.BeginTable("Rotation_" .. name, numCols, bit32.bor(ImGuiTableFlags.Resizable, ImGuiTableFlags.Borders)) then
@@ -1950,6 +1961,9 @@ function Ui.RenderRotationTable(name, rotationTable, resolvedActionMap, rotation
         if showDebugTiming then
             ImGui.TableSetupColumn('Timing', ImGuiTableColumnFlags.WidthStretch, 250.0)
         end
+        if reorderable then
+            ImGui.TableSetupColumn("##reorder", ImGuiTableColumnFlags.WidthFixed, 55.0)
+        end
 
         ImGui.TableHeadersRow()
 
@@ -1960,6 +1974,16 @@ function Ui.RenderRotationTable(name, rotationTable, resolvedActionMap, rotation
             ImGui.SameLine()
             Ui.RenderText(Icons.MD_INFO_OUTLINE)
             Ui.Tooltip("Click a resolved action to inspect the spell/item/AA effect.")
+        end
+
+        if reorderable and (Config:GetSetting('RotationEntryOrder') or {})[name] and ImGui.TableSetColumnIndex(numCols - 1) then
+            if ImGui.SmallButton(Icons.MD_REFRESH .. "##reset_" .. name) then
+                local order = Config:GetSetting('RotationEntryOrder') or {}
+                order[name] = nil
+                Config:SetSetting('RotationEntryOrder', order)
+                resetRequested = true
+            end
+            Ui.Tooltip("Reset this list to its default order.")
         end
 
         for idx, entry in ipairs(rotationTable or {}) do
@@ -2099,12 +2123,38 @@ function Ui.RenderRotationTable(name, rotationTable, resolvedActionMap, rotation
                     Strings.FormatTimeMS((entry.lastFollowTimeSpent or 0) * 1000),
                     Strings.FormatTimeMS((entry.lastTotalTimeSpent or 0) * 1000))
             end
+
+            if reorderable then
+                ImGui.TableNextColumn()
+                if idx > 1 then
+                    ImGui.PushID(string.format("rot_%s_up_%d", name, idx))
+                    if ImGui.SmallButton(Icons.FA_CHEVRON_UP) then pendingSwap = { idx, idx - 1, } end
+                    ImGui.PopID()
+                else
+                    ImGui.InvisibleButton("##rot_upspace_" .. idx, ImVec2(22, 1))
+                end
+                ImGui.SameLine()
+                if idx < #rotationTable then
+                    ImGui.PushID(string.format("rot_%s_dn_%d", name, idx))
+                    if ImGui.SmallButton(Icons.FA_CHEVRON_DOWN) then pendingSwap = { idx, idx + 1, } end
+                    ImGui.PopID()
+                else
+                    ImGui.InvisibleButton("##rot_dnspace_" .. idx, ImVec2(22, 1))
+                end
+            end
         end
 
         ImGui.EndTable()
     end
 
-    return showFailed, enabledRotationEntries, enabledRotationEntriesChanged
+    local reordered = false
+    if pendingSwap and rotationTable then
+        rotationTable[pendingSwap[1]], rotationTable[pendingSwap[2]] = rotationTable[pendingSwap[2]], rotationTable[pendingSwap[1]]
+        persistRotationOrder()
+        reordered = true
+    end
+
+    return showFailed, enabledRotationEntries, enabledRotationEntriesChanged, reordered, resetRequested
 end
 
 --- Renders an animated fancy toggle switch with optional label and color options.

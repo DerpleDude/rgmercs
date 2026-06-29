@@ -167,7 +167,7 @@ function Rotation.ExecEntry(caller, entry, targetId, resolvedActionMap, bAllowMe
 
         if Casting.SpellReady(spell, bAllowMem) then
             Rotation.RunPreActivate(caller, resolvedActionMap, entry)
-            ret, isGroup = Casting.UseSpell(spell.RankName(), targetId, bAllowMem, entry.allowDead, entry.retries)
+            ret, isGroup = Casting.UseSpell(spell.RankName(), targetId, bAllowMem, entry.allowDead, entry.retries, entry.noWait)
         end
         Logger.log_verbose("(Spell) Trying to use %s - %s :: %s", entry.name, spell.RankName(), ret and "\agSuccess" or "\arFailed!")
     end
@@ -191,7 +191,7 @@ function Rotation.ExecEntry(caller, entry, targetId, resolvedActionMap, bAllowMe
 
         if Casting.DiscReady(discSpell) then
             Rotation.RunPreActivate(caller, resolvedActionMap, entry)
-            ret, isGroup = Casting.UseDisc(discSpell, targetId)
+            ret, isGroup = Casting.UseDisc(discSpell, targetId, entry.noWait)
         end
         Logger.log_verbose("(Disc) Trying to use %s - %s :: %s", entry.name, discSpell.RankName(), ret and "\agSuccess" or "\arFailed!")
     end
@@ -203,7 +203,7 @@ function Rotation.ExecEntry(caller, entry, targetId, resolvedActionMap, bAllowMe
 
         if Casting.AAReady(aaName) then
             Rotation.RunPreActivate(caller, resolvedActionMap, entry)
-            ret, isGroup = Casting.UseAA(aaName, targetId, entry.allowDead, entry.retries)
+            ret, isGroup = Casting.UseAA(aaName, targetId, entry.allowDead, entry.retries, entry.noWait)
         end
         Logger.log_verbose("(AA) Trying to use %s :: %s", aaName, ret and "\agSuccess" or "\arFailed!")
     end
@@ -424,8 +424,6 @@ function Rotation.Run(caller, rotationTable, targetTable, resolvedActionMap, ste
         end
     end
 
-    Modules:ExecModule("Class", "PromptRestoreSwapSlot")
-
     lastStepIdx = lastStepIdx + 1
 
     if lastStepIdx > #rotationTable then
@@ -436,6 +434,28 @@ function Rotation.Run(caller, rotationTable, targetTable, resolvedActionMap, ste
         lastStepIdx)
 
     return lastStepIdx, anySuccess
+end
+
+--- Reorders entryList in place to match a saved order of entry names, keying by name+occurrence so duplicate names stay distinct.
+---@param entryList table Array of rotation entry descriptors, reordered in place.
+---@param savedOrder table? Array of entry names defining the desired order; entries absent from it keep their built order at the end. Nil/empty is a no-op.
+function Rotation.ApplyEntryOrder(entryList, savedOrder)
+    if not savedOrder or #savedOrder == 0 then return end
+    local pos = {}
+    local savedSeen = {}
+    for i, entryName in ipairs(savedOrder) do
+        savedSeen[entryName] = (savedSeen[entryName] or 0) + 1
+        pos[entryName .. "\0" .. savedSeen[entryName]] = i
+    end
+    local base = #savedOrder
+    local liveSeen = {}
+    local keyed = {}
+    for i, entry in ipairs(entryList) do
+        liveSeen[entry.name] = (liveSeen[entry.name] or 0) + 1
+        keyed[i] = { entry = entry, key = pos[entry.name .. "\0" .. liveSeen[entry.name]] or (base + i), }
+    end
+    table.sort(keyed, function(a, b) return a.key < b.key end)
+    for i, k in ipairs(keyed) do entryList[i] = k.entry end
 end
 
 --- Builds and returns a resolvedActionMap by calling GetBestItem, GetBestSpell,

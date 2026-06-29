@@ -21,7 +21,7 @@ Comms.OutgoingToasts       = {}
 --- @param peerServer string? Server name; defaults to the local server.
 --- @return string The formatted "Name (Server)" peer identifier.
 function Comms.GetPeerName(peerName, peerServer)
-    local server = peerServer or mq.TLO.EverQuest.Server()
+    local server = peerServer or Globals.CurServer
     --upper first letter if it isnt (Live)
     if server:len() > 0 then
         server = server:sub(1, 1):upper() .. server:sub(2)

@@ -10,6 +10,7 @@ local Core      = require("utils.core")
 local Globals   = require('utils.globals')
 local Logger    = require("utils.logger")
 local Modules   = require("utils.modules")
+local Rotation  = require("utils.rotation")
 local Strings   = require("utils.strings")
 local Targeting = require("utils.targeting")
 local Ui        = require("utils.ui")
@@ -525,6 +526,9 @@ function Module:RebuildCharmLists()
         PreCharm  = self:FilterLoaded(charm and charm.PreCharm),
         Assist    = self:FilterLoaded(charm and charm.Assist),
     }
+    local order = Config:GetSetting('RotationEntryOrder') or {}
+    Rotation.ApplyEntryOrder(self.TempSettings.CharmLists.PreCharm, order["CharmPreCharm"])
+    Rotation.ApplyEntryOrder(self.TempSettings.CharmLists.Assist, order["CharmAssist"])
 end
 
 function Module:GetCharmLists()
@@ -921,11 +925,16 @@ function Module:CharmAssistNeeded()
     self.TempSettings.LastCharmAssistTime = Globals.GetTimeMS()
 
     local assistOn = Config:GetSetting('DoCharmAssist')
+    if not assistOn or next(Globals.LooseCharms) == nil then
+        self.TempSettings.LastCharmAssistResult = false
+        return false
+    end
+
     local healClear = Core.OkayToNotHeal(Config:GetSetting('HealPriority', true))
     local mezClear = Core.OkayToNotMez(Config:GetSetting('PriorityMez'))
     local hpOk = (mq.TLO.Me.PctHPs() or 100) > (Config:GetSetting('HPCritical', true) or Config:GetSetting('EmergencyStart', true) or 0)
     -- only scan for a loose charm once the cheaper gates pass
-    local result = assistOn and healClear and mezClear and hpOk and self:FindLooseCharmToAssist() > 0
+    local result = healClear and mezClear and hpOk and self:FindLooseCharmToAssist() > 0
 
     Logger.log_verbose("CharmAssistNeeded - DoCharmAssist(%s) HealClear(%s) MezClear(%s) HpOk(%s) => %s",
         Strings.BoolToColorString(assistOn), Strings.BoolToColorString(healClear), Strings.BoolToColorString(mezClear),
@@ -1293,9 +1302,10 @@ function Module:Render()
                         resolvedMap[entry.name] = Modules:ExecModule("Class", "GetResolvedActionMapItem", entry.name)
                     end
                     enabled[listName] = enabled[listName] or {}
-                    local _, newEnabled, entriesChanged = Ui.RenderRotationTable("Charm" .. listName, list, resolvedMap, 0, false, enabled[listName], true)
+                    local _, newEnabled, entriesChanged, _, resetRequested = Ui.RenderRotationTable("Charm" .. listName, list, resolvedMap, 0, false, enabled[listName], true, true)
                     enabled[listName] = newEnabled
                     if entriesChanged then changed = true end
+                    if resetRequested then self:RebuildCharmLists() end
                 end
             end
             if changed then Config:SetSetting('EnabledCharmEntries', enabled) end
