@@ -181,10 +181,11 @@ local _ClassConfig = {
         },
         ['LowLvlAtkBuff'] = {
             -- Low Level Attack Buff --- user under level 86. Including Harnessing of Spirit as they will have similar usecases and targets.
-            "Champion",             -- Level 70
-            "Ferine Avatar",        -- Level 65
-            "Primal Avatar",        -- Level 60
-            "Harnessing of Spirit", -- Level 46
+            "Champion",              -- Level 70
+            "Ferine Avatar",         -- Level 65
+            "Ancient: Feral Avatar", -- Level 60
+            "Primal Avatar",         -- Level 60
+            "Harnessing of Spirit",  -- Level 46
         },
         ['LowLvlHPBuff'] = {
             "Talisman of Kragg",  -- Level 55, - Single
