@@ -389,7 +389,7 @@ end
 --- Renders a combo box for selecting the active class config directory.
 function Ui.RenderConfigSelector()
     if Globals.ClassConfigDirs ~= nil then
-        Ui.RenderText("Config Type:")
+        Ui.RenderText("Active Config:")
         ImGui.SameLine()
         ImGui.SetNextItemWidth(200)
         local newConfigDir, changed = ImGui.Combo("##config_type", Ui.GetClassConfigIDFromName(Config:GetSetting('ClassConfigDir')), Globals.ClassConfigDirs,
@@ -1926,17 +1926,25 @@ end
 ---@return boolean showFailed The (potentially toggled) showFailed value.
 ---@return table enabledRotationEntries Updated enablement map.
 ---@return boolean changed True if any enablement setting was toggled this frame.
-function Ui.RenderRotationTable(name, rotationTable, resolvedActionMap, rotationState, showFailed, enabledRotationEntries)
+function Ui.RenderRotationTable(name, rotationTable, resolvedActionMap, rotationState, showFailed, enabledRotationEntries, hideRotationCols)
     local enabledRotationEntriesChanged = false
     local showDebugTiming = Config:GetSetting('ShowDebugTiming')
 
-    if ImGui.BeginTable("Rotation_" .. name, showDebugTiming and 7 or 6, bit32.bor(ImGuiTableFlags.Resizable, ImGuiTableFlags.Borders)) then
+    -- non-rotation callers (mez/charm) drive their own resolvers, so the rotation-only Cur ("-") and always-red "Condition Met" columns are noise - let them hide both
+    local numCols = (hideRotationCols and 4 or 6) + (showDebugTiming and 1 or 0)
+    local resolvedColIdx = hideRotationCols and 3 or 5
+
+    if ImGui.BeginTable("Rotation_" .. name, numCols, bit32.bor(ImGuiTableFlags.Resizable, ImGuiTableFlags.Borders)) then
         ImGui.TableSetupColumn('ID', ImGuiTableColumnFlags.WidthFixed, 20.0)
-        ImGui.TableSetupColumn(rotationState > 0 and 'Cur' or '-', ImGuiTableColumnFlags.WidthFixed, 20.0)
+        if not hideRotationCols then
+            ImGui.TableSetupColumn(rotationState > 0 and 'Cur' or '-', ImGuiTableColumnFlags.WidthFixed, 20.0)
+        end
         ImGui.TableSetupColumn('Enable', ImGuiTableColumnFlags.WidthFixed, 30.0)
-        ImGui.TableSetupColumn('Condition Met', ImGuiTableColumnFlags.WidthFixed, 20.0)
+        if not hideRotationCols then
+            ImGui.TableSetupColumn('Condition Met', ImGuiTableColumnFlags.WidthFixed, 20.0)
+        end
         ImGui.TableSetupColumn('Action', ImGuiTableColumnFlags.WidthFixed, 250.0)
-        --- Column 5: header will be manually drawn
+        --- Resolved Action column: header drawn manually below
         ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthStretch, 250.0);
 
         if showDebugTiming then
@@ -1946,7 +1954,7 @@ function Ui.RenderRotationTable(name, rotationTable, resolvedActionMap, rotation
         ImGui.TableHeadersRow()
 
         -- Manually draw header cell content for Resolved Action Column
-        if ImGui.TableSetColumnIndex(5) then
+        if ImGui.TableSetColumnIndex(resolvedColIdx) then
             ImGui.SameLine()
             Ui.RenderText("Resolved Action ")
             ImGui.SameLine()
@@ -1958,41 +1966,45 @@ function Ui.RenderRotationTable(name, rotationTable, resolvedActionMap, rotation
             ImGui.TableNextRow()
             ImGui.TableNextColumn()
             Ui.RenderText(tostring(idx))
-            if rotationState > 0 then
-                ImGui.TableNextColumn()
-                ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.ConditionPassColor)
-                if idx == rotationState then
-                    Ui.RenderText(Icons.FA_DOT_CIRCLE_O)
+            if not hideRotationCols then
+                if rotationState > 0 then
+                    ImGui.TableNextColumn()
+                    ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.ConditionPassColor)
+                    if idx == rotationState then
+                        Ui.RenderText(Icons.FA_DOT_CIRCLE_O)
+                    end
+                    ImGui.PopStyleColor()
+                else
+                    ImGui.TableNextColumn()
                 end
-                ImGui.PopStyleColor()
-            else
-                ImGui.TableNextColumn()
             end
             ImGui.TableNextColumn()
             local changed = false
             enabledRotationEntries[entry.name], changed = Ui.RenderOptionToggle(string.format("rot_%s_tggl_%d", name, idx), "",
                 enabledRotationEntries[entry.name] == nil and true or enabledRotationEntries[entry.name])
             if changed then enabledRotationEntriesChanged = true end
-            ImGui.TableNextColumn()
-            local pass, active = false, false
+            if not hideRotationCols then
+                ImGui.TableNextColumn()
+                local pass, active = false, false
 
-            if entry.lastRun then
-                pass, active = entry.lastRun.pass, entry.lastRun.active
-            end
+                if entry.lastRun then
+                    pass, active = entry.lastRun.pass, entry.lastRun.active
+                end
 
-            if active == true then
-                ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.ConditionPassColor)
-                Ui.RenderText(Icons.FA_SMILE_O)
-            elseif pass == true then
-                ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.ConditionPassColor)
-                Ui.RenderText(Icons.MD_CHECK)
-            else
-                ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.ConditionFailColor)
-                Ui.RenderText(Icons.FA_EXCLAMATION)
-            end
-            ImGui.PopStyleColor()
-            if entry.tooltip then
-                Ui.Tooltip(entry.tooltip)
+                if active == true then
+                    ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.ConditionPassColor)
+                    Ui.RenderText(Icons.FA_SMILE_O)
+                elseif pass == true then
+                    ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.ConditionPassColor)
+                    Ui.RenderText(Icons.MD_CHECK)
+                else
+                    ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.ConditionFailColor)
+                    Ui.RenderText(Icons.FA_EXCLAMATION)
+                end
+                ImGui.PopStyleColor()
+                if entry.tooltip then
+                    Ui.Tooltip(entry.tooltip)
+                end
             end
 
             ImGui.TableNextColumn()

@@ -12,12 +12,22 @@ local _ClassConfig = {
     _author               = "Algar, Derple",
     ['ModeChecks']        = {
         IsHealing = function() return true end,
-        IsCuring = function() return Config:GetSetting('DoCureAA') or Config:GetSetting('DoCureSpells') end,
-        IsRezing = function() return Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0 end,
+        IsCuring  = function() return Config:GetSetting('DoCureAA') or Config:GetSetting('DoCureSpells') end,
+        IsRezing  = function()
+            return (Core.GetResolvedActionMapItem('RezSpell') and Targeting.GetXTHaterCount() == 0) or
+                (Casting.CanUseAA("Call of the Wild") and Config:GetSetting('DoBattleRez'))
+        end,
     },
     ['Modes']             = {
         'Heal',
         'Hybrid',
+    },
+    ['PetPosition']       = {
+        SummonAA   = function() return Casting.CanUseAA("Summon Companion") and "Summon Companion" end,
+        RelocateAA = function()
+            local cdAA = mq.TLO.Me.AltAbility("Companion's Discipline")
+            return (cdAA and cdAA.Rank() or 0) >= 4 and "Companion's Discipline"
+        end,
     },
     ['Cures']             = {
         -- this code is slightly ineffecient (we could just check for CureSpell once), but adding corruption or more options would have us change it back to this
@@ -43,11 +53,6 @@ local _ClassConfig = {
             end
         end,
         CureNow = function(self, type, targetId)
-            if Config:GetSetting('DoCureAA') then
-                if Casting.AAReady("Radiant Cure") then
-                    return Casting.UseAA("Radiant Cure", targetId)
-                end
-            end
             local targetSpawn = mq.TLO.Spawn(targetId)
             if not targetSpawn and targetSpawn then return false, false end
 
@@ -147,6 +152,8 @@ local _ClassConfig = {
             "Talisman of Wunshi",         -- Level 70, - Group
             "Focus of the Seventh",       -- Level 65, - Group
             "Khura's Focusing",           -- Level 60, - Group
+            "Focus of Spirit",            -- Level 60, - Single, added for TLP without Khura's
+            "Infusion of Spirit",         -- Level 49, Str/Dex/Sta, can use HP buff. Not sure if this is the final home for this one or not.
         },
         ['RunSpeedBuff'] = {
             -- Run Speed Buff - 9 - 74
@@ -160,6 +167,7 @@ local _ClassConfig = {
             "Talisman of Celerity", -- Level 64
             "Swift Like the Wind",  -- Level 63
             "Celerity",             -- Level 56
+            "Alacrity",             -- Level 42
             "Quickness",            -- Level 26
         },
         ['TempHPBuff'] = {
@@ -209,7 +217,9 @@ local _ClassConfig = {
             "Talisman of Might",     -- Level 70, Group
             "Spirit of Might",       -- Level 67, Single Target
             "Talisman of the Diaku", -- Level 64
-            "Infusion of Spirit",    -- Level 49, Str/Dex/Sta, can use HP buff
+            "Talisman of the Rhino", -- Level 58
+            "Maniacal Strength",     -- Level 57
+            "Strength",              -- Level 46
             "Tumultuous Strength",   -- Level 35
             "Raging Strength",       -- Level 28
             "Spirit Strength",       -- Level 18, Can't see this as being very worth but keeping for now.
@@ -362,6 +372,7 @@ local _ClassConfig = {
             "Ancient Alliance",   -- Level 103
         },
         ['RezSpell'] = {
+            "Incarnate Anew", -- Level 59
         },
         ['RecklessHeal1'] = {
             "Reckless Mending VIII",      -- Level 130
@@ -794,6 +805,7 @@ local _ClassConfig = {
     ['Helpers']           = {
         DoRez = function(self, corpseId, ownerName)
             local rezAction = false
+            local rezSpell = Core.GetResolvedActionMapItem('RezSpell')
             local okayToRez = Casting.OkayToRez(corpseId)
             local combatState = mq.TLO.Me.CombatState():lower() or "unknown"
 
@@ -806,8 +818,8 @@ local _ClassConfig = {
             elseif combatState == "active" or combatState == "resting" then
                 if Casting.AAReady("Rejuvenation of Spirit") then
                     rezAction = okayToRez and Casting.UseAA("Rejuvenation of Spirit", corpseId, true, 1)
-                elseif not Casting.CanUseAA("Rejuvenation of Spirit") and Casting.SpellReady(mq.TLO.Spell("Incarnate Anew"), true) then
-                    rezAction = okayToRez and Casting.UseSpell("Incarnate Anew", corpseId, true, true)
+                elseif not Casting.CanUseAA("Rejuvenation of Spirit") and Casting.SpellReady(rezSpell, true) then
+                    rezAction = okayToRez and Casting.UseSpell(rezSpell.RankName(), corpseId, true, true)
                 end
             end
 
@@ -987,13 +999,33 @@ local _ClassConfig = {
             },
         },
     },
+    ['Charm']             = {
+        ['Assist'] = {
+            {
+                name = "Malaise",
+                type = "AA",
+                load_cond = function(self) return Config:GetSetting('DoSTMalo') and Casting.CanUseAA("Malaise") end,
+                cond = function(self, aaName, target)
+                    return Casting.DetAACheck(aaName, target)
+                end,
+            },
+            {
+                name = "MaloSpell",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoSTMalo') and not Casting.CanUseAA("Malaise") end,
+                cond = function(self, spell, target)
+                    return Casting.DetSpellCheck(spell, target)
+                end,
+            },
+        },
+    },
     ['RotationOrder']     = {
         -- Downtime doesn't have state because we run the whole rotation at once.
         {
             name = 'Downtime',
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
-                return combat_state == "Downtime" and (not Core.IsModeActive('Heal') or Core.OkayToNotHeal()) and Casting.OkayToBuff() and
+                return combat_state == "Downtime" and Core.CombatActionsCheck() and Casting.OkayToBuff() and
                     Casting.AmIBuffable()
             end,
         },
@@ -1001,7 +1033,7 @@ local _ClassConfig = {
             name = 'PetSummon',
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
-                return combat_state == "Downtime" and (not Core.IsModeActive('Heal') or Core.OkayToNotHeal()) and mq.TLO.Me.Pet.ID() == 0 and Casting.OkayToPetBuff() and
+                return combat_state == "Downtime" and Core.CombatActionsCheck() and mq.TLO.Me.Pet.ID() == 0 and Casting.OkayToPetBuff() and
                     Casting.AmIBuffable()
             end,
         },
@@ -1011,7 +1043,7 @@ local _ClassConfig = {
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
                 return combat_state == "Downtime" and
-                    (not Core.IsModeActive('Heal') or Core.OkayToNotHeal()) and Casting.OkayToBuff() and Casting.AmIBuffable()
+                    Core.CombatActionsCheck() and Casting.OkayToBuff() and Casting.AmIBuffable()
             end,
         },
         { --Spells that should be checked on group members
@@ -1020,7 +1052,7 @@ local _ClassConfig = {
             steps = 1,
             targetId = function(self) return Casting.GetBuffableIDs() end,
             cond = function(self, combat_state)
-                return combat_state == "Downtime" and (not Core.IsModeActive('Heal') or Core.OkayToNotHeal()) and Casting.OkayToBuff()
+                return combat_state == "Downtime" and Core.CombatActionsCheck() and Casting.OkayToBuff()
             end,
         },
         { --Pet Buffs if we have one, timer because we don't need to constantly check this
@@ -1028,7 +1060,7 @@ local _ClassConfig = {
             timer = 10,
             targetId = function(self) return mq.TLO.Me.Pet.ID() > 0 and { mq.TLO.Me.Pet.ID(), } or {} end,
             cond = function(self, combat_state)
-                return combat_state == "Downtime" and (not Core.IsModeActive('Heal') or Core.OkayToNotHeal()) and mq.TLO.Me.Pet.ID() > 0 and Casting.OkayToPetBuff()
+                return combat_state == "Downtime" and Core.CombatActionsCheck() and mq.TLO.Me.Pet.ID() > 0 and Casting.OkayToPetBuff()
             end,
         },
         {
@@ -1038,7 +1070,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting('DoSTMalo') or Config:GetSetting('DoAEMalo') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.OkayToDebuff() and (not Core.IsModeActive('Heal') or Core.OkayToNotHeal())
+                return combat_state == "Combat" and Casting.OkayToDebuff() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -1048,7 +1080,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting('DoSTSlow') or Config:GetSetting('DoAESlow') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.OkayToDebuff() and (not Core.IsModeActive('Heal') or Core.OkayToNotHeal())
+                return combat_state == "Combat" and Casting.OkayToDebuff() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -1058,7 +1090,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and Casting.BurnCheck() and
-                    (not Core.IsModeActive('Heal') or Core.OkayToNotHeal())
+                    Core.CombatActionsCheck()
             end,
         },
         {
@@ -1070,7 +1102,7 @@ local _ClassConfig = {
             cond = function(self, combat_state)
                 local downtime = combat_state == "Downtime" and Casting.OkayToBuff()
                 local combat = combat_state == "Combat"
-                return (downtime or combat) and (not Core.IsModeActive('Heal') or Core.OkayToNotHeal())
+                return (downtime or combat) and Core.CombatActionsCheck()
             end,
         },
         {
@@ -1080,7 +1112,7 @@ local _ClassConfig = {
             steps = 1,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and (not Core.IsModeActive('Heal') or Core.OkayToNotHeal())
+                return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
         {
@@ -1090,7 +1122,7 @@ local _ClassConfig = {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and (not Core.IsModeActive('Heal') or (Config:GetSetting('DoHealDPS') and Core.OkayToNotHeal()))
+                return combat_state == "Combat" and ((not Core.IsModeActive('Heal') or Config:GetSetting('DoHealDPS')) and Core.CombatActionsCheck())
             end,
         },
     },
@@ -1218,7 +1250,7 @@ local _ClassConfig = {
                 load_cond = function(self) return Config:GetSetting('DoSTSlow') and not Casting.CanUseAA("Turgur's Swarm") end,
                 cond = function(self, spell, target)
                     if not Config:GetSetting('DoSTSlow') or Casting.CanUseAA("Turgur's Swarm") then return false end
-                    return Casting.DetSpellCheck(spell) and not Casting.SlowImmuneTarget(target)
+                    return Casting.DetSpellCheck(spell) and (spell and spell.RankName.SlowPct() or 0) > Targeting.GetTargetSlowedPct() and not Casting.SlowImmuneTarget(target)
                 end,
             },
             {
@@ -1265,7 +1297,7 @@ local _ClassConfig = {
                 load_cond = function(self) return Casting.CanUseAA("Luminary's Synergy") and Config:GetSetting('DoHealOverTime') end,
                 cond = function(self, spell, target)
                     if not Casting.CastReady(spell) then return false end
-                    return Targeting.MobHasLowHP and spell.RankName.Stacks() and (mq.TLO.Me.Song(spell).Duration.TotalSeconds() or 0) < 30
+                    return Targeting.MobHasLowHP() and spell.RankName.Stacks() and (mq.TLO.Me.Song(spell).Duration.TotalSeconds() or 0) < 30
                 end,
             },
         },
@@ -1529,7 +1561,7 @@ local _ClassConfig = {
             {
                 name = "SingleRegenBuff",
                 type = "Spell",
-                load_cond = function(self) return not Core.GetResolvedActionMapItem('GroupRegenBuff') end,
+                load_cond = function(self) return Config:GetSetting('DoRegenBuff') and not Core.GetResolvedActionMapItem('GroupRegenBuff') end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell, target)
                     return (Targeting.TargetIsATank(target) or Targeting.TargetIsMyself(target)) and Casting.GroupBuffCheck(spell, target)
@@ -1538,7 +1570,7 @@ local _ClassConfig = {
             {
                 name = "GroupRegenBuff",
                 type = "Spell",
-                load_cond = function(self) return Config:GetSetting('DoGroupRegen') and not Core.GetResolvedActionMapItem('DichoSpell') end,
+                load_cond = function(self) return Config:GetSetting('DoRegenBuff') and not Core.GetResolvedActionMapItem('DichoSpell') end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell, target)
                     return Casting.GroupBuffCheck(spell, target)
@@ -1644,7 +1676,7 @@ local _ClassConfig = {
                 -- Utility
                 { name = "CanniSpell",        cond = function(self) return Config:GetSetting('DoSpellCanni') end, },   -- 23 - ???
                 { name = "GroupRenewalHoT",   cond = function(self) return Config:GetSetting('DoHealOverTime') end, }, -- 44-125 Heal
-                { name = "SingleRegenBuff",   cond = function(self) return not Core.GetResolvedActionMapItem('GroupRegenBuff') end, },
+                { name = "SingleRegenBuff",   cond = function(self) return Config:GetSetting('DoRegenBuff') and not Core.GetResolvedActionMapItem('GroupRegenBuff') end, },
                 { name = "TempHPBuff",        cond = function(self) return Config:GetSetting('DoTempHP') end, },       -- 81-125
                 { name = "CureSpell",         cond = function(self) return Config:GetSetting('MemCureSpell') end, },
 
@@ -1706,7 +1738,7 @@ local _ClassConfig = {
                 -- Utility, Filler
                 { name = "CanniSpell",        cond = function(self) return Config:GetSetting('DoSpellCanni') end, },   -- 23 - ???
                 { name = "GroupRenewalHoT",   cond = function(self) return Config:GetSetting('DoHealOverTime') end, }, -- 44-125 Heal
-                { name = "SingleRegenBuff",   cond = function(self) return not Core.GetResolvedActionMapItem('GroupRegenBuff') end, },
+                { name = "SingleRegenBuff",   cond = function(self) return Config:GetSetting('DoRegenBuff') and not Core.GetResolvedActionMapItem('GroupRegenBuff') end, },
                 { name = "TempHPBuff",        cond = function(self) return Config:GetSetting('DoTempHP') end, },       -- 81-125
                 { name = "TwinHealNuke",      cond = function(self) return Config:GetSetting('DoTwinHealNuke') end, }, -- 85-125
                 { name = "CureSpell",         cond = function(self) return Config:GetSetting('MemCureSpell') end, },
@@ -1728,6 +1760,36 @@ local _ClassConfig = {
             AbilityRange = 150,
             cond = function(self)
                 local resolvedSpell = Core.GetResolvedActionMapItem('SlowSpell')
+                if not resolvedSpell then return false end
+                return mq.TLO.Me.Gem(resolvedSpell.RankName.Name() or "")() ~= nil
+            end,
+        },
+        {
+            id = 'SaryrnDot',
+            Type = "Spell",
+            DisplayName = function() return Core.GetResolvedActionMapItem('SaryrnDot')() or "" end,
+            AbilityName = function() return Core.GetResolvedActionMapItem('SaryrnDot')() or "" end,
+            AbilityRange = 150,
+            cond = function(self)
+                local resolvedSpell = Core.GetResolvedActionMapItem('SaryrnDot')
+                if not resolvedSpell then return false end
+                return mq.TLO.Me.Gem(resolvedSpell.RankName.Name() or "")() ~= nil
+            end,
+        },
+        {
+            id = 'NukeSpell',
+            Type = "Spell",
+            DisplayName = function()
+                local resolved = Core.GetResolvedActionMapItem(Casting.GetFirstMapItem({ "FastPoisonNuke", "PoisonNuke", "IceNuke", }))
+                return resolved and resolved() or ""
+            end,
+            AbilityName = function()
+                local resolved = Core.GetResolvedActionMapItem(Casting.GetFirstMapItem({ "FastPoisonNuke", "PoisonNuke", "IceNuke", }))
+                return resolved and resolved() or ""
+            end,
+            AbilityRange = 150,
+            cond = function(self)
+                local resolvedSpell = Core.GetResolvedActionMapItem(Casting.GetFirstMapItem({ "FastPoisonNuke", "PoisonNuke", "IceNuke", }))
                 if not resolvedSpell then return false end
                 return mq.TLO.Me.Gem(resolvedSpell.RankName.Name() or "")() ~= nil
             end,
@@ -1966,6 +2028,7 @@ local _ClassConfig = {
             Index = 101,
             Tooltip = "Do Run Speed Spells/AAs",
             Default = true,
+            RequiresLoadoutChange = true,
             FAQ = "Why are my buffers in a run speed buff war?",
             Answer = "Many run speed spells freely stack and overwrite each other, you will need to disable Run Speed Buffs on some of the buffers.",
         },
@@ -2002,14 +2065,15 @@ local _ClassConfig = {
             Default = true,
             ConfigType = "Advanced",
         },
-        ['DoGroupRegen']        = {
-            DisplayName = "Group Regen Buff",
+        ['DoRegenBuff']         = {
+            DisplayName = "Regen Buff",
             Group = "Abilities",
             Header = "Buffs",
             Category = "Group",
             Index = 105,
-            Tooltip = "Use your Group Regen buff.",
+            Tooltip = "Use your Regen buff (best of single or group versions).",
             Default = true,
+            RequiresLoadoutChange = true,
             FAQ = "Why am I spamming my Group Regen buff?",
             Answer = "Certain Shaman and Druid group regen buffs report cross-stacking. You should deselect the option on one of the PCs if they are grouped together.",
         },
@@ -2049,7 +2113,7 @@ local _ClassConfig = {
         ['DoSTMalo']            = {
             DisplayName = "Do ST Malo",
             Group = "Abilities",
-            Header = "Debuff",
+            Header = "Debuffs",
             Category = "Resist",
             Index = 101,
             Tooltip = "Do ST Malo Spells/AAs",
@@ -2059,7 +2123,7 @@ local _ClassConfig = {
         ['DoAEMalo']            = {
             DisplayName = "Do AE Malo",
             Group = "Abilities",
-            Header = "Debuff",
+            Header = "Debuffs",
             Category = "Resist",
             Index = 102,
             Tooltip = "Do AE Malo Spells/AAs",
@@ -2069,7 +2133,7 @@ local _ClassConfig = {
         ['DoSTSlow']            = {
             DisplayName = "Do ST Slow",
             Group = "Abilities",
-            Header = "Debuff",
+            Header = "Debuffs",
             Category = "Slow",
             Index = 101,
             Tooltip = "Do ST Slow Spells/AAs",
@@ -2079,7 +2143,7 @@ local _ClassConfig = {
         ['DoAESlow']            = {
             DisplayName = "Do AE Slow",
             Group = "Abilities",
-            Header = "Debuff",
+            Header = "Debuffs",
             Category = "Slow",
             Index = 102,
             Tooltip = "Do AE Slow Spells/AAs",
@@ -2089,7 +2153,7 @@ local _ClassConfig = {
         ['AESlowCount']         = {
             DisplayName = "AE Slow Count",
             Group = "Abilities",
-            Header = "Debuff",
+            Header = "Debuffs",
             Category = "Slow",
             Index = 103,
             Tooltip = "Number of XT Haters before we use AE Slow.",
@@ -2101,7 +2165,7 @@ local _ClassConfig = {
         ['AEMaloCount']         = {
             DisplayName = "AE Malo Count",
             Group = "Abilities",
-            Header = "Debuff",
+            Header = "Debuffs",
             Category = "Resist",
             Index = 103,
             Tooltip = "Number of XT Haters before we use AE Malo.",
@@ -2113,7 +2177,7 @@ local _ClassConfig = {
         ['DoDiseaseSlow']       = {
             DisplayName = "Disease Slow",
             Group = "Abilities",
-            Header = "Debuff",
+            Header = "Debuffs",
             Category = "Slow",
             Index = 104,
             Tooltip = "Use Disease Slow instead of normal ST Slow",
@@ -2171,6 +2235,20 @@ local _ClassConfig = {
             Index = 110,
             Tooltip = "Use Low Level (<= 70) HP Buffs",
             Default = false,
+            ConfigType = "Advanced",
+        },
+        ['HealPriority']        = {
+            DisplayName = "Healing Priority",
+            Group = "Abilities",
+            Header = "Recovery",
+            Category = "Healing Thresholds",
+            Index = 101,
+            Type = "Combo",
+            ComboOptions = { 'Ignore', 'Big Heal Point', 'Main Heal Point', },
+            Default = 3,
+            Min = 1,
+            Max = 3,
+            Tooltip = "When to yield offensive rotations for healing:\n1 - Ignore (never)\n2 - Big Heal Point\n3 - Main Heal Point",
             ConfigType = "Advanced",
         },
     },

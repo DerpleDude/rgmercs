@@ -16,6 +16,13 @@ return {
     ['ModeChecks']        = {
         IsHealing = function() return true end,
     },
+    ['PetPosition']       = {
+        SummonAA   = function() return Casting.CanUseAA("Summon Companion") and "Summon Companion" end,
+        RelocateAA = function()
+            local cdAA = mq.TLO.Me.AltAbility("Companion's Discipline")
+            return (cdAA and cdAA.Rank() or 0) >= 4 and "Companion's Discipline"
+        end,
+    },
     ['Themes']            = {
         ['DPS'] = {
             { element = ImGuiCol.TitleBgActive,    color = { r = 0.50, g = 0.28, b = 0.03, a = 0.8, }, },
@@ -718,14 +725,6 @@ return {
             end,
         },
         {
-            name = 'PetHealing',
-            state = 1,
-            steps = 1,
-            doFullRotation = true,
-            targetId = function(self) return mq.TLO.Me.Pet.ID() > 0 and { mq.TLO.Me.Pet.ID(), } or {} end,
-            cond = function(self, target) return (mq.TLO.Me.Pet.PctHPs() or 100) < Config:GetSetting('PetHealPct') end,
-        },
-        {
             name = 'Emergency',
             state = 1,
             steps = 1,
@@ -737,6 +736,14 @@ return {
             end,
         },
         {
+            name = 'PetHealing',
+            state = 1,
+            steps = 1,
+            doFullRotation = true,
+            targetId = function(self) return mq.TLO.Me.Pet.ID() > 0 and { mq.TLO.Me.Pet.ID(), } or {} end,
+            cond = function(self, target) return (mq.TLO.Me.Pet.PctHPs() or 100) < Config:GetSetting('PetHealPct') end,
+        },
+        {
             name = 'FocusedParagon',
             state = 1,
             steps = 1,
@@ -745,7 +752,7 @@ return {
             cond = function(self, combat_state)
                 local downtime = combat_state == "Downtime" and Config:GetSetting('DowntimeFP') and Casting.OkayToBuff()
                 local combat = combat_state == "Combat"
-                return (downtime or combat) and not Casting.IHaveBuff(mq.TLO.Me.AltAbility('Paragon of Spirit').Spell)
+                return (downtime or combat) and not Casting.IHaveBuff(mq.TLO.Me.AltAbility('Paragon of Spirit').Spell) and Core.CombatActionsCheck()
             end,
         },
         {
@@ -764,7 +771,7 @@ return {
             steps = 4,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.BurnCheck()
+                return combat_state == "Combat" and Casting.BurnCheck() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -773,7 +780,7 @@ return {
             steps = 1,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat"
+                return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
         {
@@ -782,7 +789,7 @@ return {
             steps = 1,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat"
+                return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
     },
@@ -798,8 +805,6 @@ return {
             return Casting.IHaveBuff("Bestial Alignment") or (disc and disc() and Casting.IHaveBuff(disc.Name()))
                 or Casting.IHaveBuff("Ferociousness")
         end,
-        --function to make sure we don't have non-hostiles in range before we use AE damage or non-taunt AE hate abilities
-
     },
     ['Rotations']         = {
         ['Burn'] = {
@@ -931,7 +936,7 @@ return {
                 type = "AA",
                 cond = function(self, aaName, target)
                     if not Config:GetSetting('AggroFeign') then return false end
-                    return (mq.TLO.Me.PctHPs() <= 40 and Targeting.IHaveAggro(100)) or (Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 99) and not Core.IAmMA()
+                    return (mq.TLO.Me.PctHPs() <= 40 and Targeting.IHaveAggro(100)) or (Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 99) and not Core.IsTanking()
                 end,
             },
             {
@@ -946,7 +951,7 @@ return {
                 name = "Warder's Gift",
                 type = "AA",
                 cond = function(self, aaName)
-                    return (mq.TLO.Me.Pet.PctHPs() and mq.TLO.Me.Pet.PctHPs() > 50)
+                    return (mq.TLO.Me.Pet.PctHPs() or 0) > 50
                 end,
             },
             {
@@ -971,16 +976,25 @@ return {
                 type = "AA",
             },
         },
-        ['PetHealAA'] = {
+        ['PetHealing'] = {
             {
                 name = "Mend Companion",
                 type = "AA",
+                cond = function(self, aaName, target)
+                    return (mq.TLO.Me.Pet.PctHPs() or 999) <= Config:GetSetting('BigHealPoint')
+                end,
             },
-        },
-        ['PetHealSpell'] = {
+            {
+                name = "Companion's Fortification",
+                type = "AA",
+                cond = function(self, aaName, target)
+                    return (mq.TLO.Me.Pet.PctHPs() or 999) <= Config:GetSetting('BigHealPoint')
+                end,
+            },
             {
                 name = "PetHealSpell",
                 type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoPetHealSpell') end,
             },
         },
         ['DPS'] = {
@@ -1091,22 +1105,11 @@ return {
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoSwarmPet') end,
                 cond = function(self, spell, target)
-                    --We will let Feralgia apply swarm pets if our pet currently doesn't have its Growl Effect.
-                    local feralgia = self.ResolvedActionMap['Feralgia']
-                    return (feralgia and feralgia() and mq.TLO.Me.PetBuff(mq.TLO.Spell(feralgia).RankName.Trigger(2).ID())) and Casting.HaveManaToNuke()
+                    return Casting.HaveManaToNuke()
                 end,
             },
         },
         ['Weaves'] = {
-            {
-                name = "Summon Companion",
-                type = "AA",
-                cond = function(self, aaName, target)
-                    if mq.TLO.Me.Pet.ID() == 0 then return false end
-                    local pet = mq.TLO.Me.Pet
-                    return not pet.Combat() and (pet.Distance3D() or 0) > 200
-                end,
-            },
             {
                 name = "Round Kick",
                 type = "Ability",
@@ -1510,7 +1513,7 @@ return {
             AbilityName = "Sha's Reprisal",
             AbilityRange = 150,
             cond = function(self)
-                return mq.TLO.Me.AltAbility("Sha's Reprisal")
+                return Casting.CanUseAA("Sha's Reprisal")
             end,
         },
         {
@@ -1665,7 +1668,7 @@ return {
             Header = "Recovery",
             Category = "General Healing",
             Index = 102,
-            Tooltip = "Mem and cast your Pet Heal (Salve) spell. AA Pet Heals are always used in emergencies.",
+            Tooltip = "Mem and cast your Pet Heal spell. AA Pet Heals are always used in emergencies.",
             Default = true,
             RequiresLoadoutChange = true,
         },
@@ -1799,6 +1802,20 @@ return {
             Tooltip = "Click your Epic Weapon.",
             Default = false,
             RequiresLoadoutChange = true,
+        },
+        ['HealPriority']   = {
+            DisplayName = "Healing Priority",
+            Group = "Abilities",
+            Header = "Recovery",
+            Category = "Healing Thresholds",
+            Index = 101,
+            Type = "Combo",
+            ComboOptions = { 'Ignore', 'Big Heal Point', },
+            Default = 2,
+            Min = 1,
+            Max = 2,
+            Tooltip = "When to yield offensive rotations for healing:\n1 - Ignore (never)\n2 - Big Heal Point",
+            ConfigType = "Advanced",
         },
     },
     ['ClassFAQ']          = {

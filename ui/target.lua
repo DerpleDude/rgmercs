@@ -127,10 +127,12 @@ function TargetUI:RenderContent()
                 for i = 1, buffCount do
                     local buff = target.Buff(i)
                     if buff and buff() and buff.ID() ~= 0 then
+                        ImGui.PushID(string.format("##target_buff_%d", i))
                         local borderCol = (buff.CasterName() == mq.TLO.Me.Name()) and Colors.Yellow:ToImU32() or nil
                         local doBlink = (math.floor((buff.Duration.TotalSeconds() or 0)) < blinkAtTime)
                         Ui.DrawInspectableSpellIcon(buff, iconSize, doBlink, borderCol)
                         self:RenderTooltipForBuff(buff, target.ID(), showBuffName, showBuffDescription, showBuffCaster)
+                        ImGui.PopID()
 
                         if i == 1 or i % buffsPerRow ~= 0 then
                             ImGui.SameLine()
@@ -227,6 +229,7 @@ end
 
 function TargetUI:RenderWindow(flags)
     flags = bit32.bor(flags, ImGuiWindowFlags.NoTitleBar, Config:GetSetting('LockTargetWindow') and bit32.bor(ImGuiWindowFlags.NoMove, ImGuiWindowFlags.NoResize) or 0)
+    ImGui.SetNextWindowSize(ImVec2(540, 160), ImGuiCond.FirstUseEver)
     local open, show = ImGui.Begin(Ui.GetWindowTitle("Target"), Config:GetSetting('ShowTargetWindow'), flags)
     if show then
         self:RenderContent()

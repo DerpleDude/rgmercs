@@ -87,6 +87,10 @@ local _ClassConfig = {
         'Tank',
         'DPS',
     },
+    ['PetPosition']   = {
+        SummonAA = function() return Casting.CanUseAA("Summon Companion") and "Summon Companion" end,
+        --  RelocateAA = function() return Casting.CanUseAA("Companion's Relocation") and "Companion's Relocation" end,
+    },
     ['Themes']        = {
         ['Tank'] = {
             { element = ImGuiCol.TitleBgActive,    color = { r = 0.5, g = 0.05, b = 0.05, a = .8, }, },
@@ -171,14 +175,15 @@ local _ClassConfig = {
             "Augment Death",         -- Level 60
             "Strengthen Death",      -- Level 29
         },
-        ['Horror'] = {           -- HP Tap Proc
-            "Shroud of Discord", -- Level 67, -- Buff Slot 1 <
-            "Shroud of Chaos",   -- Level 63
-            "Shroud of Death",   -- Level 55
+        ['Shroud'] = {               -- HP Tap Proc
+            "Shroud of Discord",     -- Level 67, -- Buff Slot 1 <
+            "Black Shroud",          -- Level 65
+            "Shroud of Chaos",       -- Level 63
+            "Shroud of Death",       -- Level 55
         },
-        ['Mental'] = {           -- Mana Tap Proc
-            "Mental Horror",     -- Level 65, --Buff Slot 1 >
-            "Mental Corruption", -- Level 52
+        ['Mental'] = {               -- Mana Tap Proc
+            "Mental Horror",         -- Level 65, --Buff Slot 1 >
+            "Mental Corruption",     -- Level 52
         },
         ['Skin'] = {
             "Decrepit Skin", -- Level 70
@@ -310,6 +315,14 @@ local _ClassConfig = {
             "Voice of Darkness", -- Level 39, 2% hate
         },
     },
+    ['Charm']         = {
+        ['Assist'] = {
+            { name = "Taunt",             type = "Ability", },
+            { name = "Hate's Attraction", type = "AA", },
+            { name = "Terror",            type = "Spell", load_cond = function(self) return Config:GetSetting('DoTerror') end, },
+            { name = "Terror2",           type = "Spell", load_cond = function(self) return Config:GetSetting('DoTerror') end, },
+        },
+    },
     ['Helpers']       = {
         --function to determine if we have enough mobs in range to use a defensive disc
         DefensiveDiscCheck = function(printDebug)
@@ -336,7 +349,11 @@ local _ClassConfig = {
             end
             return true
         end,
-
+        shieldNeeded = function()
+            -- check for exactly 100% to help ensure the mob is targeting us, over 100% can indicate another is still targeted
+            return (mq.TLO.Me.PctHPs() <= Config:GetSetting('EquipShield')) or mq.TLO.Me.ActiveDisc() == "Deflection Discipline" or mq.TLO.Me.Song("Rampart")() or
+                (Config:GetSetting('NamedShieldLock') and ((Globals.AutoTargetIsNamed and Targeting.GetAutoTargetAggroPct() == 100) or Targeting.TankingXTNamed()))
+        end,
     },
     ['RotationOrder'] = {
         { --Self Buffs
@@ -441,8 +458,8 @@ local _ClassConfig = {
                     (mq.TLO.Me.PctHPs() <= Config:GetSetting('DefenseStart') or
                         -- we have met our defense count threshold
                         self.Helpers.DefensiveDiscCheck(true) or
-                        -- we are fighting a named and we are (presumably) tanking it
-                        (Globals.AutoTargetIsNamed and Targeting.GetAutoTargetAggroPct() >= 100))
+                        -- we are fighting a named and we are tanking it
+                        Targeting.TankingXTNamed())
             end,
         },
         { --Keep things from running
@@ -463,7 +480,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 if mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') then return false end
-                return combat_state == "Combat" and Casting.BurnCheck()
+                return combat_state == "Combat" and Casting.BurnCheck() and Core.CombatActionsCheck()
             end,
         },
         { --DPS Spells, includes recourse/gift maintenance
@@ -473,7 +490,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 if mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') then return false end
-                return combat_state == "Combat"
+                return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
     },
@@ -487,9 +504,9 @@ local _ClassConfig = {
                 end,
             },
             {
-                name = "Horror",
+                name = "Shroud",
                 type = "Spell",
-                tooltip = Tooltips.Horror,
+                tooltip = Tooltips.Shroud,
                 load_cond = function(self) return Config:GetSetting('ProcChoice') == 1 end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
@@ -499,7 +516,7 @@ local _ClassConfig = {
             {
                 name = "Mental",
                 type = "Spell",
-                tooltip = Tooltips.Horror,
+                tooltip = Tooltips.Mental,
                 load_cond = function(self) return Config:GetSetting('ProcChoice') == 2 end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
@@ -675,13 +692,10 @@ local _ClassConfig = {
             },
         },
         ['HateTools(AggroTarget)'] = {
-            { --more valuable on laz because we have less hate tools and no other hatelist + 1 abilities
+            {
                 name = "Taunt",
                 type = "Ability",
                 tooltip = Tooltips.Taunt,
-                cond = function(self, abilityName, target)
-                    return Targeting.GetTargetDistance(target) < 30
-                end,
             },
             { --pull does not work on Laz, it is just a hate tool
                 name = "Hate's Attraction",
@@ -701,12 +715,12 @@ local _ClassConfig = {
             },
         },
         ['HateTools(AutoTarget)'] = {
-            { --more valuable on laz because we have less hate tools and no other hatelist + 1 abilities
+            {
                 name = "Taunt",
                 type = "Ability",
                 tooltip = Tooltips.Taunt,
                 cond = function(self, abilityName, target)
-                    return Targeting.LostAutoTargetAggro() and Targeting.GetTargetDistance(target) < 30
+                    return Targeting.LostAutoTargetAggro()
                 end,
             },
 
@@ -824,7 +838,7 @@ local _ClassConfig = {
                 tooltip = Tooltips.Terror,
                 load_cond = function(self) return Core.IsTanking() and Config:GetSetting('DoTerror') end,
                 cond = function(self, spell, target)
-                    return Globals.AutoTargetIsNamed and (Casting.CanUseAA("Cascading Theft of Defense") and not Casting.IHaveBuff("Cascading Theft of Defense"))
+                    return Targeting.TankingXTNamed() and (Casting.CanUseAA("Cascading Theft of Defense") and not Casting.IHaveBuff("Cascading Theft of Defense"))
                 end,
             },
             {
@@ -832,7 +846,7 @@ local _ClassConfig = {
                 type = "Spell",
                 tooltip = Tooltips.Skin,
                 cond = function(self, spell, target)
-                    if not Core.IsTanking() or not Globals.AutoTargetIsNamed then return false end
+                    if not Core.IsTanking() or not Targeting.TankingXTNamed() then return false end
                     return Casting.SelfBuffCheck(spell)
                         --laz specific deconflict
                         and not Casting.IHaveBuff("Necrotic Pustules")
@@ -873,7 +887,7 @@ local _ClassConfig = {
                 type = "Item",
                 tooltip = Tooltips.Epic,
                 cond = function(self, itemName, target)
-                    return self.Helpers.LeechCheck(self) or Globals.AutoTargetIsNamed
+                    return self.Helpers.LeechCheck(self) or Targeting.TankingXTNamed()
                 end,
             },
             {
@@ -1044,21 +1058,26 @@ local _ClassConfig = {
             {
                 name = "Equip Shield",
                 type = "CustomFunc",
-                cond = function(self, target)
+                cond = function(self)
                     if mq.TLO.Me.Bandolier("Shield").Active() then return false end
-                    return (mq.TLO.Me.PctHPs() <= Config:GetSetting('EquipShield')) or (Globals.AutoTargetIsNamed and Config:GetSetting('NamedShieldLock'))
+                    return self.Helpers.shieldNeeded()
                 end,
-                custom_func = function(self) return ItemManager.BandolierSwap("Shield") end,
+                custom_func = function(self)
+                    ItemManager.BandolierSwap("Shield")
+                    return true
+                end,
             },
             {
                 name = "Equip 2Hand",
                 type = "CustomFunc",
-                cond = function()
+                cond = function(self)
                     if mq.TLO.Me.Bandolier("2Hand").Active() then return false end
-                    return mq.TLO.Me.PctHPs() >= Config:GetSetting('Equip2Hand') and mq.TLO.Me.ActiveDisc() ~= "Deflection Discipline" and not mq.TLO.Me.Song("Rampart")() and
-                        not (Globals.AutoTargetIsNamed and Config:GetSetting('NamedShieldLock'))
+                    return mq.TLO.Me.PctHPs() >= Config:GetSetting('Equip2Hand') and not self.Helpers.shieldNeeded()
                 end,
-                custom_func = function(self) return ItemManager.BandolierSwap("2Hand") end,
+                custom_func = function(self)
+                    ItemManager.BandolierSwap("2Hand")
+                    return true
+                end,
             },
         },
     },
@@ -1203,7 +1222,7 @@ local _ClassConfig = {
             Index = 101,
             Tooltip = "Choose which proc you prefer, if any.",
             Type = "Combo",
-            ComboOptions = { 'HP Proc: Terror Line', 'Mana Proc: Mental Line,', 'Disabled', },
+            ComboOptions = { 'HP Proc: Shroud Line', 'Mana Proc: Mental Line,', 'Disabled', },
             Default = 1,
             Min = 1,
             Max = 3,
@@ -1508,7 +1527,7 @@ local _ClassConfig = {
             Header = "Bandolier",
             Category = "Bandolier",
             Index = 104,
-            Tooltip = "Keep Shield equipped for mobs detected as 'named' by RGMercs (see Named tab).",
+            Tooltip = "Keep Shield equipped while tanking a named.",
             Default = true,
             FAQ = "Why does my SHD switch to a Shield on puny gray named?",
             Answer = "The Shield on Named option doesn't check levels, so feel free to disable this setting (or Bandolier swapping entirely) if you are farming fodder.",

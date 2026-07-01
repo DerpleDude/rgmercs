@@ -97,7 +97,7 @@ local _ClassConfig = {
     },
     ['Helpers']       = {
         DoRez = function(self, corpseId)
-            local rezStaff = self.ResolvedActionMap['RezStaff']
+            local rezStaff = Core.GetResolvedActionMapItem('RezStaff')
 
             if mq.TLO.Me.ItemReady(rezStaff)() then
                 if Casting.OkayToRez(corpseId) then
@@ -107,8 +107,6 @@ local _ClassConfig = {
 
             return false
         end,
-        --function to make sure we don't have non-hostiles in range before we use AE damage
-
     },
     ['RotationOrder'] = {
         {
@@ -116,6 +114,15 @@ local _ClassConfig = {
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
                 return combat_state == "Downtime" and Casting.OkayToBuff() and Casting.AmIBuffable()
+            end,
+        },
+        {
+            name = 'GroupBuff',
+            state = 1,
+            steps = 1,
+            targetId = function(self) return Casting.GetBuffableIDs() end,
+            cond = function(self, combat_state)
+                return combat_state == "Downtime" and Casting.OkayToBuff()
             end,
         },
         {
@@ -186,8 +193,8 @@ local _ClassConfig = {
                 type = "AA",
                 load_cond = function(self) return Config:GetSetting('AggroFeign') end,
                 cond = function(self, aaName, target)
+                    if Core.IsTanking() then return false end
                     return (mq.TLO.Me.PctHPs() <= 40 and Targeting.IHaveAggro(100)) or (Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 99)
-                        and not Core.IAmMA()
                 end,
             },
             {
@@ -195,7 +202,7 @@ local _ClassConfig = {
                 type = "Ability",
                 load_cond = function(self) return Config:GetSetting('AggroFeign') end,
                 cond = function(self, abilityName)
-                    return Targeting.IHaveAggro(80) and not Core.IAmMA()
+                    return Targeting.IHaveAggro(80) and not Core.IsTanking()
                 end,
             },
             {
@@ -302,6 +309,9 @@ local _ClassConfig = {
                 type = "Ability",
             },
         },
+        ['GroupBuff'] = { -- Added to anchor clickies to
+
+        },
     },
     ['PullAbilities'] = {
         {
@@ -311,7 +321,7 @@ local _ClassConfig = {
             AbilityName = 'Grappling Strike',
             AbilityRange = 50,
             cond = function(self)
-                return mq.TLO.Me.AltAbility('Grappling Strike')
+                return Casting.CanUseAA('Grappling Strike')
             end,
         },
     },

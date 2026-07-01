@@ -148,6 +148,13 @@ function Module.DoLooting()
 			break
 		end
 
+		if not Core.CombatActionsCheck() then
+			Logger.log_debug("\ay[LOOT]: Aborting Actions to respond to charm/assist/mez/heal.")
+			if mq.TLO.Window('LootWnd').Open() then mq.TLO.Window('LootWnd').DoClose() end
+			Module.TempSettings.Looting = false
+			break
+		end
+
 		if not Module:CheckChaseTargetInRange() then
 			Logger.log_debug("\ay[LOOT]: Aborting Actions due to chase target distance!")
 			Module.TempSettings.Looting = false
@@ -199,6 +206,7 @@ function Module:GiveTime()
 	local combat_state = Combat.GetCachedCombatState()
 
 	if not Config:GetSetting('DoLoot') then return end
+
 	if Globals.PauseMain then return end
 	if mq.TLO.Lua.Script('lootnscoot').Status() ~= 'RUNNING' then
 		if not suppressWarning then
@@ -212,6 +220,8 @@ function Module:GiveTime()
 	suppressWarning = false
 
 	if not Core.OkayToNotHeal() or mq.TLO.Me.Invis() or Casting.IAmFeigning() then return end
+
+	if Combat.CombatNavActive() then return end
 
 	if not self:CheckChaseTargetInRange() then
 		Logger.log_super_verbose("\ay::LOOT:: \arAborted!\ax Chase Target too far away.")
@@ -228,9 +238,14 @@ function Module:GiveTime()
 	if myCorpseCount > 0 then deadCount = deadCount + 1 end
 	Logger.log_verbose("\ay[LOOT]: \agFound %d corpses within range.", deadCount)
 	if self.Actor == nil then self:LootMessageHandler() end
+
+	local settled = Config:GetSetting('CombatLooting') or Combat.CombatSettled(1000)
+
 	-- send actors message to loot
 	if (combat_state ~= "Combat" or Config:GetSetting('CombatLooting')) and deadCount > 0 then
-		if not self.TempSettings.Looting then
+		if not settled then
+			Logger.log_super_verbose("\ay::LOOT:: \arHolding!\ax Waiting for combat to settle before looting.")
+		elseif not self.TempSettings.Looting then
 			self.Actor:send({ mailbox = 'lootnscoot', script = 'lootnscoot', },
 				{ who = Globals.CurLoadedChar, server = serverLNSFormat, directions = 'doloot', })
 			self.TempSettings.Looting = true

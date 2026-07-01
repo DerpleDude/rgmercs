@@ -9,11 +9,13 @@ local _ClassConfig = {
     _version              = "1.1 - Live",
     _author               = "Derple, Grimmier",
     ['ModeChecks']        = {
-        IsHealing  = function() return true end,
-        IsCuring   = function() return Core.IsModeActive("Heal") end,
-        IsRezing   = function() return Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0 end,
-        CanCharm   = function() return true end,
-        IsCharming = function() return (Config:GetSetting('CharmOn') and mq.TLO.Pet.ID() == 0) end,
+        IsHealing = function() return true end,
+        IsCuring  = function() return Core.IsModeActive("Heal") end,
+        IsRezing  = function()
+            return (Core.GetResolvedActionMapItem('RezSpell') and Targeting.GetXTHaterCount() == 0) or
+                (Casting.CanUseAA("Call of the Wild") and Config:GetSetting('DoBattleRez'))
+        end,
+        CanCharm  = function() return true end,
     },
     ['Modes']             = {
         'Heal',
@@ -712,7 +714,7 @@ local _ClassConfig = {
             "Mask of the Stalker",         -- Level 60
             "Mask of the Hunter",          -- Level 60
         },
-        ['HPTypeOneGroup'] = {
+        ['HPTypeOne'] = {
             "Grovewood Blessing",         -- Level 127
             "Emberquartz Blessing",       -- Level 125
             "Luclinite Blessing",         -- Level 120
@@ -727,12 +729,18 @@ local _ClassConfig = {
             "Blessing of the Direwild",   -- Level 75
             "Blessing of Steeloak",       -- Level 70
             "Blessing of the Nine",       -- Level 65
-            "Protection of the Glades",   -- Level 60
-            "Protection of Nature",       -- Level 49
-            "Protection of Diamond",      -- Level 39
-            "Protection of Steel",        -- Level 27
-            "Protection of Rock",         -- Level 19
-            "Protection of Wood",         -- Level 9
+            "Protection of the Glades",   -- Level 60 Group (All above, also group)
+            "Natureskin",                 -- Level 57 Single
+            "Protection of Nature",       -- Level 49 Group
+            "Skin like Nature",           -- Level 46 Single
+            "Protection of Diamond",      -- Level 39 Group
+            "Skin like Diamond",          -- Level 36 Single
+            "Protection of Steel",        -- Level 27 Group
+            "Skin like Steel",            -- Level 24 Single
+            "Protection of Rock",         -- Level 19 Group
+            "Skin like Rock",             -- Level 14 Single
+            "Protection of Wood",         -- Level 9 Group
+            "Skin like Wood",             -- Level 1 Single
         },
         ['TempHPBuff'] = {
             -- Temp Health -- Focus on Tank
@@ -932,6 +940,12 @@ local _ClassConfig = {
             },
         },
     },
+    ['Charm']             = {
+        ['Abilities'] = {
+            { name = "Dire Charm", type = "AA", },
+            { name = "CharmSpell", type = "Spell", },
+        },
+    },
     ['RotationOrder']     = {
         -- Downtime doesn't have state because we run the whole rotation at once.
         {
@@ -947,7 +961,7 @@ local _ClassConfig = {
             load_cond = function(self) return Core.OnEMU() end,
             cond = function(self, combat_state)
                 if not Config:GetSetting('DoPet') or mq.TLO.Me.Pet.ID() ~= 0 then return false end
-                return combat_state == "Downtime" and (not Core.IsModeActive('Heal') or Core.OkayToNotHeal()) and Casting.OkayToPetBuff() and Casting.AmIBuffable()
+                return combat_state == "Downtime" and Core.CombatActionsCheck() and Casting.OkayToPetBuff() and Casting.AmIBuffable()
             end,
         },
         {
@@ -1039,7 +1053,7 @@ local _ClassConfig = {
                 name = "HordeDot",
                 type = "Spell",
                 cond = function(self, spell)
-                    return Core.IsModeActive("Mana") and Casting.DotSpellCheck(spell) and Config:GetSetting('DoDot')
+                    return Casting.DotSpellCheck(spell) and Config:GetSetting('DoDot')
                 end,
             },
             {
@@ -1093,7 +1107,7 @@ local _ClassConfig = {
                 name = "WinterFireDD",
                 type = "Spell",
                 cond = function(self, spell)
-                    return Core.IsModeActive("Mana") and Casting.DetSpellCheck(spell) and Config:GetSetting('DoFire') and Casting.OkayToNuke()
+                    return Casting.DetSpellCheck(spell) and Config:GetSetting('DoFire') and Casting.OkayToNuke()
                 end,
             },
             {
@@ -1216,7 +1230,7 @@ local _ClassConfig = {
                 type = "Spell",
                 cond = function(self, spell, target)
                     return Casting.DetSpellCheck(spell) and not Targeting.TargetBodyIs(target, "Undead") and
-                        not Targeting.TargetBodyIs(target, "Undead Pet")
+                        not Targeting.IsSummoned(target)
                 end,
             },
             {
@@ -1316,7 +1330,7 @@ local _ClassConfig = {
                 end,
             },
             {
-                name = "HPTypeOneGroup",
+                name = "HPTypeOne",
                 type = "Spell",
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell, target)
@@ -1471,7 +1485,7 @@ local _ClassConfig = {
                 { name = "WinterFireDD",   cond = function(self) return Core.IsModeActive("Mana") end, },
                 -- [ HEAL MODE ] --
                 { name = "QuickGroupHeal", cond = function(self) return mq.TLO.Me.Level() >= 90 end, },
-                { name = "CharmSpell",     cond = function(self) return Config:GetSetting('CharmOn') end, },
+                { name = "CharmSpell",     cond = function(self, spell) return Config:GetSetting('CharmOn') and Core.IsSelectedCharmSpell(spell) end, },
                 { name = "QuickRoarDD",    cond = function(self) return true end, },
                 -- [ Fall Back ]--
                 { name = "IceRainNuke",    cond = function(self) return true end, },
@@ -1630,6 +1644,7 @@ local _ClassConfig = {
     ['Helpers']           = {
         DoRez = function(self, corpseId, ownerName)
             local rezAction = false
+            local rezSpell = Core.GetResolvedActionMapItem('RezSpell')
             local okayToRez = Casting.OkayToRez(corpseId)
             local combatState = mq.TLO.Me.CombatState():lower() or "unknown"
 
@@ -1642,8 +1657,8 @@ local _ClassConfig = {
             elseif combatState == "active" or combatState == "resting" then
                 if Casting.AAReady("Rejuvenation of Spirit") then
                     rezAction = okayToRez and Casting.UseAA("Rejuvenation of Spirit", corpseId, true, 1)
-                elseif not Casting.CanUseAA("Rejuvenation of Spirit") and Casting.SpellReady(mq.TLO.Spell("Incarnate Anew"), true) then
-                    rezAction = okayToRez and Casting.UseSpell("Incarnate Anew", corpseId, true, true)
+                elseif not Casting.CanUseAA("Rejuvenation of Spirit") and Casting.SpellReady(rezSpell, true) then
+                    rezAction = okayToRez and Casting.UseSpell(rezSpell.RankName(), corpseId, true, true)
                 end
             end
 
@@ -1773,6 +1788,20 @@ local _ClassConfig = {
             Default = true,
             FAQ = "Why am I spamming my Group Regen buff?",
             Answer = "Certain Shaman and Druid group regen buffs report cross-stacking. You should deselect the option on one of the PCs if they are grouped together.",
+        },
+        ['HealPriority'] = {
+            DisplayName = "Healing Priority",
+            Group = "Abilities",
+            Header = "Recovery",
+            Category = "Healing Thresholds",
+            Index = 101,
+            Type = "Combo",
+            ComboOptions = { 'Ignore', 'Big Heal Point', 'Main Heal Point', },
+            Default = 3,
+            Min = 1,
+            Max = 3,
+            Tooltip = "When to yield offensive rotations for healing:\n1 - Ignore (never)\n2 - Big Heal Point\n3 - Main Heal Point",
+            ConfigType = "Advanced",
         },
     },
     ['ClassFAQ']          = {

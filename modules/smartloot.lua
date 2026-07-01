@@ -3,6 +3,7 @@ local mq        = require('mq')
 local Set       = require("mq.Set")
 local Base      = require("modules.base")
 local Casting   = require("utils.casting")
+local Combat    = require("utils.combat")
 local Config    = require('utils.config')
 local Core      = require("utils.core")
 local Events    = require("utils.events")
@@ -297,6 +298,8 @@ function Module:GiveTime()
 	if Globals.PauseMain then return end
 
 	if not Core.OkayToNotHeal() or mq.TLO.Me.Invis() or Casting.IAmFeigning() then return end
+
+	if Combat.CombatNavActive() then return end
 
 	-- Check for corpses using SmartLoot
 	if self.TempSettings.Looting or (self:GetSLTLO() and (self:GetSLTLO().HasNewCorpses() and self:GetSLTLO().SafeToLoot())) then

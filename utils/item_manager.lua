@@ -1,6 +1,8 @@
 local mq            = require('mq')
+local Comms         = require("utils.comms")
 local Config        = require("utils.config")
 local Core          = require("utils.core")
+local Globals       = require("utils.globals")
 local Logger        = require("utils.logger")
 local Movement      = require("utils.movement")
 local Targeting     = require("utils.targeting")
@@ -87,13 +89,56 @@ function ItemManager.SwapItemToSlot(slot, item)
     Logger.log_verbose("\ag Found Item! Swapping item %s to %s", item, slot)
 
     Core.DoCmd("/itemnotify \"%s\" leftmouseup", item)
-    mq.delay(100, function() return mq.TLO.Cursor() and mq.TLO.Cursor.Name() == item end)
+    mq.delay(100, function() return mq.TLO.Cursor() ~= nil and mq.TLO.Cursor.Name() == item end)
     Core.DoCmd("/itemnotify %s leftmouseup", slot)
-    mq.delay(100, function() return mq.TLO.Cursor() and mq.TLO.Cursor.Name() ~= item end)
+    mq.delay(100, function() return mq.TLO.Cursor() ~= nil and mq.TLO.Cursor.Name() ~= item end)
 
     while mq.TLO.Cursor.ID() do
         mq.delay(1)
         Core.DoCmd("/autoinv")
+    end
+end
+
+ItemManager.AutoInvItems = {}
+
+--- Arms a 15s window to stow the summoned item id once it lands on the cursor and we're not casting.
+--- @param itemId number The summoned item's template id, matched against the cursor each tick.
+function ItemManager.QueueAutoInv(itemId)
+    if not itemId or itemId <= 0 then return end
+    ItemManager.AutoInvItems[itemId] = Globals.GetTimeMS() + 15000
+end
+
+--- Serviced every main-loop tick; polls every pending summon id (so overlapping summons each stow) which absorbs settle latency and waits out a cast.
+function ItemManager.ServiceAutoInv()
+    if not next(ItemManager.AutoInvItems) then return end
+
+    local now = Globals.GetTimeMS()
+    local cursorId = mq.TLO.Cursor.ID() or 0
+    for itemId, deadline in pairs(ItemManager.AutoInvItems) do
+        if now > deadline then
+            if cursorId == itemId then
+                Logger.log_debug("Autoinv window expired with %s still on cursor.", mq.TLO.Cursor())
+            end
+            ItemManager.AutoInvItems[itemId] = nil
+        end
+    end
+
+    if cursorId > 0 and ItemManager.AutoInvItems[cursorId] and not mq.TLO.Me.Casting() then
+        mq.cmd("/squelch /autoinv")
+    end
+end
+
+--- Arms our own copy and tells same server+zone+instance peers to stow theirs by id over actors.
+--- @param itemId number The summoned item's template id to match on each receiver's cursor.
+function ItemManager.BroadcastQueueAutoInv(itemId)
+    ItemManager.QueueAutoInv(itemId)
+    for peer, data in pairs(Comms.PeersHeartbeats) do
+        if peer ~= Comms.GetPeerName()
+            and data.Data.Server == mq.TLO.EverQuest.Server()
+            and data.Data.ZoneId == mq.TLO.Zone.ID()
+            and data.Data.InstanceId == mq.TLO.Me.Instance() then
+            Comms.SendMessage(peer, "ItemManager", "QueueAutoInv", { itemId = itemId, })
+        end
     end
 end
 

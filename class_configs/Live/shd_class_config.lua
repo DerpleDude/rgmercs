@@ -86,6 +86,13 @@ local _ClassConfig = {
         'Tank',
         'DPS',
     },
+    ['PetPosition']   = {
+        SummonAA   = function() return Casting.CanUseAA("Summon Companion") and "Summon Companion" end,
+        RelocateAA = function()
+            local cdAA = mq.TLO.Me.AltAbility("Companion's Discipline")
+            return (cdAA and cdAA.Rank() or 0) >= 4 and "Companion's Discipline"
+        end,
+    },
     ['Themes']        = {
         ['Tank'] = {
             { element = ImGuiCol.TitleBgActive,    color = { r = 0.5, g = 0.05, b = 0.05, a = .8, }, },
@@ -267,7 +274,7 @@ local _ClassConfig = {
             "Augment Death",             -- Level 60
             "Strengthen Death",          -- Level 29
         },
-        ['Shroud'] = {                   --Some Shrouds listed under the Horror Line as HP/Mana Proc Choice was shroud vs. mental in buff slot 1 at lower levels.
+        ['Shroud'] = {                   --Some Shrouds listed under the Horror Line as ProcChoice=HP buff slot 1 at lower levels.
             "Shroud of Elonik",          -- Level 127
             "Shroud of Rimeclaw",        -- Level 122
             "Shroud of Zelinstein",      -- Level 117
@@ -307,8 +314,9 @@ local _ClassConfig = {
             "Mental Fright",             -- Level 106
             "Mental Dread",              -- Level 101
             "Mental Terror",             -- Level 96, --Buff Slot 2 <
-            "Mental Horror",             -- Level 65, --Buff Slot 1 >
-            "Mental Corruption",         -- Level 52
+            -- Slot 1 procs; conflict with Shroud at lvl 72-95.
+            -- "Mental Horror",             -- Level 65, --Buff Slot 1 >
+            -- "Mental Corruption",         -- Level 52
         },
         ['Skin'] = {
             "Spitetangle's Skin", -- Level 130
@@ -778,8 +786,29 @@ local _ClassConfig = {
             end
             return true
         end,
-        --function to make sure we don't have non-hostiles in range before we use AE damage or non-taunt AE hate abilities
-
+        shieldNeeded = function()
+            -- check for exactly 100% to help ensure the mob is targeting us, over 100% can indicate another is still targeted
+            return (mq.TLO.Me.PctHPs() <= Config:GetSetting('EquipShield')) or mq.TLO.Me.ActiveDisc.Name() == "Deflection Discipline" or
+                (mq.TLO.Me.AltAbilityTimer("Shield Flash")() or 0) >= 234000 or
+                (Config:GetSetting('NamedShieldLock') and ((Globals.AutoTargetIsNamed and Targeting.GetAutoTargetAggroPct() == 100) or Targeting.TankingXTNamed()))
+        end,
+    },
+    ['Charm']         = {
+        ['Assist'] = {
+            { name = "Taunt",            type = "Ability", },
+            {
+                name = "Terror",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoTerror') == 3 or (Config:GetSetting('DoTerror') == 2 and not Core.GetResolvedActionMapItem('ForPower')) end,
+            },
+            {
+                name = "Terror2",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoTerror') == 3 or (Config:GetSetting('DoTerror') == 2 and not Core.GetResolvedActionMapItem('ForPower')) end,
+            },
+            { name = "Acrimony",         type = "Disc", },
+            { name = "Veil of Darkness", type = "AA", },
+        },
     },
     ['RotationOrder'] = {
         { --Self Buffs
@@ -880,7 +909,7 @@ local _ClassConfig = {
             load_cond = function() return Core.IsTanking() end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and (mq.TLO.Me.PctHPs() <= Config:GetSetting('DefenseStart') or Globals.AutoTargetIsNamed or
+                return combat_state == "Combat" and (mq.TLO.Me.PctHPs() <= Config:GetSetting('DefenseStart') or Targeting.TankingXTNamed() or
                     self.Helpers.DefensiveDiscCheck(true))
             end,
         },
@@ -912,7 +941,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 if mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') then return false end
-                return combat_state == "Combat" and Casting.BurnCheck()
+                return combat_state == "Combat" and Casting.BurnCheck() and Core.CombatActionsCheck()
             end,
         },
         { --Non-spell actions that can be used during/between casts
@@ -922,7 +951,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 if mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') then return false end
-                return combat_state == "Combat"
+                return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
         { --DPS Spells, includes recourse/gift maintenance
@@ -932,7 +961,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 if mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') then return false end
-                return combat_state == "Combat"
+                return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
     },
@@ -995,7 +1024,7 @@ local _ClassConfig = {
             {
                 name = "Mental",
                 type = "Spell",
-                tooltip = Tooltips.Horror,
+                tooltip = Tooltips.Mental,
                 load_cond = function(self) return Config:GetSetting('ProcChoice') == 2 end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
@@ -1214,9 +1243,6 @@ local _ClassConfig = {
                 name = "Taunt",
                 type = "Ability",
                 tooltip = Tooltips.Taunt,
-                cond = function(self, abilityName, target)
-                    return Targeting.GetTargetDistance(target) < 30
-                end,
             },
             {
                 name = "Terror",
@@ -1291,7 +1317,7 @@ local _ClassConfig = {
                 type = "Ability",
                 tooltip = Tooltips.Taunt,
                 cond = function(self, abilityName, target)
-                    return mq.TLO.Me.TargetOfTarget.ID() ~= mq.TLO.Me.ID() and target.ID() > 0 and Targeting.GetTargetDistance(target) < 30
+                    return Targeting.LostAutoTargetAggro()
                 end,
             },
             {
@@ -1739,21 +1765,26 @@ local _ClassConfig = {
             {
                 name = "Equip Shield",
                 type = "CustomFunc",
-                cond = function(self, target)
+                cond = function(self)
                     if mq.TLO.Me.Bandolier("Shield").Active() then return false end
-                    return (mq.TLO.Me.PctHPs() <= Config:GetSetting('EquipShield')) or (Globals.AutoTargetIsNamed and Config:GetSetting('NamedShieldLock'))
+                    return self.Helpers.shieldNeeded()
                 end,
-                custom_func = function(self) return ItemManager.BandolierSwap("Shield") end,
+                custom_func = function(self)
+                    ItemManager.BandolierSwap("Shield")
+                    return true
+                end,
             },
             {
                 name = "Equip 2Hand",
                 type = "CustomFunc",
-                cond = function()
+                cond = function(self)
                     if mq.TLO.Me.Bandolier("2Hand").Active() then return false end
-                    return mq.TLO.Me.PctHPs() >= Config:GetSetting('Equip2Hand') and mq.TLO.Me.ActiveDisc.Name() ~= "Deflection Discipline" and
-                        (mq.TLO.Me.AltAbilityTimer("Shield Flash")() or 0) < 234000 and not (Globals.AutoTargetIsNamed and Config:GetSetting('NamedShieldLock'))
+                    return mq.TLO.Me.PctHPs() >= Config:GetSetting('Equip2Hand') and not self.Helpers.shieldNeeded()
                 end,
-                custom_func = function(self) return ItemManager.BandolierSwap("2Hand") end,
+                custom_func = function(self)
+                    ItemManager.BandolierSwap("2Hand")
+                    return true
+                end,
             },
         },
     },
@@ -2302,7 +2333,7 @@ local _ClassConfig = {
             Index = 102,
             Tooltip = "Prefer HP Proc and DLU(Azia) or Mana Proc and DLU(Beza)",
             Type = "Combo",
-            ComboOptions = { 'HP Proc: Terror Line, DLU(Azia)', 'Mana Proc: Mental Line, DLU(Beza)', 'Disabled', },
+            ComboOptions = { 'HP Proc: Horror Line, DLU(Azia)', 'Mana Proc: Mental Line, DLU(Beza)', 'Disabled', },
             Default = 1,
             Min = 1,
             Max = 3,
@@ -2697,7 +2728,7 @@ local _ClassConfig = {
             Header = "Bandolier",
             Category = "Bandolier",
             Index = 104,
-            Tooltip = "Keep Shield equipped for mobs detected as 'named' by RGMercs (see Named tab).",
+            Tooltip = "Keep Shield equipped while tanking a named.",
             Default = true,
             FAQ = "Why does my SHD switch to a Shield on puny gray named?",
             Answer = "The Shield on Named option doesn't check levels, so feel free to disable this setting (or Bandolier swapping entirely) if you are farming fodder.",

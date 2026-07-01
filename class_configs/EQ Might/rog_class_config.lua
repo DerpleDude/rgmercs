@@ -57,10 +57,12 @@ return {
             "Thief's Eyes", -- Level 68
         },
         ['Kinesthetics'] = {
+            "Twinblade Discipline",    -- Level 67 EQM Custom
             "Kinesthetics Discipline", -- Level 57
         },
         ['Duelist'] = {
-            "Duelist Discipline", -- Level 59
+            "Assassin Discipline", -- Level 70
+            "Duelist Discipline",  -- Level 59
         },
         ['ChanceDisc'] = {
             "Twisted Chance Discipline", -- Level 65
@@ -108,6 +110,15 @@ return {
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
                 return combat_state == "Downtime" and Casting.OkayToBuff() and Casting.AmIBuffable()
+            end,
+        },
+        {
+            name = 'GroupBuff',
+            state = 1,
+            steps = 1,
+            targetId = function(self) return Casting.GetBuffableIDs() end,
+            cond = function(self, combat_state)
+                return combat_state == "Downtime" and Casting.OkayToBuff()
             end,
         },
         {
@@ -200,6 +211,9 @@ return {
             {
                 name = "Duelist",
                 type = "Disc",
+                cond = function(self, discSpell, target)
+                    return not Core.IsWarden()
+                end,
             },
             {
                 name = "ChanceDisc",
@@ -355,10 +369,13 @@ return {
                 end,
             },
         },
+        ['GroupBuff'] = { -- Added to anchor clickies to
+
+        },
     },
     ['Helpers']       = {
         DoRez = function(self, corpseId)
-            local rezStaff = self.ResolvedActionMap['RezStaff']
+            local rezStaff = Core.GetResolvedActionMapItem('RezStaff')
 
             if mq.TLO.Me.ItemReady(rezStaff)() then
                 if Casting.OkayToRez(corpseId) then
@@ -385,10 +402,8 @@ return {
                     mq.TLO.Me.AbilityTimer("Hide")(), Strings.BoolToColorString(mq.TLO.Me.Invis()))
             end
         end,
-        --function to make sure we don't have non-hostiles in range before we use AE damage
-
-        UnwantedAggroCheck = function(self) --Self-Explanatory. Add isTanking to this if you ever make a mode for roguetanks!
-            if Targeting.GetXTHaterCount() == 0 or Core.IAmMA() or mq.TLO.Group.Puller.ID() == mq.TLO.Me.ID() then return false end
+        UnwantedAggroCheck = function(self)
+            if Targeting.GetXTHaterCount() == 0 or Core.IsTanking() or mq.TLO.Group.Puller.ID() == mq.TLO.Me.ID() then return false end
             return Targeting.IHaveAggro(100)
         end,
     },

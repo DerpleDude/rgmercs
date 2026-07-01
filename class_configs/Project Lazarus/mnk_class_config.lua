@@ -92,8 +92,6 @@ local _ClassConfig = {
         -- },
     },
     ['Helpers']       = {
-        --function to make sure we don't have non-hostiles in range before we use AE damage
-
     },
     ['RotationOrder'] = {
         {
@@ -171,8 +169,8 @@ local _ClassConfig = {
                 type = "AA",
                 load_cond = function(self) return Config:GetSetting('AggroFeign') end,
                 cond = function(self, aaName, target)
+                    if Core.IsTanking() then return false end
                     return (mq.TLO.Me.PctHPs() <= 40 and Targeting.IHaveAggro(100)) or (Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 99)
-                        and not Core.IAmMA()
                 end,
             },
             {
@@ -180,7 +178,7 @@ local _ClassConfig = {
                 type = "Ability",
                 load_cond = function(self) return Config:GetSetting('AggroFeign') end,
                 cond = function(self, abilityName)
-                    return Targeting.IHaveAggro(80) and not Core.IAmMA()
+                    return Targeting.IHaveAggro(80) and not Core.IsTanking()
                 end,
             },
             {
@@ -342,7 +340,7 @@ local _ClassConfig = {
             AbilityName = 'Grappling Strike',
             AbilityRange = 50,
             cond = function(self)
-                return mq.TLO.Me.AltAbility('Grappling Strike')
+                return Casting.CanUseAA('Grappling Strike')
             end,
         },
     },

@@ -327,6 +327,9 @@ return {
             "Leg Strike",       -- Level 8
         },
     },
+    ['Charm']         = {
+        ['Assist'] = {},
+    },
     ['RotationOrder'] = {
         -- Downtime doesn't have state because we run the whole rotation at once.
         {
@@ -846,9 +849,7 @@ return {
 
             if mq.TLO.Cursor.ID() ~= nil then Core.DoCmd("/autoinv") end
             local ret = Casting.UseDisc(axeDisc, mq.TLO.Me.ID())
-            Logger.log_verbose("\aySummonAxe(): Waiting for Summon to Finish")
-            Casting.WaitCastFinish(mq.TLO.Me.ID(), false, axeDisc.Range() or 0)
-            Logger.log_verbose("\agSummonAxe(): Done!")
+            Logger.log_verbose("\aySummonAxe(): Summoning the Axe.")
             mq.delay(500, function() return mq.TLO.Cursor.ID() ~= nil end)
             while mq.TLO.Cursor.ID() ~= nil do Core.DoCmd("/autoinv") end
             return ret

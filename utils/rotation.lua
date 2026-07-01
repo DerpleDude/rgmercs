@@ -8,7 +8,6 @@ local Globals    = require("utils.globals")
 local Logger     = require("utils.logger")
 local Modules    = require("utils.modules")
 local Strings    = require("utils.strings")
-local Targeting  = require("utils.targeting")
 
 local Rotation   = { _version = '1.0', _name = "Rotation", _author = 'Derple', }
 Rotation.__index = Rotation
@@ -303,7 +302,6 @@ end
 
 --- Iterates rotationTable from start_step, testing conditions and executing
 --- entries against targetTable until steps successful casts or end of table.
---- Restores the UseGem spell after combat if LastGemRemem is configured.
 ---@param caller any Class module instance passed to condition/exec functions.
 ---@param rotationTable table Array of rotation entries from the class config.
 ---@param targetTable table Array of spawn IDs to target for each entry.
@@ -317,11 +315,9 @@ end
 ---@return number nextStep The index to resume from on the next call.
 ---@return boolean anySuccess True if at least one entry executed successfully.
 function Rotation.Run(caller, rotationTable, targetTable, resolvedActionMap, steps, start_step, bAllowMem, bDoFullRotation, fnRotationCond, enabledRotationEntries)
-    local oldSpellInSlot = mq.TLO.Me.Gem(Casting.UseGem)
-    local loadoutSpell   = (Modules.ModuleList.Class.SpellLoadOut[Casting.UseGem] and Modules.ModuleList.Class.SpellLoadOut[Casting.UseGem].spell)
-    local stepsThisTime  = 0
-    local lastStepIdx    = 0
-    local anySuccess     = false
+    local stepsThisTime = 0
+    local lastStepIdx   = 0
+    local anySuccess    = false
 
     -- This is useful when class config wants to re-check every rotation condition every run
     -- For example, if gem1 meets all condition criteria, it WILL cast repeatedly on every cast
@@ -379,9 +375,9 @@ function Rotation.Run(caller, rotationTable, targetTable, resolvedActionMap, ste
                         if active then entryActive = true end
 
                         Logger.log_verbose("\aoDoing RunRotation(start(%d), step(%d), cur(%d)) :: TestConditionsForEntry(target(%d)) => %s",
-                            start_step, steps, idx, targetId, Strings.BoolToColorString(pass))
+                            start_step, steps, idx, targetId, Strings.BoolToColorString(pass and true or false))
 
-                        if pass == true then
+                        if pass then
                             local rStart = string.format("%.03f", Globals.GetTimeMS())
                             local res, isGroup = Rotation.ExecEntry(caller, entry, targetId, resolvedActionMap, bAllowMem)
                             local rStop = string.format("%.03f", Globals.GetTimeMS())
@@ -393,7 +389,7 @@ function Rotation.Run(caller, rotationTable, targetTable, resolvedActionMap, ste
                             Logger.log_verbose("\aoDoing RunRotation(start(%d), step(%d), cur(%d)) :: ExecEntry(target(%d)) => %s",
                                 start_step, steps, idx, targetId, Strings.BoolToColorString(res))
 
-                            if res == true then
+                            if res == true then -- Algarnote... revisit: Either make sure customfuncs all return bools, or consider relaxing this so a customfunc will count as success if ~= false
                                 entryHadSuccess = true
                                 if isGroup then break end
                             end
@@ -428,17 +424,8 @@ function Rotation.Run(caller, rotationTable, targetTable, resolvedActionMap, ste
         end
     end
 
-    if Targeting.GetXTHaterCount() == 0 then -- no magic numbers, just 4 u bb
-        if Globals.Constants.LastGemRemem[Config:GetSetting('LastGemRemem')] == "Mem Previous Spell" and oldSpellInSlot() and mq.TLO.Me.Gem(Casting.UseGem)() ~= oldSpellInSlot.Name() then
-            Logger.log_debug("\ayRestoring %s in slot %d", oldSpellInSlot, Casting.UseGem)
-            Casting.MemorizeSpell(Casting.UseGem, oldSpellInSlot.Name(), false, 15000)
-        elseif Globals.Constants.LastGemRemem[Config:GetSetting('LastGemRemem')] == "Mem Loadout Spell" and loadoutSpell and mq.TLO.Me.Gem(Casting.UseGem)() ~= loadoutSpell.RankName() then
-            Logger.log_debug("\ayRestoring %s in slot %d", loadoutSpell.RankName(), Casting.UseGem)
-            Casting.MemorizeSpell(Casting.UseGem, loadoutSpell.RankName(), false, 15000)
-        end
-    end
+    Modules:ExecModule("Class", "PromptRestoreSwapSlot")
 
-    -- Move to the next step
     lastStepIdx = lastStepIdx + 1
 
     if lastStepIdx > #rotationTable then
@@ -486,62 +473,111 @@ function Rotation.ResolveActions(itemSets, abilitySets, aaSets)
     return resolvedActionMap
 end
 
---- Evaluates each list in spellList in order, selects the first whose
---- condition passes, and assigns spells to gems by priority within that list.
+--- Builds a gem assignment from the first list in spellList whose cond passes, keeping long-refresh spells out of the swap slot and reusing already-memmed placements unless forceRepack is true.
 ---@param caller any Class module instance passed to list/spell conditions.
 ---@param spellList table Array of {name, cond, spells} list descriptors.
+---@param forceRepack boolean? Ignore current gem placement and pack in priority order; default is stable.
 ---@return table spellLoadOut Map of gem number → {selectedSpellData, spell}.
 ---@return string listName Name of the selected list, or an error string.
-function Rotation.SetSpellLoadOutByPriority(caller, spellList)
+function Rotation.SetSpellLoadOutByPriority(caller, spellList, forceRepack)
     local spellLoadOut = {}
-    local spellsToLoad = {}
     local listName = "Error: No Valid List Found!"
 
-    Casting.UseGem = mq.TLO.Me.NumGems()
+    local numGems = mq.TLO.Me.NumGems()
+    local swapGem = numGems
+    Casting.UseGem = swapGem
+
+    local desired = {}
+    local picked = {}
 
     for _, l in ipairs(spellList or {}) do
         if l ~= nil and (not l.cond or Core.SafeCallFunc(string.format("List Condition Check %s", l.name), l.cond, caller)) then
             Logger.log_debug("\ayList \am%s\ay will be loaded.", l.name)
             listName = l.name
-            for i = 1, mq.TLO.Me.NumGems() do
-                for _, s in ipairs(l.spells) do
-                    if s.name_func then
-                        s.name = Core.SafeCallFunc("Spell Name Func", s.name_func, caller) or
-                            "Error in name_func!"
-                    end
-                    local spellName = s.name
-                    Logger.log_debug("\aw  ==> Testing \at%s\aw for Gem \am%d", spellName, i)
-                    local bestSpell = Core.GetResolvedActionMapItem(spellName)
-                    if bestSpell then
-                        local bookSpell = mq.TLO.Me.Book(bestSpell.RankName())()
-                        local pass = Core.SafeCallFunc(
-                            string.format("Spell Condition Check: %s", bestSpell() or "None"), s.cond, caller, bestSpell)
-                        local loadedSpell = spellsToLoad[bestSpell.RankName()] or false
-
-                        if pass and bestSpell and bookSpell and not loadedSpell then
-                            Logger.log_debug("    ==> \ayGem \am%d\ay will load \at%s\ax ==> \ag%s", i, s
-                                .name, bestSpell.RankName())
-                            spellLoadOut[i] = { selectedSpellData = s, spell = bestSpell, }
-                            spellsToLoad[bestSpell.RankName()] = true
-                            i = i + 1
-                            break
-                        else
-                            Logger.log_debug(
-                                "    ==> \ayGem \am%d will \arNOT\ay load \at%s (pass=%s, bestSpell=%s, bookSpell=%d, loadedSpell=%s)",
-                                i, s.name,
-                                Strings.BoolToColorString(pass), bestSpell and bestSpell.RankName() or "", bookSpell or -1,
-                                Strings.BoolToColorString(loadedSpell))
-                        end
+            for _, s in ipairs(l.spells) do
+                if #desired >= numGems then break end
+                if s.name_func then
+                    s.name = Core.SafeCallFunc("Spell Name Func", s.name_func, caller) or
+                        "Error in name_func!"
+                end
+                local spellName = s.name
+                Logger.log_debug("\aw  ==> Testing \at%s", spellName)
+                local bestSpell = Core.GetResolvedActionMapItem(spellName)
+                if bestSpell then
+                    local rankName = bestSpell.RankName()
+                    local bookSpell = mq.TLO.Me.Book(rankName)()
+                    local pass = Core.SafeCallFunc(
+                        string.format("Spell Condition Check: %s", bestSpell() or "None"), s.cond, caller, bestSpell)
+                    if pass and bookSpell and not picked[rankName] then
+                        local recastMs = bestSpell.RecastTime() or 0
+                        local isLong = recastMs >= 30000
+                        table.insert(desired, { selectedSpellData = s, spell = bestSpell, rankName = rankName, isLong = isLong, })
+                        picked[rankName] = true
+                        Logger.log_debug("    ==> \aydesired[%d]\ay = \at%s\ax (recast \am%.1fs\ax, \ag%s\ax)", #desired, rankName, recastMs / 1000,
+                            isLong and "long" or "short")
                     else
                         Logger.log_debug(
-                            "    ==> \ayGem \am%d\ay will \arNOT\ay load \at%s\ax ==> \arNo Resolved Spell!", i,
-                            s.name)
+                            "    ==> \arSkip\ay \at%s\ay (pass=%s, bookSpell=%d, alreadyPicked=%s)",
+                            spellName, Strings.BoolToColorString(pass), bookSpell or -1,
+                            Strings.BoolToColorString(picked[rankName] or false))
                     end
+                else
+                    Logger.log_debug("    ==> \arNo Resolved Spell for \at%s", spellName)
                 end
             end
-            break --we only want the first valid spellset
+            break
         else
             Logger.log_debug("\ayList \am%s\ay will \arNOT\ay be loaded ==> \arCondition Check Failed!", l.name)
+        end
+    end
+
+    local swapOccupantIdx = nil
+    if #desired >= numGems then
+        for i = #desired, 1, -1 do
+            if not desired[i].isLong then
+                swapOccupantIdx = i
+                break
+            end
+        end
+        if not swapOccupantIdx then
+            swapOccupantIdx = #desired
+        end
+    end
+
+    if swapOccupantIdx then
+        local occ = desired[swapOccupantIdx]
+        spellLoadOut[swapGem] = { selectedSpellData = occ.selectedSpellData, spell = occ.spell, }
+        Logger.log_debug("\aySwap slot \am%d\ay = \at%s\ax (lowest-priority %s)", swapGem, occ.rankName,
+            occ.isLong and "long-refresh fallback" or "short-refresh")
+        table.remove(desired, swapOccupantIdx)
+    end
+
+    local nonSwapOpen = {}
+    for g = 1, numGems - 1 do nonSwapOpen[g] = true end
+
+    if not forceRepack then
+        for i = #desired, 1, -1 do
+            local d = desired[i]
+            for g = 1, numGems - 1 do
+                if nonSwapOpen[g] and mq.TLO.Me.Gem(g)() == d.rankName then
+                    spellLoadOut[g] = { selectedSpellData = d.selectedSpellData, spell = d.spell, }
+                    nonSwapOpen[g] = false
+                    table.remove(desired, i)
+                    Logger.log_debug("\ay  Stable: \at%s\ay kept in gem \am%d", d.rankName, g)
+                    break
+                end
+            end
+        end
+    end
+
+    for _, d in ipairs(desired) do
+        for g = 1, numGems - 1 do
+            if nonSwapOpen[g] then
+                spellLoadOut[g] = { selectedSpellData = d.selectedSpellData, spell = d.spell, }
+                nonSwapOpen[g] = false
+                Logger.log_debug("\ay  Fill: gem \am%d\ay = \at%s", g, d.rankName)
+                break
+            end
         end
     end
 
@@ -621,21 +657,6 @@ function Rotation.SetSpellLoadOutByGem(caller, spellGemList)
     end
 
     return spellLoadOut
-end
-
---- Memorizes each spell in spellLoadOut into its assigned gem slot if the
---- slot doesn't already hold the correct spell.
----@param spellLoadOut table Map of gem number → {selectedSpellData, spell}.
-function Rotation.LoadSpellLoadOut(spellLoadOut)
-    local selectedRank = ""
-
-    for gem, loadoutData in pairs(spellLoadOut) do
-        selectedRank = loadoutData.spell.RankName()
-        Logger.log_debug("Loading \ay%s\ax into gem \ag%d\ax", selectedRank, gem)
-        if mq.TLO.Me.Gem(gem)() ~= selectedRank then
-            Casting.MemorizeSpell(gem, selectedRank, false, 15000)
-        end
-    end
 end
 
 --- Appends entries for spells in spellList that are not in the spellbook

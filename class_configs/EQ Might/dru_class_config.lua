@@ -11,14 +11,20 @@ local _ClassConfig = {
     _version              = "2.1 - EQ Might",
     _author               = "Algar",
     ['ModeChecks']        = {
-        IsHealing  = function() return true end,
-        IsCuring   = function() return Config:GetSetting('DoCureAA') or Config:GetSetting('DoCureSpells') end,
-        IsRezing   = function() return Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0 end,
-        CanCharm   = function() return true end,
-        IsCharming = function() return Config:GetSetting('CharmOn') end,
+        IsHealing = function() return true end,
+        IsCuring  = function() return Config:GetSetting('DoCureAA') or Config:GetSetting('DoCureSpells') end,
+        IsRezing  = function()
+            local rezAction = Casting.CanUseAA("Call of the Wild") or Core.GetResolvedActionMapItem('RezStaff')
+            return ((Core.GetResolvedActionMapItem('RezSpell') or rezAction) and Targeting.GetXTHaterCount() == 0) or (Config:GetSetting('DoBattleRez') and rezAction)
+        end,
+        CanCharm  = function() return true end,
     },
     ['Modes']             = {
         'Heal',
+    },
+    ['PetPosition']       = {
+        SummonAA   = function() return Casting.CanUseAA("Summon Companion") and "Summon Companion" end,
+        RelocateAA = function() return Casting.CanUseAA("Companion's Relocation") and "Companion's Relocation" end,
     },
     ['Cures']             = {
         GetCureSpells = function(self)
@@ -277,16 +283,23 @@ local _ClassConfig = {
             "Mask of the Forest",  -- Level 65
             "Mask of the Stalker", -- Level 60
         },
-        ['HPTypeOneGroup'] = {
-            "Blessing of Steeloak",     -- Level 70
-            "Blessing of the Nine",     -- Level 65
-            "Protection of the Glades", -- Level 60
-            "Protection of Nature",     -- Level 49
-            "Protection of Diamond",    -- Level 39
-            "Protection of Steel",      -- Level 27
-            "Protection of Rock",       -- Level 19
-            "Protection of Wood",       -- Level 9
-            'Skin like Wood',           -- Level 1
+        ['HPTypeOne'] = {
+            "Direwild Skin",            -- Level 71 Single
+            "Blessing of Steeloak",     -- Level 70 Group
+            "Steeloak Skin",            -- Level 68 Single
+            "Blessing of the Nine",     -- Level 65 Group
+            "Protection of the Glades", -- Level 60 Group
+            "Natureskin",               -- Level 57 Single
+            "Protection of Nature",     -- Level 49 Group
+            -- "Skin like Nature",         -- Level 46 Single
+            "Protection of Diamond",    -- Level 39 Group
+            -- "Skin like Diamond",        -- Level 36 Single
+            "Protection of Steel",      -- Level 27 Group
+            -- "Skin like Steel",          -- Level 24 Single
+            "Protection of Rock",       -- Level 19 Group
+            "Skin like Rock",           -- Level 14 Single
+            "Protection of Wood",       -- Level 9 Group
+            "Skin like Wood",           -- Level 1 Single
         },
         ['GroupRegenBuff'] = {
             "Blessing of Oak",           -- Level 69
@@ -478,13 +491,18 @@ local _ClassConfig = {
             },
         },
     },
+    ['Charm']             = {
+        ['Abilities'] = {
+            { name = "Dire Charm", type = "AA", },
+        },
+    },
     ['RotationOrder']     = {
         -- Downtime doesn't have state because we run the whole rotation at once.
         {
             name = 'Downtime',
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
-                return combat_state == "Downtime" and Core.OkayToNotHeal() and Casting.OkayToBuff() and Casting.AmIBuffable()
+                return combat_state == "Downtime" and Core.CombatActionsCheck() and Casting.OkayToBuff() and Casting.AmIBuffable()
             end,
         },
         {
@@ -493,7 +511,7 @@ local _ClassConfig = {
             load_cond = function(self) return Core.OnEMU() end,
             cond = function(self, combat_state)
                 if not Config:GetSetting('DoPet') or mq.TLO.Me.Pet.ID() ~= 0 then return false end
-                return combat_state == "Downtime" and (not Core.IsModeActive('Heal') or Core.OkayToNotHeal()) and Casting.OkayToPetBuff() and Casting.AmIBuffable()
+                return combat_state == "Downtime" and Core.CombatActionsCheck() and Casting.OkayToPetBuff() and Casting.AmIBuffable()
             end,
         },
         { --Pet Buffs if we have one, timer because we don't need to constantly check this
@@ -501,7 +519,7 @@ local _ClassConfig = {
             timer = 10,
             targetId = function(self) return mq.TLO.Me.Pet.ID() > 0 and { mq.TLO.Me.Pet.ID(), } or {} end,
             cond = function(self, combat_state)
-                return combat_state == "Downtime" and (not Core.IsModeActive('Heal') or Core.OkayToNotHeal()) and mq.TLO.Me.Pet.ID() > 0 and Casting.OkayToPetBuff()
+                return combat_state == "Downtime" and Core.CombatActionsCheck() and mq.TLO.Me.Pet.ID() > 0 and Casting.OkayToPetBuff()
             end,
         },
         {
@@ -510,7 +528,7 @@ local _ClassConfig = {
             steps = 1,
             targetId = function(self) return Casting.GetBuffableIDs() end,
             cond = function(self, combat_state)
-                return combat_state == "Downtime" and Core.OkayToNotHeal() and Casting.OkayToBuff()
+                return combat_state == "Downtime" and Core.CombatActionsCheck() and Casting.OkayToBuff()
             end,
         },
         {
@@ -545,7 +563,7 @@ local _ClassConfig = {
             end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Core.OkayToNotHeal() and Casting.OkayToDebuff()
+                return combat_state == "Combat" and Core.CombatActionsCheck() and Casting.OkayToDebuff()
             end,
         },
         { --Keep things from running
@@ -555,7 +573,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting('DoSnare') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Core.OkayToNotHeal() and not Globals.AutoTargetIsNamed and
+                return combat_state == "Combat" and Core.CombatActionsCheck() and not Globals.AutoTargetIsNamed and
                     Targeting.GetXTHaterCount() <= Config:GetSetting('SnareCount')
             end,
         },
@@ -566,7 +584,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and
-                    Casting.BurnCheck() and Core.OkayToNotHeal()
+                    Casting.BurnCheck() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -581,7 +599,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 if not Config:GetSetting('DoAEDamage') then return false end
-                return combat_state == "Combat" and Core.OkayToNotHeal() and Targeting.AggroCheckOkay() and Combat.AETargetCheck(true)
+                return combat_state == "Combat" and Core.CombatActionsCheck() and Targeting.AggroCheckOkay() and Combat.AETargetCheck(true)
             end,
         },
         {
@@ -591,12 +609,24 @@ local _ClassConfig = {
             load_cond = function() return mq.TLO.Me.Level() < 71 end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Core.OkayToNotHeal()
+                return combat_state == "Combat" and Core.CombatActionsCheck()
+            end,
+        },
+        {
+            name = 'InstantRunBuff',
+            state = 1,
+            steps = 1,
+            targetId = function(self) return Combat.GetCachedCombatState() == "Combat" and Targeting.CheckForAutoTargetID() or Casting.GetBuffableIDs() end,
+            load_cond = function(self) return Config:GetSetting('DoMoveBuffs') and Casting.CanUseAA("Communion of the Cheetah") end,
+            cond = function(self, combat_state)
+                local downtime = combat_state == "Downtime" and not mq.TLO.Me.Invis()
+                local combat = combat_state == "Combat" and Core.CombatActionsCheck()
+                return downtime or combat
             end,
         },
     },
     ['Rotations']         = {
-        ['DPS']       = {
+        ['DPS']            = {
             {
                 name = "Epic",
                 type = "Item",
@@ -693,7 +723,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['DPS(AE)']   = {
+        ['DPS(AE)']        = {
             {
                 name = "PBAEMagic",
                 type = "Spell",
@@ -713,7 +743,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Burn']      = {
+        ['Burn']           = {
             {
                 name = "Improved Twincast",
                 type = "AA",
@@ -764,18 +794,14 @@ local _ClassConfig = {
                 end,
                 type = "AA",
             },
-            {
-                name = "Shattered Gnoll Slayer",
-                type = "Item",
-            },
         },
-        ['Emergency'] = {
+        ['Emergency']      = {
             {
                 name = "Cover Tracks",
                 type = "AA",
             },
         },
-        ['Slow']      = {
+        ['Slow']           = {
             {
                 name = "ColdSlow",
                 type = "Spell",
@@ -784,7 +810,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Debuff']    = {
+        ['Debuff']         = {
             { -- Fire Debuff AA, will use the first(best) available
                 name = "FireDebuffAA",
                 type = "AA",
@@ -818,7 +844,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Snare']     = {
+        ['Snare']          = {
             {
                 name = "Entrap",
                 type = "AA",
@@ -836,15 +862,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['GroupBuff'] = {
-            {
-                name = "Communion of the Cheetah",
-                type = "AA",
-                load_cond = function() return Config:GetSetting('DoMoveBuffs') end,
-                cond = function(self, aaName, target)
-                    return Casting.GroupBuffAACheck(aaName, target)
-                end,
-            },
+        ['GroupBuff']      = {
             {
                 name = "Flight of Eagles",
                 type = "AA",
@@ -885,7 +903,7 @@ local _ClassConfig = {
                 end,
             },
             {
-                name = "HPTypeOneGroup",
+                name = "HPTypeOne",
                 type = "Spell",
                 load_cond = function() return Config:GetSetting('DoHPBuff') end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
@@ -922,15 +940,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Downtime']  = {
-            {
-                name = "Communion of the Cheetah",
-                type = "AA",
-                load_cond = function() return Config:GetSetting('DoMoveBuffs') end,
-                cond = function(self, aaName, target)
-                    return Casting.SelfBuffAACheck(aaName)
-                end,
-            },
+        ['Downtime']       = {
             {
                 name = "HealingAura",
                 type = "Spell",
@@ -964,7 +974,7 @@ local _ClassConfig = {
                 cond = function(self, spell) return Casting.SelfBuffCheck(spell) end,
             },
         },
-        ['PetSummon'] = {
+        ['PetSummon']      = {
             {
                 name = "Artifact of Nature Spirit",
                 type = "Item",
@@ -992,7 +1002,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['PetBuff']   = {
+        ['PetBuff']        = {
             {
                 name = "PetHaste",
                 type = "Spell",
@@ -1000,17 +1010,23 @@ local _ClassConfig = {
                 cond = function(self, spell) return Casting.PetBuffCheck(spell) end,
             },
             {
-                name = "Crystalized Soul Gem", -- This isn't a typo
-                type = "Item",
-                cond = function(self, itemName)
-                    return Casting.PetBuffItemCheck(itemName)
-                end,
-            },
-            {
                 name = "Minionskin",
                 type = "Spell",
                 cond = function(self, spell)
                     return Casting.PetBuffCheck(spell)
+                end,
+            },
+        },
+        ['InstantRunBuff'] = {
+            {
+                name = "Communion of the Cheetah",
+                type = "AA",
+                cond = function(self, aaName, target)
+                    local aaBuff = Casting.GetAASpell(aaName).Name() or ""
+                    local combatState = Combat.GetCachedCombatState()
+                    -- if in combat, check self, out of combat, also check others
+                    return (combatState == "Combat" and (mq.TLO.Me.Buff(aaBuff).Duration.TotalSeconds() or 0) < 15) or
+                        (combatState == "Downtime" and Casting.GroupBuffAACheck(aaName, target))
                 end,
             },
         },
@@ -1045,7 +1061,7 @@ local _ClassConfig = {
                 --fallback QoL to take up extra slots
                 { name = "GroupRegenBuff", cond = function(self) return Config:GetSetting('DoGroupRegen') end, },
                 { name = "GroupDmgShield", cond = function(self) return Config:GetSetting('DoGroupDmgShield') end, },
-                { name = "HPTypeOneGroup", cond = function(self) return Config:GetSetting('DoHPBuff') end, },
+                { name = "HPTypeOne",      cond = function(self) return Config:GetSetting('DoHPBuff') end, },
             },
         },
     },
@@ -1053,7 +1069,7 @@ local _ClassConfig = {
         DoRez = function(self, corpseId, ownerName)
             local rezAction = false
             local rezSpell = Core.GetResolvedActionMapItem('RezSpell')
-            local rezStaff = self.ResolvedActionMap['RezStaff']
+            local rezStaff = Core.GetResolvedActionMapItem('RezStaff')
             local staffReady = mq.TLO.Me.ItemReady(rezStaff)()
             local okayToRez = Casting.OkayToRez(corpseId)
             local combatState = mq.TLO.Me.CombatState():lower() or "unknown"
@@ -1068,7 +1084,7 @@ local _ClassConfig = {
                 rezAction = okayToRez and Casting.UseItem(rezStaff, corpseId)
             elseif combatState == "active" or combatState == "resting" then
                 if Casting.SpellReady(rezSpell, true) then
-                    rezAction = okayToRez and Casting.UseSpell(rezSpell, corpseId, true, true)
+                    rezAction = okayToRez and Casting.UseSpell(rezSpell.RankName(), corpseId, true, true)
                 end
             end
 
@@ -1461,6 +1477,20 @@ local _ClassConfig = {
             Tooltip = "Use your Artifact of Nature Spirit to summon the donor mammoth pet.",
             RequiresLoadoutChange = true, -- this is a load condition
             Default = true,
+        },
+        ['HealPriority']      = {
+            DisplayName = "Healing Priority",
+            Group = "Abilities",
+            Header = "Recovery",
+            Category = "Healing Thresholds",
+            Index = 101,
+            Type = "Combo",
+            ComboOptions = { 'Ignore', 'Big Heal Point', 'Main Heal Point', },
+            Default = 3,
+            Min = 1,
+            Max = 3,
+            Tooltip = "When to yield offensive rotations for healing:\n1 - Ignore (never)\n2 - Big Heal Point\n3 - Main Heal Point",
+            ConfigType = "Advanced",
         },
     },
     ['ClassFAQ']          = {

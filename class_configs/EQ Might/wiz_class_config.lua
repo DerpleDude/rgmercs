@@ -298,7 +298,7 @@ return {
     },
     ['Helpers']       = {
         DoRez = function(self, corpseId)
-            local rezStaff = self.ResolvedActionMap['RezStaff']
+            local rezStaff = Core.GetResolvedActionMapItem('RezStaff')
 
             if mq.TLO.Me.ItemReady(rezStaff)() then
                 if Casting.OkayToRez(corpseId) then
@@ -338,6 +338,18 @@ return {
             return "Fire"
         end,
     },
+    ['Charm']         = {
+        ['Assist'] = {
+            {
+                name = "StunSpell",
+                type = "Spell",
+                load_cond = function() return Config:GetSetting('DoStun') end,
+                cond = function(self, spell, target)
+                    return Casting.HaveManaToDebuff() and Targeting.TargetNotStunned() and not Casting.StunImmuneTarget(target)
+                end,
+            },
+        },
+    },
     ['RotationOrder'] = {
         -- Downtime doesn't have state because we run the whole rotation at once.
         {
@@ -346,6 +358,15 @@ return {
             cond = function(self, combat_state)
                 return combat_state == "Downtime" and
                     Casting.OkayToBuff() and Casting.AmIBuffable()
+            end,
+        },
+        {
+            name = 'GroupBuff',
+            state = 1,
+            steps = 1,
+            targetId = function(self) return Casting.GetBuffableIDs() end,
+            cond = function(self, combat_state)
+                return combat_state == "Downtime" and Casting.OkayToBuff()
             end,
         },
         {
@@ -465,6 +486,9 @@ return {
         },
     },
     ['Rotations']     = {
+        ['GroupBuff'] = { -- Added to anchor clickies to
+
+        },
         ['Burn'] = {
             {
                 name = "Epic",

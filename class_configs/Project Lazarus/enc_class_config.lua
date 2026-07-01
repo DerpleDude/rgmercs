@@ -5,6 +5,7 @@ local Config       = require('utils.config')
 local Core         = require("utils.core")
 local DanNet       = require('lib.dannet.helpers')
 local Globals      = require("utils.globals")
+local ItemManager  = require("utils.item_manager")
 local Logger       = require("utils.logger")
 local Targeting    = require("utils.targeting")
 
@@ -12,13 +13,16 @@ local _ClassConfig = {
     _version          = "1.4 - Project Lazarus",
     _author           = "Derple, Grimmier, Algar, Robban",
     ['ModeChecks']    = {
-        CanMez     = function() return true end,
-        CanCharm   = function() return true end,
-        IsCharming = function() return Config:GetSetting('CharmOn') end,
-        IsMezzing  = function() return Config:GetSetting('MezOn') end,
+        CanMez    = function() return true end,
+        CanCharm  = function() return true end,
+        IsMezzing = function() return Config:GetSetting('MezOn') end,
     },
     ['Modes']         = {
         'Default',
+    },
+    ['PetPosition']   = {
+        SummonAA = function() return Casting.CanUseAA("Summon Companion") and "Summon Companion" end,
+        -- RelocateAA = function() return Casting.CanUseAA("Companion's Relocation") and "Companion's Relocation" end,
     },
     ['Themes']        = {
         ['Default'] = {
@@ -157,18 +161,16 @@ local _ClassConfig = {
             "Whirl Till You Hurl", -- Level 9
         },
         ['CharmSpell'] = {
-            "Ancient: Voice of Muram", -- Level 70
-            "True Name",               -- Level 70
-            "Compel",                  -- Level 68
-            "Command of Druzzil",      -- Level 64
-            "Beckon",                  -- Level 62
-            "Dictate",                 -- Level 60
-            "Boltran's Agacerie",      -- Level 53
-            "Ordinance",               -- Level 52
-            "Allure",                  -- Level 46
-            "Cajoling Whispers",       -- Level 37
-            "Beguile",                 -- Level 23
-            "Charm",                   -- Level 11
+            --  "Ancient: Voice of Muram", -- Level 70 3m dur/10m reuse
+            "True Name",          -- Level 70
+            "Compel",             -- Level 68
+            "Command of Druzzil", -- Level 64
+            "Beckon",             -- Level 62
+            "Boltran's Agacerie", -- Level 53
+            "Allure",             -- Level 46
+            "Cajoling Whispers",  -- Level 37
+            "Beguile",            -- Level 23
+            "Charm",              -- Level 11
         },
         ['CrippleSpell'] = {
             -- "Synaptic Seizure", -- Level 70, In resources but not available
@@ -225,7 +227,6 @@ local _ClassConfig = {
             "Mind Shatter", -- Level 70
         },
         ['MagicNuke'] = {
-            "Chromarcana",              -- Level 87
             "Ancient: Neurosis",        -- Level 70
             "Psychosis",                -- Level 68
             "Ancient: Chaos Madness",   -- Level 65
@@ -334,6 +335,26 @@ local _ClassConfig = {
             "Gather Mana",
         },
     },
+    ['Mez']           = {
+        { type = "AA",    name = "Stasis",          cond = function() return Globals.AutoTargetIsNamed end, },
+        { type = "Spell", name = "MezSpell", },
+        { type = "Spell", name = "MezAESpell", },
+        { type = "AA",    name = "Beam of Slumber", cond = function() return Config:GetSetting('DoAAMez') end, },
+    },
+    ['Charm']         = {
+        ['Abilities'] = {
+            { name = "Dire Charm", type = "AA", },
+            { name = "CharmSpell", type = "Spell", },
+        },
+        ['PreCharm']  = {
+            { name = "TashSpell", type = "Spell", cond = function(self, spell, target) return not target.Tashed() end, },
+        },
+        ['Assist']    = {
+            { name = "SpinStunSpell", type = "Spell", cond = function(self, spell, target) return Targeting.TargetNotStunned() end, },
+            { name = "PBAEStunSpell", type = "Spell", cond = function(self, spell, target) return Targeting.TargetNotStunned() and Targeting.InSpellRange(spell, target) end, },
+            { name = "TashSpell",     type = "Spell", cond = function(self, spell, target) return Casting.DetSpellCheck(spell, target) end, },
+        },
+    },
     ['RotationOrder'] = {
         {
             name = 'Downtime',
@@ -373,7 +394,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting('DoTash') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.OkayToDebuff()
+                return combat_state == "Combat" and Casting.OkayToDebuff() and Core.CombatActionsCheck()
             end,
         },
         { --Slow and Tash separated so we use both before we start DPS
@@ -383,7 +404,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting('DoSlow') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.OkayToDebuff()
+                return combat_state == "Combat" and Casting.OkayToDebuff() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -393,7 +414,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting('DoDispel') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.OkayToDebuff()
+                return combat_state == "Combat" and Casting.OkayToDebuff() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -422,7 +443,7 @@ local _ClassConfig = {
             steps = 3,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.BurnCheck()
+                return combat_state == "Combat" and Casting.BurnCheck() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -432,7 +453,7 @@ local _ClassConfig = {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat"
+                return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
         {
@@ -442,7 +463,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting('DoArcanumWeave') and Casting.CanUseAA("Acute Focus of Arcanum") end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and not mq.TLO.Me.Buff("Focus of Arcanum")()
+                return combat_state == "Combat" and not mq.TLO.Me.Buff("Focus of Arcanum")() and Core.CombatActionsCheck()
             end,
         },
     },
@@ -457,9 +478,7 @@ local _ClassConfig = {
 
             Logger.log_debug("Sending the %s to our bags.", mq.TLO.Cursor())
 
-            Comms.PrintGroupMessage("%s summoned, issuing autoinventory command momentarily.", mq.TLO.Cursor())
-            mq.delay(Config:GetSetting("AICrystalDelay"))
-            Core.DoGroupCmd("/autoinventory")
+            ItemManager.BroadcastQueueAutoInv(mq.TLO.Cursor.ID())
         end,
     },
     ['Rotations']     = {
@@ -780,6 +799,7 @@ local _ClassConfig = {
                 name = "Self Stasis",
                 type = "AA",
                 cond = function(self, aaName)
+                    if Config:GetSetting('CharmOn') and mq.TLO.Me.Pet.ID() > 0 then return false end
                     return mq.TLO.Me.TargetOfTarget.ID() == mq.TLO.Me.ID() and mq.TLO.Target.ID() == Globals.AutoTargetID
                 end,
                 post_activate = function(self, aaName, success)
@@ -955,6 +975,11 @@ local _ClassConfig = {
             --     type = "AA",
             -- },
             {
+                name = "Nightmare Stasis",
+                type = "AA",
+                cond = function(self, aaName, target) return Globals.AutoTargetIsNamed end,
+            },
+            {
                 name = "Tarnished Skeleton Key",
                 type = "Item",
             },
@@ -1046,7 +1071,7 @@ local _ClassConfig = {
             spells = {
                 { name = "MezSpell",         cond = function(self) return Config:GetSetting('DoSTMez') end, },
                 { name = "MezAESpell",       cond = function(self) return Config:GetSetting('DoAEMez') end, },
-                { name = "CharmSpell",       cond = function(self) return Config:GetSetting('CharmOn') end, },
+                { name = "CharmSpell",       cond = function(self, spell) return Config:GetSetting('CharmOn') and Core.IsSelectedCharmSpell(spell) end, },
                 { name = "TashSpell",        cond = function(self) return Config:GetSetting('DoTash') end, },
                 { name = "SlowSpell",        cond = function(self) return Config:GetSetting('DoSlow') and not Casting.CanUseAA("Dreary Deeds") end, },
                 { name = "CrippleSpell",     cond = function(self) return Config:GetSetting('DoCrippleSpell') end, },
@@ -1071,8 +1096,12 @@ local _ClassConfig = {
         {
             id = 'TashSpell',
             Type = "Spell",
-            DisplayName = function() return Core.GetResolvedActionMapItem('TashSpell').RankName.Name() or "" end,
-            AbilityName = function() return Core.GetResolvedActionMapItem('TashSpell').RankName.Name() or "" end,
+            DisplayName = function()
+                local s = Core.GetResolvedActionMapItem('TashSpell'); return s and s.RankName.Name() or ""
+            end,
+            AbilityName = function()
+                local s = Core.GetResolvedActionMapItem('TashSpell'); return s and s.RankName.Name() or ""
+            end,
             AbilityRange = 200,
             cond = function(self)
                 local resolvedSpell = Core.GetResolvedActionMapItem('TashSpell')
@@ -1083,8 +1112,12 @@ local _ClassConfig = {
         {
             id = 'Dispel',
             Type = "Spell",
-            DisplayName = function() return Core.GetResolvedActionMapItem('Dispel').RankName.Name() or "" end,
-            AbilityName = function() return Core.GetResolvedActionMapItem('Dispel').RankName.Name() or "" end,
+            DisplayName = function()
+                local s = Core.GetResolvedActionMapItem('Dispel'); return s and s.RankName.Name() or ""
+            end,
+            AbilityName = function()
+                local s = Core.GetResolvedActionMapItem('Dispel'); return s and s.RankName.Name() or ""
+            end,
             AbilityRange = 200,
             cond = function(self)
                 local resolvedSpell = Core.GetResolvedActionMapItem('Dispel')
@@ -1409,17 +1442,6 @@ local _ClassConfig = {
             Tooltip = "Summon Sanguine Mind Crystals (Health Restore) for the group.",
             RequiresLoadoutChange = true, -- this is a load condition
             Default = true,
-        },
-        ['AICrystalDelay']     = {
-            DisplayName = "Crystal Autoinv Delay",
-            Group = "Items",
-            Header = "Item Summoning",
-            Category = "Item Summoning",
-            Index = 103,
-            Tooltip = "Delay in ms before /autoinventory after summoning, adjust if you notice items left on cursors regularly.",
-            Default = 150,
-            Min = 1,
-            Max = 500,
         },
     },
     ['ClassFAQ']      = {

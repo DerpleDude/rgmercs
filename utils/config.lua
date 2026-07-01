@@ -688,6 +688,17 @@ Config.DefaultConfig                                     = {
         Default = false,
         ConfigType = "Advanced",
     },
+    ['ClearStuckXTargets']         = {
+        DisplayName = "Clear Stuck XTargets",
+        Group = "Combat",
+        Header = "Targeting",
+        Category = "Targeting Behavior",
+        Index = 7,
+        Tooltip =
+        "EMU only: during downtime, use the #clearxtargets command to remove bugged corpse entries from XTarget slots. Existing xtarget assignments will be preserved and regenerated.",
+        Default = (Globals.BuildType:lower() == "emu"),
+        ConfigType = "Advanced",
+    },
 
     ['ScanNamedPriority']          = {
         DisplayName = "Scan Priority:",
@@ -822,12 +833,6 @@ Config.DefaultConfig                                     = {
         Default = 100,
         Min = 0,
         Max = 300,
-        Warning = function()
-            if Config:GetSetting('AssistRange') > Config:GetSetting('AutoCampRadius') then
-                return true, "Warning: AssistRange exceeds AutoCampRadius - this might cause your characters to run out of camp to assist."
-            end
-            return false, ""
-        end,
     },
     ['DoMelee']                    = {
         DisplayName = "Enable Melee Combat",
@@ -854,7 +859,7 @@ Config.DefaultConfig                                     = {
         Group = "Abilities",
         Header = "Common",
         Category = "Common Rules",
-        Index = 7,
+        Index = 6,
         Tooltip = "Don't use spells with a fire resist type (as long as they aren't flagged in the config to ignore this check).\n" ..
             "This is a top-level setting that can be freely toggled without changing spell loadout. Refer to the Named List FAQs for more details.",
         Default = false,
@@ -869,7 +874,7 @@ Config.DefaultConfig                                     = {
         Group = "Abilities",
         Header = "Common",
         Category = "Common Rules",
-        Index = 8,
+        Index = 7,
         Tooltip = "Don't use spells with a cold resist type (as long as they aren't flagged in the config to ignore this check).\n" ..
             "This is a top-level setting that can be freely toggled without changing spell loadout. Refer to the Named List FAQs for more details.",
         Default = false,
@@ -880,7 +885,7 @@ Config.DefaultConfig                                     = {
         Group = "Abilities",
         Header = "Common",
         Category = "Common Rules",
-        Index = 9,
+        Index = 8,
         Tooltip = "Don't use spells with a magic resist type (as long as they aren't flagged in the config to ignore this check).\n" ..
             "This is a top-level setting that can be freely toggled without changing spell loadout. Refer to the Named List FAQs for more details.",
         Default = false,
@@ -891,7 +896,7 @@ Config.DefaultConfig                                     = {
         Group = "Abilities",
         Header = "Common",
         Category = "Common Rules",
-        Index = 10,
+        Index = 9,
         Tooltip = "Don't use spells with a poison resist type (as long as they aren't flagged in the config to ignore this check).\n" ..
             "This is a top-level setting that can be freely toggled without changing spell loadout. Refer to the Named List FAQs for more details.",
         Default = false,
@@ -902,7 +907,7 @@ Config.DefaultConfig                                     = {
         Group = "Abilities",
         Header = "Common",
         Category = "Common Rules",
-        Index = 11,
+        Index = 10,
         Tooltip = "Don't use spells with a disease resist type (as long as they aren't flagged in the config to ignore this check).\n" ..
             "This is a top-level setting that can be freely toggled without changing spell loadout. Refer to the Named List FAQs for more details.",
         Default = false,
@@ -913,7 +918,7 @@ Config.DefaultConfig                                     = {
         Group = "Abilities",
         Header = "Common",
         Category = "Common Rules",
-        Index = 12,
+        Index = 11,
         Tooltip = "Use immunity data shipped with RGMercs (if available) to automatically determine whether to skip a spell.\n" ..
             "Refer to the Named List FAQs for more details.",
         Default = true,
@@ -956,7 +961,7 @@ Config.DefaultConfig                                     = {
         Category = "Assisting",
         Index = 8,
         Tooltip = "Allow RGMercs to issue mercenary commands. We plan to add selectable stances in a future update.",
-        Default = (Globals.BuildType ~= 'Emu'),
+        Default = (Globals.BuildType:lower() ~= "emu"),
         ConfigType = "Normal",
     },
     ['MercStance']                 = {
@@ -1042,13 +1047,14 @@ Config.DefaultConfig                                     = {
         Header = "Positioning",
         Category = "General Positioning",
         Index = 2,
-        Tooltip = "Custom arguments for /stick command. Leave blank for default (varies on class).",
+        Tooltip = "Custom arguments for /stick command, used in melee or ranged combat. Leave blank for default (varies on class).",
         Default = "",
         ConfigType = "Advanced",
         FAQ = "What are the default stick settings?",
         Answer = "   If the Stick How entry is left blank, we will use default stick settings as follows:\n" ..
             "If MA: < 10 moveback* uw >\n" ..
-            "Others: < 10** behindonce moveback uw >\n\n" ..
+            "Others: < 10** behindonce moveback uw >\n" ..
+            "Ranged (Use Ranged Stick): < <bowrangesetting> moveback uw >\n\n" ..
             "* - Optional moveback flag (if 'Moveback As Tank' is enabled).\n" ..
             "** - On larger targets this value becomes 20.",
     },
@@ -1159,6 +1165,15 @@ Config.DefaultConfig                                     = {
         Answer =
         "If you enable Manual Mode, it will disable all automated movement options for your character, but will still allow it to use abilities as normal. This is ideal for those who want to control their character's positioning manually, but still want to benefit from the spell and item usage of RGMercs. Please note that enabling this will also disable some features that rely on movement automation, such as handling 'cannot see target' messages or auto-facing the target in combat.",
     },
+    ['RepositionPet']              = {
+        DisplayName = "Reposition Pet",
+        Group = "Combat",
+        Header = "Positioning",
+        Category = "General Positioning",
+        Index = 10,
+        Tooltip = "Use summon and move AA to reposition your pet to avoid ripostes. (We will always summon a far out-of-range pet during combat if able).",
+        Default = false,
+    },
 
     -- Positioning/Tank
     ['MovebackWhenTank']           = {
@@ -1171,26 +1186,14 @@ Config.DefaultConfig                                     = {
         Default = false,
         ConfigType = "Advanced",
     },
-    ['MovebackWhenBehind']         = {
-        DisplayName = "Moveback if Mob Behind",
+    ['KeepMobsInFront']            = {
+        DisplayName = "Keep Mobs in Front",
         Group = "Combat",
         Header = "Positioning",
         Category = "Tank Positioning",
         Index = 2,
-        Tooltip = "Initiates a stick moveback if we detect an XTarget is behind you when tanking.",
+        Tooltip = "While tanking, reposition to keep haters in your front arc.",
         Default = true,
-        ConfigType = "Advanced",
-    },
-    ['MovebackDistance']           = {
-        DisplayName = "Units to Moveback",
-        Group = "Combat",
-        Header = "Positioning",
-        Category = "Tank Positioning",
-        Index = 3,
-        Tooltip = "Distance from mob to moveback to. May require adjustment for larger targets or due to overshooting from high move speed.",
-        Default = 20,
-        Min = 1,
-        Max = 40,
         ConfigType = "Advanced",
     },
 
@@ -1239,42 +1242,25 @@ Config.DefaultConfig                                     = {
         Max = 999,
         ConfigType = "Advanced",
     },
-    ['LastGemRemem']               = {
-        DisplayName = "Remem After Buff:",
-        Group = "Abilities",
-        Header = "Common",
-        Category = "Common Rules",
-        Index = 5,
-        Tooltip = "Choose what do with the last gem slot after we use it to buff:\n" ..
-            "Do Nothing: Use the slot as needed for buffs, but don't rememorize anything.\n" ..
-            "Remem Previous Spell: Rememorize the spell that was in the slot before buffing, if there was one.\n" ..
-            "Remem Loadout Spell: Rememorize the spell from the current loadout, if there is one.",
-        Default = 3,
-        Min = 1,
-        Max = #Globals.Constants.LastGemRemem,
-        Type = "Combo",
-        ComboOptions = Globals.Constants.LastGemRemem,
-        ConfigType = "Advanced",
-    },
     ['IgnoreLevelCheck']           = {
         DisplayName = "Ignore Spell Level Checks",
         Group = "Abilities",
         Header = "Common",
         Category = "Common Rules",
-        Index = 6,
+        Index = 5,
         Tooltip = "Ignore checks for minimum level on spells. Used on servers that allow heals, buffs and other spells to land on PCs regardless of level.",
         Default = Globals.ServerEnv:lower() ~= "live", -- more emu servers ignore level checks than not, and all the ones we support currently do. lesser of two evils.
         ConfigType = "Advanced",
     },
     -- Common/Under the Hood
-    ['CastRetryCountBeta']         = {
+    ['CastRetryCount']             = {
         DisplayName = "Cast Retry Count",
         Group = "Abilities",
         Header = "Common",
         Category = "Under the Hood",
         Index = 1,
-        Tooltip = "The amount of times to try to recast a spell, AA, or item due to a fizzle, interrupt, or similar.",
-        Default = 2,
+        Tooltip = "The amount of times to try to recast a spell, AA, or item due to a fizzle, interrupt, or similar. Note that queued actions already have a retry built-in.",
+        Default = 0,
         Min = 0,
         Max = 5,
         ConfigType = "Advanced",
@@ -3255,7 +3241,7 @@ function Config:MakeValidSetting(module, setting, value)
         return value
     elseif type(defaultConfig[setting].Default) == 'number' then
         value = tonumber(value)
-        if not value or value > (defaultConfig[setting].Max or 999) or value < (defaultConfig[setting].Min or 0) then
+        if not value or value > (defaultConfig[setting].Max or 99999) or value < (defaultConfig[setting].Min or 0) then
             Logger.log_error("\ayError: Invalid or out-of-range value supplied for %s, falling back to previous value.", setting)
             local _, update = Config:GetUsageText(setting, true, defaultConfig)
             Logger.log_error(update)

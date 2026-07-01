@@ -38,7 +38,6 @@ local _ClassConfig = {
         CanMez     = function() return true end,
         CanCharm   = function() return true end,
         IsMezzing  = function() return Config:GetSetting('MezOn') end,
-        IsCharming = function() return Config:GetSetting('CharmOn') and mq.TLO.Pet.ID() == 0 end,
         IsHealing  = function() return true end,
         IsCuring   = function() return true end,
         IsRezing   = function() return Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0 end,

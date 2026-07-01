@@ -16,6 +16,10 @@ return {
     ['ModeChecks']        = {
         IsHealing = function() return Config:GetSetting('DoHeals') end,
     },
+    ['PetPosition']       = {
+        SummonAA = function() return Casting.CanUseAA("Summon Companion") and "Summon Companion" end,
+        --  RelocateAA = function() return Casting.CanUseAA("Companion's Relocation") and "Companion's Relocation" end,
+    },
     ['Themes']            = {
         ['DPS'] = {
             { element = ImGuiCol.TitleBgActive,    color = { r = 0.50, g = 0.28, b = 0.03, a = 0.8, }, },
@@ -144,6 +148,7 @@ return {
         },
         ['PetGrowl'] = {
             "Growl of the Panther", -- Level 69
+            "Growl of the Leopard", -- Level 61
         },
         ['PetDamageProc'] = {
             "Spirit of Oroshar",      -- Level 70
@@ -290,7 +295,7 @@ return {
             cond = function(self, combat_state)
                 local downtime = combat_state == "Downtime" and Config:GetSetting('DowntimeFP') and Casting.OkayToBuff()
                 local combat = combat_state == "Combat"
-                return (downtime or combat) and not Casting.IHaveBuff(mq.TLO.Me.AltAbility('Paragon of Spirit').Spell)
+                return (downtime or combat) and not Casting.IHaveBuff(mq.TLO.Me.AltAbility('Paragon of Spirit').Spell) and Core.CombatActionsCheck()
             end,
         },
         {
@@ -309,7 +314,7 @@ return {
             steps = 4,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.BurnCheck()
+                return combat_state == "Combat" and Casting.BurnCheck() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -320,7 +325,15 @@ return {
             cond = function(self, combat_state)
                 local downtime = combat_state == "Downtime" and Casting.OkayToBuff()
                 local burning = combat_state == "Combat" and Casting.BurnCheck() and not Casting.IAmFeigning()
-                return downtime or burning
+                return (downtime or burning) and Core.CombatActionsCheck()
+            end,
+        },
+        {
+            name = 'Growl',
+            targetId = function(self) return mq.TLO.Me.Pet.ID() > 0 and { mq.TLO.Me.Pet.ID(), } or {} end,
+            load_cond = function() return Core.GetResolvedActionMapItem("PetGrowl") end,
+            cond = function(self, combat_state)
+                return combat_state == "Combat" and not mq.TLO.Me.Song("Growl")() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -329,7 +342,7 @@ return {
             steps = 1,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat"
+                return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
         {
@@ -338,7 +351,7 @@ return {
             steps = 1,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Targeting.AggroCheckOkay()
+                return combat_state == "Combat" and Targeting.AggroCheckOkay() and Core.CombatActionsCheck()
             end,
         },
     },
@@ -348,8 +361,6 @@ return {
             return Casting.IHaveBuff("Bestial Alignment") or (disc and disc() and Casting.IHaveBuff(disc.Name()))
                 or Casting.IHaveBuff("Ferociousness")
         end,
-        --function to make sure we don't have non-hostiles in range before we use AE damage or non-taunt AE hate abilities
-
     },
     ['Rotations']         = {
         ['Burn']           = {
@@ -425,7 +436,7 @@ return {
                 name = "Warder's Gift",
                 type = "AA",
                 cond = function(self, aaName)
-                    return (mq.TLO.Me.Pet.PctHPs() and mq.TLO.Me.Pet.PctHPs() > 50)
+                    return (mq.TLO.Me.Pet.PctHPs() or 0) > 50
                 end,
             },
             {
@@ -543,15 +554,6 @@ return {
             },
         },
         ['Weaves']         = {
-            {
-                name = "Summon Companion",
-                type = "AA",
-                cond = function(self, aaName, target)
-                    if mq.TLO.Me.Pet.ID() == 0 then return false end
-                    local pet = mq.TLO.Me.Pet
-                    return not pet.Combat() and (pet.Distance3D() or 0) > 200
-                end,
-            },
             {
                 name = "Roar of Thunder",
                 type = "AA",
@@ -682,7 +684,7 @@ return {
                 load_cond = function(self) return Config:GetSetting('DoPetSnare') end,
                 cond = function(self, aaName, target)
                     local slowProc = self.ResolvedActionMap['PetSlowProc']
-                    return (slowProc and slowProc() and mq.TLO.Me.PetBuff(slowProc.RankName()) == nil) and Casting.PetBuffAACheck(aaName)
+                    return (slowProc and slowProc() and mq.TLO.Me.PetBuff(slowProc.RankName())() == nil) and Casting.PetBuffAACheck(aaName)
                 end,
             },
             {
@@ -740,6 +742,15 @@ return {
                 type = "AA",
                 cond = function(self, aaName)
                     return Casting.PetBuffAACheck(aaName)
+                end,
+            },
+        },
+        ['Growl']          = {
+            {
+                name = "PetGrowl",
+                type = "Spell",
+                cond = function(self, spell)
+                    return Casting.SelfBuffCheck(spell)
                 end,
             },
         },
@@ -959,6 +970,7 @@ return {
             Category = "Group",
             Index = 101,
             Tooltip = "Use your Run/Move Speed buff spells or AA.",
+            RequiresLoadoutChange = true,
             Default = false,
         },
         ['DoAvatar']       = {
@@ -1002,6 +1014,20 @@ return {
             Index = 102,
             Tooltip = "Click your Blood Drinker's Coating in an emergency.",
             Default = false,
+        },
+        ['HealPriority']   = {
+            DisplayName = "Healing Priority",
+            Group = "Abilities",
+            Header = "Recovery",
+            Category = "Healing Thresholds",
+            Index = 101,
+            Type = "Combo",
+            ComboOptions = { 'Ignore', 'Big Heal Point', },
+            Default = 2,
+            Min = 1,
+            Max = 2,
+            Tooltip = "When to yield offensive rotations for healing:\n1 - Ignore (never)\n2 - Big Heal Point",
+            ConfigType = "Advanced",
         },
     },
     ['ClassFAQ']          = {

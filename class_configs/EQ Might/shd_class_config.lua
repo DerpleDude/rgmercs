@@ -87,6 +87,10 @@ local _ClassConfig = {
         'Tank',
         'DPS',
     },
+    ['PetPosition']   = {
+        SummonAA   = function() return Casting.CanUseAA("Summon Companion") and "Summon Companion" end,
+        RelocateAA = function() return Casting.CanUseAA("Companion's Relocation") and "Companion's Relocation" end,
+    },
     ['Themes']        = {
         ['Tank'] = {
             { element = ImGuiCol.TitleBgActive,    color = { r = 0.5, g = 0.05, b = 0.05, a = .8, }, },
@@ -180,13 +184,15 @@ local _ClassConfig = {
             "Augment Death",           -- Level 60
             "Strengthen Death",        -- Level 29
         },
-        ['Horror'] = {                 -- HP Tap Proc
+        ['Shroud'] = {                 -- HP Tap Proc
             "Shroud of the Nightborn", -- Level 71
-            "Marrowthirst Horror",     -- Level 70
             "Shroud of Discord",       -- Level 67 Buff Slot 1 <
             "Black Shroud",            -- Level 65
             "Shroud of Chaos",         -- Level 63
             "Shroud of Death",         -- Level 55
+        },
+        ['Horror'] = {                 -- HP Tap Proc
+            "Marrowthirst Horror",     -- Level 70
         },
         ['Mental'] = {                 -- Mana Tap Proc
             "Mental Horror",           -- Level 65 Buff Slot 1 >
@@ -362,6 +368,9 @@ local _ClassConfig = {
             "Protective Discipline",       -- Level 69 EQM Custom
             "Protective Surge Discipline", -- Level 45 EQM Custom
         },
+        ['Steelwrath'] = {
+            "Steelwrath Discipline", -- Level 68 EQM Custom
+        },
         ['ForPower'] = {
             "Challenge for Power", -- Level 71
         },
@@ -369,7 +378,7 @@ local _ClassConfig = {
     },
     ['Helpers']       = {
         DoRez = function(self, corpseId)
-            local rezStaff = self.ResolvedActionMap['RezStaff']
+            local rezStaff = Core.GetResolvedActionMapItem('RezStaff')
 
             if mq.TLO.Me.ItemReady(rezStaff)() then
                 if Casting.OkayToRez(corpseId) then
@@ -404,7 +413,20 @@ local _ClassConfig = {
             end
             return true
         end,
-
+        shieldNeeded = function()
+            -- check for exactly 100% to help ensure the mob is targeting us, over 100% can indicate another is still targeted
+            return (mq.TLO.Me.PctHPs() <= Config:GetSetting('EquipShield')) or mq.TLO.Me.ActiveDisc() == "Deflection Discipline" or
+                (Config:GetSetting('NamedShieldLock') and ((Globals.AutoTargetIsNamed and Targeting.GetAutoTargetAggroPct() == 100) or Targeting.TankingXTNamed()))
+        end,
+    },
+    ['Charm']         = {
+        ['Assist'] = {
+            { name = "Taunt",            type = "Ability", },
+            { name = "Terror",           type = "Spell",   load_cond = function(self) return Config:GetSetting('DoTerror') end, },
+            { name = "Terror2",          type = "Spell",   load_cond = function(self) return Config:GetSetting('DoTerror') end, },
+            { name = "Terror3",          type = "Spell",   load_cond = function(self) return Config:GetSetting('DoTerror') end, },
+            { name = "Xeno's Faceguard", type = "Item",    load_cond = function(self) return mq.TLO.FindItem("=Xeno's Faceguard")() end, },
+        },
     },
     ['RotationOrder'] = {
         { --Self Buffs
@@ -429,6 +451,15 @@ local _ClassConfig = {
             load_cond = function(self) return Config:GetSetting('DoPet') end,
             cond = function(self, combat_state)
                 return combat_state == "Downtime" and mq.TLO.Me.Pet.ID() > 0 and Casting.OkayToPetBuff()
+            end,
+        },
+        {
+            name = 'GroupBuff',
+            state = 1,
+            steps = 1,
+            targetId = function(self) return Casting.GetBuffableIDs() end,
+            cond = function(self, combat_state)
+                return combat_state == "Downtime" and Casting.OkayToBuff()
             end,
         },
         { --Actions to lock down xtarg haters
@@ -514,8 +545,8 @@ local _ClassConfig = {
                     (mq.TLO.Me.PctHPs() <= Config:GetSetting('DefenseStart') or
                         -- we have met our defense count threshold
                         self.Helpers.DefensiveDiscCheck(true) or
-                        -- we are fighting a named and we are (presumably) tanking it
-                        (Globals.AutoTargetIsNamed and Targeting.GetAutoTargetAggroPct() >= 100))
+                        -- we are fighting a named and we are tanking it
+                        Targeting.TankingXTNamed())
             end,
         },
         { --Keep things from running
@@ -536,7 +567,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 if mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') then return false end
-                return combat_state == "Combat" and Casting.BurnCheck()
+                return combat_state == "Combat" and Casting.BurnCheck() and Core.CombatActionsCheck()
             end,
         },
         { --DPS Spells, includes recourse/gift maintenance
@@ -546,17 +577,26 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 if mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') then return false end
-                return combat_state == "Combat"
+                return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
     },
     ['Rotations']     = {
         ['Downtime'] = {
             {
+                name = "Shroud",
+                type = "Spell",
+                tooltip = Tooltips.Shroud,
+                load_cond = function(self) return Config:GetSetting('ProcChoice') == 1 end,
+                active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
+                cond = function(self, spell)
+                    return Casting.SelfBuffCheck(spell)
+                end,
+            },
+            {
                 name = "Horror",
                 type = "Spell",
                 tooltip = Tooltips.Horror,
-                load_cond = function(self) return Config:GetSetting('ProcChoice') == 1 end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
                     return Casting.SelfBuffCheck(spell)
@@ -565,7 +605,7 @@ local _ClassConfig = {
             {
                 name = "Mental",
                 type = "Spell",
-                tooltip = Tooltips.Horror,
+                tooltip = Tooltips.Mental,
                 load_cond = function(self) return Config:GetSetting('ProcChoice') == 2 end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
@@ -637,12 +677,15 @@ local _ClassConfig = {
                 name = "Emergency Visage Cancel",
                 desc = "Removes VoD at Critical HP",
                 type = "CustomFunc",
-                load_cond = function(self) Casting.CanUseAA("Visage of Death") end,
-                cond = function(self) return Config:GetSetting('HPCritical') and mq.TLO.Me.Buff("Visage of Death")() end,
+                load_cond = function(self) return Casting.CanUseAA("Visage of Death") end,
+                cond = function(self) return mq.TLO.Me.PctHPs() <= Config:GetSetting('HPCritical') and mq.TLO.Me.Buff("Visage of Death")() end,
                 custom_func = function(self)
                     Core.DoCmd("/removebuff \"Visage of Death\"")
                 end,
             },
+        },
+        ['GroupBuff'] = { -- Added to anchor clickies to
+
         },
         ['PetSummon'] = {
             {
@@ -727,20 +770,20 @@ local _ClassConfig = {
                 name = "Emergency Visage Cancel",
                 desc = "Removes VoD at Critical HP",
                 type = "CustomFunc",
-                load_cond = function(self) Casting.CanUseAA("Visage of Death") end,
-                cond = function(self) return Config:GetSetting('HPCritical') and mq.TLO.Me.Buff("Visage of Death")() end,
+                load_cond = function(self) return Casting.CanUseAA("Visage of Death") end,
+                cond = function(self) return mq.TLO.Me.PctHPs() <= Config:GetSetting('HPCritical') and mq.TLO.Me.Buff("Visage of Death")() end,
                 custom_func = function(self)
                     Core.DoCmd("/removebuff \"Visage of Death\"")
                 end,
             },
         },
         ['HateTools(AutoTarget)'] = {
-            { --more valuable on laz because we have less hate tools and no other hatelist + 1 abilities
+            {
                 name = "Taunt",
                 type = "Ability",
                 tooltip = Tooltips.Taunt,
                 cond = function(self, abilityName, target)
-                    return Targeting.LostAutoTargetAggro() and Targeting.GetTargetDistance(target) < 30
+                    return Targeting.LostAutoTargetAggro()
                 end,
             },
             {
@@ -861,6 +904,14 @@ local _ClassConfig = {
                     return Casting.NoDiscActive()
                 end,
             },
+            { -- for DPS mode
+                name = "Steelwrath",
+                type = "Disc",
+                load_cond = function(self) return not Core.IsTanking() end,
+                cond = function(self)
+                    return Casting.NoDiscActive()
+                end,
+            },
             {
                 name = "Harm Touch",
                 type = "AA",
@@ -879,7 +930,7 @@ local _ClassConfig = {
                 type = "Spell",
                 tooltip = Tooltips.Skin,
                 cond = function(self, spell, target)
-                    if not Core.IsTanking() or not Globals.AutoTargetIsNamed then return false end
+                    if not Core.IsTanking() or not Targeting.TankingXTNamed() then return false end
                     return Casting.SelfBuffCheck(spell)
                 end,
             },
@@ -908,8 +959,8 @@ local _ClassConfig = {
             {
                 name = "Protective",
                 type = "Disc",
+                load_cond = function(self) return Core.IsTanking() end,
                 cond = function(self, discSpell, target)
-                    if not Core.IsTanking() then return false end
                     return Casting.NoDiscActive()
                 end,
             },
@@ -917,8 +968,8 @@ local _ClassConfig = {
                 name = "Mantle",
                 type = "Disc",
                 tooltip = Tooltips.Mantle,
+                load_cond = function(self) return Core.IsTanking() end,
                 cond = function(self, discSpell, target)
-                    if not Core.IsTanking() then return false end
                     return Casting.NoDiscActive() and Casting.DiscOnCoolDown('Protective')
                 end,
             },
@@ -928,7 +979,7 @@ local _ClassConfig = {
                 tooltip = Tooltips.Epic,
                 cond = function(self, itemName, target)
                     if Config:GetSetting('HoldEpicForNoDisc') and not Casting.NoDiscActive() then return false end
-                    return self.Helpers.LeechCheck(self) or Globals.AutoTargetIsNamed
+                    return self.Helpers.LeechCheck(self) or Targeting.TankingXTNamed()
                 end,
             },
         },
@@ -1081,21 +1132,26 @@ local _ClassConfig = {
             {
                 name = "Equip Shield",
                 type = "CustomFunc",
-                cond = function(self, target)
+                cond = function(self)
                     if mq.TLO.Me.Bandolier("Shield").Active() then return false end
-                    return (mq.TLO.Me.PctHPs() <= Config:GetSetting('EquipShield')) or (Globals.AutoTargetIsNamed and Config:GetSetting('NamedShieldLock'))
+                    return self.Helpers.shieldNeeded()
                 end,
-                custom_func = function(self) return ItemManager.BandolierSwap("Shield") end,
+                custom_func = function(self)
+                    ItemManager.BandolierSwap("Shield")
+                    return true
+                end,
             },
             {
                 name = "Equip 2Hand",
                 type = "CustomFunc",
-                cond = function()
+                cond = function(self)
                     if mq.TLO.Me.Bandolier("2Hand").Active() then return false end
-                    return mq.TLO.Me.PctHPs() >= Config:GetSetting('Equip2Hand') and mq.TLO.Me.ActiveDisc() ~= "Deflection Discipline" and
-                        not (Globals.AutoTargetIsNamed and Config:GetSetting('NamedShieldLock'))
+                    return mq.TLO.Me.PctHPs() >= Config:GetSetting('Equip2Hand') and not self.Helpers.shieldNeeded()
                 end,
-                custom_func = function(self) return ItemManager.BandolierSwap("2Hand") end,
+                custom_func = function(self)
+                    ItemManager.BandolierSwap("2Hand")
+                    return true
+                end,
             },
         },
     },
@@ -1250,7 +1306,7 @@ local _ClassConfig = {
             Index = 101,
             Tooltip = "Choose which proc you prefer, if any.",
             Type = "Combo",
-            ComboOptions = { 'HP Proc: Terror Line', 'Mana Proc: Mental Line,', 'Disabled', },
+            ComboOptions = { 'HP Proc: Shroud Line', 'Mana Proc: Mental Line', 'Disabled', },
             Default = 1,
             Min = 1,
             Max = 3,
@@ -1534,7 +1590,7 @@ local _ClassConfig = {
             Header = "Bandolier",
             Category = "Bandolier",
             Index = 104,
-            Tooltip = "Keep Shield equipped for mobs detected as 'named' by RGMercs (see Named tab).",
+            Tooltip = "Keep Shield equipped while tanking a named.",
             Default = true,
             FAQ = "Why does my SHD switch to a Shield on puny gray named?",
             Answer = "The Shield on Named option doesn't check levels, so feel free to disable this setting (or Bandolier swapping entirely) if you are farming fodder.",

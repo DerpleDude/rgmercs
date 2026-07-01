@@ -10,6 +10,7 @@ local Movement               = { _version = '1.0', _name = "Movement", _author =
 Movement.__index             = Movement
 Movement.LastDoStick         = 0
 Movement.LastDoStickCmd      = ""
+Movement.LastReposition      = 0
 Movement.LastDoNav           = 0
 Movement.LastDoNavCmd        = ""
 Movement.LastDoNavTracer     = ""
@@ -37,7 +38,7 @@ function Movement:DoStick(targetId)
     if Config:GetSetting('StickHow'):len() > 0 then
         self:DoStickCmd("%s", Config:GetSetting('StickHow'))
     else
-        if Core.IAmMA() then
+        if Core.IsTanking() then
             self:DoStickCmd("10 id %d %s uw", targetId, Config:GetSetting('MovebackWhenTank') and "moveback" or "")
         else
             local stickDist = (mq.TLO.Spawn(targetId).Height() or 5) > 15 and 20 or 10
@@ -167,13 +168,13 @@ function Movement:GetSecondsSinceLastNav()
     return Globals.GetTimeSeconds() - self.LastDoNav
 end
 
---- Navigates to targetId during combat, then optionally sticks. Blocks
---- until nav or moveto completes, processing events along the way.
+--- Navigates to the combat target then sticks; bNoWait issues the nav and returns immediately instead of waiting for arrival.
 ---@param targetId number Spawn ID of the combat target.
 ---@param distance number Desired distance to maintain from the target.
 ---@param bDontStick boolean If true, skips the final DoStick call.
 ---@param bCalledFromInsideEvent boolean? If true, skips mq.doevents during nav.
-function Movement:NavInCombat(targetId, distance, bDontStick, bCalledFromInsideEvent)
+---@param bNoWait boolean? If true, issues the nav and returns immediately (skips the wait loop and trailing stick).
+function Movement:NavInCombat(targetId, distance, bDontStick, bCalledFromInsideEvent, bNoWait)
     if bCalledFromInsideEvent == nil then bCalledFromInsideEvent = false end
 
     if not Config:GetSetting('DoAutoEngage') then return end
@@ -184,8 +185,9 @@ function Movement:NavInCombat(targetId, distance, bDontStick, bCalledFromInsideE
     end
 
     if mq.TLO.Navigation.PathExists("id " .. tostring(targetId) .. " distance " .. tostring(distance))() then
+        Globals.CombatNavTargetId = targetId
         Movement:DoNav(false, "id %d distance=%d log=off lineofsight=on", targetId, distance or 15)
-        while mq.TLO.Navigation.Active() and mq.TLO.Navigation.Velocity() > 0 do
+        while not bNoWait and mq.TLO.Navigation.Active() and mq.TLO.Navigation.Velocity() > 0 do
             mq.delay(100)
             if not bCalledFromInsideEvent then
                 mq.doevents()
@@ -195,7 +197,7 @@ function Movement:NavInCombat(targetId, distance, bDontStick, bCalledFromInsideE
     else
         Movement:MoveToSpawnId(targetId, distance)
 
-        while mq.TLO.MoveTo.Moving() and not mq.TLO.MoveUtils.Stuck() do
+        while not bNoWait and mq.TLO.MoveTo.Moving() and not mq.TLO.MoveUtils.Stuck() do
             mq.delay(100)
             if not bCalledFromInsideEvent then
                 mq.doevents()
@@ -204,7 +206,7 @@ function Movement:NavInCombat(targetId, distance, bDontStick, bCalledFromInsideE
         end
     end
 
-    if not bDontStick then
+    if not bDontStick and not bNoWait then
         self:DoStick(targetId)
     end
 end
@@ -223,8 +225,7 @@ function Movement:NavAroundCircle(target, radius)
     local spawn_y = target.Y()
     local spawn_z = target.Z()
 
-    local tgt_x = 0
-    local tgt_y = 0
+    local tgt_x, tgt_y
     -- We need to get the spawn's heading to _us_ based on our heading to the spawn
     -- to nav a circle around it. This is done by inverting the coordinates. E.g.,
     -- If our heading to the mob is 90 degrees CCW, their heading to us is 270 degrees CCW.
@@ -235,14 +236,17 @@ function Movement:NavAroundCircle(target, radius)
     -- Loop until we find an x,y loc ${radius} away from the mob,
     -- that we can navigate to, and is in LoS
 
-    for steps = 1, 36 do
+    -- Skip our current angle (start at +10 deg): repositioning to where we already stand can't fix a
+    -- blocked shot, and re-picking it would loop when the LoS TLO and the game's LoS disagree.
+    for steps = 1, 35 do
         -- EQ's x coordinates have an opposite number line. Positive x values are to the left of 0,
         -- negative values are to the right of 0, so we need to - our radius.
         -- EQ's unit circle starts 0 degrees at the top of the unit circle instead of the right, so
         -- the below still finds coordinates rotated counter-clockwise 90 degrees.
 
-        tgt_x = spawn_x + (-1 * radius * math.cos(tmp_degrees))
-        tgt_y = spawn_y + (radius * math.sin(tmp_degrees))
+        local rad = math.rad(tmp_degrees + steps * 10)
+        tgt_x = spawn_x + (-1 * radius * math.cos(rad))
+        tgt_y = spawn_y + (radius * math.sin(rad))
 
         Logger.log_debug("\aw%d\ax tmp_degrees \aw%d\ax tgt_x \aw%0.2f\ax tgt_y \aw%02.f\ax", steps, tmp_degrees,
             tgt_x, tgt_y)
@@ -253,9 +257,9 @@ function Movement:NavAroundCircle(target, radius)
                 -- Make sure it's a valid loc...
                 if mq.TLO.EverQuest.ValidLoc(string.format("%0.2f %0.2f %0.2f", tgt_x, tgt_y, spawn_z))() then
                     Logger.log_debug(" \ag--> Found Valid Circling Loc: %0.2f %0.2f %0.2f", tgt_x, tgt_y, spawn_z)
-                    Movement:DoNav(false, "locyxz %0.2f %0.2f %0.2f facing=backward", tgt_y, tgt_x, spawn_z)
+                    Movement:DoNav(false, "locyxz %0.2f %0.2f %0.2f", tgt_y, tgt_x, spawn_z)
                     mq.delay("2s", function() return mq.TLO.Navigation.Active() end)
-                    mq.delay("10s", function() return not mq.TLO.Navigation.Active() end)
+                    mq.delay("5s", function() return not mq.TLO.Navigation.Active() end)
                     Core.DoCmd("/squelch /face fast")
                     return true
                 else
@@ -266,6 +270,258 @@ function Movement:NavAroundCircle(target, radius)
     end
 
     return false
+end
+
+-- Reposition (rear-mob handling for tanks)
+
+--- Returns +1 if the stray sits on the player's right side, -1 if left, 0 if straddled (engaged-stray-me collinear).
+---@param meX number
+---@param meY number
+---@param engagedX number
+---@param engagedY number
+---@param strayX number
+---@param strayY number
+---@return integer
+function Movement:PickStraySide(meX, meY, engagedX, engagedY, strayX, strayY)
+    -- Standard 2D cross of (engaged-me) x (stray-me); in EQ coords (positive x = left of 0, per :241),
+    -- cross > 0 maps to stray physically on the player's right, cross < 0 = left.
+    local cross = (engagedX - meX) * (strayY - meY) - (engagedY - meY) * (strayX - meX)
+    if cross > 0 then return 1 end
+    if cross < 0 then return -1 end
+    return 0
+end
+
+--- Returns world (X, Y) for a destination at sideAngleDeg off the player's current facing, length units away.
+---@param meX number
+---@param meY number
+---@param headingDegCCW number Current heading (Me.Heading.DegreesCCW).
+---@param sideAngleDeg number Lateral angle off facing (0-90).
+---@param side integer +1 right side, -1 left side (per PickStraySide).
+---@param length number Step distance in units.
+---@return number, number
+function Movement:LateralDestFromFacing(meX, meY, headingDegCCW, sideAngleDeg, side, length)
+    local facingRad = math.rad(headingDegCCW or 0)
+    local fx, fy = math.sin(facingRad), math.cos(facingRad)
+    local rotRad = math.rad((side or 0) * sideAngleDeg)
+    local cr, sr = math.cos(rotRad), math.sin(rotRad)
+    local dx = fx * cr - fy * sr
+    local dy = fx * sr + fy * cr
+    return meX + length * dx, meY + length * dy
+end
+
+--- Returns the worst (nearest) XTarget that is behind the player and meets the per-mob aggro/animation guards, or nil.
+---@return MQSpawn? worstBehind
+function Movement:DetectMobBehind()
+    local me = mq.TLO.Me
+    local myHeading = me.Heading.DegreesCCW() or 0
+    local xtCount = me.XTarget() or 0
+    local nearest = nil
+    local nearestDistSq = math.huge
+
+    for i = 1, xtCount do
+        local xtSpawn = me.XTarget(i)
+        if xtSpawn and (xtSpawn.ID() or 0) > 0 and not xtSpawn.Dead() and not xtSpawn.Fleeing()
+            and (math.ceil(xtSpawn.PctHPs() or 0)) > 0
+            and (xtSpawn.Aggressive() or (xtSpawn.TargetType() or ""):lower() == "auto hater" or xtSpawn.ID() == Globals.ForceTargetID)
+            and Globals.Constants.RGNotMezzedAnims:contains(xtSpawn.Animation())
+            and (xtSpawn.PctAggro() or 0) >= 100 then
+            local theirHeadingTo = xtSpawn.HeadingTo.DegreesCCW() or 0
+            local diff = math.abs(myHeading - theirHeadingTo) % 360
+            if diff > 180 then diff = 360 - diff end
+            if diff > 90 then
+                local maxRange = xtSpawn.MaxRangeTo() or 15
+                local distance = xtSpawn.Distance3D() or 999
+                if distance <= maxRange then
+                    Logger.log_debug("\arXT(%s) is behind us! \awMyHeading(\am%d\aw) BearingToMob(\am%d\aw) Diff(\am%d\aw) Distance(\am%d\aw)",
+                        xtSpawn.DisplayName() or "", myHeading, theirHeadingTo, diff, distance)
+                    local distSq = distance * distance
+                    if distSq < nearestDistSq then
+                        nearest = xtSpawn
+                        nearestDistSq = distSq
+                    end
+                end
+            end
+        end
+    end
+
+    return nearest
+end
+
+--- True when reposition guards (tanking, auto-nav/stick, not in chase/pull/back-off, rate-limit) all pass.
+---@return boolean
+function Movement:CanReposition()
+    if not Core.IsTanking() then
+        Logger.log_debug("\ayReposition skipped: not tanking.")
+        return false
+    end
+    if Config:GetSetting('ManualMode') then
+        Logger.log_debug("\ayReposition skipped: Manual Mode on.")
+        return false
+    end
+    if not Config:GetSetting('DoAutoNav') then
+        Logger.log_debug("\ayReposition skipped: DoAutoNav off.")
+        return false
+    end
+    if not Config:GetSetting('DoAutoStick') then
+        Logger.log_debug("\ayReposition skipped: DoAutoStick off.")
+        return false
+    end
+    if Config:GetSetting('ChaseOn') then
+        Logger.log_debug("\ayReposition skipped: ChaseOn enabled.")
+        return false
+    end
+    if Globals.BackOffFlag then
+        Logger.log_debug("\ayReposition skipped: BackOffFlag set.")
+        return false
+    end
+    if Modules:ExecModule("Pull", "IsPullState", "PULL_PULLING") or Modules:ExecModule("Pull", "IsPullState", "PULL_RETURN_TO_CAMP") then
+        Logger.log_debug("\ayReposition skipped: in pull state.")
+        return false
+    end
+    local sinceReposition = Globals.GetTimeSeconds() - self.LastReposition
+    if sinceReposition < 0.5 then
+        Logger.log_debug("\ayReposition skipped: rate-limit (%0.2fs since last reposition).", sinceReposition)
+        return false
+    end
+    return true
+end
+
+--- TankReposition: lateral nav around the engaged mob to bring rear adds into the front arc; backslide fallback if lateral is blocked.
+function Movement:TankReposition()
+    if not self:CanReposition() then return end
+
+    local autoTargetId = Globals.AutoTargetID or 0
+    if autoTargetId <= 0 then return end
+    local engaged = mq.TLO.Spawn("id " .. autoTargetId)
+    if not engaged() or engaged.Dead() then return end
+    if not mq.TLO.Navigation.MeshLoaded() then return end
+
+    local engagedBearing = engaged.HeadingTo.DegreesCCW() or 0
+    local myHeading = mq.TLO.Me.Heading.DegreesCCW() or 0
+    local headingDiff = math.abs(myHeading - engagedBearing) % 360
+    if headingDiff > 180 then headingDiff = 360 - headingDiff end
+    if headingDiff > 30 then
+        Logger.log_debug("\ayReposition: /face fast id %d (heading diff %d).", autoTargetId, headingDiff)
+        Core.DoCmd("/squelch /face fast id %d", autoTargetId)
+        -- The /face may have shifted what's behind us; if rotation alone solved it, skip the maneuver entirely.
+        local stillBehind = self:DetectMobBehind()
+        if not stillBehind or (stillBehind.ID() or 0) == 0 then
+            Logger.log_debug("\ayReposition: no mob behind after heading correction, no action.")
+            return
+        end
+    end
+
+    Logger.log_debug("\arReposition: starting series.")
+    self:DoStickCmd("off")
+    Globals.RepositioningActive = true
+    Globals.RepositioningActiveSince = mq.gettime()
+
+    local seriesStartMs = mq.gettime()
+    local stepCount = 0
+
+    while stepCount < 4 and (mq.gettime() - seriesStartMs) < 2000 do
+        if not engaged() or engaged.Dead() then break end
+
+        local stray = self:DetectMobBehind()
+        if not stray or (stray.ID() or 0) == 0 then
+            Logger.log_debug("\agReposition: series complete (%d steps).", stepCount)
+            break
+        end
+
+        local me = mq.TLO.Me
+        local meX = me.X() or 0
+        local meY = me.Y() or 0
+        local meZ = me.Z() or 0
+        local headingCCW = me.Heading.DegreesCCW() or 0
+        local engX = engaged.X() or 0
+        local engY = engaged.Y() or 0
+        local maxRange = engaged.MaxRangeTo() or 15
+        local distNow = engaged.Distance3D() or maxRange
+        local strX = stray.X() or 0
+        local strY = stray.Y() or 0
+
+        local strayLocation = self:PickStraySide(meX, meY, engX, engY, strX, strY)
+        if strayLocation == 0 then
+            Logger.log_debug("\ayReposition: straddled rear mob, giving up series.")
+            break
+        end
+        -- Move opposite the stray's side; moving toward it would keep us inside the diameter circle where the stray stays behind us when we re-face engaged.
+        local moveDir = -strayLocation
+
+        local strayHeadingCCW = stray.HeadingTo.DegreesCCW() or 0
+        local strayDiff = math.abs(headingCCW - strayHeadingCCW) % 360
+        if strayDiff > 180 then strayDiff = 360 - strayDiff end
+        -- Step just enough to rotate the stray into front-arc; overshooting wastes melee distance, undershooting forces extra iterations within the series budget.
+        local L_ideal = math.max(2, (strayDiff - 80) * 0.01807 * distNow)
+        local stepLength = math.min(L_ideal, maxRange - 1)
+
+        local navIssued = false
+
+        -- Ideal 75° first, then ±10° on the same side; switching sides would defeat the diameter-circle pick and undo the move.
+        for _, lateralAngle in ipairs({ 75, 85, 65, }) do
+            local destX, destY = self:LateralDestFromFacing(meX, meY, headingCCW, lateralAngle, moveDir, stepLength)
+            local distToEngaged = math.sqrt((destX - engX) ^ 2 + (destY - engY) ^ 2)
+            if distToEngaged > maxRange then
+                local scale = (maxRange - 1) / distToEngaged
+                destX = engX + (destX - engX) * scale
+                destY = engY + (destY - engY) * scale
+            end
+            local stepDist = math.sqrt((destX - meX) ^ 2 + (destY - meY) ^ 2)
+            if stepDist >= 2
+                and mq.TLO.EverQuest.ValidLoc(string.format("%0.2f %0.2f %0.2f", destX, destY, meZ))()
+                and mq.TLO.Navigation.PathExists(string.format("locyxz %0.2f %0.2f %0.2f", destY, destX, meZ))()
+                and mq.TLO.LineOfSight(string.format("%0.2f,%0.2f,%0.2f:%0.2f,%0.2f,%0.2f", destY, destX, meZ, engY, engX, meZ))() then
+                Logger.log_debug("\arReposition step %d: lateral %d° dir=%d L=%.1f -> %.1f %.1f", stepCount + 1, lateralAngle, moveDir, stepLength, destX, destY)
+                self:DoNav(false, "locyxz %0.2f %0.2f %0.2f facing=backward log=off", destY, destX, meZ)
+                navIssued = true
+                break
+            end
+        end
+
+        if not navIssued then
+            local room = maxRange - distNow
+            if room >= 2 then
+                local facingRad = math.rad(headingCCW)
+                local fx, fy = math.sin(facingRad), math.cos(facingRad)
+                -- Pull back only as far as needed to flip the stray into front-arc; backsliding farther than necessary risks losing melee on the engaged mob.
+                local rearOffset = -((strX - meX) * fx + (strY - meY) * fy)
+                local slide = math.min(math.max(2, rearOffset + 2), room + maxRange * 0.5)
+                local backX = meX - slide * fx
+                local backY = meY - slide * fy
+                if mq.TLO.EverQuest.ValidLoc(string.format("%0.2f %0.2f %0.2f", backX, backY, meZ))()
+                    and mq.TLO.Navigation.PathExists(string.format("locyxz %0.2f %0.2f %0.2f", backY, backX, meZ))() then
+                    Logger.log_debug("\arReposition step %d: backslide fallback %0.1fu (rear-offset %0.1f, lateral blocked).", stepCount + 1, slide, rearOffset)
+                    self:DoNav(false, "locyxz %0.2f %0.2f %0.2f facing=backward log=off", backY, backX, meZ)
+                    navIssued = true
+                end
+            end
+        end
+
+        if navIssued then
+            local stepDeadline = mq.gettime() + 600
+            while mq.TLO.Navigation.Active() and (mq.TLO.Navigation.Velocity() or 0) > 0
+                and mq.gettime() < stepDeadline and (mq.gettime() - seriesStartMs) < 2000 do
+                mq.delay(50)
+                mq.doevents()
+                Events.DoEvents()
+            end
+            Core.DoCmd("/squelch /face fast id %d", autoTargetId)
+            stepCount = stepCount + 1
+        else
+            Logger.log_debug("\ayReposition step %d: no viable nav (lateral + backslide both blocked), ending series.", stepCount + 1)
+            break
+        end
+    end
+
+    if (stepCount >= 4 or (mq.gettime() - seriesStartMs) >= 2000) then
+        local finalCheck = self:DetectMobBehind()
+        if finalCheck and (finalCheck.ID() or 0) > 0 then
+            Logger.log_debug("\ayReposition: budget hit after %d steps (%dms) with mob still behind.", stepCount, mq.gettime() - seriesStartMs)
+        end
+    end
+
+    Globals.RepositioningActive = false
+    self.LastReposition = Globals.GetTimeSeconds()
 end
 
 --- Updates the MQ map filter pull and camp radii based on current

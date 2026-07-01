@@ -1,15 +1,16 @@
-local mq        = require('mq')
-local Casting   = require("utils.casting")
-local Combat    = require("utils.combat")
-local Comms     = require("utils.comms")
-local Config    = require('utils.config')
-local Core      = require("utils.core")
-local DanNet    = require('lib.dannet.helpers')
-local Globals   = require('utils.globals')
-local Logger    = require("utils.logger")
-local Targeting = require("utils.targeting")
+local mq          = require('mq')
+local Casting     = require("utils.casting")
+local Combat      = require("utils.combat")
+local Comms       = require("utils.comms")
+local Config      = require('utils.config')
+local Core        = require("utils.core")
+local DanNet      = require('lib.dannet.helpers')
+local Globals     = require('utils.globals')
+local ItemManager = require("utils.item_manager")
+local Logger      = require("utils.logger")
+local Targeting   = require("utils.targeting")
 
-_ClassConfig    = {
+_ClassConfig      = {
     _version          = "1.4 - EQ Might",
     _author           = "Derple, Morisato, Algar",
     ['ModeChecks']    = {
@@ -18,6 +19,10 @@ _ClassConfig    = {
     ['Modes']         = {
         'DPS',
         'PBAE',
+    },
+    ['PetPosition']   = {
+        SummonAA   = function() return Casting.CanUseAA("Summon Companion") and "Summon Companion" end,
+        RelocateAA = function() return Casting.CanUseAA("Companion's Relocation") and "Companion's Relocation" end,
     },
     ['Themes']        = {
         ['DPS'] = {
@@ -72,6 +77,11 @@ _ClassConfig    = {
         ['OoW_Chest'] = {
             "Glyphwielder's Tunic of the Summoner",
             "Runemaster's Robe",
+        },
+        ['Asterion'] = {
+            "Artifact of Greater Asterion",
+            "Artifact of Asterion",
+            "Lesser Artifact of Asterion",
         },
     },
     ['AbilitySets']   = {
@@ -326,6 +336,26 @@ _ClassConfig    = {
             "Small Modulation Shard",
         },
     },
+    ['Charm']         = {
+        ['Assist'] = {
+            {
+                name = "Malosinete",
+                type = "AA",
+                load_cond = function() return Config:GetSetting('DoMaloAA') and Casting.CanUseAA("Malosinete") end,
+                cond = function(self, aaName, target)
+                    return Casting.DetAACheck(aaName, target)
+                end,
+            },
+            {
+                name = "MaloDebuff",
+                type = "Spell",
+                load_cond = function() return Config:GetSetting('DoMalo') and not Casting.CanUseAA("Malosinete") end,
+                cond = function(self, spell, target)
+                    return Casting.DetSpellCheck(spell, target)
+                end,
+            },
+        },
+    },
     ['RotationOrder'] = { -- TODO: Add emergency rotation, shared health, etc
         {
             name = 'PetSummon',
@@ -452,7 +482,7 @@ _ClassConfig    = {
     -- Really the meat of this class.
     ['Helpers']       = {
         DoRez = function(self, corpseId)
-            local rezStaff = self.ResolvedActionMap['RezStaff']
+            local rezStaff = Core.GetResolvedActionMapItem('RezStaff')
             if mq.TLO.Me.ItemReady(rezStaff)() then
                 if Casting.OkayToRez(corpseId) then
                     return Casting.UseItem(rezStaff, corpseId)
@@ -490,7 +520,7 @@ _ClassConfig    = {
                             return true
                         end
                     else
-                        Logger.Log_warning("Warning: We seem to have something else on the cursor! Do you have another item named 'Orb of Mastery'? Aborting delete.")
+                        Logger.log_warning("Warning: We seem to have something else on the cursor! Do you have another item named 'Orb of Mastery'? Aborting delete.")
                     end
                 end
             end
@@ -510,15 +540,11 @@ _ClassConfig    = {
 
             Logger.log_debug("Sending the %s to our bags.", mq.TLO.Cursor())
 
+            local itemId = mq.TLO.Cursor.ID()
             if scope == "group" then
-                local delay = Config:GetSetting('AIGroupDelay')
-                Comms.PrintGroupMessage("%s summoned, issuing autoinventory command momentarily.", mq.TLO.Cursor())
-                mq.delay(delay)
-                Core.DoGroupOrRaidCmd("/autoinventory")
+                ItemManager.BroadcastQueueAutoInv(itemId)
             elseif scope == "personal" then
-                local delay = Config:GetSetting('AISelfDelay')
-                mq.delay(delay)
-                Core.DoCmd("/autoinventory")
+                ItemManager.QueueAutoInv(itemId)
             else
                 Logger.log_debug("Invalid scope sent: (%s). Item handling aborted.", scope)
                 return false
@@ -528,9 +554,9 @@ _ClassConfig    = {
     ['Rotations']     = {
         ['PetSummon'] = {
             {
-                name = "Artifact of Asterion",
+                name = "Asterion",
                 type = "Item",
-                load_cond = function(self) return Config:GetSetting("UseDonorPet") and mq.TLO.FindItem("=Artifact of Asterion")() end,
+                load_cond = function(self) return Config:GetSetting("UseDonorPet") and Core.GetResolvedActionMapItem('Asterion') end,
                 active_cond = function(self, _) return mq.TLO.Me.Pet.ID() > 0 end,
                 post_activate = function(self, spell, success)
                     if success and mq.TLO.Me.Pet.ID() > 0 then
@@ -557,7 +583,8 @@ _ClassConfig    = {
                 load_cond = function(self) return Config:GetSetting("UseEpicPet") and not mq.TLO.FindItem("=Ornate Orb of Mastery")() end,
                 active_cond = function(self, _) return mq.TLO.Me.Pet.ID() > 0 end,
                 cond = function(self, itemName, target)
-                    return mq.TLO.FindItem("28034")() and (mq.TLO.FindItem("28034").Charges() or 0) == 1
+                    local orb = mq.TLO.FindItem("28034")
+                    return orb() and (orb.Charges() or 0) > 0
                 end,
                 post_activate = function(self, itemName, success)
                     if success and mq.TLO.Me.Pet.ID() > 0 then
@@ -575,7 +602,7 @@ _ClassConfig    = {
                 active_cond = function(self) return mq.TLO.Me.Pet.ID() > 0 end,
                 load_cond = function(self)
                     return (not Config:GetSetting("UseEpicPet") or not mq.TLO.Me.Book("Summon Orb")()) and
-                        (not Config:GetSetting("UseDonorPet") or not mq.TLO.FindItem("=Artifact of Asterion")())
+                        (not Config:GetSetting("UseDonorPet") or not Core.GetResolvedActionMapItem('Asterion'))
                 end,
                 cond = function(self, spell)
                     return Casting.ReagentCheck(spell)
@@ -583,7 +610,6 @@ _ClassConfig    = {
                 post_activate = function(self, spell, success)
                     local pet = mq.TLO.Me.Pet
                     if success and pet.ID() > 0 then
-                        Comms.PrintGroupMessage("Summoned a new %d %s pet named %s using '%s'!", pet.Level(), pet.Class.Name(), pet.CleanName(), spell.RankName())
                         mq.delay(50) -- slight delay to prevent chat bug with command issue
                         self:SetPetHold()
                     end
@@ -698,15 +724,6 @@ _ClassConfig    = {
         },
         ['Weaves'] = {
             {
-                name = "Summon Companion",
-                type = "AA",
-                cond = function(self, aaName, target)
-                    if mq.TLO.Me.Pet.ID() == 0 then return false end
-                    local pet = mq.TLO.Me.Pet
-                    return not pet.Combat() and (pet.Distance3D() or 0) > 200
-                end,
-            },
-            {
                 name = "FireOrbItem",
                 type = "CustomFunc",
                 custom_func = function(self)
@@ -793,7 +810,7 @@ _ClassConfig    = {
                 name = "Turn Summoned",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    return Targeting.TargetBodyIs(target, "Undead Pet")
+                    return Targeting.IsSummoned(target)
                 end,
             },
         },
@@ -880,7 +897,8 @@ _ClassConfig    = {
                 type = "CustomFunc",
                 load_cond = function(self) return Config:GetSetting('UseEpicPet') and not mq.TLO.FindItem("=Ornate Orb of Mastery")() end,
                 cond = function(self)
-                    return mq.TLO.FindItem("28034")() and (mq.TLO.FindItem("28034").Charges() or 999) == 0
+                    local orb = mq.TLO.FindItem("28034")
+                    return orb() and (orb.Charges() or 999) == 0
                 end,
                 custom_func = function(self) return self.Helpers.DeleteEpicOrb(self) end,
             },
@@ -1000,7 +1018,7 @@ _ClassConfig    = {
             Header = "Pet",
             Category = "Pet Summoning",
             Index = 101,
-            Tooltip = "1 = Fire, 2 = Water, 3 = Earth, 4 = Air",
+            Tooltip = "Choose the elemental to summon when not using the epic pet.",
             Type = "Combo",
             ComboOptions = { 'Fire', 'Water', 'Earth', 'Air', },
             Default = 2,
@@ -1071,28 +1089,6 @@ _ClassConfig    = {
             Min = 1,
             Max = 3,
             RequiresLoadoutChange = true,
-        },
-        ['AISelfDelay']    = {
-            DisplayName = "Autoinv Delay (Self)",
-            Group = "Items",
-            Header = "Item Summoning",
-            Category = "Item Summoning",
-            Index = 107,
-            Tooltip = "Delay in ms before /autoinventory after summoning, adjust if you notice items left on cursors regularly.",
-            Default = 50,
-            Min = 1,
-            Max = 250,
-        },
-        ['AIGroupDelay']   = {
-            DisplayName = "Autoinv Delay (Group)",
-            Group = "Items",
-            Header = "Item Summoning",
-            Category = "Item Summoning",
-            Index = 108,
-            Tooltip = "Delay in ms before /autoinventory after summoning, adjust if you notice items left on cursors regularly.",
-            Default = 150,
-            Min = 1,
-            Max = 500,
         },
         ['DoMalo']         = {
             DisplayName = "Cast Malo",

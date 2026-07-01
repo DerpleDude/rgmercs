@@ -9,6 +9,7 @@ local Logger       = require("utils.logger")
 local Modules      = require("utils.modules")
 local NamedDefault = require("namedlist.named_default")
 local NamedEQMight = require("namedlist.named_eqmight")
+local NamedLazarus = require("namedlist.named_lazarus")
 local Strings      = require("utils.strings")
 local Targeting    = require("utils.targeting")
 local Ui           = require("utils.ui")
@@ -24,13 +25,8 @@ Module.CommandHandlers = {}
 Module.NamedList       = {}
 Module.LastNamedCheck  = 0
 
-Module.DefNamed        = {}
-
-if Core.OnMight() then
-    Module.DefNamed = NamedEQMight or {}
-else
-    Module.DefNamed = NamedDefault or {}
-end
+Module.DefNamedBase    = NamedDefault or {}
+Module.DefNamedOverlay = (Core.OnMight() and NamedEQMight) or (Core.OnLaz() and NamedLazarus) or {}
 
 Module.FlagOrder = { { kind = "named", key = nil, label = "Named", }, }
 for _, e in ipairs(Globals.Constants.ResistTypes)     do table.insert(Module.FlagOrder, { kind = "elementalImmunities", key = e, label = e, }) end
@@ -38,7 +34,11 @@ for _, e in ipairs(Globals.Constants.ImmunityEffects) do table.insert(Module.Fla
 
 function Module:FlagSummary(entry)
     local parts = {}
-    if entry.named then table.insert(parts, "Named") end
+    if entry.named == false then
+        table.insert(parts, "Not Named")
+    elseif entry.named then
+        table.insert(parts, "Named")
+    end
     for _, key in ipairs(Globals.Constants.ResistTypes) do
         if entry.elementalImmunities and entry.elementalImmunities[key] then table.insert(parts, key) end
     end
@@ -77,7 +77,7 @@ Module.DefaultConfig = {
         FAQ = "Can I add my own named NPCs and immunity flags to RGMercs?",
         Answer = "Open the Named module tab and add your current target via the Custom Named List editor. " ..
             "Each row's Flags combo toggles Named, elemental immunity flags (Fire/Cold/Magic/Poison/Disease), and status immunity flags (Slow/Snare/Stun). " ..
-            "CLI alternatives: /rgl namedadd and /rgl immuneadd (plus matching delete commands).\n\n" ..
+            "CLI alternatives: /rgl namedadd, /rgl nameddeny (suppress a built-in named), and /rgl immuneadd (plus matching delete commands).\n\n" ..
             "This per-server, per-zone list is shared in real-time with all RGMercs peers on this machine.",
     },
 }
@@ -169,16 +169,21 @@ end
 
 function Module:IngestDefEntry(item, mergeImmunities)
     if type(item) == "string" then
-        self.NamedList[item] = self.NamedList[item] or {}
-        self.NamedList[item].named = true
+        local key = item:lower()
+        local e = self.NamedList[key] or {}
+        e.named = true
+        e.displayName = e.displayName or item
+        self.NamedList[key] = e
     elseif type(item) == "table" and item.name then
-        local e = self.NamedList[item.name] or {}
+        local key = item.name:lower()
+        local e = self.NamedList[key] or {}
+        e.displayName = e.displayName or item.name
         if item.named ~= false then e.named = true end
         if mergeImmunities then
             if item.elementalImmunities then e.elementalImmunities = item.elementalImmunities end
             if item.statusImmunities    then e.statusImmunities    = item.statusImmunities    end
         end
-        self.NamedList[item.name] = e
+        self.NamedList[key] = e
     end
 end
 
@@ -199,18 +204,32 @@ function Module:RefreshNamedCache()
         local zoneFull = (mq.TLO.Zone.Name() or ""):lower()
         local zoneShort = (mq.TLO.Zone.ShortName() or ""):lower()
 
-        for _, item in ipairs(self.DefNamed[zoneFull] or {}) do
+        for _, item in ipairs(self.DefNamedBase[zoneFull] or {}) do
             self:IngestDefEntry(item, mergeImmunities)
         end
 
-        for _, item in ipairs(self.DefNamed[zoneShort] or {}) do
+        for _, item in ipairs(self.DefNamedBase[zoneShort] or {}) do
+            self:IngestDefEntry(item, mergeImmunities)
+        end
+
+        for _, item in ipairs(self.DefNamedOverlay[zoneFull] or {}) do
+            self:IngestDefEntry(item, mergeImmunities)
+        end
+
+        for _, item in ipairs(self.DefNamedOverlay[zoneShort] or {}) do
             self:IngestDefEntry(item, mergeImmunities)
         end
 
         for mobName, userEntry in pairs(userList[zoneShort] or {}) do
             if type(userEntry) == "table" then
-                local e = self.NamedList[mobName] or {}
-                if userEntry.named then e.named = true end
+                local key = mobName:lower()
+                local e = self.NamedList[key] or {}
+                e.displayName = e.displayName or mobName
+                if userEntry.named == false then
+                    e.named = false
+                elseif userEntry.named then
+                    e.named = true
+                end
                 if userEntry.elementalImmunities then
                     e.elementalImmunities = e.elementalImmunities or {}
                     for k, v in pairs(userEntry.elementalImmunities) do e.elementalImmunities[k] = v end
@@ -219,7 +238,7 @@ function Module:RefreshNamedCache()
                     e.statusImmunities = e.statusImmunities or {}
                     for k, v in pairs(userEntry.statusImmunities) do e.statusImmunities[k] = v end
                 end
-                self.NamedList[mobName] = e
+                self.NamedList[key] = e
             end
         end
     end
@@ -236,20 +255,23 @@ function Module:CheckZoneNamed()
 
     for _, spawn in ipairs(namedSpawns) do
         local name = spawn.CleanName()
-        table.insert(tmpTbl, {
-            Name      = name,
-            Spawn     = spawn,
-            Distance  = spawn and spawn.Distance() or 9999,
-            Loc       = spawn and spawn.LocYXZ() or "0,0,0",
-            Immunities = self:ImmunitySummary(self.NamedList[name]),
-        })
-        upNameds[name] = true
+        if name then
+            local key = name:lower()
+            table.insert(tmpTbl, {
+                Name      = name,
+                Spawn     = spawn,
+                Distance  = spawn and spawn.Distance() or 9999,
+                Loc       = spawn and spawn.LocYXZ() or "0,0,0",
+                Immunities = self:ImmunitySummary(self.NamedList[key]),
+            })
+            upNameds[key] = true
+        end
     end
 
-    for name, entry in pairs(self.NamedList) do
-        if entry.named and not upNameds[name] then
+    for key, entry in pairs(self.NamedList) do
+        if entry.named and not upNameds[key] then
             table.insert(tmpTbl, {
-                Name       = name,
+                Name       = entry.displayName or key,
                 Spawn      = nil,
                 Distance   = 9999,
                 Loc        = "0,0,0",
@@ -286,7 +308,9 @@ function Module:IsNamed(spawn)
         end
     end
 
-    local entry = self.NamedList[spawn.Name()] or self.NamedList[spawn.CleanName()] or self.NamedList[cleanNameFixed]
+    local entry = self.NamedList[(spawn.Name() or ""):lower()]
+        or self.NamedList[(spawn.CleanName() or ""):lower()]
+        or self.NamedList[(cleanNameFixed or ""):lower()]
     if entry and entry.named then return true end
 
     ---@diagnostic disable-next-line: undefined-field
@@ -306,6 +330,10 @@ function Module:DeleteNamedFromCustomList(arg1)
     Config:ZoneRegistryClearFlag(arg1, 'CustomNamedList', 'named')
 end
 
+function Module:DenyNamedFromCustomList(npcName)
+    Config:ZoneRegistrySetFlag(npcName, 'CustomNamedList', 'named', false)
+end
+
 --- Removes a mob entry entirely from CustomNamedList (regardless of which flags are set).
 --- Used by the UI trash button to match the original delete UX.
 function Module:DeleteEntryFromCustomList(mobName, zoneKey)
@@ -321,7 +349,7 @@ function Module:GetRegistryEntry(mobName)
     self:RefreshNamedCache()
     mobName = Strings.TrimSpaces(mobName)
     if not mobName then return nil end
-    return self.NamedList[mobName] or nil
+    return self.NamedList[mobName:lower()] or nil
 end
 
 function Module:HasElementalImmunity(mobName, element)

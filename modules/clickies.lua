@@ -217,15 +217,15 @@ Module.DefaultServerClickies                  = {
 Module.DefaultServerClickies['Project Might'] = Module.DefaultServerClickies['EQ Might']
 
 Module.DefaultConfig                          = {
-    ['MaxClickiesPerFrame']                    = {
-        DisplayName = "Max Clickies Per Frame",
+    ['MaxClickiesPerCycle']                    = {
+        DisplayName = "Max Clickies Per Cycle",
         Group = "Items",
         Header = "Clickies",
         Category = "User Clickies",
         Index = 1,
         Tooltip =
-        "The max number of clickies that can successfully be used per frame/processing cycle before we move on, 0 for no limit.\nThis setting may help prevent delays in other processing if a high number of clickies are used.",
-        Default = 0,
+        "The max number of clickies that can successfully be used per processing cycle before we move on, 0 for no limit.\nClickies attached to rotations are exempt from this limit.\nThis setting may help prevent delays in other processing if a high number of clickies are used.",
+        Default = 1,
         Min = 0,
         Max = 99,
         ConfigType = "Advanced",
@@ -248,8 +248,8 @@ Module.DefaultConfig                          = {
     },
 }
 
-Module.CombatTargetTypes                      = { 'Self', 'Pet', 'Main Assist', 'Auto Target', 'Mercs Peer', 'Rotation Target', }
-Module.NonCombatTargetTypes                   = { 'Self', 'Pet', 'Main Assist', 'Mercs Peer', 'Rotation Target', }
+Module.CombatTargetTypes                      = { 'Self', 'Pet', 'Main Assist', 'Auto Target', 'Mercs Peer', 'All Buffable', }
+Module.NonCombatTargetTypes                   = { 'Self', 'Pet', 'Main Assist', 'Mercs Peer', 'All Buffable', }
 Module.RotationTargetTypes                    = { 'Rotation Target', }
 Module.MercPeerTargetTypes                    = { 'Mercs Peer', }
 Module.CombatStates                           = { 'Downtime', 'Combat', 'Any', 'During Rotation', 'During Heal Rotation', }
@@ -519,6 +519,21 @@ Module.LogicBlocks                            = {
             { name = "Disease",    type = "boolean", default = true, },
             { name = "Curse",      type = "boolean", default = true, },
             { name = "Corruption", type = "boolean", default = true, },
+        },
+    },
+
+    {
+        name = "Free Aura Check",
+        cond = function(self, target, peerData, auraName)
+            if not auraName or auraName == "" then return false end
+            return not Casting.AuraActiveByName(auraName) and Casting.HasFreeAuraSlot()
+        end,
+        tooltip = "Only use when this aura isn't up and you have a free aura slot.",
+        render_header_text = function(self, cond)
+            return string.format("Aura '%s' is missing and a free aura slot is available", cond.args[1] or "None")
+        end,
+        args = {
+            { name = "Aura", type = "string", default = "", },
         },
     },
 
@@ -833,7 +848,7 @@ Module.LogicBlocks                            = {
         name = "Target Body Type Is ...",
         cond = function(self, target, peerData, checkUndead, checkSummoned)
             return (checkUndead and Targeting.TargetBodyIs(target, "Undead")) or
-                (checkSummoned and Targeting.TargetBodyIs(target, "Undead Pet"))
+                (checkSummoned and Targeting.IsSummoned(target))
         end,
         tooltip = "Only use when the target body type matches this criteria.",
         render_header_text = function(self, cond)
@@ -1183,6 +1198,10 @@ function Module:LoadSettings()
                 clicky.no_target_change = false
                 settingsChanged = true
             end
+            if clicky.skipTriggerCheck == nil then
+                clicky.skipTriggerCheck = false
+                settingsChanged = true
+            end
             settingsChanged = self:ValidateClickyRotationSettings(clicky) or settingsChanged
         end
 
@@ -1370,7 +1389,7 @@ function Module:RenderConditionTargetCombo(cond, condIdx, combatState)
         end
         ImGui.EndTable()
         Ui.Tooltip(
-            "Target Types\nSelf - This PC\nPet - This PC's pet\nMain Assist - The current RGMercs Main Assist\nAuto Target - The current RGMercs Combat Auto Target\nMercs Peer - A character running RGMercs on the same network\nRotation Target - The target passed in by the active rotation")
+            "Target Types\nSelf - This PC\nPet - This PC's pet\nMain Assist - The current RGMercs Main Assist\nAuto Target - The current RGMercs Combat Auto Target\nMercs Peer - A character running RGMercs on the same network\nAll Buffable - Checks all buffable targets in your Actor Buff Scope and uses the first one that needs the buff\nRotation Target - The target passed in by the active rotation")
     end
 
     if cond.target == "Mercs Peer" then
@@ -1417,6 +1436,14 @@ function Module:RenderClickyTargetCombo(clicky, clickyIdx)
                 defaultTarget = "Self"
             end
 
+            -- DEPRECATION FALLBACK BEGIN (added 6/26, remove this entire block after 9/26)
+            -- 'Rotation Target' used to be selectable for any combat state; reset stale stored values so the dropdown doesn't desync.
+            if not targetTypeIDs[clicky.target or ""] then
+                clicky.target = defaultTarget
+                Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
+            end
+            -- DEPRECATION FALLBACK END
+
             local selectedNum, changed = ImGui.Combo("##clicky_cond_target_" .. "_" .. clickyIdx, tonumber(targetTypeIDs[clicky.target or defaultTarget]) or 1,
                 targetTypes, #targetTypes)
             if changed then
@@ -1426,7 +1453,7 @@ function Module:RenderClickyTargetCombo(clicky, clickyIdx)
         end
         ImGui.EndTable()
         Ui.Tooltip(
-            "Target Types\nSelf - This PC\nPet - This PC's pet\nMain Assist - The current RGMercs Main Assist\nAuto Target - The current RGMercs Combat Auto Target\nMercs Peer - A character running RGMercs on the same network\nRotation Target - The target passed in by the active rotation")
+            "Target Types\nSelf - This PC\nPet - This PC's pet\nMain Assist - The current RGMercs Main Assist\nAuto Target - The current RGMercs Combat Auto Target\nMercs Peer - A character running RGMercs on the same network\nAll Buffable - Checks all buffable targets in your Actor Buff Scope and uses the first one that needs the buff\nRotation Target - The target passed in by the active rotation")
     end
 
     if clicky.target == "Mercs Peer" then
@@ -1446,29 +1473,48 @@ function Module:RenderClickyTargetCombo(clicky, clickyIdx)
     end
 end
 
-function Module:RenderClickyNoTargetChangeToggle(clicky, clickyIdx)
+function Module:RenderClickyToggles(clicky, clickyIdx)
     local isRotationTarget = clicky.target == "Rotation Target"
-    if ImGui.BeginTable("##clicky_target_no_change_table_" .. clickyIdx, 2, bit32.bor(ImGuiTableFlags.None)) then
-        ImGui.TableSetupColumn("Key", ImGuiTableColumnFlags.WidthFixed, 140)
-        ImGui.TableSetupColumn("Value", ImGuiTableColumnFlags.WidthStretch, 0)
+    if ImGui.BeginTable("##clicky_toggles_table_" .. clickyIdx, 4, bit32.bor(ImGuiTableFlags.None)) then
+        ImGui.TableSetupColumn("Key1", ImGuiTableColumnFlags.WidthFixed, 140)
+        ImGui.TableSetupColumn("Value1", ImGuiTableColumnFlags.WidthFixed, 40)
+        ImGui.TableSetupColumn("Key2", ImGuiTableColumnFlags.WidthFixed, 140)
+        ImGui.TableSetupColumn("Value2", ImGuiTableColumnFlags.WidthStretch, 0)
+
         ImGui.TableNextColumn()
+        ImGui.AlignTextToFramePadding()
         Ui.RenderText("Don't Change Target")
         ImGui.TableNextColumn()
+        ImGui.BeginGroup()
         ImGui.BeginDisabled(isRotationTarget)
-        local new_no_target_change, clicked = Ui.RenderOptionToggle("##clicky_no_target_change_" .. clickyIdx, "",
+        local newNoTargetChange, ntcClicked = Ui.RenderOptionToggle("##clicky_no_target_change_" .. clickyIdx, "",
             clicky.no_target_change)
         ImGui.EndDisabled()
-
+        ImGui.EndGroup()
         if isRotationTarget and clicky.no_target_change then
             clicky.no_target_change = false
             Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
         end
-
-        if not isRotationTarget and clicked then
-            clicky.no_target_change = new_no_target_change
+        if not isRotationTarget and ntcClicked then
+            clicky.no_target_change = newNoTargetChange
             Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
         end
         Ui.Tooltip("If enabled, we will not change targets to use this clicky.")
+
+        ImGui.TableNextColumn()
+        ImGui.AlignTextToFramePadding()
+        Ui.RenderText("Skip Trigger Checks")
+        ImGui.TableNextColumn()
+        ImGui.BeginGroup()
+        local newSkipTriggerCheck, skipClicked = Ui.RenderOptionToggle("##clicky_skip_trigger_check_" .. clickyIdx, "",
+            clicky.skipTriggerCheck or false)
+        ImGui.EndGroup()
+        if skipClicked then
+            clicky.skipTriggerCheck = newSkipTriggerCheck
+            Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
+        end
+        Ui.Tooltip("Only check the clicky buff for stacking, ignoring any secondary spell effects triggered by the clicky spell.")
+
         ImGui.EndTable()
     end
 end
@@ -1478,7 +1524,7 @@ function Module:RenderClickyCombatStateCombo(clicky, clickyIdx)
         ImGui.TableSetupColumn("Key", ImGuiTableColumnFlags.WidthFixed, 140)
         ImGui.TableSetupColumn("Value", ImGuiTableColumnFlags.WidthStretch, 0)
         ImGui.TableNextColumn()
-        Ui.RenderText("Combat State")
+        Ui.RenderText("Usage")
         ImGui.TableNextColumn()
         local selectedNum, changed = ImGui.Combo("##clicky_cond_combat_state_" .. "_" .. clickyIdx, tonumber(self.CombatStateIDs[clicky.combat_state or "Any"]) or 1,
             self.CombatStates,
@@ -1711,10 +1757,7 @@ function Module:RenderClickiesWithConditions(type, clickies)
     end
     Ui.Tooltip("Add server-specific default clickies to the end of the list.")
 
-    ImGui.SameLine()
-    Ui.RenderText(Icons.MD_INFO_OUTLINE .. " Special Note on Clickies " .. Icons.MD_INFO_OUTLINE)
-    Ui.Tooltip(
-        "All clickies have inherent presence and stacking checks built in; that is to say, we will only use a clicky if we detect that the effect is absent (and would stack) on its intended target.\n\nAdding conditions to check for the clicky's effect is generally not required or performant, be it buff, debuff or otherwise.")
+    Ui.RenderText("For best performance, assign clickies to rotations whenever feasible.")
 
     ImGui.Separator()
     if #clickies > 0 then
@@ -1765,7 +1808,7 @@ function Module:RenderClickiesWithConditions(type, clickies)
 
                     self:RenderClickyCombatStateCombo(clicky, clickyIdx)
                     self:RenderClickyTargetCombo(clicky, clickyIdx)
-                    self:RenderClickyNoTargetChangeToggle(clicky, clickyIdx)
+                    self:RenderClickyToggles(clicky, clickyIdx)
 
                     ImGui.SeparatorText("Usage Info")
                     self:RenderClickyData(clicky, clickyIdx)
@@ -1971,9 +2014,9 @@ function Module:GiveTime()
     -- Main Module logic goes here.
     self:ValidateClickies()
 
-    local maxClickiesPerFrame = Config:GetSetting('MaxClickiesPerFrame') or 0
-    local clickiesUsedThisFrame = 0
-    local startingClickyIdx = maxClickiesPerFrame > 0 and self.ClickyRotationIndex or 1
+    local maxClickiesPerCycle = Config:GetSetting('MaxClickiesPerCycle') or 0
+    local clickiesUsedThisCycle = 0
+    local startingClickyIdx = maxClickiesPerCycle > 0 and self.ClickyRotationIndex or 1
     local clickies = Config:GetSetting('Clickies') or {}
     local numClickies = #clickies
     local moving = mq.TLO.Me.Moving() or mq.TLO.Navigation.Active() or mq.TLO.MoveTo.Moving()
@@ -2032,13 +2075,13 @@ function Module:GiveTime()
 
                             if clicky.target == "Self" then
                                 target = mq.TLO.Me
-                                buffCheckPassed = Casting.SelfBuffItemCheck(clicky.itemName)
+                                buffCheckPassed = Casting.SelfBuffItemCheck(clicky.itemName, nil, clicky.skipTriggerCheck)
                             elseif clicky.target == "Pet" then
                                 target = mq.TLO.Me.Pet
-                                buffCheckPassed = target and Casting.PetBuffItemCheck(clicky.itemName)
+                                buffCheckPassed = target and Casting.PetBuffItemCheck(clicky.itemName, nil, clicky.skipTriggerCheck)
                             elseif clicky.target == "Main Assist" then
                                 target = Core.GetMainAssistSpawn()
-                                buffCheckPassed = target and Casting.GroupBuffItemCheck(clicky.itemName, target)
+                                buffCheckPassed = target and Casting.GroupBuffItemCheck(clicky.itemName, target, nil, clicky.skipTriggerCheck)
                             elseif clicky.target == "Auto Target" then
                                 target = Targeting.GetAutoTarget()
                                 buffCheckPassed = target and Casting.DetItemCheck(clicky.itemName, target)
@@ -2051,10 +2094,21 @@ function Module:GiveTime()
                                     Strings.BoolToColorString(peerFound))
                                 if peerFound then
                                     target = mq.TLO.Spawn(targetPeer.Data.ID)
-                                    buffCheckPassed = target and Casting.ActorBuffCheck(item.Clicky.Spell.RankName.ID(), target)
+                                    buffCheckPassed = target and Casting.ActorBuffCheck(item.Clicky.Spell.RankName.ID(), target, nil, clicky.skipTriggerCheck)
                                 else
                                     buffCheckPassed = false
                                 end
+                            elseif clicky.target == "All Buffable" then
+                                local buffableIds = Casting.GetBuffableIDs()
+                                for _, peerId in ipairs(buffableIds) do
+                                    local candidate = mq.TLO.Spawn(peerId)
+                                    if candidate() and Casting.GroupBuffItemCheck(clicky.itemName, candidate, nil, clicky.skipTriggerCheck) then
+                                        target = candidate
+                                        buffCheckPassed = true
+                                        break
+                                    end
+                                end
+                                if not target then buffCheckPassed = false end
                             end
 
                             if not clicky.no_target_change then
@@ -2084,16 +2138,17 @@ function Module:GiveTime()
                             if buffCheckPassed and distanceCheckPassed and readyCheckPassed and elementCheckPassed then
                                 Logger.log_verbose("\ayClicky: \awItem \am%s\aw Clicky Spell: \at%s\ag!", item.Name(), item.Clicky.Spell.RankName.Name())
                                 Casting.UseItem(item.Name(), targetId)
-                                clickiesUsedThisFrame = clickiesUsedThisFrame + 1
-                                if maxClickiesPerFrame > 0 and clickiesUsedThisFrame >= maxClickiesPerFrame then
-                                    Logger.log_debug("\ayClicky: \a-tMax Clickies Per Frame of \am%d\a-t reached, stopping for this frame and picking up with %d next frame.",
-                                        maxClickiesPerFrame, self.ClickyRotationIndex)
+                                self.TempSettings.ClickyState[clicky.itemName].lastUsed = Globals.GetTimeSeconds()
+                                clickiesUsedThisCycle = clickiesUsedThisCycle + 1
+                                if maxClickiesPerCycle > 0 and clickiesUsedThisCycle >= maxClickiesPerCycle then
+                                    Logger.log_debug("\ayClicky: \a-tMax Clickies Per Cycle of \am%d\a-t reached, stopping for this cycle and picking up with %d next cycle.",
+                                        maxClickiesPerCycle, self.ClickyRotationIndex)
                                     break
                                 end
-                                self.TempSettings.ClickyState[clicky.itemName].lastUsed = Globals.GetTimeSeconds()
-                                break --ensure we stop after we process a single clicky to allow rotations to continue
+                                break --yield to other modules between clicky uses
                             else
-                                Logger.log_verbose("\ayClicky: \awItem \am%s\aw Clicky: \at%s\ar checks failed, not using!\aw BuffCheck(%s), DistanceCheck(%s), ItemReady(%s), ElementCheck(%s)",
+                                Logger.log_verbose(
+                                    "\ayClicky: \awItem \am%s\aw Clicky: \at%s\ar checks failed, not using!\aw BuffCheck(%s), DistanceCheck(%s), ItemReady(%s), ElementCheck(%s)",
                                     item.Name(), item.Clicky.Spell.RankName.Name(), Strings.BoolToColorString(buffCheckPassed), Strings.BoolToColorString(distanceCheckPassed),
                                     Strings.BoolToColorString(readyCheckPassed), Strings.BoolToColorString(elementCheckPassed))
                             end
@@ -2122,12 +2177,12 @@ function Module.GetConditionTarget(cond, targetSpawn, clickyPeerName)
     return nil
 end
 
-function Module:GetClickiesForRotation(rotationName)
+function Module:GetClickiesForRotations(clickyCombatState, rotationName)
     local result   = {}
     local clickies = Config:GetSetting('Clickies') or {}
 
     for _, clicky in ipairs(clickies) do
-        if clicky.combat_state == "During Rotation"
+        if clicky.combat_state == clickyCombatState
             and clicky.rotation_name == rotationName
             and clicky.itemName:len() > 0
             and (clicky.enabled == nil or clicky.enabled == true)
@@ -2144,71 +2199,13 @@ function Module:GetClickiesForRotation(rotationName)
                     local buffCheckPassed = true
 
                     if targetSpawn.ID() == mq.TLO.Me.ID() then
-                        buffCheckPassed = Casting.SelfBuffItemCheck(clicky.itemName)
+                        buffCheckPassed = Casting.SelfBuffItemCheck(clicky.itemName, nil, clicky.skipTriggerCheck)
                     elseif targetSpawn.ID() == mq.TLO.Me.Pet.ID() then
                         ---@diagnostic disable-next-line: cast-local-type
-                        buffCheckPassed = mq.TLO.Me.Pet.ID() > 0 and Casting.PetBuffItemCheck(clicky.itemName)
+                        buffCheckPassed = mq.TLO.Me.Pet.ID() > 0 and Casting.PetBuffItemCheck(clicky.itemName, nil, clicky.skipTriggerCheck)
                     elseif targetSpawn.Type() == "PC" then
                         ---@diagnostic disable-next-line: cast-local-type
-                        buffCheckPassed = Casting.GroupBuffItemCheck(clicky.itemName, targetSpawn)
-                    else ---@diagnostic disable-next-line: cast-local-type
-                        buffCheckPassed = Casting.DetItemCheck(clicky.itemName, targetSpawn)
-                    end
-
-                    if not buffCheckPassed then return false end
-
-                    local condTarget = nil
-                    local condPeer = nil
-                    for _, cond in ipairs(conditions) do
-                        local condBlock = self:GetLogicBlockByType(cond.type)
-                        if condBlock then
-                            if condBlock.cond_targets then
-                                condTarget, condPeer = Module.GetConditionTarget(cond, targetSpawn, clicky.mercs_peer_name)
-                            end
-                            ---@diagnostic disable-next-line: deprecated
-                            if not Core.SafeCallFunc("Rotation Clicky :: Test clicky Condition", condBlock.cond, caller, condTarget, condPeer and condPeer.Data, unpack(cond.args or {})) then
-                                return false
-                            end
-                        end
-                    end
-                    return true
-                end,
-            })
-        end
-    end
-
-    return result
-end
-
-function Module:GetClickiesForHealRotation(rotationName)
-    local result   = {}
-    local clickies = Config:GetSetting('Clickies') or {}
-
-    for _, clicky in ipairs(clickies) do
-        if clicky.combat_state == "During Heal Rotation"
-            and clicky.rotation_name == rotationName
-            and clicky.itemName:len() > 0
-            and (clicky.enabled == nil or clicky.enabled == true)
-        then
-            local itemName   = clicky.itemName
-            local conditions = clicky.conditions or {}
-
-            table.insert(result, {
-                name = itemName,
-                type = "Item",
-                from_clicky = true,
-                cond = function(caller, itemName, targetSpawn)
-                    if not Casting.ItemReady(itemName) then return false end
-                    local buffCheckPassed = true
-
-                    if targetSpawn.ID() == mq.TLO.Me.ID() then
-                        buffCheckPassed = Casting.SelfBuffItemCheck(clicky.itemName)
-                    elseif targetSpawn.ID() == mq.TLO.Me.Pet.ID() then
-                        ---@diagnostic disable-next-line: cast-local-type
-                        buffCheckPassed = mq.TLO.Me.Pet.ID() > 0 and Casting.PetBuffItemCheck(clicky.itemName)
-                    elseif targetSpawn.Type() == "PC" then
-                        ---@diagnostic disable-next-line: cast-local-type
-                        buffCheckPassed = Casting.GroupBuffItemCheck(clicky.itemName, targetSpawn)
+                        buffCheckPassed = Casting.GroupBuffItemCheck(clicky.itemName, targetSpawn, nil, clicky.skipTriggerCheck)
                     else ---@diagnostic disable-next-line: cast-local-type
                         buffCheckPassed = Casting.DetItemCheck(clicky.itemName, targetSpawn)
                     end

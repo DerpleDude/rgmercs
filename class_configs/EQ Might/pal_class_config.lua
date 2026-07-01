@@ -15,8 +15,11 @@ return {
     ['ModeChecks']        = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
         IsHealing = function() return true end,
-        IsCuring = function() return Config:GetSetting('DoCureAA') or Config:GetSetting('DoCureSpells') end,
-        IsRezing = function() return Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0 end,
+        IsCuring  = function() return Config:GetSetting('DoCureAA') or Config:GetSetting('DoCureSpells') end,
+        IsRezing  = function()
+            local rezAction = Casting.CanUseAA("Gift of Resurrection") or Core.GetResolvedActionMapItem('RezStaff')
+            return ((Core.GetResolvedActionMapItem('RezSpell') or rezAction) and Targeting.GetXTHaterCount() == 0) or (Config:GetSetting('DoBattleRez') and rezAction)
+        end,
     },
     ['Modes']             = {
         'Tank',
@@ -359,8 +362,11 @@ return {
             "Protective Discipline",       -- Level 69 EQM Custom
             "Protective Surge Discipline", -- Level 45 EQM Custom
         },
-        ['SelfHeal'] = {                   -- EQM Custom Zero-Casttime Self-heal
-            "Blessed Mantle Heal",         -- Level 66 EQM Custom
+        ['Steelwrath'] = {
+            "Steelwrath Discipline", -- Level 68 EQM Custom
+        },
+        ['SelfHeal'] = {             -- EQM Custom Zero-Casttime Self-heal
+            "Blessed Mantle Heal",   -- Level 66 EQM Custom
         },
         ['SpellResistBuff'] = {
             "Silent Piety",        -- Level 69
@@ -368,11 +374,11 @@ return {
         ['ForHonor'] = {           -- Hate Over Time with small absorb recourse
             "Challenge for Honor", -- Level 71
         },
-        -- ['FlameLure'] = { -- eqm port of wizard fire lures, not quite sure what i'm going to do with these yet
-        --     "Lure of Ro",    -- Level 67
-        --     "Lure of Flame", -- Level 62
-        --     "Lure of Fire",  -- Level 55 EQM Custom
-        -- },
+        ['FlameLure'] = {          -- eqm port of wizard fire lures, not quite sure what i'm going to do with these yet
+            "Lure of Ro",          -- Level 67
+            "Lure of Flame",       -- Level 62
+            "Lure of Fire",        -- Level 55 EQM Custom
+        },
     },
     ['AASets']            = {
         ['Disruption'] = {
@@ -402,6 +408,7 @@ return {
                 { name = "CureCurse",       cond = function(self) return Config:GetSetting('KeepCurseMemmed') end, },
                 { name = "PurityCure",      cond = function(self) return Config:GetSetting('KeepPurityMemmed') end, },
                 { name = "CureCorrupt",     cond = function(self) return Config:GetSetting('KeepCorruptMemmed') end, },
+                { name = "FlameLure",       cond = function(self) return Config:GetSetting('DoFlameLure') end, },
                 { name = "UndeadNuke",      cond = function(self) return Config:GetSetting('DoUndeadNuke') end, },
                 { name = "QuickUndeadNuke", cond = function(self) return Config:GetSetting('DoQuickUndeadNuke') end, },
                 { name = "WardProc", },
@@ -412,7 +419,7 @@ return {
         DoRez = function(self, corpseId)
             local rezAction = false
             local rezSpell = Core.GetResolvedActionMapItem('RezSpell')
-            local rezStaff = self.ResolvedActionMap['RezStaff']
+            local rezStaff = Core.GetResolvedActionMapItem('RezStaff')
             local staffReady = mq.TLO.Me.ItemReady(rezStaff)()
             local okayToRez = Casting.OkayToRez(corpseId)
             local combatState = mq.TLO.Me.CombatState():lower() or "unknown"
@@ -429,7 +436,7 @@ return {
                 rezAction = okayToRez and Casting.UseItem(rezStaff, corpseId)
             elseif combatState == "active" or combatState == "resting" then
                 if Casting.SpellReady(rezSpell, true) then
-                    rezAction = okayToRez and Casting.UseSpell(rezSpell, corpseId, true, true)
+                    rezAction = okayToRez and Casting.UseSpell(rezSpell.RankName(), corpseId, true, true)
                 end
             end
 
@@ -452,7 +459,11 @@ return {
             end
             return false
         end,
-
+        shieldNeeded = function()
+            -- check for exactly 100% to help ensure the mob is targeting us, over 100% can indicate another is still targeted
+            return (mq.TLO.Me.PctHPs() <= Config:GetSetting('EquipShield')) or mq.TLO.Me.ActiveDisc() == "Deflection Discipline" or
+                (Config:GetSetting('NamedShieldLock') and ((Globals.AutoTargetIsNamed and Targeting.GetAutoTargetAggroPct() == 100) or Targeting.TankingXTNamed()))
+        end,
     },
     ['HealRotationOrder'] = {
         {
@@ -589,12 +600,21 @@ return {
             },
         },
     },
+    ['Charm']             = {
+        ['Assist'] = {
+            { name = "Taunt",            type = "Ability", },
+            { name = "StunTimer5",       type = "Spell", },
+            { name = "StunTimer4",       type = "Spell", },
+            { name = "Xeno's Faceguard", type = "Item",    load_cond = function(self) return mq.TLO.FindItem("=Xeno's Faceguard")() end, },
+            { name = "Disruption",       type = "AA", },
+        },
+    },
     ['RotationOrder']     = {
         { --Self Buffs
             name = 'Downtime',
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
-                return combat_state == "Downtime" and Casting.OkayToBuff() and Core.OkayToNotHeal() and Casting.AmIBuffable()
+                return combat_state == "Downtime" and Casting.OkayToBuff() and Core.CombatActionsCheck() and Casting.AmIBuffable()
             end,
         },
         {
@@ -603,7 +623,7 @@ return {
             steps = 1,
             targetId = function(self) return Casting.GetBuffableIDs() end,
             cond = function(self, combat_state)
-                return combat_state == "Downtime" and Casting.OkayToBuff() and Core.OkayToNotHeal()
+                return combat_state == "Downtime" and Casting.OkayToBuff() and Core.CombatActionsCheck()
             end,
         },
         { --Actions to lock down xtarg haters
@@ -689,8 +709,8 @@ return {
                     (mq.TLO.Me.PctHPs() <= Config:GetSetting('DefenseStart') or
                         -- we have met our defense count threshold
                         self.Helpers.DefensiveDiscCheck(true) or
-                        -- we are fighting a named and we are (presumably) tanking it
-                        (Globals.AutoTargetIsNamed and Targeting.GetAutoTargetAggroPct() >= 100))
+                        -- we are fighting a named and we are tanking it
+                        Targeting.TankingXTNamed())
             end,
         },
         { --Offensive actions to temporarily boost damage dealt
@@ -700,7 +720,7 @@ return {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 if mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') then return false end
-                return combat_state == "Combat" and Casting.BurnCheck() and Core.OkayToNotHeal()
+                return combat_state == "Combat" and Casting.BurnCheck() and Core.CombatActionsCheck()
             end,
         },
         { --Stun or damage enemies per your settings
@@ -715,7 +735,7 @@ return {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 if not Config:GetSetting('DoAEDamage') or (Core.IsTanking() and mq.TLO.Me.PctHPs() <= Config:GetSetting('HPCritical')) then return false end
-                return combat_state == "Combat" and Combat.AETargetCheck(true)
+                return combat_state == "Combat" and Combat.AETargetCheck(true) and Core.CombatActionsCheck()
             end,
         },
         { --DPS Spells, includes recourse/gift maintenance
@@ -725,7 +745,7 @@ return {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 if mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') then return false end
-                return combat_state == "Combat" and Core.OkayToNotHeal()
+                return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
     },
@@ -817,7 +837,7 @@ return {
                 type = "Spell",
                 active_cond = function(self, spell) return Casting.AuraActiveByName(spell.BaseName()) end,
                 cond = function(self, spell)
-                    return (spell and spell() and not Casting.AuraActiveByName(spell.BaseName()))
+                    return spell() and not Casting.AuraActiveByName(spell.BaseName())
                 end,
             },
             {
@@ -870,12 +890,9 @@ return {
             },
         },
         ['HateTools(AggroTarget)'] = {
-            { --more valuable on laz because we have less hate tools and no other hatelist + 1 abilities
+            {
                 name = "Taunt",
                 type = "Ability",
-                cond = function(self, abilityName, target)
-                    return Targeting.GetTargetDistance(target) < 30
-                end,
             },
             {
                 name = "Xeno's Faceguard",
@@ -903,11 +920,11 @@ return {
             },
         },
         ['HateTools(AutoTarget)'] = {
-            { --more valuable on laz because we have less hate tools and no other hatelist + 1 abilities
+            {
                 name = "Taunt",
                 type = "Ability",
                 cond = function(self, abilityName, target)
-                    return Targeting.LostAutoTargetAggro() and Targeting.GetTargetDistance(target) < 30
+                    return Targeting.LostAutoTargetAggro()
                 end,
             },
             {
@@ -963,9 +980,6 @@ return {
                 type = "Spell",
                 allowDead = true,
                 load_cond = function(self) return Config:GetSetting('AEStunUse') == 3 and Core.GetResolvedActionMapItem('PBAEStun') end,
-                cond = function(self, spell, target)
-                    return mq.TLO.Me.PctEndurance() >= Config:GetSetting("ManaToNuke") -- save mana for emergency healing
-                end,
             },
             {
                 name = "BladeDisc",
@@ -994,13 +1008,21 @@ return {
                     return Casting.SelfBuffCheck(spell)
                 end,
             },
-            { -- for DPS mode
+            {
                 name = "ForgeDisc",
                 type = "Disc",
                 load_cond = function(self) return not Core.IsTanking() end,
                 cond = function(self, discSpell, target)
                     if not Targeting.TargetBodyIs(target, "Undead") then return false end
                     return Globals.AutoTargetIsNamed and Casting.NoDiscActive()
+                end,
+            },
+            {
+                name = "Steelwrath",
+                type = "Disc",
+                load_cond = function(self) return not Core.IsTanking() end,
+                cond = function(self, discSpell, target)
+                    return Casting.NoDiscActive()
                 end,
             },
         },
@@ -1109,6 +1131,14 @@ return {
                 end,
             },
             {
+                name = "FlameLure",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoFlameLure') end,
+                cond = function(self, aaName, target)
+                    return Casting.OkayToNuke(true)
+                end,
+            },
+            {
                 name = "Bash",
                 type = "Ability",
                 cond = function(self)
@@ -1125,21 +1155,26 @@ return {
             {
                 name = "Equip Shield",
                 type = "CustomFunc",
-                cond = function(self, target)
+                cond = function(self)
                     if mq.TLO.Me.Bandolier("Shield").Active() then return false end
-                    return (mq.TLO.Me.PctHPs() <= Config:GetSetting('EquipShield')) or (Globals.AutoTargetIsNamed and Config:GetSetting('NamedShieldLock'))
+                    return self.Helpers.shieldNeeded()
                 end,
-                custom_func = function(self) return ItemManager.BandolierSwap("Shield") end,
+                custom_func = function(self)
+                    ItemManager.BandolierSwap("Shield")
+                    return true
+                end,
             },
             {
                 name = "Equip 2Hand",
                 type = "CustomFunc",
-                cond = function()
+                cond = function(self)
                     if mq.TLO.Me.Bandolier("2Hand").Active() then return false end
-                    return mq.TLO.Me.PctHPs() >= Config:GetSetting('Equip2Hand') and mq.TLO.Me.ActiveDisc() ~= "Deflection Discipline" and
-                        not (Globals.AutoTargetIsNamed and Config:GetSetting('NamedShieldLock'))
+                    return mq.TLO.Me.PctHPs() >= Config:GetSetting('Equip2Hand') and not self.Helpers.shieldNeeded()
                 end,
-                custom_func = function(self) return ItemManager.BandolierSwap("2Hand") end,
+                custom_func = function(self)
+                    ItemManager.BandolierSwap("2Hand")
+                    return true
+                end,
             },
         },
     },
@@ -1197,13 +1232,13 @@ return {
         ['AEStunUse']         = {
             DisplayName = "AEStun Spell Use:",
             Group = "Abilities",
-            Header = "Debuff",
+            Header = "Debuffs",
             Category = "Stun",
-            Index = 103,
-            Tooltip = "When to use your AE Stun Spell Line (DPS mode will not attempt to regain hate).",
+            Index = 102,
+            Tooltip = "When to use your AE Stun Spell Line.",
             RequiresLoadoutChange = true,
             Type = "Combo",
-            ComboOptions = { 'Disabled', 'Only To Regain Hate', 'Whenever Possible', },
+            ComboOptions = { 'Disabled', 'To Regain Hate If In Tank Mode', 'Whenever Possible', },
             Default = 2,
             Min = 1,
             Max = 3,
@@ -1214,10 +1249,10 @@ return {
             Header = "Damage",
             Category = "AE",
             Index = 102,
-            Tooltip = "When to use your AE Blade Disc Line (DPS mode will not attempt to regain hate).",
+            Tooltip = "When to use your AE Blade Disc Line.",
             RequiresLoadoutChange = true,
             Type = "Combo",
-            ComboOptions = { 'Disabled', 'Only To Regain Hate', 'Whenever Possible', },
+            ComboOptions = { 'Disabled', 'To Regain Hate If In Tank Mode', 'Whenever Possible', },
             Default = 2,
             Min = 1,
             Max = 3,
@@ -1342,7 +1377,7 @@ return {
             Header = "Bandolier",
             Category = "Bandolier",
             Index = 104,
-            Tooltip = "Keep Shield equipped for mobs detected as 'named' by RGMercs (see Named tab).",
+            Tooltip = "Keep Shield equipped while tanking a named.",
             Default = true,
         },
 
@@ -1480,6 +1515,16 @@ return {
             RequiresLoadoutChange = true,
             Default = true,
         },
+        ['DoFlameLure']       = {
+            DisplayName = "Do FlameLure Nuke",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "Direct",
+            Index = 104,
+            Tooltip = "Use the fire lure nuke line.",
+            RequiresLoadoutChange = true,
+            Default = false,
+        },
         ['DoValorousRage']    = {
             DisplayName = "Valorous Rage",
             Group = "Abilities",
@@ -1504,6 +1549,7 @@ return {
             Default = 1,
             Min = 1,
             Max = 4,
+            RequiresLoadoutChange = true,
         },
         ['DoACBuff']          = {
             DisplayName = "Use AC Buff",
@@ -1562,6 +1608,20 @@ return {
             FAQ = "Why am I using and Undead proc, I'm not fighting any undead?",
             Answer = "If you have elected to use the Standard DD proc (default) and it is not yet available, we will use the Undead proc still.\n" ..
                 "Your desired proc can be adjusted with the Proc Buff Choice setting in Self Buff category.",
+        },
+        ['HealPriority']      = {
+            DisplayName = "Healing Priority",
+            Group = "Abilities",
+            Header = "Recovery",
+            Category = "Healing Thresholds",
+            Index = 101,
+            Type = "Combo",
+            ComboOptions = { 'Ignore', 'Big Heal Point', },
+            Default = 2,
+            Min = 1,
+            Max = 2,
+            Tooltip = "When to yield offensive rotations for healing:\n1 - Ignore (never)\n2 - Big Heal Point",
+            ConfigType = "Advanced",
         },
     },
     ['ClassFAQ']          = {

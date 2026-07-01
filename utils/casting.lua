@@ -75,6 +75,10 @@ function Casting.TargetHasBuff(effect, target, bAllowTargetChange)
     return mq.TLO.Target.Buff(spell)() ~= nil
 end
 
+-- Buff Check Family: Local, LocalPet, Peer, Actor, ActorPet.
+-- By default, if the buff's triggers are still up we won't recast it, even after the parent spell has expired. This stops Unity-style spells (short duration parent buff we don't care about) from recasting every 6 seconds.
+-- Set skipTriggerCheck to ignore triggers and recast whenever the parent spell itself is missing -- needed for spells like ENC illusion buffs with an illusion trigger we don't care about. Can also be used if we know we don't need triggers.
+
 --- Complex buff check that will check for presence and stacking of the buff (and any triggers) on the PC or the PC's pet.
 --- @param spellId integer The ID of the spell to check.
 --- @param skipBlockCheck boolean|nil whether to check the peers blocked spells, this needs to be skipped for certain manual stacking checks
@@ -86,62 +90,63 @@ function Casting.LocalBuffCheck(spellId, skipBlockCheck, skipTriggerCheck)
     local buffSpell = mq.TLO.Spell(spellId)
     if not buffSpell or not buffSpell() then return false end
     local spellName = buffSpell.Name()
+    if not spellName then return false end
 
-    if not skipBlockCheck then
-        if mq.TLO.Me.BlockedBuff(spellName)() == spellName then
-            Logger.log_verbose("LocalBuffCheck: %s(ID:%d) is on the blocked spell list, aborting check.", spellName, spellId)
-            return false
-        end
+    local spellBlocked = not skipBlockCheck and mq.TLO.Me.BlockedBuff(spellName)() == spellName
+    if spellBlocked then
+        Logger.log_verbose("LocalBuffCheck: %s(ID:%d) is blocked, counting as present.", spellName, spellId)
     end
 
-    if mq.TLO.Me.FindBuff("id " .. spellId)() then
-        Logger.log_verbose("LocalBuffCheck: %s(ID:%d) found, ending check.", spellName, spellId)
-        return false
-    end
+    local spellPresent = spellBlocked or mq.TLO.Me.FindBuff("id " .. spellId)() ~= nil
 
-    if not buffSpell.Stacks() then
+    if not spellPresent and not buffSpell.Stacks() then
         Logger.log_verbose("LocalBuffCheck: %s(ID:%d) does not stack, ending check.", spellName, spellId)
         return false
     end
 
-    -- Check triggers
-    if not skipTriggerCheck then
-        Logger.log_verbose("LocalBuffCheck: %s(ID:%d) not found, let's check for triggers.", spellName, spellId)
-        local numEffects = buffSpell.NumEffects()
-        local triggerCount = 0
-        local triggerFound = 0
-        for i = 1, numEffects do
-            local triggerSpell = buffSpell.Trigger(i)
-            --Some Laz spells report trigger 1 as "Unknown Spell" with an ID of 0, which always reports false on stack checks
-            if not (triggerSpell and triggerSpell() and triggerSpell.ID() > 0) then
-                Logger.log_verbose("LocalBuffCheck: We've checked every trigger for %s(ID:%d).", spellName, spellId)
-                break
-            end
-
-            local triggerName = triggerSpell.Name()
-            local triggerId = triggerSpell.ID()
-            triggerCount = triggerCount + 1
-
-            if mq.TLO.Me.FindBuff("id " .. triggerId)() then
-                Logger.log_verbose("LocalBuffCheck: Trigger %s(ID:%d) found, moving on.", triggerName, triggerId)
-                triggerFound = triggerFound + 1
-            elseif triggerSpell.Stacks() then
-                Logger.log_verbose("LocalBuffCheck: Trigger %s(ID:%d) seems to stack, let's do it!", triggerName, triggerId)
-                return true
-            else
-                Logger.log_verbose("LocalBuffCheck: Trigger %s(ID:%d) does not stack, moving on.", triggerName, triggerId)
-                triggerFound = triggerFound + 1
-            end
-        end
-
-        if triggerCount > 0 and triggerFound >= triggerCount then
-            Logger.log_verbose("LocalBuffCheck: Total triggers for %s(ID:%d): %d. Triggers found: %d. Ending Check.", spellName, spellId, triggerCount, triggerFound)
+    if skipTriggerCheck then
+        if spellPresent then
+            Logger.log_verbose("LocalBuffCheck: %s(ID:%d) present, trigger check skipped.", spellName, spellId)
             return false
+        end
+        Logger.log_verbose("LocalBuffCheck: %s(ID:%d) missing and stacks, trigger check skipped, let's do it!", spellName, spellId)
+        return true
+    end
+
+    Logger.log_verbose("LocalBuffCheck: %s(ID:%d) checking for triggers.", spellName, spellId)
+    local numEffects = buffSpell.NumEffects()
+    local hasTriggers = false
+    for i = 1, numEffects do
+        local triggerSpell = buffSpell.Trigger(i)
+        --Some Laz spells report trigger 1 as "Unknown Spell" with an ID of 0, which always reports false on stack checks
+        if not (triggerSpell and triggerSpell() and triggerSpell.ID() > 0) then
+            Logger.log_verbose("LocalBuffCheck: We've checked every trigger for %s(ID:%d).", spellName, spellId)
+            break
+        end
+        hasTriggers = true
+
+        local triggerName = triggerSpell.Name()
+        local triggerId = triggerSpell.ID()
+
+        if not skipBlockCheck and mq.TLO.Me.BlockedBuff(triggerName)() == triggerName then
+            Logger.log_verbose("LocalBuffCheck: Trigger %s(ID:%d) is blocked, counting as present.", triggerName, triggerId)
+        elseif mq.TLO.Me.FindBuff("id " .. triggerId)() then
+            Logger.log_verbose("LocalBuffCheck: Trigger %s(ID:%d) found, moving on.", triggerName, triggerId)
+        elseif triggerSpell.Stacks() then
+            Logger.log_verbose("LocalBuffCheck: Trigger %s(ID:%d) missing and stacks, let's do it!", triggerName, triggerId)
+            return true
+        else
+            Logger.log_verbose("LocalBuffCheck: Trigger %s(ID:%d) does not stack, moving on.", triggerName, triggerId)
         end
     end
 
-    Logger.log_verbose("LocalBuffCheck: %s(ID:%d) seems to stack, let's do it!", spellName, spellId)
-    return true
+    if not hasTriggers and not spellPresent then
+        Logger.log_verbose("LocalBuffCheck: %s(ID:%d) missing and stacks with no triggers, let's do it!", spellName, spellId)
+        return true
+    end
+
+    Logger.log_verbose("LocalBuffCheck: %s(ID:%d) handled, no need to cast.", spellName, spellId)
+    return false
 end
 
 --- Delegates to LocalBuffCheck after resolving the spell rank via
@@ -158,19 +163,21 @@ end
 --- spell ID to confirm not blocked, not present, and stacks.
 ---@param aaName string The AA name to check.
 ---@return boolean True if the AA buff should be cast on self.
-function Casting.SelfBuffAACheck(aaName)
+function Casting.SelfBuffAACheck(aaName, skipBlockCheck, skipTriggerCheck)
     if not Casting.CanUseAA(aaName) then return false end
-    return Casting.LocalBuffCheck(mq.TLO.Me.AltAbility(aaName).Spell.ID())
+    return Casting.LocalBuffCheck(mq.TLO.Me.AltAbility(aaName).Spell.ID(), skipBlockCheck, skipTriggerCheck)
 end
 
 --- Gets the clicky spell via GetClickySpell, then delegates to
 --- LocalBuffCheck to confirm not blocked, not present, and stacks.
 ---@param itemName string The item name whose clicky to check.
+---@param skipBlockCheck boolean|nil whether to skip the blocked-spell check
+---@param skipTriggerCheck boolean|nil whether to skip the trigger check
 ---@return boolean True if the item's clicky buff should be applied to self.
-function Casting.SelfBuffItemCheck(itemName)
+function Casting.SelfBuffItemCheck(itemName, skipBlockCheck, skipTriggerCheck)
     local clickySpell = Casting.GetClickySpell(itemName)
     if not (clickySpell and clickySpell()) then return false end
-    return Casting.LocalBuffCheck(clickySpell.ID())
+    return Casting.LocalBuffCheck(clickySpell.ID(), skipBlockCheck, skipTriggerCheck)
 end
 
 --- Complex buff check that will check for presence and stacking of the buff (and any triggers) on the PC or the PC's pet.
@@ -185,64 +192,64 @@ function Casting.LocalPetBuffCheck(spellId, skipBlockCheck, skipTriggerCheck)
     local buffSpell = mq.TLO.Spell(spellId)
     if not buffSpell or not buffSpell() then return false end
     local spellName = buffSpell.Name()
+    if not spellName then return false end
 
-    if not skipBlockCheck then
-        if mq.TLO.Me.BlockedPetBuff(spellName)() == spellName then
-            Logger.log_verbose("LocalPetBuffCheck: %s(ID:%d) is on the blocked spell list, aborting check.", spellName, spellId)
-            return false
-        end
+    local spellBlocked = not skipBlockCheck and mq.TLO.Me.BlockedPetBuff(spellName)() == spellName
+    if spellBlocked then
+        Logger.log_verbose("LocalPetBuffCheck: %s(ID:%d) is blocked, counting as present.", spellName, spellId)
     end
 
     -- I would like to use FindBuff with an ID here but it mysteriously does not see certain buffs.
-    if mq.TLO.Me.Pet.Buff(spellName)() then
-        Logger.log_verbose("LocalPetBuffCheck: %s(ID:%d) found, ending check.", spellName, spellId)
-        return false
-    end
+    local spellPresent = spellBlocked or mq.TLO.Me.Pet.Buff(spellName)() ~= nil
 
-    -- Check stacking
-    if not buffSpell.StacksPet() then
+    if not spellPresent and not buffSpell.StacksPet() then
         Logger.log_verbose("LocalPetBuffCheck: %s(ID:%d) does not stack, ending check.", spellName, spellId)
         return false
     end
 
-    -- Check triggers
-    if not skipTriggerCheck then
-        Logger.log_verbose("LocalPetBuffCheck: %s(ID:%d) not found, let's check for triggers.", spellName, spellId)
-        local numEffects = buffSpell.NumEffects()
-        local triggerCount = 0
-        local triggerFound = 0
-        for i = 1, numEffects do
-            local triggerSpell = buffSpell.Trigger(i)
-            --Some Laz spells report trigger 1 as "Unknown Spell" with an ID of 0, which always reports false on stack checks
-            if not (triggerSpell and triggerSpell() and triggerSpell.ID() > 0) then
-                Logger.log_verbose("LocalPetBuffCheck: We've checked every trigger for %s(ID:%d).", spellName, spellId)
-                break
-            end
-
-            local triggerName = triggerSpell.Name()
-            local triggerId = triggerSpell.ID()
-            triggerCount = triggerCount + 1
-
-            if mq.TLO.Me.Pet.Buff(triggerName)() then
-                Logger.log_verbose("LocalPetBuffCheck: Trigger %s(ID:%d) found, moving on.", triggerName, triggerId)
-                triggerFound = triggerFound + 1
-            elseif triggerSpell.StacksPet() then
-                Logger.log_verbose("LocalPetBuffCheck: Trigger %s(ID:%d) seems to stack, let's do it!", triggerName, triggerId)
-                return true
-            else
-                Logger.log_verbose("LocalPetBuffCheck: Trigger %s(ID:%d) does not stack, moving on.", triggerName, triggerId)
-                triggerFound = triggerFound + 1
-            end
-        end
-
-        if triggerCount > 0 and triggerFound >= triggerCount then
-            Logger.log_verbose("LocalPetBuffCheck: Total triggers for %s(ID:%d): %d. Triggers found: %d. Ending Check.", spellName, spellId, triggerCount, triggerFound)
+    if skipTriggerCheck then
+        if spellPresent then
+            Logger.log_verbose("LocalPetBuffCheck: %s(ID:%d) present, trigger check skipped.", spellName, spellId)
             return false
+        end
+        Logger.log_verbose("LocalPetBuffCheck: %s(ID:%d) missing and stacks, trigger check skipped, let's do it!", spellName, spellId)
+        return true
+    end
+
+    Logger.log_verbose("LocalPetBuffCheck: %s(ID:%d) checking for triggers.", spellName, spellId)
+    local numEffects = buffSpell.NumEffects()
+    local hasTriggers = false
+    for i = 1, numEffects do
+        local triggerSpell = buffSpell.Trigger(i)
+        --Some Laz spells report trigger 1 as "Unknown Spell" with an ID of 0, which always reports false on stack checks
+        if not (triggerSpell and triggerSpell() and triggerSpell.ID() > 0) then
+            Logger.log_verbose("LocalPetBuffCheck: We've checked every trigger for %s(ID:%d).", spellName, spellId)
+            break
+        end
+        hasTriggers = true
+
+        local triggerName = triggerSpell.Name()
+        local triggerId = triggerSpell.ID()
+
+        if not skipBlockCheck and mq.TLO.Me.BlockedPetBuff(triggerName)() == triggerName then
+            Logger.log_verbose("LocalPetBuffCheck: Trigger %s(ID:%d) is blocked, counting as present.", triggerName, triggerId)
+        elseif mq.TLO.Me.Pet.Buff(triggerName)() then
+            Logger.log_verbose("LocalPetBuffCheck: Trigger %s(ID:%d) found, moving on.", triggerName, triggerId)
+        elseif triggerSpell.StacksPet() then
+            Logger.log_verbose("LocalPetBuffCheck: Trigger %s(ID:%d) missing and stacks, let's do it!", triggerName, triggerId)
+            return true
+        else
+            Logger.log_verbose("LocalPetBuffCheck: Trigger %s(ID:%d) does not stack, moving on.", triggerName, triggerId)
         end
     end
 
-    Logger.log_verbose("LocalPetBuffCheck: %s(ID:%d) seems to stack, let's do it!", spellName, spellId)
-    return true
+    if not hasTriggers and not spellPresent then
+        Logger.log_verbose("LocalPetBuffCheck: %s(ID:%d) missing and stacks with no triggers, let's do it!", spellName, spellId)
+        return true
+    end
+
+    Logger.log_verbose("LocalPetBuffCheck: %s(ID:%d) handled, no need to cast.", spellName, spellId)
+    return false
 end
 
 --- Delegates to LocalPetBuffCheck after resolving the spell rank via
@@ -267,11 +274,13 @@ end
 --- Gets the clicky spell via GetClickySpell, then delegates to
 --- LocalPetBuffCheck to confirm not blocked on pet, not present, stacks.
 ---@param itemName string The item name whose clicky to check.
+---@param skipBlockCheck boolean|nil whether to skip the blocked-spell check
+---@param skipTriggerCheck boolean|nil whether to skip the trigger check
 ---@return boolean True if the item's clicky buff should be applied to the pet.
-function Casting.PetBuffItemCheck(itemName)
+function Casting.PetBuffItemCheck(itemName, skipBlockCheck, skipTriggerCheck)
     local clickySpell = Casting.GetClickySpell(itemName)
     if not (clickySpell and clickySpell()) then return false end
-    return Casting.LocalPetBuffCheck(clickySpell.ID())
+    return Casting.LocalPetBuffCheck(clickySpell.ID(), skipBlockCheck, skipTriggerCheck)
 end
 
 --- Helper that will perform complex checks for presence and stacking of buffs (and any triggers) using the best (determined) method available.
@@ -361,6 +370,7 @@ end
 ---@return boolean True if the spell should be cast on the target.
 function Casting.GroupBuffCheck(spell, target, skipBlockCheck, skipTriggerCheck)
     if not (spell and spell()) then return false end
+    if not Casting.LevelCheckPass(spell, target) then return false end
     return Casting.ResolveBuffCheck(Casting.GetUseableSpellId(spell), target, skipBlockCheck, skipTriggerCheck)
 end
 
@@ -376,6 +386,7 @@ function Casting.GroupBuffAACheck(aaName, target, skipBlockCheck, skipTriggerChe
     if not Casting.CanUseAA(aaName) then return false end
     local aaSpell = mq.TLO.Me.AltAbility(aaName).Spell
     if not aaSpell or not aaSpell() then return false end
+    if not Casting.LevelCheckPass(aaSpell, target) then return false end
     return Casting.ResolveBuffCheck(aaSpell.ID(), target, skipBlockCheck, skipTriggerCheck)
 end
 
@@ -390,6 +401,7 @@ end
 function Casting.GroupBuffItemCheck(itemName, target, skipBlockCheck, skipTriggerCheck)
     local clickySpell = Casting.GetClickySpell(itemName)
     if not (clickySpell and clickySpell()) then return false end
+    if not Casting.LevelCheckPass(clickySpell, target) then return false end
     return Casting.ResolveBuffCheck(clickySpell.ID(), target, skipBlockCheck, skipTriggerCheck)
 end
 
@@ -500,79 +512,86 @@ function Casting.PeerBuffCheck(spellId, target, skipBlockCheck, skipTriggerCheck
         return false
     end
 
-    if not skipBlockCheck then
-        local blockedResult = DanNet.query(targetName, string.format("Me.BlockedBuff[%s]", spellName), 1000)
-        if not blockedResult then
-            Logger.log_error(
-                "PeerBuffCheck: Tried to check buff blocking, but something seems to have gone wrong! Your character may not be responding. If this persists, please report it. Spell:%s(ID:%d), Target:%s(ID:%d)",
-                spellName, spellId, targetName, targetId)
-        elseif blockedResult:lower() == spellName:lower() then
-            Logger.log_verbose("PeerBuffCheck: %s(ID:%d) appears to be blocked on %s(ID:%d). Aborting Check.", spellName, spellId, targetName, targetId)
-            return false
-        else
-            Logger.log_verbose("PeerBuffCheck: %s(ID:%d) does not appear to be blocked on %s(ID:%d).", spellName, spellId, targetName, targetId)
-        end
-    end
-
+    -- check presence first because blocking is rare
     local spellResult = DanNet.query(targetName, string.format("Me.FindBuff[id %d]", spellId), 1000)
-
-    if spellResult:lower() == spellName:lower() then
-        Logger.log_verbose("PeerBuffCheck: %s(ID:%d) found on %s(ID:%d), ending check.", spellName, spellId, targetName, targetId)
-        return false
-    elseif spellResult:lower() ~= "null" then
+    local spellPresent = spellResult:lower() == spellName:lower()
+    if not spellPresent and spellResult:lower() ~= "null" then
         Logger.log_error(
             "PeerBuffCheck: Tried to check buff presence, but something seems to have gone wrong! Your character may not be responding. If this persists, please report it. Spell:%s(ID:%d), Target:%s(ID:%d) Result:%s",
             spellName, spellId, targetName, targetId, spellResult)
         return false
     end
 
-    local spellStackResult = DanNet.query(targetName, string.format("Spell[%d].Stacks", spellId), 1000)
-    if spellStackResult:lower() ~= "true" then
-        Logger.log_verbose("PeerBuffCheck: %s(ID:%d) does not stack on %s(ID:%d), ending check.", spellName, spellId, targetName, targetId)
-        return false
+    if not spellPresent and not skipBlockCheck then
+        local blockedResult = DanNet.query(targetName, string.format("Me.BlockedBuff[%s]", spellName), 1000)
+        if blockedResult:lower() == spellName:lower() then
+            Logger.log_verbose("PeerBuffCheck: %s(ID:%d) is blocked on %s(ID:%d), counting as present.", spellName, spellId, targetName, targetId)
+            spellPresent = true
+        end
     end
 
-    if not skipTriggerCheck then
-        Logger.log_verbose("PeerBuffCheck: %s(ID:%d) stacks on %s(ID:%d), but let's check for triggers.", spellName, spellId, targetName, targetId)
-        local numEffects = buffSpell.NumEffects()
-        local triggerCount = 0
-        local triggerFound = 0
-        for i = 1, numEffects do
-            local triggerSpell = buffSpell.Trigger(i)
-            if not (triggerSpell and triggerSpell() and triggerSpell.ID() > 0) then
-                Logger.log_verbose("PeerBuffCheck: We've checked every trigger for %s(ID:%d).", spellName, spellId)
-                break
-            end
-
-            local triggerName = triggerSpell.Name()
-            local triggerId = triggerSpell.ID()
-            local triggerResult = DanNet.query(targetName, string.format("Me.FindBuff[id %d]", triggerId), 1000)
-
-            triggerCount = triggerCount + 1
-
-            if triggerResult:lower() == triggerName:lower() then
-                Logger.log_verbose("PeerBuffCheck: %s(ID:%d) found on %s(ID:%d), moving on.", triggerName, triggerId, targetName, targetId)
-                triggerFound = triggerFound + 1
-            elseif triggerResult:lower() == "null" then
-                local triggerStackResult = DanNet.query(targetName, string.format("Spell[%d].Stacks", triggerId), 1000)
-                if triggerStackResult:lower() == "true" then
-                    Logger.log_verbose("PeerBuffCheck: %s(ID:%d) seems to stack on %s(ID:%d), let's do it!", triggerName, triggerId, targetName, targetId)
-                    return true
-                else
-                    Logger.log_verbose("PeerBuffCheck: %s(ID:%d) does not stack on %s(ID:%d), moving on.", triggerName, triggerId, targetName, targetId)
-                    triggerFound = triggerFound + 1
-                end
-            end
-        end
-
-        if triggerCount > 0 and triggerFound >= triggerCount then
-            Logger.log_verbose("PeerBuffCheck: Total triggers for %s(ID:%d): %d. Present or non-stacking triggers: %d. Ending Check.", spellName, spellId, triggerCount, triggerFound)
+    if not spellPresent then
+        local spellStackResult = DanNet.query(targetName, string.format("Spell[%d].Stacks", spellId), 1000)
+        if spellStackResult:lower() ~= "true" then
+            Logger.log_verbose("PeerBuffCheck: %s(ID:%d) does not stack on %s(ID:%d), ending check.", spellName, spellId, targetName, targetId)
             return false
         end
     end
 
-    Logger.log_verbose("PeerBuffCheck: %s(ID:%d) seems to stack on %s(ID:%d), let's do it!", spellName, spellId, targetName, targetId)
-    return true
+    if skipTriggerCheck then
+        if spellPresent then
+            Logger.log_verbose("PeerBuffCheck: %s(ID:%d) present on %s(ID:%d), trigger check skipped.", spellName, spellId, targetName, targetId)
+            return false
+        end
+        Logger.log_verbose("PeerBuffCheck: %s(ID:%d) missing on %s(ID:%d) and stacks, trigger check skipped, let's do it!", spellName, spellId, targetName, targetId)
+        return true
+    end
+
+    Logger.log_verbose("PeerBuffCheck: %s(ID:%d) checking for triggers on %s(ID:%d).", spellName, spellId, targetName, targetId)
+    local numEffects = buffSpell.NumEffects()
+    local hasTriggers = false
+    for i = 1, numEffects do
+        local triggerSpell = buffSpell.Trigger(i)
+        if not (triggerSpell and triggerSpell() and triggerSpell.ID() > 0) then
+            Logger.log_verbose("PeerBuffCheck: We've checked every trigger for %s(ID:%d).", spellName, spellId)
+            break
+        end
+        hasTriggers = true
+
+        local triggerName = triggerSpell.Name()
+        local triggerId = triggerSpell.ID()
+        local triggerResult = DanNet.query(targetName, string.format("Me.FindBuff[id %d]", triggerId), 1000)
+
+        if triggerResult:lower() == triggerName:lower() then
+            Logger.log_verbose("PeerBuffCheck: Trigger %s(ID:%d) found on %s(ID:%d), moving on.", triggerName, triggerId, targetName, targetId)
+        elseif triggerResult:lower() == "null" then
+            local triggerBlocked = false
+            if not skipBlockCheck then
+                local triggerBlockedResult = DanNet.query(targetName, string.format("Me.BlockedBuff[%s]", triggerName), 1000)
+                if triggerBlockedResult:lower() == triggerName:lower() then
+                    triggerBlocked = true
+                end
+            end
+            if triggerBlocked then
+                Logger.log_verbose("PeerBuffCheck: Trigger %s(ID:%d) is blocked on %s(ID:%d), counting as present.", triggerName, triggerId, targetName, targetId)
+            else
+                local triggerStackResult = DanNet.query(targetName, string.format("Spell[%d].Stacks", triggerId), 1000)
+                if triggerStackResult:lower() == "true" then
+                    Logger.log_verbose("PeerBuffCheck: Trigger %s(ID:%d) missing and stacks on %s(ID:%d), let's do it!", triggerName, triggerId, targetName, targetId)
+                    return true
+                end
+                Logger.log_verbose("PeerBuffCheck: Trigger %s(ID:%d) does not stack on %s(ID:%d), moving on.", triggerName, triggerId, targetName, targetId)
+            end
+        end
+    end
+
+    if not hasTriggers and not spellPresent then
+        Logger.log_verbose("PeerBuffCheck: %s(ID:%d) missing on %s(ID:%d) and stacks with no triggers, let's do it!", spellName, spellId, targetName, targetId)
+        return true
+    end
+
+    Logger.log_verbose("PeerBuffCheck: %s(ID:%d) handled on %s(ID:%d), no need to cast.", spellName, spellId, targetName, targetId)
+    return false
 end
 
 --- Complex buff check that will check for presence and stacking of the buff (and any triggers) on an actor peer.
@@ -596,9 +615,8 @@ function Casting.ActorBuffCheck(spellId, target, skipBlockCheck, skipTriggerChec
 
     if not heartbeat or not heartbeat.Data then
         Logger.log_error(
-            "ActorBuffCheck: Tried to check a peer's buff, but that peer isn't found! " ..
-            "If this behavior continues, please report this. Spell:%s(ID:%d), Target:%s(ID:%d)",
-            spellName, spellId, targetName, targetId)
+            "ActorBuffCheck: Tried to check a peer's buff, but that peer isn't found! If this behavior continues, please report this. Spell:%s(ID:%d), Target:%s(ID:%d)", spellName,
+            spellId, targetName, targetId)
         return false
     end
 
@@ -614,118 +632,93 @@ function Casting.ActorBuffCheck(spellId, target, skipBlockCheck, skipTriggerChec
         return Casting.PeerBuffCheck(spellId, target, skipBlockCheck, skipTriggerCheck)
     end
 
-    if not skipBlockCheck then
-        if Tables.TableContains(blockedList, spellId) then
-            Logger.log_verbose("ActorBuffCheck: %s(ID:%d) appears to be blocked on %s(ID:%d). Aborting Check.", spellName, spellId, targetName, targetId)
-            return false
-        else
-            Logger.log_verbose("ActorBuffCheck: %s(ID:%d) does not appear to be blocked on %s(ID:%d).", spellName, spellId, targetName, targetId)
-        end
-    else
-        Logger.log_verbose("ActorBuffCheck: %s(ID:%d) block check skipped on %s(ID:%d).", spellName, spellId, targetName, targetId)
+    local spellBlocked = not skipBlockCheck and Tables.TableContains(blockedList, spellId)
+    if spellBlocked then
+        Logger.log_verbose("ActorBuffCheck: %s(ID:%d) is blocked on %s(ID:%d), counting as present.", spellName, spellId, targetName, targetId)
     end
 
-    -- if they don't have open buff slots, even if local stacking is true, it may not be able to land on them... they should check it.
-    -- if this PC doesn't have open buff slots, some stackswith checks will incorrectly return false, so they need to check it then as well.
-    local myOpenBuffs = mq.TLO.Me.MaxBuffSlots() - Globals.CurrentBuffCount
-    if openBuffs <= 0 or myOpenBuffs <= 0 then
-        Logger.log_verbose(
-            "ActorBuffCheck: Either %s or myself has full buffs, falling back on DanNet checks for %s(ID: %d). MyOpenSlots: %d, TargetOpenSlots: %d", targetName, spellName, spellId,
-            myOpenBuffs, openBuffs)
-        return Casting.PeerBuffCheck(spellId, target, true, skipTriggerCheck) -- we already did the block check (if needed) here, skip it, saves a query
+    local spellWindow = buffSpell.DurationWindow()
+    local activeList = spellWindow == 1 and songList or buffList
+    local spellPresent = spellBlocked or Tables.TableContains(activeList, spellId)
+
+    -- if the spell isn't already up and the target's buff window is full, have the PC check via DanNet to see if this could overwrite an existing spell instead of assuming it won't land
+    if not spellPresent and spellWindow == 0 and openBuffs <= 0 then
+        Logger.log_verbose("ActorBuffCheck: %s has a full buff window, falling back on DanNet checks for %s(ID:%d).", targetName, spellName, spellId)
+        return Casting.PeerBuffCheck(spellId, target, skipBlockCheck, skipTriggerCheck)
     end
 
-    for _, buffId in ipairs(buffList) do
-        if buffId == spellId then
-            Logger.log_verbose("ActorBuffCheck: %s(ID:%d) found on %s(ID:%d), ending check.", spellName, spellId, targetName, targetId)
-            return false
-        end
-        ---@diagnostic disable-next-line: redundant-parameter
-        if not buffSpell.StacksWith(buffId)() then
-            Logger.log_verbose("ActorBuffCheck: %s(ID:%d) does not stack with %s(ID:%d) on %s(ID:%d), ending check.", spellName, spellId, mq.TLO.Spell(buffId).Name(), buffId,
-                targetName, targetId)
-            return false
-        end
-    end
-
-    for _, songId in ipairs(songList) do
-        if songId == spellId then
-            Logger.log_verbose("ActorBuffCheck: %s(ID:%d) found on %s(ID:%d), ending check.", spellName, spellId, targetName, targetId)
-            return false
-        end
-        ---@diagnostic disable-next-line: redundant-parameter
-        if not buffSpell.StacksWith(songId)() then
-            Logger.log_verbose("ActorBuffCheck: %s(ID:%d) does not stack with %s(ID:%d) on %s(ID:%d), ending check.", spellName, spellId, mq.TLO.Spell(songId).Name(), songId,
-                targetName, targetId)
-            return false
-        end
-    end
-
-    if not skipTriggerCheck then
-        Logger.log_verbose("ActorBuffCheck: %s(ID:%d) seems to stack on %s(ID:%d), let's check for triggers.", spellName, spellId, targetName, targetId)
-        local numEffects = buffSpell.NumEffects()
-        local triggerCount = 0
-        local triggerFound = 0
-
-        for i = 1, numEffects do
-            local triggerSpell = buffSpell.Trigger(i)
-            --Some Laz spells report trigger 1 as "Unknown Spell" with an ID of 0, which always reports false on stack checks
-            if triggerSpell and triggerSpell() and triggerSpell.ID() > 0 then
-                local triggerName = triggerSpell.Name()
-                local triggerId = triggerSpell.ID()
-                triggerCount = triggerCount + 1
-                local triggerHandled = false
-                for _, buffId in ipairs(buffList) do
-                    if buffId == triggerId then
-                        Logger.log_verbose("ActorBuffCheck: %s(ID:%d) found on %s(ID:%d), moving on.", triggerName, triggerId, targetName, targetId)
-                        triggerFound = triggerFound + 1
-                        triggerHandled = true
-                        break
-                    end
-                    ---@diagnostic disable-next-line: redundant-parameter
-                    if not triggerSpell.StacksWith(buffId)() then
-                        Logger.log_verbose("ActorBuffCheck: %s(ID:%d) does not stack with %s(ID:%d) on %s(ID:%d), moving on.", triggerName, triggerId, mq.TLO.Spell(buffId).Name(),
-                            buffId, targetName, targetId)
-                        triggerFound = triggerFound + 1
-                        triggerHandled = true
-                        break
-                    end
-                end
-                if not triggerHandled then
-                    for _, songId in ipairs(songList) do
-                        if songId == triggerId then
-                            Logger.log_verbose("ActorBuffCheck: %s(ID:%d) found on %s(ID:%d), moving on.", triggerName, triggerId, targetName, targetId)
-                            triggerFound = triggerFound + 1
-                            triggerHandled = true
-                            break
-                        end
-                        ---@diagnostic disable-next-line: redundant-parameter
-                        if not triggerSpell.StacksWith(songId)() then
-                            Logger.log_verbose("ActorBuffCheck: %s(ID:%d) does not stack with %s(ID:%d) on %s(ID:%d), moving on.", triggerName, triggerId,
-                                mq.TLO.Spell(songId).Name(), songId, targetName, targetId)
-                            triggerFound = triggerFound + 1
-                            triggerHandled = true
-                            break
-                        end
-                    end
-                end
-                if not triggerHandled then
-                    Logger.log_verbose("ActorBuffCheck: %s(ID:%d) seems to stack on %s(ID:%d), let's do it!", triggerName, triggerId, targetName, targetId)
-                    return true
-                end
-            else
-                Logger.log_verbose("ActorBuffCheck: We've checked every trigger for %s(ID:%d).", spellName, spellId)
-                break
+    if not spellPresent then
+        for _, buffId in ipairs(activeList) do
+            ---@diagnostic disable-next-line: redundant-parameter
+            if not buffSpell.StacksWith(buffId)() then
+                Logger.log_verbose("ActorBuffCheck: %s(ID:%d) does not stack with %s(ID:%d) on %s(ID:%d), ending check.", spellName, spellId,
+                    mq.TLO.Spell(buffId).Name() or "Error", buffId, targetName, targetId)
+                return false
             end
         end
-        if triggerCount > 0 and triggerFound >= triggerCount then
-            Logger.log_verbose("ActorBuffCheck: Total triggers for %s(ID:%d): %d. Present or non-stacking triggers: %d. Ending Check.", spellName, spellId, triggerCount,
-                triggerFound)
+    end
+
+    if skipTriggerCheck then
+        if spellPresent then
+            Logger.log_verbose("ActorBuffCheck: %s(ID:%d) present on %s(ID:%d), trigger check skipped.", spellName, spellId, targetName, targetId)
             return false
         end
+        Logger.log_verbose("ActorBuffCheck: %s(ID:%d) missing on %s(ID:%d) and stacks, trigger check skipped, let's do it!", spellName, spellId, targetName, targetId)
+        return true
     end
-    Logger.log_verbose("ActorBuffCheck: %s(ID:%d) seems to stack on %s(ID:%d), let's do it!", spellName, spellId, targetName, targetId)
-    return true
+
+    Logger.log_verbose("ActorBuffCheck: %s(ID:%d) checking for triggers on %s(ID:%d).", spellName, spellId, targetName, targetId)
+    local numEffects = buffSpell.NumEffects()
+    local hasTriggers = false
+    for i = 1, numEffects do
+        local triggerSpell = buffSpell.Trigger(i)
+        --Some Laz spells report trigger 1 as "Unknown Spell" with an ID of 0, which always reports false on stack checks
+        if not (triggerSpell and triggerSpell() and triggerSpell.ID() > 0) then
+            Logger.log_verbose("ActorBuffCheck: We've checked every trigger for %s(ID:%d).", spellName, spellId)
+            break
+        end
+        hasTriggers = true
+
+        local triggerName = triggerSpell.Name()
+        local triggerId = triggerSpell.ID()
+        local triggerWindow = triggerSpell.DurationWindow()
+        local triggerActiveList = triggerWindow == 1 and songList or buffList
+
+        if not skipBlockCheck and Tables.TableContains(blockedList, triggerId) then
+            Logger.log_verbose("ActorBuffCheck: Trigger %s(ID:%d) is blocked on %s(ID:%d), counting as present.", triggerName, triggerId, targetName, targetId)
+        elseif Tables.TableContains(triggerActiveList, triggerId) then
+            Logger.log_verbose("ActorBuffCheck: Trigger %s(ID:%d) found on %s(ID:%d), moving on.", triggerName, triggerId, targetName, targetId)
+        elseif triggerWindow == 0 and openBuffs <= 0 then
+            -- if the trigger isn't already up and the target's buff window is full, have the PC check via DanNet to see if this could overwrite an existing spell instead of assuming it won't land
+            if Casting.PeerBuffCheck(triggerId, target, true, true) then
+                Logger.log_verbose("ActorBuffCheck: Trigger %s(ID:%d) missing and stacks on %s(ID:%d) via fallback, let's do it!", triggerName, triggerId, targetName, targetId)
+                return true
+            end
+        else
+            local stacks = true
+            for _, buffId in ipairs(triggerActiveList) do
+                ---@diagnostic disable-next-line: redundant-parameter
+                if not triggerSpell.StacksWith(buffId)() then
+                    Logger.log_verbose("ActorBuffCheck: Trigger %s(ID:%d) does not stack with %s(ID:%d) on %s(ID:%d), moving on.", triggerName, triggerId,
+                        mq.TLO.Spell(buffId).Name() or "Error", buffId, targetName, targetId)
+                    stacks = false
+                    break
+                end
+            end
+            if stacks then
+                Logger.log_verbose("ActorBuffCheck: Trigger %s(ID:%d) missing and stacks on %s(ID:%d), let's do it!", triggerName, triggerId, targetName, targetId)
+                return true
+            end
+        end
+    end
+
+    if not hasTriggers and not spellPresent then
+        Logger.log_verbose("ActorBuffCheck: %s(ID:%d) missing on %s(ID:%d) and stacks with no triggers, let's do it!", spellName, spellId, targetName, targetId)
+        return true
+    end
+
+    Logger.log_verbose("ActorBuffCheck: %s(ID:%d) handled on %s(ID:%d), no need to cast.", spellName, spellId, targetName, targetId)
+    return false
 end
 
 --- Complex buff check that will check for presence and stacking of the buff (and any triggers) on an actor peer.
@@ -767,75 +760,81 @@ function Casting.ActorPetBuffCheck(spellId, target, skipBlockCheck, skipTriggerC
         return false
     end
 
-    if not skipBlockCheck then
-        if Tables.TableContains(blockedList, spellId) then
-            Logger.log_verbose("ActorPetBuffCheck: %s(ID:%d) appears to be blocked on %s's pet(%s, ID:%d). Aborting Check.", spellName, spellId, masterName, targetName, targetId)
-            return false
-        else
-            Logger.log_verbose("ActorPetBuffCheck: %s(ID:%d) does not appear to be on %s's pet(%s, ID:%d).", spellName, spellId, masterName, targetName, targetId)
-        end
-    else
-        Logger.log_verbose("ActorPetBuffCheck: %s(ID:%d) block check skipped on %s's pet(ID:%d).", spellName, spellId, masterName, targetName, targetId)
+    local spellBlocked = not skipBlockCheck and Tables.TableContains(blockedList, spellId)
+    if spellBlocked then
+        Logger.log_verbose("ActorPetBuffCheck: %s(ID:%d) is blocked on %s's pet(%s, ID:%d), counting as present.", spellName, spellId, masterName, targetName, targetId)
     end
 
-    for _, buffId in ipairs(buffList) do
-        if buffId == spellId then
-            Logger.log_verbose("ActorPetBuffCheck: %s(ID:%d) found on %s's pet(%s, ID:%d), ending check.", spellName, spellId, masterName, targetName, targetId)
-            return false
-        end
-        ---@diagnostic disable-next-line: redundant-parameter
-        if not buffSpell.StacksWith(buffId)() then
-            Logger.log_verbose("ActorPetBuffCheck: %s(ID:%d) does not stack on %s's pet(%s, ID:%d), ending check.", spellName, spellId, masterName, targetName, targetId)
-            return false
-        end
-    end
+    local spellPresent = spellBlocked or Tables.TableContains(buffList, spellId)
 
-    if not skipTriggerCheck then
-        Logger.log_verbose("ActorPetBuffCheck: %s(ID:%d) seems to stack on %s's pet(%s, ID:%d), let's check for triggers.", spellName, spellId, masterName, targetName, targetId)
-        local numEffects = buffSpell.NumEffects()
-        local triggerCount = 0
-        local triggerFound = 0
-
-        for i = 1, numEffects do
-            local triggerSpell = buffSpell.Trigger(i)
-            --Some Laz spells report trigger 1 as "Unknown Spell" with an ID of 0, which always reports false on stack checks
-            if triggerSpell and triggerSpell() and triggerSpell.ID() > 0 then
-                local triggerName = triggerSpell.Name()
-                local triggerId = triggerSpell.ID()
-                triggerCount = triggerCount + 1
-                local triggerHandled = false
-                for _, buffId in ipairs(buffList) do
-                    if buffId == triggerId then
-                        Logger.log_verbose("ActorPetBuffCheck: %s(ID:%d) found on %s's pet(%s, ID:%d), moving on.", triggerName, triggerId, masterName, targetName, targetId)
-                        triggerFound = triggerFound + 1
-                        triggerHandled = true
-                        break
-                    end
-                    ---@diagnostic disable-next-line: redundant-parameter
-                    if not triggerSpell.StacksWith(buffId)() then
-                        Logger.log_verbose("ActorPetBuffCheck: %s(ID:%d) does not stack on %s's pet(%s, ID:%d), moving on.", triggerName, triggerId, masterName, targetName, targetId)
-                        triggerFound = triggerFound + 1
-                        triggerHandled = true
-                        break
-                    end
-                end
-                if not triggerHandled then
-                    Logger.log_verbose("ActorPetBuffCheck: %s(ID:%d) seems to stack on %s's pet(%s, ID:%d), let's do it!", triggerName, triggerId, masterName, targetName, targetId)
-                    return true
-                end
-            else
-                Logger.log_verbose("ActorPetBuffCheck: We've checked every trigger for %s(ID:%d).", spellName, spellId)
-                break
+    if not spellPresent then
+        for _, buffId in ipairs(buffList) do
+            ---@diagnostic disable-next-line: redundant-parameter
+            if not buffSpell.StacksWith(buffId)() then
+                Logger.log_verbose("ActorPetBuffCheck: %s(ID:%d) does not stack with %s(ID:%d) on %s's pet(%s, ID:%d), ending check.", spellName, spellId,
+                    mq.TLO.Spell(buffId).Name() or "Error", buffId, masterName, targetName, targetId)
+                return false
             end
         end
-        if triggerCount > 0 and triggerFound >= triggerCount then
-            Logger.log_verbose("ActorPetBuffCheck: Total triggers for %s(ID:%d): %d. Present or non-stacking triggers: %d. Ending Check.", spellName, spellId, triggerCount,
-                triggerFound)
+    end
+
+    if skipTriggerCheck then
+        if spellPresent then
+            Logger.log_verbose("ActorPetBuffCheck: %s(ID:%d) present on %s's pet(%s, ID:%d), trigger check skipped.", spellName, spellId, masterName, targetName, targetId)
             return false
         end
+        Logger.log_verbose("ActorPetBuffCheck: %s(ID:%d) missing on %s's pet(%s, ID:%d) and stacks, trigger check skipped, let's do it!", spellName, spellId, masterName, targetName,
+            targetId)
+        return true
     end
-    Logger.log_verbose("ActorPetBuffCheck: %s(ID:%d) seems to stack on %s's pet(%s, ID:%d), let's do it!", spellName, spellId, masterName, targetName, targetId)
-    return true
+
+    Logger.log_verbose("ActorPetBuffCheck: %s(ID:%d) checking for triggers on %s's pet(%s, ID:%d).", spellName, spellId, masterName, targetName, targetId)
+    local numEffects = buffSpell.NumEffects()
+    local hasTriggers = false
+    for i = 1, numEffects do
+        local triggerSpell = buffSpell.Trigger(i)
+        --Some Laz spells report trigger 1 as "Unknown Spell" with an ID of 0, which always reports false on stack checks
+        if not (triggerSpell and triggerSpell() and triggerSpell.ID() > 0) then
+            Logger.log_verbose("ActorPetBuffCheck: We've checked every trigger for %s(ID:%d).", spellName, spellId)
+            break
+        end
+        hasTriggers = true
+
+        local triggerName = triggerSpell.Name()
+        local triggerId = triggerSpell.ID()
+
+        if not skipBlockCheck and Tables.TableContains(blockedList, triggerId) then
+            Logger.log_verbose("ActorPetBuffCheck: Trigger %s(ID:%d) is blocked on %s's pet(%s, ID:%d), counting as present.", triggerName, triggerId, masterName, targetName,
+                targetId)
+        elseif Tables.TableContains(buffList, triggerId) then
+            Logger.log_verbose("ActorPetBuffCheck: Trigger %s(ID:%d) found on %s's pet(%s, ID:%d), moving on.", triggerName, triggerId, masterName, targetName, targetId)
+        else
+            local stacks = true
+            for _, buffId in ipairs(buffList) do
+                ---@diagnostic disable-next-line: redundant-parameter
+                if not triggerSpell.StacksWith(buffId)() then
+                    Logger.log_verbose("ActorPetBuffCheck: Trigger %s(ID:%d) does not stack with %s(ID:%d) on %s's pet(%s, ID:%d), moving on.", triggerName, triggerId,
+                        mq.TLO.Spell(buffId).Name() or "Error", buffId, masterName, targetName, targetId)
+                    stacks = false
+                    break
+                end
+            end
+            if stacks then
+                Logger.log_verbose("ActorPetBuffCheck: Trigger %s(ID:%d) missing and stacks on %s's pet(%s, ID:%d), let's do it!", triggerName, triggerId, masterName, targetName,
+                    targetId)
+                return true
+            end
+        end
+    end
+
+    if not hasTriggers and not spellPresent then
+        Logger.log_verbose("ActorPetBuffCheck: %s(ID:%d) missing on %s's pet(%s, ID:%d) and stacks with no triggers, let's do it!", spellName, spellId, masterName, targetName,
+            targetId)
+        return true
+    end
+
+    Logger.log_verbose("ActorPetBuffCheck: %s(ID:%d) handled on %s's pet(%s, ID:%d), no need to cast.", spellName, spellId, masterName, targetName, targetId)
+    return false
 end
 
 --- Checks if an aura is active by its name.
@@ -843,14 +842,32 @@ end
 --- @return boolean True if the aura is active, false otherwise.
 function Casting.AuraActiveByName(auraName)
     if not auraName then return false end
-    local auraOne = string.find(mq.TLO.Me.Aura(1)() or "", auraName) ~= nil
-    local auraTwo = string.find(mq.TLO.Me.Aura(2)() or "", auraName) ~= nil
     local stripName = string.gsub(auraName, "'", "")
+    for i = 1, Casting.MaxAuraSlots() do
+        local slot = mq.TLO.Me.Aura(i)() or ""
+        if string.find(slot, auraName) or string.find(slot, stripName) then
+            return true
+        end
+    end
+    return false
+end
 
-    auraOne = auraOne or string.find(mq.TLO.Me.Aura(1)() or "", stripName) ~= nil
-    auraTwo = auraTwo or string.find(mq.TLO.Me.Aura(2)() or "", stripName) ~= nil
+--- Returns the maximum number of aura slots the player can have active.
+--- @return integer
+function Casting.MaxAuraSlots()
+    if Core.OnLaz() then return 1 end
+    local auroriaSlots = Casting.AARank('Auroria Mastery')
+    local spiritSlots = Casting.CanUseAA('Spirit Mastery') and 1 or 0
+    return auroriaSlots + spiritSlots + 1
+end
 
-    return auraOne or auraTwo
+--- Returns true if at least one aura slot is currently empty.
+--- @return boolean
+function Casting.HasFreeAuraSlot()
+    for i = 1, Casting.MaxAuraSlots() do
+        if (mq.TLO.Me.Aura(i)() or "") == "" then return true end
+    end
+    return false
 end
 
 --- Verifies the player has the spell's expended reagent (ReagentID slot 1) and, on live servers, the non-expended reagent (NoExpendReagentID slot 1) in inventory. Announces a chat message to the group/raid if either is missing. Returns false if any required reagent is absent.
@@ -1089,8 +1106,9 @@ function Casting.GetBuffableInZoneIDs()
     for i = 1, count do
         local member = mq.TLO.Group.Member(i)
         if not member.OtherZone() then
-            if checkCorpses and Casting.HasNearbyCorpse(member.DisplayName()) then
-                Logger.log_debug("Groupmember corpse detected (%s), aborting group buff rotation.", member.DisplayName())
+            local memberName = member.DisplayName()
+            if checkCorpses and Casting.HasNearbyCorpse(memberName) then
+                Logger.log_debug("Groupmember corpse detected (%s), aborting group buff rotation.", memberName)
                 return {}
             end
             zoneIds:add(member.ID())
@@ -1169,8 +1187,9 @@ function Casting.GetBuffableRaidIDs()
     for i = 1, count do
         local member = mq.TLO.Group.Member(i)
         if not member.OtherZone() then
-            if checkCorpses and Casting.HasNearbyCorpse(member.DisplayName()) then
-                Logger.log_debug("Groupmember corpse detected (%s), aborting group buff rotation.", member.DisplayName())
+            local memberName = member.DisplayName()
+            if checkCorpses and Casting.HasNearbyCorpse(memberName) then
+                Logger.log_debug("Groupmember corpse detected (%s), aborting group buff rotation.", memberName)
                 return {}
             end
             raidIds:add(member.ID())
@@ -1246,16 +1265,18 @@ function Casting.GetBuffableGroupIDs()
     for i = 1, count do
         local member = mq.TLO.Group.Member(i)
         if not member.OtherZone() then
-            if checkCorpses and Casting.HasNearbyCorpse(member.DisplayName()) then
-                Logger.log_debug("Groupmember corpse detected (%s), aborting group buff rotation.", member.DisplayName())
+            local memberName = member.DisplayName()
+            if checkCorpses and Casting.HasNearbyCorpse(memberName) then
+                Logger.log_debug("Groupmember corpse detected (%s), aborting group buff rotation.", memberName)
                 return {}
             end
             groupIds:add(member.ID())
             if Config:GetSetting("DoActorPetBuffs") then
-                if #Comms.GetPeerHeartbeatByName(member.DisplayName()) > 0 then
-                    if member() and member.Pet.ID() > 0 then
+                if #Comms.GetPeerHeartbeatByName(memberName) > 0 then
+                    local petId = member() and member.Pet.ID() or 0
+                    if petId > 0 then
                         if not (member.Pet.CleanName() or "familiar"):lower():find("familiar") then
-                            groupIds:add(member.Pet.ID())
+                            groupIds:add(petId)
                         end
                     end
                 end
@@ -1320,12 +1341,13 @@ end
 --- @param spell string The name of the spell to memorize.
 --- @param waitSpellReady boolean Whether to wait until the spell is ready to be memorized.
 --- @param maxWait number The maximum time to wait for the spell to be ready, in milliseconds.
---- @return boolean|nil
+--- @return boolean loaded True when the gem ended up showing the requested spell.
+--- @return boolean permanent True when the spell is no longer in the book (e.g. persona change) and a retry is pointless.
 function Casting.MemorizeSpell(gem, spell, waitSpellReady, maxWait)
     local me = mq.TLO.Me
     if me.CombatState():lower() == "combat" and Targeting.IHaveAggro(100) then
         Logger.log_warning("\atMemorizeSpell\aw():\ar %s was not memorized in slot %d due to aggro! The loadout may need manual rescan after combat.", spell, gem)
-        return false
+        return false, false
     end
     local aggressiveMem      = Config:GetSetting('AggressivelyMemorizeSpells')
     local aggressiveMemTimer = Config:GetSetting('AggressivelyMemorizeTimer') * 1000
@@ -1337,6 +1359,8 @@ function Casting.MemorizeSpell(gem, spell, waitSpellReady, maxWait)
 
     Casting.Memorizing = true
 
+    local interrupted = false
+    local permanent = false
     local startMem = Globals.GetTimeMS()
     while (me.Gem(gem)() ~= mq.TLO.Spell(spell).Name() or (waitSpellReady and not me.SpellReady(gem)())) and ((Globals.GetTimeMS() - startMem) < maxWait) do
         Logger.log_debug("\atMemorizeSpell\aw():\ay Waiting for '%s' to load in slot %d'...", spell, gem)
@@ -1345,10 +1369,12 @@ function Casting.MemorizeSpell(gem, spell, waitSpellReady, maxWait)
                 "\atMemorizeSpell\aw():\ay I was interrupted while waiting for spell '%s' to load in slot %d'! Aborting. CombatState(%s) Casting(%s) Moving(%s) Stick(%s) Nav(%s) MoveTo(%s))",
                 spell, gem, me.CombatState(), me.Casting() or "None", Strings.BoolToColorString(me.Moving()), Strings.BoolToColorString(mq.TLO.Stick.Active()),
                 Strings.BoolToColorString(mq.TLO.Navigation.Active()), Strings.BoolToColorString(mq.TLO.MoveTo.Moving()))
+            interrupted = true
             break
         end
         if not me.Book(spell)() then
             Logger.log_debug("\atMemorizeSpell\aw():\ar I was trying to memorize %s as my persona was changed, aborting.", spell)
+            permanent = true
             break
         end
 
@@ -1369,6 +1395,12 @@ function Casting.MemorizeSpell(gem, spell, waitSpellReady, maxWait)
         spell, gem, (Globals.GetTimeMS() - startMem) / 1000, maxWait / 1000)
 
     Casting.Memorizing = false
+
+    local loaded = me.Gem(gem)() == mq.TLO.Spell(spell).Name()
+    if not loaded and not interrupted and not permanent then
+        Logger.log_error("\atMemorizeSpell\aw():\ar Timed out memming '%s' in slot %d with no interrupt detected - the spell bar may be incomplete.", spell, gem)
+    end
+    return loaded, permanent
 end
 
 --- Returns true if the player owns the AA (not nil), meets the minimum level requirement (or is on the Might server), and has at least rank 1 purchased. All three gates must pass.
@@ -1591,6 +1623,27 @@ function Casting.SongReady(songSpell, skipGemTimer)
     return Casting.CastCheck(songSpell)
 end
 
+--- True if the spell's gem is off its own recast timer (it may still be briefly blocked by the global cooldown).
+---@param spell MQSpell
+---@return boolean
+function Casting.GemReady(spell)
+    return (mq.TLO.Me.GemTimer(spell.RankName() or "")() or -1) == 0
+end
+
+--- A bard may fire an instant action while a song's cast window is open.
+---@param castTimeMs number?
+---@return boolean
+function Casting.CanActMidSong(castTimeMs)
+    return Core.MyClassIs("BRD") and (castTimeMs or -1) == 0
+end
+
+---@param castTimeMs number?
+---@return boolean
+function Casting.MoveBlocksCast(castTimeMs)
+    if Core.MyClassIs("brd") then return false end
+    return mq.TLO.Me.Moving() and (castTimeMs or -1) > 0
+end
+
 --- Checks CombatAbilityReady for the disc's ranked name, then runs CastCheck allowing movement and, for bards with an instant-cast disc (0 cast time), allowing an open casting window.
 --- @param discSpell MQSpell The name of the discipline spell to check.
 --- @return boolean Returns true if the discipline is ready, false otherwise.
@@ -1603,9 +1656,7 @@ function Casting.DiscReady(discSpell)
 
     if not ready then return false end
 
-    local allowCastWindow = Core.MyClassIs("BRD") and (discSpell.MyCastTime() or -1) == 0
-
-    return Casting.CastCheck(discSpell, true, allowCastWindow)
+    return Casting.CastCheck(discSpell, true)
 end
 
 --- Verifies AltAbilityReady is true for the named AA and then runs CastCheck against the AA's associated spell to confirm mana/endurance/movement/control conditions are met.
@@ -1625,7 +1676,7 @@ function Casting.AAReady(aaName)
     return Casting.CastCheck(aaSpell)
 end
 
---- Verifies Me.AbilityReady is true for the named combat ability, then confirms the target is within maximum melee range (or that the ability is "taunt", which has special range behavior in EQ).
+--- Verifies Me.AbilityReady is true for the named combat ability, then confirms the target is within maximum melee range.
 --- @param abilityName string The name of the ability to check.
 --- @param target MQSpawn|nil The intended target of the ability.
 --- @return boolean True if the ability is ready, false otherwise.
@@ -1639,7 +1690,7 @@ function Casting.AbilityReady(abilityName, target)
 
     if not ready then return false end
 
-    return Targeting.GetTargetDistance(target) <= Targeting.GetTargetMaxRangeTo(target) or abilityName:lower() == "taunt"
+    return Targeting.GetTargetDistance(target) <= Targeting.GetTargetMaxRangeTo(target)
 end
 
 --- Checks ItemHasClicky, Me.ItemReady (off cooldown), required level,
@@ -1657,7 +1708,7 @@ function Casting.ItemReady(itemName)
 
     local clicky = mq.TLO.FindItem("=" .. itemName).Clicky
     local levelCheck = me.Level() >= (clicky.RequiredLevel() or 0)
-    local movingCheck = Core.MyClassIs("brd") or not (me.Moving() and (clicky.CastTime() or -1) > 0)
+    local movingCheck = not Casting.MoveBlocksCast(clicky.CastTime())
     local controlCheck = not (me.Stunned() or me.Feared() or me.Charmed() or me.Mezzed())
 
     Logger.log_verbose("ItemReady for %s: LevelCheck(%s) MovingCheck(%s) ControlCheck(%s)", itemName, Strings.BoolToColorString(levelCheck),
@@ -1671,14 +1722,13 @@ end
 --- (adjusted for med regen ticks), and control state.
 ---@param spell MQSpell The spell whose cost and cast time to evaluate.
 ---@param bAllowMove boolean? Skip the movement check if true.
----@param bAllowCast boolean? Skip the casting-window check if true.
 ---@return boolean True if all pre-cast conditions are met.
-function Casting.CastCheck(spell, bAllowMove, bAllowCast)
+function Casting.CastCheck(spell, bAllowMove)
     if not spell or not spell() then return false end
 
     local me = mq.TLO.Me
-    local castingCheck = bAllowCast or (not (me.Casting() or mq.TLO.Window("CastingWindow").Open()))
-    local movingCheck = bAllowMove or Core.MyClassIs("brd") or not (me.Moving() and (spell.MyCastTime() or -1) > 0)
+    local castingCheck = Casting.CanActMidSong(spell.MyCastTime()) or (not (me.Casting() or mq.TLO.Window("CastingWindow").Open()))
+    local movingCheck = bAllowMove or not Casting.MoveBlocksCast(spell.MyCastTime())
 
     local currentMana = me.CurrentMana()
     local currentEnd = me.CurrentEndurance()
@@ -1726,7 +1776,7 @@ function Casting.UseSpell(spellName, targetId, bAllowMem, bAllowDead, retryCount
         return false
     end
 
-    if me.Moving() then
+    if Casting.MoveBlocksCast(spell.MyCastTime()) then
         Logger.log_debug("\ayUseSpell(): \arCan't cast %s - I am moving", spellName)
         return false
     end
@@ -1737,15 +1787,10 @@ function Casting.UseSpell(spellName, targetId, bAllowMem, bAllowDead, retryCount
 
     local targetSpawn = mq.TLO.Spawn(targetId)
 
-    if (not Config:GetSetting('IgnoreLevelCheck')) and targetSpawn() and Targeting.TargetIsType("pc", targetSpawn) then
-        local targetLevel = targetSpawn.Level() or 0
-        local spellLevel  = spell.Level() or 999
-
-        if not Casting.LevelCheckPass(targetLevel, spellLevel) then
-            Logger.log_error("\ayUseSpell(): \arCasting %s failed level check with target=%d and spell=%d", spellName,
-                targetLevel, spellLevel)
-            return false
-        end
+    if not Casting.LevelCheckPass(spell, targetSpawn) then
+        Logger.log_debug("\ayUseSpell(): \arCasting %s failed level check with target=%d and spell=%d", spellName,
+            targetSpawn.Level() or 0, spell.Level() or 999)
+        return false
     end
 
     if not Casting.ReagentCheck(spell) then
@@ -1760,12 +1805,13 @@ function Casting.UseSpell(spellName, targetId, bAllowMem, bAllowDead, retryCount
         return false
     end
 
-    -- If we're combat casting we need to both have the same swimming status
-    if targetId == 0 or (targetSpawn() and targetSpawn.FeetWet() ~= me.FeetWet()) then
+    if targetId == 0 then
         Logger.log_debug("\ayUseSpell(): \arCasting Failed: I tried to cast a spell %s I don't have a target (%d) for it.",
             spellName, targetId)
         return false
     end
+    -- TEMP 6/26: FeetWet swim-state check disabled - a flyer flying above a pool (e.g. Hartini in Stillmoon) reports FeetWet but its feet aren't actually wet, blocking all casts. Not a verified EQ mechanic.
+    -- if targetSpawn() and targetSpawn.FeetWet() ~= me.FeetWet() then return false end
 
     if not bAllowDead and targetSpawn() and targetSpawn.Dead() then
         Logger.log_verbose("\ayUseSpell(): \arCasting Failed: I tried to cast a spell %s but my target (%d) is dead.",
@@ -1964,6 +2010,11 @@ function Casting.UseSong(songName, targetId, bAllowMem, retryCount)
 
             if scanTimer % 500 == 0 then
                 Casting.RescanCombatTargets()
+                Modules:ExecModule("Class", "DoMidSongEngage", targetId)
+            end
+
+            if scanTimer % 100 == 0 then
+                Modules:ExecModule("Class", "DoMidSongActions")
             end
 
             mq.delay(20)
@@ -2037,8 +2088,7 @@ function Casting.UseDisc(discSpell, targetId)
     local discName = discSpell.RankName.Name()
     local castTime = discSpell.MyCastTime() or 0
 
-    local allowCastWindow = Core.MyClassIs("BRD") and castTime == 0
-    if (mq.TLO.Window("CastingWindow").Open() or me.Casting()) and not allowCastWindow then
+    if (mq.TLO.Window("CastingWindow").Open() or me.Casting()) and not Casting.CanActMidSong(castTime) then
         Logger.log_debug("\ayUseDisc(): \arCan't use %s - Casting Window Open", discName)
         return false
     end
@@ -2140,7 +2190,13 @@ function Casting.RunCastLoop(opts)
     local bAllowDead = opts.bAllowDead
     local spellRange = opts.spellRange
     local castTime = opts.castTime or 0
-    local retryCount = opts.retryCount or Config:GetSetting('CastRetryCountBeta')
+    local retryCount = opts.retryCount or Config:GetSetting('CastRetryCount')
+
+    -- bard firing a 0-cast action mid-song: fire-and-return so we don't wait on or clip the in-progress song.
+    if castTime == 0 and (mq.TLO.Window("CastingWindow").Open() or mq.TLO.Me.Casting()) then
+        Core.DoCmd(cmd)
+        return
+    end
 
     -- give a small delay for when we need to rely on an action changing to "not ready" to detect success, this is data from the server. values tested on laz/might numerous times
     local floor = math.max(300, 3 * (mq.TLO.EverQuest.Ping() or 0))
@@ -2206,18 +2262,18 @@ function Casting.UseAA(aaName, targetId, bAllowDead, retryCount)
         return false
     end
 
-    local allowCastWindow = Core.MyClassIs("BRD") and (aaSpell.MyCastTime() or -1) == 0
-    if (mq.TLO.Window("CastingWindow").Open() or me.Casting()) and not allowCastWindow then
+    if (mq.TLO.Window("CastingWindow").Open() or me.Casting()) and not Casting.CanActMidSong(aaSpell.MyCastTime()) then
         Logger.log_debug("\ayUseAA(): \arCan't cast %s - Casting Window Open", aaName)
         return false
     end
 
     local targetSpawn = mq.TLO.Spawn(targetId)
 
-    if targetSpawn() and targetSpawn.FeetWet() ~= me.FeetWet() then
-        Logger.log_debug("\ayUseAA(): \arCan't cast %s on %d - swim state mismatch", aaName, targetId)
-        return false
-    end
+    -- TEMP 6/26: FeetWet swim-state check disabled - a flyer flying above a pool (e.g. Hartini in Stillmoon) reports FeetWet but its feet aren't actually wet, blocking all casts. Not a verified EQ mechanic.
+    -- if targetSpawn() and targetSpawn.FeetWet() ~= me.FeetWet() then
+    --     Logger.log_debug("\ayUseAA(): \arCan't cast %s on %d - swim state mismatch", aaName, targetId)
+    --     return false
+    -- end
 
     if not bAllowDead and targetSpawn() and targetSpawn.Dead() then
         Logger.log_debug("\ayUseAA(): \arAbility Failed!: I tried to use %s but my target (%d) is dead.",
@@ -2225,15 +2281,10 @@ function Casting.UseAA(aaName, targetId, bAllowDead, retryCount)
         return false
     end
 
-    if not Config:GetSetting('IgnoreLevelCheck') and targetSpawn() and Targeting.TargetIsType("pc", targetSpawn) then
-        local targetLevel = targetSpawn.Level() or 0
-        local spellLevel  = aaSpell.Level() or 999
-
-        if spellLevel <= Globals.Constants.LiveLevelCap and not Casting.LevelCheckPass(targetLevel, spellLevel) then
-            Logger.log_error("\ayUseAA(): \arCasting %s(spell: %s) failed level check with target=%d and spell=%d", aaName, aaSpell.Name(),
-                targetLevel, spellLevel)
-            return false
-        end
+    if not Casting.LevelCheckPass(aaSpell, targetSpawn) then
+        Logger.log_debug("\ayUseAA(): \arCasting %s(spell: %s) failed level check with target=%d and spell=%d", aaName, aaSpell.Name(),
+            targetSpawn.Level() or 0, aaSpell.Level() or 999)
+        return false
     end
 
     Casting.ActionPrep()
@@ -2317,8 +2368,7 @@ function Casting.UseItem(itemName, targetId, bAllowDead, retryCount)
     local itemSpell = item.Spell
     local targetType = itemSpell and itemSpell.TargetType()
 
-    local allowCastWindow = Core.MyClassIs("BRD") and castTime == 0
-    if (mq.TLO.Window("CastingWindow").Open() or me.Casting()) and not allowCastWindow then
+    if (mq.TLO.Window("CastingWindow").Open() or me.Casting()) and not Casting.CanActMidSong(castTime) then
         Logger.log_debug("\ayUseItem(): \arCan't use %s - Casting Window Open", itemName)
         return false
     end
@@ -2414,8 +2464,7 @@ end
 --- @param spellRange number The max range of the spell.
 --- @param castTime number|nil The length of the spell's cast.
 function Casting.WaitCastFinish(targetId, bAllowDead, spellRange, castTime)
-    if not castTime then castTime = mq.TLO.Me.Casting.MyCastTime() or 0 end
-    local maxWaitOrig = castTime + ((mq.TLO.EverQuest.Ping() * 20) + 1000)
+    local maxWaitOrig = (castTime or 5000) + ((mq.TLO.EverQuest.Ping() * 20) + 1000)
     local maxWait = maxWaitOrig
 
     while mq.TLO.Me.Casting() do
@@ -2461,6 +2510,7 @@ function Casting.WaitCastFinish(targetId, bAllowDead, spellRange, castTime)
             Logger.log_debug(msg)
             Comms.PrintGroupMessage(msg)
 
+            --Algarnote: Consider re-adding this, but i'm not sure this is the place where we need to be doing it (we are in the while casting loop here, i think gem freeze will have no casting active)
             --Core.DoCmd("/alt act 511")
             mq.TLO.Me.StopCast()
             return
@@ -2505,6 +2555,25 @@ function Casting.WaitCastReady(spell, maxWait, ignoreCombat)
     -- account for lag
     local pingDelay = mq.TLO.EverQuest.Ping() * Config:GetSetting('CastReadyDelayFact')
     mq.delay(pingDelay)
+end
+
+--- Generic blocking wait: polls pollFn every ~20 ms (pumping events to stay responsive) until it returns true, abortFn returns true, or maxWaitMs elapses; ability-agnostic sibling to WaitCastReady for callers needing a custom ready/abort condition.
+---@param pollFn fun():boolean Returns true when the wait should end successfully.
+---@param maxWaitMs number Maximum time to wait, in milliseconds.
+---@param abortFn fun():boolean|nil Optional; returns true to abort the wait early.
+function Casting.WaitForReady(pollFn, maxWaitMs, abortFn)
+    local remaining = maxWaitMs or 0
+    while remaining > 0 do
+        if pollFn() then return end
+        if abortFn and abortFn() then return end
+        mq.delay(20)
+        mq.doevents()
+        Events.DoEvents()
+        remaining = remaining - 20
+        if (remaining % 1000) == 0 then
+            Logger.log_verbose("WaitForReady: waiting... %dms left", remaining)
+        end
+    end
 end
 
 --- Polls Me.SpellInCooldown every 100 ms until the global spell cooldown (the "gem lockout" between casts) has cleared, processing events each iteration to keep the system responsive.
@@ -2787,14 +2856,21 @@ function Casting.GetUseableSpellId(spell)
     return spellId > 0 and spellId or spell.ID()
 end
 
---- Applies EQ's buff level restriction table (Fanra's wiki) to
---- determine whether a spell of spellLevel can land on targetLevel.
----@param targetLevel number The target's level.
----@param spellLevel number The spell's level to check against the cap.
----@return boolean True if the target is high enough to receive the spell.
-function Casting.LevelCheckPass(targetLevel, spellLevel)
-    local maxSpellLevel
+--- Returns true if spell is allowed to land on target per EQ's buff-level restriction (only applies to persistent beneficial buffs on PC targets, global IgnoreLevelCheck bypasses).
+---@param spell MQSpell The spell to evaluate.
+---@param target MQSpawn|MQTarget|nil The target spawn handle to check.
+---@return boolean True if the spell is allowed to land on target.
+function Casting.LevelCheckPass(spell, target)
+    if not spell or not spell() then return false end
+    if not target or not target() then return false end
+    if Config:GetSetting('IgnoreLevelCheck') then return true end
+    if (target.Type() or ""):lower() ~= "pc" then return true end
+    if not (spell.Beneficial() and (spell.Duration.TotalSeconds() or 0) > 0) then return true end
+    local spellLevel = spell.Level() or 999
+    if spellLevel > Globals.Constants.LiveLevelCap then return true end
 
+    local targetLevel = target.Level() or 0
+    local maxSpellLevel
     -- table data taken from https://everquest.fanra.info/wiki/Spells,_Songs,_Disciplines,_and_AAs#Buff_level_restrictions
     -- converted to perpetuate past the table limits. untested
     if targetLevel <= 39 then
@@ -2808,6 +2884,11 @@ function Casting.LevelCheckPass(targetLevel, spellLevel)
     end
 
     return maxSpellLevel >= spellLevel
+end
+
+function Casting.SlowSpellCheck(spell, target)
+    if not spell or not spell() then return false end
+    return (spell.RankName.SlowPct() or 0) > Targeting.GetTargetSlowedPct() and not Casting.SlowImmuneTarget(target)
 end
 
 return Casting

@@ -81,6 +81,12 @@ function Core.OnMight()
     return Globals.CurServer:lower() == "eq might" or Globals.CurServer:lower() == "project might"
 end
 
+--- Returns true if a Ward of Might buff is active.
+---@return boolean True if the Ward of Might buff is active.
+function Core.IsWarden()
+    return (mq.TLO.Me.Buff("Ward of Might").ID() or 0) > 0
+end
+
 --- Formats and executes an MQ command, logging it at debug level.
 ---@param cmd string Format string for the command.
 ---@param ... any Arguments for the format string.
@@ -211,6 +217,12 @@ function Core.IAmMA()
     return Core.GetMainAssistId() == mq.TLO.Me.ID()
 end
 
+--- Returns true if this character is set as the EQ group's Main Tank.
+---@return boolean True if this toon holds the group MT slot.
+function Core.IAmGroupMT()
+    return (mq.TLO.Group.MainTank.ID() or 0) == mq.TLO.Me.ID()
+end
+
 --- Returns the spawn ID of the configured main assist character.
 ---@return number The spawn ID, or 0 if no main assist is set or not found.
 function Core.GetMainAssistId()
@@ -239,17 +251,18 @@ end
 ---@param ignoreBuffPopulation boolean? If true, don't wait for buff population.
 function Core.SetTarget(targetId, ignoreBuffPopulation)
     if targetId == 0 then return end
-
-    local maxWaitBuffs = ((mq.TLO.EverQuest.Ping() * 2) + 500)
-
     if targetId == mq.TLO.Target.ID() then return end
+
+    local maxWaitBuffs = (mq.TLO.EverQuest.Ping() * 2) + 500
     Logger.log_debug("SetTarget(): Setting Target: %d (buffPopWait: %d)", targetId, ignoreBuffPopulation and 0 or maxWaitBuffs)
-    if mq.TLO.Target.ID() ~= targetId then
-        mq.TLO.Spawn(targetId).DoTarget()
-        mq.delay(10, function() return mq.TLO.Target.ID() == targetId end)
-        local targetBuffsPopulated = (mq.TLO.Target() and mq.TLO.Target.BuffsPopulated() or false)
-        mq.delay(maxWaitBuffs, function() return (ignoreBuffPopulation or targetBuffsPopulated) end)
+
+    mq.TLO.Spawn(targetId).DoTarget()
+    mq.delay(10, function() return mq.TLO.Target.ID() == targetId end)
+
+    if not ignoreBuffPopulation then
+        mq.delay(maxWaitBuffs, function() return mq.TLO.Target.BuffsPopulated() or false end)
     end
+
     Logger.log_debug("SetTarget(): Set Target to: %d (buffsPopulated: %s)", targetId, Strings.BoolToColorString(mq.TLO.Target.BuffsPopulated() ~= nil))
 
     Modules:ExecAll("OnTargetChange", targetId)
@@ -359,6 +372,12 @@ function Core.IsTanking()
     return Modules:ExecModule("Class", "IsTanking")
 end
 
+--- True when a tank reposition is needed (rear hater detected, setting on, reposition can fire, and we haven't repositioned in the last 3 seconds).
+---@return boolean
+function Core.TankRepositionNeeded()
+    return Modules:ExecModule("Movement", "TankRepositionNeeded")
+end
+
 --- Returns true if the class module reports the character is in heal mode.
 ---@return boolean True if actively healing.
 function Core.IsHealing()
@@ -395,23 +414,64 @@ function Core.CanCharm()
     return Modules:ExecModule("Class", "CanCharm")
 end
 
+--- Returns true if spell is the resolved spell of the charm ability selected in the Charm panel.
+---@param spell MQSpell The resolved spell a SpellList entry's cond is given.
+---@return boolean
+function Core.IsSelectedCharmSpell(spell)
+    return Modules:ExecModule("Charm", "IsSelectedCharmSpell", spell) == true
+end
+
 --- Returns true if a shield is equipped in the offhand slot.
 ---@return boolean True if the offhand item type is "Shield".
 function Core.ShieldEquipped()
-    return mq.TLO.InvSlot("Offhand").Item.Type() and mq.TLO.InvSlot("Offhand").Item.Type() == "Shield"
+    return (mq.TLO.InvSlot("Offhand").Item.Type() or "") == "Shield"
 end
 
---- Returns true if the character can safely skip healing for this frame —
---- i.e., not in heal mode, no queued cure, and no injured group members.
+--- Safe to skip healing this frame.
+---@param priority integer? HealPriority setting: 1 Ignore, 2 Big Heal Point, 3 Main Heal Point (nil/absent treats as Ignore)
 ---@return boolean True if it is safe to perform non-heal actions.
-function Core.OkayToNotHeal()
+function Core.OkayToNotHeal(priority)
     if not Core.IsHealing() then return true end
 
     if Core.IsCuring() and Modules:ExecModule("Class", "CureIsQueued") then
         Logger.log_verbose("OkayToNotHeal: We have a queued cure to process! Skipping.")
         return false
     end
-    return (mq.TLO.Group.Injured(Config:GetSetting('BigHealPoint'))() or 0) == 0
+
+    if (priority or 1) == 1 then return true end
+    return not Modules:ExecModule("Class", "NeedToHeal", priority)
+end
+
+--- Safe to skip mezzing this frame.
+---@param priority boolean? PriorityMez setting; false disables the mez yield entirely
+---@return boolean True if it is safe to perform non-mez actions (e.g. DPS).
+function Core.OkayToNotMez(priority)
+    if priority == false then return true end
+    if not Core.IsMezzing() then return true end
+    return not Modules:ExecModule("Mez", "NeedToMez")
+end
+
+--- Safe to skip charming this frame.
+---@return boolean True if it is safe to perform non-charm actions.
+function Core.OkayToNotCharm()
+    return not Core.IsCharming() or not Modules:ExecModule("Charm", "NeedToCharm")
+end
+
+--- True when we should pause the rotation to act on a loose charm pet.
+---@return boolean True when a loose charm needs our assist.
+function Core.CharmAssistNeeded()
+    return Modules:ExecModule("Charm", "CharmAssistNeeded") == true
+end
+
+--- Ensure that high-priority actions aren't ignored in favor of what we are currently checking.
+---@return boolean True if it is okay to run normal offensive actions.
+function Core.CombatActionsCheck()
+    if not Core.OkayToNotCharm() then return false end
+    if Core.CharmAssistNeeded() then return false end
+    if not Core.OkayToNotHeal(Config:GetSetting('HealPriority', true)) then return false end
+    if not Core.OkayToNotMez(Config:GetSetting('PriorityMez')) then return false end
+    if Core.TankRepositionNeeded() then return false end
+    return true
 end
 
 --- Returns the resolved (ranked) spell/item/AA for action from the class module.
@@ -509,7 +569,6 @@ end
 
 --- Rebuilds Globals.CurrentPetBuffs from active pet buff slots if a pet exists.
 function Core.GetPetBuffTable()
-    Logger.log_debug("Pet Buff Start")
     Globals.CurrentPetBuffs = {}
 
     if mq.TLO.Me.Pet.ID() > 0 then
@@ -520,12 +579,10 @@ function Core.GetPetBuffTable()
             end
         end
     end
-    Logger.log_debug("Pet Buff Finish")
 end
 
 --- Rebuilds Globals.CurrentPetBlocked from up to 60 blocked pet buff slots.
 function Core.GetPetBlockedTable()
-    Logger.log_debug("Pet Block Start")
     Globals.CurrentPetBlocked = {}
 
     if mq.TLO.Me.Pet.ID() > 0 then
@@ -535,7 +592,6 @@ function Core.GetPetBlockedTable()
             table.insert(Globals.CurrentPetBlocked, blocked.ID())
         end
     end
-    Logger.log_debug("Pet Block Finish")
 end
 
 return Core

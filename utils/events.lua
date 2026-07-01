@@ -36,7 +36,7 @@ function Events.HandleDeath()
     if Config:GetSetting('DoFellow') and not Modules:ExecModule("Movement", "InCampZone") then
         Logger.log_debug("Doing fellowship post death.")
         if mq.TLO.FindItem("Fellowship Registration Insignia").Timer.TotalSeconds() == 0 then
-            mq.delay("30s", function() return (mq.TLO.Me.CombatState():lower() == "active") end)
+            mq.delay("30s", function() return ((mq.TLO.Me.CombatState() or ""):lower() == "active") end)
             Core.DoCmd("/useitem \"Fellowship Registration Insignia\"")
             mq.delay("2s",
                 function() return (mq.TLO.FindItem("Fellowship Registration Insignia").Timer.TotalSeconds() ~= 0) end)

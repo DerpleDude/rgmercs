@@ -44,6 +44,7 @@ local Comms       = require("utils.comms")
 local Core        = require("utils.core")
 local Events      = require("utils.events")
 local Globals     = require("utils.globals")
+local ItemManager = require("utils.item_manager")
 local Movement    = require("utils.movement")
 local Targeting   = require("utils.targeting")
 local Ui          = require("utils.ui")
@@ -385,6 +386,7 @@ local function Main()
     Config.Db:updateTelemetryGraphs()
 
     Comms.HeartbeatWatchdog()
+    ItemManager.ServiceAutoInv()
 
     if mq.TLO.Zone.ID() ~= Globals.CurZoneId or mq.TLO.Me.Instance() ~= Globals.CurInstanceId then
         if notifyZoning then
@@ -393,11 +395,15 @@ local function Main()
             Config.TempSettings.NoLevZone = false
             Globals.ForceCombatID = 0
             Globals.IgnoredTargetIDs = Set.new({})
+            Globals.CharmedPetIDs = Set.new({})
+            Globals.LooseCharms = {}
             Globals.LastCachedBuffUpdate = {}
             Globals.AutoTargetID = 0
             Globals.AutoTargetIsNamed = false
             Globals.AggroTargetID = 0
+            Globals.CombatNavTargetId = 0
             Globals.SetForcedTargetId(0)
+            Globals.ForceCharmID = 0
         end
         mq.delay(100)
         Globals.CurZoneId = mq.TLO.Zone.ID()
@@ -438,6 +444,7 @@ local function Main()
         end
 
         Globals.CurrentState = "Combat"
+        Globals.LastCombatTime = Globals.GetTimeMS()
         if Config:GetSetting('FaceTarget') and not Targeting.FacingTarget() and mq.TLO.Target.ID() ~= mq.TLO.Me.ID() and not mq.TLO.Me.Moving() then
             Core.DoCmd("/squelch /face fast")
         end
@@ -454,12 +461,15 @@ local function Main()
             Targeting.ForceBurnTargetID = 0
             Globals.LastPulledID        = 0
             Globals.AutoTargetID        = 0
+            Globals.CombatNavTargetId   = 0
             Globals.IgnoredTargetIDs    = Set.new({})
             Globals.LastBurnCheck       = false
             Modules:ExecModule("Pull", "SetLastPullOrCombatEndedTimer")
         end
 
         Globals.CurrentState = "Downtime"
+
+        Targeting.ClearStuckXTargets()
 
         if Config:GetSetting('DoMed') ~= 1 then
             Casting.AutoMed()
@@ -524,7 +534,7 @@ local function Main()
         if Config:GetSetting('DoMercenary') then
             local merc = mq.TLO.Me.Mercenary
 
-            if merc() and merc.ID() then
+            if (merc.State() or ""):lower() == "active" then
                 if Combat.MercEngage() then
                     local class = merc.Class.ShortName():lower()
                     local stanceGroups = {
@@ -558,7 +568,9 @@ local function Main()
     end
 
     if Combat.ShouldDoCamp() then
-        if Config:GetSetting('DoMercenary') and mq.TLO.Me.Mercenary.ID() and (mq.TLO.Me.Mercenary.Class.ShortName() or "none"):lower() ~= "clr" and mq.TLO.Me.Mercenary.Stance():lower() ~= "passive" then
+        local merc = mq.TLO.Me.Mercenary
+        if Config:GetSetting('DoMercenary') and (merc.State() or ""):lower() == "active"
+            and (merc.Class.ShortName() or "none"):lower() ~= "clr" and merc.Stance():lower() ~= "passive" then
             Core.DoCmd("/squelch /stance passive")
         end
     end
@@ -622,6 +634,11 @@ local script_actor = Comms.Actors.register('RGMercs', function(message)
         --Logger.log_debug("Received Heartbeat from \am%s\aw: \ag%s", msg.From, Strings.TableToString(msg.Data))
         Logger.log_debug("Received Command from \am%s\aw: \ag%s", msg.From, msg.Data.cmd or "nil")
         Core.DoCmd(msg.Data.cmd)
+        return
+    end
+
+    if msg.Event == "QueueAutoInv" then
+        ItemManager.QueueAutoInv(msg.Data and msg.Data.itemId)
         return
     end
 

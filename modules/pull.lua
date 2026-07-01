@@ -52,7 +52,7 @@ Module.TempSettings.PausePulls            = false
 local PullStates                          = {
     ['PULL_IDLE']               = 1,
     ['PULL_GROUPWATCH_WAIT']    = 2,
-    ['PULL_PEERWATCH_WAIT']     = 12,
+    ['PULL_PEERWATCH_WAIT']     = 11,
     ['PULL_NAV_INTERRUPT']      = 3,
     ['PULL_SCAN']               = 4,
     ['PULL_PULLING']            = 5,
@@ -61,7 +61,6 @@ local PullStates                          = {
     ['PULL_RETURN_TO_CAMP']     = 8,
     ['PULL_WAITING_ON_MOB']     = 9,
     ['PULL_WAITING_SHOULDPULL'] = 10,
-    ['PULL_MOVING_CHECKS']      = 11,
 }
 
 local PullStateDisplayStrings             = {
@@ -77,7 +76,6 @@ local PullStateDisplayStrings             = {
     ['PULL_RETURN_TO_CAMP']     = { Display = Icons.FA_FREE_CODE_CAMP, Text = "Returning to Camp", Color = 'Green', },
     ['PULL_WAITING_ON_MOB']     = { Display = Icons.FA_CLOCK_O, Text = "Waiting on Mob", Color = 'Yellow', },
     ['PULL_WAITING_SHOULDPULL'] = { Display = Icons.FA_CLOCK_O, Text = "Waiting for Should Pull", Color = 'Red', },
-    ['PULL_MOVING_CHECKS']      = { Display = Icons.FA_EYE, Text = "Rechecking Actions", Color = 'Yellow', },
 }
 
 local PullStatesIDToName                  = {}
@@ -832,7 +830,9 @@ end
 ---@param id number
 ---@return string
 function Module:getPullAbilityDisplayName(id)
-    local displayName = self.TempSettings.ValidPullAbilities[id].DisplayName
+    local entry = self.TempSettings.ValidPullAbilities[id]
+    if not entry then return "Error" end
+    local displayName = entry.DisplayName
 
     if type(displayName) == 'function' then displayName = displayName() end
 
@@ -1074,6 +1074,7 @@ function Module:Render()
         end
         if #self.TempSettings.ValidPullAbilities > 0 then
             local pullAbility = Config:GetSetting('PullAbility')
+            if not self.TempSettings.ValidPullAbilities[pullAbility] then pullAbility = 1 end
             pullAbility, pressed = ImGui.Combo("Pull Ability", pullAbility, function(id) return self:getPullAbilityDisplayName(id) end,
                 #self.TempSettings.ValidPullAbilities) --, self.TempSettings.ValidPullAbilities, #self.TempSettings.ValidPullAbilities)
             if pressed then
@@ -2073,7 +2074,7 @@ function Module:CheckForAbort(pullID, bNavigating)
 
     -- ignore distance and time if this is a manually requested pull
     if pullID ~= self.TempSettings.TargetSpawnID then
-        if spawn.Distance() > Config:GetSetting("MaxPathRange") then
+        if (spawn.Distance() or 0) > Config:GetSetting("MaxPathRange") then
             Logger.log_debug("PULL:\ar ALERT: Aborting mob moved out of spawn distance \ax")
             return true
         end
@@ -2114,6 +2115,19 @@ function Module:IsPullState(state)
     return self.TempSettings.PullState == PullStates[state]
 end
 
+-- True when we're standing idle during a pull hold and below our med-stop level on a stat our class uses.
+---@return boolean
+function Module:ShouldSitToMed()
+    local me = mq.TLO.Me
+    if not me.Standing() or me.Moving() then return false end
+
+    local needHP = me.PctHPs() < Config:GetSetting('HPMedPctStop')
+    local needMana = me.MaxMana() > 0 and me.PctMana() < Config:GetSetting('ManaMedPctStop')
+    local needEndurance = not Globals.Constants.RGCasters:contains(me.Class.ShortName()) and me.PctEndurance() < Config:GetSetting('EndMedPctStop')
+
+    return needHP or needMana or needEndurance
+end
+
 ---@param state number
 ---@param reason string
 function Module:SetPullState(state, reason)
@@ -2132,7 +2146,6 @@ function Module:NavToWaypoint(loc, ignoreAggro)
     Movement:DoNav(false, "locyxz %s, log=off", loc)
     mq.delay(1000, function() return mq.TLO.Navigation.Active() end)
 
-    local maxMove = Config:GetSetting('MaxMoveTime') * 1000
     while mq.TLO.Navigation.Active() do
         Logger.log_verbose("PULL:NavToWaypoint Waypoint: %d Aggro Count: %d", self.GetCurrentWpId(self), Targeting.GetXTHaterCount())
 
@@ -2158,15 +2171,6 @@ function Module:NavToWaypoint(loc, ignoreAggro)
         mq.delay(100)
         mq.doevents()
         Events.DoEvents()
-        maxMove = maxMove - 100
-
-        if maxMove <= 0 then
-            Logger.log_debug("\arNOTICE:\ax Pull Time Exceeded! Rescan for targets.")
-            self:SetPullState(PullStates.PULL_MOVING_CHECKS, "")
-            -- simply return, if nav needs to be stopped, whatever needs to do it will stop it.
-            -- in this way, nav will continue towards the original target while we rescan
-            return false
-        end
     end
 
     local distanceToWP = mq.TLO.Math.Distance(loc)()
@@ -2281,7 +2285,6 @@ function Module:GiveTime()
     Logger.log_verbose("PULL:GiveTime() - ShouldPull: %s", Strings.BoolToColorString(shouldPull))
 
     if not shouldPull then
-        Module:StopNavAfterFailedMovingCheck()
         if not mq.TLO.Navigation.Active() and combat_state == "Downtime" then
             -- go back to camp.
             self:SetPullState(PullStates.PULL_WAITING_SHOULDPULL, reason)
@@ -2300,13 +2303,11 @@ function Module:GiveTime()
         local groupReady, groupReason = self:CheckGroupForPull(Config:GetSetting('WatchStartPct'), Config:GetSetting('WatchStopPct'), campData)
         if not groupReady then
             Logger.log_verbose("PULL:GiveTime() - GroupWatch Failed")
-            Module:StopNavAfterFailedMovingCheck()
             self:SetPullState(PullStates.PULL_GROUPWATCH_WAIT, groupReason)
-            local me = mq.TLO.Me
-            if me.Standing() and not me.Moving() and (me.PctHPs() < Config:GetSetting('HPMedPctStop') or me.PctMana() < Config:GetSetting('ManaMedPctStop') or me.PctEndurance() < Config:GetSetting('EndMedPctStop')) then
+            if self:ShouldSitToMed() then
                 Logger.log_verbose(
                     "PULL:GiveTime() - We are waiting for GroupWatch and we are below med stop levels, lets sit down ourselves! Note: Does not interface with medstate.")
-                me.Sit()
+                mq.TLO.Me.Sit()
             end
             return
         end
@@ -2316,11 +2317,11 @@ function Module:GiveTime()
         local peerReady, peerReason = self:CheckPeersForPull(Config:GetSetting('WatchStartPct'), Config:GetSetting('WatchStopPct'), campData)
         if not peerReady then
             Logger.log_verbose("PULL:GiveTime() - PeerWatch Failed")
-            Module:StopNavAfterFailedMovingCheck()
             self:SetPullState(PullStates.PULL_PEERWATCH_WAIT, peerReason)
-            local me = mq.TLO.Me
-            if me.Standing() and not me.Moving() and (me.PctHPs() < Config:GetSetting('HPMedPctStop') or me.PctMana() < Config:GetSetting('ManaMedPctStop') or me.PctEndurance() < Config:GetSetting('EndMedPctStop')) then
-                me.Sit()
+            if self:ShouldSitToMed() then
+                Logger.log_verbose(
+                    "PULL:GiveTime() - We are waiting for PeerWatch and we are below med stop levels, lets sit down ourselves! Note: Does not interface with medstate.")
+                mq.TLO.Me.Sit()
             end
             return
         end
@@ -2515,11 +2516,18 @@ function Module:GiveTime()
         maxMove = maxMove - 100
 
         if maxMove <= 0 then
-            Logger.log_debug("\arNOTICE:\ax Pull Time Exceeded! Rescan for targets.")
-            self:SetPullState(PullStates.PULL_MOVING_CHECKS, "")
-            -- simply return, if nav needs to be stopped, whatever needs to do it will stop it.
-            -- in this way, nav will continue towards the original target while we rescan
-            return
+            Logger.log_debug("\arNOTICE:\ax Pull Time Exceeded! Rescanning for a closer target.")
+            -- On a long pull, periodically rescan so we can switch to a closer target if one popped.
+            if self.TempSettings.TargetSpawnID == 0 then
+                local closerID = self:FindTarget()
+                if closerID > 0 and closerID ~= self.TempSettings.PullID then
+                    Logger.log_debug("PULL:\ayCloser target popped - switching pull to %d.", closerID)
+                    self.TempSettings.PullID = closerID
+                    Movement:DoNav(false, "id %d distance=%d lineofsight=%s log=off", closerID, self:GetPullAbilityRange(), requireLOS)
+                    mq.delay(500, function() return mq.TLO.Navigation.Active() end)
+                end
+            end
+            maxMove = Config:GetSetting('MaxMoveTime') * 1000
         end
     end
 
@@ -2543,7 +2551,7 @@ function Module:GiveTime()
         local target = mq.TLO.Target
         self:SetPullState(PullStates.PULL_PULLING, self:GetPullStateTargetInfo())
 
-        if target and target.ID() > 0 then
+        if target and target.ID() > 0 and not abortPull then
             Logger.log_info("\agPulling %s [%d]", target.CleanName(), target.ID())
 
             local successFn = function() return Targeting.GetXTHaterCount() > 0 end
@@ -2716,8 +2724,6 @@ function Module:GiveTime()
                         Logger.log_error("\arInvalid PullAbilityType: %s :: %s", pullAbility.Type, pullAbility.id)
                     end
 
-                    if successFn() then Globals.LastPulledID = self.TempSettings.PullID end
-
                     if self:IsPullMode("Chain") and Targeting.DiffXTHaterIDs(startingXTargs) then
                         break
                     end
@@ -2734,6 +2740,8 @@ function Module:GiveTime()
             else
                 Logger.log_error("\arInvalid PullAbility: \at%d\ar - Please Select a valid Pull Ability\ax", Config:GetSetting('PullAbility'))
             end
+
+            if successFn() then Globals.LastPulledID = self.TempSettings.PullID end
         end
     else
         Logger.log_debug("\arNOTICE:\ax Pull Aborted!")
@@ -2806,11 +2814,7 @@ function Module:GiveTime()
 
     self:SetLastPullOrCombatEndedTimer()
     self.TempSettings.TargetSpawnID = 0
-    if (self:IsPullMode("Normal") or self:IsPullMode("Chain"))
-        and campData.returnToCamp
-        and Math.GetDistanceSquared(mq.TLO.Me.X(), mq.TLO.Me.Y(),
-            campData.campSettings.AutoCampX, campData.campSettings.AutoCampY)
-            > math.max(Config:GetSetting('AutoCampRadius') ^ 2, 200 ^ 2) then
+    if (self:IsPullMode("Normal") or self:IsPullMode("Chain")) and campData.returnToCamp and Math.GetDistanceSquared(mq.TLO.Me.X(), mq.TLO.Me.Y(), campData.campSettings.AutoCampX, campData.campSettings.AutoCampY) > math.max(Config:GetSetting('AutoCampRadius') ^ 2, 200 ^ 2) then
         self:SetPullState(PullStates.PULL_WAITING_SHOULDPULL, "Awaiting return to camp")
     else
         self:SetPullState(PullStates.PULL_IDLE, "")
@@ -2872,15 +2876,6 @@ end
 function Module:SetLastPullOrCombatEndedTimer()
     self.TempSettings.LastPullOrCombatEnded = Globals.GetTimeSeconds()
     Logger.log_verbose("Last Pull or Combat Ended: %s", Globals.GetTimeSeconds())
-end
-
-function Module:StopNavAfterFailedMovingCheck()
-    --if we were navigating during a rescan, cancel it.
-    if self.TempSettings.PullState == PullStates.PULL_MOVING_CHECKS and mq.TLO.Navigation.Active() then
-        Logger.log_debug("PULL\arNOTICE:\ax Moving Checks failed! Aborting nav.")
-        Movement:DoNav(false, "stop log=off")
-        mq.delay("2s", function() return not mq.TLO.Navigation.Active() end)
-    end
 end
 
 return Module

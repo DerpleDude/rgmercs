@@ -16,8 +16,11 @@ local _ClassConfig = {
     ['ModeChecks']        = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
         IsHealing = function() return true end,
-        IsCuring = function() return Config:GetSetting('DoCureAA') or Config:GetSetting('DoCureSpells') end,
-        IsRezing = function() return Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0 end,
+        IsCuring  = function() return Config:GetSetting('DoCureAA') or Config:GetSetting('DoCureSpells') end,
+        IsRezing  = function()
+            return (Core.GetResolvedActionMapItem('RezSpell') and Targeting.GetXTHaterCount() == 0) or
+                (Casting.CanUseAA("Gift of Resurrection") and Config:GetSetting('DoBattleRez'))
+        end,
     },
     ['Modes']             = {
         'Tank',
@@ -767,6 +770,13 @@ local _ClassConfig = {
             "Reflexive Righteousness", -- Level 100
         },
         ['RezSpell'] = {
+            "Resurrection",   -- Level 59
+            "Restoration",    -- Level 55
+            "Renewal",        -- Level 49
+            "Revive",         -- Level 39
+            "Reparation",     -- Level 31
+            "Reconstitution", -- Level 30
+            "Reanimation",    -- Level 22
         },
     },
     ['AASets']            = {
@@ -784,7 +794,7 @@ local _ClassConfig = {
             if (Config:GetSetting('DoBattleRez') or mq.TLO.Me.CombatState():lower() ~= "combat") and Casting.AAReady("Gift of Resurrection") then
                 rezAction = okayToRez and Casting.UseAA("Gift of Resurrection", corpseId, true, 1)
             elseif not Casting.CanUseAA("Gift of Resurrection") and mq.TLO.Me.CombatState():lower() ~= "combat" and Casting.SpellReady(rezSpell, true) then
-                rezAction = okayToRez and Casting.UseSpell(rezSpell, corpseId, true, true)
+                rezAction = okayToRez and Casting.UseSpell(rezSpell.RankName(), corpseId, true, true)
             end
 
             return rezAction
@@ -811,31 +821,35 @@ local _ClassConfig = {
             end
             return false
         end,
+        shieldNeeded = function()
+            -- check for exactly 100% to help ensure the mob is targeting us, over 100% can indicate another is still targeted
+            return (mq.TLO.Me.PctHPs() <= Config:GetSetting('EquipShield')) or mq.TLO.Me.ActiveDisc.Name() == "Deflection Discipline" or
+                (mq.TLO.Me.AltAbilityTimer("Shield Flash")() or 0) >= 234000 or
+                (Config:GetSetting('NamedShieldLock') and ((Globals.AutoTargetIsNamed and Targeting.GetAutoTargetAggroPct() == 100) or Targeting.TankingXTNamed()))
+        end,
     },
     ['HealRotationOrder'] = {
-        ['HealRotationOrder'] = {
-            {
-                name = 'GroupHeal',
-                state = 1,
-                steps = 1,
-                cond = function(self, target) return Targeting.GroupHealsNeeded() end,
-            },
-            {
-                name = 'BigHeal',
-                state = 1,
-                steps = 1,
-                cond = function(self, target)
-                    return Targeting.BigHealsNeeded(target) and not Targeting.TargetIsType("pet", target)
-                end,
-            },
-            {
-                name = 'MainHeal',
-                state = 1,
-                steps = 1,
-                cond = function(self, target)
-                    return Targeting.MainHealsNeeded(target)
-                end,
-            },
+        {
+            name = 'GroupHeal',
+            state = 1,
+            steps = 1,
+            cond = function(self, target) return Targeting.GroupHealsNeeded() end,
+        },
+        {
+            name = 'BigHeal',
+            state = 1,
+            steps = 1,
+            cond = function(self, target)
+                return Targeting.BigHealsNeeded(target) and not Targeting.TargetIsType("pet", target)
+            end,
+        },
+        {
+            name = 'MainHeal',
+            state = 1,
+            steps = 1,
+            cond = function(self, target)
+                return Targeting.MainHealsNeeded(target)
+            end,
         },
     },
     ['HealRotations']     = {
@@ -923,12 +937,31 @@ local _ClassConfig = {
             },
         },
     },
+    ['Charm']             = {
+        ['Assist'] = {
+            { name = "HealTaunt",   type = "Spell", },
+            { name = "Audacity",    type = "Spell", cond = function(self, spell, target) return Casting.DetSpellCheck(spell, target) end, },
+            { name = "Disruption",  type = "AA", },
+            { name = "Taunt",       type = "Ability", },
+            { name = "CrushTimer5", type = "Spell", load_cond = function(self) return Config:GetSetting('Timer5Choice') == 1 end, },
+            { name = "CrushTimer6", type = "Spell", load_cond = function(self) return Config:GetSetting('Timer6Choice') == 1 end, },
+            {
+                name = "StunTimer5",
+                type = "Spell",
+                load_cond = function(self)
+                    return Config:GetSetting('Timer5Choice') == 2 or ((Config:GetSetting('Timer5Choice') == 1)) and not Core.GetResolvedActionMapItem('CrushTimer5')
+                end,
+            },
+            { name = "StunTimer4", type = "Spell", load_cond = function(self) return Config:GetSetting('Timer4Choice') end, },
+            { name = "StunTimer6", type = "Spell", load_cond = function(self) return Config:GetSetting('Timer6Choice') == 2 end, },
+        },
+    },
     ['RotationOrder']     = {
         { --Self Buffs
             name = 'Downtime',
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
-                return combat_state == "Downtime" and Casting.OkayToBuff() and Core.OkayToNotHeal() and Casting.AmIBuffable()
+                return combat_state == "Downtime" and Casting.OkayToBuff() and Core.CombatActionsCheck() and Casting.AmIBuffable()
             end,
         },
         {
@@ -937,7 +970,7 @@ local _ClassConfig = {
             steps = 1,
             targetId = function(self) return Casting.GetBuffableIDs() end,
             cond = function(self, combat_state)
-                return combat_state == "Downtime" and Casting.OkayToBuff() and Core.OkayToNotHeal()
+                return combat_state == "Downtime" and Casting.OkayToBuff() and Core.CombatActionsCheck()
             end,
         },
         { --Actions to lock down xtarg haters
@@ -1017,8 +1050,8 @@ local _ClassConfig = {
                     (mq.TLO.Me.PctHPs() <= Config:GetSetting('DefenseStart') or
                         -- we have met our defense count threshold
                         self.Helpers.DefensiveDiscCheck(true) or
-                        -- we are fighting a named and we are (presumably) tanking it
-                        (Globals.AutoTargetIsNamed and Targeting.GetAutoTargetAggroPct() >= 100))
+                        -- we are fighting a named and we are tanking it
+                        Targeting.TankingXTNamed())
             end,
         },
         {
@@ -1028,7 +1061,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 if mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') then return false end
-                return combat_state == "Combat" and Core.OkayToNotHeal()
+                return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
         { --Offensive actions to temporarily boost damage dealt
@@ -1038,7 +1071,17 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 if mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') then return false end
-                return combat_state == "Combat" and Casting.BurnCheck() and Core.OkayToNotHeal()
+                return combat_state == "Combat" and Casting.BurnCheck() and Core.CombatActionsCheck()
+            end,
+        },
+        { --Non-spell actions that can be used during/between casts
+            name = 'CombatWeave',
+            state = 1,
+            steps = 1,
+            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
+            cond = function(self, combat_state)
+                if mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') then return false end
+                return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
         { --DPS Spells, includes recourse/gift maintenance
@@ -1048,7 +1091,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 if mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') then return false end
-                return combat_state == "Combat" and Core.OkayToNotHeal()
+                return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
     },
@@ -1334,9 +1377,6 @@ local _ClassConfig = {
             {
                 name = "Taunt",
                 type = "Ability",
-                cond = function(self, abilityName, target)
-                    return Targeting.GetTargetDistance(target) < 30
-                end,
             },
             {
                 name = "CrushTimer5",
@@ -1405,7 +1445,7 @@ local _ClassConfig = {
                 name = "Taunt",
                 type = "Ability",
                 cond = function(self, abilityName, target)
-                    return Targeting.LostAutoTargetAggro() and Targeting.GetTargetDistance(target) < 30
+                    return Targeting.LostAutoTargetAggro()
                 end,
             },
             {
@@ -1460,7 +1500,7 @@ local _ClassConfig = {
             {
                 name = "Audacity",
                 type = "Spell",
-                load_cond = function(self) return Core.IsTanking end,
+                load_cond = function(self) return Core.IsTanking() end,
                 cond = function(self, spell, target)
                     return Casting.DetSpellCheck(spell, target)
                 end,
@@ -1559,7 +1599,7 @@ local _ClassConfig = {
                 name = "MeleeMit",
                 type = "Disc",
                 cond = function(self, discSpell)
-                    return not ((discSpell.Level() or 0) < 108 and not Casting.NoDiscActive)
+                    return not ((discSpell.Level() or 0) < 108 and not Casting.NoDiscActive())
                 end,
             },
             {
@@ -1733,27 +1773,26 @@ local _ClassConfig = {
             {
                 name = "Equip Shield",
                 type = "CustomFunc",
-                active_cond = function()
-                    return mq.TLO.Me.Bandolier("Shield").Active()
-                end,
-                cond = function(self, target)
+                cond = function(self)
                     if mq.TLO.Me.Bandolier("Shield").Active() then return false end
-                    return (mq.TLO.Me.PctHPs() <= Config:GetSetting('EquipShield')) or (Globals.AutoTargetIsNamed and Config:GetSetting('NamedShieldLock'))
+                    return self.Helpers.shieldNeeded()
                 end,
-                custom_func = function(self) return ItemManager.BandolierSwap("Shield") end,
+                custom_func = function(self)
+                    ItemManager.BandolierSwap("Shield")
+                    return true
+                end,
             },
             {
                 name = "Equip 2Hand",
                 type = "CustomFunc",
-                active_cond = function(self, target)
-                    return mq.TLO.Me.Bandolier("2Hand").Active()
-                end,
-                cond = function()
+                cond = function(self)
                     if mq.TLO.Me.Bandolier("2Hand").Active() then return false end
-                    return mq.TLO.Me.PctHPs() >= Config:GetSetting('Equip2Hand') and mq.TLO.Me.ActiveDisc.Name() ~= "Deflection Discipline" and
-                        (mq.TLO.Me.AltAbilityTimer("Shield Flash")() or 0) < 234000 and not (Globals.AutoTargetIsNamed and Config:GetSetting('NamedShieldLock'))
+                    return mq.TLO.Me.PctHPs() >= Config:GetSetting('Equip2Hand') and not self.Helpers.shieldNeeded()
                 end,
-                custom_func = function(self) return ItemManager.BandolierSwap("2Hand") end,
+                custom_func = function(self)
+                    ItemManager.BandolierSwap("2Hand")
+                    return true
+                end,
             },
         },
     },
@@ -2107,7 +2146,7 @@ local _ClassConfig = {
             Header = "Bandolier",
             Category = "Bandolier",
             Index = 104,
-            Tooltip = "Keep Shield equipped for mobs detected as 'named' by RGMercs (see Named tab).",
+            Tooltip = "Keep Shield equipped while tanking a named.",
             Default = true,
             FAQ = "Why does my PAL switch to a Shield on puny gray named?",
             Answer = "The Shield on Named option doesn't check levels, so feel free to disable this setting (or Bandolier swapping entirely) if you are farming fodder.",
@@ -2224,6 +2263,20 @@ local _ClassConfig = {
             Min = 1,
             Max = 3,
             RequiresLoadoutChange = true,
+        },
+        ['HealPriority']      = {
+            DisplayName = "Healing Priority",
+            Group = "Abilities",
+            Header = "Recovery",
+            Category = "Healing Thresholds",
+            Index = 101,
+            Type = "Combo",
+            ComboOptions = { 'Ignore', 'Big Heal Point', },
+            Default = 2,
+            Min = 1,
+            Max = 2,
+            Tooltip = "When to yield offensive rotations for healing:\n1 - Ignore (never)\n2 - Big Heal Point",
+            ConfigType = "Advanced",
         },
     },
     ['ClassFAQ']          = {

@@ -54,6 +54,8 @@ Module.TempSettings.ShowFailedSpells         = false
 Module.TempSettings.ResolvingActions         = true
 Module.TempSettings.CombatModeSet            = false
 Module.TempSettings.NewCombatMode            = false
+Module.TempSettings.ForceRepackGems          = false
+Module.TempSettings.LastFastPathTime         = 0
 Module.TempSettings.CombatModeChangeTime     = 0
 Module.TempSettings.MissingSpells            = {}
 Module.TempSettings.MissingSpellsHighestOnly = true
@@ -66,6 +68,7 @@ Module.TempSettings.CureChecksStale          = false
 Module.TempSettings.ImmuneTargets            = {}
 Module.TempSettings.RotationClickies         = Set.new({})
 Module.TempSettings.RotationAAs              = Set.new({})
+Module.TempSettings.MidSongFireable          = {}
 
 Module.FAQ                                   = {
     {
@@ -148,14 +151,13 @@ Module.CommandHandlers                       = {
                     return true
                 end
 
-                if not self:IsModeActive(newMode) then
-                    Config:SetSetting('Mode', newModeIdx)
-                    self:SetCombatMode(newMode)
+                if self:IsModeActive(newMode) then
+                    Logger.log_info("\awMode \am%s\aw is already active.", newMode)
                     return true
                 end
 
-                Logger.log_info("\awMode successfully set to: \am%s", newMode)
-
+                Config:SetSetting('Mode', newModeIdx)
+                Logger.log_info("\awMode change to \am%s\aw requested.", newMode)
                 return true
             end,
     },
@@ -166,6 +168,17 @@ Module.CommandHandlers                       = {
             self:RescanLoadout()
 
             Logger.log_info("\awManual loadout scan initiated.")
+
+            return true
+        end,
+    },
+    reordergems = {
+        usage = "/rgl reordergems",
+        about = "Repack your spell bar into priority order, ignoring current placement.",
+        handler = function(self)
+            self:ReorderGems()
+
+            Logger.log_info("\awGem reorder initiated.")
 
             return true
         end,
@@ -441,6 +454,11 @@ function Module:RescanLoadout()
     self.TempSettings.NewCombatMode = true
 end
 
+function Module:ReorderGems()
+    self.TempSettings.ForceRepackGems = true
+    self.TempSettings.NewCombatMode = true
+end
+
 function Module:SetCombatMode(mode)
     if not Tables.TableContains(self.ClassConfig.Modes, mode) then
         Logger.log_error("\ayInvalid Mode: \am%s", mode)
@@ -454,14 +472,14 @@ function Module:SetCombatMode(mode)
         self.TempSettings.ResolvingActions = false
 
         if self.ClassConfig.SpellList then
-            self.SpellLoadOut, self.LoadOutName = Rotation.SetSpellLoadOutByPriority(self, self.ClassConfig.SpellList)
+            local forceRepack = self.TempSettings.ForceRepackGems or not self.TempSettings.CombatModeSet
+            self.SpellLoadOut, self.LoadOutName = Rotation.SetSpellLoadOutByPriority(self, self.ClassConfig.SpellList, forceRepack)
+            self.TempSettings.ForceRepackGems = false
         else
             self.SpellLoadOut = Rotation.SetSpellLoadOutByGem(self, self.ClassConfig.Spells)
             self.LoadOutName = "Default"
         end
     end
-
-    Rotation.LoadSpellLoadOut(self.SpellLoadOut)
 
     if self.ClassConfig.OnModeChange then
         self.ClassConfig.OnModeChange(self, mode)
@@ -470,6 +488,81 @@ function Module:SetCombatMode(mode)
     self.TempSettings.MissingSpells = Rotation.FindAllMissingSpells(self.ClassConfig.AbilitySets, self.TempSettings.MissingSpellsHighestOnly)
 
     Modules:ExecAll("OnCombatModeChanged")
+end
+
+function Module:ComputedLoadoutMatchesCurrent()
+    if not self.ClassConfig or not self.ClassConfig.SpellList then return false end
+
+    local now = Globals.GetTimeMS()
+    if (now - self.TempSettings.LastFastPathTime) < 1000 then return false end
+    self.TempSettings.LastFastPathTime = now
+
+    local savedMap = self.ResolvedActionMap
+    self.ResolvedActionMap = Rotation.ResolveActions(self.ClassConfig.ItemSets, self.ClassConfig.AbilitySets, self.ClassConfig.AASets)
+
+    local forceRepack = self.TempSettings.ForceRepackGems
+    local candidate = Rotation.SetSpellLoadOutByPriority(self, self.ClassConfig.SpellList, forceRepack)
+
+    local me = mq.TLO.Me
+    for gem = 1, me.NumGems() do
+        local entry = candidate[gem]
+        local computedRank = entry and entry.spell and entry.spell.RankName() or nil
+        if computedRank ~= me.Gem(gem)() then
+            self.ResolvedActionMap = savedMap
+            return false
+        end
+    end
+    return true
+end
+
+function Module:ReconcileLoadout()
+    if not self.ClassConfig or not self.SpellLoadOut then return end
+    if self.TempSettings.ResolvingActions then return end
+    if Globals.CurrentState ~= "Downtime" then return end
+    if not Combat.CombatSettled(1000) then return end
+
+    local me = mq.TLO.Me
+    if me.Feigning() then return end
+
+    local numGems = me.NumGems()
+    for gem = 1, numGems do
+        local loadoutData = self.SpellLoadOut[gem]
+        if loadoutData then
+            local desiredRank = loadoutData.spell and loadoutData.spell.RankName() or nil
+            if desiredRank and me.Gem(gem)() ~= desiredRank then
+                Logger.log_debug("\ayReconcile:\ax gem \am%d\ax mismatch (have=\at%s\ax, want=\ag%s\ax)",
+                    gem, tostring(me.Gem(gem)()), desiredRank)
+                local _, permanent = Casting.MemorizeSpell(gem, desiredRank, false, 15000)
+                if permanent then
+                    Logger.log_warning("\ayReconcile:\ar %s no longer in book; skipping gem %d.", desiredRank, gem)
+                end
+            end
+        end
+    end
+end
+
+function Module:PromptRestoreSwapSlot()
+    if not self.ClassConfig or not self.SpellLoadOut then return end
+    if Targeting.GetXTHaterCount() > 0 then return end
+
+    local me = mq.TLO.Me
+    if me.Feigning() then return end
+
+    local swapGem = Casting.UseGem
+    for gem = 1, me.NumGems() do
+        if gem ~= swapGem then
+            local entry = self.SpellLoadOut[gem]
+            local rank = entry and entry.spell and entry.spell.RankName() or nil
+            if rank and me.Gem(gem)() ~= rank then return end
+        end
+    end
+
+    local desired = self.SpellLoadOut[swapGem]
+    local desiredRank = desired and desired.spell and desired.spell.RankName() or nil
+    if not desiredRank then return end
+    if me.Gem(swapGem)() == desiredRank then return end
+
+    Casting.MemorizeSpell(swapGem, desiredRank, false, 15000)
 end
 
 function Module:OnCombatModeChanged()
@@ -587,7 +680,7 @@ function Module:Render()
     local pressed = false
 
     if self.ClassConfig and self.ModuleLoaded then
-        Ui.RenderText("Active Mode:")
+        Ui.RenderText("Current Mode:")
         ImGui.SameLine()
         ImGui.SetNextItemWidth(150)
         Ui.Tooltip(self.ClassConfig.DefaultConfig.Mode.Tooltip)
@@ -627,9 +720,17 @@ function Module:Render()
 
         if ImGui.CollapsingHeader(string.format("Spell Loadout (%s)", self.LoadOutName)) then
             ImGui.Indent()
-            if ImGui.SmallButton("Reload Spells") then
-                self:RescanLoadout()
-                Logger.log_info("\awManual loadout scan initiated.")
+            if self.ClassConfig.SpellList then
+                if ImGui.SmallButton("Reorder Gems") then
+                    self:ReorderGems()
+                    Logger.log_info("\awGem reorder initiated.")
+                end
+                Ui.Tooltip("Repack your spell bar into priority order.")
+            else
+                if ImGui.SmallButton("Reload Spells") then
+                    self:RescanLoadout()
+                    Logger.log_info("\awManual loadout scan initiated.")
+                end
             end
 
             if Tables.GetTableSize(self.SpellLoadOut) > 0 then
@@ -767,10 +868,9 @@ end
 
 ---@return boolean
 function Module:IsTanking()
-    if not self.ClassConfig or not self.ClassConfig.ModeChecks or not self.ClassConfig.ModeChecks.IsTanking then
-        return false
-    end
-    return self.ClassConfig.ModeChecks.IsTanking()
+    local modeChecks = self.ClassConfig and self.ClassConfig.ModeChecks
+    local classTanking = modeChecks and modeChecks.IsTanking and modeChecks.IsTanking()
+    return classTanking or Core.IAmGroupMT()
 end
 
 ---@return boolean
@@ -809,10 +909,80 @@ end
 
 ---@return boolean
 function Module:IsCharming()
-    if not self.ClassConfig or not self.ClassConfig.ModeChecks or not self.ClassConfig.ModeChecks.IsCharming then
-        return false
+    return self:CanCharm() and Config:GetSetting('CharmOn')
+end
+
+--- Runs the main-loop engage step mid-song, gated to the combat target so it never re-targets off a mez/charm/cure victim.
+---@param targetId number The song's target (UseSong's targetId).
+function Module:DoMidSongEngage(targetId)
+    if (Globals.AutoTargetID or 0) <= 0 or targetId ~= Globals.AutoTargetID then return end
+
+    if not Globals.BackOffFlag then
+        Combat.FindBestAutoTarget(Combat.OkToEngagePreValidateId)
     end
-    return self.ClassConfig.ModeChecks.IsCharming()
+
+    if Combat.OkToEngage(Globals.AutoTargetID) then
+        Combat.EngageTarget(Globals.AutoTargetID)
+    end
+end
+
+--- Whether a midSong-flagged entry is a fireable instant; errors once per zone when it isn't.
+---@param entry table
+---@return boolean
+function Module:MidSongAllowed(entry)
+    local cached = self.TempSettings.MidSongFireable[entry]
+    if cached ~= nil then return cached end
+
+    local entryType = (entry.type or ""):lower()
+    local castTime = 0
+    local instantType = true
+
+    if entryType == "disc" then
+        local discSpell = self.ResolvedActionMap[entry.name]
+        castTime = discSpell and discSpell.MyCastTime() or 0
+    elseif entryType == "aa" then
+        local aaName = self.ResolvedActionMap[entry.name] or entry.name
+        castTime = aaName and (mq.TLO.Me.AltAbility(aaName).Spell.MyCastTime() or 0) or 0
+    elseif entryType == "item" or entryType == "clickyitem" then
+        local itemName = entryType == "clickyitem" and (entry.name and Config:GetSetting(entry.name)) or self.ResolvedActionMap[entry.name] or entry.name
+        local item = itemName and mq.TLO.FindItem("=" .. itemName)
+        castTime = (item and item()) and ((item.Clicky() and item.Clicky.CastTime()) or item.CastTime() or 0) or 0
+    elseif entryType ~= "ability" then
+        instantType = false -- song/spell would start a song; customfunc excluded as a conservative default
+    end
+
+    local fireable = instantType and (castTime or 0) == 0
+    self.TempSettings.MidSongFireable[entry] = fireable
+    if not fireable then
+        Logger.log_error("\arMidSong: '%s' (type %s) isn't instant - it can't fire mid-song; remove its midSong flag.", entry.name or "?", entry.type or "nil")
+    end
+    return fireable
+end
+
+--- Fires the midSong-flagged instant rotation entries at the combat auto-target via ExecEntry in fire-and-return mode, so a singing bard's instants go off without clipping the song.
+function Module:DoMidSongActions()
+    local autoTargetId = Globals.AutoTargetID
+    if autoTargetId == 0 or mq.TLO.Target.ID() ~= autoTargetId then return end
+
+    local combat_state = Combat.GetCachedCombatState()
+    local enabledRotations = Config:GetSetting('EnabledRotations') or {}
+    local enabledEntries = Config:GetSetting('EnabledRotationEntries') or {}
+
+    for _, r in ipairs(self.TempSettings.RotationStates) do
+        if r.midSong and enabledRotations[r.name] ~= false then
+            if Core.SafeCallFunc("MidSong rotation cond " .. r.name, r.cond, self, combat_state) then
+                for _, entry in ipairs(self:GetRotationTable(r.name)) do
+                    if entry.midSong and enabledEntries[entry.name] ~= false and self:MidSongAllowed(entry) then
+                        Core.SafeCallFunc("MidSong entry " .. entry.name, function()
+                            if Rotation.TestConditionForEntry(self, self.ResolvedActionMap, entry, autoTargetId) then
+                                Rotation.ExecEntry(self, entry, autoTargetId, self.ResolvedActionMap, false)
+                            end
+                        end)
+                    end
+                end
+            end
+        end
+    end
 end
 
 ---@return boolean
@@ -866,7 +1036,7 @@ function Module:GetRotations()
                 end
             end
             self.TempSettings.RotationTable[rname] = Tables.ConcatTables(self.TempSettings.RotationTable[rname],
-                Modules:ExecModule("Clickies", "GetClickiesForRotation", rname) or {})
+                Modules:ExecModule("Clickies", "GetClickiesForRotations", "During Rotation", rname) or {})
         end
     end
 
@@ -889,7 +1059,7 @@ function Module:GetRotations()
                 end
             end
             self.TempSettings.HealRotationTable[rname] = Tables.ConcatTables(self.TempSettings.HealRotationTable[rname],
-                Modules:ExecModule("Clickies", "GetClickiesForHealRotation", rname) or {})
+                Modules:ExecModule("Clickies", "GetClickiesForRotations", "During Heal Rotation", rname) or {})
         end
     end
 
@@ -914,6 +1084,8 @@ function Module:GetRotations()
             return nil
         end
         if not spell or not spell() then return nil end
+        -- Beneficial spells (self/group buffs) are never cast at the mob, so a target's immunity can't gate them even if they carry a resist type.
+        if spell.Beneficial() then return nil end
         local rt = spell.ResistType and spell.ResistType()
         return Globals.Constants.ResistTypesSet:contains(rt) and rt or nil
     end
@@ -1169,6 +1341,19 @@ function Module:RunHealRotation()
     else
         self:HealById(Combat.FindWorstHurtXT(Config:GetSetting('MaxHealPoint')))
     end
+end
+
+--- True if anyone we heal (group/pets + heal list or XT) is below the gate threshold this frame.
+---@param priority integer HealPriority setting: 2 Big Heal Point, 3 Main Heal Point
+---@return boolean
+function Module:NeedToHeal(priority)
+    local point = Config:GetSetting(priority == 3 and 'MainHealPoint' or 'BigHealPoint')
+    if (mq.TLO.Group.Injured(point)() or 0) > 0 then return true end
+    if Config:GetSetting('DoPetHeals') and Combat.AnyHurtGroupPet(Config:GetSetting('PetHealPoint')) then return true end
+    if Config:GetSetting('UseHealList') then
+        return Combat.FindWorstHurtHealList(point) > 0
+    end
+    return Combat.FindWorstHurtXT(point) > 0
 end
 
 function Module:ClearCureFromList(id)
@@ -1542,6 +1727,63 @@ function Module:QueueAbility(type, name, targetId)
     })
 end
 
+function Module:PositionPet()
+    local petPos = self.ClassConfig.PetPosition
+    if not petPos then return end
+
+    local targetId = Globals.AutoTargetID
+    if targetId == 0 then return end
+
+    local pet = mq.TLO.Me.Pet
+    if mq.TLO.Me.Pet.ID() == 0 then return false end
+
+    if mq.TLO.Me.Moving() or mq.TLO.Me.Casting() then return end
+
+    local ability
+
+    if not pet.Combat() and (pet.Distance3D() or 0) > 200 then
+        -- pet is lagging behind, summon it
+        ability = petPos.SummonAA and petPos.SummonAA()
+        Logger.log_verbose("PositionPet: Pet is far away and we are in combat, %s is needed.", ability)
+    elseif Config:GetSetting('RepositionPet') then
+        if pet.Combat() and pet.Target.ID() == targetId then
+            -- check if pet needs reposition
+            local target = mq.TLO.Spawn(targetId)
+            if not target() then return end
+
+            if (Globals.GetTimeSeconds() - (self.TempSettings.LastPetPosCheck or 0)) < 0.25 then return end
+            self.TempSettings.LastPetPosCheck = Globals.GetTimeSeconds()
+
+            local frontArc = 180
+            local targetFacing = target.Heading.DegreesCCW() or 0
+            local inFrontArc = function(y, x)
+                local diff = (((target.HeadingToLoc(y, x).DegreesCCW() or 0) - targetFacing + 540) % 360) - 180
+                return math.abs(diff) < frontArc / 2
+            end
+
+            if not inFrontArc(pet.Y(), pet.X()) then return end
+
+            if inFrontArc(mq.TLO.Me.Y(), mq.TLO.Me.X()) then
+                -- Relocate flings the pet in our faced direction, so don't fire mid-turn or it lands off-target.
+                local myHeading = mq.TLO.Me.Heading.DegreesCCW() or 0
+                local headingDelta = math.abs(myHeading - (self.TempSettings.LastPetPosHeading or myHeading))
+                self.TempSettings.LastPetPosHeading = myHeading
+                if headingDelta > 180 then headingDelta = 360 - headingDelta end
+                if headingDelta > 5 then return end
+                ability = petPos.RelocateAA and petPos.RelocateAA()
+            else
+                ability = petPos.SummonAA and petPos.SummonAA()
+            end
+
+            Logger.log_verbose("PositionPet: pet in %s's front arc, %s is needed.", target.CleanName() or "target", ability)
+        end
+    end
+
+    if not ability or not Casting.AAReady(ability) then return end
+    Logger.log_debug("PositionPet: Using %s to move my pet.", ability)
+    Casting.UseAA(ability)
+end
+
 function Module:GiveTime()
     local combat_state = Combat.GetCachedCombatState()
 
@@ -1556,25 +1798,31 @@ function Module:GiveTime()
         return
     end
 
-    -- Main Module logic goes here.
-    if (self.TempSettings.NewCombatMode and combat_state == "Downtime") or not self.TempSettings.CombatModeSet then
-        Logger.log_debug("New Combat Mode Requested: %s", self.ClassConfig.Modes[Config:GetSetting('Mode')])
+    if self.TempSettings.NewCombatMode or not self.TempSettings.CombatModeSet then
+        local canApply = (not self.TempSettings.CombatModeSet)
+            or (combat_state == "Downtime" and Combat.CombatSettled(1000))
+            or self:ComputedLoadoutMatchesCurrent()
 
-        self:SetCombatMode(self.ClassConfig.Modes[Config:GetSetting('Mode')])
-        self:GetRotations()
-        if self:IsCuring() then
-            if self.ClassConfig.Cures and self.ClassConfig.Cures.GetCureSpells then
-                Core.SafeCallFunc("GetCureSpells", self.ClassConfig.Cures.GetCureSpells, self)
+        if canApply then
+            Logger.log_debug("New Combat Mode Requested: %s", self.ClassConfig.Modes[Config:GetSetting('Mode')])
+
+            self:SetCombatMode(self.ClassConfig.Modes[Config:GetSetting('Mode')])
+            self:GetRotations()
+            if self:IsCuring() then
+                if self.ClassConfig.Cures and self.ClassConfig.Cures.GetCureSpells then
+                    Core.SafeCallFunc("GetCureSpells", self.ClassConfig.Cures.GetCureSpells, self)
+                end
             end
-        end
-        self:SetRotationActions()
-        self.TempSettings.NewCombatMode = false
-        self.TempSettings.CombatModeSet = true
-        self.TempSettings.CombatModeChangeTime = Globals.GetTimeSeconds()
+            self:SetRotationActions()
+            self.TempSettings.NewCombatMode = false
+            self.TempSettings.CombatModeSet = true
+            self.TempSettings.CombatModeChangeTime = Globals.GetTimeSeconds()
 
-        -- update our peers about our new state.
-        Config:BroadcastConfigs()
+            Config:BroadcastConfigs()
+        end
     end
+
+    self:ReconcileLoadout()
 
     if self.CombatState ~= combat_state and combat_state == "Downtime" then
         self:ResetRotation()
@@ -1643,24 +1891,12 @@ function Module:GiveTime()
         self:RunCounterRotation()
     end
 
-    if self:IsTanking() and Config:GetSetting('MovebackWhenBehind') then
-        -- make sure nothing is behind us when tanking.
-        -- Maybe spawn search is failing us -- look through the xtarget list
-        local xtCount = mq.TLO.Me.XTarget()
+    if self:IsTanking() and Config:GetSetting('KeepMobsInFront') and Movement:DetectMobBehind() then
+        Movement:TankReposition()
+    end
 
-        for i = 1, xtCount do
-            local xtSpawn = mq.TLO.Me.XTarget(i)
-            if xtSpawn and xtSpawn.ID() > 0 and not xtSpawn.Dead() and not xtSpawn.Fleeing() and (math.ceil(xtSpawn.PctHPs() or 0)) > 0 and (xtSpawn.Aggressive() or xtSpawn.TargetType():lower() == "auto hater" or xtSpawn.ID() == Globals.ForceTargetID) and Globals.Constants.RGNotMezzedAnims:contains(xtSpawn.Animation()) and math.abs((mq.TLO.Me.Heading.Degrees() - (xtSpawn.Heading.Degrees() or 0))) < 100 then
-                Logger.log_debug("\arXT(%s) is behind us! \atTaking evasive maneuvers! \awMyHeader(\am%d\aw) ThierHeading(\am%d\aw)", xtSpawn.DisplayName() or "",
-                    mq.TLO.Me.Heading.Degrees(), (xtSpawn.Heading.Degrees() or 0))
-                if Globals.GetTimeSeconds() - Movement:GetLastStickTimer() < 0.5 then
-                    Logger.log_debug("\ayIgnoring moveback because we just stuck a second ago - let's give it some time.")
-                else
-                    Movement:DoStickCmd("moveback %d", Config:GetSetting('MovebackDistance'))
-                    Movement:SetLastStickTimer(Globals.GetTimeSeconds())
-                end
-            end
-        end
+    if combat_state == "Combat" then
+        self:PositionPet()
     end
 
     -- stop singing after pause so we can take over again (if we are active, we will stop our own songs). If paused, allow user to manage their own songs.
@@ -1752,6 +1988,7 @@ function Module:OnZone()
     end
     Module.TempSettings.ImmuneTargets = {}   -- clear list of slow/snare/stun immune mobs
     Module.TempSettings.QueuedAbilities = {} -- clear queued actions
+    Module.TempSettings.MidSongFireable = {} -- re-check (and re-warn) mid-song eligibility each zone
 end
 
 function Module:DoGetState()

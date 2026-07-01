@@ -9,11 +9,38 @@ local Modules               = require("utils.modules")
 local Movement              = require("utils.movement")
 local Strings               = require("utils.strings")
 
-local Targeting             = { _version = '1.0', _name = "Targeting", _author = 'Derple', }
-Targeting.__index           = Targeting
-Targeting.ForceNamed        = false
-Targeting.ForceBurnTargetID = 0
-Targeting.SafeTargetCache   = {}
+local Targeting              = { _version = '1.0', _name = "Targeting", _author = 'Derple', }
+Targeting.__index            = Targeting
+Targeting.ForceNamed         = false
+Targeting.ForceBurnTargetID  = 0
+Targeting.SafeTargetCache    = {}
+Targeting.XTClearTime        = 0
+Targeting.TankingNamedCheckTime = 0
+Targeting.TankingNamedFound     = false
+
+Targeting.XTargetTypeKeywords = {
+    ["Target's Target"]      = "targetstarget",
+    ["Group Tank"]           = "grouptank",
+    ["Group Tank's Target"]  = "grouptanktarget",
+    ["Group Assist"]         = "groupassist",
+    ["Group Assist Target"]  = "groupassisttarget",
+    ["Group Puller"]         = "puller",
+    ["Group Puller Target"]  = "grouppullertarget",
+    ["Group Mark 1"]         = "groupmark1",
+    ["Group Mark 2"]         = "groupmark2",
+    ["Group Mark 3"]         = "groupmark3",
+    ["Raid Assist 1"]        = "raidassist1",
+    ["Raid Assist 2"]        = "raidassist2",
+    ["Raid Assist 3"]        = "raidassist3",
+    ["Raid Assist 1 Target"] = "raidassist1target",
+    ["Raid Assist 2 Target"] = "raidassist2target",
+    ["Raid Assist 3 Target"] = "raidassist3target",
+    ["Raid Mark 1"]          = "raidmark1",
+    ["Raid Mark 2"]          = "raidmark2",
+    ["Raid Mark 3"]          = "raidmark3",
+    ["Pet Target"]           = "pettarget",
+    ["Mercenary Target"]     = "mercenarytarget",
+}
 
 --- Returns true if spawn qualifies as a named mob per the Named module,
 --- ignoring spawns below the NamedMinLevel config setting.
@@ -81,6 +108,16 @@ function Targeting.TargetBodyIs(target, type)
 
     local targetBody = (target() and target.Body() and target.Body.Name()) or "none"
     return targetBody:lower() == type:lower()
+end
+
+-- Returns true if the proper body type for magician/druid anti-summoned spells
+function Targeting.IsSummoned(target)
+    if not target then target = mq.TLO.Target end
+    if not target or not target() then return false end
+
+    local targetBody = target.Body() and target.Body.Name() or "none"
+
+    return targetBody:lower() == "construct" or targetBody:lower() == "undead pet"
 end
 
 --- Returns true if target's class short name is in classTable (string or array).
@@ -324,6 +361,29 @@ function Targeting.IHaveAggro(pct)
     return false
 end
 
+--- Returns true if any XT row is a named mob we currently have aggro on; result cached 1s.
+---@return boolean True if we are the current aggro target of a named XT row.
+function Targeting.TankingXTNamed()
+    if Globals.GetTimeSeconds() - Targeting.TankingNamedCheckTime < 1 then
+        return Targeting.TankingNamedFound
+    end
+    Targeting.TankingNamedCheckTime = Globals.GetTimeSeconds()
+    Targeting.TankingNamedFound = false
+    local xtCount = mq.TLO.Me.XTarget() or 0
+    for i = 1, xtCount do
+        local xt = mq.TLO.Me.XTarget(i)
+        -- check for exactly 100% to help ensure the mob is targeting us, over 100% can indicate another is still targeted
+        if xt and xt.ID() > 0 and not xt.Dead()
+            and (xt.Aggressive() or (xt.TargetType() or ""):lower() == "auto hater")
+            and (xt.PctAggro() or 0) == 100
+            and Targeting.IsNamed(xt) then
+            Targeting.TankingNamedFound = true
+            break
+        end
+    end
+    return Targeting.TankingNamedFound
+end
+
 --- Returns a Set of spawn IDs currently hating the player on XTarget.
 ---@param printDebug boolean? If true, logs each hater found.
 ---@return table Set of hater spawn IDs.
@@ -445,6 +505,7 @@ function Targeting.AddXTByID(slot, id)
         if spawnToAdd.Type() == "PC" then
             Core.DoCmd("/xtarget set %d \"%s\"", slot, spawnToAdd.CleanName())
         else
+            -- Need dirty name to differentiate which mob
             Core.DoCmd("/xtarget set %d \"%s\"", slot, spawnToAdd.Name())
         end
     end
@@ -454,8 +515,67 @@ end
 ---@param slot number XTarget slot index to reset (1–20).
 function Targeting.ResetXTSlot(slot)
     Core.DoCmd("/xtarget set %d ET", slot)
-    mq.delay(500, function() return (mq.TLO.Me.XTarget(slot).TargetType():lower() or "empty target") == "empty target" end)
+    mq.delay(500, function() return (mq.TLO.Me.XTarget(slot).TargetType() or "") == "Empty Target" end)
     Core.DoCmd("/xtarget set %d autohater", slot)
+end
+
+--- EMU only: when any Auto Hater XTarget slot is holding a corpse during downtime, fires #clearxtargets and restores user-configured slot types.
+function Targeting.ClearStuckXTargets()
+    if not Core.OnEMU() then return end
+    if not Config:GetSetting('ClearStuckXTargets') then return end
+    if Globals.CurrentState ~= "Downtime" then return end
+    if (Globals.GetTimeMS() - (Globals.LastCombatTime or 0)) < 1000 then return end
+    if (Globals.GetTimeSeconds() - Targeting.XTClearTime) < 10 then return end
+
+    local slotCount       = mq.TLO.Me.XTargetSlots() or 20
+    local stuckSlots      = {}
+    local idSnap          = {}
+    local populatedBefore = {}
+    for i = 1, slotCount do
+        local xt = mq.TLO.Me.XTarget(i)
+        local tt = xt.TargetType() or ""
+        local id = xt.ID() or 0
+        local isCorpse = (xt.Type() or "") == "Corpse"
+        if id > 0 then populatedBefore[i] = true end
+        if tt == "Auto Hater" and id > 0 and isCorpse then
+            stuckSlots[i] = true
+        elseif (tt == "Specific PC" or tt == "Specific NPC") and id > 0 and not isCorpse then
+            idSnap[i] = id
+        end
+    end
+
+    if not next(stuckSlots) then return end
+
+    Targeting.XTClearTime = Globals.GetTimeSeconds()
+    Logger.log_info("ClearStuckXTargets: clearing bugged XTarget corpses via #clearxtargets.")
+
+    Core.DoCmd("/say #clearxtargets")
+    mq.delay(2000, function()
+        for slot in pairs(populatedBefore) do
+            if (mq.TLO.Me.XTarget(slot).ID() or 0) ~= 0 then return false end
+        end
+        return true
+    end)
+
+    for i = 1, slotCount do
+        if idSnap[i] then
+            if mq.TLO.Spawn(idSnap[i])() then
+                Targeting.AddXTByID(i, idSnap[i])
+                mq.delay(500, function() return (mq.TLO.Me.XTarget(i).ID() or 0) == idSnap[i] end)
+            end
+        else
+            local tt = mq.TLO.Me.XTarget(i).TargetType() or ""
+            if tt ~= "Empty Target" and tt ~= "Auto Hater" then
+                local kw = Targeting.XTargetTypeKeywords[tt]
+                if kw then
+                    Core.DoCmd("/xtarget set %d emptytarget", i)
+                    mq.delay(500, function() return (mq.TLO.Me.XTarget(i).TargetType() or "") == "Empty Target" end)
+                    Core.DoCmd("/xtarget set %d %s", i, kw)
+                    mq.delay(500, function() return (mq.TLO.Me.XTarget(i).TargetType() or "") == tt end)
+                end
+            end
+        end
+    end
 end
 
 --- Returns true if any PC/pet/merc within radius is assisting spawn but is
@@ -710,7 +830,7 @@ end
 --- either aggro throttling is off, the player is the tank, or aggro is below MobMaxAggro.
 ---@return boolean True if aggro is within acceptable limits.
 function Targeting.AggroCheckOkay()
-    if not mq.TLO.Group() or (mq.TLO.Group.MainTank.ID() or 0) == mq.TLO.Me.ID() or Core.IsTanking() then return true end
+    if not mq.TLO.Group() or Core.IsTanking() then return true end
     return (mq.TLO.Target.PctAggro() or 0) < Config:GetSetting('MobMaxAggro') or not Config:GetSetting('AggroThrottling')
 end
 

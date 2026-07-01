@@ -1,5 +1,6 @@
 local mq           = require('mq')
 local Casting      = require("utils.casting")
+local Combat       = require('utils.combat')
 local Config       = require('utils.config')
 local Core         = require("utils.core")
 local Globals      = require("utils.globals")
@@ -10,7 +11,6 @@ local Targeting    = require("utils.targeting")
 
 local Tooltips     = {
     Epic           = 'Item: Casts Epic Weapon Ability',
-    BardRunBuff    = "Song Line: Movement Speed Modifier",
     AriaSong       = "Song Line: Spell Damage Focus / Haste v3 Modifier",
     WarMarchSong   = "Song Line: Melee Haste / DS / STR/ATK Increase",
     ArcaneSong     = "Song Line: Group Melee and Spell Proc",
@@ -51,11 +51,10 @@ local _ClassConfig = {
     end,
 
     ['ModeChecks']    = {
-        CanMez     = function() return true end,
-        CanCharm   = function() return true end,
-        IsMezzing  = function() return Config:GetSetting('MezOn') end,
-        IsCuring   = function() return Config:GetSetting('UseCure') end,
-        IsCharming = function() return Config:GetSetting('CharmOn') and mq.TLO.Pet.ID() == 0 end,
+        CanMez    = function() return true end,
+        CanCharm  = function() return true end,
+        IsMezzing = function() return Config:GetSetting('MezOn') end,
+        IsCuring  = function() return Config:GetSetting('UseCure') end,
     },
     ['Cures']         = {
         CureNow = function(self, type, targetId)
@@ -251,6 +250,11 @@ local _ClassConfig = {
             "Bellow of Chaos", -- Level 66
         },
     },
+    ['Charm']         = {
+        ['Abilities'] = {
+            { name = "CharmSong", type = "Song", },
+        },
+    },
     ['Helpers']       = {
         SwapInst = function(type)
             if not Config:GetSetting('SwapInstruments') then return end
@@ -329,8 +333,8 @@ local _ClassConfig = {
             local interval = (self.TempSettings.MarchDuration or 12) - threshold
             return (Globals.GetTimeSeconds() - (self.TempSettings.LastMarchCast or 0)) >= interval
         end,
-        UnwantedAggroCheck = function(self) --Self-Explanatory. Add isTanking to this if you ever make a mode for bardtanks!
-            if Targeting.GetXTHaterCount() == 0 or Core.IAmMA() or mq.TLO.Group.Puller.ID() == mq.TLO.Me.ID() then return false end
+        UnwantedAggroCheck = function(self)
+            if Targeting.GetXTHaterCount() == 0 or Core.IsTanking() or mq.TLO.Group.Puller.ID() == mq.TLO.Me.ID() then return false end
             return Targeting.IHaveAggro(100)
         end,
         DotSongCheck = function(songSpell) --Check dot stacking, stop dotting when HP threshold is reached based on mob type, can't use utils function because we try to refresh just as the dot is ending
@@ -342,6 +346,10 @@ local _ClassConfig = {
             Logger.log_debug("getDetSongDuration() Current duration for %s : %d", songSpell, duration)
             return duration
         end,
+    },
+    ['Mez']           = {
+        { type = "AA",   name = "Dirge of the Sleepwalker", cond = function() return Config:GetSetting('DoAAMez') end, },
+        { type = "Song", name = "MezSong", },
     },
     ['RotationOrder'] = {
         {
@@ -358,6 +366,7 @@ local _ClassConfig = {
             name = 'Downtime',
             state = 1,
             steps = 1,
+            midSong = true,
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
                 return combat_state == "Downtime" and not mq.TLO.Me.Invis()
@@ -367,6 +376,7 @@ local _ClassConfig = {
             name = 'Emergency',
             state = 1,
             steps = 1,
+            midSong = true,
             doFullRotation = true,
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
@@ -380,7 +390,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting("DoSTSlow") or Config:GetSetting("DoAESlow") or Config:GetSetting("DoResistDebuff") or Config:GetSetting("DoDispel") end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.OkayToDebuff()
+                return combat_state == "Combat" and Casting.OkayToDebuff() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -391,25 +401,29 @@ local _ClassConfig = {
             doFullRotation = true,
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
-                return not (combat_state == "Downtime" and mq.TLO.Me.Invis()) and not Globals.InMedState
+                if Globals.InMedState then return false end
+                if combat_state == "Downtime" and mq.TLO.Me.Invis() then return false end
+                return Core.CombatActionsCheck()
             end,
         },
         {
             name = 'Burn',
             state = 1,
             steps = 4,
+            midSong = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.BurnCheck()
+                return combat_state == "Combat" and Casting.BurnCheck() and Core.CombatActionsCheck()
             end,
         },
         {
             name = 'Combat',
             state = 1,
             steps = 1,
+            midSong = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat"
+                return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
         {
@@ -419,7 +433,19 @@ local _ClassConfig = {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat"
+                return combat_state == "Combat" and Core.CombatActionsCheck()
+            end,
+        },
+        {
+            name = 'InstantRunBuff',
+            state = 1,
+            steps = 1,
+            targetId = function(self) return Combat.GetCachedCombatState() == "Combat" and Targeting.CheckForAutoTargetID() or Casting.GetBuffableGroupIDs() end,
+            load_cond = function(self) return Casting.CanUseAA("Selo's Sonata") end,
+            cond = function(self, combat_state)
+                local downtime = combat_state == "Downtime" and not mq.TLO.Me.Invis()
+                local combat = combat_state == "Combat" and Core.CombatActionsCheck()
+                return downtime or combat
             end,
         },
     },
@@ -428,14 +454,17 @@ local _ClassConfig = {
             {
                 name = "Quick Time",
                 type = "AA",
+                midSong = true,
             },
             {
                 name = "Fierce Eye",
                 type = "AA",
+                midSong = true,
             },
             {
                 name = "Funeral Dirge",
                 type = "AA",
+                midSong = true,
             },
             { -- Spire, the SpireChoice setting will determine which ability is displayed/used.
                 name_func = function(self)
@@ -443,39 +472,48 @@ local _ClassConfig = {
                     return Casting.CanUseAA(spireAbil) and spireAbil or "Spire Not Purchased/Selected"
                 end,
                 type = "AA",
+                midSong = true,
             },
             {
                 name = "Bladed Song",
                 type = "AA",
+                midSong = true,
             },
             {
                 name = "Song of Stone",
                 type = "AA",
+                midSong = true,
             },
             {
                 name = "ThousandBlades",
                 type = "Disc",
+                midSong = true,
             },
             {
                 name = "OoW_Chest",
                 type = "Item",
+                midSong = true,
             },
             {
                 name = "Dance of Blades",
                 type = "AA",
+                midSong = true,
             },
             {
                 name = "Cacophony",
                 type = "AA",
+                midSong = true,
             },
             {
                 name = "Intensity of the Resolute",
                 type = "AA",
+                midSong = true,
                 load_cond = function(self) return Config:GetSetting('DoVetAA') end,
             },
             {
                 name = "A Tune Stuck In Your Head",
                 type = "AA",
+                midSong = true,
             },
             {
                 name = "SpellAbsorbSong",
@@ -533,15 +571,18 @@ local _ClassConfig = {
             {
                 name = "Boastful Bellow",
                 type = "AA",
+                midSong = true,
             },
             {
                 name = "Vainglorious Shout",
                 type = "AA",
+                midSong = true,
                 load_cond = function(self) return Config:GetSetting('UseShout') end,
             },
             {
                 name = "Kick",
                 type = "Ability",
+                midSong = true,
             },
         },
         ['CombatSongs'] = {
@@ -650,6 +691,14 @@ local _ClassConfig = {
                 end,
             },
             {
+                name = "RunBuff",
+                type = "Song",
+                load_cond = function(self) return Config:GetSetting('UseRunBuff') > 1 and not Casting.CanUseAA("Selo's Sonata") end,
+                cond = function(self, songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseRunBuff") and self.Helpers.RefreshBuffSong(songSpell)
+                end,
+            },
+            {
                 name = "Jonthan",
                 type = "Song",
                 load_cond = function(self) return Config:GetSetting('UseJonthan') > 1 end,
@@ -706,27 +755,6 @@ local _ClassConfig = {
         },
         ['Downtime'] = {
             {
-                name = "Selo's Sonata",
-                type = "AA",
-                targetId = function(self) return { mq.TLO.Me.ID(), } end,
-                load_cond = function(self) return Config:GetSetting('UseRunBuff') and Casting.CanUseAA("Selo's Sonata") end,
-                cond = function(self, aaName)
-                    if not Config:GetSetting('UseRunBuff') then return false end
-                    --refresh slightly before expiry for better uptime
-                    return (mq.TLO.Me.Buff(aaName).Duration.TotalSeconds() or 0) < 30
-                end,
-            },
-            {
-                name = "RunBuff",
-                type = "Song",
-                targetId = function(self) return { mq.TLO.Me.ID(), } end,
-                load_cond = function(self) return Config:GetSetting('UseRunBuff') and not Casting.CanUseAA("Selo's Sonata") end,
-                cond = function(self, songSpell)
-                    if Globals.InMedState then return false end
-                    return self.Helpers.RefreshBuffSong(songSpell)
-                end,
-            },
-            {
                 name = "DPSAura",
                 type = "Song",
                 pre_activate = function(self, songSpell) --remove the old aura if we leveled up (or the other aura if we just changed options), otherwise we will be spammed because of no focus.
@@ -743,6 +771,7 @@ local _ClassConfig = {
             {
                 name = "Armor of Experience",
                 type = "AA",
+                midSong = true,
                 load_cond = function(self) return Config:GetSetting('DoVetAA') end,
                 cond = function(self, aaName)
                     return mq.TLO.Me.PctHPs() < 35
@@ -751,15 +780,17 @@ local _ClassConfig = {
             {
                 name = "Fading Memories",
                 type = "AA",
+                midSong = true,
+                load_cond = function(self) return Config:GetSetting('UseFading') and Casting.CanUseAA('Fading Memories') end,
                 cond = function(self, aaName)
-                    if not Config:GetSetting('UseFading') then return false end
-                    return mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') and self.Helpers.UnwantedAggroCheck(self)
-                    --I wanted to use XTAggroCount here but it doesn't include your current target in the number it returns and I don't see a good workaround. For Loop it is.
+                    if Config:GetSetting('CharmOn') and mq.TLO.Me.Pet.ID() > 0 then return false end
+                    return (mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') or Globals.AutoTargetIsNamed) and self.Helpers.UnwantedAggroCheck(self)
                 end,
             },
             {
                 name = "Hymn of the Last Stand",
                 type = "AA",
+                midSong = true,
                 cond = function(self, aaName)
                     return mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart')
                 end,
@@ -767,6 +798,7 @@ local _ClassConfig = {
             {
                 name = "Shield of Notes",
                 type = "AA",
+                midSong = true,
                 cond = function(self, aaName)
                     return mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart')
                 end,
@@ -777,6 +809,19 @@ local _ClassConfig = {
                 cond = function(self, itemName, target)
                     if not Config:GetSetting('DoCoating') then return false end
                     return mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') and Casting.SelfBuffItemCheck(itemName)
+                end,
+            },
+        },
+        ['InstantRunBuff'] = {
+            {
+                name = "Selo's Sonata",
+                type = "AA",
+                midSong = true,
+                cond = function(self, aaName, target)
+                    local combatState = Combat.GetCachedCombatState()
+                    -- if in combat, check self, out of combat, also check others
+                    return (combatState == "Combat" and (mq.TLO.Me.Buff(aaName).Duration.TotalSeconds() or 0) < 15) or
+                        (combatState == "Downtime" and Casting.GroupBuffAACheck(aaName, target))
                 end,
             },
         },
@@ -794,7 +839,7 @@ local _ClassConfig = {
                 { name = "DispelSong",      cond = function(self) return Config:GetSetting('DoDispel') end, },
                 { name = "ResistDebuff",    cond = function(self) return Config:GetSetting('DoResistDebuff') end, },
                 { name = "CureSong",        cond = function(self) return Config:GetSetting('UseCure') end, },
-                { name = "RunBuff",         cond = function(self) return Config:GetSetting('UseRunBuff') and not Casting.CanUseAA("Selo's Sonata") end, },
+                { name = "RunBuff",         cond = function(self) return Config:GetSetting('UseRunBuff') > 1 and not Casting.CanUseAA("Selo's Sonata") end, },
                 { name = "EndBreathSong",   cond = function(self) return Config:GetSetting('UseEndBreath') end, },
                 -- major group buffs
                 { name = "AriaSong",        cond = function(self) return Config:GetSetting('UseAria') > 1 end, },
@@ -850,11 +895,13 @@ local _ClassConfig = {
             Header = "Buffs",
             Category = "Group",
             Index = 101,
-            Tooltip = "Use your run speed buff song or AA.",
-            Default = true,
+            Tooltip = "Song Line: Movement Speed Modifier (Does not control the Selo's AA).",
+            Type = "Combo",
+            ComboOptions = { 'Never', 'In-Combat Only', 'Always', 'Out-of-Combat Only', },
+            Default = 3,
+            Min = 1,
+            Max = 4,
             RequiresLoadoutChange = true,
-            FAQ = "Why am I slowing down in combat?",
-            Answer = "Runspeed songs, if selected, are only sung in the downtime rotation. Higher level bards will have longer durations.",
         },
         ['UseEndBreath']    = {
             DisplayName = "Use Enduring Breath",

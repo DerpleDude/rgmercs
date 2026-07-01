@@ -13,7 +13,10 @@ local _ClassConfig = {
     ['ModeChecks']        = {
         IsHealing = function() return true end,
         IsCuring = function() return Config:GetSetting('DoCureAA') or Config:GetSetting('DoCureSpells') end,
-        IsRezing = function() return Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0 end,
+        IsRezing = function()
+            local rezAction = Casting.CanUseAA("Blessing of Resurrection") or mq.TLO.FindItem("=Water Sprinkler of Nem Ankh")() or Core.GetResolvedActionMapItem('RezStaff')
+            return ((Core.GetResolvedActionMapItem('RezSpell') or rezAction) and Targeting.GetXTHaterCount() == 0) or (Config:GetSetting('DoBattleRez') and rezAction)
+        end,
     },
     ['Modes']             = {
         'Heal',
@@ -229,10 +232,6 @@ local _ClassConfig = {
             "Aura of the Pious",  -- Level 66
             "Aura of the Zealot", -- Level 55
         },
-        ['HPAura'] = {
-            ---- Aura Buff 2 - Aura Name is the same as the buff name
-            "Aura of Divinity", -- Level 100
-        },
         ['DivineBuff'] = {
             --Divine Buffs REQUIRES extra spell slot because of the 90s recast
             "Divine Incursion",    -- Level 69 EQM Custom
@@ -369,10 +368,16 @@ local _ClassConfig = {
         },
     },                          -- end AbilitySets
     ['Helpers']           = {
+        -- Artifact of Aegis is Aegis of Vie Rk. I
+        PreferAegisSpell = function(self)
+            if mq.TLO.Me.Level() < 69 or not mq.TLO.FindItem("=Artifact of Aegis")() then return true end
+            local vieBuff = self.ResolvedActionMap['SingleVieBuff']
+            return vieBuff and vieBuff() and vieBuff.Name() == "Aegis of Vie" and (vieBuff.RankName.Rank() or 0) >= 2
+        end,
         DoRez = function(self, corpseId)
             local rezAction = false
-            local rezSpell = self.ResolvedActionMap['RezSpell']
-            local rezStaff = self.ResolvedActionMap['RezStaff']
+            local rezSpell = Core.GetResolvedActionMapItem('RezSpell')
+            local rezStaff = Core.GetResolvedActionMapItem('RezStaff')
             local staffReady = mq.TLO.Me.ItemReady(rezStaff)()
             local okayToRez = Casting.OkayToRez(corpseId)
             local combatState = mq.TLO.Me.CombatState():lower() or "unknown"
@@ -406,7 +411,7 @@ local _ClassConfig = {
                 elseif not Casting.CanUseAA("Blessing of Resurrection") and (combatState == "active" or combatState == "resting") then
                     -- ^ if we have BoR, just wait for it, rather than taking the time to memorize a spell
                     if Casting.SpellReady(rezSpell, true) then
-                        rezAction = okayToRez and Casting.UseSpell(rezSpell, corpseId, true, true)
+                        rezAction = okayToRez and Casting.UseSpell(rezSpell.RankName(), corpseId, true, true)
                     end
                 end
             end
@@ -544,7 +549,7 @@ local _ClassConfig = {
                 name = "Blessing of Sanctuary",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    return target.ID() == (mq.TLO.Target.AggroHolder.ID() and not Targeting.TargetIsATank(target))
+                    return target.ID() == (mq.TLO.Target.AggroHolder.ID() or 0) and not Targeting.TargetIsATank(target)
                 end,
             },
             { --The stuff above is down, lets make mainhealpoint faster.
@@ -597,13 +602,20 @@ local _ClassConfig = {
             },
         },
     },
+    ['Charm']             = {
+        ['Assist'] = {
+            { name = "LowLevelStun", type = "Spell", cond = function(self, spell, target) return Targeting.TargetNotStunned() end, },
+            { name = "StunTimer6",   type = "Spell", cond = function(self, spell, target) return Targeting.TargetNotStunned() end, },
+            { name = "PBAEStun",     type = "Spell", cond = function(self, spell, target) return Targeting.TargetNotStunned() and Targeting.InSpellRange(spell, target) end, },
+        },
+    },
     ['RotationOrder']     = {
         -- Downtime doesn't have state because we run the whole rotation at once.
         {
             name = 'Downtime',
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
-                return combat_state == "Downtime" and (not Core.IsModeActive('Heal') or Core.OkayToNotHeal()) and Casting.OkayToBuff() and Casting.AmIBuffable()
+                return combat_state == "Downtime" and Core.CombatActionsCheck() and Casting.OkayToBuff() and Casting.AmIBuffable()
             end,
         },
         { --Spells that should be checked on group members
@@ -612,7 +624,7 @@ local _ClassConfig = {
             steps = 1,
             targetId = function(self) return Casting.GetBuffableIDs() end,
             cond = function(self, combat_state)
-                return combat_state == "Downtime" and (not Core.IsModeActive('Heal') or Core.OkayToNotHeal()) and Casting.OkayToBuff()
+                return combat_state == "Downtime" and Core.CombatActionsCheck() and Casting.OkayToBuff()
             end,
         },
         {
@@ -621,7 +633,7 @@ local _ClassConfig = {
             steps = 3,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.BurnCheck() and (not Core.IsModeActive('Heal') or Core.OkayToNotHeal())
+                return combat_state == "Combat" and Casting.BurnCheck() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -634,7 +646,7 @@ local _ClassConfig = {
             cond = function(self, combat_state)
                 local downtime = combat_state == "Downtime" and Casting.OkayToBuff()
                 local combat = combat_state == "Combat"
-                return (downtime or combat) and Core.OkayToNotHeal()
+                return (downtime or combat) and Core.CombatActionsCheck()
             end,
         },
         {
@@ -648,7 +660,7 @@ local _ClassConfig = {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Core.OkayToNotHeal() and Config:GetSetting('DoAEDamage') and Combat.AETargetCheck(true)
+                return combat_state == "Combat" and Core.CombatActionsCheck() and Config:GetSetting('DoAEDamage') and Combat.AETargetCheck(true)
             end,
         },
         {
@@ -657,7 +669,7 @@ local _ClassConfig = {
             steps = 1,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Core.OkayToNotHeal()
+                return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
         {
@@ -666,7 +678,7 @@ local _ClassConfig = {
             steps = 1,
             targetId = function(self) return Casting.GetBuffableIDs() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Core.OkayToNotHeal()
+                return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
     },
@@ -732,10 +744,6 @@ local _ClassConfig = {
                 name = "Celestial Rapidity",
                 type = "AA",
             },
-            {
-                name = "Graverobber's Icon",
-                type = "Item",
-            },
         },
         ['Combat Buffs'] = {
             {
@@ -745,6 +753,24 @@ local _ClassConfig = {
                 cond = function(self, spell, target)
                     if not Targeting.TargetIsATank(target) then return false end
                     return Casting.CastReady(spell) and Casting.GroupBuffCheck(spell, target)
+                end,
+            },
+            {
+                name = "Artifact of Aegis",
+                type = "Item",
+                load_cond = function(self) return Config:GetSetting('VieBuffMode') > 2 and not self.Helpers.PreferAegisSpell(self) end,
+                cond = function(self, itemName, target)
+                    if not Targeting.TargetIsATank(target) then return false end
+                    return Casting.GroupBuffItemCheck(itemName, target) and Casting.AddedBuffCheck(43037, target) -- Bulwark of the Pegasus
+                end,
+            },
+            {
+                name = "SingleVieBuff",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('VieBuffMode') > 2 and self.Helpers.PreferAegisSpell(self) end,
+                cond = function(self, spell, target)
+                    if not Targeting.TargetIsATank(target) then return false end
+                    return Casting.GroupBuffCheck(spell, target) and Casting.AddedBuffCheck(43037, target) -- Bulwark of the Pegasus
                 end,
             },
         },
@@ -873,38 +899,14 @@ local _ClassConfig = {
                 end,
             },
             {
-                name = "Spirit Mastery",
-                type = "AA",
-                pre_activate = function(self, aaName) --remove the old aura if we just purchased the AA, otherwise we will be spammed because of no focus.
-                    ---@diagnostic disable-next-line: undefined-field
-                    if not Casting.AuraActiveByName("Aura of Pious Divinity") then mq.TLO.Me.Aura(1).Remove() end
-                end,
-                cond = function(self, aaName)
-                    return not Casting.AuraActiveByName("Aura of Pious Divinity")
-                end,
-            },
-            {
                 name = "AbsorbAura",
                 type = "Spell",
-                pre_activate = function(self, spell) --remove the old aura if we leveled up (or the other aura if we just changed options), otherwise we will be spammed because of no focus.
+                pre_activate = function(self, spell) --remove the old aura if we leveled up, otherwise we will be spammed because of no focus.
                     ---@diagnostic disable-next-line: undefined-field
                     if not Casting.AuraActiveByName(spell.BaseName()) then mq.TLO.Me.Aura(1).Remove() end
                 end,
                 cond = function(self, spell)
-                    if Casting.CanUseAA('Spirit Mastery') then return false end
-                    return not Casting.AuraActiveByName(spell.BaseName()) and Config:GetSetting('UseAura') == 1
-                end,
-            },
-            {
-                name = "HPAura",
-                type = "Spell",
-                pre_activate = function(self, spell) --remove the old aura if we leveled up (or the other aura if we just changed options), otherwise we will be spammed because of no focus.
-                    ---@diagnostic disable-next-line: undefined-field
-                    if not Casting.AuraActiveByName(spell.BaseName()) then mq.TLO.Me.Aura(1).Remove() end
-                end,
-                cond = function(self, spell)
-                    if Casting.CanUseAA('Spirit Mastery') then return false end
-                    return not Casting.AuraActiveByName(spell.BaseName()) and Config:GetSetting('UseAura') == 2
+                    return not Casting.AuraActiveByName(spell.BaseName())
                 end,
             },
         },
@@ -934,7 +936,7 @@ local _ClassConfig = {
                 type = "Item",
                 load_cond = function() return mq.TLO.Me.Level() >= 68 and (mq.TLO.FindItem("=Mythical Armband of Elushar")() or mq.TLO.FindItem("=Legendary Armband of Mithaniel")()) end,
                 cond = function(self, itemName, target)
-                    if Config:GetSetting('AegoSymbol') == (1 or 4) then return false end
+                    if Config:GetSetting('AegoSymbol') == 1 or Config:GetSetting('AegoSymbol') == 4 then return false end
                     return Casting.GroupBuffItemCheck(itemName, target)
                 end,
             },
@@ -943,7 +945,7 @@ local _ClassConfig = {
                 type = "Spell",
                 load_cond = function() return mq.TLO.Me.Level() < 68 or not mq.TLO.FindItem("=Legendary Armband of Mithaniel")() end,
                 cond = function(self, spell, target)
-                    if Config:GetSetting('AegoSymbol') == (1 or 4) or ((spell.TargetType() or ""):lower() == "single" and target.ID() ~= Core.GetMainAssistId()) then return false end
+                    if Config:GetSetting('AegoSymbol') == 1 or Config:GetSetting('AegoSymbol') == 4 or ((spell.TargetType() or ""):lower() == "single" and target.ID() ~= Core.GetMainAssistId()) then return false end
                     return Casting.GroupBuffCheck(spell, target)
                 end,
             },
@@ -967,7 +969,7 @@ local _ClassConfig = {
             {
                 name = "Artifact of Aegis",
                 type = "Item",
-                load_cond = function() return Config:GetSetting('DoVieBuff') and mq.TLO.Me.Level() >= 69 and mq.TLO.FindItem("=Artifact of Aegis")() end,
+                load_cond = function(self) return Config:GetSetting('VieBuffMode') > 1 and not self.Helpers.PreferAegisSpell(self) end,
                 cond = function(self, itemName, target)
                     return Casting.GroupBuffItemCheck(itemName, target) and Casting.AddedBuffCheck(43037, target) -- Bulwark of the Pegasus
                 end,
@@ -975,9 +977,8 @@ local _ClassConfig = {
             {
                 name = "SingleVieBuff",
                 type = "Spell",
-                load_cond = function(self) return Config:GetSetting('DoVieBuff') and (mq.TLO.Me.Level() < 69 or not mq.TLO.FindItem("=Artifact of Aegis")()) end,
+                load_cond = function(self) return Config:GetSetting('VieBuffMode') > 1 and self.Helpers.PreferAegisSpell(self) end,
                 cond = function(self, spell, target)
-                    if not Targeting.TargetIsATank(target) then return false end
                     return Casting.GroupBuffCheck(spell, target) and Casting.AddedBuffCheck(43037, target) -- Bulwark of the Pegasus
                 end,
             },
@@ -1016,7 +1017,7 @@ local _ClassConfig = {
                 { name = "CureCorrupt",   cond = function(self) return Config:GetSetting('KeepCorruptMemmed') end, },
                 { name = "DivineBuff",    cond = function(self) return Config:GetSetting('DoDivineBuff') end, },
                 { name = "YaulpSpell",    cond = function(self) return Config:GetSetting('DoYaulp') and not Casting.CanUseAA("Yaulp") end, },
-                { name = "SingleVieBuff", cond = function(self) return Config:GetSetting('DoVieBuff') end, },
+                { name = "SingleVieBuff", cond = function(self) return Config:GetSetting('VieBuffMode') > 1 and self.Helpers.PreferAegisSpell(self) end, },
                 { name = "StunTimer6",    cond = function(self) return Config:GetSetting('DoTimer6Stun') end, },
                 { name = "StunTimer4",    cond = function(self) return Config:GetSetting('DoTimer4Stun') end, },
                 { name = "LowLevelStun",  cond = function(self) return Config:GetSetting('DoLLStun') and mq.TLO.Me.Level() < 59 end, },
@@ -1057,6 +1058,7 @@ local _ClassConfig = {
             Default = 1,
             Min = 1,
             Max = 4,
+            RequiresLoadoutChange = true,
         },
         ['DoACBuff']          = {
             DisplayName = "Use AC Buff",
@@ -1071,28 +1073,19 @@ local _ClassConfig = {
                 "Leaving this on in other cases is not likely to cause issue, but may cause unnecessary buff checking.",
             Default = false,
         },
-        ['DoVieBuff']         = {
+        ['VieBuffMode']       = {
             DisplayName = "Use Vie Buff",
             Group = "Abilities",
             Header = "Buffs",
             Category = "Group",
             Index = 103,
             Tooltip = "Use your Melee Damage absorb (Vie) line.",
-            RequiresLoadoutChange = true,
-            Default = true,
-        },
-        ['UseAura']           = {
-            DisplayName = "Aura Spell Choice:",
-            Group = "Abilities",
-            Header = "Buffs",
-            Category = "Group",
-            Index = 104,
-            Tooltip = "Select the Aura to be used, prior to purchasing the Spirit Mastery AA.",
             Type = "Combo",
-            ComboOptions = { 'Absorb', 'HP', 'None', },
-            Default = 1,
+            ComboOptions = { 'None', 'Downtime Only', 'Downtime + Combat', },
+            Default = 3,
             Min = 1,
             Max = 3,
+            RequiresLoadoutChange = true,
         },
         ['DoDivineBuff']      = {
             DisplayName = "Do Divine Intervetion",
@@ -1352,6 +1345,20 @@ local _ClassConfig = {
             Default = true,
             FAQ = "Why am I using Yaulp? Clerics are not supposed to melee!",
             Answer = "The Yaulp spells we use also contain a mana regen component. You can disable this behavior on the Utility tab in the Class Options.",
+        },
+        ['HealPriority']      = {
+            DisplayName = "Healing Priority",
+            Group = "Abilities",
+            Header = "Recovery",
+            Category = "Healing Thresholds",
+            Index = 101,
+            Type = "Combo",
+            ComboOptions = { 'Ignore', 'Big Heal Point', 'Main Heal Point', },
+            Default = 3,
+            Min = 1,
+            Max = 3,
+            Tooltip = "When to yield offensive rotations for healing:\n1 - Ignore (never)\n2 - Big Heal Point\n3 - Main Heal Point",
+            ConfigType = "Advanced",
         },
     },
     ['ClassFAQ']          = {

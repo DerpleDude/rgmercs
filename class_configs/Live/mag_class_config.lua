@@ -1,14 +1,15 @@
-local mq        = require('mq')
-local Casting   = require("utils.casting")
-local Comms     = require("utils.comms")
-local Config    = require('utils.config')
-local Core      = require("utils.core")
-local DanNet    = require('lib.dannet.helpers')
-local Globals   = require("utils.globals")
-local Logger    = require("utils.logger")
-local Targeting = require("utils.targeting")
+local mq          = require('mq')
+local Casting     = require("utils.casting")
+local Comms       = require("utils.comms")
+local Config      = require('utils.config')
+local Core        = require("utils.core")
+local DanNet      = require('lib.dannet.helpers')
+local Globals     = require("utils.globals")
+local ItemManager = require("utils.item_manager")
+local Logger      = require("utils.logger")
+local Targeting   = require("utils.targeting")
 
-_ClassConfig    = {
+_ClassConfig      = {
     _version              = "1.3 - Live",
     _author               = "Derple, Morisato, Algar",
     ['ModeChecks']        = {
@@ -17,6 +18,13 @@ _ClassConfig    = {
     ['Modes']             = {
         'DPS',
         'PetTank',
+    },
+    ['PetPosition']       = {
+        SummonAA   = function() return Casting.CanUseAA("Summon Companion") and "Summon Companion" end,
+        RelocateAA = function()
+            local cdAA = mq.TLO.Me.AltAbility("Companion's Discipline")
+            return (cdAA and cdAA.Rank() or 0) >= 4 and "Companion's Discipline"
+        end,
     },
     ['OnModeChange']      = function(self, mode)
         if mode == "PetTank" then
@@ -81,6 +89,10 @@ _ClassConfig    = {
         ['Epic'] = {
             "Focus of Primal Elements",
             "Staff of Elemental Essence",
+        },
+        ['OoW_Chest'] = {
+            "Glyphwielder's Tunic of the Summoner",
+            "Runemaster's Robe",
         },
     },
     ['AbilitySets']       = { --TODO: Look into new TOB item summons (Boiling Orb?)
@@ -898,9 +910,32 @@ _ClassConfig    = {
         ['GroupCotH'] = {
             "Call of the Heroes", -- Level 97
         },
+        ['EpicPetOrb'] = {
+            "Summon Orb", -- Level 45
+        },
     },
     ['HealRotationOrder'] = {
 
+    },
+    ['Charm']             = {
+        ['Assist'] = {
+            {
+                name = "Malaise",
+                type = "AA",
+                load_cond = function() return Casting.CanUseAA("Malaise") end,
+                cond = function(self, aaName, target)
+                    return Casting.DetAACheck(aaName, target)
+                end,
+            },
+            {
+                name = "MaloDebuff",
+                type = "Spell",
+                load_cond = function() return not Casting.CanUseAA("Malaise") end,
+                cond = function(self, spell, target)
+                    return Casting.DetSpellCheck(spell, target)
+                end,
+            },
+        },
     },
     ['RotationOrder']     = {
         {
@@ -909,15 +944,6 @@ _ClassConfig    = {
             cond = function(self, combat_state)
                 return combat_state == "Downtime" and Casting.OkayToPetBuff() and mq.TLO.Me.Pet.ID() == 0 and Casting.AmIBuffable()
             end,
-        },
-        {
-            name = 'PetHealSpell',
-            state = 1,
-            steps = 1,
-            doFullRotation = true,
-            load_cond = function() return Config:GetSetting('DoPetHealSpell') end,
-            targetId = function(self) return mq.TLO.Me.Pet.ID() > 0 and { mq.TLO.Me.Pet.ID(), } or {} end,
-            cond = function(self, target) return (mq.TLO.Me.Pet.PctHPs() or 100) < Config:GetSetting('PetHealPct') end,
         },
         {
             name = 'Downtime',
@@ -942,6 +968,14 @@ _ClassConfig    = {
             cond = function(self, combat_state)
                 return combat_state == "Downtime" and Casting.OkayToBuff()
             end,
+        },
+        {
+            name = 'PetHealing',
+            state = 1,
+            steps = 1,
+            doFullRotation = true,
+            targetId = function(self) return mq.TLO.Me.Pet.ID() > 0 and { mq.TLO.Me.Pet.ID(), } or {} end,
+            cond = function(self, target) return (mq.TLO.Me.Pet.PctHPs() or 100) < Config:GetSetting('PetHealPct') end,
         },
         {
             name = 'Burn',
@@ -1054,6 +1088,29 @@ _ClassConfig    = {
             if shroudSpell.Level() > aaSpell.Level() then return false end
             return true
         end,
+        DeleteEpicOrb = function(self)
+            if mq.TLO.Cursor() and mq.TLO.Cursor.ID() > 0 then
+                Core.DoCmd("/autoinventory")
+                mq.delay(50, function() return mq.TLO.Cursor() == nil end)
+            end
+            if not mq.TLO.Cursor() then
+                Core.DoCmd("/nomodkey /itemnotify \"Orb of Mastery\" leftmouseup")
+                mq.delay(50, function() return mq.TLO.Cursor() ~= nil end)
+                if mq.TLO.Cursor() then
+                    if mq.TLO.Cursor.ID() == 28034 then
+                        Core.DoCmd("/destroy")
+                        mq.delay(50, function() return mq.TLO.Cursor() == nil end)
+                        if not mq.TLO.FindItem("28034")() then
+                            return true
+                        end
+                    else
+                        Logger.log_warning("Warning: We seem to have something else on the cursor! Do you have another item named 'Orb of Mastery'? Aborting delete.")
+                    end
+                end
+            end
+            Logger.log_warning("Warning: Mage pet orb not destroyed! An error or conflict has occured.")
+            return false
+        end,
         HandleItemSummon = function(self, itemSource, scope) --scope: "personal" or "group" summons
             if not itemSource and itemSource() then return false end
             if not scope then return false end
@@ -1067,15 +1124,11 @@ _ClassConfig    = {
 
             Logger.log_debug("Sending the %s to our bags.", mq.TLO.Cursor())
 
+            local itemId = mq.TLO.Cursor.ID()
             if scope == "group" then
-                local delay = Config:GetSetting('AIGroupDelay')
-                Comms.PrintGroupMessage("%s summoned, issuing autoinventory command momentarily.", mq.TLO.Cursor())
-                mq.delay(delay)
-                Core.DoGroupOrRaidCmd("/autoinventory")
+                ItemManager.BroadcastQueueAutoInv(itemId)
             elseif scope == "personal" then
-                local delay = Config:GetSetting('AISelfDelay')
-                mq.delay(delay)
-                Core.DoCmd("/autoinventory")
+                ItemManager.QueueAutoInv(itemId)
             else
                 Logger.log_debug("Invalid scope sent: (%s). Item handling aborted.", scope)
                 return false
@@ -1085,10 +1138,30 @@ _ClassConfig    = {
     ['Rotations']         = {
         ['PetSummon'] = {
             {
+                name = "Orb of Mastery",
+                type = "Item",
+                load_cond = function(self) return Config:GetSetting("UseEpicPet") and mq.TLO.Me.Book("Summon Orb")() end,
+                active_cond = function(self, _) return mq.TLO.Me.Pet.ID() > 0 end,
+                cond = function(self, itemName, target)
+                    local orb = mq.TLO.FindItem("28034")
+                    return orb() and (orb.Charges() or 0) > 0
+                end,
+                post_activate = function(self, itemName, success)
+                    if success and mq.TLO.Me.Pet.ID() > 0 then
+                        mq.delay(50)
+                        self:SetPetHold()
+                        self.Helpers.DeleteEpicOrb(self)
+                    end
+                end,
+            },
+            {
                 name_func = function(self)
                     return string.format("%sPetSpell", self.ClassConfig.DefaultConfig.PetType.ComboOptions[Config:GetSetting('PetType')])
                 end,
                 type = "Spell",
+                load_cond = function(self)
+                    return not Config:GetSetting("UseEpicPet") or not mq.TLO.Me.Book("Summon Orb")()
+                end,
                 active_cond = function(self) return mq.TLO.Me.Pet.ID() > 0 end,
                 cond = function(self, spell)
                     return Casting.ReagentCheck(spell)
@@ -1102,10 +1175,25 @@ _ClassConfig    = {
                 end,
             },
         },
-        ['PetHealSpell'] = {
+        ['PetHealing'] = {
+            {
+                name = "Mend Companion",
+                type = "AA",
+                cond = function(self, aaName, target)
+                    return (mq.TLO.Me.Pet.PctHPs() or 999) <= Config:GetSetting('BigHealPoint')
+                end,
+            },
+            {
+                name = "Companion's Fortification",
+                type = "AA",
+                cond = function(self, aaName, target)
+                    return (mq.TLO.Me.Pet.PctHPs() or 999) <= Config:GetSetting('BigHealPoint')
+                end,
+            },
             {
                 name = "PetHealSpell",
                 type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoPetHealSpell') end,
             },
         },
         ['PetBuff'] = {
@@ -1269,28 +1357,18 @@ _ClassConfig    = {
         },
         ['DPS PET'] = {
             {
-                name = "OowRobeName",
-                type = "CustomFunc",
-                custom_func = function(self)
-                    if not Core.IsModeActive("PetTank") then return end
-                    local oowItems = { 'Glyphwielder\'s Tunic of the Summoner', 'Runemaster\'s Robe', }
-                    for _, item in ipairs(oowItems) do
-                        if mq.TLO.FindItemCount(item)() == 1 then
-                            self.TempSettings.OowRobeBase = item
-                            return Casting.UseItem(item, mq.TLO.Me.ID())
-                        end
-                    end
-
-                    return false
+                name = "OoW_Chest",
+                type = "Item",
+                cond = function(self, spell)
+                    return Core.IsModeActive("PetTank")
                 end,
             },
             {
                 name = "PetStanceSpell",
                 type = "Spell",
                 cond = function(self, spell)
-                    return Core.IsModeActive("PetTank") and self.TempSettings.OowRobeBase ~= nil and Core.IsModeActive("PetTank") and
-                        Casting.PetBuffCheck(spell) and mq.TLO.Me.Pet.PctHPs() <= 95 and
-                        (mq.TLO.Me.PetBuff(mq.TLO.Spell(self.TempSettings.OowRobeBase).RankName.Base(1)() or "").ID()) or 0 == 0
+                    local chestBuff = Casting.GetClickySpell(Core.GetResolvedActionMapItem('OoW_Chest'))
+                    return Core.IsModeActive("PetTank") and mq.TLO.Me.Pet.PctHPs() <= 95 and Casting.PetBuffCheck(spell) and not mq.TLO.Me.PetBuff(chestBuff and chestBuff() or "")()
                 end,
             },
             {
@@ -1361,7 +1439,7 @@ _ClassConfig    = {
                 name = "Turn Summoned",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    return Targeting.TargetBodyIs(target, "Undead Pet")
+                    return Targeting.IsSummoned(target)
                 end,
             },
             {
@@ -1369,7 +1447,7 @@ _ClassConfig    = {
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoSummonedNuke') end,
                 cond = function(self, spell, target)
-                    return Targeting.TargetBodyIs(target, "Undead Pet")
+                    return Targeting.IsSummoned(target)
                 end,
             },
             {
@@ -1388,7 +1466,7 @@ _ClassConfig    = {
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoSummonedNuke') end,
                 cond = function(self, spell, target)
-                    return Targeting.TargetBodyIs(target, "Undead Pet")
+                    return Targeting.IsSummoned(target)
                 end,
             },
             {
@@ -1417,7 +1495,7 @@ _ClassConfig    = {
                 name = "Turn Summoned",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    return Targeting.TargetBodyIs(target, "Undead Pet")
+                    return Targeting.IsSummoned(target)
                 end,
             },
         },
@@ -1503,6 +1581,29 @@ _ClassConfig    = {
                 end,
             },
             {
+                name = "EpicPetOrb",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('UseEpicPet') and mq.TLO.Me.Book("Summon Orb")() end,
+                cond = function(self, spell, target)
+                    return not mq.TLO.FindItem("28034")()
+                end,
+                post_activate = function(self, spell, success)
+                    if success then
+                        Core.SafeCallFunc("Autoinventory", self.Helpers.HandleItemSummon, self, spell, "personal")
+                    end
+                end,
+            },
+            {
+                name = "Delete Used Epic Orb",
+                type = "CustomFunc",
+                load_cond = function(self) return Config:GetSetting('UseEpicPet') and mq.TLO.Me.Book("Summon Orb")() end,
+                cond = function(self)
+                    local orb = mq.TLO.FindItem("28034")
+                    return orb() and (orb.Charges() or 999) == 0
+                end,
+                custom_func = function(self) return self.Helpers.DeleteEpicOrb(self) end,
+            },
+            {
                 name = "PetAura",
                 type = "Spell",
                 active_cond = function(self, spell)
@@ -1561,7 +1662,7 @@ _ClassConfig    = {
                 name = "Elemental Form",
                 type = "AA",
                 cond = function(self, aaName)
-                    return Casting.SelfBuffAACheck(aaName)
+                    return Casting.SelfBuffAACheck(aaName, false, true)
                 end,
             },
             {
@@ -1661,6 +1762,7 @@ _ClassConfig    = {
             gem = 4,
             spells = {
                 { name = "VolleyNuke", },
+                { name = "EpicPetOrb",   cond = function(self) return Config:GetSetting('UseEpicPet') and mq.TLO.Me.Book("Summon Orb")() end, },
                 { name = "PetHealSpell", },
             },
         },
@@ -1669,6 +1771,7 @@ _ClassConfig    = {
             spells = {
                 { name = "TwinCast", },
                 { name = "MaloDebuff",       cond = function(self) return Config:GetSetting('DoMalo') and not Casting.CanUseAA("Malaise") end, },
+                { name = "EpicPetOrb",       cond = function(self) return Config:GetSetting('UseEpicPet') and mq.TLO.Me.Book("Summon Orb")() end, },
                 { name = "PetHealSpell", },
                 { name = "SkinDS",           cond = function(self) return Config:GetSetting('DoSkinDS') end, },
                 { name = "LongDurDmgShield", },
@@ -1678,6 +1781,7 @@ _ClassConfig    = {
             gem = 6,
             spells = {
                 { name = "SummonedNuke",     cond = function(self) return Config:GetSetting('DoSummonedNuke') end, },
+                { name = "EpicPetOrb",       cond = function(self) return Config:GetSetting('UseEpicPet') and mq.TLO.Me.Book("Summon Orb")() end, },
                 { name = "PetHealSpell", },
                 { name = "GroupCotH", },
                 { name = "ManaRodSummon", },
@@ -1689,6 +1793,7 @@ _ClassConfig    = {
             gem = 7,
             spells = {
                 { name = "FireOrbSummon", },
+                { name = "EpicPetOrb",       cond = function(self) return Config:GetSetting('UseEpicPet') and mq.TLO.Me.Book("Summon Orb")() end, },
                 { name = "PetHealSpell", },
                 { name = "SkinDS",           cond = function(self) return Config:GetSetting('DoSkinDS') end, },
                 { name = "GroupCotH", },
@@ -1700,6 +1805,7 @@ _ClassConfig    = {
             cond = function(self, gem) return mq.TLO.Me.NumGems() >= gem end,
             spells = {
                 { name = "PetManaNuke", },
+                { name = "EpicPetOrb",       cond = function(self) return Config:GetSetting('UseEpicPet') and mq.TLO.Me.Book("Summon Orb")() end, },
                 { name = "PetHealSpell", },
                 { name = "SingleCotH",       cond = function() return not Casting.CanUseAA('Call of the Hero') end, },
                 { name = "SkinDS",           cond = function(self) return Config:GetSetting('DoSkinDS') end, },
@@ -1790,13 +1896,24 @@ _ClassConfig    = {
             Group = "Abilities",
             Header = "Pet",
             Category = "Pet Summoning",
-            Tooltip = "1 = Fire, 2 = Water, 3 = Earth, 4 = Air",
+            Index = 101,
+            Tooltip = "Choose the elemental to summon when not using the epic pet.",
             Type = "Combo",
             ComboOptions = { 'Fire', 'Water', 'Earth', 'Air', },
             Default = 2,
             Min = 1,
             Max = 4,
             RequiresLoadoutChange = true,
+        },
+        ['UseEpicPet']     = {
+            DisplayName = "Summon Epic Pet",
+            Group = "Abilities",
+            Header = "Pet",
+            Category = "Pet Summoning",
+            Index = 102,
+            Tooltip = "Use your Orb of Mastery to summon the epic pet.",
+            RequiresLoadoutChange = true,
+            Default = true,
         },
         ['DoPetHealSpell'] = {
             DisplayName = "Pet Heal Spell",
@@ -1813,6 +1930,7 @@ _ClassConfig    = {
             Group = "Abilities",
             Header = "Recovery",
             Category = "Healing Thresholds",
+            Index = 101,
             Tooltip = "Use your pet heal spell when your pet is at or below this HP percentage.",
             Default = 80,
             Min = 1,
@@ -1887,29 +2005,6 @@ _ClassConfig    = {
             Category = "Class Config Clickies",
             Tooltip = "Click your chest item",
             Default = mq.TLO.MacroQuest.BuildName() ~= "Emu",
-        },
-        ['AISelfDelay']    = {
-            DisplayName = "Autoinv Delay (Self)",
-            Group = "Items",
-            Header = "Item Summoning",
-            Category = "Item Summoning",
-            Tooltip = "Delay in ms before /autoinventory after summoning, adjust if you notice items left on cursors regularly.",
-            Default = 50,
-            Min = 1,
-            Max = 250,
-            FAQ = "Why do I always have items stuck on the cursor?",
-            Answer = "You can adjust the delay before autoinventory by adjusting the item summoning delay settings.\n" ..
-                "Increase the delay if you notice items left on cursors regularly.",
-        },
-        ['AIGroupDelay']   = {
-            DisplayName = "Autoinv Delay (Group)",
-            Group = "Items",
-            Header = "Item Summoning",
-            Category = "Item Summoning",
-            Tooltip = "Delay in ms before /autoinventory after summoning, adjust if you notice items left on cursors regularly.",
-            Default = 150,
-            Min = 1,
-            Max = 500,
         },
         ['DoMalo']         = {
             DisplayName = "Cast Malo",

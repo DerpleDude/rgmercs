@@ -1,8 +1,10 @@
 local mq              = require('mq')
 local Casting         = require("utils.casting")
+local Comms           = require("utils.comms")
 local Config          = require('utils.config')
 local Core            = require("utils.core")
 local Globals         = require("utils.globals")
+local ItemManager     = require("utils.item_manager")
 local Logger          = require("utils.logger")
 local Modules         = require("utils.modules")
 local Targeting       = require("utils.targeting")
@@ -31,14 +33,20 @@ local _ClassConfig    = {
     _version          = "1.5 - Live",
     _author           = "Derple, Grimmier, Algar",
     ['ModeChecks']    = {
-        CanMez     = function() return true end,
-        CanCharm   = function() return true end,
-        IsCharming = function() return Config:GetSetting('CharmOn') end,
-        IsMezzing  = function() return Config:GetSetting('MezOn') end,
+        CanMez    = function() return true end,
+        CanCharm  = function() return true end,
+        IsMezzing = function() return Config:GetSetting('MezOn') end,
     },
     ['Modes']         = {
         'Default',
         'ModernEra', --Different DPS rotation, meant for ~90+ (and may not come fully online until 105ish)
+    },
+    ['PetPosition']   = {
+        SummonAA   = function() return Casting.CanUseAA("Summon Companion") and "Summon Companion" end,
+        RelocateAA = function()
+            local cdAA = mq.TLO.Me.AltAbility("Companion's Discipline")
+            return (cdAA and cdAA.Rank() or 0) >= 5 and "Companion's Discipline"
+        end,
     },
     ['Themes']        = {
         ['Default'] = {
@@ -468,25 +476,12 @@ local _ClassConfig    = {
             "Whirl till you hurl",      -- Level 9
         },
         ['CharmSpell'] = {
-            "Enticer's Command XV", -- Level 130
             "Charm XVII",           -- Level 127
-            "Esoteric Command",     -- Level 125
-            "Stupefier's Demand",   -- Level 124
-            "Marvel's Command",     -- Level 120
-            "Marvel's Demand",      -- Level 119
             "Inveigle",             -- Level 117
-            "Deviser's Command",    -- Level 115
-            "Deviser's Demand",     -- Level 114
-            "Transfixer's Command", -- Level 110
             "Spellbinding",         -- Level 107
-            "Enticer's Command",    -- Level 105
-            "Enticer's Demand",     -- Level 104
             "Captivation",          -- Level 102
-            "Impose",               -- Level 100
             "Temptation",           -- Level 97
-            "Enforce",              -- Level 95
             "Compelling Edict",     -- Level 92
-            "Subjugate",            -- Level 90
             "Deception",            -- Level 87
             "Dominate",             -- Level 85
             "Seduction",            -- Level 82
@@ -494,18 +489,32 @@ local _ClassConfig    = {
             "Cajole",               -- Level 77
             "Dyn`leth's Whispers",  -- Level 75
             "Coax",                 -- Level 72
-            -- "Ancient: Voice of Muram", -- Level 70
             "True Name",            -- Level 70
             "Compel",               -- Level 68
             "Command of Druzzil",   -- Level 64
             "Beckon",               -- Level 62
-            "Dictate",              -- Level 60
             "Boltran's Agacerie",   -- Level 53
-            "Ordinance",            -- Level 52
             "Allure",               -- Level 46
             "Cajoling Whispers",    -- Level 37
             "Beguile",              -- Level 23
             "Charm",                -- Level 11
+        },
+        ['CharmCommand'] = {        -- chance to stun on break, later spells carry a pet buff
+            "Enticer's Command XV", -- Level 130
+            "Esoteric Command",     -- Level 125
+            "Marvel's Command",     -- Level 120
+            "Deviser's Command",    -- Level 115
+            "Transfixer's Command", -- Level 110
+            "Enticer's Command",    -- Level 105
+            "Impose",               -- Level 100
+            "Enforce",              -- Level 95
+            "Subjugate",            -- Level 90
+        },
+        ['CharmDemand'] = {         -- chance to memblur on break, later spells carry a pet buff
+            "Stupefier's Demand",   -- Level 124
+            "Marvel's Demand",      -- Level 119
+            "Deviser's Demand",     -- Level 114
+            "Enticer's Demand",     -- Level 104
         },
         ['CrippleSpell'] = {
             "Splintered Consciousness", -- Level 86
@@ -868,6 +877,27 @@ local _ClassConfig    = {
             "Root",             -- Level 6
         },
     },
+    ['Mez']           = {
+        { type = "Spell", name = "TwinCastMez",     cond = function() return Config:GetSetting('TwincastMez') > 1 end, },
+        { type = "Spell", name = "MezSpell",        cond = function() return Config:GetSetting('TwincastMez') == 1 end, },
+        { type = "Spell", name = "MezAESpell", },
+        { type = "AA",    name = "Beam of Slumber", cond = function() return Config:GetSetting('DoAAMez') end, },
+    },
+    ['Charm']         = {
+        ['Abilities'] = {
+            { type = "AA",    name = "Dire Charm", },
+            { type = "Spell", name = "CharmSpell", },
+            { type = "Spell", name = "CharmDemand", },
+            { type = "Spell", name = "CharmCommand", },
+        },
+        ['PreCharm']  = {
+            { name = "TashSpell", type = "Spell", cond = function(self, spell, target) return not target.Tashed() end, },
+        },
+        ['Assist']    = {
+            { name = "PBAEStunSpell", type = "Spell", cond = function(self, spell, target) return Targeting.TargetNotStunned() and Targeting.InSpellRange(spell, target) end, },
+            { name = "TashSpell",     type = "Spell", cond = function(self, spell, target) return Casting.DetSpellCheck(spell, target) end, },
+        },
+    },
     ['RotationOrder'] = {
         {
             name = 'Downtime',
@@ -907,7 +937,7 @@ local _ClassConfig    = {
             load_cond = function() return Config:GetSetting('DoTash') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.OkayToDebuff()
+                return combat_state == "Combat" and Casting.OkayToDebuff() and Core.CombatActionsCheck()
             end,
         },
         { --Slow and Tash separated so we use both before we start DPS
@@ -917,7 +947,7 @@ local _ClassConfig    = {
             load_cond = function() return Config:GetSetting('DoSlow') or Config:GetSetting('DoCripple') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.OkayToDebuff()
+                return combat_state == "Combat" and Casting.OkayToDebuff() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -927,7 +957,7 @@ local _ClassConfig    = {
             load_cond = function() return Config:GetSetting('DoDispel') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.OkayToDebuff()
+                return combat_state == "Combat" and Casting.OkayToDebuff() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -936,7 +966,7 @@ local _ClassConfig    = {
             steps = 3,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.BurnCheck()
+                return combat_state == "Combat" and Casting.BurnCheck() and Core.CombatActionsCheck()
             end,
         },
         { --AA Stuns, Runes, etc, moved from previous home in DPS
@@ -956,7 +986,7 @@ local _ClassConfig    = {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat"
+                return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
         {
@@ -966,7 +996,7 @@ local _ClassConfig    = {
             load_cond = function() return Core.IsModeActive("ModernEra") end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat"
+                return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
     },
@@ -980,8 +1010,7 @@ local _ClassConfig    = {
             end
 
             Logger.log_debug("Sending the %s to our bags.", mq.TLO.Cursor())
-            mq.delay(150)
-            Core.DoCmd("/autoinventory")
+            ItemManager.QueueAutoInv(mq.TLO.Cursor.ID())
         end,
         AuraCheck = function() -- remove undesired auras to stop spam conditions... this will only be triggered if we have already identified we are missing a desired aura
             if Casting.CanUseAA("Auroria Mastery") then
@@ -1272,13 +1301,20 @@ local _ClassConfig    = {
                 end,
             },
 
-            -- { --this can be readded once we creat a post_activate to cancel the debuff you receive after
-            --     name = "Self Stasis",
-            --     type = "AA",
-            --     cond = function(self, aaName)
-            --         return mq.TLO.Me.TargetOfTarget.ID() == mq.TLO.Me.ID() and mq.TLO.Target.ID() == Globals.AutoTargetID and mq.TLO.Me.PctHPs() <= 30
-            --     end,
-            -- },
+            {
+                name = "Self Stasis",
+                type = "AA",
+                cond = function(self, aaName)
+                    if Config:GetSetting('CharmOn') and mq.TLO.Me.Pet.ID() > 0 then return false end
+                    return mq.TLO.Me.TargetOfTarget.ID() == mq.TLO.Me.ID() and mq.TLO.Target.ID() == Globals.AutoTargetID
+                end,
+                post_activate = function(self, aaName, success)
+                    if success and mq.TLO.Me.Buff("Self Stasis")() then
+                        Comms.PrintGroupMessage("We're out of combat, removing the Self Stasis buff so we can act again.")
+                        Core.DoCmd('/removebuff =Self Stasis')
+                    end
+                end,
+            },
             -- { --This can interrupt spellcasting which can just make something worse. Let us trust healers and tanks.
             --     name = "Dimensional Instability",
             --     type = "AA",
@@ -1545,7 +1581,9 @@ local _ClassConfig    = {
                 { name = "TwinCastMez",      cond = function(self) return Config:GetSetting('DoSTMez') and Config:GetSetting('TwincastMez') > 1 end, },
                 { name = "MezSpell",         cond = function(self) return Config:GetSetting('DoSTMez') and Config:GetSetting('TwincastMez') == 1 end, },
                 { name = "MezAESpell",       cond = function(self) return Config:GetSetting('DoAEMez') end, },
-                { name = "CharmSpell",       cond = function(self) return Config:GetSetting('CharmOn') end, },
+                { name = "CharmDemand",      cond = function(self, spell) return Config:GetSetting('CharmOn') and Core.IsSelectedCharmSpell(spell) end, },
+                { name = "CharmCommand",     cond = function(self, spell) return Config:GetSetting('CharmOn') and Core.IsSelectedCharmSpell(spell) end, },
+                { name = "CharmSpell",       cond = function(self, spell) return Config:GetSetting('CharmOn') and Core.IsSelectedCharmSpell(spell) end, },
                 { name = "TashSpell",        cond = function(self) return Config:GetSetting('DoTash') end, },
                 { name = "CripSlowSpell",    cond = function(self) return (Config:GetSetting('DoSlow') or Config:GetSetting('DoCripple')) and not Casting.CanUseAA("Slowing Helix") end, },
                 { name = "SlowSpell",        cond = function(self) return Config:GetSetting('DoSlow') and not Core.GetResolvedActionMapItem('CripSlowSpell') end, },

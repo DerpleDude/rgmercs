@@ -28,6 +28,13 @@ function Combat.GetCachedCombatState()
     return Globals.CurrentState
 end
 
+--- Returns true once at least thresholdMs has elapsed since the last combat frame.
+---@param thresholdMs number Milliseconds to wait after combat before considering it settled.
+---@return boolean
+function Combat.CombatSettled(thresholdMs)
+    return (Globals.GetTimeMS() - Globals.LastCombatTime) >= thresholdMs
+end
+
 --- Designates the main assist from the assist list, raid, group, or self as a fallback.
 function Combat.SetMainAssist()
     local inRaid = mq.TLO.Raid.Members() > 0
@@ -124,7 +131,7 @@ function Combat.EngageTarget(autoTargetId)
                     Logger.log_verbose("EngageTarget(): Target is too far! %d>%d attempting to nav to it.", target.Distance3D(),
                         target.MaxRangeTo())
 
-                    Movement:NavInCombat(autoTargetId, Targeting.GetTargetMaxRangeTo(target), false)
+                    Movement:NavInCombat(autoTargetId, Targeting.GetTargetMaxRangeTo(target), false, false, true)
                 else
                     Logger.log_verbose("EngageTarget(): Target is in range moving to combat")
                     if mq.TLO.Navigation.Active() then
@@ -137,7 +144,7 @@ function Combat.EngageTarget(autoTargetId)
 
                 if not mq.TLO.Me.Combat() then
                     Logger.log_debug("\awNOTICE:\ax Engaging %s in mortal combat.", Targeting.GetTargetCleanName())
-                    if Core.IAmMA() then
+                    if Core.IsTanking() then
                         Comms.HandleAnnounce(Comms.FormatChatEvent("Tanking", Targeting.GetTargetCleanName(), "Started"), Config:GetSetting('AnnounceTargetGroup'),
                             Config:GetSetting('AnnounceTarget'), Config:GetSetting('AnnounceToRaidIfInRaid'))
                     end
@@ -250,6 +257,12 @@ function Combat.ValidMAXTarget(target)
         return false
     end
 
+    -- a charm pet (or one a peer is re-charming) is protected unless explicitly forced
+    if spawnId ~= Globals.ForceTargetID and spawnId ~= Globals.ForceCombatID and Globals.CharmedPetIDs:contains(spawnId) then
+        Logger.log_verbose("ValidateMATarget: Spawn ID %d is a protected charm pet", spawnId)
+        return false
+    end
+
     -- believe it or not, target can become invalid between the time we get its ID and now
     if target.ID() <= 0 then
         Logger.log_verbose("ValidateMATarget: Spawn ID %d is no longer valid", spawnId)
@@ -285,17 +298,34 @@ function Combat.PickBestSpawn(hpPref, spawn, bucket)
     end
 end
 
-local function processFallbackSpawn(spawn, checkNamed, radius, namedPref, hpPref, primaryTarget)
+--- Returns true if spawn matches the named/trash preference (no preference matches anything).
+---@param spawnIsNamed boolean Whether the spawn is considered named.
+---@param namedPref    {prefNamed:boolean,prefTrash:boolean} Named targeting preference flags.
+---@return boolean True if the spawn is the preferred type.
+function Combat.IsPreferredType(spawnIsNamed, namedPref)
+    return (not namedPref.prefNamed and not namedPref.prefTrash)
+        or (namedPref.prefNamed and spawnIsNamed)
+        or (namedPref.prefTrash and not spawnIsNamed)
+end
+
+local function processFallbackSpawn(spawn, checkNamed, radius, namedPref, hpPref, primaryTarget, fallbackTarget)
     if not spawn or not spawn() then return end
     if Targeting.IsTempPet(spawn) then return end
+    local fallbackId = spawn.ID() or 0
+    if fallbackId ~= Globals.ForceTargetID and fallbackId ~= Globals.ForceCombatID and Globals.CharmedPetIDs:contains(fallbackId) then return end
     if (spawn.CleanName() or ""):find("Guard") then return end
     if Config:GetSetting('SafeTargeting') and Targeting.IsSpawnFightingStranger(spawn, radius) then return end
     local spawnIsNamed = checkNamed and Targeting.IsNamed(spawn) or false
-    if namedPref.prefNamed and not spawnIsNamed then return end -- want named, this is trash: skip
-    if namedPref.prefTrash and spawnIsNamed then return end     -- want trash, this is named: skip
-    Logger.log_verbose("MATargetScan FallbackScan Found: %s -- id %d", spawn.CleanName(), spawn.ID())
-    Combat.PickBestSpawn(hpPref, spawn, primaryTarget)
-    primaryTarget.found = true
+
+    if Combat.IsPreferredType(spawnIsNamed, namedPref) then
+        Logger.log_verbose("MATargetScan FallbackScan Found: %s -- id %d", spawn.CleanName(), spawn.ID())
+        Combat.PickBestSpawn(hpPref, spawn, primaryTarget)
+        primaryTarget.found = true
+    else
+        -- preferred type not available: stash as fallback in case it's the only type left
+        Logger.log_verbose("MATargetScan FallbackScan found non-preferred target: %s -- id %d", spawn.CleanName(), spawn.ID())
+        Combat.PickBestSpawn(hpPref, spawn, fallbackTarget)
+    end
 end
 
 --- Scans nearby spawns matching search and updates the primaryTarget bucket as a fallback when XTargets yield nothing.
@@ -305,11 +335,12 @@ end
 ---@param namedPref     {prefNamed:boolean,prefTrash:boolean} Named targeting preference flags.
 ---@param hpPref        {prefLow:boolean,prefHigh:boolean}   HP targeting preference flags.
 ---@param primaryTarget {hp:number,id:number,found:boolean}  Primary target bucket, mutated in place.
-function Combat.FallbackScan(search, checkNamed, radius, namedPref, hpPref, primaryTarget)
+---@param fallbackTarget {hp:number,id:number,name:string}  Non-preferred-type bucket, mutated in place.
+function Combat.FallbackScan(search, checkNamed, radius, namedPref, hpPref, primaryTarget, fallbackTarget)
     local count = mq.TLO.SpawnCount(search)()
     Logger.log_verbose("MATargetScan FallbackScan: %s ===> %d", search, count)
     for i = 1, count do
-        processFallbackSpawn(mq.TLO.NearestSpawn(i, search), checkNamed, radius, namedPref, hpPref, primaryTarget)
+        processFallbackSpawn(mq.TLO.NearestSpawn(i, search), checkNamed, radius, namedPref, hpPref, primaryTarget, fallbackTarget)
     end
 end
 
@@ -357,9 +388,7 @@ function Combat.ProcessXTarget(xtSpawn, radius, namedPref, hpPref, immediate, pr
     end
 
     local spawnIsNamed = Targeting.IsNamed(xtSpawn)
-    local wantThisSpawn = (not namedPref.prefNamed and not namedPref.prefTrash)
-        or (namedPref.prefNamed and spawnIsNamed)
-        or (namedPref.prefTrash and not spawnIsNamed)
+    local wantThisSpawn = Combat.IsPreferredType(spawnIsNamed, namedPref)
 
     if wantThisSpawn then
         if immediate then
@@ -384,7 +413,7 @@ end
 ---@param zradius number The vertical radius to scan for targets.
 ---@return number Spawn id of the chosen target, or 0 if none found.
 function Combat.MATargetScan(radius, zradius)
-    local aggroSearch    = string.format("npc radius %d zradius %d targetable playerstate 4", radius, zradius)
+    local aggroSearch    = string.format("npc nopet radius %d zradius %d targetable playerstate 4", radius, zradius)
     local aggroSearchPet = string.format("npcpet radius %d zradius %d targetable playerstate 4", radius, zradius)
     local namedPriority  = Globals.Constants.ScanNamedPriority[Config:GetSetting('ScanNamedPriority')]
     local hpPriority     = Globals.Constants.ScanHPPriority[Config:GetSetting('ScanHPPriority')]
@@ -410,8 +439,14 @@ function Combat.MATargetScan(radius, zradius)
         elseif Config:GetSetting('AreaScanFallback') then
             -- We didn't find anything to kill yet so spawn search
             Logger.log_verbose("MATargetScan Falling back on Spawn Searching")
-            Combat.FallbackScan(aggroSearch, true, radius, namedPref, hpPref, primaryTarget)
-            Combat.FallbackScan(aggroSearchPet, false, radius, namedPref, hpPref, primaryTarget)
+            Combat.FallbackScan(aggroSearch, true, radius, namedPref, hpPref, primaryTarget, fallbackTarget)
+            if not primaryTarget.found and fallbackTarget.id == 0 then
+                Combat.FallbackScan(aggroSearchPet, false, radius, namedPref, hpPref, primaryTarget, fallbackTarget)
+            end
+            if not primaryTarget.found and fallbackTarget.id > 0 then
+                Logger.log_verbose("MATargetScan \agArea scan found only non-preferred type, falling back to: %d", fallbackTarget.id)
+                primaryTarget.id = fallbackTarget.id
+            end
         end
     end
 
@@ -552,24 +587,29 @@ function Combat.FindBestAutoTarget(validateFn)
         end
     end
 
-    -- FollowMarkTarget causes RG to have allow RG toons focus on who the group has marked. We'll exit early if this is the case.
-    if Config:GetSetting('FollowMarkTarget') then
-        local markNPC = mq.TLO.Me.GroupMarkNPC(1)
-        if markNPC and markNPC() and markNPC.ID() > 0 and Globals.AutoTargetID ~= markNPC.ID() then
-            Globals.AutoTargetID = markNPC.ID()
-            Globals.AutoTargetIsNamed = Targeting.IsNamed(markNPC)
-            Logger.log_debug("FindAutoTarget(): Following Marked Target: \ag%s\ax [ID: \ag%d\ax] Named(%s)", markNPC.CleanName() or "None", markNPC.ID(),
-                Strings.BoolToColorString(Globals.AutoTargetIsNamed))
-            return
-        end
+    if Globals.LastPulledID > 0 and not Combat.ValidCombatTarget(Globals.LastPulledID) then
+        Globals.LastPulledID = 0
     end
 
     local target = mq.TLO.Target
-    local targetValidated = false
     local assistTargetIsNamed = nil
+    local markedHandled = false
+
+    -- FollowMarkTarget: set candidate and route through the common validation below; far/invalid marks get cleared there.
+    if Config:GetSetting('FollowMarkTarget') then
+        local markNPC = mq.TLO.Me.GroupMarkNPC(1)
+        if markNPC and markNPC() and markNPC.ID() > 0 then
+            if Globals.AutoTargetID ~= markNPC.ID() then
+                Globals.AutoTargetID = markNPC.ID()
+                Logger.log_debug("FindAutoTarget(): Following Marked Target: \ag%s\ax [ID: \ag%d\ax]", markNPC.CleanName() or "None", markNPC.ID())
+            end
+            assistTargetIsNamed = Targeting.IsNamed(markNPC)
+            markedHandled = true
+        end
+    end
 
     -- Now handle normal situations where we need to choose a target because we don't have one.
-    if Core.IAmMA() then
+    if not markedHandled and Core.IAmMA() then
         Logger.log_verbose("FindAutoTarget() ==> I am MA!")
         if Globals.ForceTargetID ~= 0 then
             local forceSpawn = mq.TLO.Spawn(Globals.ForceTargetID)
@@ -631,7 +671,7 @@ function Combat.FindBestAutoTarget(validateFn)
                 end
             end
         end
-    else
+    elseif not markedHandled then
         local assistId = 0
 
         -- check if we are currently forcing a target, use it as the assistId to validate if so, clear the ForceTargetID if its dead.
@@ -657,15 +697,17 @@ function Combat.FindBestAutoTarget(validateFn)
             assistId, assistTargetIsNamed = Combat.GetMainAssistTargetID()
         end
 
-        if assistId > 0 and (validateFn == nil or validateFn(assistId)) then
-            targetValidated = true
+        if assistId > 0 then
             Globals.AutoTargetID = assistId
-        else
-            Globals.AutoTargetID = 0
-            assistTargetIsNamed = false
-            Globals.AutoTargetElementalImmunities = {}
-            Globals.AutoTargetStatusImmunities = {}
         end
+    end
+
+    -- Common validation: any AutoTargetID set above gets gated through validateFn once here. Failure zeroes and clears caches.
+    if Globals.AutoTargetID > 0 and validateFn and not validateFn(Globals.AutoTargetID) then
+        Globals.AutoTargetID = 0
+        assistTargetIsNamed = false
+        Globals.AutoTargetElementalImmunities = {}
+        Globals.AutoTargetStatusImmunities = {}
     end
 
     if Globals.AutoTargetID > 0 then
@@ -684,25 +726,28 @@ function Combat.FindBestAutoTarget(validateFn)
     Logger.log_verbose("FindAutoTarget(): FoundTargetID(%d) - Named(%s), myTargetId(%d)", Globals.AutoTargetID or 0, Strings.BoolToColorString(Globals.AutoTargetIsNamed),
         mq.TLO.Target.ID())
 
-    if Config:GetSetting('DoAutoTarget') then
-        local autoTargetId = Globals.AutoTargetID or 0
-        if autoTargetId > 0 and (targetValidated or (validateFn == nil or validateFn(autoTargetId))) then
-            if mq.TLO.Target.ID() ~= autoTargetId then
-                Targeting.SetTarget(autoTargetId)
-            end
+    if Config:GetSetting('DoAutoTarget') and Globals.AutoTargetID > 0 then
+        local autoTargetId = Globals.AutoTargetID
+        if mq.TLO.Target.ID() ~= autoTargetId then
+            Targeting.SetTarget(autoTargetId)
+        end
 
-            -- For Assist Lists, this ensures we correctly and quickly receive health percent to assist in a timely manner
-            -- For Emu, this helps correct for emu xtarget bugs
-            -- For Force Target, this makes sure a non-aggressive mob is added to our xtargets for tracking
-            -- Second dead check because targets were ocasionally dying between the validateFn and this check
-            if Config:GetSetting('UseAssistList') or Core.OnEMU() or autoTargetId == Globals.ForceTargetID then
-                if mq.TLO.Spawn(autoTargetId)() and not mq.TLO.Spawn(autoTargetId).Dead() and not Targeting.IsSpawnXTHater(autoTargetId) then
-                    Targeting.AddXTByID(1, Globals.AutoTargetID)
-                    Logger.log_verbose("FindAutoTarget(): FoundTargetID(%d) not on xt list, adding.", autoTargetId or 0)
-                end
+        -- For Assist Lists, this ensures we correctly and quickly receive health percent to assist in a timely manner
+        -- For Emu, this helps correct for emu xtarget bugs
+        -- For Force Target, this makes sure a non-aggressive mob is added to our xtargets for tracking
+        -- Second dead check because targets were ocasionally dying between the validateFn and this check
+        if Config:GetSetting('UseAssistList') or Core.OnEMU() or autoTargetId == Globals.ForceTargetID then
+            if mq.TLO.Spawn(autoTargetId)() and not mq.TLO.Spawn(autoTargetId).Dead() and not Targeting.IsSpawnXTHater(autoTargetId) then
+                Targeting.AddXTByID(1, Globals.AutoTargetID)
+                Logger.log_verbose("FindAutoTarget(): FoundTargetID(%d) not on xt list, adding.", autoTargetId or 0)
             end
         end
     end
+end
+
+---@return boolean
+function Combat.CombatNavActive()
+    return mq.TLO.Navigation.Active() and Globals.CombatNavTargetId > 0 and Globals.CombatNavTargetId == Globals.AutoTargetID
 end
 
 --- Validates if it is acceptable to engage with a target based on its ID.
@@ -730,6 +775,12 @@ function Combat.OkToEngagePreValidateId(targetId)
         return false
     end
 
+    -- a charm pet (or one a peer is re-charming) is protected unless explicitly forced
+    if targetId ~= Globals.ForceTargetID and targetId ~= Globals.ForceCombatID and Globals.CharmedPetIDs:contains(targetId) then
+        Logger.log_verbose("\ayOkToEngagePrevalidate check for %s(ID: %d) - Protected charm pet --> Not Engaging", targetName, targetId)
+        return false
+    end
+
     local pcCheck = Targeting.TargetIsType("pc", target) or (Targeting.TargetIsType("pet", target) and Targeting.TargetIsType("pc", target.Master))
     local mercCheck = Targeting.TargetIsType("mercenary", target)
     if pcCheck or mercCheck then
@@ -745,8 +796,12 @@ function Combat.OkToEngagePreValidateId(targetId)
 
     if not Globals.BackOffFlag then
         if Core.IAmMA() then
-            Logger.log_verbose("OkToEngagePrevalidate check for %s(ID: %d) - I am MA, proceeding!", targetName, targetId)
-            return true
+            if Targeting.GetTargetDistance(target) <= Config:GetSetting('AssistRange') then
+                Logger.log_verbose("OkToEngagePrevalidate check for %s(ID: %d) - I am MA, proceeding!", targetName, targetId)
+                return true
+            end
+            Logger.log_verbose("OkToEngagePrevalidate check for %s(ID: %d) - I am MA but target beyond AssistRange.", targetName, targetId)
+            return false
         else -- can't check HP yet, as we haven't targeted
             local distanceCheck = Targeting.GetTargetDistance(target) < Config:GetSetting('AssistRange')
             local hostileCheck = Config:GetSetting('TargetNonAggressives') or target.Aggressive()
@@ -801,6 +856,12 @@ function Combat.OkToEngage(autoTargetId)
         return false
     end
 
+    -- a charm pet (or one a peer is re-charming) is protected unless explicitly forced
+    if targetId ~= Globals.ForceTargetID and targetId ~= Globals.ForceCombatID and Globals.CharmedPetIDs:contains(targetId) then
+        Logger.log_verbose("\ayOkToEngage check for %s(ID: %d) - Protected charm pet --> Not Engaging", targetName, targetId)
+        return false
+    end
+
     local pcCheck = Targeting.TargetIsType("pc", target) or (Targeting.TargetIsType("pet", target) and Targeting.TargetIsType("pc", target.Master))
     local mercCheck = Targeting.TargetIsType("mercenary", target)
     if pcCheck or mercCheck then
@@ -822,8 +883,12 @@ function Combat.OkToEngage(autoTargetId)
 
     if not Globals.BackOffFlag then
         if Core.IAmMA() then
-            Logger.log_verbose("OkToEngage check for %s(ID: %d) - I am MA, proceeding!", targetName, targetId)
-            return true
+            if Targeting.GetTargetDistance() <= Config:GetSetting('AssistRange') then
+                Logger.log_verbose("OkToEngage check for %s(ID: %d) - I am MA, proceeding!", targetName, targetId)
+                return true
+            end
+            Logger.log_verbose("OkToEngage check for %s(ID: %d) - I am MA but target beyond AssistRange.", targetName, targetId)
+            return false
         else
             local distanceCheck = Targeting.GetTargetDistance() < Config:GetSetting('AssistRange')
             local assistHPCheck = Targeting.GetTargetPctHPs() <= Config:GetSetting('AutoAssistAt')
@@ -848,6 +913,8 @@ end
 ---@param targetId number The ID of the target to attack.
 ---@param sendSwarm boolean Whether to send a swarm attack or not.
 function Combat.PetAttack(targetId, sendSwarm)
+    if Globals.BackOffFlag then return end
+
     local pet = mq.TLO.Me.Pet
 
     local target = mq.TLO.Spawn(targetId)
@@ -856,7 +923,12 @@ function Combat.PetAttack(targetId, sendSwarm)
     if pet.ID() == 0 then return end
 
     if Config:GetSetting('DoPetCommands') and (not pet.Combat() or pet.Target.ID() ~= targetId) and (targetId == Globals.ForceTargetID or targetId == Globals.AutoTargetID or Targeting.TargetIsType("npc", target)) then
-        Core.DoCmd("/squelch /pet attack %d", targetId)
+        -- only back off to redirect a pet already fighting the wrong target; an idle pet (e.g. during a pull) just attacks
+        if pet.Combat() then
+            Core.DoCmd("/multiline ; /squelch /pet back off ; /timed 1 /squelch /pet attack")
+        else
+            Core.DoCmd("/squelch /pet attack")
+        end
         if sendSwarm then
             Core.DoCmd("/squelch /pet swarm")
         end
@@ -880,7 +952,7 @@ function Combat.ShouldDoCamp()
         (not Core.IsTanking() and Targeting.GetAutoTargetPctHPs() > Config:GetSetting('AutoAssistAt'))
 end
 
---- Navigates back to camp if ReturnToCamp is enabled and we are outside the camp radius.
+--- Navigates back to camp out of combat if Camp is on and we are outside the camp radius.
 ---@param tempConfig           table    Camp configuration containing AutoCampX/Y/Z, CampZoneId, etc.
 ---@param bCalledFromInsideEvent? boolean True if called from within an event handler (skips doevents calls).
 function Combat.AutoCampCheck(tempConfig, bCalledFromInsideEvent)
@@ -890,10 +962,8 @@ function Combat.AutoCampCheck(tempConfig, bCalledFromInsideEvent)
 
     if mq.TLO.Me.Casting() and not Core.MyClassIs("brd") then return end
 
-    -- chasing a toon dont use camnp.
     if Config:GetSetting('ChaseOn') then return end
 
-    -- camped in a different zone.
     if tempConfig.CampZoneId ~= mq.TLO.Zone.ID() then return end
 
     -- let pulling module handle camp decisions while it is enabled.
@@ -910,13 +980,13 @@ function Combat.AutoCampCheck(tempConfig, bCalledFromInsideEvent)
 
     local distanceToCamp = Math.GetDistance(me.Y(), me.X(), tempConfig.AutoCampY, tempConfig.AutoCampX)
 
-    if distanceToCamp >= 400 and not Config:GetSetting('DoPull') then
-        Comms.PrintGroupMessage("I'm over 400 units from camp, not returning!")
+    if distanceToCamp >= Config:GetSetting('CampExceedRadius') and not Config:GetSetting('DoPull') then
+        Comms.PrintGroupMessage("I'm over %d units from camp, not returning!", Config:GetSetting('CampExceedRadius'))
         Core.DoCmd("/rgl campoff")
         return
     end
 
-    if not Config:GetSetting('CampHard') then
+    if not Config:GetSetting('CampLeashDowntime') or not Combat.CombatSettled(1000) then
         if distanceToCamp < Config:GetSetting('AutoCampRadius') then return end
     end
 
@@ -949,44 +1019,48 @@ function Combat.AutoCampCheck(tempConfig, bCalledFromInsideEvent)
     end
 end
 
---- Navigates back to camp during combat if ReturnToCamp is enabled and we are outside the camp radius.
+--- Navigates back to camp during combat if CampLeashCombat is enabled and we are outside the camp radius.
 ---@param tempConfig table Camp configuration containing AutoCampX/Y/Z and CampZoneId.
 function Combat.CombatCampCheck(tempConfig)
     if not Config:GetSetting('ReturnToCamp') then return end
+    if not Config:GetSetting('CampLeashCombat') then return end
 
     if mq.TLO.Me.Casting() and not Core.MyClassIs("brd") then return end
 
-    -- chasing a toon dont use camnp.
     if Config:GetSetting('ChaseOn') then return end
 
-    -- camped in a different zone.
     if tempConfig.CampZoneId ~= mq.TLO.Zone.ID() then return end
 
-    local me = mq.TLO.Me
+    -- let pulling module handle camp decisions while it is enabled.
+    if Config:GetSetting('DoPull') then
+        local pullState = Modules:ExecModule("Pull", "GetPullState")
 
-    local distanceToCampSq = Math.GetDistanceSquared(me.Y(), me.X(), tempConfig.AutoCampY, tempConfig.AutoCampX)
-
-    if not Config:GetSetting('CampHard') then
-        if distanceToCampSq < Config:GetSetting('AutoCampRadius') ^ 2 then return end
+        -- if we are idle or in groupwatch waiting its possible we wandered out of camp to loot and need to come back.
+        if pullState > 2 then
+            return
+        end
     end
 
-    if distanceToCampSq > 25 then
-        local navTo = string.format("locyxz %d %d %d", tempConfig.AutoCampY, tempConfig.AutoCampX, tempConfig.AutoCampZ)
-        if mq.TLO.Navigation.PathExists(navTo)() then
-            Movement:DoNav(false, "%s", navTo)
-            mq.delay("2s", function() return mq.TLO.Navigation.Active() and mq.TLO.Navigation.Velocity() > 0 end)
-            while mq.TLO.Navigation.Active() and mq.TLO.Navigation.Velocity() > 0 do
-                mq.delay(10)
-                mq.doevents()
-                Events.DoEvents()
-            end
-        else
-            Movement:MoveToLoc(tempConfig.AutoCampY, tempConfig.AutoCampX)
-            while mq.TLO.MoveTo.Moving() and not mq.TLO.MoveTo.Stopped() do
-                mq.delay(10)
-                mq.doevents()
-                Events.DoEvents()
-            end
+    local me = mq.TLO.Me
+    local distanceToCampSq = Math.GetDistanceSquared(me.Y(), me.X(), tempConfig.AutoCampY, tempConfig.AutoCampX)
+
+    if distanceToCampSq < Config:GetSetting('AutoCampRadius') ^ 2 then return end
+
+    local navTo = string.format("locyxz %d %d %d", tempConfig.AutoCampY, tempConfig.AutoCampX, tempConfig.AutoCampZ)
+    if mq.TLO.Navigation.PathExists(navTo)() then
+        Movement:DoNav(false, "%s", navTo)
+        mq.delay("2s", function() return mq.TLO.Navigation.Active() and mq.TLO.Navigation.Velocity() > 0 end)
+        while mq.TLO.Navigation.Active() and mq.TLO.Navigation.Velocity() > 0 do
+            mq.delay(10)
+            mq.doevents()
+            Events.DoEvents()
+        end
+    else
+        Movement:MoveToLoc(tempConfig.AutoCampY, tempConfig.AutoCampX)
+        while mq.TLO.MoveTo.Moving() and not mq.TLO.MoveTo.Stopped() do
+            mq.delay(10)
+            mq.doevents()
+            Events.DoEvents()
         end
     end
 
@@ -1045,34 +1119,33 @@ function Combat.FindWorstHurtGroupMember(minHPs)
     for i = 1, groupSize do
         local healTarget = mq.TLO.Group.Member(i)
 
-        if healTarget and healTarget() and (healTarget.Distance3D() or 999) <= 300 and not (healTarget.Dead() or healTarget.OtherZone() or healTarget.Offline()) then
-            -- Heal the aggro holder if they are in our group and below the mainheal point, no other checks needed
-            if Targeting.TargetIsType("NPC", mq.TLO.Target) and mq.TLO.Me.TargetOfTarget.ID() == healTarget.ID() and Targeting.BigHealsNeeded(healTarget) then
-                Logger.log_verbose("\agSomeone with aggro is hurt, prioritizing id %d", healTarget.ID())
-                return healTarget.ID()
-            end
+        if healTarget and healTarget() then
+            if (healTarget.Distance3D() or 999) <= 300 and not (healTarget.Dead() or healTarget.OtherZone() or healTarget.Offline()) then
+                -- Heal the aggro holder if they are in our group and below the mainheal point, no other checks needed
+                if Targeting.TargetIsType("NPC", mq.TLO.Target) and mq.TLO.Me.TargetOfTarget.ID() == healTarget.ID() and Targeting.BigHealsNeeded(healTarget) then
+                    Logger.log_verbose("\agSomeone with aggro is hurt, prioritizing id %d", healTarget.ID())
+                    return healTarget.ID()
+                end
 
-            -- Prioritize any tanks in the group that are under mainhealpoint, otherwise, treat them as normal group members
-            if Targeting.TargetIsATank(healTarget) and (healTarget.PctHPs() or 101) < tankPct then
-                tankPct = (healTarget.PctHPs() or tankPct)
-                tankId = (healTarget.PctHPs() and healTarget.ID() or tankId)
-            else
-                if (healTarget.PctHPs() or 101) < worstPct then
+                -- Prioritize any tanks in the group that are under mainhealpoint, otherwise, treat them as normal group members
+                if Targeting.TargetIsATank(healTarget) and (healTarget.PctHPs() or 101) < tankPct then
+                    tankPct = (healTarget.PctHPs() or tankPct)
+                    tankId = (healTarget.PctHPs() and healTarget.ID() or tankId)
+                elseif (healTarget.PctHPs() or 101) < worstPct then
                     Logger.log_verbose("\aySo far %s is the worst off.", healTarget.DisplayName())
                     -- this looks weird but it guards against a possible yield between the if above and this line where the healtarget might have died.
                     worstPct = (healTarget.PctHPs() or worstPct)
                     worstId = (healTarget.PctHPs() and healTarget.ID() or worstId)
                 end
+            end
 
-                if Config:GetSetting('DoPetHeals') and (healTarget.Pet.ID() or 0) > 0 then
-                    local petHP = healTarget.Pet.PctHPs() or 101
-                    if petHP < worstPct and petHP < Config:GetSetting('PetHealPoint') then
-                        Logger.log_verbose("\aySo far %s's pet %s is the worst off.", healTarget.DisplayName(),
-                            healTarget.Pet.DisplayName())
-                        -- this looks weird but it guards against a possible yield between the if above and this line where the healtarget might have died.
-                        worstPct = (healTarget.Pet.PctHPs() or worstPct)
-                        worstId = (healTarget.Pet.PctHPs() and healTarget.Pet.ID() or worstId)
-                    end
+            -- Pet heals gate on the pet's own range; a live pet implies the owner is in-zone even if out of heal range
+            if Config:GetSetting('DoPetHeals') and (healTarget.Pet.ID() or 0) > 0 then
+                local petHP = healTarget.Pet.PctHPs() or 101
+                if petHP > 0 and petHP < worstPct and petHP < Config:GetSetting('PetHealPoint') and (healTarget.Pet.Distance3D() or 999) <= 300 then
+                    Logger.log_verbose("\aySo far %s's pet %s is the worst off.", healTarget.DisplayName(), healTarget.Pet.DisplayName())
+                    worstPct = (healTarget.Pet.PctHPs() or worstPct)
+                    worstId = (healTarget.Pet.PctHPs() and healTarget.Pet.ID() or worstId)
                 end
             end
         end
@@ -1090,6 +1163,23 @@ function Combat.FindWorstHurtGroupMember(minHPs)
 
     Logger.log_verbose("\agNo one is hurt!")
     return 0
+end
+
+--- True if any group member's pet is in heal range and below the given HP%.
+---@param minHPs number Pet HP% threshold.
+---@return boolean
+function Combat.AnyHurtGroupPet(minHPs)
+    for i = 1, mq.TLO.Group.Members() do
+        local member = mq.TLO.Group.Member(i)
+        if member and member() and (member.Pet.ID() or 0) > 0 then
+            local pet = member.Pet
+            local petHP = pet.PctHPs() or 101
+            if petHP > 0 and petHP < minHPs and (pet.Distance3D() or 999) <= 300 then
+                return true
+            end
+        end
+    end
+    return false
 end
 
 --- Finds the entity with the worst hurt mana exceeding a minimum threshold.
@@ -1163,25 +1253,33 @@ end
 function Combat.FindWorstHurtHealList(minHPs)
     local worstId = 0
     local worstPct = minHPs
-    local hpPct = 101
+    local myX, myY, myZ = mq.TLO.Me.X(), mq.TLO.Me.Y(), mq.TLO.Me.Z()
 
     Logger.log_verbose("\ayChecking for worst Hurt from Heal List.")
     for _, name in ipairs(Config:GetSetting('HealList') or {}) do
-        local healTarget = mq.TLO.Spawn(string.format("PC =%s", name))
-        if healTarget and healTarget() and (healTarget.Distance3D() or 0) < 300 and not healTarget.Dead() then
-            local heartbeat = Comms.GetPeerHeartbeatByName(name)
+        local hpPct, id = nil, nil
+        local data = Comms.GetPeerHeartbeat(Comms.GetPeerName(name, Globals.CurServer)).Data
 
-            if heartbeat and heartbeat.Data and heartbeat.Data.HPs then
-                hpPct = tonumber(heartbeat.Data.HPs) or 101
-            else
+        if data and data.HPs and data.ZoneId == Globals.CurZoneId and data.InstanceId == Globals.CurInstanceId then
+            -- RGMercs peer in our zone/instance: evaluate from the heartbeat (no spawn lookup, squared distance, no sqrt)
+            local dx, dy, dz = (data.X or 0) - myX, (data.Y or 0) - myY, (data.Z or 0) - myZ
+            if data.HPs > 0 and (dx * dx + dy * dy + dz * dz) < 90000 then
+                hpPct = data.HPs
+                id = data.ID
+            end
+        else
+            -- Non-RGMercs heal target (e.g. another player's tank): fall back to a spawn lookup
+            local healTarget = mq.TLO.Spawn(string.format("PC =%s", name))
+            if healTarget and healTarget() and (healTarget.Distance3D() or 0) < 300 and not healTarget.Dead() then
                 hpPct = healTarget.PctHPs() or 101
+                id = healTarget.ID()
             end
+        end
 
-            if hpPct < worstPct then
-                Logger.log_verbose("\aySo far %s is the worst off.", healTarget.DisplayName() or "Error")
-                worstId = healTarget.ID()
-                worstPct = hpPct
-            end
+        if hpPct and id and hpPct < worstPct then
+            Logger.log_verbose("\aySo far heal-list id %d is the worst off.", id)
+            worstId = id
+            worstPct = hpPct
         end
     end
 
@@ -1277,16 +1375,13 @@ function Combat.AETargetCheck(printDebug, minCount)
     if not minCount then minCount = Config:GetSetting('AETargetCnt') end
 
     local haters = mq.TLO.SpawnCount("NPC xtarhater radius 80 zradius 50")()
-    local haterPets = mq.TLO.SpawnCount("NPCpet xtarhater radius 80 zradius 50")()
-    local totalHaters = haters + haterPets
-    if totalHaters < minCount or totalHaters > Config:GetSetting('MaxAETargetCnt') then return false end
+    if haters < minCount or haters > Config:GetSetting('MaxAETargetCnt') then return false end
 
     if Config:GetSetting('SafeAEDamage') then
         local npcs = mq.TLO.SpawnCount("NPC radius 80 zradius 50")()
-        local npcPets = mq.TLO.SpawnCount("NPCpet radius 80 zradius 50")()
-        if totalHaters < (npcs + npcPets) then
+        if haters < npcs then
             if printDebug then
-                Logger.log_verbose("AETargetCheck(): %d mobs in range but only %d xtarget haters, blocking AE damage actions.", npcs + npcPets, haters + haterPets)
+                Logger.log_verbose("AETargetCheck(): %d mobs in range but only %d xtarget haters, blocking AE damage actions.", npcs, haters)
             end
             return false
         end

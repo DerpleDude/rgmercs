@@ -24,9 +24,15 @@ local _ClassConfig = {
     },
     ['ModeChecks']      = {
         -- necro can AA Rez
-        IsRezing   = function() return Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0 end,
-        CanCharm   = function() return true end,
-        IsCharming = function() return (Config:GetSetting('CharmOn') and mq.TLO.Pet.ID() == 0) end,
+        IsRezing = function() return Casting.CanUseAA("Convergence") and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
+        CanCharm = function() return true end,
+    },
+    ['PetPosition']     = {
+        SummonAA   = function() return Casting.CanUseAA("Summon Companion") and "Summon Companion" end,
+        RelocateAA = function()
+            local cdAA = mq.TLO.Me.AltAbility("Companion's Discipline")
+            return (cdAA and cdAA.Rank() or 0) >= 7 and "Companion's Discipline"
+        end,
     },
     ['Themes']          = {
         ['DPS'] = {
@@ -798,6 +804,12 @@ local _ClassConfig = {
             "Flesh to Poison", -- Level 99
         },
     },
+    ['Charm']           = {
+        ['Abilities'] = {
+            { name = "Dire Charm", type = "AA", },
+            { name = "CharmSpell", type = "Spell", },
+        },
+    },
     ['RotationOrder']   = {
         -- Downtime doesn't have state because we run the whole rotation at once.
         {
@@ -845,13 +857,21 @@ local _ClassConfig = {
             end,
         },
         {
+            name = 'PetHealing',
+            state = 1,
+            steps = 1,
+            doFullRotation = true,
+            targetId = function(self) return mq.TLO.Me.Pet.ID() > 0 and { mq.TLO.Me.Pet.ID(), } or {} end,
+            cond = function(self, target) return (mq.TLO.Me.Pet.PctHPs() or 100) < Config:GetSetting('PetHealPct') end,
+        },
+        {
             name = 'Scent',
             state = 1,
             steps = 1,
             load_cond = function() return Config:GetSetting('DoScentDebuff') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and not Casting.IAmFeigning() and Casting.OkayToDebuff()
+                return combat_state == "Combat" and not Casting.IAmFeigning() and Casting.OkayToDebuff() and Core.CombatActionsCheck()
             end,
         },
         { --Keep things from running
@@ -862,7 +882,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and not Globals.AutoTargetIsNamed and Targeting.GetXTHaterCount() <= Config:GetSetting('SnareCount') and
-                    not Casting.IAmFeigning()
+                    not Casting.IAmFeigning() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -872,7 +892,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and
-                    Casting.BurnCheck() and not Casting.IAmFeigning()
+                    Casting.BurnCheck() and not Casting.IAmFeigning() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -882,7 +902,7 @@ local _ClassConfig = {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and not Casting.IAmFeigning() and Targeting.MobNotLowHP(Targeting.GetAutoTarget())
+                return combat_state == "Combat" and not Casting.IAmFeigning() and Targeting.MobNotLowHP(Targeting.GetAutoTarget()) and Core.CombatActionsCheck()
             end,
         },
         {
@@ -891,16 +911,8 @@ local _ClassConfig = {
             steps = 1,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and not Casting.IAmFeigning() and Targeting.MobHasLowHP(Targeting.GetAutoTarget())
+                return combat_state == "Combat" and not Casting.IAmFeigning() and Targeting.MobHasLowHP(Targeting.GetAutoTarget()) and Core.CombatActionsCheck()
             end,
-        },
-        {
-            name = 'PetHealing',
-            state = 1,
-            steps = 1,
-            doFullRotation = true,
-            targetId = function(self) return mq.TLO.Me.Pet.ID() > 0 and { mq.TLO.Me.Pet.ID(), } or {} end,
-            cond = function(self, target) return (mq.TLO.Me.Pet.PctHPs() or 100) < Config:GetSetting('PetHealPct') end,
         },
     },
     ['Rotations']       = {
@@ -947,6 +959,7 @@ local _ClassConfig = {
                 type = "AA",
                 cond = function(self, aaName, target)
                     if not Config:GetSetting('AggroFeign') then return false end
+                    if Config:GetSetting('CharmOn') and mq.TLO.Me.Pet.ID() > 0 then return false end
                     return (Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 99) or (mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') and Targeting.IHaveAggro(100))
                 end,
             },
@@ -993,15 +1006,6 @@ local _ClassConfig = {
         },
         ['DPS(MobHighHP)']  = {
             {
-                name = "Summon Companion",
-                type = "AA",
-                cond = function(self, aaName, target)
-                    if mq.TLO.Me.Pet.ID() == 0 then return false end
-                    local pet = mq.TLO.Me.Pet
-                    return not pet.Combat() and (pet.Distance3D() or 0) > 200
-                end,
-            },
-            {
                 name = "DurationTap",
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoDurationTap') end,
@@ -1021,8 +1025,8 @@ local _ClassConfig = {
                 name = "ManaDrain",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    return not Casting.IHaveBuff(spell.Name() .. " Recourse") and
-                        (mq.TLO.Target.PctMana() or -1) > 0 and mq.TLO.Group.LowMana(40)() > 2
+                    if not spell or not spell() then return false end
+                    return Casting.IHaveBuff(spell.Name() .. " Recourse") and (mq.TLO.Target.PctMana() or -1) > 0 and mq.TLO.Group.LowMana(40)() > 2
                 end,
             },
             {
@@ -1497,7 +1501,7 @@ local _ClassConfig = {
                 { name = "PoisonNuke2", },
                 { name = "FireNuke", },
                 { name = "Lifetap",      cond = function(self) return Config:GetSetting('DoLifetap') end, },
-                { name = "CharmSpell",   cond = function(self) return Config:GetSetting('CharmOn') end, },
+                { name = "CharmSpell",   cond = function(self, spell) return Config:GetSetting('CharmOn') and Core.IsSelectedCharmSpell(spell) end, },
                 { name = "SnareDot",     cond = function(self) return Config:GetSetting('DoSnare') and not Casting.CanUseAA("Enchroaching Darkness") end, },
                 { name = "ScentDebuff",  cond = function(self) return Config:GetSetting('DoScentDebuff') and not Casting.CanUseAA("Scent of Thule") end, },
                 { name = "LichSpell",    cond = function(self) return not Config:GetSetting('DoUnity') end, },
@@ -1546,7 +1550,7 @@ local _ClassConfig = {
             Tooltip = "1 = War, 2 = Rog",
             Type = "Combo",
             ComboOptions = { 'War', 'Rog', },
-            Default = 2,
+            Default = function() return Core.GetResolvedActionMapItem('RogPetSpell') and 2 or 1 end,
             Min = 1,
             Max = 2,
             RequiresLoadoutChange = true,
@@ -1557,8 +1561,9 @@ local _ClassConfig = {
             Header = "Recovery",
             Category = "General Healing",
             Index = 101,
-            Tooltip = "Mem and cast your Pet Heal (Salve) spell. AA Pet Heals are always used in emergencies.",
-            Default = false,
+            Tooltip = "Mem and cast your Pet Heal spell. AA Pet Heals are always used in emergencies.",
+            Default = true,
+            RequiresLoadoutChange = true,
         },
         ['PetHealPct']        = {
             DisplayName = "Pet Heal Spell HP%",
@@ -1567,8 +1572,7 @@ local _ClassConfig = {
             Category = "Healing Thresholds",
             Index = 101,
             Tooltip = "Use your pet heal spell when your pet is at or below this HP percentage.",
-
-            Default = 60,
+            Default = 80,
             Min = 1,
             Max = 99,
         },

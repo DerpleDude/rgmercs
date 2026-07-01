@@ -12,10 +12,13 @@ local _ClassConfig = {
     ['Modes']           = {
         'DPS',
     },
+    ['PetPosition']     = {
+        SummonAA   = function() return Casting.CanUseAA("Summon Companion") and "Summon Companion" end,
+        RelocateAA = function() return Casting.CanUseAA("Companion's Relocation") and "Companion's Relocation" end,
+    },
     ['ModeChecks']      = {
-        CanCharm   = function() return true end,
-        IsCharming = function() return (Config:GetSetting('CharmOn') and mq.TLO.Pet.ID() == 0) end,
-        IsRezing   = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
+        CanCharm = function() return true end,
+        IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
     },
     ['Themes']          = {
         ['DPS'] = {
@@ -78,6 +81,13 @@ local _ClassConfig = {
         ['DeathDagger'] = {
             "Legendary Dagger of Death",
             "Dagger of Death",
+        },
+        ['RedDemon'] = {
+            "Artifact of the Greater Red Demon",
+            "Artifact of the Red Demon",
+        },
+        ['Thulik'] = {
+            "Artifact of Thulik",
         },
     },
     ['AbilitySets']     = {
@@ -363,6 +373,12 @@ local _ClassConfig = {
             "Wake the Dead",
         },
     },
+    ['Charm']           = {
+        ['Abilities'] = {
+            { name = "Dire Charm", type = "AA", },
+            { name = "CharmSpell", type = "Spell", },
+        },
+    },
     ['RotationOrder']   = {
         {
             name = 'PetSummon',
@@ -388,6 +404,15 @@ local _ClassConfig = {
             end,
         },
         {
+            name = 'GroupBuff',
+            state = 1,
+            steps = 1,
+            targetId = function(self) return Casting.GetBuffableIDs() end,
+            cond = function(self, combat_state)
+                return combat_state == "Downtime" and Casting.OkayToBuff()
+            end,
+        },
+        {
             name = 'Emergency',
             state = 1,
             steps = 1,
@@ -399,13 +424,21 @@ local _ClassConfig = {
             end,
         },
         {
+            name = 'PetHealing',
+            state = 1,
+            steps = 1,
+            doFullRotation = true,
+            targetId = function(self) return mq.TLO.Me.Pet.ID() > 0 and { mq.TLO.Me.Pet.ID(), } or {} end,
+            cond = function(self, target) return (mq.TLO.Me.Pet.PctHPs() or 100) < Config:GetSetting('PetHealPct') end,
+        },
+        {
             name = 'Scent(Terris)',
             state = 1,
             steps = 1,
             load_cond = function() return Config:GetSetting('ScentDebuffUse') == 2 end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and not Casting.IAmFeigning() and Casting.OkayToDebuff()
+                return combat_state == "Combat" and not Casting.IAmFeigning() and Casting.OkayToDebuff() and Core.CombatActionsCheck()
             end,
         },
         { -- On Laz, this hits slightly different resists, and in different slots, it is a choice.
@@ -415,7 +448,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting('ScentDebuffUse') == 3 end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and not Casting.IAmFeigning() and Casting.OkayToDebuff()
+                return combat_state == "Combat" and not Casting.IAmFeigning() and Casting.OkayToDebuff() and Core.CombatActionsCheck()
             end,
         },
         { --Keep things from running
@@ -426,7 +459,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 if mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') then return false end
-                return combat_state == "Combat" and not Globals.AutoTargetIsNamed and Targeting.GetXTHaterCount() <= Config:GetSetting('SnareCount')
+                return combat_state == "Combat" and not Globals.AutoTargetIsNamed and Targeting.GetXTHaterCount() <= Config:GetSetting('SnareCount') and Core.CombatActionsCheck()
             end,
         },
         {
@@ -436,7 +469,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and
-                    Casting.BurnCheck() and not Casting.IAmFeigning()
+                    Casting.BurnCheck() and not Casting.IAmFeigning() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -446,7 +479,7 @@ local _ClassConfig = {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and not Casting.IAmFeigning() and Targeting.MobNotLowHP(Targeting.GetAutoTarget())
+                return combat_state == "Combat" and not Casting.IAmFeigning() and Targeting.MobNotLowHP(Targeting.GetAutoTarget()) and Core.CombatActionsCheck()
             end,
         },
         {
@@ -455,7 +488,7 @@ local _ClassConfig = {
             steps = 1,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and not Casting.IAmFeigning() and Targeting.MobHasLowHP(Targeting.GetAutoTarget())
+                return combat_state == "Combat" and not Casting.IAmFeigning() and Targeting.MobHasLowHP(Targeting.GetAutoTarget()) and Core.CombatActionsCheck()
             end,
         },
         {
@@ -467,14 +500,6 @@ local _ClassConfig = {
                 return combat_state == "Combat" and not Casting.IAmFeigning()
             end,
         },
-        {
-            name = 'PetHealing',
-            state = 1,
-            steps = 1,
-            doFullRotation = true,
-            targetId = function(self) return mq.TLO.Me.Pet.ID() > 0 and { mq.TLO.Me.Pet.ID(), } or {} end,
-            cond = function(self, target) return (mq.TLO.Me.Pet.PctHPs() or 100) < Config:GetSetting('PetHealPct') end,
-        },
     },
     ['Rotations']       = {
         ['Emergency']       = {
@@ -483,6 +508,7 @@ local _ClassConfig = {
                 type = "AA",
                 cond = function(self, aaName, target)
                     if not Config:GetSetting('AggroFeign') then return false end
+                    if Config:GetSetting('CharmOn') and mq.TLO.Me.Pet.ID() > 0 then return false end
                     return (Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 99) or (mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') and Targeting.IHaveAggro(100))
                 end,
             },
@@ -549,15 +575,6 @@ local _ClassConfig = {
         },
         ['CombatBuff']      = {
             {
-                name = "Summon Companion",
-                type = "AA",
-                cond = function(self, aaName, target)
-                    if mq.TLO.Me.Pet.ID() == 0 then return false end
-                    local pet = mq.TLO.Me.Pet
-                    return not pet.Combat() and (pet.Distance3D() or 0) > 200
-                end,
-            },
-            {
                 name = "Epic",
                 type = "Item",
                 cond = function(self, itemName)
@@ -570,7 +587,7 @@ local _ClassConfig = {
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoLich') end,
                 cond = function(self, spell)
-                    return mq.TLO.Me.PctHPs() > Config:GetSetting('StopLichHP') and mq.TLO.Me.PctMana() < Config:GetSetting('StartLichMana')
+                    return Casting.SelfBuffCheck(spell) and mq.TLO.Me.PctHPs() > Config:GetSetting('StopLichHP') and mq.TLO.Me.PctMana() <= Config:GetSetting('StartLichMana')
                 end,
             },
             {
@@ -588,9 +605,21 @@ local _ClassConfig = {
                 end,
             },
             {
-                name = "Artifact of the Red Demon",
+                name = "RedDemon",
                 type = "Item",
-                load_cond = function(self) return Config:GetSetting("UseDonorPet") and mq.TLO.FindItem("=Artifact of the Red Demon")() end,
+                load_cond = function(self) return Config:GetSetting("DonorPetChoice") == 2 and Core.GetResolvedActionMapItem('RedDemon') end,
+                cond = function(self, _) return mq.TLO.Me.Pet.ID() == 0 end,
+                post_activate = function(self, spell, success)
+                    if success and mq.TLO.Me.Pet.ID() > 0 then
+                        mq.delay(50) -- slight delay to prevent chat bug with command issue
+                        self:SetPetHold()
+                    end
+                end,
+            },
+            {
+                name = "Thulik",
+                type = "Item",
+                load_cond = function(self) return Config:GetSetting("DonorPetChoice") == 3 and Core.GetResolvedActionMapItem('Thulik') end,
                 cond = function(self, _) return mq.TLO.Me.Pet.ID() == 0 end,
                 post_activate = function(self, spell, success)
                     if success and mq.TLO.Me.Pet.ID() > 0 then
@@ -831,7 +860,7 @@ local _ClassConfig = {
                 load_cond = function(self) return Config:GetSetting('DoLich') end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
-                    return mq.TLO.Me.PctHPs() > Config:GetSetting('StopLichHP') and mq.TLO.Me.PctMana() < Config:GetSetting('StartLichMana')
+                    return Casting.SelfBuffCheck(spell) and mq.TLO.Me.PctHPs() > Config:GetSetting('StopLichHP') and mq.TLO.Me.PctMana() <= Config:GetSetting('StartLichMana')
                 end,
             },
             {
@@ -858,10 +887,22 @@ local _ClassConfig = {
         },
         ['PetSummon']       = {
             {
-                name = "Artifact of the Red Demon",
+                name = "RedDemon",
                 type = "Item",
-                load_cond = function(self) return Config:GetSetting("UseDonorPet") and mq.TLO.FindItem("=Artifact of the Red Demon")() end,
+                load_cond = function(self) return Config:GetSetting("DonorPetChoice") == 2 and Core.GetResolvedActionMapItem('RedDemon') end,
                 active_cond = function(self, _) return mq.TLO.Me.Pet.ID() > 0 end,
+                post_activate = function(self, spell, success)
+                    if success and mq.TLO.Me.Pet.ID() > 0 then
+                        mq.delay(50) -- slight delay to prevent chat bug with command issue
+                        self:SetPetHold()
+                    end
+                end,
+            },
+            {
+                name = "Thulik",
+                type = "Item",
+                load_cond = function(self) return Config:GetSetting("DonorPetChoice") == 3 and Core.GetResolvedActionMapItem('Thulik') end,
+                cond = function(self, _) return mq.TLO.Me.Pet.ID() == 0 end,
                 post_activate = function(self, spell, success)
                     if success and mq.TLO.Me.Pet.ID() > 0 then
                         mq.delay(50) -- slight delay to prevent chat bug with command issue
@@ -874,7 +915,11 @@ local _ClassConfig = {
                     return string.format("%sPetSpell", self.ClassConfig.DefaultConfig.PetType.ComboOptions[Config:GetSetting('PetType')])
                 end,
                 type = "Spell",
-                load_cond = function(self) return not Config:GetSetting("UseDonorPet") or not mq.TLO.FindItem("=Artifact of the Red Demon")() end,
+                load_cond = function(self)
+                    local settingValue = Config:GetSetting('DonorPetChoice')
+                    return settingValue == 1 or (settingValue == 2 and not Core.GetResolvedActionMapItem('RedDemon')) or
+                        (settingValue == 3 and not Core.GetResolvedActionMapItem('Thulik'))
+                end,
                 active_cond = function(self) return mq.TLO.Me.Pet.ID() > 0 end,
                 cond = function(self, spell)
                     return Casting.ReagentCheck(spell)
@@ -903,10 +948,13 @@ local _ClassConfig = {
                 end,
             },
         },
+        ['GroupBuff']       = { -- Added to anchor clickies to
+
+        },
     },
     ['Helpers']         = {
         DoRez = function(self, corpseId)
-            local rezStaff = self.ResolvedActionMap['RezStaff']
+            local rezStaff = Core.GetResolvedActionMapItem('RezStaff')
 
             if mq.TLO.Me.ItemReady(rezStaff)() then
                 if Casting.OkayToRez(corpseId) then
@@ -946,7 +994,7 @@ local _ClassConfig = {
             -- cond = function(self) return true end, --Code kept here for illustration, if there is no condition to check, this line is not required
             spells = {
                 { name = "PetHealSpell", cond = function(self) return Config:GetSetting('DoPetHealSpell') end, },
-                { name = "CharmSpell",   cond = function(self) return Config:GetSetting('CharmOn') end, },
+                { name = "CharmSpell",   cond = function(self, spell) return Config:GetSetting('CharmOn') and Core.IsSelectedCharmSpell(spell) end, },
                 { name = "SnareDot",     cond = function(self) return Config:GetSetting('DoSnare') and not Casting.CanUseAA("Encroaching Darkness") end, },
                 { name = "ScentDebuff",  cond = function(self) return Config:GetSetting('ScentDebuffUse') == 2 and not self.Helpers.GetScentItem end, },
                 { name = "ScentDebuff2", cond = function(self) return Config:GetSetting('ScentDebuffUse') == 3 end, },
@@ -992,20 +1040,24 @@ local _ClassConfig = {
             Tooltip = "Choose which pet you wish to summon. Please note that rogue pets have uneven spacing at lower levels.",
             Type = "Combo",
             ComboOptions = { 'War', 'Rog', },
-            Default = 1,
+            Default = function() return Core.GetResolvedActionMapItem('RogPetSpell') and 2 or 1 end,
             Min = 1,
             Max = 2,
             RequiresLoadoutChange = true,
         },
-        ['UseDonorPet']       = {
-            DisplayName = "Summon Red Demon",
+        ['DonorPetChoice']    = {
+            DisplayName = "Donor Pet Choice",
             Group = "Abilities",
             Header = "Pet",
             Category = "Pet Summoning",
             Index = 102,
-            Tooltip = "Use your Artifact of the Red Demon to summon the donor rogue skeleton pet.",
-            RequiresLoadoutChange = true, -- this is a load condition
-            Default = true,
+            Tooltip = "Select the donor pet to use instead of the normal pet (if any).",
+            Type = "Combo",
+            ComboOptions = { 'Disabled', 'Red Demon', 'Thulik', },
+            Default = 1,
+            Min = 1,
+            Max = 3,
+            RequiresLoadoutChange = true,
         },
         ['DoPetHealSpell']    = {
             DisplayName = "Pet Heal Spell",
