@@ -356,6 +356,20 @@ local _ClassConfig = {
             if usestate == 4 then return not inCombat end -- Out-of-Combat Only
             return false
         end,
+        AriaClickyChoice = function()
+            if not Config:GetSetting('UseAriaClickies') or Config:GetSetting('AriaChoice') == 1 then return "None" end
+            if mq.TLO.FindItem("=Ancient Artifact of Power")() and mq.TLO.Me.Level() >= 68 then
+                return "AncientArtifact"
+            elseif mq.TLO.FindItem("=Echo of Trusik Lute")() and mq.TLO.Me.Level() >= 65 then
+                return "EchoLute"
+            end
+            return "None"
+        end,
+        AriaClickyRefresh = function(self, itemName)
+            local clickySpell = Casting.GetClickySpell(itemName)
+            if not (clickySpell and clickySpell()) then return false end
+            return (mq.TLO.Me.Song(clickySpell.Name()).Duration.TotalSeconds() or 0) < 10
+        end,
         GetSongBuffer = function() --seconds of remaining duration at which a buff song is resung
             return Config:GetSetting('SongRefresh')
         end,
@@ -474,6 +488,7 @@ local _ClassConfig = {
             name = 'Melody',
             state = 1,
             steps = 1,
+            midSong = true,
             timer = 0,
             doFullRotation = true,
             blockMem = true,
@@ -652,7 +667,7 @@ local _ClassConfig = {
             {
                 name = "AreaAriaSong",
                 type = "Song",
-                load_cond = function(self) return Config:GetSetting('AriaChoice') == 2 end,
+                load_cond = function(self) return Config:GetSetting('AriaChoice') == 2 and self.Helpers.AriaClickyChoice() == "None" end,
                 cond = function(self, songSpell)
                     return self.Helpers.CheckSongStateUse(self, "UseAria") and self.Helpers.RefreshBuffSong(self, songSpell)
                 end,
@@ -660,9 +675,27 @@ local _ClassConfig = {
             {
                 name = "GroupAriaSong",
                 type = "Song",
-                load_cond = function(self) return Config:GetSetting('AriaChoice') == 3 end,
+                load_cond = function(self) return Config:GetSetting('AriaChoice') == 3 and self.Helpers.AriaClickyChoice() == "None" end,
                 cond = function(self, songSpell)
                     return self.Helpers.CheckSongStateUse(self, "UseAria") and self.Helpers.RefreshBuffSong(self, songSpell)
+                end,
+            },
+            {
+                name = "Ancient Artifact of Power",
+                type = "Item",
+                midSong = true,
+                load_cond = function(self) return self.Helpers.AriaClickyChoice() == "AncientArtifact" end,
+                cond = function(self, itemName)
+                    return self.Helpers.CheckSongStateUse(self, "UseAria") and self.Helpers.AriaClickyRefresh(self, itemName)
+                end,
+            },
+            {
+                name = "Echo of Trusik Lute",
+                type = "Item",
+                midSong = true,
+                load_cond = function(self) return self.Helpers.AriaClickyChoice() == "EchoLute" end,
+                cond = function(self, itemName)
+                    return self.Helpers.CheckSongStateUse(self, "UseAria") and self.Helpers.AriaClickyRefresh(self, itemName)
                 end,
             },
             {
@@ -898,8 +931,8 @@ local _ClassConfig = {
                 { name = "RunBuff",        cond = function(self) return Config:GetSetting('UseRunBuff') > 1 and not Casting.CanUseAA("Selo's Sonata") end, },
                 { name = "EndBreathSong",  cond = function(self) return Config:GetSetting('UseEndBreath') end, },
                 -- major group buffs
-                { name = "AreaAriaSong",   cond = function(self) return Config:GetSetting('AriaChoice') == 2 end, },
-                { name = "GroupAriaSong",  cond = function(self) return Config:GetSetting('AriaChoice') == 3 end, },
+                { name = "AreaAriaSong",   cond = function(self) return Config:GetSetting('AriaChoice') == 2 and self.Helpers.AriaClickyChoice() == "None" end, },
+                { name = "GroupAriaSong",  cond = function(self) return Config:GetSetting('AriaChoice') == 3 and self.Helpers.AriaClickyChoice() == "None" end, },
                 { name = "WarMarchSong",   cond = function(self) return Config:GetSetting('UseMarch') > 1 end, },
                 { name = "ProcSong",       cond = function(self) return Config:GetSetting('UseProcSong') > 1 end, },
                 { name = "ArcaneSong",     cond = function(self) return Config:GetSetting('UseArcane') > 1 end, },
@@ -1275,6 +1308,16 @@ local _ClassConfig = {
             Default = 3,
             Min = 1,
             Max = 4,
+            RequiresLoadoutChange = true,
+        },
+        ['UseAriaClickies'] = {
+            DisplayName = "Use Aria Clickies",
+            Group = "Abilities",
+            Header = "Buffs",
+            Category = "Group",
+            Index = 108,
+            Tooltip = "Use available Aria clickies (Such as Ancient Artifact of Power or Echo of Trusik Lute) instead of the song.",
+            Default = true,
             RequiresLoadoutChange = true,
         },
         ['UseMarch']        = {
