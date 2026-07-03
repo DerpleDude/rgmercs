@@ -1681,11 +1681,16 @@ local _ClassConfig = {
                     end
                 elseif (mq.TLO.Stick.StickTarget() or 0) ~= Globals.AutoTargetID or (mq.TLO.Stick.Status() or "off"):lower() == "off" then
                     Core.DoCmd('/squelch /face fast')
+                    -- DEPRECATED 7/26 - sunset 9/1/26. StickHow passthrough, mirroring DoStick.
                     local stickHow = Config:GetSetting('StickHow') or ""
                     if #stickHow > 0 then
                         Movement:DoStickCmd("%s", stickHow)
                     else
-                        Movement:DoStickCmd("%d id %d moveback uw", bowRange, Globals.AutoTargetID)
+                        local stickDist = Config:GetSetting('StickDistance') or ""
+                        if stickDist == "" then stickDist = tostring(bowRange) end
+                        local stickArgs = Config:GetSetting('StickArgs') or ""
+                        if stickArgs == "" then stickArgs = "moveback uw" end
+                        Movement:DoStickCmd("%s id %d %s", stickDist, Globals.AutoTargetID, stickArgs)
                     end
                 end
             else -- Loose: react to the game's own range messages, one-shot, no held position.

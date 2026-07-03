@@ -628,7 +628,8 @@ function OptionsUI:RenderCategorySettings(category)
                                 setting,
                                 id,
                                 settingDefaults.RequiresLoadoutChange or false,
-                                settingDefaults.ComboOptions or settingDefaults.Min, settingDefaults.Max, settingDefaults.Step or 1)
+                                settingDefaults.ComboOptions or settingDefaults.Min or (type(settingDefaults.Hint) == "function" and settingDefaults.Hint() or settingDefaults.Hint),
+                                settingDefaults.Max, settingDefaults.Step or 1)
                             new_loadout = new_loadout or loadout_change
                             any_pressed = any_pressed or pressed
 

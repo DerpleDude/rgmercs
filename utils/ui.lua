@@ -2849,6 +2849,32 @@ function Ui.MarqueeButton(text, height, width)
     return ImGui.IsItemClicked()
 end
 
+--- Draws grayed hint text over the last drawn (empty) input, scrolling it when too wide to fit.
+---@param id string Unique key for the scroll state.
+---@param text string Hint text to display.
+function Ui.MarqueeHint(id, text)
+    ---@diagnostic disable-next-line: undefined-field
+    local scale = ImGui.GetIO().FontGlobalScale
+    local draw_list = ImGui.GetWindowDrawList()
+    local rectMin = ImGui.GetItemRectMinVec()
+    local rectMax = ImGui.GetItemRectMaxVec()
+    local pad = ImGui.GetStyle().FramePadding.x
+    local width = rectMax.x - rectMin.x - pad * 2
+    local textSize = ImGui.CalcTextSizeVec(text)
+    local textY = rectMin.y + ((rectMax.y - rectMin.y) - ImGui.GetFontSize() * scale) * 0.5
+
+    local scrollX = 0
+    if textSize.x > width then
+        scrollX = (Ui.TempSettings.MarqueeScrollX["hint_" .. id] or 0) - Ui.GetDeltaTime() * 25.0 * scale
+        if scrollX < -textSize.x then scrollX = width end
+        Ui.TempSettings.MarqueeScrollX["hint_" .. id] = scrollX
+    end
+
+    ImGui.PushClipRect(ImVec2(rectMin.x + pad, rectMin.y), ImVec2(rectMax.x - pad, rectMax.y), true)
+    draw_list:AddText(ImVec2(rectMin.x + pad + scrollX, textY), IM_COL32(150, 150, 150, 255), text)
+    ImGui.PopClipRect()
+end
+
 --- Renders a typed config option widget (Combo, Toggle, Color, number, etc.).
 ---@param type string Widget type: "Combo", "Toggle", "Color", "number", "string",
 ---   "ClickyItem", "ClickyItemWithConditions", "Custom", "SpellSlot", "ImVec2".
@@ -2955,8 +2981,13 @@ function Ui.RenderOption(type, setting, id, requiresLoadoutChange, ...)
     elseif type == 'string' then -- display only
         ImGui.SetNextItemWidth(-1)
         setting, pressed = ImGui.InputText("##" .. id, setting)
+        if (setting or "") == "" and (args[1] or "") ~= "" and not ImGui.IsItemActive() then
+            Ui.MarqueeHint(id, args[1])
+        end
         any_pressed = any_pressed or (pressed or false)
-        Ui.Tooltip(setting)
+        if (setting or "") ~= "" then
+            Ui.Tooltip(setting)
+        end
     end
 
     return setting, new_loadout, any_pressed

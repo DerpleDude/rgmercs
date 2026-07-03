@@ -134,10 +134,10 @@ function Combat.EngageTarget(autoTargetId)
                     Movement:NavInCombat(autoTargetId, Targeting.GetTargetMaxRangeTo(target), false, false, true)
                 else
                     Logger.log_verbose("EngageTarget(): Target is in range moving to combat")
-                    if mq.TLO.Navigation.Active() then
+                    if mq.TLO.Navigation.Active() and Config:GetSetting('DoAutoNav') then
                         Movement:DoNav(false, "stop log=off")
                     end
-                    if mq.TLO.Stick.Status():lower() == "off" or (mq.TLO.Stick.StickTarget() or autoTargetId) ~= autoTargetId then
+                    if not mq.TLO.Navigation.Active() and (mq.TLO.Stick.Status():lower() == "off" or (mq.TLO.Stick.StickTarget() or autoTargetId) ~= autoTargetId) then
                         Movement:DoStick(autoTargetId)
                     end
                 end

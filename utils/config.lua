@@ -1041,29 +1041,37 @@ Config.DefaultConfig                                     = {
             Config:SetSetting('ManualMode', false, false, true)
         end,
     },
-    ['StickHow']                   = {
-        DisplayName = "Stick How",
+    ['StickDistance']              = {
+        DisplayName = "Stick Distance",
         Group = "Combat",
         Header = "Positioning",
         Category = "General Positioning",
         Index = 2,
-        Tooltip = "Custom arguments for /stick command, used in melee or ranged combat. Leave blank for default (varies on class).",
+        Tooltip = "Stick distance or percentage; leave blank to set it automatically by target size.",
         Default = "",
+        Hint = "Automatic: 10 / 15 / 20 by target size",
+        ConfigType = "Advanced",
+    },
+    ['StickArgs']                  = {
+        DisplayName = "Stick Arguments",
+        Group = "Combat",
+        Header = "Positioning",
+        Category = "General Positioning",
+        Index = 3,
+        Tooltip = "Custom /stick flags, not including distance; leave blank to use role-based defaults.",
+        Default = "",
+        Hint = function() return require('utils.movement').GetDefaultStickArgs() .. " (default)" end,
         ConfigType = "Advanced",
         FAQ = "What are the default stick settings?",
-        Answer = "   If the Stick How entry is left blank, we will use default stick settings as follows:\n" ..
-            "If MA: < 10 moveback* uw >\n" ..
-            "Others: < 10** behindonce moveback uw >\n" ..
-            "Ranged (Use Ranged Stick): < <bowrangesetting> moveback uw >\n\n" ..
-            "* - Optional moveback flag (if 'Moveback As Tank' is enabled).\n" ..
-            "** - On larger targets this value becomes 20.",
+        Answer = "Your current defaults are shown as hint text in the empty Stick Distance and Stick Arguments fields.\n" ..
+            "Ranged sticks (Use Ranged Stick) use these settings as well, but default their distance to Bow Range.",
     },
     ['BellyCastStick']             = {
         DisplayName = "Stick for Belly Cast",
         Group = "Combat",
         Header = "Positioning",
         Category = "General Positioning",
-        Index = 3,
+        Index = 4,
         Tooltip = "If Melee Combat is disabled, pin at 40 units on named with a dragon bodytype in case of possible bellycaster.",
         Default = false,
         ConfigType = "Advanced",
@@ -1073,7 +1081,7 @@ Config.DefaultConfig                                     = {
         Group = "Combat",
         Header = "Positioning",
         Category = "General Positioning",
-        Index = 4,
+        Index = 5,
         Tooltip = "Stand up if feigning at the start of combat.",
         Default = true,
         ConfigType = "Advanced",
@@ -1083,7 +1091,7 @@ Config.DefaultConfig                                     = {
         Group = "Combat",
         Header = "Positioning",
         Category = "General Positioning",
-        Index = 5,
+        Index = 6,
         Tooltip = "Attempt to adjust positioning if you receive a 'cannot see your target' message.",
         Default = true,
         ConfigType = "Advanced",
@@ -1096,7 +1104,7 @@ Config.DefaultConfig                                     = {
         Group = "Combat",
         Header = "Positioning",
         Category = "General Positioning",
-        Index = 6,
+        Index = 7,
         Tooltip = "Attempt to adjust positioning if you receive a 'too close to use a ranged weapon' message.",
         Default = true,
         ConfigType = "Advanced",
@@ -1109,7 +1117,7 @@ Config.DefaultConfig                                     = {
         Group = "Combat",
         Header = "Positioning",
         Category = "General Positioning",
-        Index = 7,
+        Index = 8,
         Tooltip = "Attempt to adjust positioning if you receive a 'too far away' or 'cant hit them from here' message.",
         Default = true,
         ConfigType = "Advanced",
@@ -1122,7 +1130,7 @@ Config.DefaultConfig                                     = {
         Group = "Combat",
         Header = "Positioning",
         Category = "General Positioning",
-        Index = 8,
+        Index = 9,
         Tooltip = "Enables RGMercs to issue Navigation Commands in Combat. Disable if you wish to manually control movement.",
         Default = true,
         ConfigType = "Advanced",
@@ -1135,7 +1143,7 @@ Config.DefaultConfig                                     = {
         Group = "Combat",
         Header = "Positioning",
         Category = "General Positioning",
-        Index = 8,
+        Index = 10,
         Tooltip = "Enables RGMercs to issue Stick Commands in Combat. Disable if you wish to manually control movement.",
         Default = true,
         ConfigType = "Advanced",
@@ -1148,7 +1156,7 @@ Config.DefaultConfig                                     = {
         Group = "Combat",
         Header = "Positioning",
         Category = "General Positioning",
-        Index = 9,
+        Index = 11,
         Tooltip =
         "This will disable all automated movement on your character but not using abilities.",
         Default = false,
@@ -1157,6 +1165,10 @@ Config.DefaultConfig                                     = {
 
             for _, setting in ipairs(settings) do
                 Config:SetSetting(setting, not newVal, false, true)
+            end
+
+            if newVal then
+                Config:SetSetting('ChaseOn', false, false, true)
             end
 
             Logger.log_info("Manual Mode has been " .. (newVal and "enabled" or "disabled"))
@@ -1170,7 +1182,7 @@ Config.DefaultConfig                                     = {
         Group = "Combat",
         Header = "Positioning",
         Category = "General Positioning",
-        Index = 10,
+        Index = 12,
         Tooltip = "Use summon and move AA to reposition your pet to avoid ripostes. (We will always summon a far out-of-range pet during combat if able).",
         Default = false,
     },
@@ -2814,6 +2826,13 @@ Config.DefaultConfig                                     = {
         Type = "Custom",
         Default = true,
     },
+    -- DEPRECATED 7/26 - sunset 9/1/26. Split into StickDistance/StickArgs (auto-migrated by Config:MigrateStickHow at load);
+    -- non-blank values set mid-session are honored verbatim by DoStick until sunset. DELETE at sunset with MigrateStickHow.
+    ['StickHow']                         = {
+        DisplayName = "Stick How",
+        Type = "Custom",
+        Default = "",
+    },
     ['FullUI']                           = {
         DisplayName = "Use Full UI",
         Group = "General",
@@ -2911,6 +2930,33 @@ function Config.GetConfigFileName(moduleName, returnExisting)
     return latest
 end
 
+-- DEPRECATED 7/26 - sunset 9/1/26. Splits legacy StickHow into StickDistance + StickArgs. DELETE at sunset.
+function Config:MigrateStickHow()
+    local stickHow = Config:GetSetting('StickHow') or ""
+    if stickHow == "" then return end
+
+    local distance = nil
+    local argTokens = {}
+    local lastToken = ""
+    for token in stickHow:gmatch("%S+") do
+        if not distance and lastToken:lower() ~= "id" and (token:match("^%d+$") or token:match("^%d+%%$")) then
+            distance = token
+        else
+            table.insert(argTokens, token)
+        end
+        lastToken = token
+    end
+
+    local migratedArgs = table.concat(argTokens, " ")
+    -- distance-only strings had no flags; bare uw keeps them positionally identical (blank would add role defaults)
+    if migratedArgs == "" and distance then migratedArgs = "uw" end
+
+    Config:SetSetting('StickDistance', distance or "")
+    Config:SetSetting('StickArgs', migratedArgs)
+    Config:SetSetting('StickHow', "")
+    Logger.log_info("\ayStick How has been split: Stick Distance = '\at%s\ay', Stick Arguments = '\at%s\ay'.", distance or "", migratedArgs)
+end
+
 function Config:LoadSettings()
     -- handle update to db before anything else.
     if not self:CharacterExistsInDb() then
@@ -2942,6 +2988,8 @@ function Config:LoadSettings()
     end
 
     Config:RegisterModuleSettings(coreModuleName, settings, Config.DefaultConfig, Config.FAQ, firstSaveRequired)
+
+    Config:MigrateStickHow()
 
     -- setup our script path for later usage since getting it kind of sucks, but only on the first run (personas)
     if Globals.ScriptDir == "" then
