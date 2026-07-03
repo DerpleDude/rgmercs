@@ -10,6 +10,7 @@ local Core            = require("utils.core")
 local Events          = require("utils.events")
 local Globals         = require('utils.globals')
 local Logger          = require("utils.logger")
+local Movement        = require("utils.movement")
 local Ui              = require('utils.ui')
 
 -- Server name formatted for LNS to recognize
@@ -91,6 +92,35 @@ Module.DefaultConfig   = {
 		Default = 300,
 		Min = 1,
 		Max = 20000,
+	},
+	['OpenChests'] = {
+		DisplayName = "Open Chests",
+		Group = "General",
+		Header = "Loot(Emu)",
+		Category = "LNS",
+		Index = 6,
+		Tooltip = "Target and open nearby treasure chests. (Added for EQ/Project Might)",
+		Default = function() return Core.OnMight() end,
+	},
+	['NavToChests'] = {
+		DisplayName = "Nav To Chests",
+		Group = "General",
+		Header = "Loot(Emu)",
+		Category = "LNS",
+		Index = 7,
+		Tooltip = "Navigate to treasure chests that are out of open range. (Added for EQ/Project Might)",
+		Default = function() return Core.OnMight() end,
+	},
+	['MaxChestNavDistance'] = {
+		DisplayName = "Max Chest Nav Dist",
+		Group = "General",
+		Header = "Loot(Emu)",
+		Category = "LNS",
+		Index = 8,
+		Tooltip = "Maximum path distance RGMercs will navigate to open a treasure chest. (Added for EQ/Project Might)",
+		Default = 100,
+		Min = 10,
+		Max = 500,
 	},
 	[string.format("%s_Popped", Module._name)] = {
 		DisplayName = Module._name .. " Popped",
@@ -202,6 +232,62 @@ function Module:CheckChaseTargetInRange()
 	return true
 end
 
+function Module:OpenChest(chestId, chestName)
+	Logger.log_debug("\ay[LOOT]: \agOpening chest: \at%s", chestName)
+	mq.TLO.Spawn(chestId).DoTarget()
+	mq.delay(100, function() return mq.TLO.Target.ID() == chestId end)
+	if mq.TLO.Target.ID() == chestId then
+		Core.DoCmd("/open")
+		mq.delay(1000, function() return (mq.TLO.Spawn(chestId).Type() or "") == "Corpse" or not Core.OkayToNotHeal() end)
+	end
+end
+
+function Module:NavToChest(chestId, chestName)
+	Logger.log_debug("\ay[LOOT]: \agNavigating to chest: \at%s", chestName)
+	Movement:DoNav(true, "id %d distance=15 log=off", chestId)
+	mq.delay(1000, function() return mq.TLO.Navigation.Active() end)
+
+	local maxWait = 10000
+	while mq.TLO.Navigation.Active() and maxWait > 0 do
+		if (Combat.GetCombatState() == "Combat" and not Config:GetSetting('CombatLooting'))
+			or not Core.CombatActionsCheck() or not Core.OkayToNotHeal() then
+			Movement:DoNav(true, "stop log=off")
+			return false
+		end
+		mq.delay(100)
+		maxWait = maxWait - 100
+		mq.doevents()
+		Events.DoEvents()
+	end
+
+	if mq.TLO.Navigation.Active() then Movement:DoNav(true, "stop log=off") end
+	return (mq.TLO.Spawn(chestId).Distance3D() or 999) <= 20
+end
+
+function Module:OpenChests()
+	local navEnabled = Config:GetSetting('NavToChests')
+	local maxNav = Config:GetSetting('MaxChestNavDistance') or 100
+	local chestSearch = string.format("npc treasure radius %d", navEnabled and maxNav or 20)
+
+	for i = 1, mq.TLO.SpawnCount(chestSearch)() do
+		local chest = mq.TLO.NearestSpawn(i, chestSearch)
+		local chestId = chest.ID() or 0
+		if chestId > 0 and chest.Class() == "Destructible Object"
+			and (chest.CleanName() or ""):lower():find("treasure chest", 1, true) then
+			if (chest.Distance3D() or 999) <= 20 then
+				self:OpenChest(chestId, chest.DisplayName())
+				return
+			elseif navEnabled and mq.TLO.Navigation.PathExists("id " .. chestId)()
+				and (mq.TLO.Navigation.PathLength("id " .. chestId)() or 99999) <= maxNav then
+				if self:NavToChest(chestId, chest.DisplayName()) then
+					self:OpenChest(chestId, chest.DisplayName())
+				end
+				return
+			end
+		end
+	end
+end
+
 function Module:GiveTime()
 	local combat_state = Combat.GetCachedCombatState()
 
@@ -240,6 +326,10 @@ function Module:GiveTime()
 	if self.Actor == nil then self:LootMessageHandler() end
 
 	local settled = Config:GetSetting('CombatLooting') or Combat.CombatSettled(1000)
+
+	if Config:GetSetting('OpenChests') and (combat_state ~= "Combat" or Config:GetSetting('CombatLooting')) and settled then
+		self:OpenChests()
+	end
 
 	-- send actors message to loot
 	if (combat_state ~= "Combat" or Config:GetSetting('CombatLooting')) and deadCount > 0 then
