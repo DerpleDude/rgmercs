@@ -138,7 +138,7 @@ function Rotation.ExecEntry(caller, entry, targetId, resolvedActionMap, bAllowMe
 
         if Casting.ItemReady(itemName) then
             Rotation.RunPreActivate(caller, resolvedActionMap, entry)
-            ret, isGroup = Casting.UseItem(itemName, entry.no_target == true and nil or targetId)
+            ret, isGroup = Casting.UseItem(itemName, entry.no_target == true and nil or targetId, nil, nil, not entry.mustWait)
         end
         Logger.log_verbose("Trying to use item %s :: %s", itemName, ret and "\agSuccess" or "\arFailed!")
     end
@@ -151,7 +151,7 @@ function Rotation.ExecEntry(caller, entry, targetId, resolvedActionMap, bAllowMe
 
         if Casting.ItemReady(itemName) then
             Rotation.RunPreActivate(caller, resolvedActionMap, entry)
-            ret, isGroup = Casting.UseItem(itemName, entry.no_target == true and nil or targetId)
+            ret, isGroup = Casting.UseItem(itemName, entry.no_target == true and nil or targetId, nil, nil, not entry.mustWait)
         end
         Logger.log_verbose("Trying to use clickyitem %s :: %s", itemName, ret and "\agSuccess" or "\arFailed!")
     end
@@ -167,7 +167,7 @@ function Rotation.ExecEntry(caller, entry, targetId, resolvedActionMap, bAllowMe
 
         if Casting.SpellReady(spell, bAllowMem) then
             Rotation.RunPreActivate(caller, resolvedActionMap, entry)
-            ret, isGroup = Casting.UseSpell(spell.RankName(), targetId, bAllowMem, entry.allowDead, entry.retries, entry.noWait)
+            ret, isGroup = Casting.UseSpell(spell.RankName(), targetId, bAllowMem, entry.allowDead, entry.retries)
         end
         Logger.log_verbose("(Spell) Trying to use %s - %s :: %s", entry.name, spell.RankName(), ret and "\agSuccess" or "\arFailed!")
     end
@@ -191,7 +191,7 @@ function Rotation.ExecEntry(caller, entry, targetId, resolvedActionMap, bAllowMe
 
         if Casting.DiscReady(discSpell) then
             Rotation.RunPreActivate(caller, resolvedActionMap, entry)
-            ret, isGroup = Casting.UseDisc(discSpell, targetId, entry.noWait)
+            ret, isGroup = Casting.UseDisc(discSpell, targetId, not entry.mustWait)
         end
         Logger.log_verbose("(Disc) Trying to use %s - %s :: %s", entry.name, discSpell.RankName(), ret and "\agSuccess" or "\arFailed!")
     end
@@ -203,7 +203,7 @@ function Rotation.ExecEntry(caller, entry, targetId, resolvedActionMap, bAllowMe
 
         if Casting.AAReady(aaName) then
             Rotation.RunPreActivate(caller, resolvedActionMap, entry)
-            ret, isGroup = Casting.UseAA(aaName, targetId, entry.allowDead, entry.retries, entry.noWait)
+            ret, isGroup = Casting.UseAA(aaName, targetId, entry.allowDead, entry.retries, not entry.mustWait)
         end
         Logger.log_verbose("(AA) Trying to use %s :: %s", aaName, ret and "\agSuccess" or "\arFailed!")
     end

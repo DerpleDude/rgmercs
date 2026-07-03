@@ -1202,6 +1202,10 @@ function Module:LoadSettings()
                 clicky.skipTriggerCheck = false
                 settingsChanged = true
             end
+            if clicky.mustWait == nil then
+                clicky.mustWait = false
+                settingsChanged = true
+            end
             settingsChanged = self:ValidateClickyRotationSettings(clicky) or settingsChanged
         end
 
@@ -1475,11 +1479,13 @@ end
 
 function Module:RenderClickyToggles(clicky, clickyIdx)
     local isRotationTarget = clicky.target == "Rotation Target"
-    if ImGui.BeginTable("##clicky_toggles_table_" .. clickyIdx, 4, bit32.bor(ImGuiTableFlags.None)) then
+    if ImGui.BeginTable("##clicky_toggles_table_" .. clickyIdx, 6, bit32.bor(ImGuiTableFlags.None)) then
         ImGui.TableSetupColumn("Key1", ImGuiTableColumnFlags.WidthFixed, 140)
         ImGui.TableSetupColumn("Value1", ImGuiTableColumnFlags.WidthFixed, 40)
         ImGui.TableSetupColumn("Key2", ImGuiTableColumnFlags.WidthFixed, 140)
-        ImGui.TableSetupColumn("Value2", ImGuiTableColumnFlags.WidthStretch, 0)
+        ImGui.TableSetupColumn("Value2", ImGuiTableColumnFlags.WidthFixed, 40)
+        ImGui.TableSetupColumn("Key3", ImGuiTableColumnFlags.WidthFixed, 140)
+        ImGui.TableSetupColumn("Value3", ImGuiTableColumnFlags.WidthStretch, 0)
 
         ImGui.TableNextColumn()
         ImGui.AlignTextToFramePadding()
@@ -1514,6 +1520,20 @@ function Module:RenderClickyToggles(clicky, clickyIdx)
             Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
         end
         Ui.Tooltip("Only check the clicky buff for stacking, ignoring any secondary spell effects triggered by the clicky spell.")
+
+        ImGui.TableNextColumn()
+        ImGui.AlignTextToFramePadding()
+        Ui.RenderText("Confirm Cast")
+        ImGui.TableNextColumn()
+        ImGui.BeginGroup()
+        local newMustWait, mustWaitClicked = Ui.RenderOptionToggle("##clicky_must_wait_" .. clickyIdx, "",
+            clicky.mustWait or false)
+        ImGui.EndGroup()
+        if mustWaitClicked then
+            clicky.mustWait = newMustWait
+            Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
+        end
+        Ui.Tooltip("Wait and confirm that item use has started by checking that it has gone on cooldown or that a cast success is reported. Generally not needed.")
 
         ImGui.EndTable()
     end
@@ -2139,7 +2159,7 @@ function Module:GiveTime()
 
                             if buffCheckPassed and distanceCheckPassed and readyCheckPassed and elementCheckPassed then
                                 Logger.log_verbose("\ayClicky: \awItem \am%s\aw Clicky Spell: \at%s\ag!", item.Name(), item.Clicky.Spell.RankName.Name())
-                                Casting.UseItem(item.Name(), targetId)
+                                Casting.UseItem(item.Name(), targetId, nil, nil, not clicky.mustWait)
                                 self.TempSettings.ClickyState[clicky.itemName].lastUsed = Globals.GetTimeSeconds()
                                 clickiesUsedThisCycle = clickiesUsedThisCycle + 1
                                 if maxClickiesPerCycle > 0 and clickiesUsedThisCycle >= maxClickiesPerCycle then

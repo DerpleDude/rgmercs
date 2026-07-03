@@ -813,7 +813,6 @@ local _ClassConfig = {
                 name = "Selo's Sonata",
                 type = "AA",
                 midSong = true,
-                noWait = true,
                 cond = function(self, aaName, target)
                     local combatState = Combat.GetCachedCombatState()
                     -- if in combat, check self, out of combat, also check others

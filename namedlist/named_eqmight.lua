@@ -225,6 +225,7 @@ return {
         "The Fabled Master of Spite",
     },
     ["hateplaneb"] = {
+        "A timeless golem of spite",
         { name = "The Timeless Deathrot Knight", elementalImmunities = { Magic = true, }, },
         "The Ultrafabled Master of Spite",
         { name = "Timeless Arcanist V`Gimis",    statusImmunities = { Slow = true, }, },

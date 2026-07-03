@@ -1469,7 +1469,6 @@ local _ClassConfig = {
                 name = "Selo's Sonata",
                 type = "AA",
                 midSong = true,
-                noWait = true,
                 cond = function(self, aaName, target)
                     -- Selo AA triggers Accelerando or Accelerato depending on rank.
                     local aaBuff = mq.TLO.Me.AltAbility(aaName).Spell.Trigger(1)() or ""

@@ -1757,7 +1757,7 @@ end
 --- @param retryCount number? The number of times to retry casting the spell if it fails.
 --- @return boolean success Returns true if the spell was successfully cast, false otherwise.
 --- @return boolean|nil isGroup Returns true if the spell is a group-affecting target type.
-function Casting.UseSpell(spellName, targetId, bAllowMem, bAllowDead, retryCount, noWait)
+function Casting.UseSpell(spellName, targetId, bAllowMem, bAllowDead, retryCount)
     local me = mq.TLO.Me
     if not targetId then targetId = mq.TLO.Target.ID() end
     -- Immediately send bards to the song handler.
@@ -1881,7 +1881,6 @@ function Casting.UseSpell(spellName, targetId, bAllowMem, bAllowDead, retryCount
         spellRange = spellRange,
         castTime = castTime,
         retryCount = retryCount,
-        noWait = noWait,
     })
     if Globals.StopCast then return false end
 
@@ -2092,7 +2091,7 @@ end
 --- @param targetId? number The ID of the target on which to use the discipline spell.
 --- @return boolean success True if we were able to fire the Disc, false otherwise.
 --- @return boolean|nil isGroup True if the disc is a group-affecting target type.
-function Casting.UseDisc(discSpell, targetId, noWait)
+function Casting.UseDisc(discSpell, targetId, fireAndForget)
     local me = mq.TLO.Me
     if not targetId then targetId = mq.TLO.Target.ID() end
 
@@ -2155,7 +2154,7 @@ function Casting.UseDisc(discSpell, targetId, noWait)
         spellRange = spellRange,
         castTime = castTime,
         retryCount = 0,
-        noWait = noWait,
+        fireAndForget = fireAndForget,
     })
     if Globals.StopCast then return false end
 
@@ -2217,8 +2216,7 @@ function Casting.RunCastLoop(opts)
 
     Casting.SetLastCastResult(Globals.Constants.CastResults.CAST_RESULT_NONE)
 
-    -- Instants that opt out (noWait) or are woven mid-song fire and assume success; anything else confirms via the loop below.
-    if castTime == 0 and (opts.noWait or mq.TLO.Window("CastingWindow").Open() or mq.TLO.Me.Casting()) then
+    if castTime == 0 and not Casting.IsActiveDisc(actionName) and (opts.fireAndForget or mq.TLO.Window("CastingWindow").Open() or mq.TLO.Me.Casting()) then
         Core.DoCmd(cmd)
         Casting.SetLastCastResult(Globals.Constants.CastResults.CAST_SUCCESS)
         return
@@ -2230,9 +2228,18 @@ function Casting.RunCastLoop(opts)
 
     repeat
         Logger.log_verbose("\ayRunCastLoop(): Attempting to cast: %s", actionName)
+        -- Active discs hold for discs to become active; other instants only hold until they go on cooldown.
+        local isActiveDisc = castTime == 0 and Casting.IsActiveDisc(actionName)
+        local confirmOnDisc = isActiveDisc and not mq.TLO.Me.ActiveDisc.ID()
         Core.DoCmd(cmd)
         Logger.log_verbose("\ayRunCastLoop(): Waiting to start cast: %s (delay=%dms)", actionName, delay)
         mq.delay(delay, function()
+            if castTime == 0 then mq.doevents('Success1') end -- check for cast message on items (it seems to be sent from the server, not client/instant like spells)
+            if isActiveDisc then
+                if confirmOnDisc and (mq.TLO.Me.ActiveDisc.ID() or 0) > 0 then return true end
+            elseif castTime == 0 and not readyCheck() then
+                return true
+            end
             return mq.TLO.Me.Casting() ~= nil
                 or Globals.Constants.CastCompleted:contains(Casting.GetLastCastResultName())
         end)
@@ -2263,7 +2270,7 @@ end
 --- @param retryCount number? The number of times to retry if the cast fails.
 --- @return boolean success True if the AA ability was successfully used, false otherwise.
 --- @return boolean|nil isGroup True if the AA is a group-affecting target type.
-function Casting.UseAA(aaName, targetId, bAllowDead, retryCount, noWait)
+function Casting.UseAA(aaName, targetId, bAllowDead, retryCount, fireAndForget)
     local me = mq.TLO.Me
     if not targetId then targetId = mq.TLO.Target.ID() end
 
@@ -2345,7 +2352,7 @@ function Casting.UseAA(aaName, targetId, bAllowDead, retryCount, noWait)
         spellRange = spellRange,
         castTime = castTime,
         retryCount = retryCount,
-        noWait = noWait,
+        fireAndForget = fireAndForget,
     })
     if Globals.StopCast then return false end
 
@@ -2375,7 +2382,7 @@ end
 --- @param retryCount number? The number of times to retry if the use fails.
 --- @return boolean success True if the item was successfully used, false otherwise.
 --- @return boolean|nil isGroup True if the item's spell is a group-affecting target type.
-function Casting.UseItem(itemName, targetId, bAllowDead, retryCount)
+function Casting.UseItem(itemName, targetId, bAllowDead, retryCount, fireAndForget)
     local me = mq.TLO.Me
 
     if not itemName then
@@ -2461,6 +2468,7 @@ function Casting.UseItem(itemName, targetId, bAllowDead, retryCount)
         spellRange = spellRange,
         castTime = castTime,
         retryCount = retryCount,
+        fireAndForget = fireAndForget,
     })
     if Globals.StopCast then return false end
 
