@@ -27,6 +27,18 @@ local _ClassConfig = {
         IsRezing = function() return Casting.CanUseAA("Convergence") and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
         CanCharm = function() return true end,
     },
+    ['Rez']             = {
+        ['Combat'] = {
+            { type = "AA", name = "Convergence", cond = function(self, spell, target)
+                return Casting.ReagentCheck(mq.TLO.Me.AltAbility("Convergence").Spell)
+            end, },
+        },
+        ['Downtime'] = {
+            { type = "AA", name = "Convergence", cond = function(self, spell, target)
+                return Casting.ReagentCheck(mq.TLO.Me.AltAbility("Convergence").Spell)
+            end, },
+        },
+    },
     ['PetPosition']     = {
         SummonAA   = function() return Casting.CanUseAA("Summon Companion") and "Summon Companion" end,
         RelocateAA = function()
@@ -1482,14 +1494,6 @@ local _ClassConfig = {
                 Casting.UseSpell(lichSpell.RankName.Name(), mq.TLO.Me.ID(), false)
             end
         end,
-
-        DoRez = function(self, corpseId)
-            if Config:GetSetting('DoBattleRez') or mq.TLO.Me.CombatState():lower() ~= "combat" then
-                if Casting.AAReady("Convergence") and Casting.ReagentCheck(mq.TLO.Me.AltAbility("Convergence").Spell) then
-                    return Casting.OkayToRez(corpseId) and Casting.UseAA("Convergence", corpseId, true, 1)
-                end
-            end
-        end,
     },
     ['SpellList']       = {
         {
@@ -1575,15 +1579,6 @@ local _ClassConfig = {
             Default = 80,
             Min = 1,
             Max = 99,
-        },
-        ['BattleRez']         = {
-            DisplayName = "Battle Rez",
-            Group = "Abilities",
-            Header = "Recovery",
-            Category = "Rez",
-            Tooltip = "Do Rezes during combat.",
-            RequiresLoadoutChange = true,
-            Default = true,
         },
         ['DoLifeBurn']        = {
             DisplayName = "Use Life Burn",

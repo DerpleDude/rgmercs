@@ -10,6 +10,7 @@ local Comms       = require("utils.comms")
 local Config      = require('utils.config')
 local Core        = require("utils.core")
 local DanNet      = require('lib.dannet.helpers')
+local Entries     = require("utils.entries")
 local Events      = require("utils.events")
 local Globals     = require('utils.globals')
 local Logger      = require("utils.logger")
@@ -37,8 +38,6 @@ Module.CurrentRotation                       = { name = "None", state = 0, }
 Module.ClassConfig                           = nil
 
 Module.Constants                             = {}
-Module.Constants.RezSearchGroup              = "pccorpse group radius 100 zradius 50"
-Module.Constants.RezSearchOutOfGroup         = "pccorpse radius 100 zradius 50"
 
 -- Track the state of rotations between frames
 Module.TempSettings.CurrentRotationStateId   = 0
@@ -49,6 +48,7 @@ Module.TempSettings.RotationTable            = {}
 Module.TempSettings.HealRotationTable        = {}
 Module.TempSettings.RotationTimers           = {}
 Module.TempSettings.RezTimers                = {}
+Module.TempSettings.RezAbilities             = nil
 Module.TempSettings.CureCheckTimer           = Globals.GetTimeSeconds() -- set this out a bit so we have time to get actor data.
 Module.TempSettings.ShowFailedSpells         = false
 Module.TempSettings.ResolvingActions         = true
@@ -59,7 +59,6 @@ Module.TempSettings.LastFastPathTime         = 0
 Module.TempSettings.CombatModeChangeTime     = 0
 Module.TempSettings.MissingSpells            = {}
 Module.TempSettings.MissingSpellsHighestOnly = true
-Module.TempSettings.CorpsesAlreadyRezzed     = {}
 Module.TempSettings.QueuedAbilities          = {}
 Module.TempSettings.CureCoroutines           = {}
 Module.TempSettings.NeedCuresList            = {}
@@ -114,6 +113,106 @@ Module.FAQ                                   = {
 }
 
 Module.CommandHandlers                       = {
+    enablerezentry = {
+        usage = "/rgl enablerezentry \"<Name>\"",
+        about = "Enables a rez ability entry by name.",
+        handler = function(self, name)
+            local enabled = Config:GetSetting('EnabledRezEntries') or {}
+            for _, phase in ipairs({ "Combat", "Downtime", }) do
+                enabled[phase] = enabled[phase] or {}
+                enabled[phase][name] = true
+            end
+            Config:SetSetting('EnabledRezEntries', enabled)
+            return true
+        end,
+    },
+    disablerezentry = {
+        usage = "/rgl disablerezentry \"<Name>\"",
+        about = "Disables a rez ability entry by name.",
+        handler = function(self, name)
+            local enabled = Config:GetSetting('EnabledRezEntries') or {}
+            for _, phase in ipairs({ "Combat", "Downtime", }) do
+                enabled[phase] = enabled[phase] or {}
+                enabled[phase][name] = false
+            end
+            Config:SetSetting('EnabledRezEntries', enabled)
+            return true
+        end,
+    },
+    enablecureentry = {
+        usage = "/rgl enablecureentry \"<Name>\"",
+        about = "Enables a cure ability entry by name.",
+        handler = function(self, name)
+            local enabled = Config:GetSetting('EnabledCureEntries') or {}
+            for _, bucket in ipairs({ "DetDispel", "Poison", "Disease", "Curse", "Corruption", }) do
+                enabled[bucket] = enabled[bucket] or {}
+                enabled[bucket][name] = true
+            end
+            Config:SetSetting('EnabledCureEntries', enabled)
+            return true
+        end,
+    },
+    disablecureentry = {
+        usage = "/rgl disablecureentry \"<Name>\"",
+        about = "Disables a cure ability entry by name.",
+        handler = function(self, name)
+            local enabled = Config:GetSetting('EnabledCureEntries') or {}
+            for _, bucket in ipairs({ "DetDispel", "Poison", "Disease", "Curse", "Corruption", }) do
+                enabled[bucket] = enabled[bucket] or {}
+                enabled[bucket][name] = false
+            end
+            Config:SetSetting('EnabledCureEntries', enabled)
+            return true
+        end,
+    },
+    cureallow = {
+        usage = "/rgl cureallow \"<effect name>\"",
+        about = "Adds <effect name> to the Cure Allow List.",
+        handler = function(self, name)
+            if not name then
+                Logger.log_error("/rgl cureallow - no effect name provided.")
+                return true
+            end
+            Config:ZoneListAdd(name, self:ActiveCureList('CureAllowList'))
+            return true
+        end,
+    },
+    curedeny = {
+        usage = "/rgl curedeny \"<effect name>\"",
+        about = "Adds <effect name> to the Cure Deny List.",
+        handler = function(self, name)
+            if not name then
+                Logger.log_error("/rgl curedeny - no effect name provided.")
+                return true
+            end
+            Config:ZoneListAdd(name, self:ActiveCureList('CureDenyList'))
+            return true
+        end,
+    },
+    cureallowrm = {
+        usage = "/rgl cureallowrm \"<effect name>\" or <List#>",
+        about = "Removes <effect name> or <List#> from the Cure Allow List.",
+        handler = function(self, arg1)
+            if not arg1 then
+                Logger.log_error("/rgl cureallowrm - no argument provided.")
+                return true
+            end
+            Config:ZoneListDelete(arg1, self:ActiveCureList('CureAllowList'))
+            return true
+        end,
+    },
+    curedenyrm = {
+        usage = "/rgl curedenyrm \"<effect name>\" or <List#>",
+        about = "Removes <effect name> or <List#> from the Cure Deny List.",
+        handler = function(self, arg1)
+            if not arg1 then
+                Logger.log_error("/rgl curedenyrm - no argument provided.")
+                return true
+            end
+            Config:ZoneListDelete(arg1, self:ActiveCureList('CureDenyList'))
+            return true
+        end,
+    },
     copy = {
         usage = "/rgl copy <config|guide>",
         about =
@@ -360,6 +459,18 @@ function Module:LoadSettings()
 
         self.ClassConfig.DefaultConfig['RotationEntryOrder'] = {
             DisplayName = "RotationEntryOrder",
+            Type = "Custom",
+            Default = {},
+        }
+
+        self.ClassConfig.DefaultConfig['EnabledRezEntries'] = {
+            DisplayName = "EnabledRezEntries",
+            Type = "Custom",
+            Default = {},
+        }
+
+        self.ClassConfig.DefaultConfig['EnabledCureEntries'] = {
+            DisplayName = "EnabledCureEntries",
             Type = "Custom",
             Default = {},
         }
@@ -797,7 +908,110 @@ function Module:Render()
                 ImGui.Unindent()
             end
         end
+
+        if not self.TempSettings.ResolvingActions and self.ClassConfig and self.ClassConfig.Rez then
+            if ImGui.CollapsingHeader("Rez Abilities") then
+                ImGui.Indent()
+                local rezAbilities = self:GetRezAbilities()
+                if rezAbilities then
+                    local enabled = Config:GetSetting('EnabledRezEntries') or {}
+                    local changed = false
+                    for _, phase in ipairs({ "Downtime", "Combat", }) do
+                        local list = rezAbilities[phase]
+                        if list and #list > 0 then
+                            ImGui.Text(phase)
+                            local resolvedMap = {}
+                            for _, entry in ipairs(list) do
+                                resolvedMap[entry.name] = self:GetResolvedActionMapItem(entry.name)
+                            end
+                            enabled[phase] = enabled[phase] or {}
+                            local _, newEnabled, entriesChanged, _, resetRequested = Ui.RenderRotationTable("Rez" .. phase, list, resolvedMap, 0, false, enabled[phase], true, true)
+                            enabled[phase] = newEnabled
+                            if entriesChanged then changed = true end
+                            if resetRequested then self:RebuildRezAbilities() end
+                        end
+                    end
+                    if changed then Config:SetSetting('EnabledRezEntries', enabled) end
+                end
+                ImGui.Unindent()
+            end
+        end
+
+        if not self.TempSettings.ResolvingActions and self.ClassConfig and self.ClassConfig.Cure then
+            if ImGui.CollapsingHeader("Cure Abilities") then
+                ImGui.Indent()
+                local cureAbilities = self:GetCureAbilities()
+                if cureAbilities then
+                    local enabled = Config:GetSetting('EnabledCureEntries') or {}
+                    local changed = false
+                    for _, bucket in ipairs({ "DetDispel", "Poison", "Disease", "Curse", "Corruption", }) do
+                        local list = cureAbilities[bucket]
+                        if list and #list > 0 then
+                            ImGui.Text(bucket == "DetDispel" and "Detrimental Dispels" or bucket)
+                            local resolvedMap = {}
+                            for _, entry in ipairs(list) do
+                                resolvedMap[entry.name] = self:GetResolvedActionMapItem(entry.name)
+                            end
+                            enabled[bucket] = enabled[bucket] or {}
+                            local _, newEnabled, entriesChanged, _, resetRequested = Ui.RenderRotationTable("Cure" .. bucket, list, resolvedMap, 0, false, enabled[bucket], true,
+                                true)
+                            enabled[bucket] = newEnabled
+                            if entriesChanged then changed = true end
+                            if resetRequested then self:RebuildCureAbilities() end
+                        end
+                    end
+                    if changed then Config:SetSetting('EnabledCureEntries', enabled) end
+                end
+                self:RenderCureLists()
+                ImGui.Unindent()
+            end
+        end
     end
+end
+
+-- text-entry editor for a zone-scoped cure name list (allow/deny); entries are typed since a buff can't be targeted
+function Module:RenderCureList(displayName, settingName)
+    self.TempSettings.CureListInput = self.TempSettings.CureListInput or {}
+    ImGui.Text(displayName)
+    local buffer = ImGui.InputText("##cure_input_" .. settingName, self.TempSettings.CureListInput[settingName] or "")
+    self.TempSettings.CureListInput[settingName] = buffer
+    ImGui.SameLine()
+    ImGui.BeginDisabled(#buffer == 0)
+    if ImGui.SmallButton("Add##cure_add_" .. settingName) then
+        Config:ZoneListAdd(buffer, self:ActiveCureList(settingName))
+        self.TempSettings.CureListInput[settingName] = ""
+    end
+    ImGui.EndDisabled()
+
+    if ImGui.BeginTable(settingName, 3, bit32.bor(ImGuiTableFlags.Borders)) then
+        ImGui.TableSetupColumn('Id', ImGuiTableColumnFlags.WidthFixed, 40.0)
+        ImGui.TableSetupColumn('Effect', ImGuiTableColumnFlags.WidthStretch, 150.0)
+        ImGui.TableSetupColumn('Controls', ImGuiTableColumnFlags.WidthFixed, 60.0)
+        ImGui.TableHeadersRow()
+        for idx, effectName in ipairs(Config:GetZoneList(self:ActiveCureList(settingName))) do
+            ImGui.TableNextColumn(); ImGui.Text(tostring(idx))
+            ImGui.TableNextColumn(); ImGui.Text(effectName)
+            ImGui.TableNextColumn()
+            if ImGui.SmallButton(Icons.FA_TRASH .. "##cure_del_" .. settingName .. tostring(idx)) then
+                Config:ZoneListDelete(idx, self:ActiveCureList(settingName))
+            end
+        end
+        ImGui.EndTable()
+    end
+end
+
+-- shared/individual toggle plus the allow/deny cure list editors
+function Module:RenderCureLists()
+    ImGui.NewLine()
+    ImGui.Separator()
+    local useShared = Config:GetSetting('UseSharedCureLists')
+    local newUseShared = ImGui.Checkbox("Use Shared Cure Lists", useShared)
+    Ui.Tooltip("On: shares cure lists with all RGMercs peers on this machine.\nOff: this character uses its own lists.")
+    if newUseShared ~= useShared then
+        Config:SetSetting('UseSharedCureLists', newUseShared)
+    end
+    self:RenderCureList("Allow List", "CureAllowList")
+    self:RenderCureList("Deny List", "CureDenyList")
 end
 
 function Module:ResetRotation()
@@ -1166,112 +1380,6 @@ function Module:LoadConditionPass(entry)
     return not entry.load_cond or Core.SafeCallFunc("CheckLoadCondition", entry.load_cond, self)
 end
 
-function Module:SelfCheckAndRez(combat_state)
-    if combat_state == "Downtime" then -- don't try to rez ourselves in combat
-        -- we are always in zone with ourself, I would hope
-        if not Config:GetSetting('RezInZonePC') then
-            Logger.log_verbose("\atSelfCheckAndRez(): We are configured to only rez out-of-zone PCs, no need to check for our own corpse.")
-            return
-        end
-
-        local rezSearch = string.format("pccorpse %s' radius 100 zradius 50", mq.TLO.Me.DisplayName()) -- use ' to prevent partial name matches (foo's corpse vs foobar's corpse)
-        local rezCount = mq.TLO.SpawnCount(rezSearch)()
-
-        for i = 1, rezCount do
-            Logger.log_debug("\atSelfCheckAndRez(): Looking for corpse #%d", i)
-            local rezSpawn = mq.TLO.NearestSpawn(i, rezSearch)
-
-            if rezSpawn() then
-                Logger.log_debug("\atSelfCheckAndRez(): Found corpse of %s :: %s", rezSpawn.CleanName() or "Unknown", rezSpawn.Name() or "Unknown")
-                if self.Helpers and self.Helpers.DoRez then
-                    if Config:GetSetting('ConCorpseForRez') and Tables.TableContains(Globals.RezzedCorpses, rezSpawn.ID()) then
-                        Logger.log_debug("\atSelfCheckAndRez(): Found corpse of %s(ID:%d), but it appears to have been rezzed already.", rezSpawn.CleanName() or "Unknown",
-                            rezSpawn.ID() or 0)
-                    elseif (Globals.GetTimeSeconds() - (self.TempSettings.RezTimers[rezSpawn.ID()] or 0)) >= Config:GetSetting('RetryRezDelay') then
-                        Core.SafeCallFunc("SelfCheckAndRez", self.Helpers.DoRez, self, rezSpawn.ID())
-                        self.TempSettings.RezTimers[rezSpawn.ID()] = Globals.GetTimeSeconds()
-                        self:ResetRotationTimer("GroupBuff")
-                    end
-                end
-            end
-        end
-    else
-        Logger.log_verbose("\atSelfCheckAndRez(): Combat detected, we will only rez ourselves in downtime.")
-    end
-end
-
-function Module:IGCheckAndRez(combat_state)
-    local rezCount = mq.TLO.SpawnCount(self.Constants.RezSearchGroup)()
-
-    for i = 1, rezCount do
-        Logger.log_debug("\atIGCheckAndRez(): Looking for corpse #%d", i)
-        local rezSpawn = mq.TLO.NearestSpawn(i, self.Constants.RezSearchGroup)
-        local corpseName = rezSpawn.CleanName() or "None"
-        local ownerName = corpseName:gsub("'s corpse$", "")
-
-        if rezSpawn() and ownerName ~= mq.TLO.Me.CleanName() then -- don't try to rez ourselves in the group checks
-            if self.Helpers and self.Helpers.DoRez then
-                Logger.log_debug("\atIGCheckAndRez(): Found corpse of %s :: %s", rezSpawn.CleanName() or "Unknown", rezSpawn.Name() or "Unknown")
-                -- don't rez someone nearby during combat or any time if we have it set that way
-                if (combat_state == "Combat" or not Config:GetSetting('RezInZonePC')) and mq.TLO.Spawn(string.format("PC =%s", ownerName))() then
-                    Logger.log_debug("\atIGCheckAndRez(): Found corpse of %s(ID:%d), but the player appears to be in-zone.", ownerName or "Unknown",
-                        rezSpawn.ID() or 0)
-                elseif Config:GetSetting('ConCorpseForRez') and Tables.TableContains(Globals.RezzedCorpses, rezSpawn.ID()) then
-                    Logger.log_debug("\atIGCheckAndRez(): Found corpse of %s(ID:%d), but it appears to have been rezzed already.", rezSpawn.CleanName() or "Unknown",
-                        rezSpawn.ID() or 0)
-                elseif (Globals.GetTimeSeconds() - (self.TempSettings.RezTimers[rezSpawn.ID()] or 0)) >= Config:GetSetting('RetryRezDelay') then
-                    Logger.log_debug("\atIGCheckAndRez(): Attempting to Res: %s", rezSpawn.CleanName())
-                    self.TempSettings.RezTimers[rezSpawn.ID()] = Globals.GetTimeSeconds()
-                    if Core.SafeCallFunc("IGCheckAndRez", self.Helpers.DoRez, self, rezSpawn.ID(), ownerName) then
-                        self:ResetRotationTimer("GroupBuff")
-                        -- make sure we process other healing/etc instead of chain rezzing
-                        if combat_state == "Combat" then
-                            Logger.log_verbose("\atIGCheckAndRez(): Rez successful: %s. Returning to allow for heal checks before we attempt to rez the next corpse.",
-                                rezSpawn.CleanName())
-                            break
-                        end
-                    end
-                end
-            end
-        end
-    end
-end
-
-function Module:OOGCheckAndRez(combat_state)
-    local rezCount = mq.TLO.SpawnCount(self.Constants.RezSearchOutOfGroup)()
-
-    for i = 1, rezCount do
-        local rezSpawn = mq.TLO.NearestSpawn(i, self.Constants.RezSearchOutOfGroup)
-        local corpseName = rezSpawn.CleanName() or "None"
-        local ownerName = corpseName:gsub("'s corpse$", "")
-
-        -- don't try to rez in group, we just checked those PCs... we will check them again with IGCheckAndRez next loop.
-        if rezSpawn() and not mq.TLO.Group.Member(ownerName)() and (Targeting.IsSafeName("pc", rezSpawn.DisplayName())) then
-            if self.Helpers and self.Helpers.DoRez then
-                -- don't rez someone nearby during combat or any time if we have it set that way
-                if (combat_state == "Combat" or not Config:GetSetting('RezInZonePC')) and mq.TLO.Spawn(string.format("PC =%s", ownerName))() then
-                    Logger.log_debug("\atIGCheckAndRez(): Found corpse of %s(ID:%d), but the player appears to be in-zone.", ownerName or "Unknown",
-                        rezSpawn.ID() or 0)
-                elseif Config:GetSetting('ConCorpseForRez') and Tables.TableContains(Globals.RezzedCorpses, rezSpawn.ID()) then
-                    Logger.log_debug("\atOOGCheckAndRez(): Found corpse of %s(ID:%d), but it appears to have been rezzed already.", rezSpawn.CleanName() or "Unknown",
-                        rezSpawn.ID() or 0)
-                elseif (Globals.GetTimeSeconds() - (self.TempSettings.RezTimers[rezSpawn.ID()] or 0)) >= Config:GetSetting('RetryRezDelay') then
-                    self.TempSettings.RezTimers[rezSpawn.ID()] = Globals.GetTimeSeconds()
-                    if Core.SafeCallFunc("OOGCheckAndRez", self.Helpers.DoRez, self, rezSpawn.ID(), ownerName) then
-                        self:ResetRotationTimer("GroupBuff")
-                        -- make sure we process other healing/etc instead of chain rezzing
-                        if combat_state == "Combat" then
-                            Logger.log_verbose("\atOOGCheckAndRez(): Rez successful: %s. Returning to allow for heal checks before we attempt to rez the next corpse.",
-                                rezSpawn.CleanName())
-                            break
-                        end
-                    end
-                end
-            end
-        end
-    end
-end
-
 function Module:HealById(id)
     if id == 0 then return end
     if not self.TempSettings.HealRotationStates then return end
@@ -1425,6 +1533,149 @@ function Module:AddCureToList(id, type)
     end
 end
 
+-- Cure Engine (config-driven ['Cure'] buckets walked via utils/entries.lua, mirroring the Rez engine)
+
+-- per-bucket user toggle (defaults on); bucket-scoped so a shared name toggles independently per cure kind
+function Module:CureEntryEnabled(entry, bucket)
+    local buckets = Config:GetSetting('EnabledCureEntries') or {}
+    return ((buckets[bucket] or {})[entry.name]) ~= false
+end
+
+-- cast the resolved cure on a live target; allowMem lets an un-gemmed cure spell/song mem on demand
+function Module:CureEntryCast(entry, spell, resolvedName, targetId)
+    local entryType = (entry.type or ""):lower()
+    local name = (entryType == "aa" or entryType == "item" or entryType == "ability") and resolvedName or spell.RankName()
+    Casting.UseEntry(entryType, name, targetId, { allowMem = true, spell = spell, })
+end
+
+-- rebuild the load_cond-filtered cure lists per bucket on rescan; also derives CuresPeerCapable (any entry not selfOnly)
+function Module:RebuildCureAbilities()
+    local cure = self.ClassConfig and self.ClassConfig.Cure
+    if not cure then
+        self.TempSettings.CureAbilities = nil
+        self.TempSettings.CuresPeerCapable = false
+        return
+    end
+    self.TempSettings.CureAbilities = {}
+    self.TempSettings.GroupDetDispelSpellIDs = {}
+    local peerCapable = false
+    local order = Config:GetSetting('RotationEntryOrder') or {}
+    for _, bucket in ipairs({ "DetDispel", "Poison", "Disease", "Curse", "Corruption", }) do
+        if cure[bucket] then
+            local entries = Entries.FilterLoaded(cure[bucket])
+            for _, entry in ipairs(entries) do
+                if entry.name_func then entry.name = Core.SafeCallFunc("Cure name_func", entry.name_func, self) or "Error in name_func!" end
+            end
+            Rotation.ApplyEntryOrder(entries, order["Cure" .. bucket])
+            self.TempSettings.CureAbilities[bucket] = entries
+            for _, entry in ipairs(entries) do
+                if not entry.selfOnly then peerCapable = true end
+            end
+        end
+    end
+    self.TempSettings.CuresPeerCapable = peerCapable
+
+    -- record our group-scoped det dispels by spell ID so peers can tell (live, off Me.Casting) when we're covering the whole group
+    for _, entry in ipairs(self.TempSettings.CureAbilities['DetDispel'] or {}) do
+        if not entry.selfOnly then
+            local resolvedName = self:GetResolvedActionMapItem(entry.name) or entry.name
+            local spell        = Entries.Spell(entry, resolvedName)
+            if type(spell) ~= "string" and spell and spell() and Casting.IsGroupSpell(spell.TargetType()) then
+                self.TempSettings.GroupDetDispelSpellIDs[spell.ID()] = true
+            end
+        end
+    end
+end
+
+function Module:GetCureAbilities()
+    if not self.TempSettings.CureAbilities then self:RebuildCureAbilities() end -- lazy build covers first-load ordering
+    return self.TempSettings.CureAbilities
+end
+
+-- walk the bucket's priority list on targetSpawn; first enabled, in-scope, resolved, reachable, cond-passing, ready entry casts and wins (one cast)
+function Module:WalkCureBucket(bucket, targetSpawn)
+    local cureAbilities = self:GetCureAbilities()
+    if not cureAbilities then return false end
+    local entries = cureAbilities[bucket]
+    if not entries then return false end
+
+    local isSelf = targetSpawn.ID() == mq.TLO.Me.ID()
+    local downtime = Combat.GetCachedCombatState() == "Downtime"
+    for _, entry in ipairs(entries) do
+        if self:CureEntryEnabled(entry, bucket) and (not entry.selfOnly or isSelf) then
+            local resolvedName = self:GetResolvedActionMapItem(entry.name) or entry.name
+            local spell        = Entries.Spell(entry, resolvedName)
+            if Entries.Resolves(entry, spell) then
+                local isGroupCure      = type(spell) ~= "string" and spell and Casting.IsGroupSpell(spell.TargetType())
+                local isGroupDetDispel = type(spell) ~= "string" and spell and (self.TempSettings.GroupDetDispelSpellIDs or {})[spell.ID()] == true
+                -- skip group cures for out-of-group targets (cross-group stays single-target); hold our own group dispel if a peer is already covering our group
+                if not (isGroupCure and not (isSelf or Targeting.GroupedWithTarget(targetSpawn)))
+                    and not (isGroupDetDispel and self.TempSettings.GroupDispelCovered)
+                    and (not entry.cond or Core.SafeCallFunc("Cure entry cond", entry.cond, self, spell, targetSpawn))
+                    and Entries.Ready(entry, spell, resolvedName, downtime) then
+                    if isGroupDetDispel then Globals.CastingGroupDispel = true end
+                    Core.SafeCallFunc("CureEntryCast", self.CureEntryCast, self, entry, spell, resolvedName, targetSpawn.ID())
+                    if isGroupDetDispel then Globals.CastingGroupDispel = false end
+                    Comms.HandleAnnounce(Comms.FormatChatEvent("Cure", targetSpawn.DisplayName() or "target", string.format("processing cure with %s", entry.name)),
+                        Config:GetSetting('CureAnnounceGroup'), Config:GetSetting('CureAnnounce'), Config:GetSetting('AnnounceToRaidIfInRaid'))
+                    return true
+                end
+            end
+        end
+    end
+    return false
+end
+
+-- the active cure list setting name, swapped to the shared variant when shared cure lists are enabled
+function Module:ActiveCureList(base)
+    return Config:GetSetting('UseSharedCureLists') and (base .. "Shared") or base
+end
+
+-- build a name->true set from the current zone's entries in the given cure list, for exact-name membership tests
+function Module:ActiveCureNameSet(base)
+    local set = {}
+    for _, name in ipairs(Config:GetZoneList(self:ActiveCureList(base))) do
+        set[name] = true
+    end
+    return set
+end
+
+-- decide and cast one cure for a target: deny/allow-filter its effects, then walk DetDispel / type buckets by priority (first match wins)
+function Module:RunCure(targetSpawn, cureEffects, mezzed, denySet, allowSet)
+    if (not cureEffects or #cureEffects == 0) and not mezzed then return nil end
+
+    local hasAllow = false
+    local types    = {}
+    for _, effect in ipairs(cureEffects or {}) do
+        if not denySet[effect.name] then
+            if allowSet[effect.name] then
+                hasAllow = true
+            elseif effect.cureType then
+                types[effect.cureType] = true
+            end
+        end
+    end
+
+    local downtime     = Combat.GetCachedCombatState() == "Downtime"
+    local detDispelSetting = Config:GetSetting('DowntimeDetDispel') -- 1 = Never, 2 = Cure List, 3 = Always
+
+    -- allow-listed effects route to an outright det dispel (no counter fallback); in downtime this needs Cure List or Always
+    if hasAllow and (not downtime or detDispelSetting >= 2) and self:WalkCureBucket('DetDispel', targetSpawn) then return true end
+
+    -- mez is always dispelled, regardless of the downtime setting
+    if mezzed and self:WalkCureBucket('DetDispel', targetSpawn) then return true end
+
+    -- general counter effects: prefer an outright det dispel (downtime needs Always), else the type-specific cure
+    if next(types) then
+        if (not downtime or detDispelSetting == 3) and self:WalkCureBucket('DetDispel', targetSpawn) then return true end
+        for _, counterType in ipairs({ "Poison", "Disease", "Curse", "Corruption", }) do
+            if types[counterType] and self:WalkCureBucket(counterType, targetSpawn) then return true end
+        end
+    end
+
+    return nil
+end
+
 function Module:ProcessCuresList()
     -- make a copy just incase it changes in the other coroutine
     local curesList = self.TempSettings.NeedCuresList
@@ -1571,37 +1822,83 @@ function Module:DoEvents()
     end
 end
 
+-- true when the stagger option is set and a peer is landing a group det dispel on our group
+function Module:GroupAACureStaggered(actorPeers)
+    if not Config:GetSetting('StaggerGroupAACures') then return false end
+    for _, heartbeat in pairs(actorPeers) do
+        local data = heartbeat.Data
+        if data and (Globals.GetTimeSeconds() - (heartbeat.LastHeartbeat or 0)) <= 3 then
+            if data.CastingGroupDispel and mq.TLO.Group.Member(data.Target)() then
+                Logger.log_debug("[Cures] %s is landing a group det dispel on my groupmate %s, bypassing cure checks.", data.Name, data.Target)
+                return true
+            end
+            -- DEPRECATED 7/26 - sunset 9/1/26. Peers predating the ['Cure'] table don't broadcast the flag; fall back to the named group-cure AAs.
+            local casting = data.Casting or ""
+            if (casting == "Radiant Cure" or casting == "Group Purify Soul") and mq.TLO.Group.Member(data.Target)() then
+                Logger.log_debug("[Cures] %s is casting %s on my groupmate %s, bypassing cure checks.", data.Name, casting, data.Target)
+                return true
+            end
+        end
+    end
+    return false
+end
+
+-- new-model cure pass: cure myself from my own classified effects, then a group or heal-list peer that needs it (one cure per pass, self > group > heal list)
+function Module:RunCureWalk()
+    local actorPeers = Comms.GetAllPeerHeartbeats(false)
+    self.TempSettings.GroupDispelCovered = self:GroupAACureStaggered(actorPeers)
+
+    local scope = Config:GetSetting('ActorCureScope')                     -- 1 = Self, 2 = Group, 3 = Heal List
+    local scanPeers = self.TempSettings.CuresPeerCapable and scope > 1
+    if #Globals.CurrentCureEffects == 0 and not scanPeers then return end -- nothing on me and no peers to scan; skip the list builds
+
+    local denySet  = self:ActiveCureNameSet('CureDenyList')
+    local allowSet = self:ActiveCureNameSet('CureAllowList')
+
+    if self:RunCure(mq.TLO.Spawn(mq.TLO.Me.ID()), Globals.CurrentCureEffects, false, denySet, allowSet) then return end
+
+    if not scanPeers then return end
+
+    -- partition curable peers by priority: my group first, then heal-list peers outside my group (scope 3 only)
+    local healList = scope >= 3 and Set.new(Config:GetSetting('HealList') or {}) or nil
+    local groupPeers, healPeers = {}, {}
+    for _, heartbeat in pairs(actorPeers) do
+        local data = heartbeat.Data
+        if data and (#(data.CureEffects or {}) > 0 or data.Mezzed) then -- skip the spawn search for peers with nothing to cure
+            if mq.TLO.Group.Member(data.Name)() then
+                table.insert(groupPeers, heartbeat)
+            elseif healList and healList:contains(data.Name) then
+                table.insert(healPeers, heartbeat)
+            end
+        end
+    end
+
+    for _, peerList in ipairs({ groupPeers, healPeers, }) do
+        for _, heartbeat in ipairs(peerList) do
+            local data = heartbeat.Data
+            local cureTarget = mq.TLO.Spawn(string.format("pc =%s", data.Name))
+            if (cureTarget.ID() or 0) > 0 and cureTarget.ID() ~= mq.TLO.Me.ID() and (cureTarget.Distance() or 999) < 150 then
+                if self:RunCure(cureTarget, data.CureEffects, data.Mezzed, denySet, allowSet) then return end
+            end
+        end
+    end
+end
+
 function Module:RunCureRotation(combat_state)
     if combat_state == "Downtime" then -- check freely in combat and the first frame of downtime; then avoid spamming
         if (Globals.GetTimeSeconds() - self.TempSettings.CureCheckTimer) < Config:GetSetting('CureInterval') then return end
         self.TempSettings.CureCheckTimer = Globals.GetTimeSeconds()
     end
 
+    if self.ClassConfig and self.ClassConfig.Cure then
+        return self:RunCureWalk()
+    end
+
+    -- ===== DEPRECATED FALLBACK ===== DEPRECATED 7/26 - sunset 9/1/26.
+    -- Legacy per-type detection + CureNow path for custom configs predating the ['Cure'] table.
     local actorPeers = Comms.GetAllPeerHeartbeats(false)
 
-    -- if a peer is using Radiant Cure or Group Purify Soul on a group mate and we have set the option, don't bother checking for cures, let the cure process
-    -- -- this may cause us to ocasionally skip curing a second group with radiant (if that group's healer is curing us for whatever reason)... this is preferred over double-tapping RC's
-    if Config:GetSetting('StaggerGroupAACures') then
-        for _, heartbeat in pairs(actorPeers) do
-            local data = heartbeat.Data
-            local casting = data and data.Casting or ""
-
-            --nested conditions here to avoid preemptive data/spawn checks
-            if casting == "Radiant Cure" or casting == "Group Purify Soul" then
-                local target = data and data.Target
-                local groupMate = mq.TLO.Group.Member(target)
-
-                if groupMate and groupMate() then
-                    local recentHeartbeat = (Globals.GetTimeSeconds() - (heartbeat.LastHeartbeat or 0)) <= 3
-
-                    if recentHeartbeat then
-                        Logger.log_debug("[Cures] %s is currently casting a group AA cure on my groupmate %s, bypassing cure checks.", heartbeat.Data.Name, target)
-                        return
-                    end
-                end
-            end
-        end
-    end
+    if self:GroupAACureStaggered(actorPeers) then return end
 
     Logger.log_verbose("\ao[Cures] Checking for curables...")
 
@@ -1623,7 +1920,7 @@ function Module:RunCureRotation(combat_state)
 
     for peer, heartbeat in pairs(actorPeers) do
         local cureTarget = mq.TLO.Spawn(string.format("pc =%s", heartbeat.Data.Name))
-        local cureTargetID = cureTarget.ID() --will return 0 if the spawn doesn't exist
+        local cureTargetID = cureTarget.ID() or 0 --0 if the peer is not in this zone
         local handled = false
         --current max range on live with raid gear is 137, radiant cure still limited to 100 (300 on laz now but not changing this), but CureNow includes range checks
         if cureTargetID > 0 then
@@ -1658,7 +1955,7 @@ function Module:RunCureRotation(combat_state)
                 peer = peer:lower()
                 if peer ~= mq.TLO.Me.Name():lower() and not handledPeers:contains(peer) then
                     local cureTarget = mq.TLO.Spawn(string.format("pc =%s", peer))
-                    local cureTargetID = cureTarget.ID() --will return 0 if the spawn doesn't exist
+                    local cureTargetID = cureTarget.ID() or 0 --0 if the peer is not in this zone
 
                     --current max range on live with raid gear is 137, radiant cure still limited to 100 (300 on laz now but not changing this), but CureNow includes range checks
                     if cureTargetID > 0 then
@@ -1702,24 +1999,13 @@ function Module:ProcessQueuedEvents()
 
     -- wait for cast window to close
     mq.delay("5s", function() return mq.TLO.Me.Casting.ID() == nil end)
-    local success = false
     local queueData = self.TempSettings.QueuedAbilities[1]
 
     Logger.log_debug("\ao[QueuedAbilities] Processing queued %s: %s on %s", queueData.type, queueData.name, queueData.targetId)
 
-    if queueData.type:lower() == "spell" then
-        success = Casting.UseSpell(queueData.name, queueData.targetId, true)
-        if not success then
-            success = Casting.UseAA(queueData.name, queueData.targetId)
-        end
-    elseif queueData.type:lower() == "song" then
-        success = Casting.UseSong(queueData.name, queueData.targetId, true)
-    elseif queueData.type:lower() == "aa" then
+    local success = Casting.UseEntry(queueData.type, queueData.name, queueData.targetId, { allowMem = true, })
+    if not success and queueData.type:lower() == "spell" then
         success = Casting.UseAA(queueData.name, queueData.targetId)
-    elseif queueData.type:lower() == "item" then
-        success = Casting.UseItem(queueData.name, queueData.targetId)
-    elseif queueData.type:lower() == "disc" then
-        success = Casting.UseDisc(queueData.name, queueData.targetId)
     end
 
     if not success and self.TempSettings.QueuedAbilities[1] ~= nil then
@@ -1808,6 +2094,151 @@ function Module:PositionPet()
     Casting.UseAA(ability)
 end
 
+-- per-phase user toggle (defaults on); scoping by phase lets a shared name toggle independently in each phase
+function Module:RezEntryEnabled(entry, phase)
+    local phases = Config:GetSetting('EnabledRezEntries') or {}
+    return ((phases[phase] or {})[entry.name]) ~= false
+end
+
+-- cast the resolved rez on the corpse; allowDead targets the dead corpse, allowMem mems an un-gemmed rez on demand
+function Module:RezEntryCast(entry, spell, resolvedName, corpseId)
+    local entryType = (entry.type or ""):lower()
+    local name = (entryType == "aa" or entryType == "item" or entryType == "ability") and resolvedName or spell.RankName()
+    Casting.UseEntry(entryType, name, corpseId, { allowMem = true, allowDead = true, spell = spell, })
+end
+
+-- rebuild the load_cond-filtered rez lists per phase on rescan, so a load-gated entry drops from both the cast logic and the UI
+function Module:RebuildRezAbilities()
+    local rez = self.ClassConfig and self.ClassConfig.Rez
+    if not rez then
+        self.TempSettings.RezAbilities = nil
+        return
+    end
+    self.TempSettings.RezAbilities = {}
+    local order = Config:GetSetting('RotationEntryOrder') or {}
+    for _, phase in ipairs({ "Combat", "Downtime", }) do
+        if rez[phase] then
+            local entries = Entries.FilterLoaded(rez[phase])
+            Rotation.ApplyEntryOrder(entries, order["Rez" .. phase])
+            self.TempSettings.RezAbilities[phase] = entries
+        end
+    end
+end
+
+function Module:GetRezAbilities()
+    if not self.TempSettings.RezAbilities then self:RebuildRezAbilities() end -- lazy build covers first-load ordering
+    return self.TempSettings.RezAbilities
+end
+
+-- walk the live phase's priority list; first enabled, resolved, cond-passing, ready, un-rezzed entry wins (one cast)
+function Module:RunRez(corpseId, ownerName)
+    local rezAbilities = self:GetRezAbilities()
+    if not rezAbilities then return nil end
+
+    local combat_state = Combat.GetCachedCombatState()
+    local entries      = rezAbilities[combat_state]
+    if not entries then return nil end
+
+    local corpseSpawn = mq.TLO.Spawn(corpseId)
+    for _, entry in ipairs(entries) do
+        if self:RezEntryEnabled(entry, combat_state) then
+            local resolvedName = self:GetResolvedActionMapItem(entry.name) or entry.name
+            local spell        = Entries.Spell(entry, resolvedName)
+            if Entries.Resolves(entry, spell)
+                and (not entry.cond or Core.SafeCallFunc("Rez entry cond", entry.cond, self, spell, corpseSpawn, ownerName))
+                and Entries.Ready(entry, spell, resolvedName, true)
+                and Casting.OkayToRez(corpseId) then
+                self:RezEntryCast(entry, spell, resolvedName, corpseId)
+                return true
+            end
+        end
+    end
+    return nil
+end
+
+-- stamp the attempt time (retry debounce), then run the rez; ['Rez'] table path preferred, legacy DoRez as fallback
+function Module:TryRez(corpseId, ownerName)
+    self.TempSettings.RezTimers[corpseId] = Globals.GetTimeSeconds()
+
+    if self.ClassConfig and self.ClassConfig.Rez then
+        return Core.SafeCallFunc("RunRez", self.RunRez, self, corpseId, ownerName)
+    end
+
+    -- DEPRECATED 6/26 - sunset 9/1/26. Custom configs predating the ['Rez'] table fall here.
+    local doRez = self.Helpers and self.Helpers.DoRez
+    return Core.SafeCallFunc("DoRez", doRez, self, corpseId, ownerName)
+end
+
+-- one enumeration of every nearby PC corpse, partitioned into self / in-group / out-of-group (OOG gated here)
+function Module:CheckAndRez(combat_state)
+    local rezOutside = Config:GetSetting('RezOutside')
+    local myName = mq.TLO.Me.DisplayName()
+    local corpses = {}
+    local search = "pccorpse radius 100 zradius 50"
+    local count = mq.TLO.SpawnCount(search)()
+    for i = 1, count do
+        local spawn = mq.TLO.NearestSpawn(i, search)
+        if spawn and spawn() then
+            local ownerName = (spawn.CleanName() or ""):gsub("'s corpse$", "")
+            local isSelf = ownerName == myName
+            local keep = isSelf or mq.TLO.Group.Member(ownerName)() ~= nil
+            if not keep then
+                keep = rezOutside and Targeting.IsSafeName("pc", spawn.DisplayName())
+            end
+            if keep then
+                table.insert(corpses, {
+                    id         = spawn.ID(),
+                    ownerName  = ownerName,
+                    isSelf     = isSelf,
+                    distance   = spawn.Distance() or 999,
+                    classShort = spawn.Class.ShortName() or "",
+                })
+            end
+        end
+    end
+
+    -- priority-tier sort (role tier first, distance second); None falls back to plain nearest-first
+    local rolePriority = Config:GetSetting('RezRolePriority') or 4
+    if rolePriority > 1 then
+        local function isPriorityCorpse(corpseClass)
+            if rolePriority == 2 then return Globals.Constants.RGHealer:contains(corpseClass) end
+            if rolePriority == 3 then return Globals.Constants.RGTank:contains(corpseClass) end
+            return Globals.Constants.RGHealer:contains(corpseClass) or Globals.Constants.RGTank:contains(corpseClass)
+        end
+        table.sort(corpses, function(a, b)
+            local aPriority, bPriority = isPriorityCorpse(a.classShort), isPriorityCorpse(b.classShort)
+            if aPriority ~= bPriority then return aPriority end
+            return a.distance < b.distance
+        end)
+    else
+        table.sort(corpses, function(a, b) return a.distance < b.distance end)
+    end
+
+    local rezInZonePC = Config:GetSetting('RezInZonePC')
+    local retryRezDelay = Config:GetSetting('RetryRezDelay')
+    local peersRezzing = #corpses > 0 and Comms.GetPeersRezzingCorpses() or {}
+    for _, corpse in ipairs(corpses) do
+        local selfBlocked = corpse.isSelf and (combat_state == "Combat" or not rezInZonePC)
+        local ownerInZone = not corpse.isSelf and (combat_state == "Combat" or not rezInZonePC)
+            and mq.TLO.Spawn(string.format("PC =%s", corpse.ownerName))()
+        local peerRezzing = peersRezzing[corpse.id]
+        local recentlyTried = (Globals.GetTimeSeconds() - (self.TempSettings.RezTimers[corpse.id] or 0)) < retryRezDelay
+        if not selfBlocked and not ownerInZone and not peerRezzing and not recentlyTried then
+            Logger.log_debug("\atRez: attempting rez of %s (%d)", corpse.ownerName, corpse.id)
+            if self:TryRez(corpse.id, corpse.ownerName) and combat_state == "Combat" then
+                break -- rez one in combat, then yield to the next tick's heal/cure pass
+            end
+        end
+    end
+
+    -- EMU: clear the already-rezzed set once corpses despawn, so a recycled spawn id isn't treated as rezzed
+    if Core.OnEMU() and mq.TLO.SpawnCount("pccorpse radius 150 zradius 50")() == 0 then
+        Globals.RezzedCorpses = {}
+        Globals.CorpseConned = false
+        Casting.RezConsiderCache = {}
+    end
+end
+
 function Module:GiveTime()
     local combat_state = Combat.GetCachedCombatState()
 
@@ -1832,6 +2263,8 @@ function Module:GiveTime()
 
             self:SetCombatMode(self.ClassConfig.Modes[Config:GetSetting('Mode')])
             self:GetRotations()
+            self:RebuildRezAbilities()
+            self:RebuildCureAbilities()
             if self:IsCuring() then
                 if self.ClassConfig.Cures and self.ClassConfig.Cures.GetCureSpells then
                     Core.SafeCallFunc("GetCureSpells", self.ClassConfig.Cures.GetCureSpells, self)
@@ -1873,40 +2306,27 @@ function Module:GiveTime()
         end
     end
 
-    if self:IsRezing() and Config:GetSetting('DoRez') then
-        -- Check Rezes
+    if self:IsRezing() and Config:GetSetting('DoRez') and Core.OkayToNotHeal(2) then
         if not (combat_state == "Downtime" and mq.TLO.Me.Invis() and not Config:GetSetting('BreakInvisForHealing')) then
-            self:IGCheckAndRez(combat_state)
-
-            self:SelfCheckAndRez(combat_state)
-
-            if Config:GetSetting('RezOutside') then
-                self:OOGCheckAndRez(combat_state)
-            end
-
-            --clear the table of corpses we've already rezzed if there are no PC corpses nearby
-            if Core.OnEMU() then
-                local rezCount = mq.TLO.SpawnCount("pccorpse radius 150 zradius 50")()
-                if rezCount == 0 then
-                    Globals.RezzedCorpses = {}
-                    Globals.CorpseConned  = false
-                end
-            end
+            self:CheckAndRez(combat_state)
         end
     end
 
     if self:IsCuring() then
+        local legacyCure = not (self.ClassConfig and self.ClassConfig.Cure)
         if not (combat_state == "Downtime" and mq.TLO.Me.Invis() and not Config:GetSetting('BreakInvisForHealing')) then
             self:RunCureRotation(combat_state)
 
-            if Module.TempSettings.NeedCuresListMutex then
-                Logger.log_debug("\ay[Cures] A coroutine is currently in mutex, bypassing cure list processing.")
-            else
-                self:ProcessCuresList()
+            if legacyCure then
+                if Module.TempSettings.NeedCuresListMutex then
+                    Logger.log_debug("\ay[Cures] A coroutine is currently in mutex, bypassing cure list processing.")
+                else
+                    self:ProcessCuresList()
+                end
             end
         end
 
-        self:DoEvents()
+        if legacyCure then self:DoEvents() end
     end
 
     --Counter TOB Debuff with AA Buff, this can be refactored/expanded if they add other similar systems

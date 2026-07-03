@@ -15,67 +15,52 @@ return {
     ['ModeChecks']        = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
         IsHealing = function() return true end,
-        IsCuring  = function() return Config:GetSetting('DoCureAA') or Config:GetSetting('DoCureSpells') end,
+        IsCuring  = function() return Config:GetSetting('DoCures') end,
         IsRezing  = function()
             local rezAction = Casting.CanUseAA("Gift of Resurrection") or Core.GetResolvedActionMapItem('RezStaff')
             return ((Core.GetResolvedActionMapItem('RezSpell') or rezAction) and Targeting.GetXTHaterCount() == 0) or (Config:GetSetting('DoBattleRez') and rezAction)
         end,
     },
+    ['Rez']               = {
+        ['Combat'] = {
+            { type = "AA",   name = "Gift of Resurrection", },
+            { type = "Item", name = "RezStaff", },
+        },
+        ['Downtime'] = {
+            { type = "AA",   name = "Gift of Resurrection", },
+            { type = "Item", name = "RezStaff", },
+            {
+                type = "Spell",
+                name = "RezSpell",
+                cond = function(self, spell, target)
+                    return Casting.DowntimeRezOkay()
+                        and not Casting.CanUseAA('Gift of Resurrection')
+                end,
+            },
+        },
+    },
     ['Modes']             = {
         'Tank',
         'DPS',
     },
-    ['Cures']             = {
-        GetCureSpells = function(self)
-            --(re)initialize the table for loadout changes
-            self.TempSettings.CureSpells = {}
-
-            -- Find the map for each cure spell we need
-            -- Curse is convoluted: If Keepmemmed, always use cure, if not, use groupheal if available and fallback to cure
-            local neededCures = {
-                ['Poison'] = 'PurityCure',
-                ['Disease'] = 'PurityCure',
-                ['Curse'] = not Config:GetSetting('KeepCurseMemmed') and ('PurityCure' or 'CureCurse') or 'CureCurse',
-                ['Corruption'] = "CureCorrupt",
-            }
-
-            -- iterate to actually resolve the selected map item, if it is valid, add it to the cure table
-            for k, v in pairs(neededCures) do
-                local cureSpell = Core.GetResolvedActionMapItem(v)
-                if cureSpell then
-                    self.TempSettings.CureSpells[k] = cureSpell
-                end
-            end
-        end,
-        CureNow = function(self, type, targetId)
-            local targetSpawn = mq.TLO.Spawn(targetId)
-            if not targetSpawn and targetSpawn then return false, false end
-
-            if Config:GetSetting('DoCureAA') then
-                local cureAA = Casting.AAReady("Radiant Cure") and "Radiant Cure"
-
-                if not cureAA and targetId == mq.TLO.Me.ID() and Casting.AAReady("Purification") then
-                    cureAA = "Purification"
-                end
-
-                if cureAA then
-                    Logger.log_debug("CureNow: Using %s for %s on %s.", cureAA, type:lower() or "unknown", targetSpawn.CleanName() or "Unknown")
-                    return Casting.UseAA(cureAA, targetId), true
-                end
-            end
-
-            if Config:GetSetting('DoCureSpells') then
-                for effectType, cureSpell in pairs(self.TempSettings.CureSpells) do
-                    if type:lower() == effectType:lower() then
-                        Logger.log_debug("CureNow: Using %s for %s on %s.", cureSpell.RankName(), type:lower() or "unknown", targetSpawn.CleanName() or "Unknown")
-                        return Casting.UseSpell(cureSpell.RankName(), targetId, true), true
-                    end
-                end
-            end
-
-            Logger.log_debug("CureNow: No valid cure at this time for %s on %s.", type:lower() or "unknown", targetSpawn.CleanName() or "Unknown")
-            return false, false
-        end,
+    ['Cure']              = {
+        ['DetDispel'] = {
+            { type = "AA", name = "Radiant Cure", },
+            { type = "AA", name = "Purification", selfOnly = true, },
+        },
+        ['Poison'] = {
+            { type = "Spell", name = "PurityCure", },
+        },
+        ['Disease'] = {
+            { type = "Spell", name = "PurityCure", },
+        },
+        ['Curse'] = {
+            { type = "Spell", name = "CureCurse",  cond = function(self) return Config:GetSetting('KeepCurseMemmed') end, },
+            { type = "Spell", name = "PurityCure", cond = function(self) return not Config:GetSetting('KeepCurseMemmed') end, },
+        },
+        ['Corruption'] = {
+            { type = "Spell", name = "CureCorrupt", },
+        },
     },
     ['Themes']            = {
         ['Tank'] = {
@@ -416,32 +401,6 @@ return {
         },
     },
     ['Helpers']           = {
-        DoRez = function(self, corpseId)
-            local rezAction = false
-            local rezSpell = Core.GetResolvedActionMapItem('RezSpell')
-            local rezStaff = Core.GetResolvedActionMapItem('RezStaff')
-            local staffReady = mq.TLO.Me.ItemReady(rezStaff)()
-            local okayToRez = Casting.OkayToRez(corpseId)
-            local combatState = mq.TLO.Me.CombatState():lower() or "unknown"
-
-
-            if combatState == "combat" and Config:GetSetting('DoBattleRez') then
-                --prioritize GoR because its instant cast
-                if Casting.AAReady("Gift of Resurrection") then
-                    rezAction = okayToRez and Casting.UseAA("Gift of Resurrection", corpseId, true, 1)
-                elseif staffReady then
-                    rezAction = okayToRez and Casting.UseItem(rezStaff, corpseId)
-                end
-            elseif combatState ~= "combat" and staffReady then
-                rezAction = okayToRez and Casting.UseItem(rezStaff, corpseId)
-            elseif combatState == "active" or combatState == "resting" then
-                if Casting.SpellReady(rezSpell, true) then
-                    rezAction = okayToRez and Casting.UseSpell(rezSpell.RankName(), corpseId, true, true)
-                end
-            end
-
-            return rezAction
-        end,
         --function to determine if we have enough mobs in range to use a defensive disc
         DefensiveDiscCheck = function(printDebug)
             local xtCount = mq.TLO.Me.XTarget() or 0

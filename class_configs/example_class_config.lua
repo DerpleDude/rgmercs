@@ -34,13 +34,63 @@ local _ClassConfig = {
     -- For example, we won't run rez checks if your IsRezzing doesn't return true for that PC.
     -- SHD CAN'T DO ALL THIS STUFF! I stole them from other configs for illustrations. Generally, you can copy the checks from the default config for your class.
     ['ModeChecks']    = {
-        IsTanking  = function() return Core.IsModeActive("Tank") end, -- This is the only check actually present in the SK config.
-        CanMez     = function() return true end,
-        CanCharm   = function() return true end,
-        IsMezzing  = function() return Config:GetSetting('MezOn') end,
-        IsHealing  = function() return true end,
-        IsCuring   = function() return true end,
-        IsRezing   = function() return Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0 end,
+        IsTanking = function() return Core.IsModeActive("Tank") end, -- This is the only check actually present in the SK config.
+        CanMez    = function() return true end,
+        CanCharm  = function() return true end,
+        IsMezzing = function() return Config:GetSetting('MezOn') end,
+        IsHealing = function() return true end,
+        IsCuring  = function() return true end,
+        IsRezing  = function() return Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0 end,
+    },
+
+    -- Rez: A declarative, phase-split priority table walked by the Rez module (mirrors the Mez and Charm tables).
+    -- These checks only run if your IsRezing ModeCheck (above) returns true for this PC.
+    -- Two phases: 'Combat' (XT haters present) and 'Downtime' (no haters). Each holds an ordered "entries" list; the first eligible entry is used.
+    -- An entry's "name" is either an ItemSets/AbilitySets key (resolved to your best owned item/spell) or a literal item/AA/spell name.
+    -- Optional "cond = function(self, spellOrItem, corpseSpawn, ownerName)" is a per-attempt gate; optional "load_cond = function(self)" is a scan-time gate (filtered out at load).
+    ['Rez']           = {
+        ['Combat'] = {
+            { type = "AA",   name = "Blessing of Resurrection", },
+            { type = "Item", name = "Water Sprinkler of Nem Ankh", },
+        },
+        ['Downtime'] = {
+            { type = "AA",   name = "Blessing of Resurrection", },
+            { type = "Item", name = "Water Sprinkler of Nem Ankh", },
+            -- "RezSpell" resolves through your AbilitySets; the cond holds this slow OOC rez spell as a fallback for when the rez AA is unavailable.
+            {
+                type = "Spell",
+                name = "RezSpell",
+                cond = function(self, spell, target)
+                    return Casting.DowntimeRezOkay()
+                        and not Casting.CanUseAA('Blessing of Resurrection')
+                end,
+            },
+        },
+    },
+
+    -- Cure: A declarative table walked by the cure engine (mirrors the Rez table above); only runs if your IsCuring ModeCheck returns true.
+    -- Buckets are cure kinds, not phases: 'DetDispel' holds abilities that remove detrimentals outright (the Radiant Cure family; these also
+    -- service mez and are preferred even for counter effects), while 'Poison'/'Disease'/'Curse'/'Corruption' hold counter-removing cures.
+    -- Each bucket is an ordered list; the first eligible entry is used. Entry fields match the Rez table (type/name/cond/load_cond), plus an
+    -- optional "selfOnly = true" for a clear that can only target yourself, and an optional "name_func = function(self) return <name> end"
+    -- to choose the name dynamically at load. Group-only ("Group v1") cures are skipped automatically for out-of-group targets.
+    ['Cure']          = {
+        ['DetDispel'] = {
+            { type = "AA", name = "Radiant Cure", },
+            { type = "AA", name = "Purified Spirits", selfOnly = true, },
+        },
+        ['Poison'] = {
+            { type = "Spell", name = "CurePoison", },
+        },
+        ['Disease'] = {
+            { type = "Spell", name = "CureDisease", },
+        },
+        ['Curse'] = {
+            { type = "Spell", name = "CureCurse", },
+        },
+        ['Corruption'] = {
+            { type = "Spell", name = "CureCorrupt", },
+        },
     },
 
     -- Modes: Set in the options. Can be used as a condition to load a rotation, perform an action, etc.

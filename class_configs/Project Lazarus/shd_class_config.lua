@@ -82,6 +82,12 @@ local _ClassConfig = {
     _author           = "Algar, Derple",
     ['ModeChecks']    = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
+        IsCuring = function() return Config:GetSetting('DoCures') end,
+    },
+    ['Cure']          = {
+        ['DetDispel'] = {
+            { type = "AA", name = "Purity of Death", selfOnly = true, },
+        },
     },
     ['Modes']         = {
         'Tank',
@@ -896,14 +902,6 @@ local _ClassConfig = {
                 cond = function(self, itemName, target)
                     if not Config:GetSetting('DoCoating') then return false end
                     return Casting.SelfBuffItemCheck(itemName) and self.Helpers.LeechCheck(self)
-                end,
-            },
-            {
-                name = "Purity of Death",
-                type = "AA",
-                tooltip = Tooltips.PurityofDeath,
-                cond = function(self)
-                    return mq.TLO.Me.TotalCounters() > 0
                 end,
             },
         },

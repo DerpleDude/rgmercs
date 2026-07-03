@@ -1393,7 +1393,7 @@ function Module:RenderConditionTargetCombo(cond, condIdx, combatState)
         end
         ImGui.EndTable()
         Ui.Tooltip(
-            "Target Types\nSelf - This PC\nPet - This PC's pet\nMain Assist - The current RGMercs Main Assist\nAuto Target - The current RGMercs Combat Auto Target\nMercs Peer - A character running RGMercs on the same network\nAll Buffable - Checks all buffable targets in your Actor Buff Scope and uses the first one that needs the buff\nRotation Target - The target passed in by the active rotation")
+            "Target Types\nSelf - This PC\nPet - This PC's pet\nMain Assist - The current RGMercs Main Assist\nAuto Target - The current RGMercs Combat Auto Target\nMercs Peer - An RGMercs Peer on your local network\nAll Buffable - Checks all buffable targets in your Actor Buff Scope and uses the first one that needs the buff\nRotation Target - The target passed in by the active rotation")
     end
 
     if cond.target == "Mercs Peer" then
@@ -1457,7 +1457,7 @@ function Module:RenderClickyTargetCombo(clicky, clickyIdx)
         end
         ImGui.EndTable()
         Ui.Tooltip(
-            "Target Types\nSelf - This PC\nPet - This PC's pet\nMain Assist - The current RGMercs Main Assist\nAuto Target - The current RGMercs Combat Auto Target\nMercs Peer - A character running RGMercs on the same network\nAll Buffable - Checks all buffable targets in your Actor Buff Scope and uses the first one that needs the buff\nRotation Target - The target passed in by the active rotation")
+            "Target Types\nSelf - This PC\nPet - This PC's pet\nMain Assist - The current RGMercs Main Assist\nAuto Target - The current RGMercs Combat Auto Target\nMercs Peer - An RGMercs Peer on your local network\nAll Buffable - Checks all buffable targets in your Actor Buff Scope and uses the first one that needs the buff\nRotation Target - The target passed in by the active rotation")
     end
 
     if clicky.target == "Mercs Peer" then

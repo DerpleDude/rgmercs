@@ -5,7 +5,6 @@ local Comms        = require("utils.comms")
 local Config       = require('utils.config')
 local Core         = require("utils.core")
 local Globals      = require('utils.globals')
-local Logger       = require("utils.logger")
 local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
@@ -13,11 +12,33 @@ local _ClassConfig = {
     _author               = "Algar, Derple",
     ['ModeChecks']        = {
         IsHealing = function() return true end,
-        IsCuring  = function() return Config:GetSetting('DoCureAA') or Config:GetSetting('DoCureSpells') end,
+        IsCuring  = function() return Config:GetSetting('DoCures') end,
         IsRezing  = function()
             local rezAction = Casting.CanUseAA("Call of the Wild") or Core.GetResolvedActionMapItem('RezStaff')
             return ((Core.GetResolvedActionMapItem('RezSpell') or rezAction) and Targeting.GetXTHaterCount() == 0) or (Config:GetSetting('DoBattleRez') and rezAction)
         end,
+    },
+    ['Rez']               = {
+        ['Combat'] = {
+            { type = "Item", name = "RezStaff", },
+            {
+                type = "AA",
+                name = "Call of the Wild",
+                cond = function(self, spell, target, ownerName)
+                    return not mq.TLO.Spawn(string.format("PC =%s", ownerName or ""))()
+                end,
+            },
+        },
+        ['Downtime'] = {
+            { type = "Item", name = "RezStaff", },
+            {
+                type = "Spell",
+                name = "RezSpell",
+                cond = function(self, spell, target)
+                    return Casting.DowntimeRezOkay()
+                end,
+            },
+        },
     },
     ['Modes']             = {
         'Heal',
@@ -27,61 +48,22 @@ local _ClassConfig = {
         SummonAA   = function() return Casting.CanUseAA("Summon Companion") and "Summon Companion" end,
         RelocateAA = function() return Casting.CanUseAA("Companion's Relocation") and "Companion's Relocation" end,
     },
-    ['Cures']             = {
-        GetCureSpells = function(self)
-            --(re)initialize the table for loadout changes
-            self.TempSettings.CureSpells = {}
-
-            local neededCures = {
-                ['Poison'] = "CurePoison",
-                ['Disease'] = "CureDisease",
-                ['Curse'] = "CureCurse",
-                ['Corruption'] = "CureCorrupt",
-            }
-
-            -- iterate to actually resolve the selected map item, if it is valid, add it to the cure table
-            for k, v in pairs(neededCures) do
-                local cureSpell = Core.GetResolvedActionMapItem(v)
-                if cureSpell then
-                    self.TempSettings.CureSpells[k] = cureSpell
-                end
-            end
-        end,
-        CureNow = function(self, type, targetId)
-            local targetSpawn = mq.TLO.Spawn(targetId)
-            if not targetSpawn and targetSpawn then return false, false end
-
-            if Config:GetSetting('DoCureAA') then
-                local cureAA = Casting.AAReady("Radiant Cure") and "Radiant Cure"
-
-                -- I am finding self-cures to be less than helpful when most effects on a healer are group-wide
-                -- if not cureAA and targetId == mq.TLO.Me.ID() and Casting.AAReady("Purified Spirits") then
-                --     cureAA = "Purified Spirits"
-                -- end
-
-                if cureAA then
-                    Logger.log_debug("CureNow: Using %s for %s on %s.", cureAA, type:lower() or "unknown", targetSpawn.CleanName() or "Unknown")
-                    return Casting.UseAA(cureAA, targetId), true
-                end
-            end
-
-            if Config:GetSetting('DoCureSpells') then
-                for effectType, cureSpell in pairs(self.TempSettings.CureSpells) do
-                    if type:lower() == effectType:lower() then
-                        if cureSpell.TargetType():lower() == "group v1" and not Targeting.GroupedWithTarget(targetSpawn) then
-                            Logger.log_debug("CureNow: We cannot use %s on %s, because it is a group-only spell and they are not in our group!", cureSpell.RankName(),
-                                targetSpawn.CleanName() or "Unknown")
-                        else
-                            Logger.log_debug("CureNow: Using %s for %s on %s.", cureSpell.RankName(), type:lower() or "unknown", targetSpawn.CleanName() or "Unknown")
-                            return Casting.UseSpell(cureSpell.RankName(), targetId, true), true
-                        end
-                    end
-                end
-            end
-
-            Logger.log_debug("CureNow: No valid cure at this time for %s on %s.", type:lower() or "unknown", targetSpawn.CleanName() or "Unknown")
-            return false, false
-        end,
+    ['Cure']              = {
+        ['DetDispel'] = {
+            { type = "AA", name = "Radiant Cure", },
+        },
+        ['Poison'] = {
+            { type = "Spell", name = "CurePoison", },
+        },
+        ['Disease'] = {
+            { type = "Spell", name = "CureDisease", },
+        },
+        ['Curse'] = {
+            { type = "Spell", name = "CureCurse", },
+        },
+        ['Corruption'] = {
+            { type = "Spell", name = "CureCorrupt", },
+        },
     },
     ['Themes']            = {
         ['Heal'] = {
@@ -371,6 +353,7 @@ local _ClassConfig = {
         },
         ['SaryrnDot'] = {
             -- Stacking: Blood of Saryrn - Long Dot(42s) - Level 8+
+            "Nectar of Pain",           -- Level 70
             "Blood of Yoppa",           -- Level 70
             "Blood of Saryrn",          -- Level 65
             "Ancient: Scourge of Nife", -- Level 60
@@ -467,31 +450,6 @@ local _ClassConfig = {
         },
     },
     ['Helpers']           = {
-        DoRez = function(self, corpseId, ownerName)
-            local rezAction = false
-            local rezSpell = Core.GetResolvedActionMapItem('RezSpell')
-            local rezStaff = Core.GetResolvedActionMapItem('RezStaff')
-            local staffReady = mq.TLO.Me.ItemReady(rezStaff)()
-            local okayToRez = Casting.OkayToRez(corpseId)
-            local combatState = mq.TLO.Me.CombatState():lower() or "unknown"
-
-            if combatState == "combat" and Config:GetSetting('DoBattleRez') and Core.OkayToNotHeal() then
-                if staffReady then
-                    rezAction = okayToRez and Casting.UseItem(rezStaff, corpseId)
-                elseif Casting.AAReady("Call of the Wild") and not mq.TLO.Spawn(string.format("PC =%s", ownerName))() then
-                    rezAction = okayToRez and Casting.UseAA("Call of the Wild", corpseId, true, 1)
-                end
-            elseif combatState ~= "combat" and staffReady then
-                rezAction = okayToRez and Casting.UseItem(rezStaff, corpseId)
-            elseif combatState == "active" or combatState == "resting" then
-                if Casting.SpellReady(rezSpell, true) then
-                    rezAction = okayToRez and Casting.UseSpell(rezSpell.RankName(), corpseId, true, true)
-                end
-            end
-
-            return rezAction
-        end,
-
         ProcBuffChoice = function()
             local buffSpell = Core.GetResolvedActionMapItem('MeleeProcBuff')
             local buffLevel = buffSpell and buffSpell.Level() or 0
@@ -982,7 +940,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['DPS']            = {
+        ['DPS']            = { -- TODO: Examine adding second dots for some lines (poison, perhaps curse), especially for hybrid
             {
                 name = "Epic",
                 type = "Item",

@@ -81,6 +81,12 @@ local _ClassConfig = {
     _author           = "Algar, Derple",
     ['ModeChecks']    = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
+        IsCuring = function() return Config:GetSetting('DoCures') end,
+    },
+    ['Cure']          = {
+        ['DetDispel'] = {
+            { type = "AA", name = "Purity of Death", selfOnly = true, },
+        },
     },
     ['Modes']         = {
         'Tank',
@@ -1647,14 +1653,6 @@ local _ClassConfig = {
                 cond = function(self, aaName, target)
                     if Config:GetSetting('DoThoughtLeech') == 2 then return false end
                     return mq.TLO.Me.PctMana() < 10
-                end,
-            },
-            {
-                name = "Purity of Death",
-                type = "AA",
-                tooltip = Tooltips.PurityofDeath,
-                cond = function(self, aaName)
-                    return mq.TLO.Me.TotalCounters() > 0
                 end,
             },
             {

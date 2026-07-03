@@ -52,20 +52,21 @@ local _ClassConfig = {
         IsCuring  = function() return Config:GetSetting('UseCure') end,
         IsRezing  = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
     },
-    ['Cures']         = {
-        CureNow = function(self, type, targetId)
-            local targetSpawn = mq.TLO.Spawn(targetId)
-            if not targetSpawn and targetSpawn() then return false, false end
-
-            local cureSong = Core.GetResolvedActionMapItem('CureSong')
-            local downtime = mq.TLO.Me.CombatState():lower() ~= "combat"
-            if type:lower() == ("disease" or "poison") and Casting.SongReady(cureSong, downtime) then
-                Logger.log_debug("CureNow: Using %s for %s on %s.", cureSong.RankName(), type:lower() or "unknown", targetSpawn.CleanName() or "Unknown")
-                return Casting.UseSong(cureSong.RankName.Name(), targetId, downtime), true
-            end
-            Logger.log_debug("CureNow: No valid cure at this time for %s on %s.", type:lower() or "unknown", targetSpawn.CleanName() or "Unknown")
-            return false, false
-        end,
+    ['Rez']           = {
+        ['Combat']   = {
+            { type = "Item", name = "RezStaff", },
+        },
+        ['Downtime'] = {
+            { type = "Item", name = "RezStaff", },
+        },
+    },
+    ['Cure']          = {
+        ['Poison'] = {
+            { type = "Song", name = "CureSong", },
+        },
+        ['Disease'] = {
+            { type = "Song", name = "CureSong", },
+        },
     },
     ['Themes']        = {
         ['General'] = {
@@ -285,17 +286,6 @@ local _ClassConfig = {
         },
     },
     ['Helpers']       = {
-        DoRez = function(self, corpseId)
-            local rezStaff = Core.GetResolvedActionMapItem('RezStaff')
-
-            if mq.TLO.Me.ItemReady(rezStaff)() then
-                if Casting.OkayToRez(corpseId) then
-                    return Casting.UseItem(rezStaff, corpseId)
-                end
-            end
-
-            return false
-        end,
         SwapInst = function(type)
             if not Config:GetSetting('SwapInstruments') then return end
             Logger.log_verbose("\ayBard SwapInst(): Swapping to Instrument Type: %s", type)

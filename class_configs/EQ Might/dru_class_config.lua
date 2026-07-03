@@ -4,7 +4,6 @@ local Combat       = require("utils.combat")
 local Config       = require('utils.config')
 local Core         = require("utils.core")
 local Globals      = require("utils.globals")
-local Logger       = require("utils.logger")
 local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
@@ -12,12 +11,34 @@ local _ClassConfig = {
     _author               = "Algar",
     ['ModeChecks']        = {
         IsHealing = function() return true end,
-        IsCuring  = function() return Config:GetSetting('DoCureAA') or Config:GetSetting('DoCureSpells') end,
+        IsCuring  = function() return Config:GetSetting('DoCures') end,
         IsRezing  = function()
             local rezAction = Casting.CanUseAA("Call of the Wild") or Core.GetResolvedActionMapItem('RezStaff')
             return ((Core.GetResolvedActionMapItem('RezSpell') or rezAction) and Targeting.GetXTHaterCount() == 0) or (Config:GetSetting('DoBattleRez') and rezAction)
         end,
         CanCharm  = function() return true end,
+    },
+    ['Rez']               = {
+        ['Combat'] = {
+            { type = "Item", name = "RezStaff", },
+            {
+                type = "AA",
+                name = "Call of the Wild",
+                cond = function(self, spell, target, ownerName)
+                    return not mq.TLO.Spawn(string.format("PC =%s", ownerName or ""))()
+                end,
+            },
+        },
+        ['Downtime'] = {
+            { type = "Item", name = "RezStaff", },
+            {
+                type = "Spell",
+                name = "RezSpell",
+                cond = function(self, spell, target)
+                    return Casting.DowntimeRezOkay()
+                end,
+            },
+        },
     },
     ['Modes']             = {
         'Heal',
@@ -26,67 +47,24 @@ local _ClassConfig = {
         SummonAA   = function() return Casting.CanUseAA("Summon Companion") and "Summon Companion" end,
         RelocateAA = function() return Casting.CanUseAA("Companion's Relocation") and "Companion's Relocation" end,
     },
-    ['Cures']             = {
-        GetCureSpells = function(self)
-            --(re)initialize the table for loadout changes
-            self.TempSettings.CureSpells = {}
-
-            -- Choose whether we should be trying to resolve the groupheal based on our settings and whether it cures at its level
-            local ghealSpell = Core.GetResolvedActionMapItem('GroupHeal')
-            local groupHeal = (Config:GetSetting('GroupHealAsCure') and (ghealSpell and ghealSpell.Level() or 0) >= 66) and "GroupHeal"
-
-            -- Find the map for each cure spell we need, given availability of groupheal, groupcure. fallback to curespell
-            -- Curse is convoluted: If Keepmemmed, always use cure, if not, use groupheal if available and fallback to cure
-            local neededCures = {
-                ['Poison'] = Casting.GetFirstMapItem({ groupHeal, "CurePoison", }),
-                ['Disease'] = Casting.GetFirstMapItem({ groupHeal, "CureDisease", }),
-                ['Curse'] = "CureCurse",
-                ['Corruption'] = "CureCorrupt",
-            }
-
-            -- iterate to actually resolve the selected map item, if it is valid, add it to the cure table
-            for k, v in pairs(neededCures) do
-                local cureSpell = Core.GetResolvedActionMapItem(v)
-                if cureSpell then
-                    self.TempSettings.CureSpells[k] = cureSpell
-                end
-            end
-        end,
-        CureNow = function(self, type, targetId)
-            local targetSpawn = mq.TLO.Spawn(targetId)
-            if not targetSpawn and targetSpawn then return false, false end
-
-            if Config:GetSetting('DoCureAA') then
-                local cureAA = Casting.AAReady("Radiant Cure") and "Radiant Cure"
-
-                -- I am finding self-cures to be less than helpful when most effects on a healer are group-wide
-                -- if not cureAA and targetId == mq.TLO.Me.ID() and Casting.AAReady("Purified Spirits") then
-                --     cureAA = "Purified Spirits"
-                -- end
-
-                if cureAA then
-                    Logger.log_debug("CureNow: Using %s for %s on %s.", cureAA, type:lower() or "unknown", targetSpawn.CleanName() or "Unknown")
-                    return Casting.UseAA(cureAA, targetId), true
-                end
-            end
-
-            if Config:GetSetting('DoCureSpells') then
-                for effectType, cureSpell in pairs(self.TempSettings.CureSpells) do
-                    if type:lower() == effectType:lower() then
-                        if cureSpell.TargetType():lower() == "group v1" and not Targeting.GroupedWithTarget(targetSpawn) then
-                            Logger.log_debug("CureNow: We cannot use %s on %s, because it is a group-only spell and they are not in our group!", cureSpell.RankName(),
-                                targetSpawn.CleanName() or "Unknown")
-                        else
-                            Logger.log_debug("CureNow: Using %s for %s on %s.", cureSpell.RankName(), type:lower() or "unknown", targetSpawn.CleanName() or "Unknown")
-                            return Casting.UseSpell(cureSpell.RankName(), targetId, true), true
-                        end
-                    end
-                end
-            end
-
-            Logger.log_debug("CureNow: No valid cure at this time for %s on %s.", type:lower() or "unknown", targetSpawn.CleanName() or "Unknown")
-            return false, false
-        end,
+    ['Cure']              = {
+        ['DetDispel'] = {
+            { type = "AA", name = "Radiant Cure", },
+        },
+        ['Poison'] = {
+            { type = "Spell", name = "GroupHeal",  load_cond = function(self) return self.Helpers.UseGroupHealCure(self, 'KeepPoisonMemmed') end, },
+            { type = "Spell", name = "CurePoison", },
+        },
+        ['Disease'] = {
+            { type = "Spell", name = "GroupHeal",   load_cond = function(self) return self.Helpers.UseGroupHealCure(self, 'KeepDiseaseMemmed') end, },
+            { type = "Spell", name = "CureDisease", },
+        },
+        ['Curse'] = {
+            { type = "Spell", name = "CureCurse", },
+        },
+        ['Corruption'] = {
+            { type = "Spell", name = "CureCorrupt", },
+        },
     },
     ['Themes']            = {
         ['Heal'] = {
@@ -209,6 +187,7 @@ local _ClassConfig = {
             "Vengeance of the Wild",        -- Level 49
         },
         ['FlameLickDot'] = {                -- Fire Dot with Fire Resist Reduction, 60s
+            "Blistering Sunray",            -- Level 70
             "Immolation of the Sun",        -- Level 67
             "Sylvan Embers",                -- Level 65
             "Immolation of Ro",             -- Level 62
@@ -260,6 +239,7 @@ local _ClassConfig = {
             "Frost",                  -- Level 55
         },
         ['IceRain'] = {
+            "Cloudburst Hail", -- Level 70
             "Tempest Wind",    -- Level 66
             "Winter's Storm",  -- Level 61
             "Blizzard",        -- Level 54
@@ -284,22 +264,24 @@ local _ClassConfig = {
             "Mask of the Stalker", -- Level 60
         },
         ['HPTypeOne'] = {
-            "Direwild Skin",            -- Level 71 Single
-            "Blessing of Steeloak",     -- Level 70 Group
-            "Steeloak Skin",            -- Level 68 Single
-            "Blessing of the Nine",     -- Level 65 Group
-            "Protection of the Glades", -- Level 60 Group
-            "Natureskin",               -- Level 57 Single
-            "Protection of Nature",     -- Level 49 Group
+            "Direwild Skin",                 -- Level 71 Single
+            "Ancient: Blessing of Steeloak", -- Level 70 Group
+            "Blessing of Steeloak",          -- Level 70 Group
+            "Steeloak Skin",                 -- Level 68 Single
+            "Blessing of the Nine",          -- Level 65 Group
+            "Protection of the Nine",        -- Level 63 Single
+            "Protection of the Glades",      -- Level 60 Group
+            "Natureskin",                    -- Level 57 Single
+            "Protection of Nature",          -- Level 49 Group
             -- "Skin like Nature",         -- Level 46 Single
-            "Protection of Diamond",    -- Level 39 Group
+            "Protection of Diamond",         -- Level 39 Group
             -- "Skin like Diamond",        -- Level 36 Single
-            "Protection of Steel",      -- Level 27 Group
+            "Protection of Steel",           -- Level 27 Group
             -- "Skin like Steel",          -- Level 24 Single
-            "Protection of Rock",       -- Level 19 Group
-            "Skin like Rock",           -- Level 14 Single
-            "Protection of Wood",       -- Level 9 Group
-            "Skin like Wood",           -- Level 1 Single
+            "Protection of Rock",            -- Level 19 Group
+            "Skin like Rock",                -- Level 14 Single
+            "Protection of Wood",            -- Level 9 Group
+            "Skin like Wood",                -- Level 1 Single
         },
         ['GroupRegenBuff'] = {
             "Blessing of Oak",           -- Level 69
@@ -1066,35 +1048,12 @@ local _ClassConfig = {
         },
     },
     ['Helpers']           = {
-        DoRez = function(self, corpseId, ownerName)
-            local rezAction = false
-            local rezSpell = Core.GetResolvedActionMapItem('RezSpell')
-            local rezStaff = Core.GetResolvedActionMapItem('RezStaff')
-            local staffReady = mq.TLO.Me.ItemReady(rezStaff)()
-            local okayToRez = Casting.OkayToRez(corpseId)
-            local combatState = mq.TLO.Me.CombatState():lower() or "unknown"
-
-            if combatState == "combat" and Config:GetSetting('DoBattleRez') and Core.OkayToNotHeal() then
-                if staffReady then
-                    rezAction = okayToRez and Casting.UseItem(rezStaff, corpseId)
-                elseif Casting.AAReady("Call of the Wild") and not mq.TLO.Spawn(string.format("PC =%s", ownerName))() then
-                    rezAction = okayToRez and Casting.UseAA("Call of the Wild", corpseId, true, 1)
-                end
-            elseif combatState ~= "combat" and staffReady then
-                rezAction = okayToRez and Casting.UseItem(rezStaff, corpseId)
-            elseif combatState == "active" or combatState == "resting" then
-                if Casting.SpellReady(rezSpell, true) then
-                    rezAction = okayToRez and Casting.UseSpell(rezSpell.RankName(), corpseId, true, true)
-                end
-            end
-
-            return rezAction
-        end,
-
-
         RainCheck = function(target) -- I made a funny
             if not Config:GetSetting('DoRain') or not Config:GetSetting('DoAEDamage') then return false end
             return Targeting.GetTargetDistance() >= Config:GetSetting('RainDistance')
+        end,
+        UseGroupHealCure = function(self, keepSetting)
+            return Config:GetSetting('GroupHealAsCure') and not Config:GetSetting(keepSetting) and Core.GetResolvedActionMapItem('GroupHeal')
         end,
     },
     ['DefaultConfig']     = {
@@ -1441,8 +1400,9 @@ local _ClassConfig = {
             Header = "Recovery",
             Category = "Curing",
             Index = 105,
-            Tooltip = "If Word of Reconstitution is available, use this to cure instead of individual cure spells. \n" ..
-                "Please note that we will prioritize Remove Greater Curse if you have selected to keep it memmed as above (due to the counter disparity).",
+            Tooltip = "Use your group heal to cure poison and disease instead of individual cure spells. \n" ..
+                "Please note that we will prioritize single target cures if you have selected to keep them memmed as above (due to the counter disparity).",
+            RequiresLoadoutChange = true,
             Default = true,
             ConfigType = "Advanced",
         },

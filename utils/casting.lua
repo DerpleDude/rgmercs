@@ -959,45 +959,65 @@ function Casting.CanAlliance()
     return true
 end
 
---- Targets and /consider's the corpse (EMU only, ConCorpseForRez)
---- to check for prior rez, waits up to 1s for con event. Summons
---- corpse via /corpse if beyond 25 units.
+--- The EMU consider-event "already rezzed?" determination (the expensive
+--- part of OkayToRez): targets and /consider's the corpse, waits up to 1s
+--- for the con event. No-op (returns true) when ConCorpseForRez is off.
+---@param corpseId number The spawn ID of the corpse to evaluate.
+---@return boolean True if the corpse is present and not yet rezzed.
+function Casting.OkayToRezConsider(corpseId)
+    if not Config:GetSetting('ConCorpseForRez') then return true end
+
+    Globals.CorpseConned = false
+    Targeting.SetTarget(corpseId, true)
+    Core.DoCmd("/consider")
+
+    local maxWait = 1000
+    while maxWait > 0 do
+        mq.doevents('CorpseConned')
+        mq.delay(50)
+        Events.DoEvents()
+        if not mq.TLO.Spawn(corpseId)() then
+            Logger.log_debug("\atEmuOkayToRez(): Corpse ID %d no longer exists, did someone else rez it? Aborting.", corpseId or 0)
+            return false
+        end
+        if Globals.CorpseConned then
+            mq.doevents('AlreadyRezzed')
+            if Tables.TableContains(Globals.RezzedCorpses, corpseId) then
+                Logger.log_debug("\atEmuOkayToRez(): Checked corpse ID %d, and it appears to have been rezzed already. Aborting.", corpseId or 0)
+                return false
+            else
+                Logger.log_debug("\atEmuOkayToRez(): Checked corpse ID %d, and it appears to be in need of a rez. Proceeding.", corpseId or 0)
+                break
+            end
+        end
+
+        maxWait = maxWait - 50
+        if maxWait <= 0 then
+            Logger.log_warn(
+                "\atEmuOkayToRez(): \arWarning! \atChecked corpse ID %d, but did not receive a con message. Allowing the check to proceed, but this may rez a corpse that has previously received one.",
+                corpseId or 0)
+        end
+    end
+    return true
+end
+
+Casting.RezConsiderCache = {}
+
+--- Targets and /consider's the corpse (EMU only, ConCorpseForRez) to check for a prior rez, summoning it via
+--- /corpse if beyond 25 units. The consider result is memoized briefly (per corpse) so a single rez pass doesn't
+--- re-/consider the same corpse once per candidate entry; the /corpse summon still runs every call.
 ---@param corpseId number The spawn ID of the corpse to evaluate.
 ---@return boolean True if the corpse is present, in range, and unrezzed.
 function Casting.OkayToRez(corpseId)
-    if Config:GetSetting('ConCorpseForRez') then
-        Targeting.SetTarget(corpseId, true)
-        Core.DoCmd("/consider")
-
-        local maxWait = 1000
-        while maxWait > 0 do
-            mq.doevents('CorpseConned')
-            mq.delay(50)
-            Events.DoEvents()
-            if not mq.TLO.Spawn(corpseId)() then
-                Logger.log_debug("\atEmuOkayToRez(): Corpse ID %d no longer exists, did someone else rez it? Aborting.", corpseId or 0)
-                return false
-            end
-            if Globals.CorpseConned then
-                mq.doevents('AlreadyRezzed')
-                if Tables.TableContains(Globals.RezzedCorpses, corpseId) then
-                    Logger.log_debug("\atEmuOkayToRez(): Checked corpse ID %d, and it appears to have been rezzed already. Aborting.", corpseId or 0)
-                    return false
-                else
-                    Logger.log_debug("\atEmuOkayToRez(): Checked corpse ID %d, and it appears to be in need of a rez. Proceeding.", corpseId or 0)
-                    break
-                end
-            end
-
-            maxWait = maxWait - 50
-            if maxWait <= 0 then
-                Logger.log_warn(
-                    "\atEmuOkayToRez(): \arWarning! \atChecked corpse ID %d, but did not receive a con message. Allowing the check to proceed, but this may rez a corpse that has previously received one.",
-                    corpseId or 0)
-            end
-        end
-        Globals.CorpseConned = false
+    local cached = Casting.RezConsiderCache[corpseId]
+    local okay
+    if cached and (Globals.GetTimeSeconds() - cached.time) < 2 then
+        okay = cached.okay
+    else
+        okay = Casting.OkayToRezConsider(corpseId)
+        Casting.RezConsiderCache[corpseId] = { time = Globals.GetTimeSeconds(), okay = okay, }
     end
+    if not okay then return false end
 
     if mq.TLO.Spawn(corpseId).Distance3D() > 25 then
         Targeting.SetTarget(corpseId, true)
@@ -1005,6 +1025,15 @@ function Casting.OkayToRez(corpseId)
     end
 
     return true
+end
+
+--- EQ rejects InCombat=0 rez spells (e.g. Incarnate Anew, Larger Reviviscence)
+--- unless the client CombatState is ACTIVE or RESTING; the RGMercs Downtime
+--- phase also covers the post-combat COOLDOWN window where those casts fail.
+---@return boolean True when an OOC-only rez spell may be cast.
+function Casting.DowntimeRezOkay()
+    local state = (mq.TLO.Me.CombatState() or ""):lower()
+    return state == "active" or state == "resting"
 end
 
 --- Returns false immediately if the DoBuffs setting is off, otherwise delegates to CheckOkayToBuff which verifies the player is visible, not in combat, stationary long enough, and not critically low on mana.
@@ -1346,7 +1375,7 @@ end
 --- @return boolean permanent True when the spell is no longer in the book (e.g. persona change) and a retry is pointless.
 function Casting.MemorizeSpell(gem, spell, waitSpellReady, maxWait)
     local me = mq.TLO.Me
-    if me.CombatState():lower() == "combat" and Targeting.IHaveAggro(100) then
+    if (me.CombatState() or ""):lower() == "combat" and Targeting.IHaveAggro(100) then
         Logger.log_warning("\atMemorizeSpell\aw():\ar %s was not memorized in slot %d due to aggro! The loadout may need manual rescan after combat.", spell, gem)
         return false, false
     end
@@ -1365,7 +1394,7 @@ function Casting.MemorizeSpell(gem, spell, waitSpellReady, maxWait)
     local startMem = Globals.GetTimeMS()
     while (me.Gem(gem)() ~= mq.TLO.Spell(spell).Name() or (waitSpellReady and not me.SpellReady(gem)())) and ((Globals.GetTimeMS() - startMem) < maxWait) do
         Logger.log_debug("\atMemorizeSpell\aw():\ay Waiting for '%s' to load in slot %d'...", spell, gem)
-        if (me.CombatState():lower() == "combat" and Targeting.IHaveAggro(100)) or me.Casting() or me.Moving() or mq.TLO.Stick.Active() or mq.TLO.Navigation.Active() or mq.TLO.MoveTo.Moving() then
+        if ((me.CombatState() or ""):lower() == "combat" and Targeting.IHaveAggro(100)) or me.Casting() or me.Moving() or mq.TLO.Stick.Active() or mq.TLO.Navigation.Active() or mq.TLO.MoveTo.Moving() then
             Logger.log_debug(
                 "\atMemorizeSpell\aw():\ay I was interrupted while waiting for spell '%s' to load in slot %d'! Aborting. CombatState(%s) Casting(%s) Moving(%s) Stick(%s) Nav(%s) MoveTo(%s))",
                 spell, gem, me.CombatState(), me.Casting() or "None", Strings.BoolToColorString(me.Moving()), Strings.BoolToColorString(mq.TLO.Stick.Active()),
@@ -1747,6 +1776,23 @@ function Casting.CastCheck(spell, bAllowMove)
         Strings.BoolToColorString(controlCheck))
 
     return castingCheck and movingCheck and manaCheck and endCheck and controlCheck
+end
+
+--- Type-dispatched cast shared by the entry-list engines (mez/charm/rez/cure) and the queued-ability processor; returns the underlying cast's success.
+--- @param entryType string One of "aa"|"item"|"song"|"disc"|"ability"|"spell"; anything unrecognized is treated as a spell.
+--- @param name string The resolved name to cast (an AA/item name, or a spell/song RankName); unused for disc, which casts opts.spell.
+--- @param targetId? number The target spawn ID.
+--- @param opts? table Optional flags: { allowMem = boolean, allowDead = boolean, spell = MQSpell (the disc's spell object) }.
+--- @return boolean success
+function Casting.UseEntry(entryType, name, targetId, opts)
+    opts = opts or {}
+    entryType = (entryType or ""):lower()
+    if entryType == "aa" then return Casting.UseAA(name, targetId, opts.allowDead) end
+    if entryType == "item" then return Casting.UseItem(name, targetId, opts.allowDead) end
+    if entryType == "song" then return Casting.UseSong(name, targetId, opts.allowMem) end
+    if entryType == "disc" then return Casting.UseDisc(opts.spell, targetId) end
+    if entryType == "ability" then return Casting.UseAbility(name) end
+    return Casting.UseSpell(name, targetId, opts.allowMem, opts.allowDead)
 end
 
 --- Casts a spell on a target. Bards are routed to UseSong.

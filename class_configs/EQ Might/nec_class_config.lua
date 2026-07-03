@@ -20,6 +20,14 @@ local _ClassConfig = {
         CanCharm = function() return true end,
         IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
     },
+    ['Rez']             = {
+        ['Combat']   = {
+            { type = "Item", name = "RezStaff", },
+        },
+        ['Downtime'] = {
+            { type = "Item", name = "RezStaff", },
+        },
+    },
     ['Themes']          = {
         ['DPS'] = {
             { element = ImGuiCol.TitleBgActive,    color = { r = 0.5, g = 0.05, b = 1.0, a = .8, }, },
@@ -933,7 +941,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['PetBuff']         = {
+        ['PetBuff']         = { -- TODO: Examine spectral guard 71
             {
                 name = "PetHaste",
                 type = "Spell",
@@ -953,17 +961,6 @@ local _ClassConfig = {
         },
     },
     ['Helpers']         = {
-        DoRez = function(self, corpseId)
-            local rezStaff = Core.GetResolvedActionMapItem('RezStaff')
-
-            if mq.TLO.Me.ItemReady(rezStaff)() then
-                if Casting.OkayToRez(corpseId) then
-                    return Casting.UseItem(rezStaff, corpseId)
-                end
-            end
-
-            return false
-        end,
         CancelLich = function(self)
             -- detspa means detremental spell affect
             -- spa is positive spell affect

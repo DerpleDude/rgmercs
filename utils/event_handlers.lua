@@ -579,14 +579,14 @@ end)
 
 -- [ EMU REZ HANDLERS] --
 mq.event('CorpseConned', "This corpse will decay#*#.", function()
-    if Core.OnEMU and Modules:ExecModule("Class", "IsRezing") then
+    if Core.OnEMU() and Modules:ExecModule("Class", "IsRezing") then
         Logger.log_verbose("Corpse /con message received for rez checks.")
         Globals.CorpseConned = true
     end
 end)
 
 mq.event('AlreadyRezzed', "This corpse has already accepted a resurrection.", function()
-    if Core.OnEMU and Modules:ExecModule("Class", "IsRezing") then
+    if Core.OnEMU() and Modules:ExecModule("Class", "IsRezing") then
         Logger.log_verbose("Already rezzed corpse detected, we will ignore this corpse for now.")
         table.insert(Globals.RezzedCorpses, mq.TLO.Target.ID()) --target.id returns 0 if no target
     end

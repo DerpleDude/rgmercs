@@ -68,7 +68,7 @@ Module.FAQ             = {
 			"  To use the Heal List, find it in the UI on the Main tab, or familiarize yourself with related commands in the command list above.\n\n" ..
 			"  The HP of any PC on the list will be monitored. There is no priority based on position in this list, the worst hurt will be healed first.\n\n" ..
 			"  Placing groupmembers on this list is not necessary, the healer's groupmates will always be checked first... however, placing critical roles (tanks) on this list may 'double-tap' them (see 'healing overview' FAQ).\n\n" ..
-			"  Note that PCs HP value updates may involve some latency from the client/server, if they are not an RGMercs Peer (a character running RGMercs on the same local network).",
+			"  Note that PCs HP value updates may involve some latency from the client/server, if they are not an RGMercs Peer (see the Peers FAQ).",
 		Settings_Used = "",
 	},
 	{
@@ -87,6 +87,32 @@ Module.FAQ             = {
 			"  Once the group is checked (whether the PC used a heal or not), the PC will then check the Heal List (see 'Heal List' FAQ entry) if it is enabled, or the healer's xtarget list if not.\n\n" ..
 			"  Neither of these lists will short-circuit based on the target's target, we will simply compare HP values to find the worst hurt and process healing rotations on this character as above.\n\n" ..
 			"  Upon completion, the healer will then process standard rotations (group buffs, combat, etc). Many healers by default have check that will prevent some of those rotations from processing if a player in their group is low health (in big heal range).",
+		Settings_Used = "",
+	},
+	{
+		Question = "What is an RGMercs peer? How do I report a character that isn't running RGMercs?",
+		Answer =
+			"A peer is any character on your local network broadcasting an RGMercs heartbeat - its buffs, cure effects, health, and position. Peer-aware features (Peer Buff Scope, Cure Scope, the Heal List, and more) can only see and act on peers.\n\n" ..
+			"  A full RGMercs character is a peer automatically.\n\n" ..
+			"  For a character running other automation (or none), run /lua run rgmercs/heartbeat to broadcast its status without loading the rest of RGMercs. Add 'directed' (/lua run rgmercs/heartbeat directed) to send only, with no status window.\n\n" ..
+			"  Type /heartbeat stop to end it.",
+		Settings_Used = "",
+	},
+	{
+		Question = "What are the Cure Allow and Deny Lists? How do I use them?",
+		Answer = "These per-zone lists let you override curing by effect name.\n\n" ..
+			"  Allow List: For effects without counters that should be dispelled outright (via Radiant Cure or similar).\n\n" ..
+			"  Deny List: For effects we should ignore when deciding whether to cure (they may be cured if we also attempt to cure something else).\n\n" ..
+			"  Manage them in the Cure Abilities section of the Class tab, or with /rgl cureallow, /rgl curedeny, /rgl cureallowrm, and /rgl curedenyrm.\n\n" ..
+			"  Enable Use Shared Cure Lists to share these lists with your RGMercs peers on this machine.",
+		Settings_Used = "",
+	},
+	{
+		Question = "How does curing prioritize? Can I get a cures overview?",
+		Answer = "Cure Overview: Every cure check, RGMercs cures yourself first, then the next peer who needs it within your Cure Scope - your group, then your Heal List - one cure per pass.\n\n" ..
+			"  For each target, effects are handled in order: Deny List entries are skipped; Allow List entries (and mez) are dispelled outright; everything else prefers a det dispel (like Radiant Cure) and falls back to the matching Poison, Disease, Curse, or Corruption cure.\n\n" ..
+			"  Within each type list, the first eligible ability by priority is used; reorder or toggle them in the Cure Abilities section of the Class tab.\n\n" ..
+			"  Outside combat, detrimental effect dispels (e.g, Radiant Cure) are limited by your Downtime Det Dispel setting (mez is always cleared).",
 		Settings_Used = "",
 	},
 }

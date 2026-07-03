@@ -6,6 +6,7 @@ local Combat    = require("utils.combat")
 local Comms     = require("utils.comms")
 local Config    = require('utils.config')
 local Core      = require("utils.core")
+local Entries   = require("utils.entries")
 local Globals   = require('utils.globals')
 local Logger    = require("utils.logger")
 local Modules   = require("utils.modules")
@@ -282,7 +283,7 @@ function Module:Render()
                 local enabled = Config:GetSetting('EnabledMezEntries') or {}
                 local resolvedMap = {}
                 for _, entry in ipairs(list) do
-                    resolvedMap[entry.name] = Modules:ExecModule("Class", "GetResolvedActionMapItem", entry.name)
+                    resolvedMap[entry.name] = Core.GetResolvedActionMapItem(entry.name)
                 end
                 local _, newEnabled, changed = Ui.RenderRotationTable("MezAbilities", list, resolvedMap, 0, false, enabled, true)
                 if changed then Config:SetSetting('EnabledMezEntries', newEnabled) end
@@ -392,10 +393,8 @@ end
 
 -- resolve a mez entry's identifier to its MQSpell (for TargetType / cast-time / range reads)
 function Module:EntrySpell(entry)
-    local entryType = (entry.type or ""):lower()
-    if entryType == "aa" then return Casting.GetAASpell(entry.name) end
-    if entryType == "item" then return Casting.GetClickySpell(entry.name) end
-    return Modules:ExecModule("Class", "GetResolvedActionMapItem", entry.name)
+    local resolvedName = Core.GetResolvedActionMapItem(entry.name) or entry.name
+    return Entries.Spell(entry, resolvedName)
 end
 
 -- classify a mez spell by its TargetType; "single" means single-target, anything else is an AE
@@ -410,36 +409,21 @@ function Module:MezDelivery(spell)
     return "single"
 end
 
--- only spell/song are gemmed abilities we ever WAIT on; AA/item run off reuse timers
 function Module:EntryIsGemmed(entry)
-    local entryType = (entry.type or ""):lower()
-    return entryType == "spell" or entryType == "song"
+    return Entries.IsGemmed(entry)
 end
 
--- type-dispatched readiness, mirroring Rotation.ExecEntry
 function Module:EntryReady(entry, spell)
-    local entryType = (entry.type or ""):lower()
-    if entryType == "aa" then return Casting.AAReady(entry.name) end
-    if entryType == "item" then return Casting.ItemReady(entry.name) end
-    if entryType == "song" then return Casting.SongReady(spell) end
-    if entryType == "disc" then return Casting.DiscReady(spell) end
-    return Casting.SpellReady(spell)
+    local resolvedName = Core.GetResolvedActionMapItem(entry.name) or entry.name
+    return Entries.Ready(entry, spell, resolvedName)
 end
 
--- type-dispatched cast (AE spells allow a dead target, matching the old MezNow behavior)
+-- cast the resolved mez; AE spells allow a dead target (matching the old MezNow behavior)
 function Module:EntryCast(entry, spell, mezId, useAE)
     local entryType = (entry.type or ""):lower()
-    if entryType == "aa" then
-        Casting.UseAA(entry.name, mezId, useAE)
-    elseif entryType == "item" then
-        Casting.UseItem(entry.name, mezId, useAE)
-    elseif entryType == "song" then
-        Casting.UseSong(spell.RankName(), mezId, false, 2)
-    elseif entryType == "disc" then
-        Casting.UseDisc(spell, mezId)
-    else
-        Casting.UseSpell(spell.RankName(), mezId, false, useAE, 2)
-    end
+    local resolvedName = Core.GetResolvedActionMapItem(entry.name) or entry.name
+    local name = (entryType == "aa" or entryType == "item" or entryType == "ability") and resolvedName or spell.RankName()
+    Casting.UseEntry(entryType, name, mezId, { allowDead = useAE, spell = spell, })
 end
 
 -- per-entry user toggle (defaults on; flat name->bool map)
@@ -452,13 +436,8 @@ function Module:EntryActive(entry)
     return self:EntryEnabled(entry) and (not entry.cond or entry.cond())
 end
 
--- keep only entries whose load_cond passes (reuses the Class module's scan-time evaluator)
 function Module:FilterLoaded(list)
-    local out = {}
-    for _, entry in ipairs(list or {}) do
-        if Modules:ExecModule("Class", "LoadConditionPass", entry) then table.insert(out, entry) end
-    end
-    return out
+    return Entries.FilterLoaded(list)
 end
 
 -- rebuild the load_cond-filtered mez list on rescan, so a load-gated entry drops from both the cast logic and the UI
@@ -479,7 +458,7 @@ function Module:OnCombatModeChanged()
     self:RebuildMezAbilities()
 end
 
--- ===== DEPRECATED FALLBACK (delete once every mez class config ships a ['Mez'] table) =====
+-- ===== DEPRECATED FALLBACK (sunset 9/1/26 - delete once every mez class config ships a ['Mez'] table) =====
 -- Synthesizes the {type,name} list from today's hardcoded class logic so un-migrated configs keep working.
 function Module:FallbackMezAbilities()
     if Core.MyClassIs("BRD") then
@@ -503,7 +482,7 @@ function Module:FallbackMezAbilities()
     }
 end
 
--- ===== END DEPRECATED FALLBACK =====
+-- ===== END DEPRECATED FALLBACK (sunset 9/1/26) =====
 
 -- first cond-passing entry of the wanted direction (false = ST, true = AE), preferring a gemmed
 -- spell/song (whose cast time + max level we read for the refresh threshold and candidate scan)

@@ -16,75 +16,53 @@ local _ClassConfig = {
     ['ModeChecks']        = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
         IsHealing = function() return true end,
-        IsCuring  = function() return Config:GetSetting('DoCureAA') or Config:GetSetting('DoCureSpells') end,
+        IsCuring  = function() return Config:GetSetting('DoCures') end,
         IsRezing  = function()
             return (Core.GetResolvedActionMapItem('RezSpell') and Targeting.GetXTHaterCount() == 0) or
                 (Casting.CanUseAA("Gift of Resurrection") and Config:GetSetting('DoBattleRez'))
         end,
     },
+    ['Rez']               = {
+        ['Combat'] = {
+            { type = "AA", name = "Gift of Resurrection", },
+        },
+        ['Downtime'] = {
+            { type = "AA", name = "Gift of Resurrection", },
+            {
+                type = "Spell",
+                name = "RezSpell",
+                cond = function(self, spell, target)
+                    return Casting.DowntimeRezOkay()
+                        and not Casting.CanUseAA('Gift of Resurrection')
+                end,
+            },
+        },
+    },
     ['Modes']             = {
         'Tank',
         'DPS',
     },
-    ['Cures']             = {
-        GetCureSpells = function(self)
-            -- These are the default cure choices. I prefer PurityCure but a user may wish to change this to something else.
-            -- -- I chose not to add the option to use CurseCure or keep that memmed like emu because this is aimed and Live.
-            local neededCures = {
-                Poison     = 'PurityCure',
-                Disease    = 'PurityCure',
-                Curse      = 'PurityCure',
-                Corruption = 'CureCorrupt',
-            }
-
-            -- If we have chose the option, and have a splash heal in our books, use that instead
-            if Config:GetSetting('SplashHealAsCure') and Core.GetResolvedActionMapItem('SplashHeal') then
-                neededCures = {
-                    Poison     = 'SplashHeal',
-                    Disease    = 'SplashHeal',
-                    Curse      = 'SplashHeal',
-                    Corruption = 'SplashHeal',
-                }
-            end
-
-            -- Make sure that we have the curespell, and then place into the tempsettings table for CureNow to use
-            self.TempSettings.CureSpells = {}
-            for k, v in pairs(neededCures) do
-                local cureSpell = Core.GetResolvedActionMapItem(v)
-                if cureSpell then
-                    self.TempSettings.CureSpells[k] = cureSpell
-                end
-            end
-        end,
-        CureNow = function(self, type, targetId)
-            local targetSpawn = mq.TLO.Spawn(targetId)
-            if not targetSpawn and targetSpawn then return false, false end
-
-            if Config:GetSetting('DoCureAA') then
-                local cureAA = Casting.AAReady("Radiant Cure") and "Radiant Cure"
-
-                if not cureAA and targetId == mq.TLO.Me.ID() and Casting.AAReady("Purification") then
-                    cureAA = "Purification"
-                end
-
-                if cureAA then
-                    Logger.log_debug("CureNow: Using %s for %s on %s.", cureAA, type:lower() or "unknown", targetSpawn.CleanName() or "Unknown")
-                    return Casting.UseAA(cureAA, targetId), true
-                end
-            end
-
-            if Config:GetSetting('DoCureSpells') then
-                for effectType, cureSpell in pairs(self.TempSettings.CureSpells) do
-                    if type:lower() == effectType:lower() then
-                        Logger.log_debug("CureNow: Using %s for %s on %s.", cureSpell.RankName(), type:lower() or "unknown", targetSpawn.CleanName() or "Unknown")
-                        return Casting.UseSpell(cureSpell.RankName(), targetId, true), true
-                    end
-                end
-            end
-
-            Logger.log_debug("CureNow: No valid cure at this time for %s on %s.", type:lower() or "unknown", targetSpawn.CleanName() or "Unknown")
-            return false, false
-        end,
+    ['Cure']              = {
+        ['DetDispel'] = {
+            { type = "AA", name = "Radiant Cure", },
+            { type = "AA", name = "Purification", selfOnly = true, },
+        },
+        ['Poison'] = {
+            { type = "Spell", name = "SplashHeal", load_cond = function(self) return self.Helpers.UseSplashHealCure(self) end, },
+            { type = "Spell", name = "PurityCure", },
+        },
+        ['Disease'] = {
+            { type = "Spell", name = "SplashHeal", load_cond = function(self) return self.Helpers.UseSplashHealCure(self) end, },
+            { type = "Spell", name = "PurityCure", },
+        },
+        ['Curse'] = {
+            { type = "Spell", name = "SplashHeal", load_cond = function(self) return self.Helpers.UseSplashHealCure(self) end, },
+            { type = "Spell", name = "PurityCure", },
+        },
+        ['Corruption'] = {
+            { type = "Spell", name = "SplashHeal",  load_cond = function(self) return self.Helpers.UseSplashHealCure(self) end, },
+            { type = "Spell", name = "CureCorrupt", },
+        },
     },
     ['Themes']            = {
         ['Tank'] = {
@@ -786,18 +764,8 @@ local _ClassConfig = {
         },
     },
     ['Helpers']           = {
-        DoRez = function(self, corpseId)
-            local rezAction = false
-            local rezSpell = Core.GetResolvedActionMapItem('RezSpell')
-            local okayToRez = Casting.OkayToRez(corpseId)
-
-            if (Config:GetSetting('DoBattleRez') or mq.TLO.Me.CombatState():lower() ~= "combat") and Casting.AAReady("Gift of Resurrection") then
-                rezAction = okayToRez and Casting.UseAA("Gift of Resurrection", corpseId, true, 1)
-            elseif not Casting.CanUseAA("Gift of Resurrection") and mq.TLO.Me.CombatState():lower() ~= "combat" and Casting.SpellReady(rezSpell, true) then
-                rezAction = okayToRez and Casting.UseSpell(rezSpell.RankName(), corpseId, true, true)
-            end
-
-            return rezAction
+        UseSplashHealCure = function(self)
+            return Config:GetSetting('SplashHealAsCure') and Core.GetResolvedActionMapItem('SplashHeal')
         end,
         --determine whether we should overwrite DPU buffs with better single buffs
         SingleBuffCheck = function(self)
@@ -940,11 +908,11 @@ local _ClassConfig = {
     ['Charm']             = {
         ['Assist'] = {
             { name = "HealTaunt",   type = "Spell", },
-            { name = "Audacity",    type = "Spell", cond = function(self, spell, target) return Casting.DetSpellCheck(spell, target) end, },
+            { name = "Audacity",    type = "Spell",   cond = function(self, spell, target) return Casting.DetSpellCheck(spell, target) end, },
             { name = "Disruption",  type = "AA", },
             { name = "Taunt",       type = "Ability", },
-            { name = "CrushTimer5", type = "Spell", load_cond = function(self) return Config:GetSetting('Timer5Choice') == 1 end, },
-            { name = "CrushTimer6", type = "Spell", load_cond = function(self) return Config:GetSetting('Timer6Choice') == 1 end, },
+            { name = "CrushTimer5", type = "Spell",   load_cond = function(self) return Config:GetSetting('Timer5Choice') == 1 end, },
+            { name = "CrushTimer6", type = "Spell",   load_cond = function(self) return Config:GetSetting('Timer6Choice') == 1 end, },
             {
                 name = "StunTimer5",
                 type = "Spell",
@@ -1624,13 +1592,6 @@ local _ClassConfig = {
                 load_cond = function(self) return Core.IsTanking() end,
                 cond = function(self, discSpell, target)
                     return Casting.NoDiscActive()
-                end,
-            },
-            {
-                name = "Purification",
-                type = "AA",
-                cond = function(self, aaName)
-                    return mq.TLO.Me.TotalCounters() > 0
                 end,
             },
         },

@@ -1976,14 +1976,19 @@ function Ui.RenderRotationTable(name, rotationTable, resolvedActionMap, rotation
             Ui.Tooltip("Click a resolved action to inspect the spell/item/AA effect.")
         end
 
-        if reorderable and (Config:GetSetting('RotationEntryOrder') or {})[name] and ImGui.TableSetColumnIndex(numCols - 1) then
-            if ImGui.SmallButton(Icons.MD_REFRESH .. "##reset_" .. name) then
-                local order = Config:GetSetting('RotationEntryOrder') or {}
-                order[name] = nil
-                Config:SetSetting('RotationEntryOrder', order)
-                resetRequested = true
+        if reorderable and ImGui.TableSetColumnIndex(numCols - 1) then
+            Ui.RenderText(Icons.MD_INFO_OUTLINE)
+            Ui.Tooltip("WARNING: In some cases rotations are carefully crafted and reordering entries may result in suboptimal conditions (or even broken entries).\nPlease tread carefully.")
+            if (Config:GetSetting('RotationEntryOrder') or {})[name] then
+                ImGui.SameLine()
+                if ImGui.SmallButton(Icons.MD_REFRESH .. "##reset_" .. name) then
+                    local order = Config:GetSetting('RotationEntryOrder') or {}
+                    order[name] = nil
+                    Config:SetSetting('RotationEntryOrder', order)
+                    resetRequested = true
+                end
+                Ui.Tooltip("Reset this list to its default order.")
             end
-            Ui.Tooltip("Reset this list to its default order.")
         end
 
         for idx, entry in ipairs(rotationTable or {}) do

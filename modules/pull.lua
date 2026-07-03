@@ -889,7 +889,7 @@ function Module:RenderMobList(displayName, settingName)
             ImGui.TableSetupColumn('Controls', (ImGuiTableColumnFlags.WidthFixed), 80.0)
             ImGui.TableHeadersRow()
 
-            for idx, mobName in ipairs(Config:GetSetting(self:ActivePullList(settingName))[(mq.TLO.Zone.ShortName() or ""):lower()] or {}) do
+            for idx, mobName in ipairs(Config:GetZoneList(self:ActivePullList(settingName))) do
                 ImGui.TableNextColumn()
                 Ui.RenderText(tostring(idx))
                 ImGui.TableNextColumn()
@@ -1275,8 +1275,7 @@ end
 ---@param listName string
 ---@return boolean
 function Module:HaveList(listName)
-    local zoneList = Config:GetSetting(self:ActivePullList(listName))[(mq.TLO.Zone.ShortName() or ""):lower()]
-    return zoneList ~= nil and #zoneList > 0
+    return #Config:GetZoneList(self:ActivePullList(listName)) > 0
 end
 
 ---@param listName string
@@ -1287,7 +1286,7 @@ function Module:IsMobInList(listName, mobName, defaultNoList)
     -- no list so everything is allowed.
     if not self:HaveList(listName) then return defaultNoList end
 
-    for _, v in pairs(Config:GetSetting(self:ActivePullList(listName))[(mq.TLO.Zone.ShortName() or ""):lower()]) do
+    for _, v in ipairs(Config:GetZoneList(self:ActivePullList(listName))) do
         if v == mobName then return true end
     end
 

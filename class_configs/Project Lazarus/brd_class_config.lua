@@ -50,20 +50,13 @@ local _ClassConfig = {
         IsMezzing = function() return Config:GetSetting('MezOn') end,
         IsCuring  = function() return Config:GetSetting('UseCure') end,
     },
-    ['Cures']         = {
-        CureNow = function(self, type, targetId)
-            local targetSpawn = mq.TLO.Spawn(targetId)
-            if not targetSpawn and targetSpawn() then return false, false end
-
-            local cureSong = Core.GetResolvedActionMapItem('CureSong')
-            local downtime = mq.TLO.Me.CombatState():lower() ~= "combat"
-            if type:lower() == ("disease" or "poison") and Casting.SongReady(cureSong, downtime) then
-                Logger.log_debug("CureNow: Using %s for %s on %s.", cureSong.RankName(), type:lower() or "unknown", targetSpawn.CleanName() or "Unknown")
-                return Casting.UseSong(cureSong.RankName.Name(), targetId, downtime), true
-            end
-            Logger.log_debug("CureNow: No valid cure at this time for %s on %s.", type:lower() or "unknown", targetSpawn.CleanName() or "Unknown")
-            return false, false
-        end,
+    ['Cure']          = {
+        ['Poison'] = {
+            { type = "Song", name = "CureSong", },
+        },
+        ['Disease'] = {
+            { type = "Song", name = "CureSong", },
+        },
     },
     ['Themes']        = {
         ['General'] = {

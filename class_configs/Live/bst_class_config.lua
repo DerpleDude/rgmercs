@@ -4,7 +4,6 @@ local Combat    = require('utils.combat')
 local Config    = require('utils.config')
 local Core      = require("utils.core")
 local Globals   = require("utils.globals")
-local Logger    = require("utils.logger")
 local Targeting = require("utils.targeting")
 
 return {
@@ -15,6 +14,12 @@ return {
     },
     ['ModeChecks']        = {
         IsHealing = function() return true end,
+        IsCuring = function() return Config:GetSetting('DoCures') end,
+    },
+    ['Cure']              = {
+        ['DetDispel'] = {
+            { type = "AA", name = "Nature's Salve", selfOnly = true, },
+        },
     },
     ['PetPosition']       = {
         SummonAA   = function() return Casting.CanUseAA("Summon Companion") and "Summon Companion" end,
@@ -1173,13 +1178,6 @@ return {
                 type = "AA",
                 cond = function(self, aaName)
                     return (mq.TLO.Me.PctHPs() > 90 and mq.TLO.Me.PctMana() < 60)
-                end,
-            },
-            {
-                name = "Nature's Salve",
-                type = "AA",
-                cond = function(self, aaName)
-                    return mq.TLO.Me.TotalCounters() > 0
                 end,
             },
         },

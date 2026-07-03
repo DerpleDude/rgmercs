@@ -12,6 +12,14 @@ return {
     ['ModeChecks']    = {
         IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
     },
+    ['Rez']           = {
+        ['Combat']   = {
+            { type = "Item", name = "RezStaff", },
+        },
+        ['Downtime'] = {
+            { type = "Item", name = "RezStaff", },
+        },
+    },
     ['Modes']         = {
         'DPS',
     },
@@ -376,18 +384,6 @@ return {
         },
     },
     ['Helpers']       = {
-        DoRez = function(self, corpseId)
-            local rezStaff = Core.GetResolvedActionMapItem('RezStaff')
-
-            if mq.TLO.Me.ItemReady(rezStaff)() then
-                if Casting.OkayToRez(corpseId) then
-                    return Casting.UseItem(rezStaff, corpseId)
-                end
-            end
-
-            return false
-        end,
-
     },
     ['DefaultConfig'] = {
         ['Mode']           = {

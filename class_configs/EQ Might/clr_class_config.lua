@@ -4,7 +4,6 @@ local Combat       = require('utils.combat')
 local Config       = require('utils.config')
 local Core         = require("utils.core")
 local Globals      = require('utils.globals')
-local Logger       = require("utils.logger")
 local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
@@ -12,78 +11,78 @@ local _ClassConfig = {
     _author               = "Algar, Derple, Robban",
     ['ModeChecks']        = {
         IsHealing = function() return true end,
-        IsCuring = function() return Config:GetSetting('DoCureAA') or Config:GetSetting('DoCureSpells') end,
+        IsCuring = function() return Config:GetSetting('DoCures') end,
         IsRezing = function()
             local rezAction = Casting.CanUseAA("Blessing of Resurrection") or mq.TLO.FindItem("=Water Sprinkler of Nem Ankh")() or Core.GetResolvedActionMapItem('RezStaff')
             return ((Core.GetResolvedActionMapItem('RezSpell') or rezAction) and Targeting.GetXTHaterCount() == 0) or (Config:GetSetting('DoBattleRez') and rezAction)
         end,
     },
+    ['Rez']               = {
+        ['Combat'] = {
+            {
+                type = "Item",
+                name = "Legendary Fabled Staff of Forbidden Rites",
+                load_cond = function(self, item, target)
+                    return Core.GetResolvedActionMapItem('RezStaff') == "Legendary Fabled Staff of Forbidden Rites" -- prefer this one if its available
+                end,
+            },
+            { type = "AA",   name = "Blessing of Resurrection", },
+            {
+                type = "Item",
+                name = "RezStaff",
+                load_cond = function(self, item, target)
+                    local rezStaff = Core.GetResolvedActionMapItem('RezStaff')
+                    return rezStaff and rezStaff ~= "Legendary Fabled Staff of Forbidden Rites" -- otherwise BoR casts faster
+                end,
+            },
+            { type = "Item", name = "Water Sprinkler of Nem Ankh", },
+        },
+        ['Downtime'] = {
+            {
+                type = "Spell",
+                name = "Larger Reviviscence",
+                cond = function(self, spell, target)
+                    return Casting.DowntimeRezOkay()
+                        and mq.TLO.SpawnCount("pccorpse radius 80 zradius 30")() > 2
+                end,
+            },
+            { type = "AA",   name = "Blessing of Resurrection", },
+            { type = "Item", name = "RezStaff", },
+            { type = "Item", name = "Water Sprinkler of Nem Ankh", },
+            {
+                type = "Spell",
+                name = "RezSpell",
+                cond = function(self, spell, target)
+                    return Casting.DowntimeRezOkay()
+                        and not Casting.CanUseAA('Blessing of Resurrection')
+                end,
+            },
+        },
+    },
     ['Modes']             = {
         'Heal',
     },
-    ['Cures']             = {
-        GetCureSpells = function(self)
-            --(re)initialize the table for loadout changes
-            self.TempSettings.CureSpells = {}
-
-            -- Choose whether we should be trying to resolve the groupheal based on our settings and whether it cures at its level
-            local ghealSpell = Core.GetResolvedActionMapItem('GroupHeal')
-            local groupHeal = (Config:GetSetting('GroupHealAsCure') and (ghealSpell and ghealSpell.Level() or 0) >= 64) and "GroupHeal"
-
-            -- Find the map for each cure spell we need, given availability of groupheal, groupcure. fallback to curespell
-            -- These are convoluted: If Keepmemmed, always use cure, if not, use groupheal if available and fallback to cure
-            local neededCures = {
-                ['Poison'] = not Config:GetSetting('KeepPoisonMemmed') and (groupHeal or 'CurePoison') or 'CurePoison',
-                ['Disease'] = not Config:GetSetting('KeepDiseaseMemmed') and (groupHeal or 'CureDisease') or 'CureDisease',
-                ['Curse'] = not Config:GetSetting('KeepCurseMemmed') and (groupHeal or 'CureCurse') or 'CureCurse',
-                ['Corruption'] = "CureCorrupt",
-            }
-
-            -- iterate to actually resolve the selected map item, if it is valid, add it to the cure table
-            for k, v in pairs(neededCures) do
-                local cureSpell = Core.GetResolvedActionMapItem(v)
-                if cureSpell then
-                    self.TempSettings.CureSpells[k] = cureSpell
-                end
-            end
-        end,
-        CureNow = function(self, type, targetId)
-            local targetSpawn = mq.TLO.Spawn(targetId)
-            if not targetSpawn and targetSpawn() then return false, false end
-
-            if Config:GetSetting('DoCureAA') then
-                local cureAA = Casting.AAReady("Purify Soul") and "Purify Soul"
-                if Casting.AAReady("Group Purify Soul") and Targeting.GroupedWithTarget(targetSpawn) then
-                    cureAA = "Group Purify Soul"
-                elseif Casting.AAReady("Radiant Cure") then
-                    cureAA = "Radiant Cure"
-                    -- I am finding self-cures to be less than helpful when most effects on a healer are group-wide
-                    -- elseif targetId == mq.TLO.Me.ID() and Casting.AAReady("Purified Spirits") then
-                    --   cureAA = "Purified Spirits"
-                end
-                if cureAA then
-                    Logger.log_debug("CureNow: Using %s for %s on %s.", cureAA, type:lower() or "unknown", mq.TLO.Spawn(targetId).CleanName() or "Unknown")
-                    return Casting.UseAA(cureAA, targetId), true
-                end
-            end
-
-            if Config:GetSetting('DoCureSpells') then
-                for effectType, cureSpell in pairs(self.TempSettings.CureSpells) do
-                    if type:lower() == effectType:lower() then
-                        if cureSpell.TargetType():lower() == "group v1" and not Targeting.GroupedWithTarget(targetSpawn) then
-                            Logger.log_debug("CureNow: We cannot use %s on %s, because it is a group-only spell and they are not in our group!", cureSpell.RankName(),
-                                targetSpawn.CleanName() or "Unknown")
-                        else
-                            Logger.log_debug("CureNow: Using %s for %s on %s.", cureSpell.RankName(), type:lower() or "unknown", targetSpawn.CleanName() or "Unknown")
-                            return Casting.UseSpell(cureSpell.RankName(), targetId, true), true
-                        end
-                    end
-                end
-            end
-
-            Logger.log_debug("CureNow: No valid cure at this time for %s on %s.", type:lower() or "unknown", targetSpawn.CleanName() or "Unknown")
-            return false, false
-        end,
+    ['Cure']              = {
+        ['DetDispel'] = {
+            { type = "AA", name = "Group Purify Soul", },
+            { type = "AA", name = "Radiant Cure", },
+            { type = "AA", name = "Purify Soul",       selfOnly = true, },
+        },
+        ['Poison'] = {
+            { type = "Spell", name = "GroupHeal",  load_cond = function(self) return self.Helpers.UseGroupHealCure(self, 'KeepPoisonMemmed') end, },
+            { type = "Spell", name = "CurePoison", },
+        },
+        ['Disease'] = {
+            { type = "Spell", name = "GroupHeal",   load_cond = function(self) return self.Helpers.UseGroupHealCure(self, 'KeepDiseaseMemmed') end, },
+            { type = "Spell", name = "CureDisease", },
+        },
+        ['Curse'] = {
+            { type = "Spell", name = "GroupHeal", load_cond = function(self) return self.Helpers.UseGroupHealCure(self, 'KeepCurseMemmed') end, },
+            { type = "Spell", name = "CureCurse", },
+        },
+        ['Corruption'] = {
+            { type = "Spell", name = "CureCorrupt", },
+        },
     },
     ['Themes']            = {
         ['Heal'] = {
@@ -374,49 +373,9 @@ local _ClassConfig = {
             local vieBuff = self.ResolvedActionMap['SingleVieBuff']
             return vieBuff and vieBuff() and vieBuff.Name() == "Aegis of Vie" and (vieBuff.RankName.Rank() or 0) >= 2
         end,
-        DoRez = function(self, corpseId)
-            local rezAction = false
-            local rezSpell = Core.GetResolvedActionMapItem('RezSpell')
-            local rezStaff = Core.GetResolvedActionMapItem('RezStaff')
-            local staffReady = mq.TLO.Me.ItemReady(rezStaff)()
-            local okayToRez = Casting.OkayToRez(corpseId)
-            local combatState = mq.TLO.Me.CombatState():lower() or "unknown"
-
-            if combatState == "active" or combatState == "resting" then
-                if mq.TLO.SpawnCount("pccorpse radius 80 zradius 30")() > 2 and Casting.SpellReady(mq.TLO.Spell("Larger Reviviscence"), true) then
-                    rezAction = okayToRez and Casting.UseSpell("Larger Reviviscence", corpseId, true, true)
-                end
-            end
-
-            if combatState == "combat" and Config:GetSetting('DoBattleRez') and Core.OkayToNotHeal() then
-                -- legendary staff only has a 1.5s cast, use it first in combat
-                if rezStaff == "Legendary Fabled Staff of Forbidden Rites" and staffReady then
-                    rezAction = okayToRez and Casting.UseItem(rezStaff, corpseId)
-                elseif Casting.AAReady("Blessing of Resurrection") then
-                    rezAction = okayToRez and Casting.UseAA("Blessing of Resurrection", corpseId, true, 1)
-                elseif staffReady then -- the lower 2 staves still cast faster or as fast as water sprinkler
-                    rezAction = okayToRez and Casting.UseItem(rezStaff, corpseId)
-                elseif mq.TLO.Me.ItemReady("=Water Sprinkler of Nem Ankh")() then
-                    rezAction = okayToRez and Casting.UseItem("Water Sprinkler of Nem Ankh", corpseId)
-                else
-                    Logger.log_debug("DoRez: No fast rez options available in combat for %s.", mq.TLO.Spawn(corpseId).CleanName() or "Unknown")
-                end
-            elseif combatState ~= "combat" then
-                if Casting.AAReady("Blessing of Resurrection") then
-                    rezAction = okayToRez and Casting.UseAA("Blessing of Resurrection", corpseId, true, 1)
-                elseif staffReady then
-                    rezAction = okayToRez and Casting.UseItem(rezStaff, corpseId)
-                elseif mq.TLO.Me.ItemReady("=Water Sprinkler of Nem Ankh")() then
-                    rezAction = okayToRez and Casting.UseItem("=Water Sprinkler of Nem Ankh", corpseId)
-                elseif not Casting.CanUseAA("Blessing of Resurrection") and (combatState == "active" or combatState == "resting") then
-                    -- ^ if we have BoR, just wait for it, rather than taking the time to memorize a spell
-                    if Casting.SpellReady(rezSpell, true) then
-                        rezAction = okayToRez and Casting.UseSpell(rezSpell.RankName(), corpseId, true, true)
-                    end
-                end
-            end
-
-            return rezAction
+        UseGroupHealCure = function(self, keepSetting)
+            local ghealSpell = Core.GetResolvedActionMapItem('GroupHeal')
+            return Config:GetSetting('GroupHealAsCure') and not Config:GetSetting(keepSetting) and (ghealSpell and ghealSpell.Level() or 0) >= 64
         end,
     },
 
@@ -1171,7 +1130,7 @@ local _ClassConfig = {
             Header = "Recovery",
             Category = "General Healing",
             Index = 104,
-            Tooltip = "Use Complete Heal on the MA (instead of the healing Light line).",
+            Tooltip = "Use Complete Heal on a tank class (instead of the healing Light line).",
             RequiresLoadoutChange = true,
             Default = false,
             ConfigType = "Advanced",
@@ -1185,14 +1144,14 @@ local _ClassConfig = {
             Header = "Recovery",
             Category = "Healing Thresholds",
             Index = 101,
-            Tooltip = "Pct we will use Complete Heal on the MA.",
+            Tooltip = "Pct we will use Complete Heal on a tank class.",
             Default = 80,
             Min = 1,
             Max = 99,
             ConfigType = "Advanced",
             Warning = function()
                 if Config:GetSetting('CompleteHealPct') > Config:GetSetting('MaxHealPoint') then
-                    return true, "Warning: CompleteHealPct exceeds MaxHealPoint - we will not check if heals are needed until health is under MaxHealPoint."
+                    return true, "Warning: CompleteHealPct exceeds MaxHealPoint - we will not check if heals are needed until health is under MaxHealPoint (Healing Threshold)."
                 end
                 return false, ""
             end,
@@ -1285,6 +1244,7 @@ local _ClassConfig = {
             Index = 104,
             Tooltip = "If Word of Replenishment or Vivification are available, use these to cure instead of individual cure spells. \n" ..
                 "Please note that we will prioritize single target cures if you have selected to keep them memmed above (due to the counter disparity).",
+            RequiresLoadoutChange = true,
             Default = true,
             ConfigType = "Advanced",
         },

@@ -7,6 +7,7 @@ local Combat    = require("utils.combat")
 local Comms     = require("utils.comms")
 local Config    = require('utils.config')
 local Core      = require("utils.core")
+local Entries   = require("utils.entries")
 local Globals   = require('utils.globals')
 local Logger    = require("utils.logger")
 local Modules   = require("utils.modules")
@@ -365,8 +366,7 @@ end
 ---@param list string
 ---@return boolean true if the active list has entries for the current zone
 function Module:HaveList(list)
-    local zoneList = Config:GetSetting(self:ActiveCharmList(list))[(mq.TLO.Zone.ShortName() or ""):lower()]
-    return zoneList ~= nil and #zoneList > 0
+    return #Config:GetZoneList(self:ActiveCharmList(list)) > 0
 end
 
 ---@param list string
@@ -375,7 +375,7 @@ end
 ---@return boolean
 function Module:IsMobInList(list, name, defaultNoList)
     if not self:HaveList(list) then return defaultNoList end
-    for _, v in pairs(Config:GetSetting(self:ActiveCharmList(list))[(mq.TLO.Zone.ShortName() or ""):lower()]) do
+    for _, v in ipairs(Config:GetZoneList(self:ActiveCharmList(list))) do
         if v == name then return true end
     end
     return false
@@ -436,50 +436,28 @@ end
 
 -- resolve an entry's identifier to its MQSpell (for TargetType / cast-time / range reads)
 function Module:EntrySpell(entry)
-    local entryType = (entry.type or ""):lower()
-    if entryType == "aa" then return Casting.GetAASpell(entry.name) end
-    if entryType == "item" then return Casting.GetClickySpell(entry.name) end
-    if entryType == "ability" then return entry.name end
-    return Modules:ExecModule("Class", "GetResolvedActionMapItem", entry.name)
+    local resolvedName = Core.GetResolvedActionMapItem(entry.name) or entry.name
+    return Entries.Spell(entry, resolvedName)
 end
 
--- did the entry resolve to a usable action? abilities resolve by name (no spell object); all others need a live spell TLO
 function Module:EntryResolves(entry, spell)
-    if (entry.type or ""):lower() == "ability" then return spell ~= nil end
-    return spell ~= nil and spell() ~= nil
+    return Entries.Resolves(entry, spell)
 end
 
--- only spell/song are gemmed abilities we ever WAIT on; AA runs off a reuse timer
 function Module:EntryIsGemmed(entry)
-    local entryType = (entry.type or ""):lower()
-    return entryType == "spell" or entryType == "song"
+    return Entries.IsGemmed(entry)
 end
 
 function Module:EntryReady(entry, spell)
-    local entryType = (entry.type or ""):lower()
-    if entryType == "aa" then return Casting.AAReady(entry.name) end
-    if entryType == "item" then return Casting.ItemReady(entry.name) end
-    if entryType == "ability" then return Casting.AbilityReady(entry.name) end
-    if entryType == "song" then return Casting.SongReady(spell) end
-    if entryType == "disc" then return Casting.DiscReady(spell) end
-    return Casting.SpellReady(spell)
+    local resolvedName = Core.GetResolvedActionMapItem(entry.name) or entry.name
+    return Entries.Ready(entry, spell, resolvedName)
 end
 
 function Module:EntryCast(entry, spell, charmId)
     local entryType = (entry.type or ""):lower()
-    if entryType == "aa" then
-        Casting.UseAA(entry.name, charmId, false)
-    elseif entryType == "item" then
-        Casting.UseItem(entry.name, charmId, false)
-    elseif entryType == "ability" then
-        Casting.UseAbility(entry.name)
-    elseif entryType == "song" then
-        Casting.UseSong(spell.RankName(), charmId, false, 5)
-    elseif entryType == "disc" then
-        Casting.UseDisc(spell, charmId)
-    else
-        Casting.UseSpell(spell.RankName(), charmId, false, false)
-    end
+    local resolvedName = Core.GetResolvedActionMapItem(entry.name) or entry.name
+    local name = (entryType == "aa" or entryType == "item" or entryType == "ability") and resolvedName or spell.RankName()
+    Casting.UseEntry(entryType, name, charmId, { spell = spell, })
 end
 
 -- per-list enable state (defaults on); scoping by listName lets a shared name toggle independently in each list
@@ -495,7 +473,7 @@ function Module:GetCharmAbilities()
     return self:FallbackCharmAbilities()
 end
 
--- ===== DEPRECATED FALLBACK (delete once every charm config ships a ['Charm'] table) =====
+-- ===== DEPRECATED FALLBACK (sunset 9/1/26 - delete once every charm config ships a ['Charm'] table) =====
 function Module:FallbackCharmAbilities()
     if Core.MyClassIs("BRD") then
         return { { type = "Song", name = "CharmSong", }, }
@@ -506,15 +484,10 @@ function Module:FallbackCharmAbilities()
     }
 end
 
--- ===== END DEPRECATED FALLBACK =====
+-- ===== END DEPRECATED FALLBACK (sunset 9/1/26) =====
 
--- keep only entries whose load_cond passes (reuses the Class module's scan-time evaluator)
 function Module:FilterLoaded(list)
-    local out = {}
-    for _, entry in ipairs(list or {}) do
-        if Modules:ExecModule("Class", "LoadConditionPass", entry) then table.insert(out, entry) end
-    end
-    return out
+    return Entries.FilterLoaded(list)
 end
 
 -- rebuild the load_cond-filtered charm lists on rescan, so a load-gated entry drops out of both the cast logic and the UI
@@ -1184,7 +1157,7 @@ function Module:RenderMobList(displayName, settingName)
             ImGui.TableSetupColumn('Controls', ImGuiTableColumnFlags.WidthFixed, 80.0)
             ImGui.TableHeadersRow()
 
-            for idx, mobName in ipairs(Config:GetSetting(self:ActiveCharmList(settingName))[(mq.TLO.Zone.ShortName() or ""):lower()] or {}) do
+            for idx, mobName in ipairs(Config:GetZoneList(self:ActiveCharmList(settingName))) do
                 ImGui.TableNextColumn(); ImGui.Text(tostring(idx))
                 ImGui.TableNextColumn(); ImGui.Text(tostring(mq.TLO.SpawnCount(string.format("NPC %s", mobName))))
                 ImGui.TableNextColumn(); ImGui.Text(mobName)
@@ -1299,7 +1272,7 @@ function Module:Render()
                     ImGui.Text(listName)
                     local resolvedMap = {}
                     for _, entry in ipairs(list) do
-                        resolvedMap[entry.name] = Modules:ExecModule("Class", "GetResolvedActionMapItem", entry.name)
+                        resolvedMap[entry.name] = Core.GetResolvedActionMapItem(entry.name)
                     end
                     enabled[listName] = enabled[listName] or {}
                     local _, newEnabled, entriesChanged, _, resetRequested = Ui.RenderRotationTable("Charm" .. listName, list, resolvedMap, 0, false, enabled[listName], true, true)

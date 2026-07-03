@@ -588,7 +588,7 @@ function Movement:StoreLastMove()
         math.abs(self.LastMove.Z - me.Z()) > 1 or
         math.abs(self.LastMove.Heading - me.Heading.Degrees()) > 1 or
         me.Combat() or
-        me.CombatState():lower() == "combat" or
+        (me.CombatState() or ""):lower() == "combat" or
         me.Sitting() ~= self.LastMove.Sitting then
         self.LastMove = self.LastMove or {}
         self.LastMove.X = me.X()

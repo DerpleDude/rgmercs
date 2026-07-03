@@ -1495,8 +1495,7 @@ Config.DefaultConfig                                     = {
         Header = "Buffs",
         Category = "Buff Rules",
         Index = 6,
-        Tooltip =
-        "Choose who to use group buffs on. Please note that we will only buff raid/in-zone if they are actor peers (other PCs running RGMercs on the local computer/network).",
+        Tooltip = "Choose who to use group buffs on. Targets other than your group must be RGMercs Peers (refer to the Peers FAQ).",
         Default = 2,
         Min = 1,
         Max = 3,
@@ -1673,30 +1672,52 @@ Config.DefaultConfig                                     = {
         ConfigType = "Advanced",
     },
     --Recovery/Curing
-    ['DoCureSpells']               = {
-        DisplayName = "Do Cure Spells",
+    ['DoCures']                    = {
+        DisplayName = "Do Cures",
         Group = "Abilities",
         Header = "Recovery",
         Category = "Curing",
         Index = 1,
-        Tooltip = "Use Cure spells to clear detrimental effects from your group or yourself.",
+        Tooltip = "Clear curable detrimental effects from yourself and your peers.",
         Default = true,
     },
-    ['DoCureAA']                   = {
-        DisplayName = "Do Cure AA",
+    ['ActorCureScope']             = {
+        DisplayName = "Cure Scope",
         Group = "Abilities",
         Header = "Recovery",
         Category = "Curing",
         Index = 2,
-        Tooltip = "Use Cure AA to clear detrimental effects from your group or yourself.",
-        Default = true,
+        Tooltip = "Choose whose detrimental effects to cure. Targets other than yourself must be RGMercs Peers (refer to the Peers FAQ).",
+        Default = 2,
+        Min = 1,
+        Max = 3,
+        Type = "Combo",
+        ComboOptions = { 'Self', 'Group', 'Group + Heal List', },
+    },
+    ['DowntimeDetDispel']          = {
+        DisplayName = "Downtime Det Dispel",
+        Group = "Abilities",
+        Header = "Recovery",
+        Category = "Curing",
+        Index = 3,
+        Tooltip =
+            "When to use clear/detrimental dispel abilities (like Radiant Cure) outside of combat:\n" ..
+            "Never: save them for combat.\n" ..
+            "Cure List: only effects on your cure list.\n" ..
+            "Always: clear whenever something is curable.\n" ..
+            "Mez is always cleared, regardless of this setting.",
+        Default = 2,
+        Min = 1,
+        Max = 3,
+        Type = "Combo",
+        ComboOptions = { 'Never', 'Cure List', 'Always', },
     },
     ['CureInterval']               = {
         DisplayName = "Downtime Cure Check Interval",
         Group = "Abilities",
         Header = "Recovery",
         Category = "Curing",
-        Index = 3,
+        Index = 4,
         Tooltip = "The delay in seconds between making cure checks during downtime (to prevent unnecessary queries).",
         Default = 5,
         Min = 1,
@@ -1708,11 +1729,39 @@ Config.DefaultConfig                                     = {
         Group = "Abilities",
         Header = "Recovery",
         Category = "Curing",
-        Index = 4,
-        Tooltip = "If you detect an actor peer already casting Radiant Cure or Group Purify Soul on a groupmate, do not check if cures are needed until they are finished.\n" ..
+        Index = 5,
+        Tooltip =
+            "If you detect an RGMercs Peer already casting a group clear (e.g. Radiant Cure or Group Purify Soul) on a groupmate, do not check if cures are needed until they are finished.\n" ..
             "This is a 'best-effort' setting that tries to avoid multiple healers using group AA cures at once on the same effect. It does not check for other spells. It is not foolproof.",
         Default = true,
         ConfigType = "Advanced",
+    },
+    ['CureAllowList']              = {
+        DisplayName = "Cure Allow List",
+        Type = "Custom",
+        Default = {},
+    },
+    ['CureDenyList']               = {
+        DisplayName = "Cure Deny List",
+        Type = "Custom",
+        Default = {},
+    },
+    ['CureAllowListShared']        = {
+        DisplayName = "Shared Cure Allow List",
+        Type = "Custom",
+        Default = {},
+        Scope = "server",
+    },
+    ['CureDenyListShared']         = {
+        DisplayName = "Shared Cure Deny List",
+        Type = "Custom",
+        Default = {},
+        Scope = "server",
+    },
+    ['UseSharedCureLists']         = {
+        DisplayName = "Use Shared Cure Lists",
+        Type = "Custom",
+        Default = false,
     },
 
     --Recovery/Rezzing
@@ -1738,7 +1787,7 @@ Config.DefaultConfig                                     = {
         DisplayName = "Rez Outside",
         Group = "Abilities",
         Header = "Recovery",
-        Category = "General Healing",
+        Category = "Rezzing",
         Index = 3,
         Tooltip = "Rez dannet peers, raid/guildmates, and anyone in the Assist List (and not simply your own group).",
         Default = true,
@@ -1776,10 +1825,23 @@ Config.DefaultConfig                                     = {
         Category = "Rezzing",
         Index = 6,
         Tooltip = "If this setting is enabled, we will attempt to con a corpse and rez only if that corpse has not yet taken one.",
-        Default = true,
+        Default = Globals.ServerEnv:lower() ~= "live",
         ConfigType = "Advanced",
         FAQ = "Why am I conning corpses? I play on a server with no exp penalty, or where we don't need to loot corpses.",
-        Answer = "The Check for Previous Rez setting is enabled by default on emu, this can be adjusted on the Heal/Rez options tab.",
+        Answer = "The Check for Previous Rez setting is enabled by default on emu, this can be adjusted in the Rezzing options.",
+    },
+    ['RezRolePriority']            = {
+        DisplayName = "Rez Role Priority",
+        Group = "Abilities",
+        Header = "Recovery",
+        Category = "Rezzing",
+        Index = 7,
+        Tooltip = "Rez the selected roles (healers and/or tanks) before other corpses; distance breaks ties. None uses plain nearest-first order.",
+        Type = "Combo",
+        ComboOptions = { 'None', 'Healers Only', 'Tanks Only', 'Both', },
+        Default = 4,
+        Min = 1,
+        Max = 4,
     },
 
     -- Burning
@@ -2626,7 +2688,7 @@ Config.DefaultConfig                                     = {
         Category = "Internals",
         Type = "Combo",
         ComboOptions = Globals.Constants.ToastLevels,
-        Tooltip = "Show toasts generated by your actor peers (other characters running RGMercs).",
+        Tooltip = "Show toasts generated by your RGMercs Peers (see the Peers FAQ).",
         Default = 3,
         Min = 1,
         Max = #Globals.Constants.ToastLevels,
@@ -2740,6 +2802,18 @@ Config.DefaultConfig                                     = {
     },
 
     --Deprecated/Need Adjusted to Custom/Etc
+    -- DEPRECATED 7/26 - sunset 9/1/26. Replaced by the single 'DoCures' master toggle. Kept hidden (Custom) so custom
+    -- cure configs predating the ['Cure'] table keep gating through their own IsCuring/CureNow. DELETE at sunset.
+    ['DoCureSpells']                     = {
+        DisplayName = "Do Cure Spells",
+        Type = "Custom",
+        Default = true,
+    },
+    ['DoCureAA']                         = {
+        DisplayName = "Do Cure AA",
+        Type = "Custom",
+        Default = true,
+    },
     ['FullUI']                           = {
         DisplayName = "Use Full UI",
         Group = "General",
@@ -3925,6 +3999,16 @@ function Config:ZoneListDelete(arg1, listName, zoneKey)
     else
         Logger.log_error("\ar%s Delete: %s was not on the list or is not a valid argument!", listName, tostring(arg1))
     end
+end
+
+--- Returns the current (or specified) zone's entries from a zone-keyed list setting, always as a table.
+--- @param listName string The setting name of the zone-keyed list.
+--- @param zoneKey string? Optional zone short name (lowercase). Defaults to the current zone.
+--- @param failOk boolean? Passed to GetSetting to suppress the not-found error (for cross-module reads).
+--- @return table entries The zone's entries, or an empty table if none.
+function Config:GetZoneList(listName, zoneKey, failOk)
+    zoneKey = zoneKey or (mq.TLO.Zone.ShortName() or ""):lower()
+    return (self:GetSetting(listName, failOk) or {})[zoneKey] or {}
 end
 
 --- Removes a zone registry entry if it has no remaining flags set.

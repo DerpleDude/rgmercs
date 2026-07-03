@@ -4,7 +4,6 @@ local Combat    = require('utils.combat')
 local Config    = require('utils.config')
 local Core      = require("utils.core")
 local Globals   = require('utils.globals')
-local Logger    = require("utils.logger")
 local Targeting = require("utils.targeting")
 
 return {
@@ -19,7 +18,21 @@ return {
     },
     ['ModeChecks']        = {
         IsHealing = function() return Config:GetSetting('DoHeals') end,
+        IsCuring = function() return Config:GetSetting('DoCures') end,
         IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
+    },
+    ['Cure']              = {
+        ['DetDispel'] = {
+            { type = "AA", name = "Nature's Salve", selfOnly = true, },
+        },
+    },
+    ['Rez']               = {
+        ['Combat']   = {
+            { type = "Item", name = "RezStaff", },
+        },
+        ['Downtime'] = {
+            { type = "Item", name = "RezStaff", },
+        },
     },
     ['Themes']            = {
         ['DPS'] = {
@@ -151,7 +164,8 @@ return {
         ['PetHaste'] = {
             "Unparalleled Voracity", -- Level 71
             "Growl of the Beast",    -- Level 68
-            "Arag's Celerity",       -- Level 63
+            --"Arag's Celerity",       -- Level 63 -- Grunt has melee mod
+            "Grunt of the Beast",    -- Level 62 EQM Custom
             "Sha's Ferocity",        -- Level 59
             "Omakin's Alacrity",     -- Level 55
             "Bond of the Wild",      -- Level 52
@@ -379,17 +393,6 @@ return {
         },
     },
     ['Helpers']           = {
-        DoRez = function(self, corpseId)
-            local rezStaff = Core.GetResolvedActionMapItem('RezStaff')
-
-            if mq.TLO.Me.ItemReady(rezStaff)() then
-                if Casting.OkayToRez(corpseId) then
-                    return Casting.UseItem(rezStaff, corpseId)
-                end
-            end
-
-            return false
-        end,
         DmgModActive = function(self) --Song active by name will check both Bestial Alignments (Self and Group)
             local disc = self.ResolvedActionMap['DmgModDisc']
             return Casting.IHaveBuff("Bestial Alignment") or (disc and disc() and Casting.IHaveBuff(disc.Name()))
@@ -588,13 +591,6 @@ return {
                 type = "Spell",
                 cond = function(self, spell, target)
                     return Casting.OkayToNuke()
-                end,
-            },
-            {
-                name = "Nature's Salve",
-                type = "AA",
-                cond = function(self, aaName)
-                    return mq.TLO.Me.TotalCounters() > 0
                 end,
             },
             {

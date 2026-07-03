@@ -499,11 +499,6 @@ function Core.SafeCallClassHelper(logInfo, name, ...)
     end
 end
 
---- Delegates to the class module's DoEvents, triggering cure checks.
-function Core.ProcessCureChecks()
-    Modules:ExecModule("Class", "DoEvents")
-end
-
 --- Tells the class module to issue the appropriate pet hold command.
 function Core.SetPetHold()
     Modules:ExecModule("Class", "SetPetHold")
@@ -528,17 +523,22 @@ function Core.UpdateBuffs(countOnly)
     end
 end
 
---- Rebuilds Globals.CurrentBuffs and Globals.CurrentBuffCount from all
+--- Rebuilds Globals.CurrentBuffs, Globals.CurrentBuffCount, and Globals.CurrentCureEffects from all
 --- active buff slots, excluding empty or zero-ID entries.
 function Core.GetBuffTable()
     local buffCount = 0 --count buffs here because BuffCount member is cached, requires self target
     Globals.CurrentBuffs = {}
+    Globals.CurrentCureEffects = {}
 
     for i = 1, mq.TLO.Me.MaxBuffSlots() do
         local buff = mq.TLO.Me.Buff(i)
         if buff() and (buff.Spell.ID() or 0) > 0 then
             table.insert(Globals.CurrentBuffs, buff.Spell.ID())
             buffCount = buffCount + 1
+            if (buff.Spell.SpellType() or "") == "Detrimental" then
+                local counterType = buff.Spell.CounterType() or ""
+                table.insert(Globals.CurrentCureEffects, { name = buff.Spell.Name(), cureType = (counterType ~= "" and counterType ~= "None") and counterType or nil, })
+            end
         end
     end
     Globals.CurrentBuffCount = buffCount

@@ -25,6 +25,14 @@ local _ClassConfig    = {
         IsMezzing = function() return Config:GetSetting('MezOn') end,
         IsRezing  = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
     },
+    ['Rez']           = {
+        ['Combat']   = {
+            { type = "Item", name = "RezStaff", },
+        },
+        ['Downtime'] = {
+            { type = "Item", name = "RezStaff", },
+        },
+    },
     ['Modes']         = {
         'Default',
     },
@@ -309,7 +317,7 @@ local _ClassConfig    = {
             "Mesmerization",      -- Level 16
         },
         -- ['MezPBAESpell'] = {
-        --     "Bewilderment",      -- Level 71
+        --     "Dreams of Veldyn",  -- Level 71
         --     "Circle of Dreams",  -- Level 68
         --     "Word of Morell",    -- Level 62
         --     "Entrancing Lights", -- Level 30
@@ -585,17 +593,6 @@ local _ClassConfig    = {
                 return "ArtifactItem"
             end
             return "ManaSpell"
-        end,
-        DoRez = function(self, corpseId)
-            local rezStaff = Core.GetResolvedActionMapItem('RezStaff')
-
-            if mq.TLO.Me.ItemReady(rezStaff)() then
-                if Casting.OkayToRez(corpseId) then
-                    return Casting.UseItem(rezStaff, corpseId)
-                end
-            end
-
-            return false
         end,
         StashCrystal = function(aaName)
             mq.delay("2s", function() return mq.TLO.Cursor.ID() == mq.TLO.Me.AltAbility(aaName).Spell.Base(1)() end)

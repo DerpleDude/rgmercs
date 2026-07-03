@@ -189,11 +189,11 @@ function Comms.SendHeartbeat(forceSend)
         Y             = mq.TLO.Me.Y(),
         Z             = mq.TLO.Me.Z(),
         Class         = mq.TLO.Me.Class.ShortName(),
-        Poison        = tostring(mq.TLO.Me.Poisoned.ID()),
-        Disease       = tostring(mq.TLO.Me.Diseased.ID()),
-        Curse         = tostring(mq.TLO.Me.Cursed.ID()),
-        Mezzed        = tostring(mq.TLO.Me.Mezzed.ID()),
-        Corruption    = tostring(mq.TLO.Me.Corrupted.ID()),
+        Poison        = mq.TLO.Me.Poisoned(),
+        Disease       = mq.TLO.Me.Diseased(),
+        Curse         = mq.TLO.Me.Cursed(),
+        Mezzed        = mq.TLO.Me.Mezzed(),
+        Corruption    = mq.TLO.Me.Corrupted(),
         Stunned       = mq.TLO.Me.Stunned(),
         HPs           = mq.TLO.Me.Dead() and 0 or mq.TLO.Me.PctHPs(),
         Mana          = useMana and mq.TLO.Me.PctMana() or nil,
@@ -204,6 +204,7 @@ function Comms.SendHeartbeat(forceSend)
         ForceTargetID = RGMercs and RGMercs.Globals("ForceTargetID")() or 0,
         CharmedPetID  = RGMercs and RGMercs.Globals("MyCharmedPetID")() or 0,
         LooseCharmID  = RGMercs and RGMercs.Globals("MyLooseCharmID")() or 0,
+        CastingGroupDispel = RGMercs and RGMercs.Globals("CastingGroupDispel")() or false,
         TargetIsNamed = RGMercs and RGMercs.Globals("AutoTargetIsNamed")() or nil,
         Casting       = mq.TLO.Me.Casting.ID() ~= 0 and mq.TLO.Me.Casting.RankName() or "None",
         Burning       = RGMercs and RGMercs.Globals("LastBurnCheck")() or false,
@@ -224,6 +225,7 @@ function Comms.SendHeartbeat(forceSend)
         Invis         = mq.TLO.Me.Invis(),
         FreeInventory = mq.TLO.Me.FreeInventory(3)(),
         Buffs         = Globals.CurrentBuffs,
+        CureEffects   = Globals.CurrentCureEffects,
         Songs         = Globals.CurrentSongs,
         Blocked       = Globals.CurrentBlocked,
         PetBuffs      = Globals.CurrentPetBuffs,
@@ -307,6 +309,7 @@ function Comms.UpdatePeerHeartbeat(peer, data)
 
     -- tables that are empty come across actors as nil so we need to fix them up.
     data.Buffs                       = data.Buffs or {}
+    data.CureEffects                 = data.CureEffects or {}
     data.Songs                       = data.Songs or {}
     data.Blocked                     = data.Blocked or {}
     data.PetBuffs                    = data.PetBuffs or {}
@@ -332,6 +335,33 @@ function Comms.UpdatePeerHeartbeat(peer, data)
             end
         end
     end
+end
+
+--- Collects the corpse ids that fresh peers (same server/zone/instance, not
+--- self) are actively casting a resurrection on, detected by SPA 81 on the
+--- peer's current cast, so a rez pass can skip corpses a peer is already
+--- rezzing. Freshness is 2s, well under ActorPeerTimeout.
+--- @return table<number, boolean> Set of corpse ids a peer is currently rezzing.
+function Comms.GetPeersRezzingCorpses()
+    local rezzing = {}
+    local myName = Comms.GetPeerName()
+    local myServer = mq.TLO.EverQuest.Server() or ""
+    local myZone = mq.TLO.Zone.ID() or 0
+    local myInst = mq.TLO.Me.Instance() or 0
+
+    for peer, heartbeat in pairs(Comms.PeersHeartbeats) do
+        if peer ~= myName and (Globals.GetTimeSeconds() - (heartbeat.LastHeartbeat or 0)) <= 2 then
+            local data = heartbeat.Data
+            if data and data.Server == myServer and data.ZoneId == myZone and data.InstanceId == myInst then
+                local casting = data.Casting or "None"
+                if casting ~= "None" and (data.TargetID or 0) > 0 then
+                    local spell = mq.TLO.Spell(casting)
+                    if spell() and spell.HasSPA(81)() then rezzing[data.TargetID] = true end
+                end
+            end
+        end
+    end
+    return rezzing
 end
 
 --- Removes peers whose last heartbeat is older than timeout seconds

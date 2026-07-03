@@ -16,6 +16,14 @@ _ClassConfig      = {
     ['ModeChecks']    = {
         IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
     },
+    ['Rez']           = {
+        ['Combat']   = {
+            { type = "Item", name = "RezStaff", },
+        },
+        ['Downtime'] = {
+            { type = "Item", name = "RezStaff", },
+        },
+    },
     ['Modes']         = {
         'DPS',
         'PBAE',
@@ -481,17 +489,6 @@ _ClassConfig      = {
     },
     -- Really the meat of this class.
     ['Helpers']       = {
-        DoRez = function(self, corpseId)
-            local rezStaff = Core.GetResolvedActionMapItem('RezStaff')
-            if mq.TLO.Me.ItemReady(rezStaff)() then
-                if Casting.OkayToRez(corpseId) then
-                    return Casting.UseItem(rezStaff, corpseId)
-                end
-            end
-
-            return false
-        end,
-
         -- Resolves the currently-active element based on ElementMode.
         -- Auto: prefers Fire, then Magic, skipping either if the auto-target is immune
         -- (per the Named List) or toggled off via Skip<X>Spells.
