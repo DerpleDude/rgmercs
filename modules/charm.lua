@@ -13,6 +13,7 @@ local Logger    = require("utils.logger")
 local Modules   = require("utils.modules")
 local Rotation  = require("utils.rotation")
 local Strings   = require("utils.strings")
+local Tables    = require("utils.tables")
 local Targeting = require("utils.targeting")
 local Ui        = require("utils.ui")
 
@@ -502,6 +503,10 @@ function Module:RebuildCharmLists()
     local order = Config:GetSetting('RotationEntryOrder') or {}
     Rotation.ApplyEntryOrder(self.TempSettings.CharmLists.PreCharm, order["CharmPreCharm"])
     Rotation.ApplyEntryOrder(self.TempSettings.CharmLists.Assist, order["CharmAssist"])
+    self.TempSettings.CharmLists.PreCharm = Tables.ConcatTables(self.TempSettings.CharmLists.PreCharm,
+        Modules:ExecModule("Clickies", "GetClickiesForAction", "As a Charm Action", "PreCharm") or {})
+    self.TempSettings.CharmLists.Assist = Tables.ConcatTables(self.TempSettings.CharmLists.Assist,
+        Modules:ExecModule("Clickies", "GetClickiesForAction", "As a Charm Action", "Assist") or {})
 end
 
 function Module:GetCharmLists()
@@ -1240,7 +1245,8 @@ function Module:Render()
             ImGui.TableNextColumn(); Ui.RenderText("Charm State")
             ImGui.TableNextColumn(); Ui.RenderText("%s", charmState)
             ImGui.TableNextColumn(); Ui.RenderText("Force Charm ID")
-            ImGui.TableNextColumn(); Ui.RenderText("%s", Globals.ForceCharmID > 0 and string.format("%d (%s)", Globals.ForceCharmID, mq.TLO.Spawn(Globals.ForceCharmID).CleanName() or "?") or "None")
+            ImGui.TableNextColumn(); Ui.RenderText("%s",
+                Globals.ForceCharmID > 0 and string.format("%d (%s)", Globals.ForceCharmID, mq.TLO.Spawn(Globals.ForceCharmID).CleanName() or "?") or "None")
             ImGui.EndTable()
         end
 

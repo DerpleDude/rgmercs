@@ -909,7 +909,7 @@ function Module:Render()
             end
         end
 
-        if not self.TempSettings.ResolvingActions and self.ClassConfig and self.ClassConfig.Rez then
+        if not self.TempSettings.ResolvingActions and ((self.ClassConfig and self.ClassConfig.Rez) or self:HasRezClickies()) then
             if ImGui.CollapsingHeader("Rez Abilities") then
                 ImGui.Indent()
                 local rezAbilities = self:GetRezAbilities()
@@ -937,7 +937,7 @@ function Module:Render()
             end
         end
 
-        if not self.TempSettings.ResolvingActions and self.ClassConfig and self.ClassConfig.Cure then
+        if not self.TempSettings.ResolvingActions and ((self.ClassConfig and self.ClassConfig.Cure) or self:HasCureClickies()) then
             if ImGui.CollapsingHeader("Cure Abilities") then
                 ImGui.Indent()
                 local cureAbilities = self:GetCureAbilities()
@@ -1551,23 +1551,29 @@ end
 -- rebuild the load_cond-filtered cure lists per bucket on rescan; also derives CuresPeerCapable (any entry not selfOnly)
 function Module:RebuildCureAbilities()
     local cure = self.ClassConfig and self.ClassConfig.Cure
-    if not cure then
+    self.TempSettings.CureClickiesPresent = false
+    local cureClickies = {}
+    for _, bucket in ipairs({ "DetDispel", "Poison", "Disease", "Curse", "Corruption", }) do
+        cureClickies[bucket] = Modules:ExecModule("Clickies", "GetClickiesForAction", "As a Cure Action", bucket) or {}
+        if #cureClickies[bucket] > 0 then self.TempSettings.CureClickiesPresent = true end
+    end
+    if not cure and not self.TempSettings.CureClickiesPresent then
         self.TempSettings.CureAbilities = nil
         self.TempSettings.CuresPeerCapable = false
         return
     end
     self.TempSettings.CureAbilities = {}
     self.TempSettings.GroupDetDispelSpellIDs = {}
-    local peerCapable = false
+    local peerCapable = self.TempSettings.CureClickiesPresent
     local order = Config:GetSetting('RotationEntryOrder') or {}
     for _, bucket in ipairs({ "DetDispel", "Poison", "Disease", "Curse", "Corruption", }) do
-        if cure[bucket] then
-            local entries = Entries.FilterLoaded(cure[bucket])
+        if (cure and cure[bucket]) or #cureClickies[bucket] > 0 then
+            local entries = Entries.FilterLoaded(cure and cure[bucket] or {})
             for _, entry in ipairs(entries) do
                 if entry.name_func then entry.name = Core.SafeCallFunc("Cure name_func", entry.name_func, self) or "Error in name_func!" end
             end
             Rotation.ApplyEntryOrder(entries, order["Cure" .. bucket])
-            self.TempSettings.CureAbilities[bucket] = entries
+            self.TempSettings.CureAbilities[bucket] = Tables.ConcatTables(entries, cureClickies[bucket])
             for _, entry in ipairs(entries) do
                 if not entry.selfOnly then peerCapable = true end
             end
@@ -1588,8 +1594,13 @@ function Module:RebuildCureAbilities()
 end
 
 function Module:GetCureAbilities()
-    if not self.TempSettings.CureAbilities then self:RebuildCureAbilities() end -- lazy build covers first-load ordering
+    if self.TempSettings.CureClickiesPresent == nil then self:RebuildCureAbilities() end -- lazy build covers first-load ordering
     return self.TempSettings.CureAbilities
+end
+
+function Module:HasCureClickies()
+    if self.TempSettings.CureClickiesPresent == nil then self:RebuildCureAbilities() end
+    return self.TempSettings.CureClickiesPresent
 end
 
 -- walk the bucket's priority list on targetSpawn; first enabled, in-scope, resolved, reachable, cond-passing, ready entry casts and wins (one cast)
@@ -1601,8 +1612,9 @@ function Module:WalkCureBucket(bucket, targetSpawn)
 
     local isSelf = targetSpawn.ID() == mq.TLO.Me.ID()
     local downtime = Combat.GetCachedCombatState() == "Downtime"
+    local clickyOnly = not self:IsCuring()
     for _, entry in ipairs(entries) do
-        if self:CureEntryEnabled(entry, bucket) and (not entry.selfOnly or isSelf) then
+        if (not clickyOnly or entry.from_clicky) and self:CureEntryEnabled(entry, bucket) and (not entry.selfOnly or isSelf) then
             local resolvedName = self:GetResolvedActionMapItem(entry.name) or entry.name
             local spell        = Entries.Spell(entry, resolvedName)
             if Entries.Resolves(entry, spell) then
@@ -1656,7 +1668,7 @@ function Module:RunCure(targetSpawn, cureEffects, mezzed, denySet, allowSet)
         end
     end
 
-    local downtime     = Combat.GetCachedCombatState() == "Downtime"
+    local downtime         = Combat.GetCachedCombatState() == "Downtime"
     local detDispelSetting = Config:GetSetting('DowntimeDetDispel') -- 1 = Never, 2 = Cure List, 3 = Always
 
     -- allow-listed effects route to an outright det dispel (no counter fallback); in downtime this needs Cure List or Always
@@ -1890,7 +1902,7 @@ function Module:RunCureRotation(combat_state)
         self.TempSettings.CureCheckTimer = Globals.GetTimeSeconds()
     end
 
-    if self.ClassConfig and self.ClassConfig.Cure then
+    if (self.ClassConfig and self.ClassConfig.Cure) or not (self.ClassConfig and self.ClassConfig.Cures) then
         return self:RunCureWalk()
     end
 
@@ -2110,24 +2122,35 @@ end
 -- rebuild the load_cond-filtered rez lists per phase on rescan, so a load-gated entry drops from both the cast logic and the UI
 function Module:RebuildRezAbilities()
     local rez = self.ClassConfig and self.ClassConfig.Rez
-    if not rez then
+    self.TempSettings.RezClickiesPresent = false
+    local rezClickies = {}
+    for _, phase in ipairs({ "Combat", "Downtime", }) do
+        rezClickies[phase] = Modules:ExecModule("Clickies", "GetClickiesForAction", "As a Rez Action", phase) or {}
+        if #rezClickies[phase] > 0 then self.TempSettings.RezClickiesPresent = true end
+    end
+    if not rez and not self.TempSettings.RezClickiesPresent then
         self.TempSettings.RezAbilities = nil
         return
     end
     self.TempSettings.RezAbilities = {}
     local order = Config:GetSetting('RotationEntryOrder') or {}
     for _, phase in ipairs({ "Combat", "Downtime", }) do
-        if rez[phase] then
-            local entries = Entries.FilterLoaded(rez[phase])
+        if (rez and rez[phase]) or #rezClickies[phase] > 0 then
+            local entries = Entries.FilterLoaded(rez and rez[phase] or {})
             Rotation.ApplyEntryOrder(entries, order["Rez" .. phase])
-            self.TempSettings.RezAbilities[phase] = entries
+            self.TempSettings.RezAbilities[phase] = Tables.ConcatTables(entries, rezClickies[phase])
         end
     end
 end
 
 function Module:GetRezAbilities()
-    if not self.TempSettings.RezAbilities then self:RebuildRezAbilities() end -- lazy build covers first-load ordering
+    if self.TempSettings.RezClickiesPresent == nil then self:RebuildRezAbilities() end -- lazy build covers first-load ordering
     return self.TempSettings.RezAbilities
+end
+
+function Module:HasRezClickies()
+    if self.TempSettings.RezClickiesPresent == nil then self:RebuildRezAbilities() end
+    return self.TempSettings.RezClickiesPresent
 end
 
 -- walk the live phase's priority list; first enabled, resolved, cond-passing, ready, un-rezzed entry wins (one cast)
@@ -2140,8 +2163,9 @@ function Module:RunRez(corpseId, ownerName)
     if not entries then return nil end
 
     local corpseSpawn = mq.TLO.Spawn(corpseId)
+    local clickyOnly = not self:IsRezing()
     for _, entry in ipairs(entries) do
-        if self:RezEntryEnabled(entry, combat_state) then
+        if (not clickyOnly or entry.from_clicky) and self:RezEntryEnabled(entry, combat_state) then
             local resolvedName = self:GetResolvedActionMapItem(entry.name) or entry.name
             local spell        = Entries.Spell(entry, resolvedName)
             if Entries.Resolves(entry, spell)
@@ -2160,7 +2184,7 @@ end
 function Module:TryRez(corpseId, ownerName)
     self.TempSettings.RezTimers[corpseId] = Globals.GetTimeSeconds()
 
-    if self.ClassConfig and self.ClassConfig.Rez then
+    if (self.ClassConfig and self.ClassConfig.Rez) or not (self.Helpers and self.Helpers.DoRez) then
         return Core.SafeCallFunc("RunRez", self.RunRez, self, corpseId, ownerName)
     end
 
@@ -2306,14 +2330,14 @@ function Module:GiveTime()
         end
     end
 
-    if self:IsRezing() and Config:GetSetting('DoRez') and Core.OkayToNotHeal(2) then
+    if (self:IsRezing() or self:HasRezClickies()) and Config:GetSetting('DoRez') and Core.OkayToNotHeal(2) then
         if not (combat_state == "Downtime" and mq.TLO.Me.Invis() and not Config:GetSetting('BreakInvisForHealing')) then
             self:CheckAndRez(combat_state)
         end
     end
 
-    if self:IsCuring() then
-        local legacyCure = not (self.ClassConfig and self.ClassConfig.Cure)
+    if self:IsCuring() or (Config:GetSetting('DoCures') and self:HasCureClickies()) then
+        local legacyCure = not (self.ClassConfig and self.ClassConfig.Cure) and (self.ClassConfig and self.ClassConfig.Cures) ~= nil
         if not (combat_state == "Downtime" and mq.TLO.Me.Invis() and not Config:GetSetting('BreakInvisForHealing')) then
             self:RunCureRotation(combat_state)
 

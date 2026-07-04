@@ -239,6 +239,9 @@ Module.DefaultConfig                          = {
         ConfigType  = "Normal",
         OnChange    = function()
             Modules:ExecModule("Class", "GetRotations")
+            Modules:ExecModule("Class", "RebuildCureAbilities")
+            Modules:ExecModule("Class", "RebuildRezAbilities")
+            Modules:ExecModule("Charm", "RebuildCharmLists")
         end,
     },
     [string.format("%s_Popped", Module._name)] = {
@@ -252,7 +255,27 @@ Module.CombatTargetTypes                      = { 'Self', 'Pet', 'Main Assist', 
 Module.NonCombatTargetTypes                   = { 'Self', 'Pet', 'Main Assist', 'Mercs Peer', 'All Buffable', }
 Module.RotationTargetTypes                    = { 'Rotation Target', }
 Module.MercPeerTargetTypes                    = { 'Mercs Peer', }
-Module.CombatStates                           = { 'Downtime', 'Combat', 'Any', 'During Rotation', 'During Heal Rotation', }
+Module.CombatStates                           = {
+    'Downtime', 'Combat', 'Any', 'During Rotation', 'During Heal Rotation',
+    'As a Cure Action', 'As a Rez Action', 'As a Charm Action',
+}
+Module.ActionPhaseOptions                     = {
+    ['As a Cure Action'] = {
+        { display = "Det Dispel", key = "DetDispel", },
+        { display = "Poison",     key = "Poison", },
+        { display = "Disease",    key = "Disease", },
+        { display = "Curse",      key = "Curse", },
+        { display = "Corruption", key = "Corruption", },
+    },
+    ['As a Rez Action'] = {
+        { display = "Downtime", key = "Downtime", },
+        { display = "Combat",   key = "Combat", },
+    },
+    ['As a Charm Action'] = {
+        { display = "Pre-Charm",    key = "PreCharm", },
+        { display = "Charm Assist", key = "Assist", },
+    },
+}
 Module.ImpliedCondition                       = {
     render_header_text = function(_, _)
         return "Not already active and will stack on the target"
@@ -1199,7 +1222,7 @@ function Module:LoadSettings()
                 settingsChanged = true
             end
             if clicky.skipTriggerCheck == nil then
-                clicky.skipTriggerCheck = false
+                clicky.skipTriggerCheck = true
                 settingsChanged = true
             end
             if clicky.mustWait == nil then
@@ -1378,7 +1401,7 @@ function Module:RenderConditionTargetCombo(cond, condIdx, combatState)
     if not condBlock or not condBlock.cond_targets then
         return
     end
-    if ImGui.BeginTable("##clicky_cond_target_table_" .. condIdx, 2, bit32.bor(ImGuiTableFlags.None)) then
+    if #condBlock.cond_targets > 1 and ImGui.BeginTable("##clicky_cond_target_table_" .. condIdx, 2, bit32.bor(ImGuiTableFlags.None)) then
         ImGui.TableSetupColumn("Key", ImGuiTableColumnFlags.WidthFixed, 50)
         ImGui.TableSetupColumn("Value", ImGuiTableColumnFlags.WidthStretch, 0)
         ImGui.TableNextColumn()
@@ -1415,6 +1438,14 @@ function Module:RenderConditionTargetCombo(cond, condIdx, combatState)
 end
 
 function Module:RenderClickyTargetCombo(clicky, clickyIdx)
+    if clicky.combat_state == "During Rotation" or clicky.combat_state == "During Heal Rotation" or self.ActionPhaseOptions[clicky.combat_state] then
+        if clicky.target ~= "Rotation Target" then
+            clicky.target = "Rotation Target"
+            Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
+        end
+        return
+    end
+
     if ImGui.BeginTable("##clicky_target_table_" .. clickyIdx, 2, bit32.bor(ImGuiTableFlags.None)) then
         ImGui.TableSetupColumn("Key", ImGuiTableColumnFlags.WidthFixed, 140)
         ImGui.TableSetupColumn("Value", ImGuiTableColumnFlags.WidthStretch, 0)
@@ -1422,42 +1453,34 @@ function Module:RenderClickyTargetCombo(clicky, clickyIdx)
         Ui.RenderText("Target")
         ImGui.TableNextColumn()
 
-        if clicky.combat_state == "During Rotation" or clicky.combat_state == "During Heal Rotation" then
-            ImGui.TextDisabled("Rotation Target")
-            if clicky.target ~= "Rotation Target" then
-                clicky.target = "Rotation Target"
-                Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
-            end
+        local targetTypeIDs, targetTypes, defaultTarget
+        if clicky.combat_state == "Downtime" then
+            targetTypeIDs = self.NonCombatTargetTypeIDs
+            targetTypes   = self.NonCombatTargetTypes
+            defaultTarget = "Self"
         else
-            local targetTypeIDs, targetTypes, defaultTarget
-            if clicky.combat_state == "Downtime" then
-                targetTypeIDs = self.NonCombatTargetTypeIDs
-                targetTypes   = self.NonCombatTargetTypes
-                defaultTarget = "Self"
-            else
-                targetTypeIDs = self.CombatTargetTypeIDs
-                targetTypes   = self.CombatTargetTypes
-                defaultTarget = "Self"
-            end
+            targetTypeIDs = self.CombatTargetTypeIDs
+            targetTypes   = self.CombatTargetTypes
+            defaultTarget = "Self"
+        end
 
-            -- DEPRECATION FALLBACK BEGIN (added 6/26, remove this entire block after 9/26)
-            -- 'Rotation Target' used to be selectable for any combat state; reset stale stored values so the dropdown doesn't desync.
-            if not targetTypeIDs[clicky.target or ""] then
-                clicky.target = defaultTarget
-                Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
-            end
-            -- DEPRECATION FALLBACK END
+        -- DEPRECATION FALLBACK BEGIN (added 6/26, remove this entire block after 9/26)
+        -- 'Rotation Target' used to be selectable for any combat state; reset stale stored values so the dropdown doesn't desync.
+        if not targetTypeIDs[clicky.target or ""] then
+            clicky.target = defaultTarget
+            Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
+        end
+        -- DEPRECATION FALLBACK END
 
-            local selectedNum, changed = ImGui.Combo("##clicky_cond_target_" .. "_" .. clickyIdx, tonumber(targetTypeIDs[clicky.target or defaultTarget]) or 1,
-                targetTypes, #targetTypes)
-            if changed then
-                clicky.target = targetTypes[selectedNum] or defaultTarget
-                Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
-            end
+        local selectedNum, changed = ImGui.Combo("##clicky_cond_target_" .. "_" .. clickyIdx, tonumber(targetTypeIDs[clicky.target or defaultTarget]) or 1,
+            targetTypes, #targetTypes)
+        if changed then
+            clicky.target = targetTypes[selectedNum] or defaultTarget
+            Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
         end
         ImGui.EndTable()
         Ui.Tooltip(
-            "Target Types\nSelf - This PC\nPet - This PC's pet\nMain Assist - The current RGMercs Main Assist\nAuto Target - The current RGMercs Combat Auto Target\nMercs Peer - An RGMercs Peer on your local network\nAll Buffable - Checks all buffable targets in your Actor Buff Scope and uses the first one that needs the buff\nRotation Target - The target passed in by the active rotation")
+            "Target Types\nSelf - This PC\nPet - This PC's pet\nMain Assist - The current RGMercs Main Assist\nAuto Target - The current RGMercs Combat Auto Target\nMercs Peer - An RGMercs Peer on your local network\nAll Buffable - Checks all buffable targets in your Actor Buff Scope and uses the first one that needs the buff")
     end
 
     if clicky.target == "Mercs Peer" then
@@ -1479,6 +1502,13 @@ end
 
 function Module:RenderClickyToggles(clicky, clickyIdx)
     local isRotationTarget = clicky.target == "Rotation Target"
+    local isActionState = self.ActionPhaseOptions[clicky.combat_state] ~= nil
+    if isRotationTarget and clicky.no_target_change then
+        clicky.no_target_change = false
+        Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
+    end
+    if isRotationTarget and isActionState then return end
+
     if ImGui.BeginTable("##clicky_toggles_table_" .. clickyIdx, 6, bit32.bor(ImGuiTableFlags.None)) then
         ImGui.TableSetupColumn("Key1", ImGuiTableColumnFlags.WidthFixed, 140)
         ImGui.TableSetupColumn("Value1", ImGuiTableColumnFlags.WidthFixed, 40)
@@ -1487,53 +1517,51 @@ function Module:RenderClickyToggles(clicky, clickyIdx)
         ImGui.TableSetupColumn("Key3", ImGuiTableColumnFlags.WidthFixed, 140)
         ImGui.TableSetupColumn("Value3", ImGuiTableColumnFlags.WidthStretch, 0)
 
-        ImGui.TableNextColumn()
-        ImGui.AlignTextToFramePadding()
-        Ui.RenderText("Don't Change Target")
-        ImGui.TableNextColumn()
-        ImGui.BeginGroup()
-        ImGui.BeginDisabled(isRotationTarget)
-        local newNoTargetChange, ntcClicked = Ui.RenderOptionToggle("##clicky_no_target_change_" .. clickyIdx, "",
-            clicky.no_target_change)
-        ImGui.EndDisabled()
-        ImGui.EndGroup()
-        if isRotationTarget and clicky.no_target_change then
-            clicky.no_target_change = false
-            Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
+        if not isRotationTarget then
+            ImGui.TableNextColumn()
+            ImGui.AlignTextToFramePadding()
+            Ui.RenderText("Don't Change Target")
+            ImGui.TableNextColumn()
+            ImGui.BeginGroup()
+            local newNoTargetChange, ntcClicked = Ui.RenderOptionToggle("##clicky_no_target_change_" .. clickyIdx, "",
+                clicky.no_target_change)
+            ImGui.EndGroup()
+            if ntcClicked then
+                clicky.no_target_change = newNoTargetChange
+                Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
+            end
+            Ui.Tooltip("If enabled, we will not change targets to use this clicky.")
         end
-        if not isRotationTarget and ntcClicked then
-            clicky.no_target_change = newNoTargetChange
-            Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
-        end
-        Ui.Tooltip("If enabled, we will not change targets to use this clicky.")
 
-        ImGui.TableNextColumn()
-        ImGui.AlignTextToFramePadding()
-        Ui.RenderText("Skip Trigger Checks")
-        ImGui.TableNextColumn()
-        ImGui.BeginGroup()
-        local newSkipTriggerCheck, skipClicked = Ui.RenderOptionToggle("##clicky_skip_trigger_check_" .. clickyIdx, "",
-            clicky.skipTriggerCheck or false)
-        ImGui.EndGroup()
-        if skipClicked then
-            clicky.skipTriggerCheck = newSkipTriggerCheck
-            Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
-        end
-        Ui.Tooltip("Only check the clicky buff for stacking, ignoring any secondary spell effects triggered by the clicky spell.")
+        if not isActionState then
+            ImGui.TableNextColumn()
+            ImGui.AlignTextToFramePadding()
+            Ui.RenderText("Skip Trigger Checks")
+            ImGui.TableNextColumn()
+            ImGui.BeginGroup()
+            local newSkipTriggerCheck, skipClicked = Ui.RenderOptionToggle("##clicky_skip_trigger_check_" .. clickyIdx, "",
+                clicky.skipTriggerCheck or false)
+            ImGui.EndGroup()
+            if skipClicked then
+                clicky.skipTriggerCheck = newSkipTriggerCheck
+                Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
+            end
+            Ui.Tooltip("Only check the clicky buff for stacking, ignoring any secondary spell effects triggered by the clicky spell.")
 
-        ImGui.TableNextColumn()
-        ImGui.AlignTextToFramePadding()
-        Ui.RenderText("Confirm Cast")
-        ImGui.TableNextColumn()
-        ImGui.BeginGroup()
-        local newMustWait, mustWaitClicked = Ui.RenderOptionToggle("##clicky_must_wait_" .. clickyIdx, "",
-            clicky.mustWait or false)
-        ImGui.EndGroup()
-        if mustWaitClicked then
-            clicky.mustWait = newMustWait
-            Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
+            ImGui.TableNextColumn()
+            ImGui.AlignTextToFramePadding()
+            Ui.RenderText("Confirm Cast")
+            ImGui.TableNextColumn()
+            ImGui.BeginGroup()
+            local newMustWait, mustWaitClicked = Ui.RenderOptionToggle("##clicky_must_wait_" .. clickyIdx, "",
+                clicky.mustWait or false)
+            ImGui.EndGroup()
+            if mustWaitClicked then
+                clicky.mustWait = newMustWait
+                Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
+            end
+            Ui.Tooltip("Wait and confirm that item use has started by checking that it has gone on cooldown or that a cast success is reported. Generally not needed.")
         end
-        Ui.Tooltip("Wait and confirm that item use has started by checking that it has gone on cooldown or that a cast success is reported. Generally not needed.")
 
         ImGui.EndTable()
     end
@@ -1554,9 +1582,14 @@ function Module:RenderClickyCombatStateCombo(clicky, clickyIdx)
             if clicky.combat_state == "During Rotation" or clicky.combat_state == "During Heal Rotation" then
                 clicky.rotation_name = "None"
                 clicky.target        = "Rotation Target"
+            elseif self.ActionPhaseOptions[clicky.combat_state] then
+                clicky.rotation_name = nil
+                clicky.target        = "Rotation Target"
+                clicky.action_phases = {}
             else
                 clicky.rotation_name = nil
                 clicky.target        = "Self"
+                clicky.action_phases = nil
             end
             Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
         end
@@ -1565,6 +1598,8 @@ function Module:RenderClickyCombatStateCombo(clicky, clickyIdx)
 
     if clicky.combat_state == "During Rotation" or clicky.combat_state == "During Heal Rotation" then
         self:RenderClickyRotationCombo(clicky, clickyIdx)
+    elseif self.ActionPhaseOptions[clicky.combat_state] then
+        self:RenderClickyActionPhaseChecks(clicky, clickyIdx)
     end
 end
 
@@ -1594,6 +1629,31 @@ function Module:RenderClickyRotationCombo(clicky, clickyIdx)
             clicky.rotation_name = rotationNames[selectedIdx] or "None"
             self.TempSettings.RotationComboIdx[clickyIdx] = selectedIdx
             Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
+        end
+        ImGui.EndTable()
+    end
+end
+
+function Module:RenderClickyActionPhaseChecks(clicky, clickyIdx)
+    clicky.action_phases = clicky.action_phases or {}
+    if ImGui.BeginTable("##clicky_action_phase_table_" .. clickyIdx, 6, bit32.bor(ImGuiTableFlags.None)) then
+        ImGui.TableSetupColumn("Key1", ImGuiTableColumnFlags.WidthFixed, 140)
+        ImGui.TableSetupColumn("Value1", ImGuiTableColumnFlags.WidthFixed, 40)
+        ImGui.TableSetupColumn("Key2", ImGuiTableColumnFlags.WidthFixed, 140)
+        ImGui.TableSetupColumn("Value2", ImGuiTableColumnFlags.WidthFixed, 40)
+        ImGui.TableSetupColumn("Key3", ImGuiTableColumnFlags.WidthFixed, 140)
+        ImGui.TableSetupColumn("Value3", ImGuiTableColumnFlags.WidthStretch, 0)
+        for _, option in ipairs(self.ActionPhaseOptions[clicky.combat_state] or {}) do
+            ImGui.TableNextColumn()
+            ImGui.AlignTextToFramePadding()
+            Ui.RenderText(option.display)
+            ImGui.TableNextColumn()
+            local newValue, clicked = Ui.RenderOptionToggle("##clicky_action_phase_" .. clickyIdx .. "_" .. option.key, "",
+                clicky.action_phases[option.key] == true)
+            if clicked then
+                clicky.action_phases[option.key] = newValue or nil
+                Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
+            end
         end
         ImGui.EndTable()
     end
@@ -1763,6 +1823,7 @@ function Module:RenderClickiesWithConditions(type, clickies)
                 iconId = tonumber((mq.TLO.Cursor.Icon() or 500) - 500) or 0,
                 combat_state = 'Any',
                 no_target_change = targetType == "Self" or targetType == "Group v1" or targetType == "AE v1",
+                skipTriggerCheck = true,
                 conditions = {},
             })
             Config:SetSetting('Clickies', clickies)
@@ -1846,7 +1907,9 @@ function Module:RenderClickiesWithConditions(type, clickies)
                         bit32.bor(ImGuiChildFlags.AlwaysAutoResize, ImGuiChildFlags.Borders, ImGuiChildFlags.AutoResizeY),
                         bit32.bor(ImGuiWindowFlags.NoMove, ImGuiWindowFlags.NoTitleBar))
 
-                    self:RenderCondition(clickyIdx, 0, self.ImpliedCondition, nil, clicky.combat_state)
+                    if not self.ActionPhaseOptions[clicky.combat_state] then
+                        self:RenderCondition(clickyIdx, 0, self.ImpliedCondition, nil, clicky.combat_state)
+                    end
 
                     for condIdx, cond in ipairs(clicky.conditions or {}) do
                         if self:GetLogicBlockByType(cond.type) and cond.Delete ~= true then
@@ -2216,6 +2279,7 @@ function Module:GetClickiesForRotations(clickyCombatState, rotationName)
                 name = itemName,
                 type = "Item",
                 from_clicky = true,
+                mustWait = clicky.mustWait,
                 cond = function(caller, itemName, targetSpawn)
                     if not Casting.ItemReady(itemName) then return false end
                     local buffCheckPassed = true
@@ -2257,7 +2321,63 @@ function Module:GetClickiesForRotations(clickyCombatState, rotationName)
     return result
 end
 
+function Module:GetClickiesForAction(clickyCombatState, phaseKey)
+    local result   = {}
+    local clickies = Config:GetSetting('Clickies') or {}
+
+    for _, clicky in ipairs(clickies) do
+        if clicky.combat_state == clickyCombatState
+            and clicky.action_phases and clicky.action_phases[phaseKey]
+            and clicky.itemName:len() > 0
+            and (clicky.enabled == nil or clicky.enabled == true)
+        then
+            local itemName   = clicky.itemName
+            local conditions = clicky.conditions or {}
+
+            table.insert(result, {
+                name = itemName,
+                type = "Item",
+                from_clicky = true,
+                cond = function(caller, _, targetSpawn)
+                    if not Casting.ItemReady(itemName) then return false end
+
+                    local condTarget = nil
+                    local condPeer = nil
+                    for _, cond in ipairs(conditions) do
+                        local condBlock = self:GetLogicBlockByType(cond.type)
+                        if condBlock then
+                            if condBlock.cond_targets then
+                                condTarget, condPeer = Module.GetConditionTarget(cond, targetSpawn, clicky.mercs_peer_name)
+                            end
+                            ---@diagnostic disable-next-line: deprecated
+                            if not Core.SafeCallFunc("Action Clicky :: Test clicky Condition", condBlock.cond, caller, condTarget, condPeer and condPeer.Data, unpack(cond.args or {})) then
+                                return false
+                            end
+                        end
+                    end
+                    return true
+                end,
+            })
+        end
+    end
+
+    return result
+end
+
 function Module:ValidateClickyRotationSettings(clicky)
+    if self.ActionPhaseOptions[clicky.combat_state] then
+        local changed = false
+        if clicky.target ~= "Rotation Target" then
+            clicky.target = "Rotation Target"
+            changed = true
+        end
+        if type(clicky.action_phases) ~= "table" then
+            clicky.action_phases = {}
+            changed = true
+        end
+        return changed
+    end
+
     local isHeal = clicky.combat_state == "During Heal Rotation"
     if clicky.combat_state ~= "During Rotation" and not isHeal then return false end
     local changed = false

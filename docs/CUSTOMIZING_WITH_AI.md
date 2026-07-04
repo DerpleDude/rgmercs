@@ -32,7 +32,7 @@ This file is the instruction set for an AI editing a user's RGMercs class config
 
 ## Scope
 
-In scope (recipes below): swapping/adding/removing options in a set; changing memorized spells; adding, removing, reordering, disabling, or gating rotation entries; adding a `DefaultConfig` setting to make an ability optional; small `Helpers` functions; `PullAbilities` entries.
+In scope (recipes below): swapping/adding/removing options in a set; changing memorized spells; adding, removing, reordering, disabling, or gating rotation entries (the `Cure`/`Rez`/`Mez`/`Charm` tables use the same entry shape); adding a `DefaultConfig` setting to make an ability optional; small `Helpers` functions; `PullAbilities` entries.
 
 Out of scope — tell the user it needs a human (RGMercs Discord, linked at the bottom): reworking mode logic, themes, or command handlers, and any edit to the framework itself (modules, utils, UI).
 
@@ -63,6 +63,7 @@ AASets              -- named groups of AAs; the first one you've purchased is us
 Spells              -- (some classes) gem-by-gem spell loadout
 SpellList           -- (some classes) prioritized spell sets (newer style, preferred)
 Rotations           -- the actual actions, grouped by rotation name
+Mez/Charm/Cure/Rez  -- (some classes) dedicated action tables; same entry shape as a rotation
 Helpers             -- class-private functions used inside cond logic
 PullAbilities       -- abilities offered in the pull module's dropdown
 DefaultConfig       -- per-character settings (HP thresholds, on/off toggles, etc.)
@@ -264,6 +265,10 @@ Two safe options:
 ### Reorder rotation entries
 
 Just move the entire `{ name = "...", ... },` block up or down inside its rotation. Order = priority.
+
+### Cure, rez, mez & charm tables
+
+Some classes carry `Mez`, `Charm`, `Cure`, and `Rez` tables. Entries are the **same shape as a rotation** (`type` + `name` + optional `cond`/`load_cond`) — add, remove, or reorder them the same way; first eligible wins. `Mez` is one flat list; the rest nest entries under fixed sub-keys, which you shouldn't rename or add to. `ModeChecks` gates whether the class runs any of it — leave it unless you're switching a whole behavior on/off.
 
 ### Add a pull ability
 
