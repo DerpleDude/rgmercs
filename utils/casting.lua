@@ -153,15 +153,19 @@ end
 --- GetUseableSpellId. Checks blocked list, buff/song window presence,
 --- and stacking including trigger spells.
 ---@param spell MQSpell The spell to check.
+---@param skipBlockCheck boolean|nil whether to check the peers blocked spells, this needs to be skipped for certain manual stacking checks
+---@param skipTriggerCheck boolean|nil whether to skip a check for spell triggers, to be used for cost savings when we know the spell does not have triggers
 ---@return boolean True if the spell should be cast on self.
-function Casting.SelfBuffCheck(spell)
+function Casting.SelfBuffCheck(spell, skipBlockCheck, skipTriggerCheck)
     if not (spell and spell()) then return false end
-    return Casting.LocalBuffCheck(Casting.GetUseableSpellId(spell))
+    return Casting.LocalBuffCheck(Casting.GetUseableSpellId(spell), skipBlockCheck, skipTriggerCheck)
 end
 
 --- Gates on CanUseAA, then delegates to LocalBuffCheck using the AA's
 --- spell ID to confirm not blocked, not present, and stacks.
 ---@param aaName string The AA name to check.
+---@param skipBlockCheck boolean|nil whether to check the peers blocked spells, this needs to be skipped for certain manual stacking checks
+---@param skipTriggerCheck boolean|nil whether to skip a check for spell triggers, to be used for cost savings when we know the spell does not have triggers
 ---@return boolean True if the AA buff should be cast on self.
 function Casting.SelfBuffAACheck(aaName, skipBlockCheck, skipTriggerCheck)
     if not Casting.CanUseAA(aaName) then return false end

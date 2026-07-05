@@ -29,14 +29,22 @@ local _ClassConfig = {
     },
     ['Rez']             = {
         ['Combat'] = {
-            { type = "AA", name = "Convergence", cond = function(self, spell, target)
-                return Casting.ReagentCheck(mq.TLO.Me.AltAbility("Convergence").Spell)
-            end, },
+            {
+                type = "AA",
+                name = "Convergence",
+                cond = function(self, spell, target)
+                    return Casting.ReagentCheck(mq.TLO.Me.AltAbility("Convergence").Spell)
+                end,
+            },
         },
         ['Downtime'] = {
-            { type = "AA", name = "Convergence", cond = function(self, spell, target)
-                return Casting.ReagentCheck(mq.TLO.Me.AltAbility("Convergence").Spell)
-            end, },
+            {
+                type = "AA",
+                name = "Convergence",
+                cond = function(self, spell, target)
+                    return Casting.ReagentCheck(mq.TLO.Me.AltAbility("Convergence").Spell)
+                end,
+            },
         },
     },
     ['PetPosition']     = {
@@ -935,7 +943,7 @@ local _ClassConfig = {
                 type = "Spell",
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
-                    return Config:GetSetting('DoLich') and Casting.SelfBuffCheck(spell) and
+                    return Config:GetSetting('DoLich') and Casting.SelfBuffCheck(spell, nil, true) and
                         (not Config:GetSetting('DoUnity') or not Casting.AAReady("Mortifier's Unity")) and
                         mq.TLO.Me.PctHPs() > Config:GetSetting('StopLichHP') and mq.TLO.Me.PctMana() <= Config:GetSetting('StartLichMana')
                 end,
