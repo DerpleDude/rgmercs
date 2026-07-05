@@ -120,6 +120,7 @@ local _ClassConfig = {
             "Major Shielding",         -- Level 24
             "Shielding",               -- Level 16
             "Lesser Shielding",        -- Level 8
+            "Minor Shielding",         -- Level 1
         },
         ['Levitate'] = {
             "Dead Men Floating", -- Level 45
