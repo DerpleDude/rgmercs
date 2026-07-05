@@ -748,7 +748,7 @@ local _ClassConfig = {
                 load_cond = function(self) return self.Helpers.ProcBuffChoice() == "PantherItem" end,
                 cond = function(self, itemName, target)
                     if (mq.TLO.Me.CombatState():lower() or "") ~= "combat" then return false end
-                    return Casting.GroupBuffItemCheck(itemName, target) and Casting.AddedBuffCheck(9975, target) --Panther Rk. II
+                    return Casting.GroupBuffItemCheck(itemName, target)
                 end,
             },
             {
@@ -756,7 +756,7 @@ local _ClassConfig = {
                 type = "Item",
                 load_cond = function(self) return self.Helpers.ProcBuffChoice() == "LeopardItem" end,
                 cond = function(self, itemName, target)
-                    return Casting.GroupBuffItemCheck(itemName, target) and Casting.AddedBuffCheck(9975, target) --Panther Rk. II
+                    return Casting.GroupBuffItemCheck(itemName, target)
                 end,
             },
             {
@@ -765,7 +765,7 @@ local _ClassConfig = {
                 load_cond = function(self) return self.Helpers.ProcBuffChoice() == "JaguarItem" end,
                 cond = function(self, itemName, target)
                     if not Targeting.TargetIsAMelee(target) then return false end
-                    return Casting.GroupBuffItemCheck(itemName, target) and Casting.AddedBuffCheck(9975, target) --Panther Rk. II
+                    return Casting.GroupBuffItemCheck(itemName, target)
                 end,
             },
             {
@@ -773,9 +773,11 @@ local _ClassConfig = {
                 type = "Spell",
                 load_cond = function(self) return self.Helpers.ProcBuffChoice() == "ProcSpell" end,
                 cond = function(self, spell, target)
-                    if not Casting.CastReady(spell) then return false end                                 --avoid constant group buff checks
+                    if not Casting.CastReady(spell) then return false end --avoid constant group buff checks
+                    -- Panther can only be used in combat
+                    if (spell.BaseName() or "") == "Talisman of the Panther" and (mq.TLO.Me.CombatState():lower() or "") ~= "combat" then return false end
                     if not Globals.Constants.GroupTargetTypes:contains(spell.TargetType() or "") and not Targeting.TargetIsAMelee(target) then return false end
-                    return Casting.GroupBuffCheck(spell, target) and Casting.AddedBuffCheck(9975, target) --Panther Rk. II
+                    return Casting.GroupBuffCheck(spell, target)
                 end,
             },
         },

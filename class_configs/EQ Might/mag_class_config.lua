@@ -117,7 +117,7 @@ _ClassConfig      = {
         },
         ['BigFireDD'] = {              -- Longer cast time bolts we can use when mobs are at higher health.
             "Bolt of Molten Slag",     -- Level 70
-            -- "Ancient: Nova Strike",  -- Level 70 -- considered how to implement smart toggles for this, didn't like what i've come up with so far.
+            -- "Ancient: Nova Strike",  -- Level 70 -- considered how to implement smart toggles for this, didn't like what i've come up with so far. less dmg then spear, -300 resist vs 150
             "Spear of Ro",             -- Level 68
             "Bolt of Jerikor",         -- Level 66
             "Ancient: Chaos Vortex",   -- Level 65

@@ -452,6 +452,10 @@ return {
                 end,
             },
             {
+                name = "Bloodlust",
+                type = "AA",
+            },
+            {
                 name = "OoW_Chest",
                 type = "Item",
                 cond = function(self, itemName)
