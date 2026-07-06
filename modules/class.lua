@@ -1227,6 +1227,15 @@ function Module:CanCharm()
     return self.ClassConfig.ModeChecks.CanCharm()
 end
 
+---@param mobId number
+---@return boolean
+function Module:CanMezTarget(mobId)
+    if not self.ClassConfig or not self.ClassConfig.ModeChecks then
+        return true
+    end
+    return Core.SafeCallFunc("CanMezTarget", self.ClassConfig.ModeChecks.CanMezTarget, self, mobId)
+end
+
 function Module:GetTheme()
     if self.ClassConfig and self.ClassConfig.Themes then
         return self.ClassConfig.Themes[self:GetClassModeName()]

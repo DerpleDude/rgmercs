@@ -1923,6 +1923,8 @@ end
 ---@param rotationState number? Current step index (>0 shows a "Cur" column).
 ---@param showFailed boolean Whether to display entries whose conditions failed.
 ---@param enabledRotationEntries table Map of entry name → bool (false = skip).
+---@param hideRotationCols boolean? If true, hides the "Cur" and "Condition Met" columns.
+---@param reorderable boolean? If true, allows the user to reorder entries in this table.
 ---@return boolean showFailed The (potentially toggled) showFailed value.
 ---@return table enabledRotationEntries Updated enablement map.
 ---@return boolean changed True if any enablement setting was toggled this frame.
@@ -1978,7 +1980,8 @@ function Ui.RenderRotationTable(name, rotationTable, resolvedActionMap, rotation
 
         if reorderable and ImGui.TableSetColumnIndex(numCols - 1) then
             Ui.RenderText(Icons.MD_INFO_OUTLINE)
-            Ui.Tooltip("WARNING: In some cases rotations are carefully crafted and reordering entries may result in suboptimal conditions (or even broken entries).\nPlease tread carefully.")
+            Ui.Tooltip(
+                "WARNING: In some cases rotations are carefully crafted and reordering entries may result in suboptimal conditions (or even broken entries).\nPlease tread carefully.")
             if (Config:GetSetting('RotationEntryOrder') or {})[name] then
                 ImGui.SameLine()
                 if ImGui.SmallButton(Icons.MD_REFRESH .. "##reset_" .. name) then

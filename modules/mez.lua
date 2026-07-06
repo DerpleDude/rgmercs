@@ -711,7 +711,10 @@ function Module:IsValidMezTarget(mobId)
             spawn.ID(), spawn.CleanName(), spawn.Level() or 0)
         return false
     end
-    -- future: body-gated mez (e.g. necro undead-only) - give ['Mez'] entries a bodyType and reject a mob no enabled entry can target (the giant rule below is the same body-check shape)
+    if not Modules:ExecModule("Class", "CanMezTarget", mobId) then
+        return false
+    end
+
     if Targeting.TargetBodyIs(spawn, "giant") then
         Logger.log_debug(
             "\ayUpdateMezList: Adding ID: %d Name: %s Level: %d to our immune list as it is a giant.", spawn.ID(),
@@ -907,7 +910,7 @@ function Module:DoMez()
         self:ProcessMezList()
     else
         Logger.log_verbose("DoMez() : Skipping Mez list processing: Spell(%s) Ready(%s) TableSize(%d)", mezSpell and mezSpell() or "None",
-            mezSpell and mezSpell() and Strings.BoolToColorString(mq.TLO.Me.SpellReady(mezSpell.RankName())()) or "NoSpell",
+            mezSpell and mezSpell() and Strings.BoolToColorString(mq.TLO.Me.SpellReady(mezSpell.RankName() or "")()) or "NoSpell",
             tableSize)
     end
 

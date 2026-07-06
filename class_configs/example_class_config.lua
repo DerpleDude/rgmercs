@@ -41,6 +41,11 @@ local _ClassConfig = {
         IsHealing = function() return true end,
         IsCuring  = function() return true end,
         IsRezing  = function() return Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0 end,
+        -- CanMezTarget: Optional per-mob veto for single-target mez. Return false to reject a mobId as an ST mez candidate.
+        -- Worked example (not real for SHD): a necro that should only mez undead mobs.
+        CanMezTarget = function(self, mobId)
+            return (mq.TLO.Spawn(mobId).Body.Name() or "") == "Undead"
+        end,
     },
 
     -- Rez: A declarative, phase-split priority table walked by the Rez module (mirrors the Mez and Charm tables).
