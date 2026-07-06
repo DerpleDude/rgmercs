@@ -1091,7 +1091,7 @@ local _ClassConfig = {
                 type = "Item",
                 load_cond = function(self) return self.Helpers.SlowProcChoice() == "Chestplate" end,
                 cond = function(self, spell, target)
-                    return Targeting.TargetIsATank(target) and Casting.GroupBuffCheck(spell, target)
+                    return Targeting.TargetIsATank(target) and Casting.GroupBuffItemCheck(spell, target)
                 end,
             },
             {
