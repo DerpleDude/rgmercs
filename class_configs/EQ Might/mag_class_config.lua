@@ -157,18 +157,19 @@ _ClassConfig      = {
         ['LongDurDmgShield'] = {
             -- Preferring group buffs for ease. Included all Single target Now as well
             -- "Magmaskin", Single target vs group (convenience), minimal difference
-            "Circle of Fireskin",    -- Level 70
-            "Fireskin",              -- Level 66
-            "Maelstrom of Ro",       -- Level 63
-            "Flameshield of Ro",     -- Level 61
-            "Aegis of Ro",           -- Level 60
-            "Cadeau of Flame",       -- Level 56
-            "Boon of Immolation",    -- Level 53
-            "Shield of Lava",        -- Level 45
-            "Barrier of Combustion", -- Level 38
-            "Inferno Shield",        -- Level 28
-            "Shield of Flame",       -- Level 19
-            "Shield of Fire",        -- Level 7
+            "Ancient: Circle of Fireskin", -- Level 70
+            "Circle of Fireskin",          -- Level 70
+            "Fireskin",                    -- Level 66
+            "Maelstrom of Ro",             -- Level 63
+            "Flameshield of Ro",           -- Level 61
+            "Aegis of Ro",                 -- Level 60
+            "Cadeau of Flame",             -- Level 56
+            "Boon of Immolation",          -- Level 53
+            "Shield of Lava",              -- Level 45
+            "Barrier of Combustion",       -- Level 38
+            "Inferno Shield",              -- Level 28
+            "Shield of Flame",             -- Level 19
+            "Shield of Fire",              -- Level 7
         },
         ['ManaRegenBuff'] = {
             "Phantasmal Warden",               -- Level 71

@@ -369,10 +369,7 @@ local _ClassConfig = {
             local remaining = songSpell.DurationWindow() == 1
                 and (me.Song(songSpell.Name()).Duration.TotalSeconds() or 0)
                 or (me.Buff(songSpell.Name()).Duration.TotalSeconds() or 0)
-            if self.TempSettings.upkeepFill then
-                local full = Config:GetSetting('SongDuration', true) or songSpell.MyDuration.TotalSeconds()
-                return remaining < full - self.Helpers.GetSongBuffer()
-            end
+            if self.TempSettings.upkeepFill then return remaining > 0 end
             return remaining <= self.Helpers.GetSongBuffer()
         end,
         MarchTimer = function(self) --minimum gap between War March resings, from the Song Duration setting
@@ -383,7 +380,7 @@ local _ClassConfig = {
             local melody = self.TempSettings.RotationTable['Melody']
             if not melody then return false end
             local me = mq.TLO.Me
-            local pick, pickRemaining = nil, nil
+            local pick, pickRemaining, pickEntry = nil, nil, nil
             self.TempSettings.upkeepFill = true
             for _, entry in ipairs(melody) do
                 local songSpell = Core.GetResolvedActionMapItem(entry.name)
@@ -392,12 +389,23 @@ local _ClassConfig = {
                         and (me.Song(songSpell.Name()).Duration.TotalSeconds() or 0)
                         or (me.Buff(songSpell.Name()).Duration.TotalSeconds() or 0)
                     if remaining > 0 and Casting.SongReady(songSpell) and (not pickRemaining or remaining < pickRemaining) then
-                        pick, pickRemaining = songSpell, remaining
+                        pick, pickRemaining, pickEntry = songSpell, remaining, entry
                     end
                 end
             end
             self.TempSettings.upkeepFill = false
-            if pick then return Casting.UseSong(pick.RankName(), me.ID(), false) end
+            if not pick then return false end
+            if pick.Name() == self.TempSettings.LastUpkeepSong and math.abs(pickRemaining - (self.TempSettings.LastUpkeepRemaining or 0)) < 1 then
+                return false
+            end
+            if Casting.UseSong(pick.RankName(), me.ID(), false) then
+                self.TempSettings.LastUpkeepSong = pick.Name()
+                self.TempSettings.LastUpkeepRemaining = pickRemaining
+                if pickEntry.post_activate then
+                    Core.SafeCallFunc("upkeep post_activate", pickEntry.post_activate, self, pick, true)
+                end
+                return true
+            end
             return false
         end,
         UnwantedAggroCheck = function(self)

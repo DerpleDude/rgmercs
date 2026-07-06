@@ -462,6 +462,10 @@ local _ClassConfig = {
             end
             return "ProcSpell"
         end,
+        SlowProcChoice = function()
+            local useChest = mq.TLO.Me.Level() >= 69 and mq.TLO.FindItem("=Ultrafabled Rune Etched Chestplate")
+            return useChest and "Chestplate" or "Spell"
+        end,
     },
     -- These are handled differently from normal rotations in that we try to make some intelligent desicions about which spells to use instead
     -- of just slamming through the base ordered list.
@@ -1083,8 +1087,17 @@ local _ClassConfig = {
         },
         ['GroupBuff']      = {
             {
+                name = "Ultrafabled Rune Etched Chestplate",
+                type = "Item",
+                load_cond = function(self) return self.Helpers.SlowProcChoice() == "Chestplate" end,
+                cond = function(self, spell, target)
+                    return Targeting.TargetIsATank(target) and Casting.GroupBuffCheck(spell, target)
+                end,
+            },
+            {
                 name = "SlowProcBuff",
                 type = "Spell",
+                load_cond = function(self) return self.Helpers.SlowProcChoice() == "Spell" end,
                 cond = function(self, spell, target)
                     return Targeting.TargetIsATank(target) and Casting.GroupBuffCheck(spell, target)
                 end,
@@ -1275,7 +1288,7 @@ local _ClassConfig = {
                 { name = "PutridDecay",     cond = function(self) return Config:GetSetting('DoPutrid') end, },
                 { name = "CanniSpell",      cond = function(self) return Config:GetSetting('DoSpellCanni') end, },
                 { name = "MeleeProcBuff",   cond = function(self) return self.Helpers.ProcBuffChoice() == "ProcSpell" end, },
-                { name = "SlowProcBuff", },
+                { name = "SlowProcBuff",    cond = function(self) return self.Helpers.SlowProcChoice() == "Spell" end, },
                 { name = "LowLvlAtkBuff",   cond = function(self) return not mq.TLO.FindItem("=Artifact of the Champion")() or mq.TLO.Me.Level() < 68 end, },
                 { name = "ColdNuke",        cond = function(self) return Config:GetSetting('DoColdNuke') end, },
                 { name = "PoisonNuke",      cond = function(self) return Config:GetSetting('DoPoisonNuke') end, },

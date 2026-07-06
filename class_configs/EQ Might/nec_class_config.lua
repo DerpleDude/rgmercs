@@ -132,7 +132,6 @@ local _ClassConfig = {
             "Dominate Undead", -- Level 18
         },
         ['LifeTap'] = {
-            "Drink of Vitae",             -- Level 70
             "Drain Life",                 -- Level 70
             "Ancient: Touch of Orshilak", -- Level 68
             "Soulspike",                  -- Level 67
