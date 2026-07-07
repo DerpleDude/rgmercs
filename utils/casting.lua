@@ -260,19 +260,23 @@ end
 --- GetUseableSpellId. Checks pet blocked list, pet buff window, and
 --- stacking including trigger spells.
 ---@param spell MQSpell The spell to check.
+---@param skipBlockCheck boolean|nil whether to check the peers blocked spells, this needs to be skipped for certain manual stacking checks
+---@param skipTriggerCheck boolean|nil whether to skip a check for spell triggers, to be used for cost savings when we know the spell does not have triggers
 ---@return boolean True if the spell should be cast on the player's pet.
-function Casting.PetBuffCheck(spell)
+function Casting.PetBuffCheck(spell, skipBlockCheck, skipTriggerCheck)
     if not (spell and spell()) then return false end
-    return Casting.LocalPetBuffCheck(Casting.GetUseableSpellId(spell))
+    return Casting.LocalPetBuffCheck(Casting.GetUseableSpellId(spell), skipBlockCheck, skipTriggerCheck)
 end
 
 --- Gates on CanUseAA, then delegates to LocalPetBuffCheck using the
 --- AA's spell ID to confirm not blocked on pet, not present, stacks.
 ---@param aaName string The AA name to check.
+---@param skipBlockCheck boolean|nil whether to check the peers blocked spells, this needs to be skipped for certain manual stacking checks
+---@param skipTriggerCheck boolean|nil whether to skip a check for spell triggers, to be used for cost savings when we know the spell does not have triggers
 ---@return boolean True if the AA buff should be cast on the pet.
-function Casting.PetBuffAACheck(aaName)
+function Casting.PetBuffAACheck(aaName, skipBlockCheck, skipTriggerCheck)
     if not Casting.CanUseAA(aaName) then return false end
-    return Casting.LocalPetBuffCheck(mq.TLO.Me.AltAbility(aaName).Spell.ID())
+    return Casting.LocalPetBuffCheck(mq.TLO.Me.AltAbility(aaName).Spell.ID(), skipBlockCheck, skipTriggerCheck)
 end
 
 --- Gets the clicky spell via GetClickySpell, then delegates to

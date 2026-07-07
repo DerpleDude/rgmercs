@@ -1353,7 +1353,7 @@ return {
                 name = "PetHaste",
                 type = "Spell",
                 cond = function(self, spell)
-                    return Casting.PetBuffCheck(spell)
+                    return Casting.PetBuffCheck(spell, nil, true)
                 end,
             },
             {
