@@ -484,6 +484,7 @@ local _ClassConfig = {
             state = 1,
             steps = 1,
             doFullRotation = true,
+            reorderable = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and not Casting.IAmFeigning() and Targeting.MobNotLowHP(Targeting.GetAutoTarget()) and Core.CombatActionsCheck()

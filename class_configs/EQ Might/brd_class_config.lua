@@ -401,7 +401,7 @@ local _ClassConfig = {
             if Casting.UseSong(pick.RankName(), me.ID(), false) then
                 self.TempSettings.LastUpkeepSong = pick.Name()
                 self.TempSettings.LastUpkeepRemaining = pickRemaining
-                if pickEntry.post_activate then
+                if pickEntry and pickEntry.post_activate then
                     Core.SafeCallFunc("upkeep post_activate", pickEntry.post_activate, self, pick, true)
                 end
                 return true
