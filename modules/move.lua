@@ -612,6 +612,16 @@ function Module:Render()
 
         if ImGui.BeginTable("ChaseInfoTable", 2, bit32.bor(ImGuiTableFlags.Borders)) then
             ImGui.TableNextColumn()
+            Ui.RenderText("Chase Status")
+            ImGui.TableNextColumn()
+            if not Config:GetSetting('ChaseOn') then
+                Ui.RenderColoredText(Globals.Constants.BasicColors.Red, "Off")
+            elseif self.TempSettings.ChaseSuppressed then
+                Ui.RenderColoredText(Globals.Constants.BasicColors.Yellow, "Suppressed (Combat)")
+            else
+                Ui.RenderColoredText(Globals.Constants.BasicColors.Green, "Chasing")
+            end
+            ImGui.TableNextColumn()
             Ui.RenderText("Chase Target")
             ImGui.TableNextColumn()
             Ui.RenderText(self:GetChaseTarget())
@@ -710,11 +720,13 @@ function Module:ShouldFollow()
         local separated = maTargetId > 0 and Targeting.IsSpawnXTHater(maTargetId, true)
             and (mq.TLO.Spawn(maTargetId).Distance3D() or 9999) > Config:GetSetting('AssistRange')
         if not separated then
+            self.TempSettings.ChaseSuppressed = true
             Logger.log_super_verbose("ShouldFollow(): chase paused, XTarget hater within Assist Range.")
             return false
         end
     end
 
+    self.TempSettings.ChaseSuppressed = false
     return true
 end
 
