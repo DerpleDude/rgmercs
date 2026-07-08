@@ -15,6 +15,7 @@ Globals.MainAssist                    = ""
 Globals.ScriptDir                     = ""
 Globals.AutoTargetID                  = 0
 Globals.AggroTargetID                 = 0
+Globals.MATargetID                    = 0
 Globals.ForceTargetID                 = 0
 Globals.ForceCharmID                  = 0
 Globals.AutoTargetIsNamed                  = false

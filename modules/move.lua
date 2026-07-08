@@ -705,9 +705,11 @@ function Module:ShouldFollow()
     if not Config:GetSetting('ChaseInCombat') and not Config:GetSetting('PriorityFollow') and Config:GetSetting('DoAutoEngage')
         and not Globals.PauseMain and not Config:GetSetting('ManualMode')
         and Targeting.XTHaterInRange(Config:GetSetting('AssistRange')) then
-        local autoTarget = Targeting.GetAutoTarget()
-        local autoTargetOutOfReach = autoTarget() and not autoTarget.Dead() and (autoTarget.Distance3D() or 0) > Config:GetSetting('AssistRange')
-        if not autoTargetOutOfReach then
+        -- Hold unless the MA's fight has moved out of our reach (they were summoned, or we were left behind).
+        local maTargetId = Globals.MATargetID
+        local separated = maTargetId > 0 and Targeting.IsSpawnXTHater(maTargetId, true)
+            and (mq.TLO.Spawn(maTargetId).Distance3D() or 9999) > Config:GetSetting('AssistRange')
+        if not separated then
             Logger.log_super_verbose("ShouldFollow(): chase paused, XTarget hater within Assist Range.")
             return false
         end

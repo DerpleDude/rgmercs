@@ -699,6 +699,7 @@ function Combat.FindBestAutoTarget(validateFn)
 
         if assistId > 0 then
             Globals.AutoTargetID = assistId
+            Globals.MATargetID = assistId -- Capture MA target for edge-case combat chase handling
         end
     end
 

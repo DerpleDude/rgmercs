@@ -78,6 +78,7 @@ function Targeting.ClearTarget()
     if Config:GetSetting('DoAutoTarget') then
         Logger.log_debug("Clearing Target")
         Globals.AutoTargetID = 0
+        Globals.MATargetID = 0
         Globals.AutoTargetIsNamed = false
         Globals.AutoTargetElementalImmunities = {}
         Globals.AutoTargetStatusImmunities = {}
