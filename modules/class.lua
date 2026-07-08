@@ -2368,7 +2368,7 @@ function Module:GiveTime()
         self:RunCounterRotation()
     end
 
-    if self:IsTanking() and Config:GetSetting('KeepMobsInFront') and Movement:DetectMobBehind() then
+    if self:IsTanking() and Config:GetSetting('KeepMobsInFront') and Movement:CanReposition() and Movement:DetectMobBehind() then
         Movement:TankReposition()
     end
 

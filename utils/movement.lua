@@ -268,21 +268,19 @@ function Movement:NavAroundCircle(target, radius)
 
         Logger.log_debug("\aw%d\ax tmp_degrees \aw%d\ax tgt_x \aw%0.2f\ax tgt_y \aw%02.f\ax", steps, tmp_degrees,
             tgt_x, tgt_y)
-        -- First check that we can navigate to our new target
-        if mq.TLO.Navigation.PathExists(string.format("locyxz %0.2f %0.2f %0.2f", tgt_y, tgt_x, spawn_z))() then
-            -- Then check if our new spots has line of sight to our target.
+        -- Cheapest gate first: valid loc, then LoS raycast, then the expensive pathfind.
+        if mq.TLO.EverQuest.ValidLoc(string.format("%0.2f %0.2f %0.2f", tgt_x, tgt_y, spawn_z))() then
             if mq.TLO.LineOfSight(string.format("%0.2f,%0.2f,%0.2f:%0.2f,%0.2f,%0.2f", tgt_y, tgt_x, spawn_z, spawn_y, spawn_x, spawn_z))() then
-                -- Make sure it's a valid loc...
-                if mq.TLO.EverQuest.ValidLoc(string.format("%0.2f %0.2f %0.2f", tgt_x, tgt_y, spawn_z))() then
+                if mq.TLO.Navigation.PathExists(string.format("locyxz %0.2f %0.2f %0.2f", tgt_y, tgt_x, spawn_z))() then
                     Logger.log_debug(" \ag--> Found Valid Circling Loc: %0.2f %0.2f %0.2f", tgt_x, tgt_y, spawn_z)
                     Movement:DoNav(false, "locyxz %0.2f %0.2f %0.2f", tgt_y, tgt_x, spawn_z)
                     mq.delay("2s", function() return mq.TLO.Navigation.Active() end)
                     mq.delay("5s", function() return not mq.TLO.Navigation.Active() end)
                     Core.DoCmd("/squelch /face fast")
                     return true
-                else
-                    Logger.log_debug(" \ar--> Invalid Loc: %0.2f %0.2f %0.2f", tgt_x, tgt_y, spawn_z)
                 end
+            else
+                Logger.log_debug(" \ar--> No LoS: %0.2f %0.2f %0.2f", tgt_x, tgt_y, spawn_z)
             end
         end
     end
@@ -338,9 +336,10 @@ function Movement:DetectMobBehind()
 
     for i = 1, xtCount do
         local xtSpawn = me.XTarget(i)
-        if xtSpawn and (xtSpawn.ID() or 0) > 0 and not xtSpawn.Dead() and not xtSpawn.Fleeing()
+        local xtId = (xtSpawn and xtSpawn.ID()) or 0
+        if xtId > 0 and not xtSpawn.Dead() and not xtSpawn.Fleeing()
             and (math.ceil(xtSpawn.PctHPs() or 0)) > 0
-            and (xtSpawn.Aggressive() or (xtSpawn.TargetType() or ""):lower() == "auto hater" or xtSpawn.ID() == Globals.ForceTargetID)
+            and (xtSpawn.Aggressive() or (xtSpawn.TargetType() or ""):lower() == "auto hater" or xtId == Globals.ForceTargetID)
             and Globals.Constants.RGNotMezzedAnims:contains(xtSpawn.Animation())
             and (xtSpawn.PctAggro() or 0) >= 100 then
             local theirHeadingTo = xtSpawn.HeadingTo.DegreesCCW() or 0
@@ -369,36 +368,36 @@ end
 ---@return boolean
 function Movement:CanReposition()
     if not Core.IsTanking() then
-        Logger.log_debug("\ayReposition skipped: not tanking.")
+        Logger.log_super_verbose("\ayReposition skipped: not tanking.")
         return false
     end
     if Config:GetSetting('ManualMode') then
-        Logger.log_debug("\ayReposition skipped: Manual Mode on.")
+        Logger.log_super_verbose("\ayReposition skipped: Manual Mode on.")
         return false
     end
     if not Config:GetSetting('DoAutoNav') then
-        Logger.log_debug("\ayReposition skipped: DoAutoNav off.")
+        Logger.log_super_verbose("\ayReposition skipped: DoAutoNav off.")
         return false
     end
     if not Config:GetSetting('DoAutoStick') then
-        Logger.log_debug("\ayReposition skipped: DoAutoStick off.")
+        Logger.log_super_verbose("\ayReposition skipped: DoAutoStick off.")
         return false
     end
     if Config:GetSetting('ChaseOn') then
-        Logger.log_debug("\ayReposition skipped: ChaseOn enabled.")
+        Logger.log_super_verbose("\ayReposition skipped: ChaseOn enabled.")
         return false
     end
     if Globals.BackOffFlag then
-        Logger.log_debug("\ayReposition skipped: BackOffFlag set.")
+        Logger.log_super_verbose("\ayReposition skipped: BackOffFlag set.")
         return false
     end
     if Modules:ExecModule("Pull", "IsPullState", "PULL_PULLING") or Modules:ExecModule("Pull", "IsPullState", "PULL_RETURN_TO_CAMP") then
-        Logger.log_debug("\ayReposition skipped: in pull state.")
+        Logger.log_super_verbose("\ayReposition skipped: in pull state.")
         return false
     end
     local sinceReposition = Globals.GetTimeSeconds() - self.LastReposition
     if sinceReposition < 0.5 then
-        Logger.log_debug("\ayReposition skipped: rate-limit (%0.2fs since last reposition).", sinceReposition)
+        Logger.log_super_verbose("\ayReposition skipped: rate-limit (%0.2fs since last reposition).", sinceReposition)
         return false
     end
     return true
@@ -410,16 +409,16 @@ function Movement:TankReposition()
 
     local autoTargetId = Globals.AutoTargetID or 0
     if autoTargetId <= 0 then
-        Logger.log_debug("\ayReposition skipped: no autotarget.")
+        Logger.log_verbose("\ayReposition skipped: no autotarget.")
         return
     end
     local engaged = mq.TLO.Spawn("id " .. autoTargetId)
     if not engaged() or engaged.Dead() then
-        Logger.log_debug("\ayReposition skipped: engaged spawn invalid or dead.")
+        Logger.log_verbose("\ayReposition skipped: engaged spawn invalid or dead.")
         return
     end
     if not mq.TLO.Navigation.MeshLoaded() then
-        Logger.log_debug("\ayReposition skipped: no navmesh loaded.")
+        Logger.log_verbose("\ayReposition skipped: no navmesh loaded.")
         return
     end
 
@@ -463,6 +462,7 @@ function Movement:TankReposition()
         local headingCCW = me.Heading.DegreesCCW() or 0
         local engX = engaged.X() or 0
         local engY = engaged.Y() or 0
+        local engZ = engaged.Z() or meZ
         local maxRange = engaged.MaxRangeTo() or 15
         local distNow = engaged.Distance3D() or maxRange
         local strX = stray.X() or 0
@@ -488,21 +488,24 @@ function Movement:TankReposition()
         -- Ideal 75° first, then ±10° on the same side; switching sides would defeat the diameter-circle pick and undo the move.
         for _, lateralAngle in ipairs({ 75, 85, 65, }) do
             local destX, destY = self:LateralDestFromFacing(meX, meY, headingCCW, lateralAngle, moveDir, stepLength)
-            local distToEngaged = math.sqrt((destX - engX) ^ 2 + (destY - engY) ^ 2)
-            if distToEngaged > maxRange then
-                local scale = (maxRange - 1) / distToEngaged
-                destX = engX + (destX - engX) * scale
-                destY = engY + (destY - engY) * scale
+            local dxE, dyE = destX - engX, destY - engY
+            if dxE * dxE + dyE * dyE > maxRange * maxRange then
+                local scale = (maxRange - 1) / math.sqrt(dxE * dxE + dyE * dyE)
+                destX = engX + dxE * scale
+                destY = engY + dyE * scale
             end
-            local stepDist = math.sqrt((destX - meX) ^ 2 + (destY - meY) ^ 2)
-            if stepDist >= 2
-                and mq.TLO.Navigation.PathExists(string.format("locyxz %0.2f %0.2f %0.2f", destY, destX, meZ))()
-                and (mq.TLO.Navigation.PathLength(string.format("locyxz %0.2f %0.2f %0.2f", destY, destX, meZ))() or 999) <= stepDist + 10
-                and mq.TLO.LineOfSight(string.format("%0.2f,%0.2f,%0.2f:%0.2f,%0.2f,%0.2f", destY, destX, meZ, engY, engX, engaged.Z() or meZ))() then
-                Logger.log_debug("\arReposition step %d: lateral %ddeg dir=%d L=%.1f -> %.1f %.1f", stepCount + 1, lateralAngle, moveDir, stepLength, destX, destY)
-                self:DoNav(false, "locyxz %0.2f %0.2f %0.2f facing=backward log=off", destY, destX, meZ)
-                navIssued = true
-                break
+            local dxM, dyM = destX - meX, destY - meY
+            local stepDistSq = dxM * dxM + dyM * dyM
+            -- Cheap LoS raycast gates the expensive pathfind; PathLength is also the path-exists check (returns -1 when none).
+            if stepDistSq >= 2 * 2
+                and mq.TLO.LineOfSight(string.format("%0.2f,%0.2f,%0.2f:%0.2f,%0.2f,%0.2f", destY, destX, meZ, engY, engX, engZ))() then
+                local pathLen = mq.TLO.Navigation.PathLength(string.format("locyxz %0.2f %0.2f %0.2f", destY, destX, meZ))() or -1
+                if pathLen > 0 and pathLen <= math.sqrt(stepDistSq) + 10 then
+                    Logger.log_debug("\arReposition step %d: lateral %ddeg dir=%d L=%.1f -> %.1f %.1f", stepCount + 1, lateralAngle, moveDir, stepLength, destX, destY)
+                    self:DoNav(false, "locyxz %0.2f %0.2f %0.2f facing=backward log=off", destY, destX, meZ)
+                    navIssued = true
+                    break
+                end
             end
         end
 
@@ -518,8 +521,8 @@ function Movement:TankReposition()
                 local backY = meY - slide * fy
                 -- The stray stands roughly where we land, so its floor samples the destination height (stairs/slopes).
                 local backZ = stray.FloorZ() or stray.Z() or meZ
-                if mq.TLO.Navigation.PathExists(string.format("locyxz %0.2f %0.2f %0.2f", backY, backX, backZ))()
-                    and (mq.TLO.Navigation.PathLength(string.format("locyxz %0.2f %0.2f %0.2f", backY, backX, backZ))() or 999) <= slide + 10 then
+                local backPathLen = mq.TLO.Navigation.PathLength(string.format("locyxz %0.2f %0.2f %0.2f", backY, backX, backZ))() or -1
+                if backPathLen > 0 and backPathLen <= slide + 10 then
                     Logger.log_debug("\arReposition step %d: backslide fallback %0.1fu (rear-offset %0.1f, lateral blocked).", stepCount + 1, slide, rearOffset)
                     self:DoNav(false, "locyxz %0.2f %0.2f %0.2f facing=backward log=off", backY, backX, backZ)
                     navIssued = true
@@ -539,9 +542,9 @@ function Movement:TankReposition()
             Core.DoCmd("/squelch /face fast id %d", autoTargetId)
             mq.delay(50)
             stepCount = stepCount + 1
-            local moved = math.sqrt(((me.X() or meX) - meX) ^ 2 + ((me.Y() or meY) - meY) ^ 2)
-            if moved < 1.5 then
-                Logger.log_debug("\ayReposition step %d: no displacement (%.1fu moved), ending series.", stepCount, moved)
+            local dxMoved, dyMoved = (me.X() or meX) - meX, (me.Y() or meY) - meY
+            if dxMoved * dxMoved + dyMoved * dyMoved < 1.5 * 1.5 then
+                Logger.log_debug("\ayReposition step %d: no displacement (%.1fu moved), ending series.", stepCount, math.sqrt(dxMoved * dxMoved + dyMoved * dyMoved))
                 break
             end
         else
