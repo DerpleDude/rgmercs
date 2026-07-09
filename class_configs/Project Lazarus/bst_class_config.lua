@@ -228,6 +228,7 @@ return {
             name = 'BigHealPoint',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             load_cond = function() return Config:GetSetting('DoHeals') end,
             cond = function(self, target) return Targeting.BigHealsNeeded(target) end,
         },
@@ -461,7 +462,10 @@ return {
             },
             {
                 name = "ProtDisc",
-                type = "Discipline",
+                type = "Disc",
+                cond = function(self, discSpell, target)
+                    return Casting.NoDiscActive()
+                end,
             },
         },
         ['PetHealing']     = {
@@ -608,6 +612,8 @@ return {
                 type = "Spell",
                 cond = function(self, spell, target)
                     return Casting.GroupBuffCheck(spell, target)
+                        --laz specific deconflict with spiritual rejuvenation misreporting stacking
+                        and Casting.AddedBuffCheck(40585, target)
                 end,
             },
             {

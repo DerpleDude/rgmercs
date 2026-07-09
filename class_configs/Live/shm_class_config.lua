@@ -791,6 +791,7 @@ local _ClassConfig = {
             name = 'LowLevelHealPoint',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             load_cond = function() return mq.TLO.Me.Level() < 65 end,
             cond = function(self, target)
                 return Targeting.MainHealsNeeded(target)
@@ -800,6 +801,7 @@ local _ClassConfig = {
             name = 'GroupHealPoint',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             load_cond = function() return mq.TLO.Me.Level() > 64 end,
             cond = function(self, target) return Targeting.GroupHealsNeeded() end,
         },
@@ -807,6 +809,7 @@ local _ClassConfig = {
             name = 'BigHealPoint',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             load_cond = function() return mq.TLO.Me.Level() > 64 end,
             cond = function(self, target) return Targeting.BigHealsNeeded(target) and not Targeting.TargetIsType("pet", target) end,
         },
@@ -814,6 +817,7 @@ local _ClassConfig = {
             name = 'MainHealPoint',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             load_cond = function() return mq.TLO.Me.Level() > 64 end,
             cond = function(self, target) return Targeting.MainHealsNeeded(target) end,
         },

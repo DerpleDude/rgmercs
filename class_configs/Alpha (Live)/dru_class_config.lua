@@ -838,21 +838,24 @@ local _ClassConfig = {
     },
     ['HealRotationOrder'] = {
         {
-            name  = 'BigHealPoint',
-            state = 1,
-            steps = 1,
-            cond  = function(self, target) return Targeting.BigHealsNeeded(target) and not Targeting.TargetIsType("pet", target) end,
+            name           = 'BigHealPoint',
+            state          = 1,
+            steps          = 1,
+            doFullRotation = true,
+            cond           = function(self, target) return Targeting.BigHealsNeeded(target) and not Targeting.TargetIsType("pet", target) end,
         },
         {
             name = 'GroupHealPoint',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             cond = function(self, target) return Targeting.GroupHealsNeeded() end,
         },
         {
             name = 'MainHealPoint',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             cond = function(self, target) return Targeting.MainHealsNeeded(target) end,
         },
     },
@@ -1008,7 +1011,7 @@ local _ClassConfig = {
             state = 1,
             steps = 1,
             load_cond = function(self) return Config:GetSetting('DoBarkspur') and self:GetResolvedActionMapItem('Barkspur') end,
-            targetId = function(self) return { Core.GetMainAssistId(), } or {} end,
+            targetId = function(self) return Casting.GetBuffableIDs() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
@@ -1427,7 +1430,7 @@ local _ClassConfig = {
                 name = "Barkspur",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    if not Casting.CastReady(spell) then return false end
+                    if not Targeting.TargetIsATank(target) or not Casting.CastReady(spell) then return false end
                     return Casting.GroupBuffCheck(spell, target, false, true)
                 end,
             },
@@ -1639,7 +1642,7 @@ local _ClassConfig = {
             Group = "Abilities",
             Header = "Buffs",
             Category = "Group",
-            Tooltip = "Use your short duration damage shield (Barkspur line) on the MA during combat.",
+            Tooltip = "Use your short duration damage shield (Barkspur line) on tanks during combat.",
             RequiresLoadoutChange = true,
             Default = false,
         },

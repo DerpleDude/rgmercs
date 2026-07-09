@@ -72,7 +72,8 @@ Module.TempSettings.MidSongFireable          = {}
 Module.FAQ                                   = {
     {
         Question = "How does RGMercs decide which action to use?",
-        Answer = "  Every action RGMercs takes comes from a 'rotation': an ordered list of actions the loaded class config runs for a given situation, such as combat, downtime, or buffing.\n\n" ..
+        Answer =
+            "  Every action RGMercs takes comes from a 'rotation': an ordered list of actions the loaded class config runs for a given situation, such as combat, downtime, or buffing.\n\n" ..
             "  Each line in a rotation is a 'rotation entry'. An entry has its own usage conditions and maps to a real spell, AA, item, or discipline. This mapped action is the 'Resolved Action' shown in the rotation table.\n\n" ..
             "  When a rotation runs, RGMercs checks its entries in order and uses those whose conditions pass. Disabled entries and entries whose conditions fail are skipped, along with actions blocked by things like cooldowns, mana, or movement.\n\n" ..
             "  Rotations come in two types, Full and Standard. A Full rotation re-checks every entry from the top on each run, while a Standard rotation resumes from the entry after the last one that succeeded. Leaving combat resets this position to the top.\n\n" ..
@@ -1066,9 +1067,6 @@ function Module:GetAllRotationNames()
 end
 
 function Module:GetRotationTable(mode)
-    if self.ClassConfig and not self.TempSettings.RotationTable[mode] then
-        printf("\ayGetRotationTable(%s) found %d entries", mode, #self.TempSettings.RotationTable[mode])
-    end
     return self.ClassConfig and self.TempSettings.RotationTable[mode] or {}
 end
 
@@ -2494,24 +2492,8 @@ function Module:DoGetState()
     for k, entry in pairs(self.ResolvedActionMap) do
         local mappedAction = entry
 
-        if mappedAction then
-            if type(mappedAction) ~= "string" then
-                mappedAction = mappedAction.RankName()
-            end
-        else
-            if entry.type:lower() == "customfunc" then
-                mappedAction = "cmd function"
-            elseif entry.type:lower() == "spell" then
-                mappedAction = "<Missing Spell>"
-            elseif entry.type:lower() == "song" then
-                mappedAction = "<Missing Song>"
-            elseif entry.type:lower() == "ability" then
-                mappedAction = entry.name
-            elseif entry.type:lower() == "aa" then
-                mappedAction = entry.name
-            else
-                mappedAction = entry.name
-            end
+        if type(mappedAction) ~= "string" then
+            mappedAction = mappedAction.RankName()
         end
 
         actionMap = actionMap .. string.format("%-20s ==> %s\n", k, mappedAction)
@@ -2525,10 +2507,12 @@ function Module:DoGetState()
     local rotationStates = "Current Rotation States\n-=-=-=-=-=-=-=-\n"
     for idx, r in ipairs(self.TempSettings.RotationStates) do
         local actionEntry = self.TempSettings.RotationTable[r.name][r.state or 1]
-        rotationStates = rotationStates ..
-            string.format("[%d] %s :: %d :: Type: %s Action: %s\n", idx, r.name, r.state or 0, actionEntry.type,
-                self.ResolvedActionMap[actionEntry.name] and self.ResolvedActionMap[actionEntry.name] or actionEntry
-                .name)
+        if actionEntry then
+            rotationStates = rotationStates ..
+                string.format("[%d] %s :: %d :: Type: %s Action: %s\n", idx, r.name, r.state or 0, actionEntry.type,
+                    self.ResolvedActionMap[actionEntry.name] and self.ResolvedActionMap[actionEntry.name] or actionEntry
+                    .name)
+        end
     end
 
     local state = string.format("Combat State: %s", self.CombatState)

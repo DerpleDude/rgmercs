@@ -77,7 +77,7 @@ local Tooltips     = {
 }
 
 local _ClassConfig = {
-    _version          = "3.0 - Live",
+    _version          = "3.1 - Live",
     _author           = "Algar, Derple",
     ['ModeChecks']    = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
@@ -798,6 +798,10 @@ local _ClassConfig = {
                 (mq.TLO.Me.AltAbilityTimer("Shield Flash")() or 0) >= 234000 or
                 (Config:GetSetting('NamedShieldLock') and ((Globals.AutoTargetIsNamed and Targeting.GetAutoTargetAggroPct() == 100) or Targeting.TankingXTNamed()))
         end,
+        ShouldMemTerror = function()
+            local setting = Config:GetSetting('DoTerror')
+            return setting == 3 or (setting == 2 and not Core.GetResolvedActionMapItem('ForPower'))
+        end,
     },
     ['Charm']         = {
         ['Assist'] = {
@@ -805,12 +809,12 @@ local _ClassConfig = {
             {
                 name = "Terror",
                 type = "Spell",
-                load_cond = function(self) return Config:GetSetting('DoTerror') == 3 or (Config:GetSetting('DoTerror') == 2 and not Core.GetResolvedActionMapItem('ForPower')) end,
+                load_cond = function(self) return self.Helpers.ShouldMemTerror() end,
             },
             {
                 name = "Terror2",
                 type = "Spell",
-                load_cond = function(self) return Config:GetSetting('DoTerror') == 3 or (Config:GetSetting('DoTerror') == 2 and not Core.GetResolvedActionMapItem('ForPower')) end,
+                load_cond = function(self) return self.Helpers.ShouldMemTerror() end,
             },
             { name = "Acrimony",         type = "Disc", },
             { name = "Veil of Darkness", type = "AA", },
@@ -1254,13 +1258,13 @@ local _ClassConfig = {
                 name = "Terror",
                 type = "Spell",
                 tooltip = Tooltips.Terror,
-                load_cond = function(self) return Config:GetSetting('DoTerror') == 3 or (Config:GetSetting('DoTerror') == 2 and not Core.GetResolvedActionMapItem('ForPower')) end,
+                load_cond = function(self) return self.Helpers.ShouldMemTerror() end,
             },
             {
                 name = "Terror2",
                 type = "Spell",
                 tooltip = Tooltips.Terror,
-                load_cond = function(self) return Config:GetSetting('DoTerror') == 3 or (Config:GetSetting('DoTerror') == 2 and not Core.GetResolvedActionMapItem('ForPower')) end,
+                load_cond = function(self) return self.Helpers.ShouldMemTerror() end,
             },
             {
                 name = "Acrimony",
@@ -1330,7 +1334,7 @@ local _ClassConfig = {
                 name = "Terror",
                 type = "Spell",
                 tooltip = Tooltips.Terror,
-                load_cond = function(self) return Config:GetSetting('DoTerror') == 3 or (Config:GetSetting('DoTerror') == 2 and not Core.GetResolvedActionMapItem('ForPower')) end,
+                load_cond = function(self) return self.Helpers.ShouldMemTerror() end,
                 cond = function(self, spell, target)
                     if Config:GetSetting('DoTerror') == 1 or mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') then return false end
                     return (mq.TLO.Target.SecondaryPctAggro() or 0) > 60
@@ -1340,7 +1344,7 @@ local _ClassConfig = {
                 name = "Terror2",
                 type = "Spell",
                 tooltip = Tooltips.Terror,
-                load_cond = function(self) return Config:GetSetting('DoTerror') == 3 or (Config:GetSetting('DoTerror') == 2 and not Core.GetResolvedActionMapItem('ForPower')) end,
+                load_cond = function(self) return self.Helpers.ShouldMemTerror() end,
                 cond = function(self, spell, target)
                     if Config:GetSetting('DoTerror') == 1 or mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') then return false end
                     return (mq.TLO.Target.SecondaryPctAggro() or 0) > 60
@@ -1786,59 +1790,21 @@ local _ClassConfig = {
             },
         },
     },
-    ['Spells']        = { --I am not trying to find a combination that works when we have 20 options that change based on level, so I've just made a repeating priority list. May adjust this later.
+    ['SpellList']     = {
         {
-            gem = 1,
+            name = "Default",
             spells = {
                 { name = "SpearNuke", },
-            },
-        },
-        {
-            gem = 2,
-            spells = {
                 { name = "LifeTap", },
-            },
-        },
-        {
-            gem = 3,
-            spells = {
-                { name = "SnareDot", cond = function(self) return Config:GetSetting('DoSnare') and not Casting.CanUseAA("Encroaching Darkness") end, },
-                { name = "DireTap",  cond = function(self) return Config:GetSetting('DoDireTap') end, },
-                { name = "Dicho",    cond = function(self) return Config:GetSetting('DoDicho') end, },
-                { name = "ForPower", cond = function(self) return Config:GetSetting('DoForPower') end, },
-                {
-                    name = "Terror",
-                    cond = function(self)
-                        local setting = Config:GetSetting('DoTerror')
-                        return setting == 3 or (setting == 2 and mq.TLO.Me.Level() < 72)
-                    end,
-                },
+                { name = "SnareDot",  cond = function(self) return Config:GetSetting('DoSnare') and not Casting.CanUseAA("Encroaching Darkness") end, },
+                { name = "DireTap",   cond = function(self) return Config:GetSetting('DoDireTap') end, },
+                { name = "Dicho",     cond = function(self) return Config:GetSetting('DoDicho') end, },
+                { name = "ForPower",  cond = function(self) return Config:GetSetting('DoForPower') end, },
+                { name = "Terror",    cond = function(self) return self.Helpers.ShouldMemTerror() end, },
                 {
                     name = "AETaunt",
                     cond = function(self)
-                        local setting = Config:GetSetting('AETauntSpell')
-                        return setting == 3 or (setting == 2 and not Casting.CanUseAA("Explosion of Hatred"))
-                    end,
-                },
-                { name = "BiteTap", },
-            },
-        },
-        {
-            gem = 4,
-            spells = {
-                { name = "DireTap",  cond = function(self) return Config:GetSetting('DoDireTap') end, },
-                { name = "Dicho",    cond = function(self) return Config:GetSetting('DoDicho') end, },
-                { name = "ForPower", cond = function(self) return Config:GetSetting('DoForPower') end, },
-                {
-                    name = "Terror",
-                    cond = function(self)
-                        local setting = Config:GetSetting('DoTerror')
-                        return setting == 3 or (setting == 2 and mq.TLO.Me.Level() < 72)
-                    end,
-                },
-                {
-                    name = "AETaunt",
-                    cond = function(self)
+                        if not Core.IsTanking() then return false end
                         local setting = Config:GetSetting('AETauntSpell')
                         return setting == 3 or (setting == 2 and not Casting.CanUseAA("Explosion of Hatred"))
                     end,
@@ -1848,358 +1814,15 @@ local _ClassConfig = {
                 { name = "PoisonDot",     cond = function(self) return Config:GetSetting('DoPoisonDot') end, },
                 { name = "CorruptionDot", cond = function(self) return Config:GetSetting('DoCorruptionDot') end, },
                 { name = "DireDot",       cond = function(self) return Config:GetSetting('DoDireDot') end, },
-                {
-                    name = "PowerTapAC",
-                    cond = function(self)
-                        local level = mq.TLO.Me.Level()
-                        return Config:GetSetting('DoACTap') and (level <= 75 or level >= 100)
-                    end,
-                },
-                { name = "PowerTapAtk", cond = function(self) return Config:GetSetting('DoAtkTap') and mq.TLO.Me.Level() < 76 end, },
-                { name = "MaxHPTap",    cond = function(self) return Config:GetSetting('DoMaxHPTap') end, },
-                { name = "Skin",        cond = function(self) return Core.IsTanking() and mq.TLO.Me.NumGems() < 13 end, },
-                { name = "AELifeTap",   cond = function(self) return Config:GetSetting('DoAELifeTap') end, },
-                { name = "LifeTap2", },
-            },
-        },
-        {
-            gem = 5,
-            spells = {
-                { name = "Dicho",    cond = function(self) return Config:GetSetting('DoDicho') end, },
-                { name = "ForPower", cond = function(self) return Config:GetSetting('DoForPower') end, },
-                {
-                    name = "Terror",
-                    cond = function(self)
-                        local setting = Config:GetSetting('DoTerror')
-                        return setting == 3 or (setting == 2 and mq.TLO.Me.Level() < 72)
-                    end,
-                },
-                {
-                    name = "AETaunt",
-                    cond = function(self)
-                        local setting = Config:GetSetting('AETauntSpell')
-                        return setting == 3 or (setting == 2 and not Casting.CanUseAA("Explosion of Hatred"))
-                    end,
-                },
-                { name = "BiteTap", },
-                { name = "BondTap",       cond = function(self) return Config:GetSetting('DoBondTap') end, },
-                { name = "PoisonDot",     cond = function(self) return Config:GetSetting('DoPoisonDot') end, },
-                { name = "CorruptionDot", cond = function(self) return Config:GetSetting('DoCorruptionDot') end, },
-                { name = "DireDot",       cond = function(self) return Config:GetSetting('DoDireDot') end, },
-                {
-                    name = "PowerTapAC",
-                    cond = function(self)
-                        local level = mq.TLO.Me.Level()
-                        return Config:GetSetting('DoACTap') and (level <= 75 or level >= 100)
-                    end,
-                },
-                { name = "PowerTapAtk", cond = function(self) return Config:GetSetting('DoAtkTap') and mq.TLO.Me.Level() < 76 end, },
-                { name = "MaxHPTap",    cond = function(self) return Config:GetSetting('DoMaxHPTap') end, },
-                { name = "Skin",        cond = function(self) return Core.IsTanking() and mq.TLO.Me.NumGems() < 13 end, },
-                { name = "AELifeTap",   cond = function(self) return Config:GetSetting('DoAELifeTap') end, },
-                { name = "LifeTap2", },
-                {
-                    name = "Terror2",
-                    cond = function(self)
-                        local setting = Config:GetSetting('DoTerror')
-                        return setting == 3 or (setting == 2 and mq.TLO.Me.Level() < 72)
-                    end,
-                },
-            },
-        },
-        {
-            gem = 6,
-            spells = {
-                { name = "ForPower",      cond = function(self) return Config:GetSetting('DoForPower') end, },
-                {
-                    name = "Terror",
-                    cond = function(self)
-                        local setting = Config:GetSetting('DoTerror')
-                        return setting == 3 or (setting == 2 and mq.TLO.Me.Level() < 72)
-                    end,
-                },
-                {
-                    name = "AETaunt",
-                    cond = function(self)
-                        local setting = Config:GetSetting('AETauntSpell')
-                        return setting == 3 or (setting == 2 and not Casting.CanUseAA("Explosion of Hatred"))
-                    end,
-                },
-                { name = "BiteTap", },
-                { name = "BondTap",       cond = function(self) return Config:GetSetting('DoBondTap') end, },
-                { name = "PoisonDot",     cond = function(self) return Config:GetSetting('DoPoisonDot') end, },
-                { name = "CorruptionDot", cond = function(self) return Config:GetSetting('DoCorruptionDot') end, },
+                { name = "TempHP",        cond = function(self) return Config:GetSetting('DoTempHP') end, },
+                { name = "Skin",          cond = function(self) return Core.IsTanking() end, },
+                { name = "HealBurn",      cond = function(self) return Core.IsTanking() end, },
+                { name = "PowerTapAC",    cond = function(self) return Config:GetSetting('DoACTap') and (mq.TLO.Me.Level() <= 75 or mq.TLO.Me.Level() >= 100) end, },
+                { name = "PowerTapAtk",   cond = function(self) return Config:GetSetting('DoAtkTap') and mq.TLO.Me.Level() < 76 end, },
+                { name = "MaxHPTap",      cond = function(self) return Config:GetSetting('DoMaxHPTap') end, },
                 { name = "AELifeTap",     cond = function(self) return Config:GetSetting('DoAELifeTap') end, },
-                { name = "DireDot",       cond = function(self) return Config:GetSetting('DoDireDot') end, },
-                {
-                    name = "PowerTapAC",
-                    cond = function(self)
-                        local level = mq.TLO.Me.Level()
-                        return Config:GetSetting('DoACTap') and (level <= 75 or level >= 100)
-                    end,
-                },
-                { name = "PowerTapAtk", cond = function(self) return Config:GetSetting('DoAtkTap') and mq.TLO.Me.Level() < 76 end, },
-                { name = "MaxHPTap",    cond = function(self) return Config:GetSetting('DoMaxHPTap') end, },
-                { name = "Skin",        cond = function(self) return Core.IsTanking() and mq.TLO.Me.NumGems() < 13 end, },
-                { name = "AELifeTap",   cond = function(self) return Config:GetSetting('DoAELifeTap') end, },
                 { name = "LifeTap2", },
-                {
-                    name = "Terror2",
-                    cond = function(self)
-                        local setting = Config:GetSetting('DoTerror')
-                        return setting == 3 or (setting == 2 and mq.TLO.Me.Level() < 72)
-                    end,
-                },
-            },
-        },
-        {
-            gem = 7,
-            spells = {
-                {
-                    name = "Terror",
-                    cond = function(self)
-                        local setting = Config:GetSetting('DoTerror')
-                        return setting == 3 or (setting == 2 and mq.TLO.Me.Level() < 72)
-                    end,
-                },
-                {
-                    name = "AETaunt",
-                    cond = function(self)
-                        local setting = Config:GetSetting('AETauntSpell')
-                        return setting == 3 or (setting == 2 and not Casting.CanUseAA("Explosion of Hatred"))
-                    end,
-                },
-                { name = "BiteTap", },
-                { name = "BondTap",       cond = function(self) return Config:GetSetting('DoBondTap') end, },
-                { name = "PoisonDot",     cond = function(self) return Config:GetSetting('DoPoisonDot') end, },
-                { name = "CorruptionDot", cond = function(self) return Config:GetSetting('DoCorruptionDot') end, },
-                { name = "AELifeTap",     cond = function(self) return Config:GetSetting('DoAELifeTap') end, },
-                { name = "DireDot",       cond = function(self) return Config:GetSetting('DoDireDot') end, },
-                {
-                    name = "PowerTapAC",
-                    cond = function(self)
-                        local level = mq.TLO.Me.Level()
-                        return Config:GetSetting('DoACTap') and (level <= 75 or level >= 100)
-                    end,
-                },
-                { name = "PowerTapAtk", cond = function(self) return Config:GetSetting('DoAtkTap') and mq.TLO.Me.Level() < 76 end, },
-                { name = "MaxHPTap",    cond = function(self) return Config:GetSetting('DoMaxHPTap') end, },
-                { name = "Skin",        cond = function(self) return Core.IsTanking() and mq.TLO.Me.NumGems() < 13 end, },
-                { name = "LifeTap2", },
-                {
-                    name = "Terror2",
-                    cond = function(self)
-                        local setting = Config:GetSetting('DoTerror')
-                        return setting == 3 or (setting == 2 and mq.TLO.Me.Level() < 72)
-                    end,
-                },
-            },
-        },
-        {
-            gem = 8,
-            cond = function(self) return mq.TLO.Me.NumGems() >= 9 end,
-            spells = {
-                {
-                    name = "AETaunt",
-                    cond = function(self)
-                        local setting = Config:GetSetting('AETauntSpell')
-                        return setting == 3 or (setting == 2 and not Casting.CanUseAA("Explosion of Hatred"))
-                    end,
-                },
-                { name = "BiteTap", },
-                { name = "BondTap",       cond = function(self) return Config:GetSetting('DoBondTap') end, },
-                { name = "PoisonDot",     cond = function(self) return Config:GetSetting('DoPoisonDot') end, },
-                { name = "CorruptionDot", cond = function(self) return Config:GetSetting('DoCorruptionDot') end, },
-                { name = "AELifeTap",     cond = function(self) return Config:GetSetting('DoAELifeTap') end, },
-                { name = "DireDot",       cond = function(self) return Config:GetSetting('DoDireDot') end, },
-                {
-                    name = "PowerTapAC",
-                    cond = function(self)
-                        local level = mq.TLO.Me.Level()
-                        return Config:GetSetting('DoACTap') and (level <= 75 or level >= 100)
-                    end,
-                },
-                { name = "PowerTapAtk", cond = function(self) return Config:GetSetting('DoAtkTap') and mq.TLO.Me.Level() < 76 end, },
-                { name = "MaxHPTap",    cond = function(self) return Config:GetSetting('DoMaxHPTap') end, },
-                { name = "Skin",        cond = function(self) return Core.IsTanking() and mq.TLO.Me.NumGems() < 13 end, },
-                { name = "LifeTap2", },
-                {
-                    name = "Terror2",
-                    cond = function(self)
-                        local setting = Config:GetSetting('DoTerror')
-                        return setting == 3 or (setting == 2 and mq.TLO.Me.Level() < 72)
-                    end,
-                },
-
-            },
-        },
-        { -- Level 55
-            gem = 9,
-            cond = function(self) return mq.TLO.Me.NumGems() >= 10 end,
-            spells = {
-                { name = "BiteTap", },
-                { name = "BondTap",       cond = function(self) return Config:GetSetting('DoBondTap') end, },
-                { name = "PoisonDot",     cond = function(self) return Config:GetSetting('DoPoisonDot') end, },
-                { name = "CorruptionDot", cond = function(self) return Config:GetSetting('DoCorruptionDot') end, },
-                { name = "AELifeTap",     cond = function(self) return Config:GetSetting('DoAELifeTap') end, },
-                { name = "DireDot",       cond = function(self) return Config:GetSetting('DoDireDot') end, },
-                {
-                    name = "PowerTapAC",
-                    cond = function(self)
-                        local level = mq.TLO.Me.Level()
-                        return Config:GetSetting('DoACTap') and (level <= 75 or level >= 100)
-                    end,
-                },
-                { name = "PowerTapAtk", cond = function(self) return Config:GetSetting('DoAtkTap') and mq.TLO.Me.Level() < 76 end, },
-                { name = "MaxHPTap",    cond = function(self) return Config:GetSetting('DoMaxHPTap') end, },
-                { name = "Skin",        cond = function(self) return Core.IsTanking() and mq.TLO.Me.NumGems() < 13 end, },
-                { name = "LifeTap2", },
-                {
-                    name = "Terror2",
-                    cond = function(self)
-                        local setting = Config:GetSetting('DoTerror')
-                        return setting == 3 or (setting == 2 and mq.TLO.Me.Level() < 72)
-                    end,
-                },
-            },
-        },
-        { -- Level 75
-            gem = 10,
-            cond = function(self) return mq.TLO.Me.NumGems() >= 11 end,
-            spells = {
-                { name = "TempHP",        cond = function(self) return Config:GetSetting('DoTempHP') and mq.TLO.Me.NumGems() < 13 end, }, --level 84, this spell starts in a long recast so I prefer to keep it on the bar.
-                { name = "BondTap",       cond = function(self) return Config:GetSetting('DoBondTap') end, },
-                { name = "PoisonDot",     cond = function(self) return Config:GetSetting('DoPoisonDot') end, },
-                { name = "CorruptionDot", cond = function(self) return Config:GetSetting('DoCorruptionDot') end, },
-                { name = "AELifeTap",     cond = function(self) return Config:GetSetting('DoAELifeTap') end, },
-                { name = "DireDot",       cond = function(self) return Config:GetSetting('DoDireDot') end, },
-                {
-                    name = "PowerTapAC",
-                    cond = function(self)
-                        local level = mq.TLO.Me.Level()
-                        return Config:GetSetting('DoACTap') and (level <= 75 or level >= 100)
-                    end,
-                },
-                { name = "PowerTapAtk", cond = function(self) return Config:GetSetting('DoAtkTap') and mq.TLO.Me.Level() < 76 end, },
-                { name = "MaxHPTap",    cond = function(self) return Config:GetSetting('DoMaxHPTap') end, },
-                { name = "Skin",        cond = function(self) return Core.IsTanking() and mq.TLO.Me.NumGems() < 13 end, },
-                { name = "LifeTap2", },
-                {
-                    name = "Terror2",
-                    cond = function(self)
-                        local setting = Config:GetSetting('DoTerror')
-                        return setting == 3 or (setting == 2 and mq.TLO.Me.Level() < 72)
-                    end,
-                },
-            },
-        },
-        { -- Level 80
-            gem = 11,
-            cond = function(self, gem) return mq.TLO.Me.NumGems() >= gem end,
-            spells = {
-                { name = "TempHP",        cond = function(self) return Config:GetSetting('DoTempHP') and mq.TLO.Me.NumGems() < 14 end, }, --level 84, this spell starts in a long recast so I prefer to keep it on the bar.
-                { name = "Skin",          cond = function(self) return Core.IsTanking() and mq.TLO.Me.NumGems() < 13 end, },              -- level 70, while not as bad as the TempHP line, also starts in a recast. Placed higher before level 106.
-                { name = "PoisonDot",     cond = function(self) return Config:GetSetting('DoPoisonDot') end, },
-                { name = "CorruptionDot", cond = function(self) return Config:GetSetting('DoCorruptionDot') end, },
-                { name = "AELifeTap",     cond = function(self) return Config:GetSetting('DoAELifeTap') end, },
-                { name = "DireDot",       cond = function(self) return Config:GetSetting('DoDireDot') end, },
-                {
-                    name = "PowerTapAC",
-                    cond = function(self)
-                        local level = mq.TLO.Me.Level()
-                        return Config:GetSetting('DoACTap') and (level <= 75 or level >= 100)
-                    end,
-                },
-                { name = "MaxHPTap", cond = function(self) return Config:GetSetting('DoMaxHPTap') end, },
-                { name = "LifeTap2", },
-                {
-                    name = "Terror2",
-                    cond = function(self)
-                        local setting = Config:GetSetting('DoTerror')
-                        return setting == 3 or (setting == 2 and mq.TLO.Me.Level() < 72)
-                    end,
-                },
-            },
-        },
-        { -- Level 80
-            gem = 12,
-            cond = function(self, gem) return mq.TLO.Me.NumGems() >= gem end,
-            spells = {
-                { name = "TempHP",        cond = function(self) return Config:GetSetting('DoTempHP') and mq.TLO.Me.NumGems() == 14 end, }, --level 84, this spell starts in a long recast so I prefer to keep it on the bar.
-                { name = "Skin",          cond = function(self) return Core.IsTanking() and mq.TLO.Me.NumGems() < 14 end, },               -- level 70, while not as bad as the TempHP line, also starts in a recast. Placed higher before level 106.
-                { name = "CorruptionDot", cond = function(self) return Config:GetSetting('DoCorruptionDot') end, },
-                { name = "AELifeTap",     cond = function(self) return Config:GetSetting('DoAELifeTap') end, },
-                { name = "DireDot",       cond = function(self) return Config:GetSetting('DoDireDot') end, },
-                {
-                    name = "PowerTapAC",
-                    cond = function(self)
-                        local level = mq.TLO.Me.Level()
-                        return Config:GetSetting('DoACTap') and (level <= 75 or level >= 100)
-                    end,
-                },
-                { name = "MaxHPTap", cond = function(self) return Config:GetSetting('DoMaxHPTap') end, },
-                { name = "HealBurn", cond = function(self) return Core.IsTanking() and mq.TLO.Me.NumGems() < 13 end, },
-                { name = "LifeTap2", },
-                {
-                    name = "Terror2",
-                    cond = function(self)
-                        local setting = Config:GetSetting('DoTerror')
-                        return setting == 3 or (setting == 2 and mq.TLO.Me.Level() < 72)
-                    end,
-                },
-            },
-        },
-        { -- Level 106
-            gem = 13,
-            cond = function(self, gem) return mq.TLO.Me.NumGems() >= gem end,
-            spells = {
-                { name = "Skin",          cond = function(self) return Core.IsTanking() and mq.TLO.Me.NumGems() == 14 end, }, -- level 70, while not as bad as the TempHP line, also starts in a recast. Placed higher before level 106.
-                { name = "CorruptionDot", cond = function(self) return Config:GetSetting('DoCorruptionDot') end, },
-                { name = "AELifeTap",     cond = function(self) return Config:GetSetting('DoAELifeTap') end, },
-                { name = "DireDot",       cond = function(self) return Config:GetSetting('DoDireDot') end, },
-                {
-                    name = "PowerTapAC",
-                    cond = function(self)
-                        local level = mq.TLO.Me.Level()
-                        return Config:GetSetting('DoACTap') and (level <= 75 or level >= 100)
-                    end,
-                },
-                { name = "MaxHPTap", cond = function(self) return Config:GetSetting('DoMaxHPTap') end, },
-                { name = "HealBurn", cond = function(self) return Core.IsTanking() and mq.TLO.Me.NumGems() < 14 end, },
-                { name = "LifeTap2", },
-                {
-                    name = "Terror2",
-                    cond = function(self)
-                        local setting = Config:GetSetting('DoTerror')
-                        return setting == 3 or (setting == 2 and mq.TLO.Me.Level() < 72)
-                    end,
-                },
-            },
-        },
-        { -- Level 125
-            gem = 14,
-            cond = function(self, gem) return mq.TLO.Me.NumGems() >= gem end,
-            spells = {
-                { name = "CorruptionDot", cond = function(self) return Config:GetSetting('DoCorruptionDot') end, },
-                { name = "AELifeTap",     cond = function(self) return Config:GetSetting('DoAELifeTap') end, },
-                { name = "DireDot",       cond = function(self) return Config:GetSetting('DoDireDot') end, },
-                {
-                    name = "PowerTapAC",
-                    cond = function(self)
-                        local level = mq.TLO.Me.Level()
-                        return Config:GetSetting('DoACTap') and (level <= 75 or level >= 100)
-                    end,
-                },
-                { name = "MaxHPTap", cond = function(self) return Config:GetSetting('DoMaxHPTap') end, },
-                { name = "HealBurn", cond = function(self) return Core.IsTanking() end, },
-                { name = "LifeTap2", },
-                {
-                    name = "Terror2",
-                    cond = function(self)
-                        local setting = Config:GetSetting('DoTerror')
-                        return setting == 3 or (setting == 2 and mq.TLO.Me.Level() < 72)
-                    end,
-                },
+                { name = "Terror2",       cond = function(self) return self.Helpers.ShouldMemTerror() end, },
             },
         },
     },

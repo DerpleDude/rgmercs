@@ -182,7 +182,7 @@ return {
     ['Rotations']     = {
         ['Burn'] = {
             {
-                name = "Guide of Toxicity",
+                name = "PoisonGuide",
                 type = "Disc",
                 cond = function(self, discSpell, target)
                     return Casting.SelfBuffCheck(discSpell)

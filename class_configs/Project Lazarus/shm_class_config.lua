@@ -34,8 +34,7 @@ local _ClassConfig = {
                 type = "Spell",
                 name = "RezSpell",
                 cond = function(self, spell, target)
-                    return Casting.DowntimeRezOkay()
-                        and not Casting.CanUseAA('Rejuvenation of Spirit')
+                    return Casting.DowntimeRezOkay() and not Casting.CanUseAA('Rejuvenation of Spirit')
                 end,
             },
         },
@@ -53,11 +52,24 @@ local _ClassConfig = {
             { type = "AA", name = "Radiant Cure", },
         },
         ['Poison'] = {
-            { type = "Spell", name = "GroupHeal", load_cond = function(self) return self.Helpers.UseGroupHealCure(self) end, },
+            {
+                type = "Spell",
+                name = "GroupHeal",
+                load_cond = function(self)
+                    return self.Helpers.UseGroupHealCure(self)
+                end,
+            },
             { type = "Spell", name_func = function(self) return Casting.GetFirstMapItem({ 'GroupCure', 'CurePoison', }) end, },
         },
         ['Disease'] = {
-            { type = "Spell", name = "GroupHeal", load_cond = function(self) return self.Helpers.UseGroupHealCure(self) end, },
+            {
+                type = "Spell",
+                name = "GroupHeal",
+                load_cond = function(self)
+                    return self.Helpers
+                        .UseGroupHealCure(self)
+                end,
+            },
             { type = "Spell", name_func = function(self) return Casting.GetFirstMapItem({ 'GroupCure', 'CureDisease', }) end, },
         },
         ['Curse'] = {
@@ -451,18 +463,21 @@ local _ClassConfig = {
             name = 'GroupHealPoint',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             cond = function(self, target) return Targeting.GroupHealsNeeded() end,
         },
         {
             name = 'BigHealPoint',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             cond = function(self, target) return Targeting.BigHealsNeeded(target) and not Targeting.TargetIsType("pet", target) end,
         },
         {
             name = 'MainHealPoint',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             cond = function(self, target) return Targeting.MainHealsNeeded(target) end,
         },
     },

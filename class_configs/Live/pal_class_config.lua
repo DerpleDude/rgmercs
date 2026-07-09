@@ -704,6 +704,9 @@ local _ClassConfig = {
         ['Undeadburn'] = {
             "Holyforge Discipline", -- Level 55
         },
+        ['Pureforge'] = {
+            "Pureforge Discipline", -- Level 90
+        },
         ['Penitent'] = {
             -- Penitent Armor Discipline Timer 11
             "Avowed Penitence",   -- Level 122
@@ -739,6 +742,7 @@ local _ClassConfig = {
             "Sanctification Discipline", -- Level 60
         },
         ['Deflection'] = {
+            "Deflection Discipline", -- Level 59
         },
         ['ReflexStrike'] = {
             --- Reflexive Strike Heal
@@ -801,12 +805,14 @@ local _ClassConfig = {
             name = 'GroupHeal',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             cond = function(self, target) return Targeting.GroupHealsNeeded() end,
         },
         {
             name = 'BigHeal',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             cond = function(self, target)
                 return Targeting.BigHealsNeeded(target) and not Targeting.TargetIsType("pet", target)
             end,
@@ -815,6 +821,7 @@ local _ClassConfig = {
             name = 'MainHeal',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             cond = function(self, target)
                 return Targeting.MainHealsNeeded(target)
             end,
@@ -1510,7 +1517,7 @@ local _ClassConfig = {
                 type = "AA",
             },
             {
-                name = "Holyforge",
+                name = "Undeadburn",
                 type = "Disc",
                 load_cond = function(self) return not Core.IsTanking() end,
                 cond = function(self, discSpell, target)

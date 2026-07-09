@@ -87,8 +87,12 @@ function ConfigShare.ImportConfig(encString)
         return false, {}
     end
     local success, decodedTable = pcall(loadedFn)
-    if not success or not type(decodedTable) == 'table' then
+    if not success then
         printf('\arERROR: Failed to import object! [pcall failed]: %s\ax', decodedTable or "Unknown")
+        return false, {}
+    end
+    if type(decodedTable) ~= 'table' then
+        printf('\arERROR: Failed to import object! [expected table, got %s]\ax', type(decodedTable))
         return false, {}
     end
     return true, decodedTable

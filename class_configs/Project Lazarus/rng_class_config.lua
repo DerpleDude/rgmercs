@@ -238,6 +238,7 @@ return {
             name = 'BigHealPoint',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             load_cond = function() return Config:GetSetting('DoHeals') end,
             cond = function(self, target) return Targeting.BigHealsNeeded(target) end,
         },
@@ -527,14 +528,14 @@ return {
                 name = "Outrider's Evasion",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    return Targeting.IHaveAggro(100) and not mq.TLO.Me.ActiveDisc() == "Weapon Shield Discipline"
+                    return Targeting.IHaveAggro(100) and mq.TLO.Me.ActiveDisc() ~= "Weapon Shield Discipline"
                 end,
             },
             {
                 name = "WeaponShield",
-                type = "Discipline",
+                type = "Disc",
                 cond = function(self, discName, target)
-                    return Targeting.IHaveAggro(100) and not mq.TLO.Me.Song("Outrider's Evasion")
+                    return Targeting.IHaveAggro(100) and not mq.TLO.Me.Song("Outrider's Evasion")() and Casting.NoDiscActive()
                 end,
             },
             {

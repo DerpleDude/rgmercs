@@ -373,7 +373,7 @@ local _ClassConfig = {
                 end,
             },
             {
-                name = "Defy Death",
+                name = "RejectDeath",
                 type = "Disc",
                 cond = function(self, discSpell)
                     return mq.TLO.Me.PctHPs() < 25

@@ -1562,6 +1562,7 @@ Config.DefaultConfig                                     = {
         Category = "Self",
         Index = 99,
         Tooltip = "Enable the use of Alliance spells (for supporting class configs, not every class config uses this).",
+        RequiresLoadoutChange = true,
         Default = false,
         ConfigType = "Advanced",
     },

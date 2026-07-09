@@ -365,12 +365,14 @@ return {
             name = 'GroupHeal',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             cond = function(self, target) return Targeting.GroupHealsNeeded() end,
         },
         {
             name = 'BigHeal',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             cond = function(self, target)
                 return Targeting.BigHealsNeeded(target) and not Targeting.TargetIsType("pet", target)
             end,
@@ -379,6 +381,7 @@ return {
             name = 'MainHeal',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             load_cond = function(self) return Config:GetSetting('DoCleansing') == 1 or Config:GetSetting("DoTouchHeal") == 2 or Config:GetSetting('WaveHealUse') == 2 end,
             cond = function(self, target)
                 return Targeting.MainHealsNeeded(target)

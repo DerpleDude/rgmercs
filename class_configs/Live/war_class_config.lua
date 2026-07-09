@@ -797,7 +797,7 @@ local _ClassConfig = {
                 type = "AA",
                 cond = function(self, aaName, target)
                     local dichoShield = Core.GetResolvedActionMapItem('DichoShield')
-                    return Core.IsTanking() and not mq.TLO.Me.Buff(dichoShield)
+                    return Core.IsTanking() and not mq.TLO.Me.Buff(dichoShield)()
                 end,
             },
             {

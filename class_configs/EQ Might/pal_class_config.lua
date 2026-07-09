@@ -429,12 +429,14 @@ return {
             name = 'GroupHeal',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             cond = function(self, target) return Targeting.GroupHealsNeeded() end,
         },
         {
             name = 'BigHeal',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             cond = function(self, target)
                 return Targeting.BigHealsNeeded(target) and not Targeting.TargetIsType("pet", target)
             end,
@@ -443,6 +445,7 @@ return {
             name = 'MainHeal',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             cond = function(self, target)
                 return Targeting.MainHealsNeeded(target)
             end,

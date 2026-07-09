@@ -49,11 +49,23 @@ local _ClassConfig = {
             { type = "AA", name = "Radiant Cure", },
         },
         ['Poison'] = {
-            { type = "Spell", name = "GroupHeal", load_cond = function(self) return self.Helpers.UseGroupHealCure(self) end, },
+            {
+                type = "Spell",
+                name = "GroupHeal",
+                load_cond = function(self)
+                    return self.Helpers.UseGroupHealCure(self)
+                end,
+            },
             { type = "Spell", name_func = function(self) return Casting.GetFirstMapItem({ 'PureBlood', 'CurePoison', }) end, },
         },
         ['Disease'] = {
-            { type = "Spell", name = "GroupHeal", load_cond = function(self) return self.Helpers.UseGroupHealCure(self) end, },
+            {
+                type = "Spell",
+                name = "GroupHeal",
+                load_cond = function(self)
+                    return self.Helpers.UseGroupHealCure(self)
+                end,
+            },
             { type = "Spell", name_func = function(self) return Casting.GetFirstMapItem({ 'PureBlood', 'CureDisease', }) end, },
         },
         ['Curse'] = {
@@ -214,7 +226,7 @@ local _ClassConfig = {
             "Pogonip",         -- Level 22
             "Cascade of Hail", -- Level 12
         },
-        ['SelfDS'] = {
+        ['SelfShield'] = {
             "Nettlecoat",  -- Level 68
             "Brackencoat", -- Level 64
             "Bladecoat",   -- Level 56
@@ -365,21 +377,24 @@ local _ClassConfig = {
     },
     ['HealRotationOrder'] = {
         {
-            name  = 'BigHealPoint',
-            state = 1,
-            steps = 1,
-            cond  = function(self, target) return Targeting.BigHealsNeeded(target) and not Targeting.TargetIsType("pet", target) end,
+            name           = 'BigHealPoint',
+            state          = 1,
+            steps          = 1,
+            doFullRotation = true,
+            cond           = function(self, target) return Targeting.BigHealsNeeded(target) and not Targeting.TargetIsType("pet", target) end,
         },
         {
             name = 'GroupHealPoint',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             cond = function(self, target) return Targeting.GroupHealsNeeded() end,
         },
         {
             name = 'MainHealPoint',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             cond = function(self, target) return Targeting.MainHealsNeeded(target) end,
         },
     },

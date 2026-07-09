@@ -14,11 +14,10 @@ local Modules   = require("utils.modules")
 local Targeting = require("utils.targeting")
 
 return {
-    _version          = "2.0 - Live",
+    _version          = "2.1 - Live",
     _author           = "Derple, Algar",
     ['Modes']         = {
         'DPS',
-        'PBAE(LowLevel)',
     },
     ['OnModeChange']  = function(self, mode)
     end,
@@ -41,25 +40,6 @@ return {
             { element = ImGuiCol.SliderGrab,       color = { r = 0.65, g = 0.92, b = 1.00, a = 0.8, }, },
             { element = ImGuiCol.SliderGrabActive, color = { r = 0.65, g = 0.92, b = 1.00, a = 0.9, }, },
             { element = ImGuiCol.FrameBgActive,    color = { r = 0.05, g = 0.30, b = 0.60, a = 1.0, }, },
-        },
-        ['PBAE(LowLevel)'] = {
-            { element = ImGuiCol.TitleBgActive,    color = { r = 0.58, g = 0.15, b = 0.00, a = 0.8, }, },
-            { element = ImGuiCol.TableHeaderBg,    color = { r = 0.58, g = 0.15, b = 0.00, a = 0.8, }, },
-            { element = ImGuiCol.Tab,              color = { r = 0.23, g = 0.06, b = 0.00, a = 0.8, }, },
-            { element = ImGuiCol.TabSelected,      color = { r = 0.58, g = 0.15, b = 0.00, a = 0.8, }, },
-            { element = ImGuiCol.TabHovered,       color = { r = 0.58, g = 0.15, b = 0.00, a = 1.0, }, },
-            { element = ImGuiCol.Header,           color = { r = 0.23, g = 0.06, b = 0.00, a = 0.8, }, },
-            { element = ImGuiCol.HeaderActive,     color = { r = 0.58, g = 0.15, b = 0.00, a = 0.8, }, },
-            { element = ImGuiCol.HeaderHovered,    color = { r = 0.58, g = 0.15, b = 0.00, a = 1.0, }, },
-            { element = ImGuiCol.FrameBgHovered,   color = { r = 0.58, g = 0.15, b = 0.00, a = 0.7, }, },
-            { element = ImGuiCol.Button,           color = { r = 0.38, g = 0.10, b = 0.00, a = 0.8, }, },
-            { element = ImGuiCol.ButtonActive,     color = { r = 0.58, g = 0.15, b = 0.00, a = 0.8, }, },
-            { element = ImGuiCol.ButtonHovered,    color = { r = 0.58, g = 0.15, b = 0.00, a = 1.0, }, },
-            { element = ImGuiCol.TextSelectedBg,   color = { r = 0.58, g = 0.15, b = 0.00, a = 0.1, }, },
-            { element = ImGuiCol.FrameBg,          color = { r = 0.23, g = 0.06, b = 0.00, a = 0.8, }, },
-            { element = ImGuiCol.SliderGrab,       color = { r = 1.00, g = 0.45, b = 0.00, a = 0.8, }, },
-            { element = ImGuiCol.SliderGrabActive, color = { r = 1.00, g = 0.45, b = 0.00, a = 0.9, }, },
-            { element = ImGuiCol.FrameBgActive,    color = { r = 0.58, g = 0.15, b = 0.00, a = 1.0, }, },
         },
     },
     ['ItemSets']      = {
@@ -201,23 +181,23 @@ return {
             "Stormjolt Vortex",     -- Level 108
             "Shocking Vortex",      -- Level 103
             -- Hoarfrost Vortex has a Fire Debuff
-            "Hoarfrost Vortex",     -- Level 100
+            -- "Hoarfrost Vortex",     -- Level 100
             -- Ether Vortex has a Cold Debuff
-            "Ether Vortex",         -- Level 98
+            -- "Ether Vortex",         -- Level 98
             -- Incandescent Vortex has a Magic Debuff
-            "Incandescent Vortex",  -- Level 96
+            -- "Incandescent Vortex",  -- Level 96
             -- Frost Vortex has a Fire Debuff
-            "Frost Vortex",         -- Level 95
+            -- "Frost Vortex",         -- Level 95
             -- Power Vortex has a Cold Debuff
-            "Power Vortex",         -- Level 93
+            -- "Power Vortex",         -- Level 93
             -- Flame Vortex has a Magic Debuff
-            "Flame Vortex",         -- Level 91
+            -- "Flame Vortex",         -- Level 91
             -- Ice Vortex has a Fire Debuff
-            "Ice Vortex",           -- Level 90
+            -- "Ice Vortex",           -- Level 90
             -- Mana Vortex has a Cold Debuff
-            "Mana Vortex",          -- Level 88
+            -- "Mana Vortex",          -- Level 88
             -- Fire Vortex has a Magic Debuff
-            "Fire Vortex",          -- Level 86
+            -- "Fire Vortex",          -- Level 86
         },
         ['WildNuke'] = {
             "Wildmagic Strike XII", -- Level 126
@@ -670,10 +650,32 @@ return {
             if not (Config:GetSetting('DoRain') and Config:GetSetting('DoAEDamage')) then return false end
             return Targeting.GetTargetDistance() >= Config:GetSetting('RainDistance') and Targeting.MobNotLowHP(target)
         end,
+        ShouldUseFuseRotation = function()
+            return Core.GetResolvedActionMapItem('FuseNuke')
+        end,
+        ShouldUseWildRotation = function()
+            return not Core.GetResolvedActionMapItem('FuseNuke') and Core.GetResolvedActionMapItem('ChaosNuke') and Core.GetResolvedActionMapItem('WildNuke')
+        end,
+        ShouldUseLowLevelRotation = function()
+            return not Core.GetResolvedActionMapItem('FuseNuke') and not (Core.GetResolvedActionMapItem('ChaosNuke') and Core.GetResolvedActionMapItem('WildNuke'))
+        end,
+        HasLowLevelPBAE = function()
+            return Config:GetSetting('DoPBAE') and not Core.GetResolvedActionMapItem('PBFlame')
+        end,
+        ShouldUseLowLevelPBAE = function()
+            return Config:GetSetting('DoPBAE') and not Core.GetResolvedActionMapItem('PBFlame') and Config:GetSetting('DoAEDamage') and Combat.AETargetCheck(true)
+        end,
     },
     ['Charm']         = {
         ['Assist'] = {
-            { name = "StunSpell", type = "Spell", cond = function(self, spell, target) return Targeting.TargetNotStunned() and not Casting.StunImmuneTarget(target) end, },
+            {
+                name = "StunSpell",
+                type = "Spell",
+                load_cond = function() return Config:GetSetting('DoStun') end,
+                cond = function(self, spell, target)
+                    return Targeting.TargetNotStunned() and not Casting.StunImmuneTarget(target)
+                end,
+            },
         },
     },
     ['RotationOrder'] = {
@@ -729,81 +731,66 @@ return {
             name = 'DPS(100+)',
             state = 1,
             steps = 1,
-            load_cond = function() return mq.TLO.Me.Level() > 99 end,
+            load_cond = function(self) return self.Helpers.ShouldUseFuseRotation() end,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Targeting.AggroCheckOkay()
+                return combat_state == "Combat" and Targeting.AggroCheckOkay() and not self.Helpers.ShouldUseLowLevelPBAE()
             end,
         },
         {
             name = 'DPS(71-99)',
             state = 1,
             steps = 1,
-            load_cond = function()
-                return mq.TLO.Me.Level() < 100 and mq.TLO.Me.Level() > 70 and
-                    (Core.GetResolvedActionMapItem('ChaosNuke') or Core.GetResolvedActionMapItem('WildNuke'))
-            end,
+            load_cond = function(self) return self.Helpers.ShouldUseWildRotation() end,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Targeting.AggroCheckOkay()
+                return combat_state == "Combat" and Targeting.AggroCheckOkay() and not self.Helpers.ShouldUseLowLevelPBAE()
             end,
         },
         {
             name = 'FireDPS(1-70)',
             state = 1,
             steps = 1,
-            load_cond = function()
-                return Config:GetSetting('ElementChoice') == 1 and
-                    (mq.TLO.Me.Level() < 71 or (not Core.GetResolvedActionMapItem('ChaosNuke') and not Core.GetResolvedActionMapItem('WildNuke')))
-            end,
+            load_cond = function(self) return Config:GetSetting('ElementChoice') == 1 and self.Helpers.ShouldUseLowLevelRotation() end,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Targeting.AggroCheckOkay() and
-                    not (Core.IsModeActive('PBAE(LowLevel)') and Combat.AETargetCheck(true))
+                return combat_state == "Combat" and Targeting.AggroCheckOkay() and not self.Helpers.ShouldUseLowLevelPBAE()
             end,
         },
         {
             name = 'IceDPS(1-70)',
             state = 1,
             steps = 1,
-            load_cond = function()
-                return Config:GetSetting('ElementChoice') == 2 and
-                    (mq.TLO.Me.Level() < 71 or (not Core.GetResolvedActionMapItem('ChaosNuke') and not Core.GetResolvedActionMapItem('WildNuke')))
-            end,
+            load_cond = function(self) return Config:GetSetting('ElementChoice') == 2 and self.Helpers.ShouldUseLowLevelRotation() end,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Targeting.AggroCheckOkay() and
-                    not (Core.IsModeActive('PBAE(LowLevel)') and Combat.AETargetCheck(true))
+                return combat_state == "Combat" and Targeting.AggroCheckOkay() and not self.Helpers.ShouldUseLowLevelPBAE()
             end,
         },
         {
             name = 'MagicDPS(1-70)',
             state = 1,
             steps = 1,
-            load_cond = function()
-                return Config:GetSetting('ElementChoice') == 3 and
-                    (mq.TLO.Me.Level() < 71 or (not Core.GetResolvedActionMapItem('ChaosNuke') and not Core.GetResolvedActionMapItem('WildNuke')))
-            end,
+            load_cond = function(self) return Config:GetSetting('ElementChoice') == 3 and self.Helpers.ShouldUseLowLevelRotation() end,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Targeting.AggroCheckOkay() and
-                    not (Core.IsModeActive('PBAE(LowLevel)') and Combat.AETargetCheck(true))
+                return combat_state == "Combat" and Targeting.AggroCheckOkay() and not self.Helpers.ShouldUseLowLevelPBAE()
             end,
         },
         {
             name = 'DPS(PBAELowLevel)',
             state = 1,
             steps = 1,
-            load_cond = function() return Core.IsModeActive('PBAE(LowLevel)') and mq.TLO.Me.Level() < 76 end,
+            load_cond = function(self) return self.Helpers.HasLowLevelPBAE() end,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Targeting.AggroCheckOkay() and Combat.AETargetCheck(true)
+                return combat_state == "Combat" and Targeting.AggroCheckOkay() and self.Helpers.ShouldUseLowLevelPBAE()
             end,
         },
         {
@@ -1023,6 +1010,11 @@ return {
                 end,
             },
             {
+                name = "SnapNuke",
+                type = "Spell",
+                load_cond = function() return not Core.GetResolvedActionMapItem('VortexNuke') end,
+            },
+            {
                 name = "FuseNuke",
                 type = "Spell",
             },
@@ -1099,6 +1091,26 @@ return {
                 end,
             },
             {
+                name = "AEBeam",
+                type = "Spell",
+                allowDead = true,
+                load_cond = function(self) return Config:GetSetting('DoAEBeam') end,
+                cond = function(self)
+                    if not Config:GetSetting('DoAEDamage') then return false end
+                    return Combat.AETargetCheck(true, Config:GetSetting('BeamTargetCnt'))
+                end,
+            },
+            {
+                name = "PBFlame",
+                type = "Spell",
+                allowDead = true,
+                load_cond = function(self) return Config:GetSetting('DoPBAE') end,
+                cond = function(self)
+                    if not Config:GetSetting('DoAEDamage') then return false end
+                    return Combat.AETargetCheck(true)
+                end,
+            },
+            {
                 name = "WildNuke",
                 type = "Spell",
             },
@@ -1123,8 +1135,14 @@ return {
                 end,
             },
             {
+                name = "FireEtherealNuke",
+                type = "Spell",
+                load_cond = function() return Core.GetResolvedActionMapItem('FireEtherealNuke') end,
+            },
+            {
                 name = "BigFireNuke",
                 type = "Spell",
+                load_cond = function() return not Core.GetResolvedActionMapItem('FireEtherealNuke') end,
                 cond = function(self, spell, target)
                     return Targeting.MobNotLowHP(target)
                 end,
@@ -1276,128 +1294,62 @@ return {
             },
         },
     },
-    ['Spells']        = {
+    ['SpellList']     = {
         {
-            gem = 1,
+            name = "Default Mode",
+            cond = function(self) return not self.Helpers.ShouldUseLowLevelRotation() end,
             spells = {
-                { name = "VortexNuke", cond = function() return mq.TLO.Me.Level() > 102 end, },
-                { name = "SnapNuke",   cond = function() return Core.GetResolvedActionMapItem('ChaosNuke') or Core.GetResolvedActionMapItem('WildNuke') end, },
-                --1-70
-                { name = "FireNuke",   cond = function() return Config:GetSetting('ElementChoice') == 1 end, },
-                { name = "IceNuke",    cond = function() return Config:GetSetting('ElementChoice') == 2 end, },
-                { name = "MagicNuke",  cond = function() return Config:GetSetting('ElementChoice') == 3 end, },
-
-            },
-        },
-        {
-            gem = 2,
-            spells = {
-                { name = "FireEtherealNuke", cond = function() return Core.GetResolvedActionMapItem('ChaosNuke') or Core.GetResolvedActionMapItem('WildNuke') end, },
-                --1-70
-                { name = "BigFireNuke",      cond = function() return Config:GetSetting('ElementChoice') == 1 end, },
-                { name = "BigIceNuke",       cond = function() return Config:GetSetting('ElementChoice') == 2 end, },
-                { name = "BigMagicNuke",     cond = function() return Config:GetSetting('ElementChoice') == 3 end, },
-            },
-        },
-        {
-            gem = 3,
-            spells = {
+                { name = "VortexNuke",       cond = function(self) return self.Helpers.ShouldUseFuseRotation() end, },
+                { name = "SnapNuke",         cond = function(self) return self.Helpers.ShouldUseWildRotation() or not Core.GetResolvedActionMapItem('VortexNuke') end, },
+                { name = "FireEtherealNuke", },
                 { name = "IceEtherealNuke", },
-                -- 1-70
-                { name = "PBTimer4",        cond = function() return Core.IsModeActive('PBAE(LowLevel)') and mq.TLO.Me.Level() < 71 end, },
-                { name = "StunSpell",       cond = function() return Config:GetSetting('DoStun') end, },
-            },
-        },
-        {
-            gem = 4,
-            spells = {
                 { name = "FuseNuke", },
-                -- 1
-                { name = "FireJyll",  cond = function() return Core.IsModeActive('PBAE(LowLevel)') and mq.TLO.Me.Level() < 71 end, },
-                { name = "FireRain",  cond = function() return Config:GetSetting('DoRain') and Config:GetSetting('ElementChoice') == 1 end, },
-                { name = "IceRain",   cond = function() return Config:GetSetting('DoRain') and Config:GetSetting('ElementChoice') == 2 end, },
-                { name = "EvacSpell", },
-
-            },
-        },
-        {
-            gem = 5,
-            spells = {
                 { name = "FireClaw", },
-                -- 1-70
-                { name = "IceJyll",   cond = function() return Core.IsModeActive('PBAE(LowLevel)') and mq.TLO.Me.Level() < 71 end, },
-                { name = "JoltSpell", },
-            },
-        },
-        {
-            gem = 6,
-            spells = {
                 { name = "WildNuke", },
-                -- 1-70
-                { name = "MagicJyll",  cond = function() return Core.IsModeActive('PBAE(LowLevel)') and mq.TLO.Me.Level() < 71 end, },
-                { name = "SnareSpell", cond = function() return Config:GetSetting('DoSnare') and not Casting.CanUseAA("Atol's Shackles") end, },
-            },
-        },
-        {
-            gem = 7,
-            spells = {
-                { name = "CloudburstNuke", cond = function() return mq.TLO.Me.Level() > 99 end, },
-                { name = "WildNuke2", },
-                { name = "ChaosNuke", },
-                -- 1-70
-                { name = "HarvestSpell", },
-
-            },
-        },
-        {
-            gem = 8,
-            spells = {
+                { name = "CloudburstNuke",   cond = function(self) return self.Helpers.ShouldUseFuseRotation() end, },
+                { name = "WildNuke2",        cond = function(self) return self.Helpers.ShouldUseWildRotation() end, },
+                { name = "ChaosNuke",        cond = function(self) return self.Helpers.ShouldUseWildRotation() and not Core.GetResolvedActionMapItem('WildNuke2') end, },
                 { name = "GambitSpell", },
-                { name = "HarvestSpell", },
-                { name = "SelfHPBuff", },
-
-            },
-        },
-        {
-            gem = 9,
-            cond = function(self, gem) return mq.TLO.Me.NumGems() >= gem end,
-            spells = {
                 { name = "TwincastSpell", },
-                { name = "SnareSpell",    cond = function() return Config:GetSetting('DoSnare') and not Casting.CanUseAA("Atol's Shackles") end, },
-            },
-        },
-        {
-            gem = 10,
-            cond = function(self, gem) return mq.TLO.Me.NumGems() >= gem end,
-            spells = {
                 { name = "AEBeam",           cond = function() return Config:GetSetting('DoAEBeam') end, },
                 { name = "PBFlame",          cond = function() return Config:GetSetting('DoPBAE') end, },
+                { name = "PBTimer4",         cond = function(self) return self.Helpers.HasLowLevelPBAE() end, },
+                { name = "FireJyll",         cond = function(self) return self.Helpers.HasLowLevelPBAE() end, },
+                { name = "IceJyll",          cond = function(self) return self.Helpers.HasLowLevelPBAE() end, },
+                { name = "MagicJyll",        cond = function(self) return self.Helpers.HasLowLevelPBAE() end, },
+                { name = "SnareSpell",       cond = function() return Config:GetSetting('DoSnare') and not Casting.CanUseAA("Atol's Shackles") end, },
+                { name = "StunSpell",        cond = function() return Config:GetSetting('DoStun') end, },
+                { name = "EvacSpell",        cond = function() return not Casting.CanUseAA("Exodus") end, },
                 { name = "SelfRune1", },
                 { name = "SelfSpellShield1", },
+                { name = "HarvestSpell", },
+                { name = "JoltSpell", },
+                { name = "SelfHPBuff", },
             },
         },
         {
-            gem = 11,
-            cond = function(self, gem) return mq.TLO.Me.NumGems() >= gem end,
+            name = "Low Level",
             spells = {
-                { name = "PBFlame",          cond = function() return Config:GetSetting('DoPBAE') end, },
+                { name = "FireNuke",         cond = function() return Config:GetSetting('ElementChoice') == 1 end, },
+                { name = "IceNuke",          cond = function() return Config:GetSetting('ElementChoice') == 2 end, },
+                { name = "MagicNuke",        cond = function() return Config:GetSetting('ElementChoice') == 3 end, },
+                { name = "FireEtherealNuke", cond = function() return Config:GetSetting('ElementChoice') == 1 end, },
+                { name = "BigFireNuke",      cond = function() return Config:GetSetting('ElementChoice') == 1 and not Core.GetResolvedActionMapItem('FireEtherealNuke') end, },
+                { name = "BigIceNuke",       cond = function() return Config:GetSetting('ElementChoice') == 2 end, },
+                { name = "BigMagicNuke",     cond = function() return Config:GetSetting('ElementChoice') == 3 end, },
+                { name = "PBTimer4",         cond = function(self) return self.Helpers.HasLowLevelPBAE() end, },
+                { name = "FireJyll",         cond = function(self) return self.Helpers.HasLowLevelPBAE() end, },
+                { name = "IceJyll",          cond = function(self) return self.Helpers.HasLowLevelPBAE() end, },
+                { name = "MagicJyll",        cond = function(self) return self.Helpers.HasLowLevelPBAE() end, },
+                { name = "FireRain",         cond = function() return Config:GetSetting('DoRain') and Config:GetSetting('ElementChoice') == 1 end, },
+                { name = "IceRain",          cond = function() return Config:GetSetting('DoRain') and Config:GetSetting('ElementChoice') == 2 end, },
+                { name = "SnareSpell",       cond = function() return Config:GetSetting('DoSnare') and not Casting.CanUseAA("Atol's Shackles") end, },
+                { name = "StunSpell",        cond = function() return Config:GetSetting('DoStun') end, },
+                { name = "EvacSpell",        cond = function() return not Casting.CanUseAA("Exodus") end, },
                 { name = "SelfRune1", },
-                { name = "SelfSpellShield1", },
-            },
-        },
-        {
-            gem = 12,
-            cond = function(self, gem) return mq.TLO.Me.NumGems() >= gem end,
-            spells = {
-                { name = "SelfRune1", },
-                { name = "SelfSpellShield1", },
-            },
-        },
-        {
-            gem = 13,
-            cond = function(self, gem) return mq.TLO.Me.NumGems() >= gem end,
-            spells = {
-                { name = "SelfSpellShield1", },
+                { name = "HarvestSpell", },
+                { name = "JoltSpell", },
+                { name = "SelfHPBuff", },
             },
         },
     },
@@ -1410,7 +1362,7 @@ return {
             RequiresLoadoutChange = true,
             Default = 1,
             Min = 1,
-            Max = 2,
+            Max = 1,
             FAQ = "What do the different Modes Do?",
             Answer = "Wizard only has a single DPS Mode, but spells or spell elements will change based on level.",
         },
@@ -1501,8 +1453,7 @@ return {
             Category = "AE",
             Index = 104,
             RequiresLoadoutChange = true,
-            Tooltip =
-            "**WILL BREAK MEZ** Use your PB AE Spells (of Flame Line). **WILL BREAK MEZ**\nPlease note, that by necessity, the PBAELowLevel mode will NOT respect this setting.",
+            Tooltip = "**WILL BREAK MEZ** Use your PB AE Spells. **WILL BREAK MEZ**",
             Default = false,
             FAQ = "Why am I using AE damage when there are mezzed mobs around?",
             Answer = "It is not currently possible to properly determine Mez status without direct Targeting. If you are mezzing, consider turning this option off.",

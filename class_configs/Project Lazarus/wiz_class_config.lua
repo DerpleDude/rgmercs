@@ -307,6 +307,9 @@ return {
             if not (Config:GetSetting('DoRain') and Config:GetSetting('DoAEDamage')) then return false end
             return Targeting.GetTargetDistance() >= Config:GetSetting('RainDistance') and Targeting.MobNotLowHP(target)
         end,
+        HasWeaveRotation = function()
+            return Core.GetResolvedActionMapItem('ManaWeave') and Core.GetResolvedActionMapItem('FireEtherealNuke')
+        end,
     },
     ['RotationOrder'] = {
         -- Downtime doesn't have state because we run the whole rotation at once.
@@ -361,7 +364,7 @@ return {
             name = 'DPS(Level70)',
             state = 1,
             steps = 1,
-            load_cond = function() return mq.TLO.Me.Level() < 101 and mq.TLO.Me.Level() > 69 end,
+            load_cond = function(self) return self.Helpers.HasWeaveRotation() end,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
@@ -373,7 +376,7 @@ return {
             name = 'DPS(FireLowLevel)',
             state = 1,
             steps = 1,
-            load_cond = function() return mq.TLO.Me.Level() < 70 and Config:GetSetting('ElementChoice') == 1 end,
+            load_cond = function(self) return not self.Helpers.HasWeaveRotation() and Config:GetSetting('ElementChoice') == 1 end,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
@@ -385,7 +388,7 @@ return {
             name = 'DPS(IceLowLevel)',
             state = 1,
             steps = 1,
-            load_cond = function() return mq.TLO.Me.Level() < 70 and Config:GetSetting('ElementChoice') == 2 end,
+            load_cond = function(self) return not self.Helpers.HasWeaveRotation() and Config:GetSetting('ElementChoice') == 2 end,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
@@ -397,7 +400,7 @@ return {
             name = 'DPS(MagicLowLevel)',
             state = 1,
             steps = 1,
-            load_cond = function() return mq.TLO.Me.Level() < 70 and Config:GetSetting('ElementChoice') == 3 end,
+            load_cond = function(self) return not self.Helpers.HasWeaveRotation() and Config:GetSetting('ElementChoice') == 3 end,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
@@ -627,6 +630,10 @@ return {
         },
         ['DPS(FireLowLevel)'] = {
             {
+                name = "WildNuke",
+                type = "Spell",
+            },
+            {
                 name = "FireRain",
                 type = "Spell",
                 cond = function(self, spell, target)
@@ -651,6 +658,10 @@ return {
         },
         ['DPS(IceLowLevel)'] = {
             {
+                name = "WildNuke",
+                type = "Spell",
+            },
+            {
                 name = "IceRain",
                 type = "Spell",
                 cond = function(self, spell, target)
@@ -674,6 +685,10 @@ return {
             },
         },
         ['DPS(MagicLowLevel)'] = {
+            {
+                name = "WildNuke",
+                type = "Spell",
+            },
             {
                 name = "BigMagicNuke",
                 type = "Spell",
@@ -798,155 +813,40 @@ return {
             },
         },
     },
-    ['Spells']        = {
+    ['SpellList']     = {
         {
-            gem = 1,
+            name = "Default Mode",
             spells = {
-                { name = "ManaWeave", },
-                { name = "FireNuke",  cond = function() return Config:GetSetting('ElementChoice') == 1 end, },
-                { name = "IceNuke",   cond = function() return Config:GetSetting('ElementChoice') == 2 end, },
-                { name = "MagicNuke", cond = function() return Config:GetSetting('ElementChoice') == 3 end, },
-
-            },
-        },
-        {
-            gem = 2,
-            spells = {
-                { name = "FireEtherealNuke", },
-                { name = "BigFireNuke",      cond = function() return Config:GetSetting('ElementChoice') == 1 end, },
-                { name = "BigIceNuke",       cond = function() return Config:GetSetting('ElementChoice') == 2 end, },
-                { name = "BigMagicNuke",     cond = function() return Config:GetSetting('ElementChoice') == 3 end, },
-            },
-        },
-        {
-            gem = 3,
-            spells = {
+                { name = "ManaWeave",        cond = function(self) return self.Helpers.HasWeaveRotation() end, },
+                { name = "FireNuke",         cond = function(self) return not self.Helpers.HasWeaveRotation() and Config:GetSetting('ElementChoice') == 1 end, },
+                { name = "IceNuke",          cond = function(self) return not self.Helpers.HasWeaveRotation() and Config:GetSetting('ElementChoice') == 2 end, },
+                { name = "MagicNuke",        cond = function(self) return not self.Helpers.HasWeaveRotation() and Config:GetSetting('ElementChoice') == 3 end, },
+                { name = "FireEtherealNuke", cond = function(self) return self.Helpers.HasWeaveRotation() end, },
+                { name = "BigFireNuke",      cond = function(self) return not self.Helpers.HasWeaveRotation() and Config:GetSetting('ElementChoice') == 1 end, },
+                { name = "BigIceNuke",       cond = function(self) return not self.Helpers.HasWeaveRotation() and Config:GetSetting('ElementChoice') == 2 end, },
+                { name = "BigMagicNuke",     cond = function(self) return not self.Helpers.HasWeaveRotation() and Config:GetSetting('ElementChoice') == 3 end, },
                 { name = "WildNuke", },
-                { name = "FireRain",     cond = function() return Config:GetSetting('DoRain') and Config:GetSetting('ElementChoice') == 1 end, },
-                { name = "IceRain",      cond = function() return Config:GetSetting('DoRain') and Config:GetSetting('ElementChoice') == 2 end, },
+                {
+                    name = "FireRain",
+                    cond = function(self)
+                        return not self.Helpers.HasWeaveRotation() and Config:GetSetting('DoRain') and Config:GetSetting('ElementChoice') == 1
+                    end,
+                },
+                {
+                    name = "IceRain",
+                    cond = function(self)
+                        return not self.Helpers.HasWeaveRotation() and Config:GetSetting('DoRain') and Config:GetSetting('ElementChoice') == 2
+                    end,
+                },
+                { name = "ChaosNuke",    cond = function(self) return self.Helpers.HasWeaveRotation() end, },
                 { name = "HarvestSpell", cond = function() return not Casting.CanUseAA("Harvest of Druzzil") end, },
                 { name = "SnareSpell",   cond = function() return Config:GetSetting('DoSnare') and not Casting.CanUseAA("Atol's Shackles") end, },
                 { name = "StunSpell",    cond = function() return Config:GetSetting('DoStun') end, },
                 { name = "JoltSpell",    cond = function() return not Casting.CanUseAA("Concussive Intuition") end, },
-                { name = "SelfRune1", },
-                { name = "EvacSpell",    cond = function() return not Casting.CanUseAA("Exodus") end, },
-                { name = "SelfHPBuff", },
-            },
-        },
-        {
-            gem = 4,
-            spells = {
-                { name = "ChaosNuke", },
-                { name = "HarvestSpell", cond = function() return not Casting.CanUseAA("Harvest of Druzzil") end, },
-                { name = "SnareSpell",   cond = function() return Config:GetSetting('DoSnare') and not Casting.CanUseAA("Atol's Shackles") end, },
-                { name = "StunSpell",    cond = function() return Config:GetSetting('DoStun') end, },
-                { name = "JoltSpell",    cond = function() return not Casting.CanUseAA("Concussive Intuition") end, },
-                { name = "SelfRune1", },
-                { name = "EvacSpell",    cond = function() return not Casting.CanUseAA("Exodus") end, },
-                { name = "SelfHPBuff", },
-            },
-        },
-        {
-            gem = 5,
-            spells = {
                 { name = "PBTimer4",     cond = function() return Core.IsModeActive('PBAE') end, },
-                { name = "HarvestSpell", cond = function() return not Casting.CanUseAA("Harvest of Druzzil") end, },
-                { name = "SnareSpell",   cond = function() return Config:GetSetting('DoSnare') and not Casting.CanUseAA("Atol's Shackles") end, },
-                { name = "StunSpell",    cond = function() return Config:GetSetting('DoStun') end, },
-                { name = "JoltSpell",    cond = function() return not Casting.CanUseAA("Concussive Intuition") end, },
-                { name = "SelfRune1", },
-                { name = "EvacSpell",    cond = function() return not Casting.CanUseAA("Exodus") end, },
-                { name = "SelfHPBuff", },
-            },
-        },
-        {
-            gem = 6,
-            spells = {
                 { name = "FireJyll",     cond = function() return Core.IsModeActive('PBAE') end, },
-                { name = "HarvestSpell", cond = function() return not Casting.CanUseAA("Harvest of Druzzil") end, },
-                { name = "SnareSpell",   cond = function() return Config:GetSetting('DoSnare') and not Casting.CanUseAA("Atol's Shackles") end, },
-                { name = "StunSpell",    cond = function() return Config:GetSetting('DoStun') end, },
-                { name = "JoltSpell",    cond = function() return not Casting.CanUseAA("Concussive Intuition") end, },
-                { name = "SelfRune1", },
-                { name = "EvacSpell",    cond = function() return not Casting.CanUseAA("Exodus") end, },
-                { name = "SelfHPBuff", },
-            },
-        },
-        {
-            gem = 7,
-            spells = {
                 { name = "IceJyll",      cond = function() return Core.IsModeActive('PBAE') end, },
-                { name = "HarvestSpell", cond = function() return not Casting.CanUseAA("Harvest of Druzzil") end, },
-                { name = "SnareSpell",   cond = function() return Config:GetSetting('DoSnare') and not Casting.CanUseAA("Atol's Shackles") end, },
-                { name = "StunSpell",    cond = function() return Config:GetSetting('DoStun') end, },
-                { name = "JoltSpell",    cond = function() return not Casting.CanUseAA("Concussive Intuition") end, },
-                { name = "SelfRune1", },
-                { name = "EvacSpell",    cond = function() return not Casting.CanUseAA("Exodus") end, },
-                { name = "SelfHPBuff", },
-
-
-            },
-        },
-        {
-            gem = 8,
-            spells = {
                 { name = "MagicJyll",    cond = function() return Core.IsModeActive('PBAE') end, },
-                { name = "HarvestSpell", cond = function() return not Casting.CanUseAA("Harvest of Druzzil") end, },
-                { name = "SnareSpell",   cond = function() return Config:GetSetting('DoSnare') and not Casting.CanUseAA("Atol's Shackles") end, },
-                { name = "StunSpell",    cond = function() return Config:GetSetting('DoStun') end, },
-                { name = "JoltSpell",    cond = function() return not Casting.CanUseAA("Concussive Intuition") end, },
-                { name = "SelfRune1", },
-                { name = "EvacSpell",    cond = function() return not Casting.CanUseAA("Exodus") end, },
-                { name = "SelfHPBuff", },
-            },
-        },
-        {
-            gem = 9,
-            cond = function(self, gem) return mq.TLO.Me.NumGems() >= gem end,
-            spells = {
-                { name = "HarvestSpell", cond = function() return not Casting.CanUseAA("Harvest of Druzzil") end, },
-                { name = "SnareSpell",   cond = function() return Config:GetSetting('DoSnare') and not Casting.CanUseAA("Atol's Shackles") end, },
-                { name = "StunSpell",    cond = function() return Config:GetSetting('DoStun') end, },
-                { name = "JoltSpell",    cond = function() return not Casting.CanUseAA("Concussive Intuition") end, },
-                { name = "SelfRune1", },
-                { name = "EvacSpell",    cond = function() return not Casting.CanUseAA("Exodus") end, },
-                { name = "SelfHPBuff", }, },
-        },
-        {
-            gem = 10,
-            cond = function(self, gem) return mq.TLO.Me.NumGems() >= gem end,
-            spells = {
-                { name = "HarvestSpell", cond = function() return not Casting.CanUseAA("Harvest of Druzzil") end, },
-                { name = "SnareSpell",   cond = function() return Config:GetSetting('DoSnare') and not Casting.CanUseAA("Atol's Shackles") end, },
-                { name = "StunSpell",    cond = function() return Config:GetSetting('DoStun') end, },
-                { name = "JoltSpell",    cond = function() return not Casting.CanUseAA("Concussive Intuition") end, },
-                { name = "SelfRune1", },
-                { name = "EvacSpell",    cond = function() return not Casting.CanUseAA("Exodus") end, },
-                { name = "SelfHPBuff", },
-
-            },
-        },
-        {
-            gem = 11,
-            cond = function(self, gem) return mq.TLO.Me.NumGems() >= gem end,
-            spells = {
-                { name = "HarvestSpell", cond = function() return not Casting.CanUseAA("Harvest of Druzzil") end, },
-                { name = "SnareSpell",   cond = function() return Config:GetSetting('DoSnare') and not Casting.CanUseAA("Atol's Shackles") end, },
-                { name = "StunSpell",    cond = function() return Config:GetSetting('DoStun') end, },
-                { name = "JoltSpell",    cond = function() return not Casting.CanUseAA("Concussive Intuition") end, },
-                { name = "SelfRune1", },
-                { name = "EvacSpell",    cond = function() return not Casting.CanUseAA("Exodus") end, },
-                { name = "SelfHPBuff", },
-            },
-        },
-        {
-            gem = 12,
-            cond = function(self, gem) return mq.TLO.Me.NumGems() >= gem end,
-            spells = {
-                { name = "HarvestSpell", cond = function() return not Casting.CanUseAA("Harvest of Druzzil") end, },
-                { name = "SnareSpell",   cond = function() return Config:GetSetting('DoSnare') and not Casting.CanUseAA("Atol's Shackles") end, },
-                { name = "StunSpell",    cond = function() return Config:GetSetting('DoStun') end, },
-                { name = "JoltSpell",    cond = function() return not Casting.CanUseAA("Concussive Intuition") end, },
                 { name = "SelfRune1", },
                 { name = "EvacSpell",    cond = function() return not Casting.CanUseAA("Exodus") end, },
                 { name = "SelfHPBuff", },

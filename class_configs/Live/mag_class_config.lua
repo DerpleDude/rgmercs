@@ -10,7 +10,7 @@ local Logger      = require("utils.logger")
 local Targeting   = require("utils.targeting")
 
 _ClassConfig      = {
-    _version              = "1.3 - Live",
+    _version              = "1.4 - Live",
     _author               = "Derple, Morisato, Algar",
     ['ModeChecks']        = {
         IsTanking = function() return Core.IsModeActive("PetTank") end,
@@ -112,7 +112,7 @@ _ClassConfig      = {
             "Rancorous Servant",   -- Level 80
             "Rampaging Servant",   -- Level 75
             "Raging Servant",      -- Level 70
-            "Rage of Zomm",        -- Level 55
+            -- "Rage of Zomm",     -- Level 55
         },
         ['SpearNuke'] = {
             -- Spear Nuke* >= LVL 70
@@ -369,6 +369,7 @@ _ClassConfig      = {
             -- Use at the start of the DPS loop
             "Searing Skin XI",            -- Level 128
             "Boiling Skin",               -- Level 123
+            "Scorching Skin",             -- Level 118
             "Burning Skin",               -- Level 113
             "Blistering Skin",            -- Level 108
             "Coronal Skin",               -- Level 103
@@ -376,10 +377,8 @@ _ClassConfig      = {
             "Molten Skin",                -- Level 93
             "Blazing Skin",               -- Level 88
             "Torrid Skin",                -- Level 83
-            "Brimstoneskin",              -- Level 81
             "Searing Skin",               -- Level 78
-            "Scorching Skin",             -- Level 73
-            "Scorching Skin",             -- Level 73
+            -- "Scorching Skin",          -- Level 73, shares its name with the 118 rank; only the book's first match resolves
             "Ancient: Veil of Pyrilonus", -- Level 70
             "Pyrilen Skin",               -- Level 68
         },
@@ -1001,7 +1000,7 @@ _ClassConfig      = {
             state = 1,
             steps = 1,
             load_cond = function() return Core.IsModeActive("PetTank") end,
-            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
+            targetId = function(self) return mq.TLO.Me.Pet.ID() > 0 and { mq.TLO.Me.Pet.ID(), } or {} end,
             cond = function(self, combat_state)
                 return combat_state == "Combat"
             end,
@@ -1020,7 +1019,7 @@ _ClassConfig      = {
             state = 1,
             steps = 1,
             load_cond = function(self) return Config:GetSetting('DoSkinDS') and self:GetResolvedActionMapItem('SkinDS') end,
-            targetId = function(self) return { Core.GetMainAssistId(), } or {} end,
+            targetId = function(self) return Casting.GetBuffableIDs() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat"
             end,
@@ -1029,7 +1028,7 @@ _ClassConfig      = {
             name = 'DPS(LowLevel)',
             state = 1,
             steps = 1,
-            load_cond = function(self) return not self:GetResolvedActionMapItem('ChaoticNuke') end,
+            load_cond = function(self) return self.Helpers.ShouldUseLowLevelRotation() end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and Casting.OkayToNuke()
@@ -1040,7 +1039,7 @@ _ClassConfig      = {
             state = 1,
             steps = 1,
             doFullRotation = true,
-            load_cond = function(self) return self:GetResolvedActionMapItem('ChaoticNuke') end,
+            load_cond = function(self) return not self.Helpers.ShouldUseLowLevelRotation() end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and Casting.OkayToNuke()
@@ -1080,6 +1079,16 @@ _ClassConfig      = {
     },
     -- Really the meat of this class.
     ['Helpers']           = {
+        ShouldUseLowLevelRotation = function() return not Core.GetResolvedActionMapItem('ChaoticNuke') end,
+        PickElement = function()
+            local mode = Config:GetSetting('ElementMode') or 1
+            if mode == 2 then return "Fire" end
+            if mode == 3 then return "Magic" end
+            local autoId = Globals.AutoTargetID or 0
+            if not Casting.ShouldSkipElement("Fire", autoId) then return "Fire" end
+            if not Casting.ShouldSkipElement("Magic", autoId) then return "Magic" end
+            return "Fire"
+        end,
         user_tu_spell = function(self, aaName)
             local shroudSpell = self.ResolvedActionMap['ShroudSpell']
             local aaSpell = Casting.GetAASpell(aaName)
@@ -1473,7 +1482,7 @@ _ClassConfig      = {
                 name = "BigFireDD",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    if Config:GetSetting('ElementChoice') ~= 1 then return false end
+                    if self.Helpers.PickElement() ~= "Fire" then return false end
                     return Targeting.MobNotLowHP(target)
                 end,
             },
@@ -1481,6 +1490,7 @@ _ClassConfig      = {
                 name = "FireDD",
                 type = "Spell",
                 cond = function(self, spell, target)
+                    if self.Helpers.PickElement() ~= "Fire" then return false end
                     return Targeting.MobHasLowHP(target) or not Core.GetResolvedActionMapItem("BigFireDD")
                 end,
             },
@@ -1488,7 +1498,7 @@ _ClassConfig      = {
                 name = "MagicDD",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    return Config:GetSetting('ElementChoice') == 2
+                    return self.Helpers.PickElement() == "Magic"
                 end,
             },
             {
@@ -1729,151 +1739,43 @@ _ClassConfig      = {
                 name = "SkinDS",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    if not Casting.CastReady(spell) then return false end
+                    if not Targeting.TargetIsATank(target) or not Casting.CastReady(spell) then return false end
                     return Casting.GroupBuffCheck(spell, target, false, true)
                 end,
             },
         },
     },
-    ['Spells']            = {
+    ['SpellList']         = {
         {
-            gem = 1,
+            name = "Default Mode",
             spells = {
+                { name = "PetHealSpell",       cond = function(self) return Config:GetSetting('DoPetHealSpell') end, },
                 { name = "SpearNuke", },
-                { name = "FireDD", },
-            },
-        },
-        {
-            gem = 2,
-            spells = {
                 { name = "ChaoticNuke", },
-                { name = "BigFireDD", },
-            },
-        },
-        {
-            gem = 3,
-            spells = {
-
-                { name = "SwarmPet", cond = function(self) return mq.TLO.Me.Level() >= 70 end, },
-                { name = "MagicDD", },
-            },
-        },
-        {
-            gem = 4,
-            spells = {
+                { name = "SwarmPet", },
                 { name = "VolleyNuke", },
-                { name = "EpicPetOrb",   cond = function(self) return Config:GetSetting('UseEpicPet') and mq.TLO.Me.Book("Summon Orb")() end, },
-                { name = "PetHealSpell", },
-            },
-        },
-        {
-            gem = 5,
-            spells = {
+                { name = "FireDD",             cond = function(self) return not Core.GetResolvedActionMapItem('SpearNuke') or self.Helpers.ShouldUseLowLevelRotation() end, },
+                { name = "BigFireDD",          cond = function(self) return self.Helpers.ShouldUseLowLevelRotation() end, },
+                { name = "MagicDD",            cond = function(self) return self.Helpers.ShouldUseLowLevelRotation() end, },
+                { name = "SummonedNuke",       cond = function(self) return Config:GetSetting('DoSummonedNuke') end, },
+                { name = "EpicPetOrb",         cond = function(self) return Config:GetSetting('UseEpicPet') and mq.TLO.Me.Book("Summon Orb")() end, },
+                { name = "MaloDebuff",         cond = function(self) return Config:GetSetting('DoMalo') and not Casting.CanUseAA("Malaise") end, },
                 { name = "TwinCast", },
-                { name = "MaloDebuff",       cond = function(self) return Config:GetSetting('DoMalo') and not Casting.CanUseAA("Malaise") end, },
-                { name = "EpicPetOrb",       cond = function(self) return Config:GetSetting('UseEpicPet') and mq.TLO.Me.Book("Summon Orb")() end, },
-                { name = "PetHealSpell", },
-                { name = "SkinDS",           cond = function(self) return Config:GetSetting('DoSkinDS') end, },
-                { name = "LongDurDmgShield", },
-            },
-        },
-        {
-            gem = 6,
-            spells = {
-                { name = "SummonedNuke",     cond = function(self) return Config:GetSetting('DoSummonedNuke') end, },
-                { name = "EpicPetOrb",       cond = function(self) return Config:GetSetting('UseEpicPet') and mq.TLO.Me.Book("Summon Orb")() end, },
-                { name = "PetHealSpell", },
-                { name = "GroupCotH", },
-                { name = "ManaRodSummon", },
-                { name = "SkinDS",           cond = function(self) return Config:GetSetting('DoSkinDS') end, },
-                { name = "LongDurDmgShield", },
-            },
-        },
-        {
-            gem = 7,
-            spells = {
-                { name = "FireOrbSummon", },
-                { name = "EpicPetOrb",       cond = function(self) return Config:GetSetting('UseEpicPet') and mq.TLO.Me.Book("Summon Orb")() end, },
-                { name = "PetHealSpell", },
-                { name = "SkinDS",           cond = function(self) return Config:GetSetting('DoSkinDS') end, },
-                { name = "GroupCotH", },
-                { name = "LongDurDmgShield", },
-            },
-        },
-        {
-            gem = 8,
-            cond = function(self, gem) return mq.TLO.Me.NumGems() >= gem end,
-            spells = {
-                { name = "PetManaNuke", },
-                { name = "EpicPetOrb",       cond = function(self) return Config:GetSetting('UseEpicPet') and mq.TLO.Me.Book("Summon Orb")() end, },
-                { name = "PetHealSpell", },
-                { name = "SingleCotH",       cond = function() return not Casting.CanUseAA('Call of the Hero') end, },
-                { name = "SkinDS",           cond = function(self) return Config:GetSetting('DoSkinDS') end, },
-                { name = "GroupCotH", },
-                { name = "LongDurDmgShield", },
-            },
-        },
-        {
-            gem = 9,
-            cond = function(self, gem) return mq.TLO.Me.NumGems() >= gem end,
-            spells = {
+                { name = "SkinDS",             cond = function(self) return Config:GetSetting('DoSkinDS') or Core.IsModeActive("PetTank") end, },
+                { name = "PetStanceSpell",     cond = function(self) return Core.IsModeActive("PetTank") end, },
+                { name = "SurgeDS1",           cond = function(self) return Core.IsModeActive("PetTank") end, },
+                { name = "SurgeDS2",           cond = function(self) return Core.IsModeActive("PetTank") end, },
+                { name = "FireShroud",         cond = function(self) return Core.IsModeActive("PetTank") end, },
                 { name = "GatherMana", },
-                { name = "PetHealSpell", },
-                { name = "SkinDS",           cond = function(self) return Config:GetSetting('DoSkinDS') end, },
-                { name = "GroupCotH", },
-                { name = "LongDurDmgShield", },
-            },
-        },
-        {
-            gem = 10,
-            cond = function(self, gem) return mq.TLO.Me.NumGems() >= gem end,
-            spells = {
                 { name = "EarthPetItemSummon", },
-                { name = "PetHealSpell", },
-                { name = "SkinDS",             cond = function(self) return Config:GetSetting('DoSkinDS') end, },
-                { name = "GroupCotH", },
-                { name = "LongDurDmgShield", },
-            },
-        },
-        {
-            gem = 11,
-            cond = function(self, gem) return mq.TLO.Me.NumGems() >= gem end,
-            spells = {
                 { name = "FirePetItemSummon", },
-                { name = "PetHealSpell", },
-                { name = "SkinDS",            cond = function(self) return Config:GetSetting('DoSkinDS') end, },
+                { name = "FireOrbSummon", },
+                { name = "ManaRodSummon",      cond = function(self) return Config:GetSetting('SummonModRods') and not Casting.CanUseAA("Summon Modulation Shard") end, },
+                { name = "SelfManaRodSummon",  cond = function(self) return Config:GetSetting('SummonModRods') end, },
+                { name = "AllianceBuff",       cond = function(self) return Config:GetSetting('DoAlliance') end, },
                 { name = "GroupCotH", },
+                { name = "SingleCotH",         cond = function() return not Casting.CanUseAA('Call of the Hero') end, },
                 { name = "LongDurDmgShield", },
-            },
-        },
-        {
-            gem = 12,
-            cond = function(self, gem) return mq.TLO.Me.NumGems() >= gem end,
-            spells = {
-                { name = "SelfManaRodSummon", },
-                { name = "PetHealSpell", },
-                { name = "SkinDS",            cond = function(self) return Config:GetSetting('DoSkinDS') end, },
-                { name = "GroupCotH", },
-                { name = "LongDurDmgShield", },
-            },
-        },
-        {
-            gem = 13,
-            cond = function(self, gem) return mq.TLO.Me.NumGems() >= gem end,
-            spells = {
-                { name = "PetHealSpell", },
-                { name = "SkinDS",           cond = function(self) return Config:GetSetting('DoSkinDS') end, },
-                { name = "GroupCotH", },
-                { name = "LongDurDmgShield", },
-            },
-        },
-        {
-            gem = 14,
-            cond = function(self, gem) return mq.TLO.Me.NumGems() >= gem end,
-            spells = {
-                { name = "SkinDS",       cond = function(self) return Config:GetSetting('DoSkinDS') end, },
-                { name = "PetHealSpell", },
-                { name = "GroupCotH", },
             },
         },
     },
@@ -1888,7 +1790,7 @@ _ClassConfig      = {
             Min = 1,
             Max = 2,
             FAQ = "What is the difference between the modes?",
-            Answer = "Fire Mode will use Fire Nukes and strive for DPS.\n" ..
+            Answer = "DPS mode will focus on dealing damage.\n" ..
                 "PetTank mode will Focus on keeping the Pet alive as the main tank.",
         },
         ['PetType']        = {
@@ -1913,7 +1815,7 @@ _ClassConfig      = {
             Index = 102,
             Tooltip = "Use your Orb of Mastery to summon the epic pet.",
             RequiresLoadoutChange = true,
-            Default = true,
+            Default = false,
         },
         ['DoPetHealSpell'] = {
             DisplayName = "Pet Heal Spell",
@@ -1974,19 +1876,18 @@ _ClassConfig      = {
             Tooltip = "Use Force of Elements AA.",
             Default = true,
         },
-        ['ElementChoice']  = {
-            DisplayName = "Element Choice:",
+        ['ElementMode']    = {
+            DisplayName = "Element Mode:",
             Group = "Abilities",
             Header = "Damage",
             Category = "Direct",
             Index = 101,
-            Tooltip = "Choose an element to focus on under level 71.",
+            Tooltip = "Choose an element for your low level nukes. Auto prefers Fire, switching to Magic when the target is Fire immune.",
             Type = "Combo",
-            ComboOptions = { 'Fire', 'Magic', },
+            ComboOptions = { 'Auto', 'Fire', 'Magic', },
             Default = 1,
             Min = 1,
-            Max = 2,
-            RequiresLoadoutChange = true,
+            Max = 3,
         },
         ['DoSummonedNuke'] = {
             DisplayName = "Do Summoned Nuke",
@@ -2063,7 +1964,7 @@ _ClassConfig      = {
             Group = "Abilities",
             Header = "Buffs",
             Category = "Group",
-            Tooltip = "Use your short duration damage shield (Skin line) on the MA during combat.",
+            Tooltip = "Use your short duration damage shield (Skin line) on tanks during combat.",
             RequiresLoadoutChange = true,
             Default = false,
         },

@@ -247,7 +247,7 @@ local _ClassConfig = {
             "Pogonip",         -- Level 22
             "Cascade of Hail", -- Level 12
         },
-        ['SelfDS'] = {
+        ['SelfShield'] = {
             "Viridicoat",  -- Level 71
             "Nettlecoat",  -- Level 68
             "Brackencoat", -- Level 64
@@ -393,21 +393,24 @@ local _ClassConfig = {
     },
     ['HealRotationOrder'] = {
         {
-            name  = 'BigHealPoint',
-            state = 1,
-            steps = 1,
-            cond  = function(self, target) return Targeting.BigHealsNeeded(target) and not Targeting.TargetIsType("pet", target) end,
+            name           = 'BigHealPoint',
+            state          = 1,
+            steps          = 1,
+            doFullRotation = true,
+            cond           = function(self, target) return Targeting.BigHealsNeeded(target) and not Targeting.TargetIsType("pet", target) end,
         },
         {
             name = 'GroupHealPoint',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             cond = function(self, target) return Targeting.GroupHealsNeeded() end,
         },
         {
             name = 'MainHealPoint',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             cond = function(self, target) return Targeting.MainHealsNeeded(target) end,
         },
     },

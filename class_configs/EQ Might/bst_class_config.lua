@@ -271,6 +271,7 @@ return {
             name = 'BigHealPoint',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             load_cond = function() return Config:GetSetting('DoHeals') end,
             cond = function(self, target) return Targeting.BigHealsNeeded(target) end,
         },
@@ -507,7 +508,7 @@ return {
             },
             {
                 name = "ProtDisc",
-                type = "Discipline",
+                type = "Disc",
                 cond = function(self, discSpell, target)
                     return Casting.NoDiscActive()
                 end,

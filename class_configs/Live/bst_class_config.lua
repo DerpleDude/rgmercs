@@ -684,6 +684,7 @@ return {
             name = 'MainHealPoint',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             load_cond = function() return Config:GetSetting('DoHeals') end,
             cond = function(self, target) return Targeting.MainHealsNeeded(target) end,
         },
@@ -809,6 +810,9 @@ return {
             local disc = self.ResolvedActionMap['DmgModDisc']
             return Casting.IHaveBuff("Bestial Alignment") or (disc and disc() and Casting.IHaveBuff(disc.Name()))
                 or Casting.IHaveBuff("Ferociousness")
+        end,
+        UsingFeralgia = function()
+            return Config:GetSetting('DoFeralgia') and Core.GetResolvedActionMapItem('Feralgia')
         end,
     },
     ['Rotations']         = {
@@ -1028,7 +1032,7 @@ return {
             {
                 name = "Feralgia",
                 type = "Spell",
-                load_cond = function(self) return Config:GetSetting('DoFeralgia') end,
+                load_cond = function(self) return self.Helpers.UsingFeralgia() end,
                 cond = function(self, spell, target)
                     --This checks to see if the Growl portion is up on the pet (or about to expire) before using this, those who prefer the swarm pets can use the actual swarm pet spell in conjunction with this for mana savings.
                     --There are some instances where the Growl isn't needed, but that is a giant TODO and of minor benefit.
@@ -1040,7 +1044,6 @@ return {
                 name = "BloodDot",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    if not Config:GetSetting('DoDot') then return false end
                     return Casting.DotSpellCheck(spell) and Casting.HaveManaToDot()
                 end,
             },
@@ -1048,7 +1051,6 @@ return {
                 name = "ColdDot",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    if not Config:GetSetting('DoDot') then return false end
                     return Casting.DotSpellCheck(spell) and Casting.HaveManaToDot()
                 end,
             },
@@ -1056,7 +1058,6 @@ return {
                 name = "EndemicDot",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    if not Config:GetSetting('DoDot') then return false end
                     return Casting.DotSpellCheck(spell) and Casting.HaveManaToDot()
                 end,
             },
@@ -1381,7 +1382,7 @@ return {
             {
                 name = "PetGrowl",
                 type = "Spell",
-                load_cond = function(self) return not Config:GetSetting('DoFeralgia') end,
+                load_cond = function(self) return not self.Helpers.UsingFeralgia() end,
                 cond = function(self, spell)
                     return Casting.SelfBuffCheck(spell)
                 end,
@@ -1395,111 +1396,29 @@ return {
             },
         },
     },
-    ['Spells']            = {
+    ['SpellList']         = {
         {
-            gem = 1,
-            spells = {
-                { name = "HealSpell",    cond = function(self) return Config:GetSetting('DoHeals') end, },
-                { name = "PetHealSpell", cond = function(self) return Config:GetSetting('DoPetHealSpell') end, },
-                { name = "Icelance1", },
-
-            },
-        },
-        {
-            gem = 2,
-            spells = {
-                { name = "PetHealSpell", cond = function(self) return Config:GetSetting('DoPetHealSpell') end, },
-                { name = "Icelance1", },
-                { name = "AERoar",       cond = function(self) return Config:GetSetting('DoAERoar') end, },
-                { name = "Icelance2", },
-            },
-        },
-        {
-            gem = 3,
+            name = "Default Mode",
             spells = {
                 { name = "Icelance1", },
-                { name = "AERoar",    cond = function(self) return Config:GetSetting('DoAERoar') end, },
-                { name = "Icelance2", },
+                { name = "AERoar",       cond = function() return Config:GetSetting('DoAERoar') end, },
+                { name = "Icelance2",    cond = function() return not Config:GetSetting('DoAERoar') end, },
                 { name = "BloodDot", },
-            },
-        },
-        {
-            gem = 4,
-            spells = {
-                { name = "AERoar",    cond = function(self) return Config:GetSetting('DoAERoar') end, },
-                { name = "Icelance2", },
-                { name = "BloodDot", },
-                { name = "ColdDot",   cond = function(self) return Config:GetSetting('DoDot') end, },
-            },
-        },
-        {
-            gem = 5,
-            spells = {
-                { name = "BloodDot", },
-                { name = "ColdDot",    cond = function(self) return Config:GetSetting('DoDot') end, },
-                { name = "EndemicDot", cond = function(self) return Config:GetSetting('DoDot') end, },
-            },
-        },
-        {
-            gem = 6,
-            spells = {
+                { name = "ColdDot", },
+                { name = "EndemicDot", },
                 { name = "AtkBuff", },
-                { name = "RunSpeedBuff", },
-            },
-        },
-        {
-            gem = 7,
-            spells = {
-                { name = "SlowSpell",  cond = function(self) return Config:GetSetting('DoSlow') and not Casting.CanUseAA("Sha's Reprisal") end, },
+                { name = "SlowSpell",    cond = function() return Config:GetSetting('DoSlow') and not Casting.CanUseAA("Sha's Reprisal") end, },
                 { name = "DichoSpell", },
-                { name = "EndemicDot", cond = function(self) return Config:GetSetting('DoDot') end, },
-            },
-        },
-        {
-            gem = 8,
-            spells = {
-                { name = "Feralgia",   cond = function(self) return Config:GetSetting('DoFeralgia') end, },
-                { name = "PetGrowl", },
-                { name = "EndemicDot", cond = function(self) return Config:GetSetting('DoDot') end, },
-            },
-        },
-        {
-            gem = 9,
-            cond = function(self, gem) return mq.TLO.Me.NumGems() >= gem end,
-            spells = {
+                { name = "Feralgia",     cond = function(self) return self.Helpers.UsingFeralgia() end, },
+                { name = "PetGrowl",     cond = function(self) return not self.Helpers.UsingFeralgia() end, },
                 { name = "PoiBite", },
-            },
-        },
-        {
-            gem = 10,
-            cond = function(self, gem) return mq.TLO.Me.NumGems() >= gem end,
-            spells = {
                 { name = "Maelstrom", },
-            },
-        },
-        {
-            gem = 11,
-            cond = function(self, gem) return mq.TLO.Me.NumGems() >= gem end,
-            spells = {
                 { name = "FrozenPoi", },
-            },
-        },
-        {
-            gem = 12,
-            cond = function(self, gem) return mq.TLO.Me.NumGems() >= gem end,
-            spells = {
-                { name = "ColdDot",     cond = function(self) return Config:GetSetting('DoDot') end, },
+                { name = "HealSpell",    cond = function() return Config:GetSetting('DoHeals') end, },
+                { name = "PetHealSpell", cond = function() return Config:GetSetting('DoPetHealSpell') end, },
                 { name = "PetHealProc", },
-
-            },
-        },
-        {
-            gem = 13,
-            cond = function(self, gem) return mq.TLO.Me.NumGems() >= gem end,
-            spells = {
-                { name = "PetHealProc", },
-                { name = "EndemicDot",  cond = function(self) return Config:GetSetting('DoDot') end, },
-                { name = "SwarmPet",    cond = function(self) return Config:GetSetting('DoSwarmPet') end, },
+                { name = "SwarmPet",     cond = function() return Config:GetSetting('DoSwarmPet') end, },
+                { name = "RunSpeedBuff", cond = function() return Config:GetSetting('DoRunSpeed') end, },
             },
         },
     },
@@ -1691,16 +1610,6 @@ return {
             Category = "Slow",
             Index = 101,
             Tooltip = "Use your slow spell or AA.",
-            Default = true,
-            RequiresLoadoutChange = true,
-        },
-        ['DoDot']          = {
-            DisplayName = "Cast DOTs",
-            Group = "Abilities",
-            Header = "Damage",
-            Category = "Over Time",
-            Index = 101,
-            Tooltip = "Enable casting Damage Over Time spells.",
             Default = true,
             RequiresLoadoutChange = true,
         },

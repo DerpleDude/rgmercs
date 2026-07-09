@@ -768,6 +768,7 @@ local _ClassConfig = {
             name = 'GroupHeal(98+)',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             load_cond = function() return mq.TLO.Me.Level() > 97 end,
             cond = function(self, target) return Targeting.GroupHealsNeeded() end,
         },
@@ -775,6 +776,7 @@ local _ClassConfig = {
             name = 'GroupHeal(1-97)',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             load_cond = function() return mq.TLO.Me.Level() < 98 end,
             cond = function(self, target) return Targeting.GroupHealsNeeded() end,
         },
@@ -782,6 +784,7 @@ local _ClassConfig = {
             name = 'BigHeal(77+)',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             load_cond = function() return mq.TLO.Me.Level() > 76 end,
             cond = function(self, target)
                 return Targeting.BigHealsNeeded(target) and not Targeting.TargetIsType("pet", target)
@@ -791,6 +794,7 @@ local _ClassConfig = {
             name = 'BigHeal(59-76)',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             load_cond = function() return mq.TLO.Me.Level() > 58 and mq.TLO.Me.Level() < 77 end,
             cond = function(self, target)
                 return Targeting.BigHealsNeeded(target) and not Targeting.TargetIsType("pet", target)
@@ -800,6 +804,7 @@ local _ClassConfig = {
             name = 'MainHeal(101+)',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             load_cond = function() return mq.TLO.Me.Level() > 100 end,
             cond = function(self, target)
                 return Targeting.MainHealsNeeded(target)
@@ -809,6 +814,7 @@ local _ClassConfig = {
             name = 'MainHeal(80-100)',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             load_cond = function() return mq.TLO.Me.Level() > 79 and mq.TLO.Me.Level() < 101 end,
             cond = function(self, target)
                 return Targeting.MainHealsNeeded(target)
@@ -818,6 +824,7 @@ local _ClassConfig = {
             name = 'MainHeal(1-79)',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             load_cond = function() return mq.TLO.Me.Level() < 80 end,
             cond = function(self, target)
                 return Targeting.MainHealsNeeded(target)

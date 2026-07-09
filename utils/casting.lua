@@ -1702,7 +1702,7 @@ end
 --- @return boolean Returns true if the AA ability is ready, false otherwise.
 function Casting.AAReady(aaName)
     local me = mq.TLO.Me
-    if not me.AltAbility(aaName) then return false end
+    if not me.AltAbility(aaName)() then return false end
 
     local ready = me.AltAbilityReady(aaName)()
     local aaSpell = me.AltAbility(aaName).Spell
@@ -2342,7 +2342,7 @@ function Casting.UseAA(aaName, targetId, bAllowDead, retryCount, fireAndForget)
         return false
     end
 
-    if not mq.TLO.Me.AltAbilityReady(aaName) then
+    if not mq.TLO.Me.AltAbilityReady(aaName)() then
         Logger.log_debug("\ayUseAA(): Ability %s is not ready!", aaName)
         return false
     end

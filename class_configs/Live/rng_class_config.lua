@@ -840,6 +840,7 @@ local _ClassConfig = {
             name = 'MainHealPoint',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             cond = function(self, target) return Targeting.MainHealsNeeded(target) end,
         },
     },
