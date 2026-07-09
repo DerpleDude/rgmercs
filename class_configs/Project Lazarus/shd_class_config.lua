@@ -266,6 +266,7 @@ local _ClassConfig = {
         ['BiteTap'] = {
             "Ancient: Bite of Muram", -- Level 70
             "Inruku's Bite",          -- Level 67
+            "Ancient: Bite of Chaos", -- Level 65
             "Zevfeer's Bite",         -- Level 62
         },
         ['Terror'] = {
@@ -325,8 +326,8 @@ local _ClassConfig = {
         ['Assist'] = {
             { name = "Taunt",             type = "Ability", },
             { name = "Hate's Attraction", type = "AA", },
-            { name = "Terror",            type = "Spell", load_cond = function(self) return Config:GetSetting('DoTerror') end, },
-            { name = "Terror2",           type = "Spell", load_cond = function(self) return Config:GetSetting('DoTerror') end, },
+            { name = "Terror",            type = "Spell",   load_cond = function(self) return Config:GetSetting('DoTerror') end, },
+            { name = "Terror2",           type = "Spell",   load_cond = function(self) return Config:GetSetting('DoTerror') end, },
         },
     },
     ['Helpers']       = {

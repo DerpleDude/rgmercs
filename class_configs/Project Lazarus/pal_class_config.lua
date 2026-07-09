@@ -979,16 +979,6 @@ return {
         },
         ['Combat'] = {
             {
-                name = "PBAEStun",
-                type = "Spell",
-                load_cond = function(self) return Core.IsTanking() end,
-                allowDead = true,
-                cond = function(self, spell, target)
-                    if not Config:GetSetting('DoAEDamage') then return false end
-                    return Combat.AETargetCheck(true)
-                end,
-            },
-            {
                 name = "StunTimer5",
                 type = "Spell",
             },

@@ -1956,7 +1956,7 @@ function Ui.RenderRotationTable(name, rotationTable, resolvedActionMap, rotation
         if not hideRotationCols then
             ImGui.TableSetupColumn('Condition Met', ImGuiTableColumnFlags.WidthFixed, 20.0)
         end
-        ImGui.TableSetupColumn('Action', ImGuiTableColumnFlags.WidthFixed, 250.0)
+        ImGui.TableSetupColumn('Action', ImGuiTableColumnFlags.WidthStretch, 250.0)
         --- Resolved Action column: header drawn manually below
         ImGui.TableSetupColumn("", ImGuiTableColumnFlags.WidthStretch, 250.0);
 

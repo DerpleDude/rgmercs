@@ -555,6 +555,18 @@ return {
                 end,
             },
             {
+                name = "Razorclaw",
+                type = "Item",
+                load_cond = function(self) return Config:GetSetting("UseDonorPet") and Core.GetResolvedActionMapItem('Razorclaw') end,
+                cond = function(self, _) return mq.TLO.Me.Pet.ID() == 0 end,
+                post_activate = function(self, spell, success)
+                    if success and mq.TLO.Me.Pet.ID() > 0 then
+                        mq.delay(50) -- slight delay to prevent chat bug with command issue
+                        self:SetPetHold()
+                    end
+                end,
+            },
+            {
                 name = "Paragon of Spirit",
                 type = "AA",
                 cond = function(self, aaName)
@@ -595,18 +607,6 @@ return {
                 type = "Spell",
                 cond = function(self, spell, target)
                     return Casting.OkayToNuke()
-                end,
-            },
-            {
-                name = "Razorclaw",
-                type = "Item",
-                load_cond = function(self) return Config:GetSetting("UseDonorPet") and Core.GetResolvedActionMapItem('Razorclaw') end,
-                cond = function(self, _) return mq.TLO.Me.Pet.ID() == 0 end,
-                post_activate = function(self, spell, success)
-                    if success and mq.TLO.Me.Pet.ID() > 0 then
-                        mq.delay(50) -- slight delay to prevent chat bug with command issue
-                        self:SetPetHold()
-                    end
                 end,
             },
         },

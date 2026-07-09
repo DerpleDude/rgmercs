@@ -71,6 +71,16 @@ Module.TempSettings.MidSongFireable          = {}
 
 Module.FAQ                                   = {
     {
+        Question = "How does RGMercs decide which action to use?",
+        Answer = "  Every action RGMercs takes comes from a 'rotation': an ordered list of actions the loaded class config runs for a given situation, such as combat, downtime, or buffing.\n\n" ..
+            "  Each line in a rotation is a 'rotation entry'. An entry has its own usage conditions and maps to a real spell, AA, item, or discipline. This mapped action is the 'Resolved Action' shown in the rotation table.\n\n" ..
+            "  When a rotation runs, RGMercs checks its entries in order and uses those whose conditions pass. Disabled entries and entries whose conditions fail are skipped, along with actions blocked by things like cooldowns, mana, or movement.\n\n" ..
+            "  Rotations come in two types, Full and Standard. A Full rotation re-checks every entry from the top on each run, while a Standard rotation resumes from the entry after the last one that succeeded. Leaving combat resets this position to the top.\n\n" ..
+            "  Rotations can be viewed in the UI on the Class tab.\n\n" ..
+            "  Note: Mez, charm, rez, and cures run on this same rotation engine (and are all treated as Full rotations).",
+        Settings_Used = "",
+    },
+    {
         Question = "How do I add, remove, or change what spells, AA, items or disciplines are being used?",
         Answer = "  RGMercs is designed to choose actions automatically based on the currently loaded 'Class Config'.\n\n" ..
             "  In addition to being able to adjust common settings, the default class configs generally offer some options to enable, disable, or fine-tune action use. These are generally found in (Options > Abililties).\n\n" ..
@@ -720,7 +730,7 @@ function Module:RenderQueuedAbilities()
     end
 end
 
-function Module:RenderRotationWithToggle(r, rotationTable)
+function Module:RenderRotationWithToggle(r, rotationTable, showRotationType)
     local enabledRotationEntriesChanged = false
     local rotationName = r.name
     local enabledRotations = Config:GetSetting('EnabledRotations') or {}
@@ -747,6 +757,13 @@ function Module:RenderRotationWithToggle(r, rotationTable)
     if ImGui.CollapsingHeader(headerText) then
         if enabledRotations[r.name] ~= false then
             ImGui.Indent()
+            if showRotationType then
+                Ui.RenderText("Rotation Type: %s", r.doFullRotation and "Full" or "Standard")
+                ImGui.SameLine()
+                Ui.RenderText(Icons.MD_INFO_OUTLINE)
+                Ui.Tooltip(
+                    "Denotes whether entries will be checked from the top every time the rotation is run (Full) or whether the checks start from the entry after the last one to succeed (Standard).\nLeaving combat resets the position of the check marker.")
+            end
             local reordered, resetRequested
             self.TempSettings.ShowFailedSpells, enabledRotationEntries, enabledRotationEntriesChanged, reordered, resetRequested = Ui.RenderRotationTable(r.name,
                 rotationTable[r.name],
@@ -890,7 +907,7 @@ function Module:Render()
                 Ui.RenderText("Current Rotation: %s [%d]", self.CurrentRotation.name, self.CurrentRotation.state)
 
                 for _, r in ipairs(self.TempSettings.RotationStates) do
-                    self:RenderRotationWithToggle(r, self.TempSettings.RotationTable)
+                    self:RenderRotationWithToggle(r, self.TempSettings.RotationTable, true)
                 end
                 Ui.RenderRotationTableKey()
                 ImGui.Unindent()
