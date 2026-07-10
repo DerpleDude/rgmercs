@@ -8,6 +8,14 @@ on:
 permissions:
   contents: write
 
+# Serialize release runs. Two pushes to main in quick succession would otherwise
+# race: both bump from the same base and the slower push-back is rejected as
+# non-fast-forward. cancel-in-progress:false lets the first run finish (tag +
+# release) before the second starts, so the second bumps on top of it.
+concurrency:
+  group: release-main
+  cancel-in-progress: false
+
 jobs:
   release:
     if: github.repository == 'DerpleDude/rgmercs'
@@ -15,25 +23,50 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Read version
-        id: version
+      # Bump extras/version.lua here instead of in the local pre-commit hook.
+      # version.lua is CI-only now (no human ever edits it), so the freshest
+      # main always holds the current number: we reset onto origin/main, bump,
+      # and push. The retry covers a concurrent push landing between fetch and
+      # push despite the concurrency group (belt and suspenders).
+      - name: Bump version
+        id: bump
         run: |
-          VERSION=$(sed -n 's/.*version *= *\([0-9]\+\).*/\1/p' extras/version.lua)
-          [ -z "$VERSION" ] && exit 1
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for attempt in 1 2 3; do
+            git fetch --quiet origin main
+            git reset --hard --quiet origin/main
+            VERSION=$(sed -n 's/.*version *= *\([0-9]\+\).*/\1/p' extras/version.lua)
+            [ -z "$VERSION" ] && { echo "::error::version not found in extras/version.lua"; exit 1; }
+            NEW=$((VERSION + 1))
+            sed -i "s/version *= *$VERSION/version = $NEW/" extras/version.lua
+            git add extras/version.lua
+            git commit --quiet -m "chore: bump version to $NEW"
+            if git push origin HEAD:main; then
+              echo "version=$NEW" >> "$GITHUB_OUTPUT"
+              echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+              echo "Bumped version to $NEW"
+              exit 0
+            fi
+            echo "::warning::push rejected (attempt $attempt/3); refetching and retrying"
+          done
+          echo "::error::failed to bump version after 3 attempts"
+          exit 1
 
       # Create a file to upload
       - name: Create artifact
         run: |
           mkdir dist
-          echo "Build from commit $GITHUB_SHA" > dist/info.txt
+          echo "Build from commit ${{ steps.bump.outputs.sha }}" > dist/info.txt
           zip -r dist/rgmercs.zip .
 
-      # Create release + upload asset
+      # Create release + upload asset. Tag the bump commit explicitly so the tag
+      # sits on the commit whose version.lua actually matches it.
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ steps.version.outputs.version }}
-          name: Release v${{ steps.version.outputs.version }}
+          tag_name: v${{ steps.bump.outputs.version }}
+          name: Release v${{ steps.bump.outputs.version }}
+          target_commitish: ${{ steps.bump.outputs.sha }}
           files: |
             dist/rgmercs.zip

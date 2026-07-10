@@ -1,23 +1,9 @@
 #!/usr/bin/env bash
-set -e
-
-set -euo pipefail
-
-FILE="extras/version.lua"
-
-# Extract current version
-VERSION=$(sed -n 's/.*version *= *\([0-9]\+\).*/\1/p' "$FILE")
-
-if [[ -z "$VERSION" ]]; then
-  echo "Error: version not found in $FILE"
-  exit 1
-fi
-
-NEW_VERSION=$((VERSION + 1))
-
-# Replace version in file
-sed -i.bak "s/version *= *$VERSION/version = $NEW_VERSION/" "$FILE"
-
-rm -f "$FILE.bak"
-
-git add extras/version.lua
+# Version bumping moved to CI (.github/workflows/package-main.yaml).
+#
+# This script is intentionally a no-op. It is kept (rather than deleted) so that
+# any already-installed .git/hooks/pre-commit that shells to it keeps succeeding
+# instead of erroring on a missing file. .git/hooks/ is not tracked, so removing
+# this file cannot disarm hooks already installed on contributors' machines --
+# you must delete your own .git/hooks/pre-commit to stop bumping locally.
+exit 0

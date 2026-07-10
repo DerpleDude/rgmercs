@@ -13,6 +13,16 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          # Full history + tags so `git describe HEAD^` resolves the previous
+          # release tag (depth-1 has no HEAD^ and no tags -> PREV was always
+          # empty -> notes were only ever the tip commit).
+          #
+          # Do NOT pin ref to workflow_run.head_sha: that is the commit that
+          # TRIGGERED package-main (pre-bump), not the bump commit it pushed.
+          # The default (latest default-branch HEAD) is the bump commit, which
+          # is what we want to read, archive, and describe against.
+          fetch-depth: 0
 
       - name: Read version
         id: version
@@ -29,7 +39,10 @@ jobs:
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           PREV=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-          git log --no-merges --pretty=format:"- [%s](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/%H)%n%n%b%n~%an" ${PREV:+$PREV..}HEAD \
+          # HEAD is the CI bump commit; exclude it (and any future bump commits
+          # in-range) so the notes are the real changelog, not "bump version".
+          git log --no-merges --invert-grep --grep='^chore: bump version' \
+            --pretty=format:"- [%s](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/%H)%n%n%b%n~%an" ${PREV:+$PREV..}HEAD \
           | awk '/^~/{print ""; print; next} /^$/{if(!blank){print}; blank=1; next} {blank=0; print}' > rg_release_notes.md
           cat rg_release_notes.md
 
