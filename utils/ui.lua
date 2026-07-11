@@ -1637,6 +1637,22 @@ function Ui.RenderForceTargetList(showPopout)
             end,
 
         },
+        {
+            name = "Class",
+            flags = bit32.bor(ImGuiTableColumnFlags.WidthFixed, ImGuiTableColumnFlags.DefaultHide),
+            width = 40.0,
+            sort = function(a, b)
+                return a.Class.ShortName() or "", b.Class.ShortName() or ""
+            end,
+            render = function(xtarg, _)
+                local shortName = xtarg.Class.ShortName()
+                if Globals.Constants.AllClassesSet:contains(shortName) then
+                    Ui.RenderText(shortName)
+                else
+                    Ui.RenderColoredText(Colors.Grey, "-")
+                end
+            end,
+        },
     }
 
     Ui.RenderTableData("XTargs", tableColumns,

@@ -2034,6 +2034,7 @@ function Casting.UseSong(songName, targetId, bAllowMem, retryCount)
 
     local cancel = false
     local castStarted = false
+    local songCastTime = songSpell.MyCastTime() or 0
     local readyCheck = function() return me.SpellReady(songName)() end
 
     repeat
@@ -2074,12 +2075,15 @@ function Casting.UseSong(songName, targetId, bAllowMem, retryCount)
                 end
             end
 
+            -- track to avoid stuck gem bug by not using actions close to song finish
+            local nearCastEnd = songCastTime > 0 and (songCastTime - scanTimer) <= 500
+
             if scanTimer % 500 == 0 then
                 Casting.RescanCombatTargets()
                 Modules:ExecModule("Class", "DoMidSongEngage", targetId)
             end
 
-            if scanTimer % 100 == 0 then
+            if scanTimer % 100 == 0 and not nearCastEnd then
                 Modules:ExecModule("Class", "DoMidSongActions")
             end
 
@@ -2290,14 +2294,15 @@ function Casting.RunCastLoop(opts)
         mq.delay(delay, function()
             if castTime == 0 then mq.doevents('Success1') end -- check for cast message on items (it seems to be sent from the server, not client/instant like spells)
             if isActiveDisc then
-                if confirmOnDisc and (mq.TLO.Me.ActiveDisc.ID() or 0) > 0 then return true end
+                return confirmOnDisc and (mq.TLO.Me.ActiveDisc.ID() or 0) > 0
             elseif castTime == 0 and not readyCheck() then
                 return true
             end
             return mq.TLO.Me.Casting() ~= nil
                 or Globals.Constants.CastCompleted:contains(Casting.GetLastCastResultName())
         end)
-        if mq.TLO.Me.Casting() then
+        -- Active discs confirm via ActiveDisc.ID above and have no cast bar to wait on.
+        if mq.TLO.Me.Casting() and not isActiveDisc then
             Logger.log_verbose("\ayRunCastLoop(): Started to cast: %s - waiting to finish", actionName)
             Casting.WaitCastFinish(targetId, bAllowDead, spellRange, castTime)
         end
@@ -2561,7 +2566,8 @@ function Casting.WaitCastFinish(targetId, bAllowDead, spellRange, castTime)
     local maxWaitOrig = (castTime or 5000) + ((mq.TLO.EverQuest.Ping() * 20) + 1000)
     local maxWait = maxWaitOrig
 
-    while mq.TLO.Me.Casting() do
+    -- A playing bard song keeps Me.Casting truthy with no cast window; don't count it as an in-flight cast.
+    while mq.TLO.Me.Casting() and (mq.TLO.Window("CastingWindow").Open() or not mq.TLO.Me.BardSongPlaying()) do
         local currentCast = mq.TLO.Me.Casting()
         Logger.log_super_verbose("WaitCastFinish(): Waiting to Finish Casting...")
         mq.delay(20)
