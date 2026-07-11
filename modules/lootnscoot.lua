@@ -122,6 +122,15 @@ Module.DefaultConfig   = {
 		Min = 10,
 		Max = 500,
 	},
+	['BreakInvis']                             = {
+		DisplayName = "Break Invis/Hiding",
+		Group = "General",
+		Header = "Loot(Emu)",
+		Category = "LNS",
+		Index = 9,
+		Tooltip = "Enables looting if hidden or invisible.",
+		Default = false,
+	},
 	[string.format("%s_Popped", Module._name)] = {
 		DisplayName = Module._name .. " Popped",
 		Type = "Custom",
@@ -305,7 +314,7 @@ function Module:GiveTime()
 
 	suppressWarning = false
 
-	if not Core.OkayToNotHeal() or mq.TLO.Me.Invis() or Casting.IAmFeigning() then return end
+	if not Core.OkayToNotHeal() or (not Config:GetSetting('BreakInvis') and mq.TLO.Me.Invis()) or Casting.IAmFeigning() then return end
 
 	if Combat.CombatNavActive() then return end
 
