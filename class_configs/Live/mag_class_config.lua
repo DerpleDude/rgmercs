@@ -897,7 +897,6 @@ _ClassConfig      = {
             "Malosinatia", -- Level 76
             "Malosinise",  -- Level 71
             "Malosinia",   -- Level 63
-            "Mala",        -- Level 60
             "Malosini",    -- Level 58
             "Malosi",      -- Level 51
             "Malaisement", -- Level 44

@@ -223,7 +223,6 @@ local _ClassConfig = {
         ['MaloSpell'] = {
             "Malos",           -- Level 65
             "Malosinia",       -- Level 63
-            "Malo",            -- Level 60
             "Malosini",        -- Level 57
             --Below this these spells are considered by many to be a waste of mana, but the user can elect to turn this off.
             "Malosi",          -- Level 48

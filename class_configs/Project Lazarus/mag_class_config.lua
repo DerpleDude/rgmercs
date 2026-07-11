@@ -259,7 +259,6 @@ _ClassConfig      = {
         },
         ['MaloDebuff'] = {
             "Malosinia",   -- Level 63
-            "Mala",        -- Level 60
             "Malosini",    -- Level 58
             "Malosi",      -- Level 51
             "Malaisement", -- Level 44
