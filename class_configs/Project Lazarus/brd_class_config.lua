@@ -39,18 +39,18 @@ local Tooltips     = {
 }
 
 local _ClassConfig = {
-    _version          = "3.1 - Project Lazarus",
-    _author           = "Algar, Derple, Grimmier, Tiddliestix, SonicZentropy",
-    ['Modes']         = { --other modes to reorder spell priorities may be added back in at a later date.
+    _version              = "3.1 - Project Lazarus",
+    _author               = "Algar, Derple, Grimmier, Tiddliestix, SonicZentropy",
+    ['Modes']             = { --other modes to reorder spell priorities may be added back in at a later date.
         'General',
     },
-    ['ModeChecks']    = {
+    ['ModeChecks']        = {
         CanMez    = function() return true end,
         CanCharm  = function() return true end,
         IsMezzing = function() return Config:GetSetting('MezOn') end,
         IsCuring  = function() return Config:GetSetting('UseCure') end,
     },
-    ['Cure']          = {
+    ['Cure']              = {
         ['Poison'] = {
             { type = "Song", name = "CureSong", },
         },
@@ -58,7 +58,7 @@ local _ClassConfig = {
             { type = "Song", name = "CureSong", },
         },
     },
-    ['Themes']        = {
+    ['Themes']            = {
         ['General'] = {
             { element = ImGuiCol.TitleBgActive,    color = { r = 0.50, g = 0.08, b = 0.35, a = 0.8, }, },
             { element = ImGuiCol.TableHeaderBg,    color = { r = 0.50, g = 0.08, b = 0.35, a = 0.8, }, },
@@ -79,7 +79,7 @@ local _ClassConfig = {
             { element = ImGuiCol.FrameBgActive,    color = { r = 0.50, g = 0.08, b = 0.35, a = 1.0, }, },
         },
     },
-    ['ItemSets']      = {
+    ['ItemSets']          = {
         ['Epic'] = {
             "Blade of Vesagran",
             "Prismatic Dragon Blade",
@@ -89,7 +89,7 @@ local _ClassConfig = {
             "Traveler's Mail Chestguard",
         },
     },
-    ['AbilitySets']   = {
+    ['AbilitySets']       = {
         ['RunBuff'] = {
             "Selo's Accelerating Chorus", -- Level 49
             "Selo's Accelerando",         -- Level 5
@@ -237,12 +237,12 @@ local _ClassConfig = {
             "Bellow of Chaos", -- Level 66
         },
     },
-    ['Charm']         = {
+    ['Charm']             = {
         ['Abilities'] = {
             { name = "CharmSong", type = "Song", },
         },
     },
-    ['Helpers']       = {
+    ['Helpers']           = {
         SwapInst = function(type)
             if not Config:GetSetting('SwapInstruments') then return end
             Logger.log_verbose("\ayBard SwapInst(): Swapping to Instrument Type: %s", type)
@@ -365,11 +365,11 @@ local _ClassConfig = {
             return duration
         end,
     },
-    ['Mez']           = {
+    ['Mez']               = {
         { type = "AA",   name = "Dirge of the Sleepwalker", cond = function() return Config:GetSetting('DoAAMez') end, },
         { type = "Song", name = "MezSong", },
     },
-    ['RotationOrder'] = {
+    ['RotationOrder']     = {
         {
             name = 'Enduring Breath',
             state = 1,
@@ -460,7 +460,7 @@ local _ClassConfig = {
             end,
         },
     },
-    ['Rotations']     = {
+    ['Rotations']         = {
         ['Burn'] = { --Order is heavy WIP
             {
                 name = "Quick Time",
@@ -823,7 +823,7 @@ local _ClassConfig = {
             },
         },
     },
-    ['SpellList']     = { -- New style spell list, gemless, priority-based. Will use the first set whose conditions are met.
+    ['SpellList']         = { -- New style spell list, gemless, priority-based. Will use the first set whose conditions are met.
         {
             name = "Default Mode",
             -- cond = function(self) return true end, --Code kept here for illustration, if there is no condition to check, this line is not required
@@ -860,7 +860,7 @@ local _ClassConfig = {
             },
         },
     },
-    ['PullAbilities'] = {
+    ['PullAbilities']     = {
         {
             id = 'Boastful Bellow',
             Type = "AA",
@@ -872,7 +872,29 @@ local _ClassConfig = {
             end,
         },
     },
-    ['DefaultConfig'] = {
+    ['PullMoveAbilities'] = {
+        {
+            name = "Selo's Sonata",
+            type = "AA",
+            load_cond = function(self) return Casting.CanUseAA("Selo's Sonata") end,
+            cond = function(self, aaName)
+                return (mq.TLO.Me.Buff(aaName).Duration.TotalSeconds() or 0) < 15
+            end,
+        },
+        {
+            name = "RunBuff",
+            type = "Song",
+            load_cond = function(self) return Core.GetResolvedActionMapItem('RunBuff') and Config:GetSetting('UseRunBuff') > 1 and not Casting.CanUseAA("Selo's Sonata") end,
+            cond = function(self, songSpell)
+                if not mq.TLO.Me.Gem(songSpell.RankName())() then return false end
+                if (mq.TLO.Me.Casting.ID() or 0) == songSpell.ID() then return false end
+                local buffName = songSpell.BaseName()
+                local spellBuff = songSpell.DurationWindow() == 1 and mq.TLO.Me.Song(buffName) or mq.TLO.Me.Buff(buffName)
+                return not spellBuff()
+            end,
+        },
+    },
+    ['DefaultConfig']     = {
         ['Mode']            = {
             DisplayName = "Mode",
             Category = "Combat",
@@ -1397,7 +1419,7 @@ local _ClassConfig = {
                 "Try adjusting this to the minimum amount of mana you want to keep in reserve. Note that burns will ignore this setting.",
         },
     },
-    ['ClassFAQ']      = {
+    ['ClassFAQ']          = {
         {
             Question = "What is the current status of this class config?",
             Answer = "This class config is a current release customized specifically for Project Lazarus server.\n\n" ..

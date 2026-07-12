@@ -1,4 +1,4 @@
--- Sample Pull Class Module
+-- Pull Module: target scanning, pull-ability selection, and the pull state machine.
 local mq        = require('mq')
 local Icons     = require('mq.ICONS')
 local Set       = require("mq.Set")
@@ -8,6 +8,7 @@ local Combat    = require("utils.combat")
 local Comms     = require("utils.comms")
 local Config    = require('utils.config')
 local Core      = require("utils.core")
+local Entries   = require("utils.entries")
 local Events    = require("utils.events")
 local Globals   = require('utils.globals')
 local Logger    = require("utils.logger")
@@ -15,84 +16,127 @@ local Math      = require('utils.math')
 local Modules   = require("utils.modules")
 local Movement  = require("utils.movement")
 local Strings   = require("utils.strings")
-local Tables    = require("utils.tables")
 local Targeting = require("utils.targeting")
 local Ui        = require("utils.ui")
 
-local Module    = { _version = '0.1a', _name = "Pull", _author = 'Derple', }
+local Module    = { _version = '2.0', _name = "Pull", _author = 'Derple, Algar', }
 Module.__index  = Module
 setmetatable(Module, { __index = Base, })
 Module.FAQ                                = {}
 
+-- Module State
 Module.TempSettings                       = {}
 Module.TempSettings.LastPullOrCombatEnded = Globals.GetTimeSeconds()
 Module.TempSettings.TargetSpawnID         = 0
-Module.TempSettings.CurrentWP             = 1
+Module.TempSettings.FightTo               = nil
+Module.TempSettings.HuntOrigin            = nil
+Module.TempSettings.UnreachableSince      = 0
+Module.TempSettings.TravelFailSince       = 0
+Module.TempSettings.LocEntryY             = ""
+Module.TempSettings.LocEntryX             = ""
+Module.TempSettings.LocEntryZ             = ""
+Module.TempSettings.LocEntryMode          = nil
+Module.TempSettings.CurrentWPName         = nil
+Module.TempSettings.CurrentWPIndex        = 1
 Module.TempSettings.ReachedWP             = false
 Module.TempSettings.PullTargets           = {}
 Module.TempSettings.PullTargetsMetaData   = {}
 Module.TempSettings.PullIgnoreTargets     = {}
 Module.TempSettings.AbortPull             = false
 Module.TempSettings.PullListUpdated       = false
-Module.TempSettings.PullID                = 0
+Module.TempSettings.Attempt               = nil
+Module.TempSettings.Travel                = nil
+Module.TempSettings.CampTravelLoc         = nil
+Module.TempSettings.EscortScopeWord       = nil
+Module.TempSettings.EscortPeers           = nil
+Module.TempSettings.CampArrivalWaitStart  = nil
+Module.TempSettings.HuntAnchor            = nil
+Module.TempSettings.PullerMercPending     = nil
 Module.TempSettings.LastPullAbilityCheck  = 0
+Module.TempSettings.LastMoveAbilityCheck  = 0
 Module.TempSettings.LastPullerMercCheck   = 0
 Module.TempSettings.LastFoundGroupCorpse  = 0
 Module.TempSettings.LastTooFarAnnounce    = 0
-Module.TempSettings.HuntX                 = 0
-Module.TempSettings.HuntY                 = 0
-Module.TempSettings.HuntZ                 = 0
-Module.TempSettings.MyPaths               = {}
-Module.TempSettings.SelectedPath          = "None"
-Module.TempSettings.PullAttemptStarted    = 0
 Module.TempSettings.PullRadius            = 0
-Module.TempSettings.WayPointsToDelete     = Set.new({})
+Module.TempSettings.LocationsToDelete     = {}
+Module.TempSettings.LocationNameEdits     = {}
+Module.TempSettings.MyPathsData           = nil
+Module.TempSettings.MyPathsZones          = {}
+Module.TempSettings.MyPathsZoneIndex      = 1
+Module.TempSettings.MyPathsPathNames      = {}
+Module.TempSettings.MyPathsPathIndex      = 1
+Module.TempSettings.MyPathsPoints         = {}
+Module.TempSettings.MyPathsChecked        = {}
 Module.TempSettings.PausePulls            = false
+Module.TempSettings.DeathResumeFreePass   = nil
+Module.TempSettings.DeathSpot             = nil
+Module.TempSettings.ValidPullAbilities    = {}
+Module.TempSettings.PullAbilityIDToName   = {}
+Module.TempSettings.PullMoveAbilities     = nil
 
-local PullStates                          = {
+-- Constants
+Module.Constants                          = {}
+Module.Constants.PullStates               = {
     ['PULL_IDLE']               = 1,
-    ['PULL_GROUPWATCH_WAIT']    = 2,
-    ['PULL_PEERWATCH_WAIT']     = 11,
-    ['PULL_NAV_INTERRUPT']      = 3,
-    ['PULL_SCAN']               = 4,
-    ['PULL_PULLING']            = 5,
+    ['PULL_WAITING_SHOULDPULL'] = 2,
+    ['PULL_GROUPWATCH_WAIT']    = 3,
+    ['PULL_PEERWATCH_WAIT']     = 4,
+    ['PULL_SCAN']               = 5,
     ['PULL_MOVING_TO_WP']       = 6,
-    ['PULL_NAV_TO_TARGET']      = 7,
-    ['PULL_RETURN_TO_CAMP']     = 8,
-    ['PULL_WAITING_ON_MOB']     = 9,
-    ['PULL_WAITING_SHOULDPULL'] = 10,
+    ['PULL_NAV_INTERRUPT']      = 7,
+    ['PULL_NAV_TO_TARGET']      = 8,
+    ['PULL_PULLING']            = 9,
+    ['PULL_RETURN_TO_CAMP']     = 10,
+    ['PULL_WAITING_ON_MOB']     = 11,
 }
 
-local PullStateDisplayStrings             = {
+Module.Constants.PullStateDisplayStrings  = {
     ['MERCS_PAUSED']            = { Display = Icons.MD_REPORT_PROBLEM, Text = "RGMercs Main Paused", Color = 'Red', },
     ['PULL_IDLE']               = { Display = Icons.FA_CLOCK_O, Text = "Idle", Color = 'Green', },
-    ['PULL_GROUPWATCH_WAIT']    = { Display = Icons.MD_GROUP, Text = "Waiting on GroupWatch", Color = 'Yellow', },
-    ['PULL_PEERWATCH_WAIT']     = { Display = Icons.MD_PEOPLE, Text = "Waiting on PeerWatch", Color = 'Yellow', },
+    ['PULL_GROUPWATCH_WAIT']    = { Display = Icons.MD_GROUP, Text = "Waiting on Group / Raid", Color = 'Yellow', },
+    ['PULL_PEERWATCH_WAIT']     = { Display = Icons.MD_PEOPLE, Text = "Waiting on Zone Peers", Color = 'Yellow', },
     ['PULL_NAV_INTERRUPT']      = { Display = Icons.MD_PAUSE_CIRCLE_OUTLINE, Text = "Navigation Interrupted", Color = 'Red', },
     ['PULL_SCAN']               = { Display = Icons.FA_EYE, Text = "Scanning for Targets", Color = 'Green', },
     ['PULL_PULLING']            = { Display = Icons.FA_BULLSEYE, Text = "Pulling", Color = 'Red', },
-    ['PULL_MOVING_TO_WP']       = { Display = Icons.MD_DIRECTIONS_RUN, Text = "Moving to Next WP", Color = 'Yellow', },
+    ['PULL_MOVING_TO_WP']       = { Display = Icons.MD_DIRECTIONS_RUN, Text = "Moving to Point", Color = 'Yellow', },
     ['PULL_NAV_TO_TARGET']      = { Display = Icons.MD_DIRECTIONS_RUN, Text = "Naving to Target", Color = 'Yellow', },
     ['PULL_RETURN_TO_CAMP']     = { Display = Icons.FA_FREE_CODE_CAMP, Text = "Returning to Camp", Color = 'Green', },
     ['PULL_WAITING_ON_MOB']     = { Display = Icons.FA_CLOCK_O, Text = "Waiting on Mob", Color = 'Yellow', },
     ['PULL_WAITING_SHOULDPULL'] = { Display = Icons.FA_CLOCK_O, Text = "Waiting for Should Pull", Color = 'Red', },
 }
 
-local PullStatesIDToName                  = {}
-for k, v in pairs(PullStates) do PullStatesIDToName[v] = k end
+Module.Constants.PullStatesIDToName       = {}
+for k, v in pairs(Module.Constants.PullStates) do Module.Constants.PullStatesIDToName[v] = k end
 
-Module.TempSettings.PullState          = PullStates.PULL_IDLE
-Module.TempSettings.PullStateReason    = ""
-
-Module.Constants                       = {}
-Module.Constants.PullModes             = {
-    "Normal",
-    "Chain",
-    "Hunt",
-    "Farm",
+Module.Constants.PullModes          = {
+    "PullToCamp",
+    "ChainToCamp",
+    "AreaHunt",
+    "RoamingHunt",
+    "CircuitHunt",
+    "FightTo",
 }
 
-Module.Constants.PullAbilities         = {
+Module.Constants.PullModeDisplays   = {
+    "Pull to Camp",
+    "Chain to Camp",
+    "Area Hunt",
+    "Roaming Hunt",
+    "Circuit Hunt",
+    "Fight To",
+}
+
+Module.Constants.PullModePolicies   = {
+    ['PullToCamp']  = { family = 'camp', runsDuringCombat = false, successCheck = 'any', rescanToCloser = true, scanCenter = 'self', radiusSetting = 'PullRadius', },
+    ['ChainToCamp'] = { family = 'camp', runsDuringCombat = true, successCheck = 'chainCount', rescanToCloser = true, scanCenter = 'self', radiusSetting = 'PullRadius', },
+    ['AreaHunt']    = { family = 'hunt', runsDuringCombat = false, successCheck = 'any', rescanToCloser = true, scanCenter = 'anchor', radiusSetting = 'PullRadiusHunt', },
+    ['RoamingHunt'] = { family = 'hunt', runsDuringCombat = false, successCheck = 'any', rescanToCloser = true, scanCenter = 'self', radiusSetting = 'PullRadiusHunt', },
+    ['CircuitHunt'] = { family = 'hunt', runsDuringCombat = false, successCheck = 'any', rescanToCloser = true, scanCenter = 'waypoint', radiusSetting = 'PullRadiusHunt', },
+    ['FightTo']     = { family = 'directive', runsDuringCombat = false, successCheck = 'any', rescanToCloser = false, scanCenter = 'self', radiusSetting = 'PullRadius', },
+}
+
+Module.Constants.RangedTypes        = Set.new({ "archery", "bow", "throwingv1", "throwing", "throwingv2", "ammo", })
+Module.Constants.PullAbilities      = {
     {
         id = "PetPull",
         Type = "Special",
@@ -153,8 +197,7 @@ Module.Constants.PullAbilities         = {
         end,
         cond = function(self)
             local rangedType = (mq.TLO.Me.Inventory("ranged").Type() or ""):lower()
-            local rangedTypes = Set.new({ "archery", "bow", "throwingv1", "throwing", "throwingv2", "ammo", })
-            return rangedTypes:contains(rangedType)
+            return Module.Constants.RangedTypes:contains(rangedType)
         end,
     },
     {
@@ -188,11 +231,118 @@ Module.Constants.PullAbilities         = {
     },
 }
 
-local PullAbilityIDToName              = {}
+Module.Constants.AbortLogMessages   = {
+    paused = "\ar ALERT: Aborting pull - paused at user's request \ax",
+    listUpdated = "\ar ALERT: Aborting pull due to change in pull allow or deny list. \ax",
+    userAbort = "\ar ALERT: Aborting pull on user request. \ax",
+    disabled = "\ar ALERT: Pulling Disabled at user request. \ax",
+    spawnGone = "PULL:\ar ALERT: Aborting mob died or despawned \ax",
+    stranger = "PULL:\ar ALERT: Aborting mob is fighting a stranger and safe targeting is enabled! \ax",
+    unreachable = "PULL:\ar ALERT: Aborting Fight To target has been unreachable for too long \ax",
+    tooFar = "PULL:\ar ALERT: Aborting mob moved out of spawn distance \ax",
+    noPath = "PULL:\ar ALERT: Aborting mob no longer reachable on mesh \ax",
+    timeout = "\ar ALERT: Aborting due to timeout, adding mob to Pull Ignore List! \ax",
+    manualTimeout = "PULL:\ar ALERT: Aborting manual pull - target could not be pulled in time \ax",
+    objectiveTimeout = "PULL:\ar ALERT: Aborting Fight To - target could not be engaged in time \ax",
+}
 
-Module.TempSettings.ValidPullAbilities = {}
+Module.Constants.EngageDescriptors  = {
+    PetPull = {
+        approach = 'none',
+        stuckCheck = false,
+        postSuccess = true,
+        verbose = "Waiting on pet pull to finish...",
+        action = function(self, attempt)
+            Combat.PetAttack(attempt.targetId, false)
+        end,
+    },
+    Face = {
+        approach = 'abilityRange',
+        forceLOS = true,
+        stuckCheck = true,
+        chainBreakLog = true,
+        verbose = "Waiting on face pull to finish...",
+    },
+    Ranged = {
+        approach = 'halfRange',
+        stuckCheck = true,
+        verbose = "Waiting on ranged pull to finish... %s",
+        verboseShowsSuccess = true,
+        action = function(self, attempt)
+            Core.DoCmd("/ranged %d", attempt.targetId)
+        end,
+    },
+    AutoAttack = {
+        approach = 'halfRange',
+        fireBeforeApproach = true,
+        stuckCheck = true,
+        verbose = "Waiting on autoattack pull to finish... %s",
+        verboseShowsSuccess = true,
+        action = function(self, attempt)
+            Core.DoCmd("/attack")
+        end,
+    },
+    Generic = {
+        approach = 'halfRange',
+        feetWetRenav = true,
+        retarget = true,
+        stuckCheck = true,
+        startGraceMs = 500,
+        verbose = "Waiting on ability pull to finish...%s",
+        verboseShowsSuccess = true,
+        action = function(self, attempt)
+            local pullAbility = attempt.ability
+            if pullAbility.Type:lower() == "ability" then
+                if mq.TLO.Me.AbilityReady(pullAbility.id)() then
+                    local abilityName = pullAbility.AbilityName
+                    if type(abilityName) == 'function' then abilityName = abilityName() end
+                    Casting.UseAbility(abilityName)
+                end
+            elseif pullAbility.Type:lower() == "spell" then
+                local abilityName = pullAbility.AbilityName
+                if type(abilityName) == 'function' then abilityName = abilityName() end
+                Casting.UseSpell(abilityName, attempt.targetId, false, false, 0)
+            elseif pullAbility.Type:lower() == "disc" then
+                local abilityName = pullAbility.AbilityName
+                if type(abilityName) == 'function' then abilityName = abilityName() end
+                Casting.UseDisc(mq.TLO.Spell(abilityName), attempt.targetId)
+            elseif pullAbility.Type:lower() == "aa" then
+                local aaName = pullAbility.AbilityName
+                if type(aaName) == 'function' then aaName = aaName() end
+                Casting.UseAA(aaName, attempt.targetId, false, 0)
+            elseif pullAbility.Type:lower() == "item" then
+                local itemName = pullAbility.ItemName
+                if type(itemName) == 'function' then itemName = itemName() end
+                Logger.log_debug("Attempting to pull with Item: %s", itemName)
+                Casting.UseItem(itemName, attempt.targetId)
+            else
+                Logger.log_error("\arInvalid PullAbilityType: %s :: %s", pullAbility.Type, pullAbility.id)
+            end
+        end,
+    },
+}
 
-Module.DefaultConfig                   = {
+local PullStates                    = Module.Constants.PullStates -- hot-path alias for the per-tick state compares
+
+Module.TempSettings.PullState       = PullStates.PULL_IDLE
+Module.TempSettings.PullStateReason = ""
+
+Module.Constants.PullStateHandlers  = {
+    [PullStates.PULL_IDLE]               = 'PreAttemptTick',
+    [PullStates.PULL_WAITING_SHOULDPULL] = 'PreAttemptTick',
+    [PullStates.PULL_GROUPWATCH_WAIT]    = 'PreAttemptTick',
+    [PullStates.PULL_PEERWATCH_WAIT]     = 'PreAttemptTick',
+    [PullStates.PULL_SCAN]               = 'PreAttemptTick',
+    [PullStates.PULL_MOVING_TO_WP]       = 'PreAttemptTick',
+    [PullStates.PULL_NAV_INTERRUPT]      = 'PreAttemptTick',
+    [PullStates.PULL_NAV_TO_TARGET]      = 'NavToTargetTick',
+    [PullStates.PULL_PULLING]            = 'PullingTick',
+    [PullStates.PULL_RETURN_TO_CAMP]     = 'ReturnToCampTick',
+    [PullStates.PULL_WAITING_ON_MOB]     = 'WaitingOnMobTick',
+}
+
+-- Default Config
+Module.DefaultConfig                = {
     -- custom: noshow in options
     ['DoPull']                                 = {
         DisplayName = "Enable Pulling",
@@ -207,20 +357,22 @@ Module.DefaultConfig                   = {
         Default = 1,
         Type = "Custom",
         FAQ = "I don't see an ability that I want to use in the Pull Ability list. How can I add it?",
-        Answer = "Default pull abilities can generally be added by feedback. Alternatively, they can be added via customization of a class config.",
+        Answer = "New default pull abilities can be requested via feedback, or you can add one by customizing a class config.",
     },
     ['PullMode']                               = {
         DisplayName = "Pull Mode",
         Type = "Custom",
-        Default = 1,
-        Min = 1,
-        Max = 4,
+        Default = "PullToCamp",
+        ValidValues = Module.Constants.PullModes,
+        OnChange = function() Modules:ExecModule("Pull", "OnPullModeChanged") end,
         FAQ = "What are the different Pull modes and how do they work?",
         Answer = "You can adjust Pull Modes on the Pull module tab.\n\n" ..
-            "Normal: Attempt to pull single mobs back to a static camp location. Requires a camp to be set.\n\n" ..
-            "Chain: Continuously pull single mobs back to a static camp location until the chain count has been reached. Requires a camp to be set.\n\n" ..
-            "Hunt: Move from target to target within a defined circular area, fighting as you go.\n\n" ..
-            "Farm: Move from waypoint to waypoint, hunting mobs in a defined radius from each.",
+            "Pull to Camp: Attempt to pull single mobs back to a static camp location. Starting pulls camps you where you stand, or at a staged travel destination, unless a camp is already set.\n\n" ..
+            "Chain to Camp: Continuously pull single mobs back to a static camp location until the chain count has been reached. The camp is set the same way as Pull to Camp.\n\n" ..
+            "Area Hunt: Move from target to target within a defined circular area, fighting as you go. Optionally, set a hunt origin to travel to and hunt from.\n\n" ..
+            "Roaming Hunt: Hunt around your current position, drifting as you fight.\n\n" ..
+            "Circuit Hunt: Move between your enabled Pull Locations, hunting mobs in a defined radius from each.\n\n" ..
+            "Fight To: Travel to a chosen target or location, fighting anything that aggros along the way.",
     },
     ['FarmWayPoints']                          = {
         DisplayName = "Farming Waypoints",
@@ -228,8 +380,16 @@ Module.DefaultConfig                   = {
         Tooltip = "",
         Type = "Custom",
         Default = {},
-        FAQ = "How do I use Farm mode for pulling?",
-        Answer = "Farm mode needs to have valid farming waypoints added to move between. You can add points in the Pull module tab.",
+    },
+    ['PullLocations']                          = {
+        DisplayName = "Pull Locations",
+        Category = "",
+        Tooltip = "",
+        Type = "Custom",
+        Default = {},
+        FAQ = "How do I use Circuit Hunt mode for pulling?",
+        Answer =
+        "Circuit Hunt mode needs Pull Locations (waypoints) added to move between. You can add locations in the Pull module tab; the enabled locations, in order, form the circuit.",
     },
     ['PullAllowList']                          = {
         DisplayName = "Allow List",
@@ -241,7 +401,7 @@ Module.DefaultConfig                   = {
         FAQ = "I only want to attack a specific set of mobs in my pull mode, how do I set this up?",
         Answer = "In the Pull Allow List (found on your Pull module tab), you will find a button to add your target to that list.\n\n" ..
             "Alternatively, you can use /rgl pullallow <mobname> or /rgl pullallowrm <mobname> or <List#> to adjust this list from the command line.\n\n" ..
-            "We will still engage mobs that aggro us, regardless of their abscence from this list.",
+            "We will still engage mobs that aggro us, regardless of their absence from this list.",
     },
     ['PullDenyList']                           = {
         DisplayName = "Deny List",
@@ -288,8 +448,8 @@ Module.DefaultConfig                   = {
         Type = "Custom",
         Default = { "poknowledge", "neighborhood", "guildhall", "guildlobby", "bazaar", },
         FAQ = "How do I make it so my puller doesn't pull in certain zones?",
-        Answer = "You can add a zone to the [PullSafeZones] and it will not pull in that zone.\n" ..
-            "This list is found in /config/rgmercs/PCConfigs/Pull_<Server>_<Character>.lua",
+        Answer = "Add the zone to the Pull Safe Zones list with /rgl pullsafezone (no argument adds your current zone; remove with /rgl pullsafezonerm).\n" ..
+            "Pulling will not run in a safe zone.",
     },
     [string.format("%s_Popped", Module._name)] = {
         DisplayName = Module._name .. " Popped",
@@ -315,7 +475,7 @@ Module.DefaultConfig                   = {
         Header = "Pulling",
         Category = "Pull Rules",
         Index = 2,
-        Tooltip = "Farm mode: Wait for x seconds before moving to the next WP. Timer resets if a pull target is found at the current WP.",
+        Tooltip = "Circuit Hunt mode: Wait this many seconds at each Pull Location before moving to the next (pulls made there restart the timer).",
         Default = 0,
         Min = 0,
         Max = 3000,
@@ -326,8 +486,7 @@ Module.DefaultConfig                   = {
         Header = "Pulling",
         Category = "Pull Rules",
         Index = 3,
-        Tooltip =
-        "As the group leader, automatically update MA and Puller group roles when pulling is enabled. We will set ourselves as puller, and attempt to set the assigned RGMercs MA as the group MA.",
+        Tooltip = "As the group leader, automatically update the group's Puller and Main Assist roles when pulling is toggled.",
         Default = true,
     },
     ['PullDebuffed']                           = {
@@ -336,7 +495,7 @@ Module.DefaultConfig                   = {
         Header = "Pulling",
         Category = "Pull Rules",
         Index = 4,
-        Tooltip = "Pull in spite of being debuffed (Not ignored: Rez Sickness, Root.)",
+        Tooltip = "Pull in spite of being debuffed (Rez Sickness and Root always hold pulls).",
         Default = false,
     },
     ['PullMobsInWater']                        = {
@@ -345,7 +504,7 @@ Module.DefaultConfig                   = {
         Header = "Pulling",
         Category = "Pull Rules",
         Index = 5,
-        Tooltip = "Allow pulling mobs that are in water. Check your EB effects if enabled!.",
+        Tooltip = "Allow pulling mobs that are in water.",
         Default = false,
     },
     ['PullBackwards']                          = {
@@ -354,7 +513,7 @@ Module.DefaultConfig                   = {
         Header = "Pulling",
         Category = "Pull Rules",
         Index = 6,
-        Tooltip = "When moving back to camp, back up and continually face your target. (Prevents stuns, etc.)",
+        Tooltip = "When moving back to camp, back up and continually face your target.",
         Default = true,
     },
     ['ChainCount']                             = {
@@ -363,13 +522,13 @@ Module.DefaultConfig                   = {
         Header = "Pulling",
         Category = "Pull Rules",
         Index = 7,
-        Tooltip = "Number of mobs in chain pull mode on xtarg before we stop pulling",
+        Tooltip = "Chain to Camp mode: The number of haters on xtarget before we stop pulling.",
         Default = 3,
-        FAQ = "How do I pull using the Chain mode? What is the Chain Count?",
-        Answer = "Chain mode is intended for a non-tank, non-assist puller to pull a stream of mobs back to a camp, one at a time.\n\n" ..
-            "Once the puller no longer has aggro, it should leave the camp to pull again, until the number of haters on xtarget count matches or exceeds the Chain Count.",
+        FAQ = "How do I pull using the Chain to Camp mode? What is the Chain Count?",
+        Answer = "Chain to Camp mode is intended for a non-tank, non-assist puller to pull a stream of mobs back to a camp, one at a time.\n\n" ..
+            "The puller will keep leaving camp to pull, even during combat, until the number of haters on xtarget matches or exceeds the Chain Count.",
         Min = 1,
-        Max = 100,
+        Max = Globals.XTargetSlots,
     },
     ['PullIgnoreTime']                         = {
         DisplayName = "Ignore Timer",
@@ -393,42 +552,69 @@ Module.DefaultConfig                   = {
         Header = "Pulling",
         Category = "Pull Rules",
         Index = 9,
-        Tooltip = "Disable Pulling once you have died (even if you are rezzed).",
+        Tooltip = "Disable pulling when you die; if unchecked, pulls resume when you return near your camp or the spot you died.",
         Default = true,
         ConfigType = "Advanced",
+        FAQ = "Can pulling resume automatically after I die?",
+        Answer = "Uncheck Stop Pulling After Death. Your camp is kept dormant while you are dead, and pulls resume when you return near your camp or the spot you died.\n\n" ..
+            "Returning anywhere else, or visiting another zone first, drops the camp and pulls stay off.",
+    },
+    ['PullManagePeerMovement']                 = {
+        DisplayName = "Manage Peer Movement",
+        Group = "Movement",
+        Header = "Pulling",
+        Category = "Pull Rules",
+        Index = 10,
+        Tooltip = "Bring your peers along for the selected mode: camping with you, or chasing you for travel and hunt modes.",
+        Default = true,
+        FAQ = "How do I bring my group with me when pulling?",
+        Answer = "Enable Manage Peer Movement and select the scope (Group / Raid or In-Zone).\n\n" ..
+            "Camp modes set the camp for everyone (peers chase you to a travel destination first); travel and hunt modes set peers to chase you.\n\n" ..
+            "RGMercs never turns peer movement back off - that is up to the player.",
+    },
+    ['PullPeerScope']                          = {
+        DisplayName = "Peer Scope",
+        Group = "Movement",
+        Header = "Pulling",
+        Category = "Pull Rules",
+        Index = 11,
+        Tooltip = "Who gets moved: peers in your group / raid, or every peer in the zone.",
+        Type = "Combo",
+        ComboOptions = { "Group / Raid", "In-Zone", },
+        Default = 1,
+        Min = 1,
+        Max = 2,
+    },
+    ['DoPullMoveAbilities']                    = {
+        DisplayName = "Use Movement Buffs",
+        Group = "Movement",
+        Header = "Pulling",
+        Category = "Pull Rules",
+        Index = 12,
+        Tooltip = "Use the pull movement buffs provided by your class config while pulling.",
+        Default = true,
     },
     -- Distance
     ['PullRadius']                             = {
-        DisplayName = "Pull Radius (Camp)",
+        DisplayName = "Camp Pull Radius",
         Group = "Movement",
         Header = "Pulling",
         Category = "Distance",
         Index = 1,
-        Tooltip = "Camp Mode: The distance to scan from your camp for valid pull targets.",
+        Tooltip = "Camp Modes: The distance to scan from your camp for valid pull targets.",
         Default = 350,
         Min = 1,
         Max = 10000,
         OnChange = function(self) Movement.UpdateMapRadii() end,
     },
     ['PullRadiusHunt']                         = {
-        DisplayName = "Pull Radius (Hunt)",
+        DisplayName = "Hunt Radius",
         Group = "Movement",
         Header = "Pulling",
         Category = "Distance",
         Index = 2,
-        Tooltip = "Hunt Mode: The distance to scan from your starting hunt position for valid pull targets.",
+        Tooltip = "The distance to scan for valid pull targets in the Area, Roaming, and Circuit Hunt modes.",
         Default = 500,
-        Min = 1,
-        Max = 10000,
-    },
-    ['PullRadiusFarm']                         = {
-        DisplayName = "Pull Radius (Farm)",
-        Group = "Movement",
-        Header = "Pulling",
-        Category = "Distance",
-        Index = 3,
-        Tooltip = "Farm Mode: The distance to scan from your current farm waypoint for valid pull targets.",
-        Default = 90,
         Min = 1,
         Max = 10000,
     },
@@ -468,15 +654,6 @@ Module.DefaultConfig                   = {
         FAQ = "Why does my puller stop every so often before running again to the same target, or change targets while pulling?",
         Answer = "The puller will periodically reassess targets if navigation has been active for a while to improve efficiency.\n" ..
             "The time period can be adjusted with the Max Move Time setting in the Pulling Distance category.",
-    },
-    ['HuntFromPlayer']                         = {
-        DisplayName = "Hunt from Player",
-        Group = "Movement",
-        Header = "Pulling",
-        Category = "Distance",
-        Index = 7,
-        Tooltip = "Hunt Mode: Reset the starting location to your current location after every pull. In most cases, this will allow zone-wide roaming.",
-        Default = false,
     },
     -- Puller Vitals
     ['PullHPPct']                              = {
@@ -523,10 +700,9 @@ Module.DefaultConfig                   = {
     },
     ['PullBuffCount']                          = {
         DisplayName = "Min Buff Count",
-        CatGroup = "Movement",
+        Group = "Movement",
         Header = "Pulling",
         Category = "Puller Vitals",
-        egory = "Puller",
         Index = 5,
         Tooltip = "The minimum number of buffs in the buff window for a puller to continue to pull (0 disables).",
         Default = 0,
@@ -607,33 +783,22 @@ Module.DefaultConfig                   = {
         ConfigType = "Advanced",
     },
     --Group Vitals
-    ['GroupWatch']                             = {
-        DisplayName = "Enable Group Watch",
+    ['WatchScope']                             = {
+        DisplayName = "Vitals Watch",
         Group = "Movement",
         Header = "Pulling",
         Category = "Peer and Group Vitals",
         Index = 1,
-        Tooltip = "Watch the vitals of group members matching the selected class types.",
-        Default = false,
-        OnChange = function(_, newVal)
-            if newVal == true then
-                Config:SetSetting("PeerWatch", false)
-            end
-        end,
-    },
-    ['PeerWatch']                              = {
-        DisplayName = "Enable Peer Watch",
-        Group = "Movement",
-        Header = "Pulling",
-        Category = "Peer and Group Vitals",
-        Index = 2,
-        Tooltip = "Watch the vitals of RGMercs peers matching the selected class types.",
-        Default = true,
-        OnChange = function(_, newVal)
-            if newVal == true then
-                Config:SetSetting("GroupWatch", false)
-            end
-        end,
+        Tooltip = "Whose vitals hold pulls: Group / Raid watches your group and raid (including non-RGMercs group members); Zone Peers watches every RGMercs box in your zone.",
+        Type = "Combo",
+        ComboOptions = { "Off", "Group / Raid", "Zone Peers", },
+        Default = 2,
+        Min = 1,
+        Max = 3,
+        FAQ = "Can I hold pulls while my group or peers recover their vitals?",
+        Answer = "Set Vitals Watch: Off disables the check, Group / Raid watches your group and raid (including non-RGMercs group members), " ..
+            "and Zone Peers watches every RGMercs box in your zone.\n\n" ..
+            "Pulls hold when a watched member falls below the Pulling Pause % and resume once everyone is above the Pulling Resume %.",
     },
     ['WatchEnd']                               = {
         DisplayName = "Watch Endurance",
@@ -650,7 +815,7 @@ Module.DefaultConfig                   = {
         Header = "Pulling",
         Category = "Peer and Group Vitals",
         Index = 4,
-        Tooltip = "Stop pulls when a watched member's vitals fall under this percent.",
+        Tooltip = "Pause pulls when a watched member's vitals fall under this percent.",
         Default = 40,
         Min = 1,
         Max = 100,
@@ -673,7 +838,7 @@ Module.DefaultConfig                   = {
         Category = "Peer and Group Vitals",
         Index = 6,
         Type = "Custom",
-        Tooltip = "Select which class types to monitor for both Group Watch and Peer Watch.",
+        Tooltip = "Select which classes the Vitals Watch monitors.",
         Default = {},
     },
     ['PullWaitCorpse']                         = {
@@ -691,15 +856,15 @@ Module.DefaultConfig                   = {
         Header = "Pulling",
         Category = "Peer and Group Vitals",
         Index = 11,
-        Tooltip = "If the puller detected a group corpse and held pulls, allow x seconds for the group to rebuff after the corpse is rezzed.\n" ..
-            "**Only respected when \"Hold for Corpses\" is enabled and a corpse was detected by that process!**",
+        Tooltip = "After a corpse detected by Hold for Corpses is rezzed, allow this many seconds for rebuffing before pulls resume.",
         Default = 30,
         Min = 0,
         Max = 90,
     },
 }
 
-Module.CommandHandlers                 = {
+-- Command Handlers
+Module.CommandHandlers              = {
     pulltarget = {
         usage = "/rgl pulltarget",
         about = "Pulls your current target using the currently selected Pull Ability.",
@@ -708,9 +873,97 @@ Module.CommandHandlers                 = {
             return true
         end,
     },
+    pullmode = {
+        usage = "/rgl pullmode <camp|chain|area|roam|circuit|fightto>",
+        about = "Sets the Pull Mode. The full mode names (PullToCamp, AreaHunt, etc) are also accepted.",
+        handler = function(self, mode)
+            local friendlyNames = { camp = "PullToCamp", chain = "ChainToCamp", area = "AreaHunt", roam = "RoamingHunt", circuit = "CircuitHunt", fightto = "FightTo", }
+            local modeArg = tostring(mode or ""):lower()
+            local newMode = friendlyNames[modeArg]
+            if not newMode then
+                for _, modeName in ipairs(self.Constants.PullModes) do
+                    if modeName:lower() == modeArg then newMode = modeName end
+                end
+            end
+            if not newMode then
+                Logger.log_error("/rgl pullmode - '%s' is not a pull mode (use camp, chain, area, roam, circuit or fightto).", tostring(mode))
+                return true
+            end
+            self:SetPullMode(newMode)
+            Logger.log_info("Pull mode set to %s.", self.Constants.PullModeDisplays[Module.PullModeIndex(newMode)])
+            return true
+        end,
+    },
+    pullobj = {
+        usage = "/rgl pullobj [target | id <spawnID> | wp <n|name> | me | <y> <x> [z] | <xy|yx|xyz|yxz> <coords>]",
+        about =
+        "Stages the objective for the current Pull Mode (Fight To target or destination, hunt origin, or camp travel destination) while pulls are stopped. Start pulls with /rgl pullstart.",
+        handler = function(self, ...)
+            if Config:GetSetting('DoPull') then
+                Logger.log_error("Stop pulls before changing the objective.")
+                return true
+            end
+            local pullModeName = Config:GetSetting('PullMode')
+            if pullModeName == "RoamingHunt" or pullModeName == "CircuitHunt" then
+                Logger.log_error("Roaming and Circuit Hunt take no objective - set the circuit position with /rgl pullwp.")
+                return true
+            end
+
+            local args = { ..., }
+            local first = tostring(args[1] or "target"):lower()
+
+            if first == "me" and pullModeName == "FightTo" then
+                Logger.log_error("Fight To - cannot use your own position as the destination!")
+                return true
+            end
+
+            if pullModeName == "FightTo" and (first == "target" or first == "id") then
+                local spawnID = first == "id" and (tonumber(args[2]) or 0) or (mq.TLO.Target.ID() or 0)
+                if not self:SetFightToSpawn(spawnID) then return true end
+            else
+                local loc
+                if first == "wp" then
+                    local entry = self:ResolveLocationEntry(table.concat(args, " ", 2))
+                    if not entry then return true end
+                    loc = { y = entry.y, x = entry.x, z = entry.z, name = entry.name, }
+                elseif first == "me" then
+                    loc = { y = mq.TLO.Me.Y(), x = mq.TLO.Me.X(), z = mq.TLO.Me.Z(), }
+                elseif first == "target" then
+                    if not mq.TLO.Target() then
+                        Logger.log_error("/rgl pullobj - no location given and no valid target exists!")
+                        return true
+                    end
+                    loc = { y = mq.TLO.Target.Y(), x = mq.TLO.Target.X(), z = mq.TLO.Target.Z(), }
+                elseif first == "id" then
+                    local spawn = mq.TLO.Spawn("id " .. (tonumber(args[2]) or 0))
+                    if not spawn() then
+                        Logger.log_error("/rgl pullobj - no spawn with ID %s exists!", tostring(args[2]))
+                        return true
+                    end
+                    loc = { y = spawn.Y(), x = spawn.X(), z = spawn.Z(), }
+                else
+                    local err
+                    loc, err = Module.ParseLocArgs(...)
+                    if not loc then
+                        Logger.log_error("/rgl pullobj - %s", err)
+                        return true
+                    end
+                end
+                if pullModeName == "FightTo" then
+                    if not self:SetFightToLoc(loc) then return true end
+                elseif pullModeName == "AreaHunt" then
+                    if not self:SetHuntOrigin(loc) then return true end
+                else
+                    self:FillLocEntry(loc)
+                end
+            end
+            self.TempSettings.LocEntryMode = pullModeName
+            return true
+        end,
+    },
     pullstart = {
         usage = "/rgl pullstart",
-        about = "Enables pulling in the currently selected Pull Mode.",
+        about = "Enables pulling in the currently selected Pull Mode. Stage any needed objective first with /rgl pullobj.",
         handler = function(self, ...)
             self:StartPuller()
             return true
@@ -718,9 +971,18 @@ Module.CommandHandlers                 = {
     },
     pullstop = {
         usage = "/rgl pullstop",
-        about = "Disables the active Pull Mode.",
+        about = "Disables pulling.",
         handler = function(self, ...)
             self:StopPuller()
+            return true
+        end,
+    },
+    pullpause = {
+        usage = "/rgl pullpause",
+        about = "Toggles pausing pulls. Pull settings (camp, locs, etc) are kept, but no pulls are attempted until unpaused.",
+        handler = function(self, ...)
+            self.TempSettings.PausePulls = not self.TempSettings.PausePulls
+            Logger.log_info(self.TempSettings.PausePulls and "Pulls paused." or "Pulls unpaused.")
             return true
         end,
     },
@@ -796,26 +1058,133 @@ Module.CommandHandlers                 = {
             return true
         end,
     },
-    setwpid = {
-        usage = "/rgl setwpid <id>",
-        about = "Set the current waypoint to <id>.",
-        handler = function(self, id)
-            local wpID = tonumber(id) or 0
-
-            local farmWPs = Config:GetSetting('FarmWayPoints')
-            local zoneWPs = farmWPs[mq.TLO.Zone.ShortName()] or {}
-
-            if wpID > 0 and wpID <= #zoneWPs then
-                self.TempSettings.CurrentWP = wpID
-                Logger.log_info("Current farm waypoint set to %d", wpID)
-            else
-                Logger.log_error("Invalid waypoint ID! Please provide a number between 1 and %d", #zoneWPs)
+    pullsafezone = {
+        usage = "/rgl pullsafezone [zone shortname]",
+        about = "Adds the zone (no argument = your current zone) to the Pull Safe Zones list.",
+        handler = function(self, zone)
+            local zoneName = tostring(zone or mq.TLO.Zone.ShortName() or ""):lower()
+            local safeZones = {}
+            for _, existing in ipairs(Config:GetSetting('PullSafeZones')) do
+                if existing:lower() == zoneName then
+                    Logger.log_info("%s is already in the Pull Safe Zones list.", zoneName)
+                    return true
+                end
+                table.insert(safeZones, existing)
             end
+            table.insert(safeZones, zoneName)
+            Config:SetSetting('PullSafeZones', safeZones)
+            Logger.log_info("Added %s to the Pull Safe Zones list - pulling will not run there.", zoneName)
+            return true
+        end,
+    },
+    pullsafezonerm = {
+        usage = "/rgl pullsafezonerm <zone shortname or List#>",
+        about = "Removes <zone shortname> or <List#> from the Pull Safe Zones list.",
+        handler = function(self, arg1)
+            local currentZones = Config:GetSetting('PullSafeZones')
+            local removeIndex = tonumber(arg1)
+            if removeIndex and not currentZones[removeIndex] then removeIndex = nil end
+            if not removeIndex then
+                local zoneName = tostring(arg1 or ""):lower()
+                for index, existing in ipairs(currentZones) do
+                    if existing:lower() == zoneName then
+                        removeIndex = index
+                        break
+                    end
+                end
+            end
+            if not removeIndex then
+                Logger.log_error("/rgl pullsafezonerm - '%s' does not match a safe zone - use a zone shortname or an index between 1 and %d.", tostring(arg1), #currentZones)
+                return true
+            end
+            local safeZones = {}
+            for index, existing in ipairs(currentZones) do
+                if index ~= removeIndex then table.insert(safeZones, existing) end
+            end
+            Config:SetSetting('PullSafeZones', safeZones)
+            Logger.log_info("Removed %s from the Pull Safe Zones list.", currentZones[removeIndex])
+            return true
+        end,
+    },
+    pullwp = {
+        usage = "/rgl pullwp <n|name>",
+        about = "Sets the circuit's current waypoint to the given pull location; a numeric index counts enabled locations only.",
+        handler = function(self, ...)
+            if #self:GetEnabledLocations() == 0 then
+                Logger.log_error("No enabled pull locations in this zone.")
+                return true
+            end
+            local entry = self:ResolveLocationEntry(table.concat({ ..., }, " "))
+            if not entry then return true end
+            for index, enabledEntry in ipairs(self:GetEnabledLocations()) do
+                if enabledEntry == entry then
+                    self.TempSettings.CurrentWPName = entry.name
+                    self.TempSettings.CurrentWPIndex = index
+                    Logger.log_info("Current pull location set to %s (%d)", entry.name, index)
+                    return true
+                end
+            end
+            Logger.log_error("Pull location %s is disabled - enable it before setting the circuit position to it.", entry.name)
+            return true
+        end,
+    },
+    pulllocadd = {
+        usage = "/rgl pulllocadd [<name>]",
+        about = "Adds your current position to this zone's pull locations, optionally renaming it to <name>.",
+        handler = function(self, ...)
+            self:AddLocationHere()
+            local name = table.concat({ ..., }, " ")
+            if name ~= "" then
+                self:RenameLocation(#self:GetZoneLocations(), name)
+            end
+            return true
+        end,
+    },
+    pulllocrm = {
+        usage = "/rgl pulllocrm <name|idx>",
+        about = "Deletes the given pull location from this zone's list.",
+        handler = function(self, ...)
+            local idx = self:ResolveZoneLocationIndex(table.concat({ ..., }, " "))
+            if not idx then return true end
+            self:DeleteLocation(idx)
+            return true
+        end,
+    },
+    enablepullloc = {
+        usage = "/rgl enablepullloc <name|idx>",
+        about = "Enables the given pull location.",
+        handler = function(self, ...)
+            local idx = self:ResolveZoneLocationIndex(table.concat({ ..., }, " "))
+            if not idx then return true end
+            local entry = self:GetZoneLocations()[idx]
+            if entry.enabled then
+                Logger.log_info("Pull location %s is already enabled.", entry.name)
+                return true
+            end
+            self:ToggleLocation(idx)
+            Logger.log_info("Pull location %s enabled.", entry.name)
+            return true
+        end,
+    },
+    disablepullloc = {
+        usage = "/rgl disablepullloc <name|idx>",
+        about = "Disables the given pull location.",
+        handler = function(self, ...)
+            local idx = self:ResolveZoneLocationIndex(table.concat({ ..., }, " "))
+            if not idx then return true end
+            local entry = self:GetZoneLocations()[idx]
+            if not entry.enabled then
+                Logger.log_info("Pull location %s is already disabled.", entry.name)
+                return true
+            end
+            self:ToggleLocation(idx)
+            Logger.log_info("Pull location %s disabled.", entry.name)
             return true
         end,
     },
 }
 
+-- Setup & Lifecycle
 function Module:New()
     return Base.New(self)
 end
@@ -825,11 +1194,32 @@ function Module:LoadSettings()
 
     -- turn off at startup for safety
     Config:SetSetting('DoPull', false)
+
+    local farmWayPoints = Config:GetSetting('FarmWayPoints') or {}
+    if next(farmWayPoints) ~= nil then
+        local pullLocations = Config:GetSetting('PullLocations') or {}
+        for zoneKey, wayPoints in pairs(farmWayPoints) do
+            if #(pullLocations[zoneKey:lower()] or {}) == 0 then
+                local zoneLocations = {}
+                for index, wayPoint in ipairs(wayPoints) do
+                    if type(wayPoint.y) == "number" and type(wayPoint.x) == "number" and type(wayPoint.z) == "number" then
+                        table.insert(zoneLocations, { name = string.format("Location %d", #zoneLocations + 1), y = wayPoint.y, x = wayPoint.x, z = wayPoint.z, enabled = true, })
+                    else
+                        Logger.log_info("Skipping farm waypoint %d in %s - invalid coordinates.", index, zoneKey)
+                    end
+                end
+                pullLocations[zoneKey:lower()] = zoneLocations
+            end
+        end
+        Config:SetSetting('PullLocations', pullLocations)
+        Config:SetSetting('FarmWayPoints', {})
+    end
 end
 
+-- Pull Abilities
 ---@param id number
 ---@return string
-function Module:getPullAbilityDisplayName(id)
+function Module:GetPullAbilityDisplayName(id)
     local entry = self.TempSettings.ValidPullAbilities[id]
     if not entry then return "Error" end
     local displayName = entry.DisplayName
@@ -864,13 +1254,275 @@ function Module:SetValidPullAbilities()
     end
 
     self.TempSettings.ValidPullAbilities = tmpValidPullAbilities
-    PullAbilityIDToName = tmpPullAbilityIDToName
+    self.TempSettings.PullAbilityIDToName = tmpPullAbilityIDToName
+end
+
+function Module:GetPullAbilityRange()
+    if not self.ModuleLoaded then return 0 end
+    local pullAbility = self.TempSettings.ValidPullAbilities[Config:GetSetting('PullAbility')]
+    if not pullAbility then return 0 end
+
+    local ret = pullAbility.AbilityRange
+    if type(ret) == 'function' then ret = ret() end
+    return ret
 end
 
 function Module:OnCombatModeChanged()
     self:SetValidPullAbilities()
+    self:RebuildMoveAbilities()
 end
 
+-- Pull Move Abilities
+function Module:RebuildMoveAbilities()
+    local moveAbilities = {}
+    for _, entry in ipairs(Entries.FilterLoaded(Modules:ExecModule("Class", "GetPullMoveAbilities"))) do
+        local entryType = (entry.type or ""):lower()
+        if type(entry.name) == "string" and (entryType == "aa" or entryType == "item" or entryType == "song") then
+            table.insert(moveAbilities, entry)
+        else
+            Logger.log_error("\arInvalid PullMoveAbility entry: %s :: %s", tostring(entry.type), tostring(entry.name))
+        end
+    end
+    self.TempSettings.PullMoveAbilities = moveAbilities
+end
+
+function Module:GetMoveAbilities()
+    if not self.TempSettings.PullMoveAbilities then self:RebuildMoveAbilities() end
+    return self.TempSettings.PullMoveAbilities
+end
+
+function Module:CheckMoveAbilities(force)
+    if not Config:GetSetting('DoPullMoveAbilities') then return end
+    if not force and Globals.GetTimeSeconds() - self.TempSettings.LastMoveAbilityCheck < 5 then return end
+
+    self.TempSettings.LastMoveAbilityCheck = Globals.GetTimeSeconds()
+    for _, entry in ipairs(self:GetMoveAbilities()) do
+        local entryType = (entry.type or ""):lower()
+        local resolved = Core.GetResolvedActionMapItem(entry.name) or entry.name
+        local abilityName = type(resolved) == "string" and resolved or entry.name
+        if entryType == "song" and type(resolved) == "string" then resolved = mq.TLO.Spell(resolved) end
+        local ready
+        if entryType == "aa" then
+            ready = Casting.AAReady(abilityName)
+        elseif entryType == "item" then
+            ready = Casting.ItemReady(abilityName)
+        else
+            ready = Casting.SongReady(resolved)
+        end
+        if ready and (not entry.cond or Core.SafeCallFunc("Checking Pull Move Ability Condition", entry.cond, self, resolved)) then
+            if entryType == "aa" then
+                Core.DoCmd("/alt act %d", mq.TLO.Me.AltAbility(abilityName).ID())
+            elseif entryType == "item" then
+                Core.DoCmd('/useitem "%s"', abilityName)
+            else
+                Core.DoCmd('/cast "=%s"', resolved.RankName())
+            end
+        end
+    end
+end
+
+-- Mode Policy
+function Module.PullModeIndex(name)
+    for index, modeName in ipairs(Module.Constants.PullModes) do
+        if modeName == name then return index end
+    end
+    return 1
+end
+
+function Module:GetModePolicy()
+    return Module.Constants.PullModePolicies[Config:GetSetting('PullMode')]
+end
+
+function Module:SetPullMode(newMode)
+    Config:SetSetting('PullMode', newMode)
+end
+
+---@param mode string
+---@return boolean
+function Module:IsPullMode(mode)
+    return Config:GetSetting('PullMode') == mode
+end
+
+function Module:OnPullModeChanged()
+    if self:GetModePolicy().family ~= 'camp' and (self.TempSettings.EscortScopeWord or self.TempSettings.CampTravelLoc) then
+        self:ClearEscortState()
+        self.TempSettings.CampTravelLoc = nil
+        self.TempSettings.Travel = nil
+        if mq.TLO.Navigation.Active() then Movement:DoNav(false, "stop log=off") end
+    end
+end
+
+-- Pure Decision Helpers (unit-tested)
+function Module.PullSuccessCheck(successCheck, xtHaterCount, chainCount)
+    if successCheck == 'chainCount' then return xtHaterCount >= chainCount end
+    return xtHaterCount > 0
+end
+
+function Module.DecideUserAbort(abortCtx, source)
+    if abortCtx.pausePulls then return 'paused' end
+    if abortCtx.pullListUpdated then return 'listUpdated' end
+    if abortCtx.abortPull then return 'userAbort' end
+    if (not abortCtx.doPull and source ~= 'manual') or abortCtx.pauseMain then return 'disabled' end
+    return nil
+end
+
+function Module.DecideAbort(attempt, abortCtx)
+    local userReason = Module.DecideUserAbort(abortCtx, attempt.source)
+    if userReason then return userReason end
+    if abortCtx.spawnGone then return 'spawnGone' end
+
+    if attempt.source == 'objective' then
+        if abortCtx.safeTargeting and abortCtx.fightingStranger then return 'stranger' end
+        if abortCtx.graceExpired then return 'unreachable' end
+        if not abortCtx.navigating and abortCtx.timedOut then return 'objectiveTimeout' end
+    elseif attempt.source == 'scan' then
+        if abortCtx.distance > abortCtx.maxPathRange then return 'tooFar' end
+        if not abortCtx.pathExists then return 'noPath' end
+        if abortCtx.safeTargeting and abortCtx.fightingStranger then return 'stranger' end
+        if not abortCtx.navigating and abortCtx.timedOut then return 'timeout' end
+    elseif attempt.source == 'manual' then
+        if not abortCtx.navigating and abortCtx.timedOut then return 'manualTimeout' end
+    end
+
+    return nil
+end
+
+function Module.BuildIntentSentence(params)
+    local scope = params.scope or 1
+    local canStart = true
+    local gapReason = nil
+    local text = nil
+
+    local scopeWord = params.scopeWord or (scope == 2 and "in-zone" or "group / raid")
+    local pre = params.breakCamp and "I'll break my camp, " or "I'll "
+    if params.manageMovement then
+        pre = pre .. string.format("set my %s peers to chase me, ", scopeWord)
+    end
+    local joiner = (params.breakCamp or params.manageMovement) and "then " or ""
+
+    if params.mode == "PullToCamp" or params.mode == "ChainToCamp" then
+        local action = params.mode == "ChainToCamp" and "chain-pull to camp" or "pull to camp"
+        if params.locationSet then
+            if params.manageMovement then
+                text = pre .. string.format("travel to %s, set camp for everyone on arrival, then %s.", Module.FormatLoc(params.loc), action)
+            else
+                text = pre .. string.format("travel to %s, set camp for myself, then %s.", Module.FormatLoc(params.loc), action)
+            end
+        else
+            if params.existingCamp then
+                text = string.format("I'll %s to my existing camp.", params.mode == "ChainToCamp" and "chain-pull" or "pull")
+            elseif params.manageMovement then
+                text = string.format("I'll set camp for myself and my %s peers here, then %s.", scopeWord, action)
+            else
+                text = string.format("I'll set camp for myself here, then %s.", action)
+            end
+        end
+    elseif params.mode == "AreaHunt" then
+        if params.locationSet then
+            text = pre .. string.format("travel to %s, then hunt the area.", Module.FormatLoc(params.loc))
+        else
+            text = pre .. joiner .. "hunt the area from my present position."
+        end
+    elseif params.mode == "RoamingHunt" then
+        text = pre .. joiner .. "roam and hunt from my present position."
+    elseif params.mode == "CircuitHunt" then
+        if params.hasWaypoints then
+            local count = params.waypointCount or 0
+            text = pre .. joiner .. string.format("run a circuit of the %d enabled Pull %s below.", count, count == 1 and "Location" or "Locations")
+        else
+            canStart = false
+            gapReason = "Add an enabled pull location to run a circuit."
+            text = gapReason
+        end
+    elseif params.mode == "FightTo" then
+        if params.fightToKind == "spawn" then
+            text = pre .. joiner .. string.format("fight my way to %s and engage it.", params.fightToName or "")
+        elseif params.fightToKind == "loc" then
+            text = pre .. joiner .. string.format("fight my way to %s.", Module.FormatLoc(params.loc))
+        else
+            canStart = false
+            gapReason = "Set a Fight To target first."
+            text = gapReason
+        end
+    end
+
+    text = (text or ""):gsub("^%l", string.upper)
+    if text:sub(-1) ~= "." then text = text .. "." end
+
+    return { text = text, canStart = canStart, gapReason = gapReason, }
+end
+
+function Module.ParseLocArgs(...)
+    local args = { ..., }
+    if #args == 0 then return nil, "no coordinates given" end
+    for i = 1, #args do args[i] = (tostring(args[i]):gsub(",", "")) end
+
+    local order = "yx"
+    local coordStart = 1
+    if not tonumber(args[1]) then
+        order = tostring(args[1]):lower():gsub("^loc", "")
+        coordStart = 2
+        if not ({ xy = true, yx = true, xyz = true, yxz = true, })[order] then
+            return nil, string.format("'%s' is not a valid coordinate order (use xy, yx, xyz or yxz)", tostring(args[1]))
+        end
+    elseif #args >= 3 then
+        order = "yxz"
+    end
+
+    local coords = {}
+    for i = coordStart, #args do
+        local value = tonumber(args[i])
+        if not value then return nil, string.format("'%s' is not a number", tostring(args[i])) end
+        table.insert(coords, value)
+    end
+    if #coords ~= #order then
+        return nil, string.format("expected %d coordinates for '%s', got %d", #order, order, #coords)
+    end
+
+    local loc = {}
+    for i = 1, #order do
+        loc[order:sub(i, i)] = coords[i]
+    end
+    return loc
+end
+
+-- Pull State Accessors
+---@param state number
+---@param reason string
+function Module:SetPullState(state, reason)
+    self.TempSettings.PullState = state
+    self.TempSettings.PullStateReason = reason
+end
+
+---@param state string
+---@return boolean
+function Module:IsPullState(state)
+    return self.TempSettings.PullState == PullStates[state]
+end
+
+---@return boolean
+function Module:IsActivelyPulling()
+    local pullState = self.TempSettings.PullState
+    return pullState ~= PullStates.PULL_IDLE and pullState ~= PullStates.PULL_GROUPWATCH_WAIT and pullState ~= PullStates.PULL_PEERWATCH_WAIT
+end
+
+---True while the puller is committed to a pull attempt or a travel leg (not just idle/waiting/scanning).
+---@return boolean
+function Module:IsBusyPulling()
+    local pullState = self.TempSettings.PullState
+    return pullState == PullStates.PULL_MOVING_TO_WP
+        or pullState == PullStates.PULL_NAV_INTERRUPT
+        or pullState == PullStates.PULL_NAV_TO_TARGET
+        or pullState == PullStates.PULL_PULLING
+        or pullState == PullStates.PULL_RETURN_TO_CAMP
+        or pullState == PullStates.PULL_WAITING_ON_MOB
+end
+
+function Module:GetPullStateTargetInfo()
+    return string.format("%s(%d) Dist(%d)", Targeting.GetTargetCleanName(), Targeting.GetTargetID(), Targeting.GetTargetDistance())
+end
+
+-- Render / UI
 function Module:RenderMobList(displayName, settingName)
     if ImGui.CollapsingHeader(string.format("Pull %s", displayName)) then
         local invalidTarget = not (mq.TLO.Target() and Targeting.TargetIsType("NPC"))
@@ -909,17 +1561,17 @@ function Module:RenderMobList(displayName, settingName)
     end
 end
 
-function Module:RenderPullTargets()
-    if ImGui.BeginTable("PullTargets", 5, bit32.bor(ImGuiTableFlags.Resizable, ImGuiTableFlags.Borders)) then
+function Module:RenderTargetTable(tableId, targets)
+    if ImGui.BeginTable(tableId, 5, bit32.bor(ImGuiTableFlags.Resizable, ImGuiTableFlags.Borders)) then
         ImGui.TableSetupColumn('Index', (ImGuiTableColumnFlags.WidthFixed), 20.0)
-        ImGui.TableSetupColumn('Name', (ImGuiTableColumnFlags.WidthFixed), 250.0)
+        ImGui.TableSetupColumn('Name', (ImGuiTableColumnFlags.WidthStretch), 250.0)
         ImGui.TableSetupColumn('Level', (ImGuiTableColumnFlags.WidthFixed), 60.0)
         ImGui.TableSetupColumn('Distance', (ImGuiTableColumnFlags.WidthFixed), 60.0)
         ImGui.TableSetupColumn('Loc', (ImGuiTableColumnFlags.WidthFixed), 160.0)
         ImGui.TableHeadersRow()
 
-        for idx, spawn in ipairs(self.TempSettings.PullTargets) do
-            if spawn.ID() > 0 then
+        for idx, spawn in ipairs(targets) do
+            if (spawn.ID() or 0) > 0 then
                 ImGui.TableNextColumn()
                 Ui.RenderText("%d", idx)
                 ImGui.TableNextColumn()
@@ -943,6 +1595,10 @@ function Module:RenderPullTargets()
 
         ImGui.EndTable()
     end
+end
+
+function Module:RenderPullTargets()
+    self:RenderTargetTable("PullTargets", self.TempSettings.PullTargets)
 end
 
 function Module:RenderIgnoreTargets()
@@ -951,43 +1607,189 @@ function Module:RenderIgnoreTargets()
         self:ClearIgnoreList()
     end
     ImGui.PopID()
-    if ImGui.BeginTable("PullIgnoreTargets", 5, bit32.bor(ImGuiTableFlags.Resizable, ImGuiTableFlags.Borders)) then
-        ImGui.TableSetupColumn('Index', (ImGuiTableColumnFlags.WidthFixed), 20.0)
-        ImGui.TableSetupColumn('Name', (ImGuiTableColumnFlags.None), 250.0)
-        ImGui.TableSetupColumn('Level', (ImGuiTableColumnFlags.WidthFixed), 60.0)
-        ImGui.TableSetupColumn('Distance', (ImGuiTableColumnFlags.WidthFixed), 60.0)
-        ImGui.TableSetupColumn('Loc', (ImGuiTableColumnFlags.WidthFixed), 160.0)
-        ImGui.TableHeadersRow()
+    self:RenderTargetTable("PullIgnoreTargets", self.TempSettings.PullIgnoreTargets)
+end
 
-        for idx, spawn in ipairs(self.TempSettings.PullIgnoreTargets) do
-            if spawn.ID() > 0 then
-                ImGui.TableNextColumn()
-                Ui.RenderText("%d", idx)
-                ImGui.TableNextColumn()
-                ImGui.PushStyleColor(ImGuiCol.Text, Ui.GetConColorBySpawn(spawn))
-                ImGui.PushID(string.format("##select_pull_npc_%d", idx))
-                local _, clicked = ImGui.Selectable(spawn.CleanName() or "Unknown")
-                if clicked then
-                    Logger.log_debug("Targeting: %d", spawn.ID() or 0)
-                    spawn.DoTarget()
-                end
-                ImGui.PopID()
-                ImGui.TableNextColumn()
-                Ui.RenderText("%d", spawn.Level() or 0)
-                ImGui.PopStyleColor()
-                ImGui.TableNextColumn()
-                Ui.RenderText("%0.2f", spawn.Distance() or 0)
-                ImGui.TableNextColumn()
-                Ui.NavEnabledLoc(spawn.LocYXZ() or "0,0,0")
+function Module:RenderObjectiveRow(pullModeName)
+    if self.TempSettings.LocEntryMode ~= pullModeName then
+        local previousMode = self.TempSettings.LocEntryMode
+        self.TempSettings.LocEntryMode = pullModeName
+        local withinCampFamily = previousMode and Module.Constants.PullModePolicies[previousMode] and Module.Constants.PullModePolicies[previousMode].family == 'camp' and
+            Module.Constants.PullModePolicies[pullModeName].family == 'camp'
+        if not withinCampFamily then
+            local storedLoc = nil
+            if pullModeName == "AreaHunt" then
+                storedLoc = self.TempSettings.HuntOrigin
+            elseif pullModeName == "FightTo" and self.TempSettings.FightTo and not self.TempSettings.FightTo.id then
+                storedLoc = self.TempSettings.FightTo
+            end
+            if storedLoc then
+                self:FillLocEntry(storedLoc)
+            else
+                self.TempSettings.LocEntryY, self.TempSettings.LocEntryX, self.TempSettings.LocEntryZ = "", "", ""
             end
         end
+    end
 
-        ImGui.EndTable()
+    local locked = Config:GetSetting('DoPull')
+    local objectiveWord = "camp travel destination"
+    if pullModeName == "AreaHunt" then
+        objectiveWord = "hunt origin"
+    elseif pullModeName == "FightTo" then
+        objectiveWord = "Fight To destination"
+    end
+    ImGui.BeginDisabled(locked)
+    if pullModeName == "FightTo" then
+        ImGui.BeginDisabled(not (mq.TLO.Target() and Targeting.TargetIsType("NPC")))
+        ImGui.PushID("##_small_btn_myloc_" .. pullModeName)
+        if ImGui.Button("Use My Target") then
+            self:SetFightToSpawn(mq.TLO.Target.ID() or 0)
+        end
+        Ui.Tooltip("Fight to your current target and engage it.")
+        ImGui.PopID()
+        ImGui.EndDisabled()
+    else
+        ImGui.PushID("##_small_btn_myloc_" .. pullModeName)
+        if ImGui.Button("Use My Loc") then
+            local loc = { y = mq.TLO.Me.Y(), x = mq.TLO.Me.X(), z = mq.TLO.Me.Z(), }
+            if pullModeName == "AreaHunt" then
+                self:SetHuntOrigin(loc)
+            else
+                self:FillLocEntry(loc)
+            end
+        end
+        Ui.Tooltip(string.format("Use your current position as the %s.", objectiveWord))
+        ImGui.PopID()
+    end
+    ImGui.SameLine()
+    ImGui.BeginDisabled(not mq.TLO.Target())
+    ImGui.PushID("##_small_btn_targetloc_" .. pullModeName)
+    if ImGui.Button("Use Target's Loc") then
+        local loc = { y = mq.TLO.Target.Y(), x = mq.TLO.Target.X(), z = mq.TLO.Target.Z(), }
+        if pullModeName == "FightTo" then
+            self:SetFightToLoc(loc)
+        elseif pullModeName == "AreaHunt" then
+            self:SetHuntOrigin(loc)
+        else
+            self:FillLocEntry(loc)
+        end
+    end
+    Ui.Tooltip(string.format("Use your target's position as the %s.", objectiveWord))
+    ImGui.PopID()
+    ImGui.EndDisabled()
+    ImGui.SameLine()
+    ImGui.AlignTextToFramePadding()
+    Ui.RenderText("Y")
+    ImGui.SameLine()
+    ImGui.SetNextItemWidth(60)
+    self.TempSettings.LocEntryY = ImGui.InputText("##PullLocEntryY", self.TempSettings.LocEntryY)
+    ImGui.SameLine()
+    ImGui.AlignTextToFramePadding()
+    Ui.RenderText("X")
+    ImGui.SameLine()
+    ImGui.SetNextItemWidth(60)
+    self.TempSettings.LocEntryX = ImGui.InputText("##PullLocEntryX", self.TempSettings.LocEntryX)
+    ImGui.SameLine()
+    ImGui.AlignTextToFramePadding()
+    Ui.RenderText("Z")
+    ImGui.SameLine()
+    ImGui.SetNextItemWidth(60)
+    self.TempSettings.LocEntryZ = ImGui.InputText("##PullLocEntryZ", self.TempSettings.LocEntryZ)
+    Ui.Tooltip("Z is optional but should be provided in multi-level zones.")
+    ImGui.SameLine()
+    ImGui.PushID("##_small_btn_setloc_" .. pullModeName)
+    if ImGui.Button("Use This Loc") then
+        self:CommitLocEntry()
+    end
+    Ui.Tooltip(string.format("Use the typed coordinates as the %s.", objectiveWord))
+    ImGui.PopID()
+    ImGui.EndDisabled()
+end
+
+function Module:RenderLoc(loc)
+    if loc.z then
+        Ui.NavEnabledLoc(Module.FormatLoc(loc))
+    else
+        Ui.RenderText(Module.FormatLoc(loc))
     end
 end
 
-function Module:ShouldRender()
-    return true
+function Module:RenderNamedLoc(loc)
+    if not loc.name then return self:RenderLoc(loc) end
+    local coords = Module.FormatLoc(loc)
+    if loc.z then
+        Ui.NavEnabledLoc(string.format("%s (%s)", loc.name, coords), coords)
+    else
+        Ui.RenderText(string.format("%s (%s)", loc.name, coords))
+    end
+end
+
+function Module:RenderWatchCombo()
+    local watchScope = Config:GetSetting('WatchScope')
+    if watchScope == 1 then return end
+
+    local watchedClasses = Config:GetSetting('WatchClasses') or {}
+    local watchSet       = Set.new(watchedClasses)
+    local label          = next(watchedClasses) and table.concat(watchedClasses, ", ") or "None"
+
+    ImGui.Text("Watched Classes:")
+    if ImGui.BeginCombo("##WatchClasses", label) then
+        for _, class in ipairs(Globals.Constants.AllClasses) do
+            local selected    = watchSet:contains(class)
+            local newSelected = ImGui.Checkbox(class, selected)
+            if newSelected ~= selected then
+                if newSelected then watchSet:add(class) else watchSet:remove(class) end
+                Config:SetSetting('WatchClasses', watchSet:toList())
+            end
+        end
+        ImGui.EndCombo()
+    end
+
+    if not next(watchedClasses) then return end
+
+    ImGui.Spacing()
+    local items = {}
+    if watchScope == 3 then
+        for _, peer in ipairs(Comms.GetZonePeers(false)) do
+            local data = peer.data
+            if watchSet:contains(data.Class) then
+                local name        = data.Name or "?"
+                local hp          = data.HPs and string.format("%d%%", data.HPs) or "?"
+                local mana        = data.Mana and string.format("%d%%", data.Mana) or "-"
+                local endu        = data.Endurance and string.format("%d%%", data.Endurance) or "-"
+                items[#items + 1] = string.format("[%s] %s  HP:%s  Mana:%s  End:%s", data.Class, name, hp, mana, endu)
+            end
+        end
+        if #items == 0 then items[1] = "No matching peers online" end
+    else
+        local scopedPeers = self:GroupOrRaidPeers(false)
+        local peerNames   = {}
+        for _, peer in ipairs(scopedPeers) do
+            peerNames[peer.name] = true
+            local data = peer.data
+            if watchSet:contains(data.Class) then
+                local name        = data.Name or "?"
+                local hp          = data.HPs and string.format("%d%%", data.HPs) or "?"
+                local mana        = data.Mana and string.format("%d%%", data.Mana) or "-"
+                local endu        = data.Endurance and string.format("%d%%", data.Endurance) or "-"
+                items[#items + 1] = string.format("[%s] %s  HP:%s  Mana:%s  End:%s", data.Class, name, hp, mana, endu)
+            end
+        end
+        local groupCount = mq.TLO.Group.Members() or 0
+        for i = 1, groupCount do
+            local member = mq.TLO.Group.Member(i)
+            if member() and member.ID() > 0 and not peerNames[member.Name() or ""] and watchSet:contains(member.Class.ShortName() or "") then
+                local name        = member.CleanName() or "?"
+                local hp          = string.format("%d%%", member.PctHPs() or 0)
+                local mana        = member.Class.CanCast() and string.format("%d%%", member.PctMana() or 0) or "-"
+                local endu        = string.format("%d%%", member.PctEndurance() or 0)
+                items[#items + 1] = string.format("[%s] %s  HP:%s  Mana:%s  End:%s", member.Class.ShortName(), name, hp, mana, endu)
+            end
+        end
+        if #items == 0 then items[1] = "No matching group / raid members" end
+    end
+    local selected = 0
+    ImGui.ListBox("##WatchList", selected, items, #items, math.max(2, #items))
 end
 
 function Module:Render()
@@ -999,6 +1801,7 @@ function Module:Render()
     if mq.TLO.Me.Hovering() then return end
 
     if self.ModuleLoaded and Globals.SubmodulesLoaded then
+        local intent = self:CurrentIntent()
         if ImGui.BeginTable("PullControls", 3, bit32.bor(ImGuiTableFlags.NoBordersInBody), ImVec2(ImGui.GetWindowWidth() - (controlPadding + 20), 0)) then
             if mq.TLO.Navigation.MeshLoaded() then
                 ImGui.TableNextColumn()
@@ -1007,9 +1810,18 @@ function Module:Render()
                 else
                     ImGui.PushStyleColor(ImGuiCol.Button, Globals.Constants.Colors.ConditionPassColor)
                 end
+                local startGated = not Config:GetSetting('DoPull') and not intent.canStart
+                ImGui.BeginDisabled(startGated)
                 if ImGui.Button(Config:GetSetting('DoPull') and "Stop Pulls" or "Start Pulls", -1, 25) then
-                    Config:SetSetting('DoPull', not Config:GetSetting('DoPull'))
-                    Module:SetRoles()
+                    if Config:GetSetting('DoPull') then
+                        self:StopPuller()
+                    else
+                        self:StartPuller()
+                    end
+                end
+                ImGui.EndDisabled()
+                if startGated and ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled) then
+                    ImGui.SetTooltip(intent.gapReason or "No objective set - set a target or location below.")
                 end
                 ImGui.PopStyleColor()
                 ImGui.TableNextColumn()
@@ -1037,49 +1849,286 @@ function Module:Render()
                 ImGui.TableNextRow()
             end
 
-            local campData = Modules:ExecModule("Movement", "GetCampData")
-
-            --            ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, ImGui.GetStyle().FramePadding.x, 0)
-            ImGui.TableNextColumn()
-            if campData.returnToCamp then
-                if ImGui.Button("Break Group Camp", -1, 18) then
-                    Core.DoGroupOrRaidCmd("/rgl campoff")
-                end
-            else
-                if ImGui.Button("Set Group Camp Here", -1, 18) then
-                    Core.DoGroupOrRaidCmd("/rgl campon")
-                end
-            end
-            ImGui.TableNextColumn()
-            if campData.returnToCamp then
-                if ImGui.Button("Break My Camp", -1, 18) then
-                    Core.DoCmd("/rgl campoff")
-                end
-            else
-                if ImGui.Button("Set My Camp Here", -1, 18) then
-                    Core.DoCmd("/rgl campon")
-                end
-            end
-            --ImGui.PopStyleVar(1)
             ImGui.EndTable()
         end
 
-        local pullMode = Config:GetSetting('PullMode')
-        pullMode, pressed = ImGui.Combo("Pull Mode", pullMode, self.Constants.PullModes, #self.Constants.PullModes)
-        if pressed then
-            Config:SetSetting('PullMode', pullMode)
-        end
-        if ImGui.IsItemHovered() then
-            Ui.Tooltip("Please refer to the in-game FAQ for a description of Pull Modes.")
-        end
+        local pullModeName = Config:GetSetting('PullMode')
+        local isCampMode = pullModeName == "PullToCamp" or pullModeName == "ChainToCamp"
+
         if #self.TempSettings.ValidPullAbilities > 0 then
             local pullAbility = Config:GetSetting('PullAbility')
             if not self.TempSettings.ValidPullAbilities[pullAbility] then pullAbility = 1 end
-            pullAbility, pressed = ImGui.Combo("Pull Ability", pullAbility, function(id) return self:getPullAbilityDisplayName(id) end,
+            ImGui.SetNextItemWidth(ImGui.GetWindowWidth() * 0.5)
+            pullAbility, pressed = ImGui.Combo("Pull Ability", pullAbility, function(id) return self:GetPullAbilityDisplayName(id) end,
                 #self.TempSettings.ValidPullAbilities) --, self.TempSettings.ValidPullAbilities, #self.TempSettings.ValidPullAbilities)
             if pressed then
                 Config:SetSetting('PullAbility', pullAbility)
             end
+        end
+
+        local pullMode = Module.PullModeIndex(Config:GetSetting('PullMode'))
+        ImGui.SetNextItemWidth(ImGui.GetWindowWidth() * 0.5)
+        pullMode, pressed = ImGui.Combo("Pull Mode", pullMode, self.Constants.PullModeDisplays, #self.Constants.PullModeDisplays)
+        if pressed then
+            self:SetPullMode(self.Constants.PullModes[pullMode])
+        end
+        if ImGui.IsItemHovered() then
+            Ui.Tooltip("Please refer to the in-game FAQ for a description of Pull Modes.")
+        end
+
+        ImGui.Spacing()
+        if intent.canStart then
+            Ui.RenderText(intent.text)
+        else
+            Ui.RenderColoredText(Globals.Constants.Colors.ConditionMidColor, intent.text)
+        end
+        ImGui.Separator()
+
+        if ImGui.CollapsingHeader("Objective Setup", ImGuiTreeNodeFlags.DefaultOpen) then
+            if isCampMode or pullModeName == "AreaHunt" or pullModeName == "FightTo" then
+                self:RenderObjectiveRow(pullModeName)
+            end
+
+            local manageMovement = Config:GetSetting('PullManagePeerMovement')
+            local newManage = ImGui.Checkbox("Manage movement for my", manageMovement)
+            if newManage ~= manageMovement then
+                Config:SetSetting('PullManagePeerMovement', newManage)
+            end
+            Ui.Tooltip(self.DefaultConfig['PullManagePeerMovement'].Tooltip)
+            ImGui.SameLine()
+            ImGui.BeginDisabled(not manageMovement)
+            local scopeOptions = self.DefaultConfig['PullPeerScope'].ComboOptions
+            local scopeWidth = 0
+            for _, option in ipairs(scopeOptions) do
+                local optionWidth = ImGui.CalcTextSize(option)
+                scopeWidth = math.max(scopeWidth, optionWidth)
+            end
+            ImGui.SetNextItemWidth(scopeWidth + ImGui.GetStyle().FramePadding.x * 2 + ImGui.GetFrameHeight())
+            local newScope, scopePressed = ImGui.Combo("##PullPeerScope", Config:GetSetting('PullPeerScope'), scopeOptions, #scopeOptions)
+            if scopePressed then
+                Config:SetSetting('PullPeerScope', newScope)
+            end
+            Ui.Tooltip(self.DefaultConfig['PullPeerScope'].Tooltip)
+            ImGui.EndDisabled()
+            ImGui.SameLine()
+            ImGui.AlignTextToFramePadding()
+            Ui.RenderText("Peers.")
+        end
+
+        if ImGui.CollapsingHeader("Pull Locations") then
+            self:ProcessDeleteLocations()
+            local locked = Config:GetSetting('DoPull')
+            ImGui.PushID("##_small_btn_add_loc_here")
+            if ImGui.SmallButton("Add Current Loc") then
+                self:AddLocationHere()
+            end
+            ImGui.PopID()
+            ImGui.SameLine()
+            ImGui.BeginDisabled(not mq.TLO.Target())
+            ImGui.PushID("##_small_btn_add_loc_target")
+            if ImGui.SmallButton("Add Target's Loc") then
+                self:AddLocationFromTarget()
+            end
+            ImGui.PopID()
+            ImGui.EndDisabled()
+            ImGui.SameLine()
+            ImGui.PushID("##_small_btn_load_mypaths")
+            if ImGui.SmallButton("Load MyPaths") then
+                self:LoadMyPathsFile()
+            end
+            ImGui.PopID()
+            Ui.Tooltip("Pick pull locations from points recorded in MyPaths.")
+
+            if self.TempSettings.MyPathsData then
+                ImGui.AlignTextToFramePadding()
+                Ui.RenderText("Import points from")
+                ImGui.SameLine()
+                local zoneWidth = 0
+                for _, zoneName in ipairs(self.TempSettings.MyPathsZones) do
+                    local nameWidth = ImGui.CalcTextSize(zoneName)
+                    zoneWidth = math.max(zoneWidth, nameWidth)
+                end
+                ImGui.SetNextItemWidth(zoneWidth + ImGui.GetStyle().FramePadding.x * 2 + ImGui.GetFrameHeight())
+                local newZone, zonePressed = ImGui.Combo("##MyPathsZone", self.TempSettings.MyPathsZoneIndex, self.TempSettings.MyPathsZones, #self.TempSettings.MyPathsZones)
+                if zonePressed and newZone ~= self.TempSettings.MyPathsZoneIndex then
+                    self:SelectMyPathsZone(newZone)
+                end
+                ImGui.SameLine()
+                if #self.TempSettings.MyPathsPathNames == 0 then
+                    ImGui.AlignTextToFramePadding()
+                    Ui.RenderText("(no paths in this zone)")
+                else
+                    local pathWidth = 0
+                    for _, pathName in ipairs(self.TempSettings.MyPathsPathNames) do
+                        local nameWidth = ImGui.CalcTextSize(pathName)
+                        pathWidth = math.max(pathWidth, nameWidth)
+                    end
+                    ImGui.SetNextItemWidth(pathWidth + ImGui.GetStyle().FramePadding.x * 2 + ImGui.GetFrameHeight())
+                    local newPath, pathPressed = ImGui.Combo("##MyPathsPath", self.TempSettings.MyPathsPathIndex, self.TempSettings.MyPathsPathNames,
+                        #self.TempSettings.MyPathsPathNames)
+                    if pathPressed and newPath ~= self.TempSettings.MyPathsPathIndex then
+                        self:SelectMyPathsPath(newPath)
+                    end
+                end
+                ImGui.SameLine()
+                ImGui.PushID("##_small_btn_mypaths_close")
+                if ImGui.SmallButton(Icons.MD_CLOSE) then
+                    self:ClearMyPathsPicker()
+                end
+                ImGui.PopID()
+                Ui.Tooltip("Close the MyPaths import picker.")
+
+                if #self.TempSettings.MyPathsPoints > 0 then
+                    ImGui.PushID("##_small_btn_mypaths_all")
+                    if ImGui.SmallButton("Select All") then
+                        for index = 1, #self.TempSettings.MyPathsPoints do
+                            self.TempSettings.MyPathsChecked[index] = true
+                        end
+                    end
+                    ImGui.PopID()
+                    ImGui.SameLine()
+                    ImGui.PushID("##_small_btn_mypaths_none")
+                    if ImGui.SmallButton("Select None") then
+                        self.TempSettings.MyPathsChecked = {}
+                    end
+                    ImGui.PopID()
+                    local pointsHeight = ImGui.GetFrameHeightWithSpacing() * math.min(#self.TempSettings.MyPathsPoints, 10) + ImGui.GetStyle().ItemSpacing.y
+                    if ImGui.BeginChild("MyPathsPoints", ImVec2(0, pointsHeight), ImGuiChildFlags.None, ImGuiWindowFlags.None) then
+                        local showDistance = (self.TempSettings.MyPathsZones[self.TempSettings.MyPathsZoneIndex] or ""):lower() == (mq.TLO.Zone.ShortName() or ""):lower()
+                        local myX, myY = mq.TLO.Me.X(), mq.TLO.Me.Y()
+                        for index, point in ipairs(self.TempSettings.MyPathsPoints) do
+                            ImGui.PushID("##_mypaths_point_" .. tostring(index))
+                            self.TempSettings.MyPathsChecked[index] = ImGui.Checkbox(Module.FormatLoc(point),
+                                self.TempSettings.MyPathsChecked[index] or false) or nil
+                            if showDistance then
+                                ImGui.SameLine()
+                                Ui.RenderText(string.format("(%.0f away)", Math.GetDistance(myX, myY, point.x, point.y)))
+                            end
+                            ImGui.PopID()
+                        end
+                    end
+                    ImGui.EndChild()
+                    ImGui.PushID("##_small_btn_mypaths_add")
+                    if ImGui.SmallButton("Add Selected") then
+                        self:ImportMyPathsSelection()
+                    end
+                    ImGui.PopID()
+                    Ui.Tooltip("Add the checked points to this path's zone as pull locations.")
+                end
+            end
+
+            local zoneLocations = self:GetZoneLocations()
+            local style = ImGui.GetStyle()
+            local setAsLabels = { Icons.FA_FREE_CODE_CAMP, Icons.FA_BINOCULARS, Icons.MD_FORWARD, }
+            local setAsWidth = style.ItemSpacing.x * (#setAsLabels - 1) + style.CellPadding.x * 2
+            for _, label in ipairs(setAsLabels) do
+                setAsWidth = setAsWidth + ImGui.CalcTextSize(label) + style.FramePadding.x * 2
+            end
+            local circuitLabels = { Icons.FA_FLAG_CHECKERED, Icons.FA_CHEVRON_UP, Icons.FA_CHEVRON_DOWN, }
+            local circuitWidth = 26.0 + style.ItemSpacing.x * #circuitLabels + style.CellPadding.x * 2
+            for _, label in ipairs(circuitLabels) do
+                circuitWidth = circuitWidth + ImGui.CalcTextSize(label) + style.FramePadding.x * 2
+            end
+            circuitWidth = math.max(circuitWidth, ImGui.CalcTextSize('Circuit Controls') + style.CellPadding.x * 2)
+            setAsWidth = math.max(setAsWidth, ImGui.CalcTextSize('Set Objective') + style.CellPadding.x * 2)
+            local trashWidth = ImGui.CalcTextSize(Icons.FA_TRASH) + style.FramePadding.x * 2 + style.CellPadding.x * 2
+            local childHeight = ImGui.GetTextLineHeightWithSpacing() + ImGui.GetFrameHeightWithSpacing() * math.min(#zoneLocations, 10) + style.ItemSpacing.y
+            if ImGui.BeginChild("PullLocationsChild", ImVec2(0, childHeight), ImGuiChildFlags.None, ImGuiWindowFlags.None) then
+                if ImGui.BeginTable("PullLocations", 5, bit32.bor(ImGuiTableFlags.Borders)) then
+                    ImGui.TableSetupColumn('Name', (ImGuiTableColumnFlags.WidthStretch), 150.0)
+                    ImGui.TableSetupColumn('Loc', (ImGuiTableColumnFlags.WidthFixed), 160.0)
+                    ImGui.TableSetupColumn('Set Objective', (ImGuiTableColumnFlags.WidthFixed), setAsWidth)
+                    ImGui.TableSetupColumn('Circuit Controls', (ImGuiTableColumnFlags.WidthFixed), circuitWidth)
+                    ImGui.TableSetupColumn('', (ImGuiTableColumnFlags.WidthFixed), trashWidth)
+                    ImGui.TableHeadersRow()
+
+                    local currentWpId = self:IsPullMode("CircuitHunt") and self:GetCurrentWpId() or 0
+                    local enabledIndex = 0
+                    for idx, entry in ipairs(zoneLocations) do
+                        if entry.enabled then enabledIndex = enabledIndex + 1 end
+                        ImGui.PushID("##_pull_loc_row_" .. tostring(idx))
+                        ImGui.TableNextColumn()
+                        ImGui.BeginDisabled(locked)
+                        ImGui.SetNextItemWidth(-1)
+                        local editedName = ImGui.InputText("##_input_loc_name", self.TempSettings.LocationNameEdits[idx] or entry.name)
+                        if ImGui.IsItemDeactivatedAfterEdit() then
+                            self.TempSettings.LocationNameEdits[idx] = nil
+                            if editedName ~= entry.name and editedName ~= "" then
+                                self:RenameLocation(idx, editedName)
+                            end
+                        elseif ImGui.IsItemActive() then
+                            self.TempSettings.LocationNameEdits[idx] = editedName
+                        else
+                            self.TempSettings.LocationNameEdits[idx] = nil
+                        end
+                        ImGui.EndDisabled()
+                        ImGui.TableNextColumn()
+                        self:RenderLoc(entry)
+                        ImGui.TableNextColumn()
+                        ImGui.BeginDisabled(locked)
+                        if ImGui.SmallButton(Icons.FA_FREE_CODE_CAMP) then
+                            local campMode = Module.Constants.PullModePolicies[Config:GetSetting('PullMode')].family == 'camp' and Config:GetSetting('PullMode') or "PullToCamp"
+                            self:SetPullMode(campMode)
+                            self:FillLocEntry({ y = entry.y, x = entry.x, z = entry.z, })
+                            self.TempSettings.LocEntryMode = campMode
+                        end
+                        Ui.Tooltip("Switch to a camp mode with this location as the travel destination.")
+                        ImGui.SameLine()
+                        if ImGui.SmallButton(Icons.FA_BINOCULARS) then
+                            self:SetPullMode("AreaHunt")
+                            self:SetHuntOrigin({ y = entry.y, x = entry.x, z = entry.z, name = entry.name, })
+                        end
+                        Ui.Tooltip("Switch to Area Hunt with this location as the hunt origin.")
+                        ImGui.SameLine()
+                        if ImGui.SmallButton(Icons.MD_FORWARD) then
+                            self:SetPullMode("FightTo")
+                            self:SetFightToLoc({ y = entry.y, x = entry.x, z = entry.z, name = entry.name, })
+                        end
+                        Ui.Tooltip("Switch to Fight To with this location as the destination.")
+                        ImGui.EndDisabled()
+                        ImGui.TableNextColumn()
+                        local _, toggled = Ui.RenderOptionToggle("pull_loc_tggl_" .. tostring(idx), "", entry.enabled)
+                        if toggled then
+                            self:ToggleLocation(idx)
+                        end
+                        ImGui.SameLine()
+                        ImGui.BeginDisabled(not entry.enabled)
+                        local isCurrentStop = entry.enabled and enabledIndex == currentWpId
+                        if isCurrentStop then ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.Green) end
+                        if ImGui.SmallButton(Icons.FA_FLAG_CHECKERED) then
+                            Core.DoCmd(string.format("/rgl pullwp %d", enabledIndex))
+                        end
+                        if isCurrentStop then ImGui.PopStyleColor() end
+                        Ui.Tooltip(isCurrentStop and "The circuit's current waypoint." or "Set as the current waypoint for the circuit.")
+                        ImGui.EndDisabled()
+                        ImGui.SameLine()
+                        if idx == 1 then
+                            ImGui.InvisibleButton(Icons.FA_CHEVRON_UP, ImVec2(ImGui.CalcTextSize(Icons.FA_CHEVRON_UP) + style.FramePadding.x * 2, 1))
+                        else
+                            if ImGui.SmallButton(Icons.FA_CHEVRON_UP) then
+                                self:MoveLocationUp(idx)
+                            end
+                        end
+                        ImGui.SameLine()
+                        if idx == #zoneLocations then
+                            ImGui.InvisibleButton(Icons.FA_CHEVRON_DOWN, ImVec2(ImGui.CalcTextSize(Icons.FA_CHEVRON_DOWN) + style.FramePadding.x * 2, 1))
+                        else
+                            if ImGui.SmallButton(Icons.FA_CHEVRON_DOWN) then
+                                self:MoveLocationDown(idx)
+                            end
+                        end
+                        ImGui.TableNextColumn()
+                        if ImGui.SmallButton(Icons.FA_TRASH) then
+                            self:DeleteLocation(idx)
+                        end
+                        Ui.Tooltip("Delete Location")
+                        ImGui.PopID()
+                    end
+
+                    ImGui.EndTable()
+                end
+            end
+            ImGui.EndChild()
         end
 
         local nextPull = Config:GetSetting('PullDelay') - (Globals.GetTimeSeconds() - self.TempSettings.LastPullOrCombatEnded)
@@ -1088,7 +2137,8 @@ function Module:Render()
             ImGui.TableNextColumn()
             Ui.RenderText("Pull State")
             ImGui.TableNextColumn()
-            local stateData = Globals.PauseMain and PullStateDisplayStrings['MERCS_PAUSED'] or PullStateDisplayStrings[PullStatesIDToName[self.TempSettings.PullState]]
+            local stateData = Globals.PauseMain and Module.Constants.PullStateDisplayStrings['MERCS_PAUSED'] or
+                Module.Constants.PullStateDisplayStrings[Module.Constants.PullStatesIDToName[self.TempSettings.PullState]]
             local stateColor = stateData and Globals.Constants.Colors[stateData.Color] or ImGui.GetColorU32(1.0, 1.0, 1.0, 1.0)
             ImGui.PushStyleColor(ImGuiCol.Text, stateColor)
             if not stateData then
@@ -1119,28 +2169,87 @@ function Module:Render()
             Ui.RenderText("Pull Ability Range")
             ImGui.TableNextColumn()
             Ui.RenderText(tostring(self:GetPullAbilityRange()))
-            ImGui.TableNextColumn()
-            Ui.RenderText("Pull ID")
-            ImGui.TableNextColumn()
-            Ui.RenderText(tostring(self.TempSettings.PullID))
-            ImGui.TableNextColumn()
-            Ui.RenderText("Pull Target Count")
-            ImGui.TableNextColumn()
-            Ui.RenderText(tostring(#self.TempSettings.PullTargets))
-            ImGui.TableNextColumn()
-            Ui.RenderText("Hunt X,Y,Z")
-            ImGui.TableNextColumn()
-            Ui.RenderText("%d, %d, %d", self.TempSettings.HuntX, self.TempSettings.HuntY, self.TempSettings.HuntZ)
-            ImGui.TableNextColumn()
-            Ui.RenderText("Current WP")
-            ImGui.TableNextColumn()
-            local wpId = self:GetCurrentWpId()
-            local wpData = self:GetWPById(wpId)
-            Ui.RenderText(wpId == 0 and "<None>" or string.format("%d [y: %0.2f, x: %0.2f, z: %0.2f]", wpId, wpData.y, wpData.x, wpData.z))
-            ImGui.TableNextColumn()
-            Ui.RenderText("Buff Count")
-            ImGui.TableNextColumn()
-            Ui.RenderText("%s", Globals.CurrentBuffCount)
+            if self.TempSettings.Attempt and (self.TempSettings.Attempt.targetId or 0) > 0 then
+                ImGui.TableNextColumn()
+                Ui.RenderText("Pull ID")
+                ImGui.TableNextColumn()
+                Ui.RenderText(tostring(self.TempSettings.Attempt.targetId))
+            end
+            if #self.TempSettings.PullTargets > 0 then
+                ImGui.TableNextColumn()
+                Ui.RenderText("Pull Target Count")
+                ImGui.TableNextColumn()
+                Ui.RenderText(tostring(#self.TempSettings.PullTargets))
+            end
+            if not self:IsPullMode("RoamingHunt") then
+                ImGui.TableNextColumn()
+                Ui.RenderText("Objective")
+                ImGui.TableNextColumn()
+                if self:IsPullMode("AreaHunt") then
+                    local origin = self.TempSettings.HuntOrigin
+                    if origin then
+                        Ui.RenderText("Traveling to:")
+                        ImGui.SameLine()
+                        self:RenderNamedLoc(origin)
+                    else
+                        local anchor = self.TempSettings.HuntAnchor
+                        if anchor then
+                            self:RenderNamedLoc(anchor)
+                        else
+                            Ui.RenderText("-")
+                        end
+                    end
+                elseif self:IsPullMode("FightTo") then
+                    local objective = self.TempSettings.FightTo
+                    if not objective then
+                        Ui.RenderText("None")
+                    elseif objective.id then
+                        local objectiveSpawn = mq.TLO.Spawn(objective.id)
+                        Ui.RenderText(string.format("%s (%d)", objectiveSpawn.CleanName() or objective.name or "Unknown", objective.id))
+                        ImGui.SameLine()
+                        Ui.NavEnabledLoc(objectiveSpawn.LocYXZ() or "0,0,0")
+                    else
+                        self:RenderNamedLoc(objective)
+                    end
+                elseif self:IsPullMode("CircuitHunt") then
+                    local wpId = self:GetCurrentWpId()
+                    if wpId == 0 then
+                        Ui.RenderText("<None>")
+                    else
+                        local wpData = self:GetWPById(wpId)
+                        local display = string.format("%s (%d of %d)", wpData.name, wpId, #self:GetEnabledLocations())
+                        if wpData.z then
+                            Ui.NavEnabledLoc(display, Module.FormatLoc(wpData))
+                        else
+                            Ui.RenderText(display)
+                        end
+                    end
+                else
+                    local campData = Modules:ExecModule("Movement", "GetCampData")
+                    if campData.returnToCamp then
+                        self:RenderLoc({ y = campData.campSettings.AutoCampY, x = campData.campSettings.AutoCampX, z = campData.campSettings.AutoCampZ, })
+                    elseif self.TempSettings.CampTravelLoc then
+                        Ui.RenderText("Traveling to:")
+                        ImGui.SameLine()
+                        self:RenderNamedLoc(self.TempSettings.CampTravelLoc)
+                    else
+                        Ui.RenderText("-")
+                    end
+                end
+            end
+            if self:IsPullMode("ChainToCamp") then
+                ImGui.TableNextColumn()
+                Ui.RenderText("Chain Progress")
+                ImGui.TableNextColumn()
+                Ui.RenderText(string.format("%d / %d", Targeting.GetXTHaterCount(), Config:GetSetting('ChainCount')))
+            end
+            if Config:GetSetting('PullBuffCount') > 0 then
+                ImGui.TableNextColumn()
+                Ui.RenderText("Buff Count")
+                ImGui.TableNextColumn()
+                Ui.RenderText("%s", Globals.CurrentBuffCount)
+            end
+            self:RenderMoveAbilities()
             ImGui.EndTable()
         end
 
@@ -1166,110 +2275,77 @@ function Module:Render()
                 self:RenderIgnoreTargets()
             end
         end
+    end
+end
 
-        if ImGui.CollapsingHeader("Farm Waypoints") then
-            ImGui.PushID("##_small_btn_create_wp")
-            if ImGui.SmallButton("Create Waypoint Here") then
-                self:CreateWayPointHere()
-            end
-            ImGui.PopID()
-            if self.TempSettings.MyPaths[mq.TLO.Zone.ShortName()] then
-                ImGui.SameLine()
-                if ImGui.SmallButton('Reload Paths##ReloadPaths') then
-                    self.TempSettings.MyPaths = dofile(string.format('%s/MyUI/MyPaths/MyPaths_Paths.lua', mq.configDir))
+function Module:RenderMoveAbilities()
+    for _, entry in ipairs(self:GetMoveAbilities()) do
+        ImGui.TableNextColumn()
+        Ui.RenderText("Move Buff")
+        ImGui.TableNextColumn()
+        local entryType = (entry.type or ""):lower()
+        local resolved = Core.GetResolvedActionMapItem(entry.name) or entry.name
+        if entryType == "aa" then
+            local aaName = type(resolved) == "string" and resolved or entry.name
+            if mq.TLO.Me.AltAbility(aaName)() ~= nil then
+                ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.LightBlue)
+                ImGui.PushStyleColor(ImGuiCol.HeaderHovered, Globals.Constants.Colors.NearBlack)
+                local _, clicked = ImGui.Selectable(aaName)
+                local aaSpell = mq.TLO.Me.AltAbility(aaName).Spell
+                if aaSpell() and clicked then
+                    aaSpell.Inspect()
                 end
-                ImGui.SetNextItemWidth(120)
-                if ImGui.BeginCombo("MyPaths Path Avail##SelectPath", self.TempSettings.SelectedPath) then
-                    for name, data in pairs(self.TempSettings.MyPaths[mq.TLO.Zone.ShortName()]) do
-                        local isSelected = name == self.TempSettings.SelectedPath
-                        if ImGui.Selectable(name, isSelected) then
-                            self.TempSettings.SelectedPath = name
-                        end
-                    end
-                    ImGui.EndCombo()
-                end
-                if self.TempSettings.SelectedPath ~= "None" then
-                    local farmWayPoints = Config:GetSetting('FarmWayPoints')
-                    farmWayPoints[mq.TLO.Zone.ShortName()] = {}
-                    for step, data in pairs(self.TempSettings.MyPaths[mq.TLO.Zone.ShortName()][self.TempSettings.SelectedPath]) do
-                        local mpy, mpx, mpz = data.loc:match("([^,]+),%s*([^,]+),%s*([^,]+)")
-                        farmWayPoints[mq.TLO.Zone.ShortName()][step] = { x = tonumber(mpx), y = tonumber(mpy), z = tonumber(mpz), }
-                    end
-                    self.TempSettings.SelectedPath = "None"
-                end
+                ImGui.PopStyleColor(2)
+                Ui.Tooltip(string.format("AA Spell: %s (click to inspect)", aaSpell.Name() or "Unknown"))
             else
-                Module.TempSettings.MyPaths = 'None'
+                ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.Red)
+                Ui.RenderText("No AA Detected")
+                ImGui.PopStyleColor()
             end
-
-            if ImGui.BeginTable("Waypoints", 3, bit32.bor(ImGuiTableFlags.Borders)) then
-                ImGui.TableSetupColumn('Id', (ImGuiTableColumnFlags.WidthFixed), 40.0)
-                ImGui.TableSetupColumn('Loc', (ImGuiTableColumnFlags.WidthStretch), 150.0)
-                ImGui.TableSetupColumn('Controls', (ImGuiTableColumnFlags.WidthFixed), 80.0)
-                ImGui.TableHeadersRow()
-
-                local waypointList = Config:GetSetting('FarmWayPoints')[mq.TLO.Zone.ShortName()] or {}
-
-                for idx, wpData in ipairs(waypointList) do
-                    ImGui.TableNextColumn()
-                    Ui.RenderText(tostring(idx))
-                    ImGui.TableNextColumn()
-                    Ui.NavEnabledLoc(string.format("y: %0.2f, x: %0.2f, z: %0.2f]", wpData.y, wpData.x, wpData.z),
-                        string.format("%0.2f, %0.2f, %0.2f", wpData.y, wpData.x, wpData.z))
-                    ImGui.TableNextColumn()
-                    ImGui.PushID("##_small_btn_set_wp_" .. tostring(idx))
-                    if ImGui.SmallButton(Icons.FA_FLAG_CHECKERED) then
-                        Core.DoCmd(string.format("/rgl setwpid %d", idx))
-                    end
-                    Ui.Tooltip("Set Current WP")
-                    ImGui.PopID()
-                    ImGui.SameLine()
-                    ImGui.PushID("##_small_btn_delete_wp_" .. tostring(idx))
-                    if ImGui.SmallButton(Icons.FA_TRASH) then
-                        self:AddWPToDeleteList(idx)
-                    end
-                    Ui.Tooltip("Delete Waypoint")
-                    ImGui.PopID()
-                    ImGui.SameLine()
-                    ImGui.PushID("##_small_btn_up_wp_" .. tostring(idx))
-                    if idx == 1 then
-                        ImGui.InvisibleButton(Icons.FA_CHEVRON_UP, ImVec2(22, 1))
-                    else
-                        if ImGui.SmallButton(Icons.FA_CHEVRON_UP) then
-                            self:MoveWayPointUp(idx)
-                        end
-                    end
-                    ImGui.PopID()
-                    ImGui.SameLine()
-                    ImGui.PushID("##_small_btn_dn_wp_" .. tostring(idx))
-                    if idx == #waypointList then
-                        ImGui.InvisibleButton(Icons.FA_CHEVRON_DOWN, ImVec2(22, 1))
-                    else
-                        if ImGui.SmallButton(Icons.FA_CHEVRON_DOWN) then
-                            self:MoveWayPointDown(idx)
-                        end
-                    end
-                    ImGui.PopID()
+        elseif entryType == "item" then
+            local itemName = type(resolved) == "string" and resolved or entry.name
+            local item = mq.TLO.FindItem("=" .. itemName)
+            if item() and item.Clicky() then
+                ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.LightOrange)
+                ImGui.PushStyleColor(ImGuiCol.HeaderHovered, Globals.Constants.Colors.NearBlack)
+                local _, clicked = ImGui.Selectable(itemName)
+                local clickySpell = item.Clicky.Spell
+                if clickySpell() and clicked then
+                    clickySpell.Inspect()
                 end
-
-                ImGui.EndTable()
+                ImGui.PopStyleColor(2)
+                Ui.Tooltip(string.format("Clicky Spell: %s (click to inspect)", clickySpell.Name() or "Unknown"))
+            else
+                ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.Red)
+                Ui.RenderText("No Item Detected")
+                ImGui.PopStyleColor()
+            end
+        else
+            local songSpell = type(resolved) == "string" and mq.TLO.Spell(resolved) or resolved
+            if songSpell and songSpell() then
+                ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.Purple)
+                ImGui.PushStyleColor(ImGuiCol.HeaderHovered, Globals.Constants.Colors.NearBlack)
+                local rankSpell = songSpell.RankName
+                local _, clicked = ImGui.Selectable(rankSpell())
+                if clicked then
+                    rankSpell.Inspect()
+                end
+                ImGui.PopStyleColor(2)
+                Ui.Tooltip(string.format("Song: %s (click to inspect)", rankSpell() or "Unknown"))
+            else
+                ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.Red)
+                Ui.RenderText("No Song Detected")
+                ImGui.PopStyleColor()
             end
         end
     end
 end
 
----@return integer
-function Module:GetCurrentWpId()
-    if not Config:GetSetting('FarmWayPoints')[mq.TLO.Zone.ShortName()] then return 0 end
-    return (self.TempSettings.CurrentWP <= #Config:GetSetting('FarmWayPoints')[mq.TLO.Zone.ShortName()]) and self.TempSettings.CurrentWP or 0
-end
-
----comment
----@param id number
----@return table
-function Module:GetWPById(id)
-    return (Config:GetSetting('FarmWayPoints')[mq.TLO.Zone.ShortName()] and
-            (id <= #Config:GetSetting('FarmWayPoints')[mq.TLO.Zone.ShortName()])) and
-        Config:GetSetting('FarmWayPoints')[mq.TLO.Zone.ShortName()][id] or { x = 0, y = 0, z = 0, }
+-- Mob Lists
+---@param baseName string # "PullAllowList" or "PullDenyList"
+---@return string
+function Module:ActivePullList(baseName)
+    return Config:GetSetting('UseSharedPullLists') and (baseName .. "Shared") or baseName
 end
 
 ---@param listName string
@@ -1293,18 +2369,6 @@ function Module:IsMobInList(listName, mobName, defaultNoList)
     return false
 end
 
-function Module:FlagPullListUpdated()
-    if Config:GetSetting('DoPull') then
-        self.TempSettings.PullListUpdated = true
-    end
-end
-
----@param baseName string # "PullAllowList" or "PullDenyList"
----@return string
-function Module:ActivePullList(baseName)
-    return Config:GetSetting('UseSharedPullLists') and (baseName .. "Shared") or baseName
-end
-
 ---@param list string
 ---@param mobName string
 function Module:AddMobToList(list, mobName)
@@ -1317,102 +2381,584 @@ function Module:DeleteMobFromList(list, arg1)
     Config:ZoneListDelete(arg1, self:ActivePullList(list))
 end
 
+function Module:FlagPullListUpdated()
+    if Config:GetSetting('DoPull') then
+        self.TempSettings.PullListUpdated = true
+    end
+end
+
 function Module:ClearIgnoreList()
     self.TempSettings.PullIgnoreTargets = {}
 end
 
 function Module:ValidateIgnoreList()
-    for entry, spawn in ipairs(self.TempSettings.PullIgnoreTargets) do
+    for i = #self.TempSettings.PullIgnoreTargets, 1, -1 do
+        local spawn = self.TempSettings.PullIgnoreTargets[i]
         if spawn.ID() == 0 or spawn.Dead() then
             Logger.log_debug("PULL: Cleaning up ignore list, it seems %s is no longer present.", spawn)
-            table.remove(self.TempSettings.PullIgnoreTargets, entry)
+            table.remove(self.TempSettings.PullIgnoreTargets, i)
         end
     end
 end
 
+-- Locations Library
+function Module.ZoneKeyLower()
+    return (mq.TLO.Zone.ShortName() or ""):lower()
+end
+
+function Module.LocationNameExists(zoneLocations, name)
+    for _, entry in ipairs(zoneLocations) do
+        if entry.name == name then return true end
+    end
+    return false
+end
+
+function Module.SynthesizeLocationName(zoneLocations, baseName)
+    baseName = baseName or string.format("Location %d", #zoneLocations + 1)
+    local name = baseName
+    local suffix = 2
+    while Module.LocationNameExists(zoneLocations, name) do
+        name = string.format("%s (%d)", baseName, suffix)
+        suffix = suffix + 1
+    end
+    return name
+end
+
+function Module.AppendLocation(zoneLocations, loc, baseName)
+    local entry = { name = Module.SynthesizeLocationName(zoneLocations, baseName), y = loc.y, x = loc.x, z = loc.z, enabled = true, }
+    table.insert(zoneLocations, entry)
+    return entry
+end
+
+function Module:GetZoneLocations()
+    return (Config:GetSetting('PullLocations') or {})[Module.ZoneKeyLower()] or {}
+end
+
+function Module:GetEnabledLocations()
+    local enabledLocations = {}
+    for _, entry in ipairs(self:GetZoneLocations()) do
+        if entry.enabled then table.insert(enabledLocations, entry) end
+    end
+    return enabledLocations
+end
+
+function Module:AddLocationAt(loc)
+    local pullLocations = Config:GetSetting('PullLocations') or {}
+    local zoneKey = Module.ZoneKeyLower()
+    pullLocations[zoneKey] = pullLocations[zoneKey] or {}
+    local entry = Module.AppendLocation(pullLocations[zoneKey], loc)
+    Config:SetSetting('PullLocations', pullLocations)
+    Logger.log_info("\axNew pull location \at%s\ax created at \ag%0.2f, %0.2f, %0.2f", entry.name, entry.y, entry.x, entry.z)
+end
+
+function Module:AddLocationHere()
+    self:AddLocationAt({ y = mq.TLO.Me.Y(), x = mq.TLO.Me.X(), z = mq.TLO.Me.Z(), })
+end
+
+function Module:AddLocationFromTarget()
+    if not mq.TLO.Target() then
+        Logger.log_error("Cannot add a pull location - no valid target exists!")
+        return
+    end
+    self:AddLocationAt({ y = mq.TLO.Target.Y(), x = mq.TLO.Target.X(), z = mq.TLO.Target.Z(), })
+end
+
+function Module:RenameLocation(idx, name)
+    local pullLocations = Config:GetSetting('PullLocations') or {}
+    local zoneLocations = pullLocations[Module.ZoneKeyLower()] or {}
+    local entry = zoneLocations[idx]
+    if not entry or entry.name == name then return end
+    if Module.LocationNameExists(zoneLocations, name) then
+        Logger.log_error("\arA pull location named \at%s\ar already exists in this zone!", name)
+        return
+    end
+    entry.name = name
+    Config:SetSetting('PullLocations', pullLocations)
+end
+
+function Module:ToggleLocation(idx)
+    local pullLocations = Config:GetSetting('PullLocations') or {}
+    local entry = (pullLocations[Module.ZoneKeyLower()] or {})[idx]
+    if not entry then return end
+    entry.enabled = not entry.enabled
+    Config:SetSetting('PullLocations', pullLocations)
+end
+
+function Module:MoveLocationUp(idx)
+    local pullLocations = Config:GetSetting('PullLocations') or {}
+    local zoneLocations = pullLocations[Module.ZoneKeyLower()] or {}
+    if idx < 2 or idx > #zoneLocations then return end
+    zoneLocations[idx - 1], zoneLocations[idx] = zoneLocations[idx], zoneLocations[idx - 1]
+    Config:SetSetting('PullLocations', pullLocations)
+end
+
+function Module:MoveLocationDown(idx)
+    local pullLocations = Config:GetSetting('PullLocations') or {}
+    local zoneLocations = pullLocations[Module.ZoneKeyLower()] or {}
+    if idx < 1 or idx + 1 > #zoneLocations then return end
+    zoneLocations[idx + 1], zoneLocations[idx] = zoneLocations[idx], zoneLocations[idx + 1]
+    Config:SetSetting('PullLocations', pullLocations)
+end
+
+function Module:DeleteLocation(idx)
+    local entry = self:GetZoneLocations()[idx]
+    if entry then self.TempSettings.LocationsToDelete[entry] = true end
+end
+
+function Module:ProcessDeleteLocations()
+    if next(self.TempSettings.LocationsToDelete) == nil then return end
+    local pullLocations = Config:GetSetting('PullLocations') or {}
+    local zoneLocations = pullLocations[Module.ZoneKeyLower()] or {}
+    for idx = #zoneLocations, 1, -1 do
+        if self.TempSettings.LocationsToDelete[zoneLocations[idx]] then
+            Logger.log_info("\axPull location \at%s\ax - \arDeleted!\ax", zoneLocations[idx].name)
+            table.remove(zoneLocations, idx)
+        end
+    end
+    Config:SetSetting('PullLocations', pullLocations)
+    self.TempSettings.LocationsToDelete = {}
+end
+
+function Module:ResolveLocationEntry(argText)
+    local enabledLocations = self:GetEnabledLocations()
+    if argText:match("^%d+$") then
+        local index = tonumber(argText)
+        if index >= 1 and index <= #enabledLocations then return enabledLocations[index] end
+    end
+    for _, entry in ipairs(self:GetZoneLocations()) do
+        if entry.name:lower() == argText:lower() then return entry end
+    end
+    Logger.log_error("'%s' does not match a pull location - use a name or an index between 1 and %d (enabled locations).", argText, #enabledLocations)
+    return nil
+end
+
+function Module:ResolveZoneLocationIndex(argText)
+    local zoneLocations = self:GetZoneLocations()
+    if argText:match("^%d+$") then
+        local index = tonumber(argText)
+        if index >= 1 and index <= #zoneLocations then return index end
+    end
+    for index, entry in ipairs(zoneLocations) do
+        if entry.name:lower() == argText:lower() then return index end
+    end
+    Logger.log_error("'%s' does not match a pull location - use a name or an index between 1 and %d.", argText, #zoneLocations)
+    return nil
+end
+
+-- Circuit Waypoints
+---@return integer
+function Module:GetCurrentWpId()
+    local enabledLocations = self:GetEnabledLocations()
+    if #enabledLocations == 0 then return 0 end
+    for index, entry in ipairs(enabledLocations) do
+        if entry.name == self.TempSettings.CurrentWPName then
+            self.TempSettings.CurrentWPIndex = index
+            return index
+        end
+    end
+    local index = math.min(self.TempSettings.CurrentWPIndex, #enabledLocations)
+    self.TempSettings.CurrentWPName = enabledLocations[index].name
+    self.TempSettings.CurrentWPIndex = index
+    return index
+end
+
+---@param id number
+---@return table
+function Module:GetWPById(id)
+    return self:GetEnabledLocations()[id] or { x = 0, y = 0, z = 0, }
+end
+
 function Module:IncrementWpId()
-    if not Config:GetSetting('FarmWayPoints')[mq.TLO.Zone.ShortName()] then return end
+    local enabledLocations = self:GetEnabledLocations()
+    if #enabledLocations == 0 then return end
 
-    if (self.TempSettings.CurrentWP + 1) <= #Config:GetSetting('FarmWayPoints')[mq.TLO.Zone.ShortName()] then
-        self.TempSettings.CurrentWP = self.TempSettings.CurrentWP + 1
-    else
-        self.TempSettings.CurrentWP = 1
+    local index = self:GetCurrentWpId() + 1
+    if index > #enabledLocations then index = 1 end
+    self.TempSettings.CurrentWPName = enabledLocations[index].name
+    self.TempSettings.CurrentWPIndex = index
+    Logger.log_verbose("Pull: Advancing circuit to %s (%d of %d)", enabledLocations[index].name, index, #enabledLocations)
+end
+
+-- MyPaths Import
+function Module:ClearMyPathsPicker()
+    self.TempSettings.MyPathsData = nil
+    self.TempSettings.MyPathsZones = {}
+    self.TempSettings.MyPathsZoneIndex = 1
+    self.TempSettings.MyPathsPathNames = {}
+    self.TempSettings.MyPathsPathIndex = 1
+    self.TempSettings.MyPathsPoints = {}
+    self.TempSettings.MyPathsChecked = {}
+end
+
+function Module:LoadMyPathsFile()
+    self:ClearMyPathsPicker()
+    local pathsLoader = loadfile(mq.configDir .. '/MyUI/MyPaths/MyPaths_Paths.lua')
+    if not pathsLoader then
+        Logger.log_info("No MyPaths file found to import from.")
+        return
     end
-    Logger.log_verbose("Pull: Incrementing farm waypoint to %d", self.TempSettings.CurrentWP)
-end
-
----@param id number
-function Module:MoveWayPointUp(id)
-    local newId = id - 1
-
-    if newId < 1 then return end
-    if id > #Config:GetSetting('FarmWayPoints')[mq.TLO.Zone.ShortName()] then return end
-
-    local farmWayPoints = Config:GetSetting('FarmWayPoints')
-    farmWayPoints[mq.TLO.Zone.ShortName()][newId], farmWayPoints[mq.TLO.Zone.ShortName()][id] =
-        farmWayPoints[mq.TLO.Zone.ShortName()][id], farmWayPoints[mq.TLO.Zone.ShortName()][newId]
-    Config:SetSetting('FarmWayPoints', farmWayPoints)
-end
-
----@param id number
-function Module:MoveWayPointDown(id)
-    local newId = id + 1
-
-    if id < 1 then return end
-    if newId > #Config:GetSetting('FarmWayPoints')[mq.TLO.Zone.ShortName()] then return end
-
-    local farmWayPoints = Config:GetSetting('FarmWayPoints')
-    farmWayPoints[mq.TLO.Zone.ShortName()][newId], farmWayPoints[mq.TLO.Zone.ShortName()][id] =
-        farmWayPoints[mq.TLO.Zone.ShortName()][id], farmWayPoints[mq.TLO.Zone.ShortName()][newId]
-    Config:SetSetting('FarmWayPoints', farmWayPoints)
-end
-
-function Module:CreateWayPointHere()
-    local farmWayPoints = Config:GetSetting('FarmWayPoints')
-
-    farmWayPoints[mq.TLO.Zone.ShortName()] = farmWayPoints[mq.TLO.Zone.ShortName()] or {}
-    table.insert(farmWayPoints[mq.TLO.Zone.ShortName()], { x = mq.TLO.Me.X(), y = mq.TLO.Me.Y(), z = mq.TLO.Me.Z(), })
-    Config:SetSetting('FarmWayPoints', farmWayPoints)
-    Logger.log_info("\axNew waypoint \at%d\ax created at location \ag%02.f, %02.f, %02.f", #farmWayPoints[mq.TLO.Zone.ShortName()],
-        mq.TLO.Me.X(), mq.TLO.Me.Y(), mq.TLO.Me.Z())
-end
-
-function Module:AddWPToDeleteList(idx)
-    self.TempSettings.WayPointsToDelete:add(idx)
-end
-
-function Module:ProcessDeleteWPs()
-    local wpToDelete = self.TempSettings.WayPointsToDelete:toList()
-    while #wpToDelete > 0 do
-        local wpId = table.remove(wpToDelete, 1)
-        self:DeleteWayPoint(wpId)
+    local ok, paths = pcall(pathsLoader)
+    if not ok or type(paths) ~= 'table' then
+        Logger.log_info("The MyPaths file could not be read.")
+        return
     end
-
-    self.TempSettings.WayPointsToDelete = Set.new({})
+    local zones = {}
+    for zoneName, zonePaths in pairs(paths) do
+        if type(zoneName) == 'string' and type(zonePaths) == 'table' then
+            table.insert(zones, zoneName)
+        end
+    end
+    table.sort(zones)
+    if #zones == 0 then
+        Logger.log_info("The MyPaths file does not contain any paths.")
+        return
+    end
+    self.TempSettings.MyPathsData = paths
+    self.TempSettings.MyPathsZones = zones
+    local zoneIndex = 1
+    for index, zoneName in ipairs(zones) do
+        if zoneName:lower() == Module.ZoneKeyLower() then
+            zoneIndex = index
+            break
+        end
+    end
+    self:SelectMyPathsZone(zoneIndex)
 end
 
-function Module:DeleteWayPoint(idx)
-    local farmWayPoints = Tables.DeepCopy(Config:GetSetting('FarmWayPoints'))
-
-    if idx <= #farmWayPoints[mq.TLO.Zone.ShortName()] then
-        Logger.log_info("\axWaypoint \at%d\ax at location \ag%s\ax - \arDeleted!\ax", idx, farmWayPoints[mq.TLO.Zone.ShortName()][idx].Loc)
-        table.remove(farmWayPoints[mq.TLO.Zone.ShortName()], idx)
-        Config:SetSetting('FarmWayPoints', farmWayPoints)
-    else
-        Logger.log_error("\ar%d is not a valid waypoint ID!", idx)
+function Module:SelectMyPathsZone(index)
+    self.TempSettings.MyPathsZoneIndex = index
+    self.TempSettings.MyPathsPathNames = {}
+    for pathName, steps in pairs(self.TempSettings.MyPathsData[self.TempSettings.MyPathsZones[index]] or {}) do
+        if type(pathName) == 'string' and type(steps) == 'table' then
+            table.insert(self.TempSettings.MyPathsPathNames, pathName)
+        end
     end
+    table.sort(self.TempSettings.MyPathsPathNames)
+    self:SelectMyPathsPath(1)
+end
 
-    local wpCount = #Config:GetSetting('FarmWayPoints')[mq.TLO.Zone.ShortName()]
-
-    if self.TempSettings.CurrentWP > wpCount then
-        self.TempSettings.CurrentWP = ((wpCount > 0) and wpCount or 1)
+function Module:SelectMyPathsPath(index)
+    self.TempSettings.MyPathsPathIndex = index
+    self.TempSettings.MyPathsPoints = {}
+    self.TempSettings.MyPathsChecked = {}
+    local pathName = self.TempSettings.MyPathsPathNames[index]
+    if not pathName then return end
+    for stepIndex, stepData in ipairs(self.TempSettings.MyPathsData[self.TempSettings.MyPathsZones[self.TempSettings.MyPathsZoneIndex]][pathName]) do
+        local locText = type(stepData) == 'table' and tostring(stepData.loc or "") or ""
+        local yText, xText, zText = locText:match("^([^,]*),([^,]*),([^,]*)$")
+        local y, x, z = tonumber(yText), tonumber(xText), tonumber(zText)
+        if y and x and z then
+            table.insert(self.TempSettings.MyPathsPoints, { y = y, x = x, z = z, })
+        else
+            Logger.log_info("Skipping MyPaths point %d in %s - could not parse its loc (%s).", stepIndex, pathName, locText)
+        end
     end
 end
 
+function Module:ImportMyPathsSelection()
+    local pathName = self.TempSettings.MyPathsPathNames[self.TempSettings.MyPathsPathIndex]
+    if not pathName then return end
+    if not next(self.TempSettings.MyPathsChecked) then
+        Logger.log_info("No MyPaths points are checked - nothing to import.")
+        return
+    end
+    local pullLocations = Config:GetSetting('PullLocations') or {}
+    local zoneKey = (self.TempSettings.MyPathsZones[self.TempSettings.MyPathsZoneIndex] or ""):lower()
+    pullLocations[zoneKey] = pullLocations[zoneKey] or {}
+    local added = 0
+    for index, point in ipairs(self.TempSettings.MyPathsPoints) do
+        if self.TempSettings.MyPathsChecked[index] then
+            added = added + 1
+            Module.AppendLocation(pullLocations[zoneKey], point, string.format("MyPaths %s %d", pathName, added))
+        end
+    end
+    Config:SetSetting('PullLocations', pullLocations)
+    self.TempSettings.MyPathsChecked = {}
+    Logger.log_info("\axImported \at%d\ax MyPaths point%s into the \at%s\ax pull location list.", added, added == 1 and "" or "s", zoneKey)
+end
+
+-- Objective Staging
+function Module:FillLocEntry(loc)
+    self.TempSettings.LocEntryY = string.format("%.0f", loc.y)
+    self.TempSettings.LocEntryX = string.format("%.0f", loc.x)
+    self.TempSettings.LocEntryZ = loc.z and string.format("%.0f", loc.z) or ""
+end
+
+function Module:SetFightToSpawn(spawnID)
+    local spawn = mq.TLO.Spawn(spawnID)
+    if (spawnID or 0) == 0 or not spawn() then
+        Logger.log_error("Fight To - no valid target or spawn ID given!")
+        return false
+    end
+    if spawn.Type() ~= "NPC" and spawn.Type() ~= "NPCPET" then
+        Logger.log_error("Fight To - %s is not an NPC!", spawn.CleanName() or "target")
+        return false
+    end
+    if not spawn.Targetable() then
+        Logger.log_error("Fight To - %s is not targetable!", spawn.CleanName() or "target")
+        return false
+    end
+    if not mq.TLO.Navigation.PathExists("id " .. spawnID)() then
+        Logger.log_error("Fight To - no nav path exists to %s!", spawn.CleanName() or "target")
+        return false
+    end
+    self.TempSettings.FightTo = { id = spawnID, name = spawn.CleanName(), }
+    self.TempSettings.UnreachableSince = 0
+    self.TempSettings.TravelFailSince = 0
+    self.TempSettings.LocEntryY, self.TempSettings.LocEntryX, self.TempSettings.LocEntryZ = "", "", ""
+    return true
+end
+
+function Module:SetFightToLoc(loc)
+    if loc.z and not mq.TLO.Navigation.PathExists(Module.NavDestString(loc))() then
+        Logger.log_error("Fight To - no nav path exists to the given location! (%s)", Module.NavDestString(loc))
+        return false
+    end
+    self.TempSettings.FightTo = loc
+    self.TempSettings.UnreachableSince = 0
+    self.TempSettings.TravelFailSince = 0
+    self:FillLocEntry(loc)
+    return true
+end
+
+function Module:SetHuntOrigin(loc)
+    if loc.z and not mq.TLO.Navigation.PathExists(Module.NavDestString(loc))() then
+        Logger.log_error("Hunt - no nav path exists to the given location! (%s)", Module.NavDestString(loc))
+        return false
+    end
+    self.TempSettings.HuntOrigin = loc
+    self.TempSettings.HuntAnchor = nil
+    Movement.UpdateMapRadii()
+    self.TempSettings.UnreachableSince = 0
+    self.TempSettings.TravelFailSince = 0
+    self:FillLocEntry(loc)
+    return true
+end
+
+function Module:HasRemoteHuntOrigin()
+    return self.TempSettings.HuntOrigin ~= nil
+end
+
+function Module:CommitLocEntry()
+    if self.TempSettings.LocEntryY == "" and self.TempSettings.LocEntryX == "" then
+        self.TempSettings.CampTravelLoc = nil
+        return true
+    end
+    local y, x = tonumber(self.TempSettings.LocEntryY), tonumber(self.TempSettings.LocEntryX)
+    local z = tonumber(self.TempSettings.LocEntryZ)
+    if not y or not x or (self.TempSettings.LocEntryZ ~= "" and not z) then
+        Logger.log_error("Invalid location - Y and X must be numbers (Z optional).")
+        return false
+    end
+    local loc = { y = y, x = x, z = z, }
+    local staged = self:IsPullMode("AreaHunt") and self.TempSettings.HuntOrigin or (self:IsPullMode("FightTo") and self.TempSettings.FightTo or nil)
+    if staged and staged.name and staged.y and
+        self.TempSettings.LocEntryY == string.format("%.0f", staged.y) and self.TempSettings.LocEntryX == string.format("%.0f", staged.x) and
+        self.TempSettings.LocEntryZ == (staged.z and string.format("%.0f", staged.z) or "") then
+        loc.name = staged.name
+    end
+    if self:GetModePolicy().family == 'camp' then
+        if loc.z and not mq.TLO.Navigation.PathExists(Module.NavDestString(loc))() then
+            Logger.log_error("Camp - no nav path exists to the given location! (%s)", Module.NavDestString(loc))
+            return false
+        end
+        local campData = Modules:ExecModule("Movement", "GetCampData")
+        if campData.returnToCamp and Math.GetDistanceSquared(loc.x, loc.y, campData.campSettings.AutoCampX, campData.campSettings.AutoCampY) <= 100 then
+            self.TempSettings.CampTravelLoc = nil
+            return true
+        end
+        self.TempSettings.CampTravelLoc = loc
+        self.TempSettings.UnreachableSince = 0
+        self.TempSettings.TravelFailSince = 0
+        self:FillLocEntry(loc)
+        return true
+    end
+    if self:IsPullMode("AreaHunt") then return self:SetHuntOrigin(loc) end
+    if self:IsPullMode("FightTo") then return self:SetFightToLoc(loc) end
+    return true
+end
+
+function Module:CurrentIntent()
+    local pullModeName = Config:GetSetting('PullMode')
+    local y, x, z = tonumber(self.TempSettings.LocEntryY), tonumber(self.TempSettings.LocEntryX), tonumber(self.TempSettings.LocEntryZ)
+    local loc = (y ~= nil and x ~= nil) and { y = y, x = x, z = z, } or nil
+    local fightToKind, fightToName = "none", nil
+    local fightTo = self.TempSettings.FightTo
+    if fightTo then
+        if fightTo.id then
+            fightToKind, fightToName = "spawn", fightTo.name
+        elseif fightTo.y then
+            fightToKind = "loc"
+            if pullModeName == "FightTo" then loc = loc or fightTo end
+        end
+    end
+    if pullModeName == "FightTo" and fightToKind == "none" and loc then fightToKind = "loc" end
+    if pullModeName == "AreaHunt" then loc = loc or self.TempSettings.HuntOrigin end
+    local campData = Modules:ExecModule("Movement", "GetCampData")
+    local breakCamp = false
+    if campData.returnToCamp then
+        if Module.Constants.PullModePolicies[pullModeName].family ~= 'camp' then
+            breakCamp = true
+        elseif loc then
+            if Math.GetDistanceSquared(loc.x, loc.y, campData.campSettings.AutoCampX, campData.campSettings.AutoCampY) <= 100 then
+                loc = nil
+            else
+                breakCamp = true
+            end
+        end
+    end
+    local existingCamp = campData.returnToCamp and Module.Constants.PullModePolicies[pullModeName].family == 'camp' and loc == nil
+    return Module.BuildIntentSentence({
+        mode = pullModeName,
+        scope = Config:GetSetting('PullPeerScope'),
+        scopeWord = Config:GetSetting('PullPeerScope') == 2 and "in-zone" or ((mq.TLO.Raid.Members() or 0) > 0 and "raid" or "group"),
+        manageMovement = Config:GetSetting('PullManagePeerMovement'),
+        breakCamp = breakCamp,
+        existingCamp = existingCamp,
+        locationSet = loc ~= nil,
+        loc = loc,
+        fightToKind = fightToKind,
+        fightToName = fightToName,
+        hasWaypoints = #self:GetEnabledLocations() > 0,
+        waypointCount = #self:GetEnabledLocations(),
+    })
+end
+
+-- Travel & Escort
+function Module.NavDestString(loc)
+    if loc.z then return string.format("locyxz %0.2f %0.2f %0.2f", loc.y, loc.x, loc.z) end
+    return string.format("locxy %0.2f %0.2f", loc.x, loc.y)
+end
+
+function Module.FormatLoc(loc)
+    if loc.z then return string.format("%.0f, %.0f, %.0f", loc.y, loc.x, loc.z) end
+    return string.format("%.0f, %.0f", loc.y, loc.x)
+end
+
+function Module:CheckReachable(destStr)
+    -- PathExists can't resolve a Z for locxy destinations (always false); the nav command can, so let the travel attempt decide
+    if destStr:find("^locxy") then
+        return true, false
+    end
+    if mq.TLO.Navigation.PathExists(destStr)() then
+        self.TempSettings.UnreachableSince = 0
+        return true, false
+    end
+    if self.TempSettings.UnreachableSince == 0 then
+        self.TempSettings.UnreachableSince = Globals.GetTimeSeconds()
+    end
+    return false, (Globals.GetTimeSeconds() - self.TempSettings.UnreachableSince) >= Config:GetSetting('PullIgnoreTime')
+end
+
+function Module:TravelTick(ctx, loc, reason, circuitWpId)
+    if Math.GetDistanceSquared(mq.TLO.Me.X(), mq.TLO.Me.Y(), loc.x, loc.y) <= 2500 then
+        self.TempSettings.Travel = nil
+        return 'arrived'
+    end
+
+    if mq.TLO.Me.Sitting() then
+        Globals.InMedState = false
+    end
+    mq.TLO.Me.Stand()
+
+    self:SetPullState(PullStates.PULL_MOVING_TO_WP, reason)
+
+    if circuitWpId then
+        if self.TempSettings.LocationsToDelete[self:GetWPById(circuitWpId)] then
+            Logger.log_debug("PULL:\arNOTICE:\ax Deleting pull location %d while naving to it.", circuitWpId)
+            Movement:DoNav(false, "stop log=off")
+            self.TempSettings.Travel = nil
+            return 'wpdeleted'
+        end
+    end
+
+    if Targeting.GetXTHaterCount() > 0 then
+        if mq.TLO.Navigation.Active() then
+            Movement:DoNav(false, "stop log=off")
+        end
+        self:SetPullState(PullStates.PULL_NAV_INTERRUPT, "")
+        self.TempSettings.Travel = nil
+        return 'aggro'
+    end
+
+    if self.TempSettings.PausePulls or self.TempSettings.AbortPull or not Config:GetSetting('DoPull') or Globals.PauseMain then
+        self.TempSettings.AbortPull = false
+        Movement:DoNav(false, "stop log=off")
+        self.TempSettings.Travel = nil
+        return 'aborted'
+    end
+
+    local travel = self.TempSettings.Travel
+
+    if not mq.TLO.Navigation.Active() then
+        if not travel then
+            Movement:DoNav(false, "%s log=off", Module.NavDestString(loc))
+            self.TempSettings.Travel = { navIssuedAt = ctx.now, }
+            return 'moving'
+        end
+        if ctx.now - travel.navIssuedAt < 1000 then return 'moving' end
+        self.TempSettings.Travel = nil
+        if circuitWpId then
+            Logger.log_verbose("PULL:TravelTick Waypoint: Something went wrong. Current distance to WP: %d. (Possible manual interruption or conflicting nav command.)",
+                mq.TLO.Math.Distance(string.format("%0.2f, %0.2f, %0.2f", loc.y, loc.x, loc.z))())
+            return 'fail', false
+        end
+        if self.TempSettings.TravelFailSince == 0 then
+            self.TempSettings.TravelFailSince = Globals.GetTimeSeconds()
+        end
+        return 'fail', (Globals.GetTimeSeconds() - self.TempSettings.TravelFailSince) >= Config:GetSetting('PullIgnoreTime')
+    end
+
+    if not travel then
+        self.TempSettings.Travel = { navIssuedAt = ctx.now, }
+    elseif not circuitWpId then
+        self.TempSettings.TravelFailSince = 0
+    end
+
+    if circuitWpId then
+        Logger.log_verbose("PULL:TravelTick Waypoint: %d Aggro Count: %d", circuitWpId, Targeting.GetXTHaterCount())
+    end
+
+    Modules:ExecModule("Movement", "CheckStuck")
+    self:CheckMoveAbilities()
+
+    if mq.TLO.Navigation.Paused() then
+        Movement:DoNav(false, "pause log=off")
+    end
+
+    return 'moving'
+end
+
+function Module:AllEscortsArrived()
+    if not self.TempSettings.EscortPeers then return false end
+    local stopDist = Config:GetSetting('ChaseStopDistance') + 10
+    for _, peer in ipairs(self.TempSettings.EscortPeers) do
+        local hb = Comms.GetPeerHeartbeat(peer.key)
+        if not hb.LastHeartbeat or (Globals.GetTimeSeconds() - hb.LastHeartbeat) > 2 then return false end
+        local d = hb.Data
+        if d.ZoneId ~= mq.TLO.Zone.ID() or d.InstanceId ~= mq.TLO.Me.Instance() then return false end
+        if not (d.X and d.Y and d.Z) then return false end
+        if mq.TLO.Math.Distance(string.format("%d, %d, %d", d.Y, d.X, d.Z))() > stopDist then return false end
+    end
+    return true
+end
+
+function Module:ClearEscortState()
+    self.TempSettings.EscortPeers = nil
+    self.TempSettings.EscortScopeWord = nil
+    self.TempSettings.CampArrivalWaitStart = nil
+end
+
+function Module:GroupOrRaidPeers(includeSelf)
+    return (mq.TLO.Raid.Members() or 0) > 0 and Comms.GetRaidPeers(includeSelf) or Comms.GetGroupPeers(includeSelf)
+end
+
+-- Pull Gating & Vitals Watch
 ---@param campData table
 ---@return boolean, string
 function Module:ShouldPull(campData)
     local me = mq.TLO.Me
+    local policy = self:GetModePolicy()
 
     if self.TempSettings.PausePulls then
         Logger.log_verbose("\ay::PULL:: \arAborted!\ax Pulls are Paused.")
@@ -1461,13 +3007,13 @@ function Module:ShouldPull(campData)
         end
     end
 
-    if (me.Rooted.ID() or 0 > 0) then
+    if (me.Rooted.ID() or 0) > 0 then
         Logger.log_verbose("\ay::PULL:: \arAborted!\ax I am rooted!")
         return false, string.format("Rooted")
     end
 
     if not Config:GetSetting('PullDebuffed') then
-        if (me.Snared.ID() or 0 > 0) then
+        if (me.Snared.ID() or 0) > 0 then
             Logger.log_verbose("\ay::PULL:: \arAborted!\ax I am snared!")
             return false, string.format("Snared")
         end
@@ -1482,23 +3028,23 @@ function Module:ShouldPull(campData)
             return false, string.format("Ice Infection")
         end
 
-        if (me.Poisoned.ID() or 0 > 0) and not (me.Tashed.ID()) or 0 > 0 then
+        if (me.Poisoned.ID() or 0) > 0 and not ((me.Tashed.ID() or 0) > 0) then
             Logger.log_verbose("\ay::PULL:: \arAborted!\ax I am poisoned!")
             return false, string.format("Poisoned")
         end
 
-        if (me.Diseased.ID() or 0 > 0) then
+        if (me.Diseased.ID() or 0) > 0 then
             Logger.log_verbose("\ay::PULL:: \arAborted!\ax I am diseased!")
             return false, string.format("Diseased")
         end
 
-        if (me.Cursed.ID() or 0 > 0) then
+        if (me.Cursed.ID() or 0) > 0 then
             Logger.log_verbose("\ay::PULL:: \arAborted!\ax I am cursed!")
             return false, string.format("Cursed")
         end
 
         -- Laz Marr's and GM Buffs are Corruption effects.
-        if not Core.OnLaz() and (me.Corrupted.ID() or 0 > 0) then
+        if not Core.OnLaz() and (me.Corrupted.ID() or 0) > 0 then
             Logger.log_verbose("\ay::PULL:: \arAborted!\ax I am corrupted!")
             return false, string.format("Corrupted")
         end
@@ -1511,22 +3057,30 @@ function Module:ShouldPull(campData)
         end
     end
 
-    if self:IsPullMode("Chain") and Targeting.GetXTHaterCount() >= Config:GetSetting('ChainCount') then
+    if policy.successCheck == 'chainCount' and Targeting.GetXTHaterCount() >= Config:GetSetting('ChainCount') then
         Logger.log_verbose("\ay::PULL:: \arAborted!\ax XTargetCount(%d) >= ChainCount(%d)", Targeting.GetXTHaterCount(), Config:GetSetting('ChainCount'))
         return false, string.format("XTargetCount(%d) > ChainCount(%d)", Targeting.GetXTHaterCount(), Config:GetSetting('ChainCount'))
     end
 
-    if not self:IsPullMode("Chain") and Targeting.GetXTHaterCount() > 0 then
+    if policy.successCheck ~= 'chainCount' and Targeting.GetXTHaterCount() > 0 then
         Logger.log_verbose("\ay::PULL:: \arAborted!\ax XTargetCount(%d) > 0", Targeting.GetXTHaterCount())
         return false, string.format("XTargetCount(%d) > 0", Targeting.GetXTHaterCount())
     end
 
-    if (self:IsPullMode("Normal") or self:IsPullMode("Chain")) and not campData.returnToCamp then
+    if Config:GetSetting('DoPull') and policy.family == 'camp' and not campData.returnToCamp
+        and not self.TempSettings.CampTravelLoc and not self.TempSettings.Travel then
         Logger.log_warn("\ar ALERT: No camp set for camp-style pull mode - Disabling Pulling. \ax")
-        Comms.HandleAnnounce(Comms.FormatChatEvent("Pull", "None", "No camp set - Disabling pulls. Use /rgl campon and re-enable pulls."),
-            Config:GetSetting('PullAnnounceGroup'), Config:GetSetting('PullAnnounce'), Config:GetSetting('AnnounceToRaidIfInRaid'))
-        Config:SetSetting('DoPull', false)
+        self:Announce("None", "No camp set - Disabling pulls. Use /rgl campon and re-enable pulls.")
+        self:StopPuller()
         return false, "No camp set"
+    end
+
+    if Config:GetSetting('DoPull') and policy.family ~= 'camp' and campData.returnToCamp then
+        local pullModeName = self.Constants.PullModeDisplays[Module.PullModeIndex(Config:GetSetting('PullMode'))]
+        Logger.log_warn("\ar ALERT: A camp is set, but %s mode is incompatible with camps - Disabling Pulling. \ax", pullModeName)
+        self:Announce("None", string.format("Camp set - %s mode is incompatible with camps. Disabling pulls. Use /rgl campoff and re-enable pulls.", pullModeName))
+        self:StopPuller()
+        return false, "Camp set"
     end
 
     if campData.returnToCamp and Math.GetDistanceSquared(me.X(), me.Y(), campData.campSettings.AutoCampX, campData.campSettings.AutoCampY) > math.max(Config:GetSetting('AutoCampRadius') ^ 2, 200 ^ 2) then
@@ -1534,9 +3088,7 @@ function Module:ShouldPull(campData)
         local now = Globals.GetTimeSeconds()
         if (now - self.TempSettings.LastTooFarAnnounce) > 30 then
             self.TempSettings.LastTooFarAnnounce = now
-            Comms.HandleAnnounce(Comms.FormatChatEvent("Pull", "None", "I am too far away from camp - Holding pulls!"), Config:GetSetting('PullAnnounceGroup'),
-                Config:GetSetting('PullAnnounce'),
-                Config:GetSetting('AnnounceToRaidIfInRaid'))
+            self:Announce("None", "I am too far away from camp - Holding pulls!")
         end
         return false,
             string.format("I am Too Far (%d) (%d,%d) (%d,%d)", Math.GetDistanceSquared(me.X(), me.Y(), campData.campSettings.AutoCampX, campData.campSettings.AutoCampY),
@@ -1547,31 +3099,11 @@ function Module:ShouldPull(campData)
     return true, ""
 end
 
-function Module:FarmFullInvActions()
-    -- Bags are full. We now try and do the following...
-    -- 1. Call a specifical sub defined in rgcustom.inc if it exists
-    -- 2. Call origin if we have it and its ready so we can go home and sell
-    -- 3. Stop farming
-    --/if (${SubDefined[Farm_${Zone.ShortName}_FullInventory]}) {
-    --    -/call Farm_${Zone.ShortName}_FullInventory
-    -- } else /if (${RG_AAReady[Origin]}) {
-    --    /call AANow ${Me.AltAbility[Origin].ID} ${Me.ID}
-    -- } else {
-    --    /echo Bags are full, can't origin back home. Stopping and beeping.
-    --    /rg DoPull 0
-    --    /beep
-    -- }
-
-    Logger.log_error("\arStopping Pulls - Bags are full!")
-    Config:SetSetting('DoPull', false)
-    Core.DoCmd("/beep")
-end
-
 ---@param resourceResumePct number -- Resume pulls at this pct
 ---@param resourcePausePct number -- Hold pulls at this pct
 ---@param campData table
 ---@return boolean, string
-function Module:CheckGroupForPull(resourceResumePct, resourcePausePct, campData)
+function Module:CheckGroupForPull(resourceResumePct, resourcePausePct, campData, skipNames, isHolding)
     local groupCount = mq.TLO.Group.Members()
 
     if not groupCount or groupCount == 0 then return true, "" end
@@ -1583,28 +3115,27 @@ function Module:CheckGroupForPull(resourceResumePct, resourcePausePct, campData)
 
     for i = 1, groupCount do
         local member = mq.TLO.Group.Member(i)
-        if member() and member.ID() > 0 and watchSet:contains(member.Class.ShortName() or "") then
-            local resourcePct = self.TempSettings.PullState == PullStates.PULL_GROUPWATCH_WAIT and resourceResumePct or resourcePausePct
+        if member() and (member.ID() or 0) > 0 and not (skipNames and skipNames[member.Name() or ""]) and watchSet:contains(member.Class.ShortName() or "") then
+            if member.OtherZone() then
+                self:Announce(member.CleanName(), "Not in Zone - Holding pulls!")
+                return false, string.format("%s Out of Zone", member.CleanName())
+            end
+
+            local resourcePct = isHolding and resourceResumePct or resourcePausePct
             if member.PctHPs() < resourcePct then
-                Comms.HandleAnnounce(Comms.FormatChatEvent("Pull", member.CleanName(), "Low on hp - Holding pulls!"),
-                    Config:GetSetting('PullAnnounceGroup'), Config:GetSetting('PullAnnounce'),
-                    Config:GetSetting('AnnounceToRaidIfInRaid'))
+                self:Announce(member.CleanName(), "Low on hp - Holding pulls!")
                 Logger.log_verbose("\arMember is low on Health - \ayHolding pulls!\ax\ag ResourcePCT:\ax \at%d \aoStopPct: \at%d \ayStartPct: \at%d \aoPullState: \at%d",
                     resourcePct, resourcePausePct, resourceResumePct, self.TempSettings.PullState)
                 return false, string.format("%s Low HP", member.CleanName())
             end
             if member.Class.CanCast() and member.Class.ShortName() ~= "BRD" and member.PctMana() < resourcePct then
-                Comms.HandleAnnounce(Comms.FormatChatEvent("Pull", member.CleanName(), "Low on mana - Holding pulls!"),
-                    Config:GetSetting('PullAnnounceGroup'),
-                    Config:GetSetting('PullAnnounce'), Config:GetSetting('AnnounceToRaidIfInRaid'))
+                self:Announce(member.CleanName(), "Low on mana - Holding pulls!")
                 Logger.log_verbose("\arMember is low on Mana - \ayHolding pulls!\ax\ag ResourcePCT:\ax \at%d \aoStopPct: \at%d \ayStartPct: \at%d \aoPullState: \at%d",
                     resourcePct, resourcePausePct, resourceResumePct, self.TempSettings.PullState)
                 return false, string.format("%s Low Mana", member.CleanName())
             end
             if Config:GetSetting('WatchEnd') and member.Class.ShortName() ~= "BRD" and member.PctEndurance() < resourcePct then
-                Comms.HandleAnnounce(Comms.FormatChatEvent("Pull", member.CleanName(), "Low on endurance - Holding pulls!"),
-                    Config:GetSetting('PullAnnounceGroup'),
-                    Config:GetSetting('PullAnnounce'), Config:GetSetting('AnnounceToRaidIfInRaid'))
+                self:Announce(member.CleanName(), "Low on endurance - Holding pulls!")
                 Logger.log_verbose(
                     "\arMember is low on Endurance - \ayHolding pulls!\ax\ag ResourcePCT:\ax \at%d \aoStopPct: \at%d \ayStartPct: \at%d \aoPullState: \at%d", resourcePct,
                     resourcePausePct, resourceResumePct, self.TempSettings.PullState)
@@ -1612,24 +3143,13 @@ function Module:CheckGroupForPull(resourceResumePct, resourcePausePct, campData)
             end
 
             if member.Hovering() then
-                Comms.HandleAnnounce(Comms.FormatChatEvent("Pull", member.CleanName(), "Dead - Holding pulls!"), Config:GetSetting('PullAnnounceGroup'),
-                    Config:GetSetting('PullAnnounce'),
-                    Config:GetSetting('AnnounceToRaidIfInRaid'))
+                self:Announce(member.CleanName(), "Dead - Holding pulls!")
                 return false, string.format("%s Dead", member.CleanName())
-            end
-
-            if member.OtherZone() then
-                Comms.HandleAnnounce(Comms.FormatChatEvent("Pull", member.CleanName(), "Not in Zone - Holding pulls!"),
-                    Config:GetSetting('PullAnnounceGroup'),
-                    Config:GetSetting('PullAnnounce'), Config:GetSetting('AnnounceToRaidIfInRaid'))
-                return false, string.format("%s Out of Zone", member.CleanName())
             end
 
             if campData.returnToCamp then
                 if Math.GetDistanceSquared(member.X(), member.Y(), campData.campSettings.AutoCampX, campData.campSettings.AutoCampY) > maxDist then
-                    Comms.HandleAnnounce(Comms.FormatChatEvent("Pull", member.CleanName(), "Too far away - Holding pulls!"),
-                        Config:GetSetting('PullAnnounceGroup'),
-                        Config:GetSetting('PullAnnounce'), Config:GetSetting('AnnounceToRaidIfInRaid'))
+                    self:Announce(member.CleanName(), "Too far away - Holding pulls!")
                     return false,
                         string.format("%s Too Far (%d) (%d,%d) (%d,%d)", member.CleanName(),
                             Math.GetDistance(member.X(), member.Y(), campData.campSettings.AutoCampX, campData.campSettings.AutoCampY), member.X(), member.Y(),
@@ -1637,34 +3157,26 @@ function Module:CheckGroupForPull(resourceResumePct, resourcePausePct, campData)
                 end
             else
                 if (member.Distance() or 0) > math.max(Config:GetSetting('AutoCampRadius'), 200) then
-                    Comms.HandleAnnounce(Comms.FormatChatEvent("Pull", member.CleanName(), "Too far away - Holding pulls!"),
-                        Config:GetSetting('PullAnnounceGroup'),
-                        Config:GetSetting('PullAnnounce'), Config:GetSetting('AnnounceToRaidIfInRaid'))
+                    self:Announce(member.CleanName(), "Too far away - Holding pulls!")
                     return false,
                         string.format("%s Too Far (%d) (%d,%d) (%d,%d)", member.CleanName(),
-                            Math.GetDistance(member.X(), member.Y(), campData.campSettings.AutoCampX, campData.campSettings.AutoCampY), member.X(), member.Y(),
+                            member.Distance() or 0, member.X(), member.Y(),
                             mq.TLO.Me.X(),
                             mq.TLO.Me.Y())
                 end
             end
 
-            if self.Constants.PullModes[Config:GetSetting('PullMode')] == "Chain" then
+            if Config:GetSetting('PullMode') == "ChainToCamp" then
                 if member.ID() == Core.GetMainAssistId() then
                     if campData.returnToCamp and Math.GetDistanceSquared(member.X(), member.Y(), campData.campSettings.AutoCampX, campData.campSettings.AutoCampY) > maxDist then
-                        Comms.HandleAnnounce(
-                            Comms.FormatChatEvent("Pull", member.CleanName(), string.format("Assist Target is beyond AutoCampRadius from %d, %d, %d : %d. Holding pulls.",
-                                campData.campSettings.AutoCampY,
-                                campData.campSettings.AutoCampX, campData.campSettings.AutoCampZ, Config:GetSetting('AutoCampRadius'))), Config:GetSetting('PullAnnounceGroup'),
-                            Config:GetSetting('PullAnnounce'), Config:GetSetting('AnnounceToRaidIfInRaid'))
+                        self:Announce(member.CleanName(), string.format("Assist Target is beyond AutoCampRadius from %d, %d, %d : %d. Holding pulls.",
+                            campData.campSettings.AutoCampY, campData.campSettings.AutoCampX, campData.campSettings.AutoCampZ, Config:GetSetting('AutoCampRadius')))
                         return false, string.format("%s Beyond AutoCampRadius", member.CleanName())
                     end
                 else
                     if Math.GetDistanceSquared(member.X(), member.Y(), mq.TLO.Me.X(), mq.TLO.Me.Y()) > maxDist then
-                        Comms.HandleAnnounce(
-                            Comms.FormatChatEvent("Pull", member.CleanName(),
-                                string.format("Assist Target is beyond AutoCampRadius from me : %d. Holding pulls.", Config:GetSetting('AutoCampRadius'))),
-                            Config:GetSetting('PullAnnounceGroup'),
-                            Config:GetSetting('PullAnnounce'), Config:GetSetting('AnnounceToRaidIfInRaid'))
+                        self:Announce(member.CleanName(),
+                            string.format("Assist Target is beyond AutoCampRadius from me : %d. Holding pulls.", Config:GetSetting('AutoCampRadius')))
                         return false, string.format("%s Beyond AutoCampRadius", member.CleanName())
                     end
                 end
@@ -1673,99 +3185,71 @@ function Module:CheckGroupForPull(resourceResumePct, resourcePausePct, campData)
     end
 
     return true, ""
-end
-
-function Module.IsPeerWatched(data, watchSet)
-    -- Class is watched
-    -- Server is the same
-    -- Either in a raid or group with me.
-    return data and data.Class and watchSet:contains(data.Class) and
-        (data.Server or "") == Globals.CurServer and
-        (data.GroupLeader == mq.TLO.Group.Leader() or
-            data.RaidLeader == mq.TLO.Raid.Leader())
 end
 
 ---@param resourceResumePct number
 ---@param resourcePausePct  number
 ---@param campData table
 ---@return boolean, string
-function Module:CheckPeersForPull(resourceResumePct, resourcePausePct, campData)
+function Module:CheckPeersForPull(resourceResumePct, resourcePausePct, campData, peerList, isHolding)
     local watchedClasses = Config:GetSetting('WatchClasses') or {}
     if not next(watchedClasses) then return true, "" end
 
-    local watchSet   = Set.new(watchedClasses)
-    local heartbeats = Comms.GetAllPeerHeartbeats()
-    local maxDist    = math.max(Config:GetSetting('AutoCampRadius') ^ 2, 200 ^ 2)
+    local watchSet = Set.new(watchedClasses)
+    local maxDist  = math.max(Config:GetSetting('AutoCampRadius') ^ 2, 200 ^ 2)
 
-    for _, hb in pairs(heartbeats) do
-        local data = hb.Data
-        if self.IsPeerWatched(data, watchSet) then
-            local resourcePct = self.TempSettings.PullState == PullStates.PULL_PEERWATCH_WAIT and resourceResumePct or resourcePausePct
+    for _, peer in ipairs(peerList) do
+        local data = peer.data
+        if watchSet:contains(data.Class) then
+            local resourcePct = isHolding and resourceResumePct or resourcePausePct
             local name        = data.Name or data.From or "Unknown"
 
             if (data.HPs or 100) == 0 then
-                Comms.HandleAnnounce(Comms.FormatChatEvent("Pull", name, "Dead - Holding pulls!"),
-                    Config:GetSetting('PullAnnounceGroup'), Config:GetSetting('PullAnnounce'), Config:GetSetting('AnnounceToRaidIfInRaid'))
+                self:Announce(name, "Dead - Holding pulls!")
                 return false, string.format("%s Dead", name)
             end
 
             if (data.HPs or 100) < resourcePct then
-                Comms.HandleAnnounce(Comms.FormatChatEvent("Pull", name, "Low on hp - Holding pulls!"),
-                    Config:GetSetting('PullAnnounceGroup'), Config:GetSetting('PullAnnounce'), Config:GetSetting('AnnounceToRaidIfInRaid'))
+                self:Announce(name, "Low on hp - Holding pulls!")
                 return false, string.format("%s Low HP", name)
             end
 
             local useMana = Globals.Constants.RGCasters:contains(data.Class)
             if useMana and data.Class ~= "BRD" and data.Mana and data.Mana < resourcePct then
-                Comms.HandleAnnounce(Comms.FormatChatEvent("Pull", name, "Low on mana - Holding pulls!"),
-                    Config:GetSetting('PullAnnounceGroup'), Config:GetSetting('PullAnnounce'), Config:GetSetting('AnnounceToRaidIfInRaid'))
+                self:Announce(name, "Low on mana - Holding pulls!")
                 return false, string.format("%s Low Mana", name)
             end
 
             if Config:GetSetting('WatchEnd') and data.Class ~= "BRD" and data.Endurance and data.Endurance < resourcePct then
-                Comms.HandleAnnounce(Comms.FormatChatEvent("Pull", name, "Low on endurance - Holding pulls!"),
-                    Config:GetSetting('PullAnnounceGroup'), Config:GetSetting('PullAnnounce'), Config:GetSetting('AnnounceToRaidIfInRaid'))
+                self:Announce(name, "Low on endurance - Holding pulls!")
                 return false, string.format("%s Low End", name)
-            end
-
-            if data.ZoneId ~= Globals.CurZoneId or data.InstanceId ~= Globals.CurInstanceId then
-                Comms.HandleAnnounce(Comms.FormatChatEvent("Pull", name, "Not in Zone - Holding pulls!"),
-                    Config:GetSetting('PullAnnounceGroup'), Config:GetSetting('PullAnnounce'), Config:GetSetting('AnnounceToRaidIfInRaid'))
-                return false, string.format("%s Out of Zone", name)
             end
 
             if data.X and data.Y then
                 if campData.returnToCamp then
                     if Math.GetDistanceSquared(data.X, data.Y, campData.campSettings.AutoCampX, campData.campSettings.AutoCampY) > maxDist then
-                        Comms.HandleAnnounce(Comms.FormatChatEvent("Pull", name, "Too far away - Holding pulls!"),
-                            Config:GetSetting('PullAnnounceGroup'), Config:GetSetting('PullAnnounce'), Config:GetSetting('AnnounceToRaidIfInRaid'))
+                        self:Announce(name, "Too far away - Holding pulls!")
                         return false, string.format("%s Too Far (%d)", name,
                             Math.GetDistance(data.X, data.Y, campData.campSettings.AutoCampX, campData.campSettings.AutoCampY))
                     end
                 else
                     if Math.GetDistanceSquared(data.X, data.Y, mq.TLO.Me.X(), mq.TLO.Me.Y()) > maxDist then
-                        Comms.HandleAnnounce(Comms.FormatChatEvent("Pull", name, "Too far away - Holding pulls!"),
-                            Config:GetSetting('PullAnnounceGroup'), Config:GetSetting('PullAnnounce'), Config:GetSetting('AnnounceToRaidIfInRaid'))
+                        self:Announce(name, "Too far away - Holding pulls!")
                         return false, string.format("%s Too Far (%d)", name,
                             Math.GetDistance(data.X, data.Y, mq.TLO.Me.X(), mq.TLO.Me.Y()))
                     end
                 end
 
-                if self.Constants.PullModes[Config:GetSetting('PullMode')] == "Chain" and data.X and data.Y then
+                if Config:GetSetting('PullMode') == "ChainToCamp" and data.X and data.Y then
                     if name == Globals.MainAssist then
                         if campData.returnToCamp and Math.GetDistanceSquared(data.X, data.Y, campData.campSettings.AutoCampX, campData.campSettings.AutoCampY) > maxDist then
-                            Comms.HandleAnnounce(
-                                Comms.FormatChatEvent("Pull", name, string.format("Assist Target is beyond AutoCampRadius from %d, %d, %d : %d. Holding pulls.",
-                                    campData.campSettings.AutoCampY, campData.campSettings.AutoCampX, campData.campSettings.AutoCampZ, Config:GetSetting('AutoCampRadius'))),
-                                Config:GetSetting('PullAnnounceGroup'), Config:GetSetting('PullAnnounce'), Config:GetSetting('AnnounceToRaidIfInRaid'))
+                            self:Announce(name, string.format("Assist Target is beyond AutoCampRadius from %d, %d, %d : %d. Holding pulls.",
+                                campData.campSettings.AutoCampY, campData.campSettings.AutoCampX, campData.campSettings.AutoCampZ, Config:GetSetting('AutoCampRadius')))
                             return false, string.format("%s Beyond AutoCampRadius", name)
                         end
                     else
                         if Math.GetDistanceSquared(data.X, data.Y, mq.TLO.Me.X(), mq.TLO.Me.Y()) > maxDist then
-                            Comms.HandleAnnounce(
-                                Comms.FormatChatEvent("Pull", name,
-                                    string.format("Assist Target is beyond AutoCampRadius from me : %d. Holding pulls.", Config:GetSetting('AutoCampRadius'))),
-                                Config:GetSetting('PullAnnounceGroup'), Config:GetSetting('PullAnnounce'), Config:GetSetting('AnnounceToRaidIfInRaid'))
+                            self:Announce(name, string.format("Assist Target is beyond AutoCampRadius from me : %d. Holding pulls.", Config:GetSetting('AutoCampRadius')))
                             return false, string.format("%s Beyond AutoCampRadius", name)
                         end
                     end
@@ -1777,192 +3261,50 @@ function Module:CheckPeersForPull(resourceResumePct, resourcePausePct, campData)
     return true, ""
 end
 
-function Module:RenderWatchCombo()
-    local groupWatchOn = Config:GetSetting('GroupWatch')
-    local peerWatchOn  = Config:GetSetting('PeerWatch')
-    if not groupWatchOn and not peerWatchOn then return end
+-- True when we're standing idle during a pull hold and below our med-stop level on a stat our class uses.
+---@return boolean
+function Module:ShouldSitToMed()
+    local me = mq.TLO.Me
+    if not me.Standing() or me.Moving() then return false end
 
-    local watchedClasses = Config:GetSetting('WatchClasses') or {}
-    local watchSet       = Set.new(watchedClasses)
-    local label          = next(watchedClasses) and table.concat(watchedClasses, ", ") or "None"
+    local needHP = me.PctHPs() < Config:GetSetting('HPMedPctStop')
+    local needMana = me.MaxMana() > 0 and me.PctMana() < Config:GetSetting('ManaMedPctStop')
+    local needEndurance = not Globals.Constants.RGCasters:contains(me.Class.ShortName()) and me.PctEndurance() < Config:GetSetting('EndMedPctStop')
 
-    ImGui.Text("Watched Classes:")
-    if ImGui.BeginCombo("##WatchClasses", label) then
-        for _, class in ipairs(Globals.Constants.AllClasses) do
-            local selected    = watchSet:contains(class)
-            local newSelected = ImGui.Checkbox(class, selected)
-            if newSelected ~= selected then
-                if newSelected then watchSet:add(class) else watchSet:remove(class) end
-                Config:SetSetting('WatchClasses', watchSet:toList())
-            end
-        end
-        ImGui.EndCombo()
-    end
-
-    if not next(watchedClasses) then return end
-
-    ImGui.Spacing()
-    local items = {}
-    if peerWatchOn then
-        for _, hb in pairs(Comms.GetAllPeerHeartbeats()) do
-            local data = hb.Data
-            if self.IsPeerWatched(data, watchSet) then
-                local name        = data.Name or data.From or "?"
-                local hp          = data.HPs and string.format("%d%%", data.HPs) or "?"
-                local mana        = data.Mana and string.format("%d%%", data.Mana) or "-"
-                local endu        = data.Endurance and string.format("%d%%", data.Endurance) or "-"
-                items[#items + 1] = string.format("[%s] %s  HP:%s  Mana:%s  End:%s", data.Class, name, hp, mana, endu)
-            end
-        end
-        if #items == 0 then items[1] = "No matching peers online" end
-    else
-        local groupCount = mq.TLO.Group.Members() or 0
-        for i = 1, groupCount do
-            local member = mq.TLO.Group.Member(i)
-            if member() and member.ID() > 0 and watchSet:contains(member.Class.ShortName() or "") then
-                local name        = member.CleanName() or "?"
-                local hp          = string.format("%d%%", member.PctHPs() or 0)
-                local mana        = member.Class.CanCast() and string.format("%d%%", member.PctMana() or 0) or "-"
-                local endu        = string.format("%d%%", member.PctEndurance() or 0)
-                items[#items + 1] = string.format("[%s] %s  HP:%s  Mana:%s  End:%s", member.Class.ShortName(), name, hp, mana, endu)
-            end
-        end
-        if #items == 0 then items[1] = "No matching group members" end
-    end
-    local selected = 0
-    ImGui.ListBox("##WatchList", selected, items, #items, math.max(2, #items))
+    return needHP or needMana or needEndurance
 end
 
-function Module:FixPullerMerc()
-    if Globals.GetTimeSeconds() - self.TempSettings.LastPullerMercCheck < 15 then return end
-    self.TempSettings.LastPullerMercCheck = Globals.GetTimeSeconds()
-
-    if mq.TLO.Group.Leader() ~= mq.TLO.Me.DisplayName() then return end
-
-    local groupCount = mq.TLO.Group.Members()
-
-    for i = 1, groupCount do
-        local merc = mq.TLO.Group.Member(i)
-
-        if merc and merc() and Targeting.TargetIsType("Mercenary", merc) and merc.Owner.DisplayName() == mq.TLO.Group.Puller() then
-            if (merc.Distance() or 0) > Config:GetSetting('AutoCampRadius') and (merc.Owner.Distance() or 0) < Config:GetSetting('AutoCampRadius') then
-                Core.DoCmd("/grouproles unset %s 3", merc.Owner.DisplayName())
-                mq.delay("10s", function() return (merc.Distance() or 0) < Config:GetSetting('AutoCampRadius') end)
-                Core.DoCmd("/grouproles set %s 3", merc.Owner.DisplayName())
-            end
-        end
-    end
-end
-
+-- Target Scanning
 function Module:GetPullableSpawns()
     local maxPathRange = Config:GetSetting('MaxPathRange')
+    local policy = self:GetModePolicy()
 
     local metaDataCache = {}
 
-    if self:IsPullMode("Farm") then
-        self.TempSettings.PullRadius = Config:GetSetting('PullRadiusFarm')
-    elseif self:IsPullMode("Hunt") then
-        self.TempSettings.PullRadius = Config:GetSetting('PullRadiusHunt')
-    else
-        self.TempSettings.PullRadius = Config:GetSetting('PullRadius')
-    end
+    self.TempSettings.PullRadius = Config:GetSetting(policy.radiusSetting)
 
     local pullRadiusSqr = self.TempSettings.PullRadius * self.TempSettings.PullRadius
+
+    local checkX, checkY, checkZ = mq.TLO.Me.X(), mq.TLO.Me.Y(), mq.TLO.Me.Z()
+
+    if policy.scanCenter == 'waypoint' then
+        local wpData = self:GetWPById(self:GetCurrentWpId())
+        checkX, checkY, checkZ = wpData.x, wpData.y, wpData.z
+    elseif policy.scanCenter == 'anchor' and self.TempSettings.HuntAnchor then
+        checkX, checkY, checkZ = self.TempSettings.HuntAnchor.x, self.TempSettings.HuntAnchor.y, self.TempSettings.HuntAnchor.z
+    end
+
+    local logSpawnNames = Logger.get_log_level() >= 5
 
     local spawnFilter = function(spawn)
         if not spawn() or spawn.ID() == 0 then return false end
         if not spawn.Targetable() then return false end
-        if spawn.Type() ~= "NPC" and spawn.Type() ~= "NPCPET" then
-            Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \aois type %s not an NPC or NPCPET -- Skipping", spawn.CleanName(), spawn.ID(),
-                spawn.Type())
-            return false
-        end
 
-        if spawn.Master.Type() == 'PC' then
-            Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \aois Charmed Pet -- Skipping", spawn.CleanName(), spawn.ID())
-            return false
-        end
-
-        if Targeting.IsTempPet(spawn) then
-            Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \aois Temp or Swarm Pet -- Skipping", spawn.CleanName(), spawn.ID())
-            return false
-        end
-
-        if self:IsPullMode("Chain") then
-            if Targeting.IsSpawnXTHater(spawn.ID()) then
-                Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \aoAlready on XTarget -- Skipping", spawn.CleanName(), spawn.ID())
-                return false
-            end
-        end
-
-        if self:HaveList("PullAllowList") then
-            if self:IsMobInList("PullAllowList", spawn.CleanName(), true) == false then
-                Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \ar -> Not Found in Allow List!", spawn.CleanName(), spawn.ID())
-                return false
-            end
-        elseif self:HaveList("PullDenyList") then
-            if self:IsMobInList("PullDenyList", spawn.CleanName(), false) == true then
-                Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \ar -> Found in Deny List!", spawn.CleanName(), spawn.ID())
-                return false
-            end
-        end
-
-        for _, ignoredMob in ipairs(self.TempSettings.PullIgnoreTargets) do
-            if spawn.ID() == ignoredMob.ID() then
-                Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \ar -> Found in Ignore List!", spawn.CleanName(), spawn.ID())
-                return false
-            end
-        end
-
-        if spawn.FeetWet() and not Config:GetSetting('PullMobsInWater') then
-            Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \agIgnoring mob in water", spawn.CleanName(), spawn.ID())
-            return false
-        end
-
-        -- Level Checks
-        if Config:GetSetting('UsePullLevels') then
-            if spawn.Level() < Config:GetSetting('PullMinLevel') then
-                Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \aoLevel too low - %d", spawn.CleanName(), spawn.ID(),
-                    spawn.Level())
-                return false
-            end
-            if spawn.Level() > Config:GetSetting('PullMaxLevel') then
-                Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \aoLevel too high - %d", spawn.CleanName(), spawn.ID(),
-                    spawn.Level())
-                return false
-            end
-        else
-            -- check cons.
-            local conLevel = Globals.Constants.ConColorsNameToId[spawn.ConColor()]
-            if conLevel > Config:GetSetting('PullMaxCon') or conLevel < Config:GetSetting('PullMinCon') then
-                Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw)  - Ignoring mob due to con color. Min = %d, Max = %d, Mob = %d (%s)",
-                    spawn.CleanName(), spawn.ID(),
-                    Config:GetSetting('PullMinCon'),
-                    Config:GetSetting('PullMaxCon'), conLevel, spawn.ConColor())
-                return false
-            end
-            -- check max level difference
-            local maxLvl = mq.TLO.Me.Level() + Config:GetSetting('MaxLevelDiff')
-            if spawn.Level() > maxLvl then
-                Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw)  - Ignoring mob due to max level difference. Max Level = %d, Mob = %d",
-                    spawn.CleanName(), spawn.ID(), maxLvl, spawn.Level())
-                return false
-            end
-        end
-
-        local checkX, checkY, checkZ = mq.TLO.Me.X(), mq.TLO.Me.Y(), mq.TLO.Me.Z()
-
-        if self:IsPullMode("Farm") then
-            local wpId = self:GetCurrentWpId()
-            local wpData = self:GetWPById(wpId)
-            checkX, checkY, checkZ = wpData.x, wpData.y, wpData.z
-        elseif self:IsPullMode("Hunt") then
-            checkX, checkY, checkZ = self.TempSettings.HuntX, self.TempSettings.HuntY, self.TempSettings.HuntZ
-        end
+        local spawnName = logSpawnNames and spawn.CleanName() or ""
 
         -- do distance checks.
         if math.abs(spawn.Z() - checkZ) > Config:GetSetting('PullZRadius') then
-            Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \aoZDistance too far - %d > %d", spawn.CleanName(), spawn.ID(),
+            Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \aoZDistance too far - %d > %d", spawnName, spawn.ID(),
                 math.abs(spawn.Z() - checkZ),
                 Config:GetSetting('PullZRadius'))
             return false
@@ -1972,9 +3314,87 @@ function Module:GetPullableSpawns()
 
         if distSqr > pullRadiusSqr then
             Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \aoDistance too far - distSq(%d) > pullRadiusSq(%d)",
-                spawn.CleanName(), spawn.ID(), distSqr,
+                spawnName, spawn.ID(), distSqr,
                 pullRadiusSqr)
             return false
+        end
+
+        if spawn.Type() ~= "NPC" and spawn.Type() ~= "NPCPET" then
+            Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \aois type %s not an NPC or NPCPET -- Skipping", spawnName, spawn.ID(),
+                spawn.Type())
+            return false
+        end
+
+        if spawn.Master.Type() == 'PC' then
+            Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \aois Charmed Pet -- Skipping", spawnName, spawn.ID())
+            return false
+        end
+
+        if Targeting.IsTempPet(spawn) then
+            Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \aois Temp or Swarm Pet -- Skipping", spawnName, spawn.ID())
+            return false
+        end
+
+        if policy.successCheck == 'chainCount' then
+            if Targeting.IsSpawnXTHater(spawn.ID()) then
+                Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \aoAlready on XTarget -- Skipping", spawnName, spawn.ID())
+                return false
+            end
+        end
+
+        if self:HaveList("PullAllowList") then
+            if self:IsMobInList("PullAllowList", spawn.CleanName(), true) == false then
+                Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \ar -> Not Found in Allow List!", spawnName, spawn.ID())
+                return false
+            end
+        elseif self:HaveList("PullDenyList") then
+            if self:IsMobInList("PullDenyList", spawn.CleanName(), false) == true then
+                Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \ar -> Found in Deny List!", spawnName, spawn.ID())
+                return false
+            end
+        end
+
+        for _, ignoredMob in ipairs(self.TempSettings.PullIgnoreTargets) do
+            if spawn.ID() == ignoredMob.ID() then
+                Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \ar -> Found in Ignore List!", spawnName, spawn.ID())
+                return false
+            end
+        end
+
+        if spawn.FeetWet() and not Config:GetSetting('PullMobsInWater') then
+            Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \agIgnoring mob in water", spawnName, spawn.ID())
+            return false
+        end
+
+        -- Level Checks
+        if Config:GetSetting('UsePullLevels') then
+            if spawn.Level() < Config:GetSetting('PullMinLevel') then
+                Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \aoLevel too low - %d", spawnName, spawn.ID(),
+                    spawn.Level())
+                return false
+            end
+            if spawn.Level() > Config:GetSetting('PullMaxLevel') then
+                Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \aoLevel too high - %d", spawnName, spawn.ID(),
+                    spawn.Level())
+                return false
+            end
+        else
+            -- check cons.
+            local conLevel = Globals.Constants.ConColorsNameToId[spawn.ConColor() or "GREY"] or 0
+            if conLevel > Config:GetSetting('PullMaxCon') or conLevel < Config:GetSetting('PullMinCon') then
+                Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw)  - Ignoring mob due to con color. Min = %d, Max = %d, Mob = %d (%s)",
+                    spawnName, spawn.ID(),
+                    Config:GetSetting('PullMinCon'),
+                    Config:GetSetting('PullMaxCon'), conLevel, spawn.ConColor())
+                return false
+            end
+            -- check max level difference
+            local maxLvl = mq.TLO.Me.Level() + Config:GetSetting('MaxLevelDiff')
+            if spawn.Level() > maxLvl then
+                Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw)  - Ignoring mob due to max level difference. Max Level = %d, Mob = %d",
+                    spawnName, spawn.ID(), maxLvl, spawn.Level())
+                return false
+            end
         end
 
         local navDist = 0
@@ -1988,14 +3408,14 @@ function Module:GetPullableSpawns()
         end
 
         if not canPath or navDist > maxPathRange then
-            Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \aoPath check failed - dist(%d) canPath(%s)", spawn.CleanName(),
+            Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \aoPath check failed - dist(%d) canPath(%s)", spawnName,
                 spawn.ID(), navDist, Strings.BoolToColorString(canPath))
             return false
         end
 
         if Config:GetSetting('SafeTargeting') and Targeting.IsSpawnFightingStranger(spawn, 500) then
             Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \ar mob is fighting a stranger and safe targeting is enabled!",
-                spawn.CleanName(), spawn.ID())
+                spawnName, spawn.ID())
             return false
         end
 
@@ -2036,211 +3456,126 @@ function Module:FindTarget()
     return 0
 end
 
----@param pullID number
+-- Attempt Abort Checks
+---@param attempt table
+---@param bNavigating boolean?
 ---@return boolean
-function Module:CheckForAbort(pullID, bNavigating)
-    if self.TempSettings.PausePulls then
-        Logger.log_debug("\ar ALERT: Aborting pull - paused at user's request \ax")
-        return true
+function Module:CheckAttemptAbort(attempt, bNavigating)
+    Logger.log_verbose("PULL:Checking for abort on spawn id: %d", attempt.targetId)
+    local spawn = mq.TLO.Spawn(attempt.targetId)
+
+    local abortCtx = {
+        pausePulls = self.TempSettings.PausePulls,
+        pullListUpdated = self.TempSettings.PullListUpdated,
+        abortPull = self.TempSettings.AbortPull,
+        doPull = Config:GetSetting('DoPull'),
+        pauseMain = Globals.PauseMain,
+        spawnGone = not spawn or spawn.Dead() or not spawn.ID() or spawn.ID() == 0,
+        navigating = bNavigating or false,
+    }
+
+    if attempt.source == 'objective' then
+        abortCtx.safeTargeting = Config:GetSetting('SafeTargeting')
+        abortCtx.fightingStranger = Targeting.IsSpawnFightingStranger(spawn, 500)
+        local _, graceExpired = self:CheckReachable("id " .. attempt.targetId)
+        abortCtx.graceExpired = graceExpired
+        abortCtx.timedOut = attempt.engageStartedAt ~= nil and (Globals.GetTimeSeconds() - attempt.engageStartedAt) >= Config:GetSetting('PullIgnoreTime')
+    elseif attempt.source == 'scan' then
+        abortCtx.distance = spawn.Distance() or 0
+        abortCtx.maxPathRange = Config:GetSetting("MaxPathRange")
+        abortCtx.pathExists = mq.TLO.Navigation.PathExists("id " .. attempt.targetId)()
+        abortCtx.safeTargeting = Config:GetSetting('SafeTargeting')
+        abortCtx.fightingStranger = Targeting.IsSpawnFightingStranger(spawn, 500)
+        abortCtx.timedOut = attempt.engageStartedAt ~= nil and (Globals.GetTimeSeconds() - attempt.engageStartedAt) >= Config:GetSetting('PullIgnoreTime')
+    elseif attempt.source == 'manual' then
+        abortCtx.timedOut = attempt.engageStartedAt ~= nil and (Globals.GetTimeSeconds() - attempt.engageStartedAt) >= Config:GetSetting('PullIgnoreTime')
     end
 
-    if self.TempSettings.PullListUpdated then
-        Logger.log_debug("\ar ALERT: Aborting pull due to change in pull allow or deny list. \ax")
+    local reason = Module.DecideAbort(attempt, abortCtx)
+    if not reason then return false end
+
+    Logger.log_debug(Module.Constants.AbortLogMessages[reason])
+    if reason == 'listUpdated' then
         self.TempSettings.PullListUpdated = false
-        return true
-    end
-
-    if self.TempSettings.AbortPull then
-        Logger.log_debug("\ar ALERT: Aborting pull on user request. \ax")
+    elseif reason == 'userAbort' then
         self.TempSettings.AbortPull = false
-        return true
+    elseif reason == 'timeout' then
+        table.insert(self.TempSettings.PullIgnoreTargets, mq.TLO.Spawn(attempt.targetId))
+    elseif reason == 'objectiveTimeout' then
+        self:AnnounceStop("Fight To target could not be engaged - pulls disabled.", false)
     end
-
-    if (not Config:GetSetting('DoPull') and self.TempSettings.TargetSpawnID == 0) or Globals.PauseMain then
-        Logger.log_debug("\ar ALERT: Pulling Disabled at user request. \ax")
-        return true
-    end
-
-    if pullID == 0 then return true end
-
-    Logger.log_verbose("PULL:Checking for abort on spawn id: %d", pullID)
-    local spawn = mq.TLO.Spawn(pullID)
-
-    if not spawn or spawn.Dead() or not spawn.ID() or spawn.ID() == 0 then
-        Logger.log_debug("PULL:\ar ALERT: Aborting mob died or despawned \ax")
-        return true
-    end
-
-    -- ignore distance and time if this is a manually requested pull
-    if pullID ~= self.TempSettings.TargetSpawnID then
-        if (spawn.Distance() or 0) > Config:GetSetting("MaxPathRange") then
-            Logger.log_debug("PULL:\ar ALERT: Aborting mob moved out of spawn distance \ax")
-            return true
-        end
-
-        if not mq.TLO.Navigation.PathExists("id " .. pullID)() then
-            Logger.log_debug("PULL:\ar ALERT: Aborting mob no longer reachable on mesh \ax")
-            return true
-        end
-
-        if Config:GetSetting('SafeTargeting') and Targeting.IsSpawnFightingStranger(spawn, 500) then
-            Logger.log_debug("PULL:\ar ALERT: Aborting mob is fighting a stranger and safe targeting is enabled! \ax")
-            return true
-        end
-
-        if not bNavigating and Globals.GetTimeSeconds() - self.TempSettings.PullAttemptStarted >= Config:GetSetting('PullIgnoreTime') then
-            Logger.log_debug("\ar ALERT: Aborting due to timeout, adding mob to Pull Ignore List! \ax")
-            table.insert(self.TempSettings.PullIgnoreTargets, mq.TLO.Spawn(pullID))
-            return true
-        end
-    end
-    return false
-end
-
----@param mode string
----@return boolean
-function Module:IsPullMode(mode)
-    return self.Constants.PullModes[Config:GetSetting('PullMode')] == mode
-end
-
----@return integer
-function Module:GetPullState()
-    return self.TempSettings.PullState
-end
-
----@param state string
----@return boolean
-function Module:IsPullState(state)
-    return self.TempSettings.PullState == PullStates[state]
-end
-
--- True when we're standing idle during a pull hold and below our med-stop level on a stat our class uses.
----@return boolean
-function Module:ShouldSitToMed()
-    local me = mq.TLO.Me
-    if not me.Standing() or me.Moving() then return false end
-
-    local needHP = me.PctHPs() < Config:GetSetting('HPMedPctStop')
-    local needMana = me.MaxMana() > 0 and me.PctMana() < Config:GetSetting('ManaMedPctStop')
-    local needEndurance = not Globals.Constants.RGCasters:contains(me.Class.ShortName()) and me.PctEndurance() < Config:GetSetting('EndMedPctStop')
-
-    return needHP or needMana or needEndurance
-end
-
----@param state number
----@param reason string
-function Module:SetPullState(state, reason)
-    self.TempSettings.PullState = state
-    self.TempSettings.PullStateReason = reason
-end
-
-function Module:NavToWaypoint(loc, ignoreAggro)
-    -- if DoMed is set it will take care of standing us up
-    if mq.TLO.Me.Sitting() then
-        Globals.InMedState = false
-    end
-
-    mq.TLO.Me.Stand()
-
-    Movement:DoNav(false, "locyxz %s, log=off", loc)
-    mq.delay(1000, function() return mq.TLO.Navigation.Active() end)
-
-    while mq.TLO.Navigation.Active() do
-        Logger.log_verbose("PULL:NavToWaypoint Waypoint: %d Aggro Count: %d", self.GetCurrentWpId(self), Targeting.GetXTHaterCount())
-
-        if self.TempSettings.WayPointsToDelete:contains(self:GetCurrentWpId()) then
-            Logger.log_debug("PULL:\arNOTICE:\ax Deleting waypoint %d while naving to it.", self:GetCurrentWpId())
-            Movement:DoNav(false, "stop log=off")
-            return false
-        end
-
-        if Targeting.GetXTHaterCount() > 0 and not ignoreAggro then
-            if mq.TLO.Navigation.Active() then
-                Movement:DoNav(false, "stop log=off")
-            end
-            return false
-        end
-
-        Modules:ExecModule("Movement", "CheckStuck")
-
-        if mq.TLO.Navigation.Paused() then
-            Movement:DoNav(false, "pause log=off")
-        end
-
-        mq.delay(100)
-        mq.doevents()
-        Events.DoEvents()
-    end
-
-    local distanceToWP = mq.TLO.Math.Distance(loc)()
-    if distanceToWP > 50 then
-        Logger.log_verbose("PULL:NavToWaypoint Waypoint: Something went wrong. Current distance to WP: %d. (Possible manual interruption or conflicting nav command.)", distanceToWP)
-        return false
-    end
-
     return true
 end
 
-function Module:GetPullAbilityRange()
-    if not self.ModuleLoaded then return 0 end
-    local pullAbility = self.TempSettings.ValidPullAbilities[Config:GetSetting('PullAbility')]
-    if not pullAbility then return 0 end
+---Honors user overrides only; target-relative aborts don't apply while the mob is following home.
+---@param attempt table
+---@return boolean
+function Module:CheckReturnAbort(attempt)
+    local reason = Module.DecideUserAbort({
+        pausePulls = self.TempSettings.PausePulls,
+        pullListUpdated = self.TempSettings.PullListUpdated,
+        abortPull = self.TempSettings.AbortPull,
+        doPull = Config:GetSetting('DoPull'),
+        pauseMain = Globals.PauseMain,
+    }, attempt.source)
+    if not reason then return false end
 
-    local ret = pullAbility.AbilityRange
-    if type(ret) == 'function' then ret = ret() end
-    return ret
-end
-
-function Module:GetPullStateTargetInfo()
-    return string.format("%s(%d) Dist(%d)", Targeting.GetTargetCleanName(), Targeting.GetTargetID(), Targeting.GetTargetDistance())
-end
-
-function Module:GiveTime()
-    local combat_state = Combat.GetCachedCombatState()
-
-    if Config:GetSetting('PeerWatch') and Config:GetSetting('GroupWatch') then
-        Logger.log_info(
-            "Disabled GroupWatch because PeerWatch is enabled. PeerWatch has more comprehensive checks and will cover all group members. You can re-enable GroupWatch if you want separate checks for group members, but it is redundant with PeerWatch.")
-        Config:SetSetting('GroupWatch', false)
+    Logger.log_debug(Module.Constants.AbortLogMessages[reason])
+    if reason == 'listUpdated' then
+        self.TempSettings.PullListUpdated = false
+    elseif reason == 'userAbort' then
+        self.TempSettings.AbortPull = false
     end
+    return true
+end
 
-    self:ProcessDeleteWPs()
+-- State Machine Ticks
+function Module:BuildPullContext()
+    return {
+        combatState = Combat.GetCachedCombatState(),
+        campData = Modules:ExecModule("Movement", "GetCampData"),
+        policy = self.TempSettings.Attempt and self.TempSettings.Attempt.policy or Module.Constants.PullModePolicies[Config:GetSetting('PullMode')],
+        now = Globals.GetTimeMS(),
+        nowSec = Globals.GetTimeSeconds(),
+    }
+end
 
-    if combat_state ~= "Downtime" and not self:IsPullMode("Chain") then
-        Logger.log_verbose("PULL:GiveTime() we are in %s, not ready for pulling.", combat_state)
-        return
+function Module:RunEntryGates(ctx)
+    self:ProcessDeleteLocations()
+
+    if ctx.combatState ~= "Downtime" and not ctx.policy.runsDuringCombat then
+        Logger.log_verbose("PULL:GiveTime() we are in %s, not ready for pulling.", ctx.combatState)
+        return false
     end
     if (Globals.GetTimeSeconds() - self.TempSettings.LastPullOrCombatEnded) < Config:GetSetting('PullDelay') then
         Logger.log_verbose("PULL:GiveTime() waiting for Pull Delay, next attempt in %d seconds.",
             Config:GetSetting('PullDelay') - (Globals.GetTimeSeconds() - self.TempSettings.LastPullOrCombatEnded))
-        return
+        return false
     end
 
     -- Hold pulls if using SmartLoot and we have opted to wait for peers to finish looting
     if Globals.SLPeerLooting and Config:GetSetting("PullsYieldForLooting", true) then
         Logger.log_verbose("PULL:GiveTime() Holding pulls to finish processing looting.")
-        return
+        return false
     end
 
     Logger.log_verbose("PULL:GiveTime() - Enter")
     self:SetValidPullAbilities()
     self:FixPullerMerc()
     if Config:GetSetting('DoPull') then
-        for _, v in pairs({}) do --Config:GetSetting('PullSafeZones')) do
+        for _, v in pairs(Config:GetSetting('PullSafeZones')) do
             if v == mq.TLO.Zone.ShortName() then
                 local safeZone = mq.TLO.Zone.ShortName()
                 Logger.log_debug("\ar ALERT: In a safe zone \at%s \ax-\ar Disabling Pulling. \ax", safeZone)
-                Config:SetSetting('DoPull', false)
+                self:StopPuller()
                 break
             end
         end
     end
 
     if not Config:GetSetting('DoPull') then
-        if self.TempSettings.HuntX ~= 0 or self.TempSettings.HuntY ~= 0 or self.TempSettings.HuntZ ~= 0 then
-            self.TempSettings.HuntX = 0
-            self.TempSettings.HuntY = 0
-            self.TempSettings.HuntZ = 0
+        if self.TempSettings.HuntAnchor then
+            self.TempSettings.HuntAnchor = nil
             Core.DoCmd("/mapfilter pullradius off")
         end
         if #self.TempSettings.PullIgnoreTargets > 0 then
@@ -2249,13 +3584,11 @@ function Module:GiveTime()
     end
 
     Logger.log_verbose("PULL:GiveTime() - DoPull: %s", Strings.BoolToColorString(Config:GetSetting('DoPull')))
-    if not Config:GetSetting('DoPull') and self.TempSettings.TargetSpawnID == 0 then return end
+    if not Config:GetSetting('DoPull') and self.TempSettings.TargetSpawnID == 0 then return false end
 
     if Config:GetSetting('DoPull') then
-        if self:IsPullMode("Hunt") and ((self.TempSettings.HuntX == 0 or self.TempSettings.HuntY == 0 or self.TempSettings.HuntZ == 0) or Config:GetSetting('HuntFromPlayer')) then
-            self.TempSettings.HuntX = mq.TLO.Me.X()
-            self.TempSettings.HuntY = mq.TLO.Me.Y()
-            self.TempSettings.HuntZ = mq.TLO.Me.Z()
+        if ctx.policy.scanCenter == 'anchor' and not self.TempSettings.HuntOrigin and not self.TempSettings.HuntAnchor then
+            self.TempSettings.HuntAnchor = { y = mq.TLO.Me.Y(), x = mq.TLO.Me.X(), z = mq.TLO.Me.Z(), }
             Movement.UpdateMapRadii()
         end
         if #self.TempSettings.PullIgnoreTargets > 0 then
@@ -2266,63 +3599,72 @@ function Module:GiveTime()
     if not mq.TLO.Navigation.MeshLoaded() then
         Logger.log_error("\ar ERROR: There's no mesh for this zone. Can't pull. \ax")
         Logger.log_error("\ar Disabling Pulling. \ax")
-        Config:SetSetting('DoPull', false)
-        return
+        self:StopPuller()
+        return false
     end
 
-    local campData = Modules:ExecModule("Movement", "GetCampData")
-
-    if Config:GetSetting('PullAbility') == PullAbilityIDToName.PetPull and (mq.TLO.Me.Pet.ID() or 0) == 0 then
-        Comms.HandleAnnounce(Comms.FormatChatEvent("Pull", mq.TLO.Me.CleanName(), "Need to create a new pet to throw as mob fodder."), Config:GetSetting('PullAnnounceGroup'),
-            Config:GetSetting('PullAnnounce'),
-            Config:GetSetting('AnnounceToRaidIfInRaid'))
-        return
+    if Config:GetSetting('PullAbility') == self.TempSettings.PullAbilityIDToName.PetPull and (mq.TLO.Me.Pet.ID() or 0) == 0 then
+        self:Announce(mq.TLO.Me.CleanName(), "Need to create a new pet to throw as mob fodder.")
+        return false
     end
 
-    local shouldPull, reason = self:ShouldPull(campData)
+    local shouldPull, reason = self:ShouldPull(ctx.campData)
 
     Logger.log_verbose("PULL:GiveTime() - ShouldPull: %s", Strings.BoolToColorString(shouldPull))
 
     if not shouldPull then
-        if not mq.TLO.Navigation.Active() and combat_state == "Downtime" then
+        if self.TempSettings.PausePulls and self.TempSettings.Travel and mq.TLO.Navigation.Active() then
+            Movement:DoNav(false, "stop log=off")
+            self.TempSettings.Travel = nil
+        end
+        if not mq.TLO.Navigation.Active() and ctx.combatState == "Downtime" then
             -- go back to camp.
             self:SetPullState(PullStates.PULL_WAITING_SHOULDPULL, reason)
-            if campData.returnToCamp then
-                local distanceToCampSq = Math.GetDistanceSquared(mq.TLO.Me.Y(), mq.TLO.Me.X(), campData.campSettings.AutoCampY, campData.campSettings.AutoCampX)
+            if ctx.campData.returnToCamp then
+                local distanceToCampSq = Math.GetDistanceSquared(mq.TLO.Me.Y(), mq.TLO.Me.X(), ctx.campData.campSettings.AutoCampY, ctx.campData.campSettings.AutoCampX)
                 if distanceToCampSq > (Config:GetSetting('AutoCampRadius') ^ 2) then
                     Logger.log_debug("PULL: Distance to camp is %d and radius is %d - going closer.", math.sqrt(distanceToCampSq), Config:GetSetting('AutoCampRadius'))
-                    Movement:DoNav(false, "locyxz %0.2f %0.2f %0.2f log=off", campData.campSettings.AutoCampY, campData.campSettings.AutoCampX, campData.campSettings.AutoCampZ)
+                    Movement:DoNav(false, "locyxz %0.2f %0.2f %0.2f log=off", ctx.campData.campSettings.AutoCampY, ctx.campData.campSettings.AutoCampX,
+                        ctx.campData.campSettings.AutoCampZ)
                 end
             end
         end
-        return
+        return false
     end
 
-    if Config:GetSetting('GroupWatch') then
-        local groupReady, groupReason = self:CheckGroupForPull(Config:GetSetting('WatchStartPct'), Config:GetSetting('WatchStopPct'), campData)
-        if not groupReady then
-            Logger.log_verbose("PULL:GiveTime() - GroupWatch Failed")
-            self:SetPullState(PullStates.PULL_GROUPWATCH_WAIT, groupReason)
-            if self:ShouldSitToMed() then
-                Logger.log_verbose(
-                    "PULL:GiveTime() - We are waiting for GroupWatch and we are below med stop levels, lets sit down ourselves! Note: Does not interface with medstate.")
-                mq.TLO.Me.Sit()
-            end
-            return
+    local watchScope = Config:GetSetting('WatchScope')
+    if watchScope == 2 then
+        local isHolding = self.TempSettings.PullState == PullStates.PULL_GROUPWATCH_WAIT
+        local scopedPeers = self:GroupOrRaidPeers(false)
+        local vitalsReady, vitalsReason = self:CheckPeersForPull(Config:GetSetting('WatchStartPct'), Config:GetSetting('WatchStopPct'), ctx.campData, scopedPeers, isHolding)
+        if vitalsReady then
+            local peerNames = {}
+            for _, peer in ipairs(scopedPeers) do peerNames[peer.name] = true end
+            vitalsReady, vitalsReason = self:CheckGroupForPull(Config:GetSetting('WatchStartPct'), Config:GetSetting('WatchStopPct'), ctx.campData, peerNames, isHolding)
         end
-    end
-
-    if Config:GetSetting('PeerWatch') then
-        local peerReady, peerReason = self:CheckPeersForPull(Config:GetSetting('WatchStartPct'), Config:GetSetting('WatchStopPct'), campData)
-        if not peerReady then
-            Logger.log_verbose("PULL:GiveTime() - PeerWatch Failed")
-            self:SetPullState(PullStates.PULL_PEERWATCH_WAIT, peerReason)
+        if not vitalsReady then
+            Logger.log_verbose("PULL:GiveTime() - Group / Raid Vitals Failed")
+            self:SetPullState(PullStates.PULL_GROUPWATCH_WAIT, vitalsReason)
             if self:ShouldSitToMed() then
                 Logger.log_verbose(
-                    "PULL:GiveTime() - We are waiting for PeerWatch and we are below med stop levels, lets sit down ourselves! Note: Does not interface with medstate.")
+                    "PULL:GiveTime() - We are waiting on Group / Raid vitals and we are below med stop levels, lets sit down ourselves! Note: Does not interface with medstate.")
                 mq.TLO.Me.Sit()
             end
-            return
+            return false
+        end
+    elseif watchScope == 3 then
+        local isHolding = self.TempSettings.PullState == PullStates.PULL_PEERWATCH_WAIT
+        local vitalsReady, vitalsReason = self:CheckPeersForPull(Config:GetSetting('WatchStartPct'), Config:GetSetting('WatchStopPct'), ctx.campData,
+            Comms.GetZonePeers(false), isHolding)
+        if not vitalsReady then
+            Logger.log_verbose("PULL:GiveTime() - Zone Peers Vitals Failed")
+            self:SetPullState(PullStates.PULL_PEERWATCH_WAIT, vitalsReason)
+            if self:ShouldSitToMed() then
+                Logger.log_verbose(
+                    "PULL:GiveTime() - We are waiting on Zone Peers vitals and we are below med stop levels, lets sit down ourselves! Note: Does not interface with medstate.")
+                mq.TLO.Me.Sit()
+            end
+            return false
         end
     end
 
@@ -2332,49 +3674,99 @@ function Module:GiveTime()
         self:SetPullState(PullStates.PULL_IDLE, "")
     end
 
-    -- We're ready to pull, but first, check if we're in farm mode and if we were interrupted
-    if self:IsPullMode("Farm") then
+    return true
+end
+
+function Module:PreAttemptTick(ctx)
+    -- We're ready to pull, but first, check if we're in Circuit Hunt mode and if we were interrupted
+    if ctx.policy.scanCenter == 'waypoint' then
         local currentWpId = self:GetCurrentWpId()
         if currentWpId == 0 then
-            Logger.log_error("\arYou do not have a valid WP ID(%d) for this zone(%s::%s) - Aborting!", self.TempSettings.CurrentWP, mq.TLO.Zone.Name(),
-                mq.TLO.Zone.ShortName())
+            Logger.log_error("\arYou do not have any enabled pull locations for this zone(%s::%s) - Aborting!", mq.TLO.Zone.Name(), mq.TLO.Zone.ShortName())
             self:SetPullState(PullStates.PULL_IDLE, "")
-            Config:SetSetting('DoPull', false)
+            self:StopPuller()
             return
         end
 
-        if self.TempSettings.PullState == PullStates.PULL_NAV_INTERRUPT then
+        if self.TempSettings.PullState == PullStates.PULL_NAV_INTERRUPT or self.TempSettings.Travel then
             -- if we still have haters let combat handle it first.
             if Targeting.GetXTHaterCount() > 0 then
                 return
             end
 
-            -- We're not ready to pull yet as we haven't made it to our waypoint. Keep navigating if we don't have a full inventory
-            if mq.TLO.Me.FreeInventory() == 0 then self:FarmFullInvActions() end
-
-            self:SetPullState(PullStates.PULL_MOVING_TO_WP, string.format("WP Id: %d", currentWpId))
+            -- We're not ready to pull yet as we haven't made it to our waypoint.
+            local advanceLeg = self.TempSettings.Travel and self.TempSettings.Travel.circuitAdvance
             local wpData = self:GetWPById(currentWpId)
-            if not self:NavToWaypoint(string.format("%0.2f, %0.2f, %0.2f", wpData.y, wpData.x, wpData.z)) then
-                self:SetPullState(PullStates.PULL_NAV_INTERRUPT, "")
-                self.TempSettings.ReachedWP = false
-                return
-            else
-                Logger.log_verbose("Pull: Reached Farm Waypoint %d.", currentWpId)
-                self.TempSettings.ReachedWP = true
-                self:SetLastPullOrCombatEndedTimer()
-                self:SetPullState(PullStates.PULL_IDLE, "")
-            end
-            self:SetPullState(PullStates.PULL_IDLE, "")
+            local result = self:TravelTick(ctx, wpData, string.format("WP Id: %d", currentWpId), currentWpId)
+            self:HandleCircuitTravelResult(result, currentWpId)
+            if result ~= 'arrived' then return end
+            if advanceLeg then return end
         end
+    end
 
-        -- We're not in an interrupted state if we make it this far -- so
-        -- now make sure we have free inventory or not.
-        if mq.TLO.Me.FreeInventory() == 0 then self:FarmFullInvActions() end
+    if ctx.policy.scanCenter == 'anchor' and self.TempSettings.HuntOrigin and self.TempSettings.TargetSpawnID == 0 then
+        local origin = self.TempSettings.HuntOrigin
+        local travelResult, travelGraceExpired = self:TravelTick(ctx, origin, "Loc: " .. Module.FormatLoc(origin))
+        if travelResult == 'arrived' then
+            self.TempSettings.HuntOrigin = nil
+            self.TempSettings.HuntAnchor = { y = mq.TLO.Me.Y(), x = mq.TLO.Me.X(), z = mq.TLO.Me.Z(), name = origin.name, }
+            Movement.UpdateMapRadii()
+        elseif travelResult == 'fail' then
+            if travelGraceExpired then
+                self:AnnounceStop("Hunt location is unreachable - pulls disabled.", false)
+            else
+                self:SetPullState(PullStates.PULL_WAITING_SHOULDPULL, "Hunt travel interrupted - retrying")
+            end
+        end
+        return
+    end
+
+    if ctx.policy.family == 'camp' and not ctx.campData.returnToCamp and self.TempSettings.CampTravelLoc then
+        local dest = self.TempSettings.CampTravelLoc
+        local travelResult, travelGraceExpired = self:TravelTick(ctx, dest, "Loc: " .. Module.FormatLoc(dest))
+        if travelResult == 'arrived' then
+            local scopeWord = self.TempSettings.EscortScopeWord
+            if scopeWord then
+                self.TempSettings.CampArrivalWaitStart = self.TempSettings.CampArrivalWaitStart or ctx.now
+                local timedOut = (ctx.now - self.TempSettings.CampArrivalWaitStart) >= 60000
+                if not timedOut and not self:AllEscortsArrived() then
+                    self:SetPullState(PullStates.PULL_WAITING_SHOULDPULL, string.format("Waiting on %s to arrive", scopeWord))
+                    return
+                end
+                if timedOut then
+                    self:Announce("None", string.format("%s didn't arrive in time - camping anyway.", scopeWord:gsub("^%l", string.upper)))
+                end
+                Core.DoCmd("/rgl campon")
+                for _, peer in ipairs(self.TempSettings.EscortPeers or {}) do
+                    local hb = Comms.GetPeerHeartbeat(peer.key)
+                    if hb.Data and hb.Data.ZoneId == mq.TLO.Zone.ID() and hb.Data.InstanceId == mq.TLO.Me.Instance() then
+                        Comms.SendPeerDoCmd(peer.key, "/rgl campon")
+                    end
+                end
+                self:ClearEscortState()
+                self.TempSettings.CampTravelLoc = nil
+                self:SetLastPullOrCombatEndedTimer()
+            else
+                Core.DoCmd("/rgl campon")
+                self.TempSettings.CampTravelLoc = nil
+                self:SetLastPullOrCombatEndedTimer()
+            end
+        elseif travelResult == 'fail' then
+            if travelGraceExpired then
+                self:ClearEscortState()
+                self.TempSettings.CampTravelLoc = nil
+                self:AnnounceStop("Camp location is unreachable - pulls disabled.", false)
+            else
+                self:SetPullState(PullStates.PULL_WAITING_SHOULDPULL, "Camp travel interrupted - retrying")
+            end
+        end
+        return
     end
 
     self:SetPullState(PullStates.PULL_SCAN, "")
 
-    self.TempSettings.PullID = 0
+    local pullID
+    local source = 'scan'
 
     if self.TempSettings.TargetSpawnID > 0 then
         local targetSpawn = mq.TLO.Spawn(self.TempSettings.TargetSpawnID)
@@ -2385,70 +3777,135 @@ function Module:GiveTime()
     end
 
     if self.TempSettings.TargetSpawnID > 0 then
-        self.TempSettings.PullID = self.TempSettings.TargetSpawnID
-    else
-        Logger.log_debug("PULL:Finding Pull Target")
-        self.TempSettings.PullID = self:FindTarget()
-    end
-
-    if self.TempSettings.PullID == 0 and self:IsPullMode("Farm") then
-        -- if we are idle, wait a bit if we have a waypoint delay set (interrupt: bypass this, we aren't at the WP)
-        if self.TempSettings.PullState == PullStates.PULL_IDLE and (Globals.GetTimeSeconds() - self.TempSettings.LastPullOrCombatEnded) < Config:GetSetting('WaypointDelay') then
-            Logger.log_verbose("PULL: Waiting for farm waypoint delay, next attempt in %d seconds.",
-                Config:GetSetting('WaypointDelay') - (Globals.GetTimeSeconds() - self.TempSettings.LastPullOrCombatEnded))
+        pullID = self.TempSettings.TargetSpawnID
+        source = 'manual'
+    elseif ctx.policy.family == 'directive' then
+        local objective = self.TempSettings.FightTo
+        if not objective then
+            self:SetPullState(PullStates.PULL_WAITING_SHOULDPULL, "No objective set")
             return
         end
 
-        -- move to next WP
-        if self.TempSettings.ReachedWP then
-            -- if we are idle, wait a bit if we have a waypoint delay set (interrupt: bypass this, we aren't at the WP)
-            if (Globals.GetTimeSeconds() - self.TempSettings.LastPullOrCombatEnded) < Config:GetSetting('WaypointDelay') then
-                Logger.log_verbose("PULL: Waiting for farm waypoint delay, next attempt in %d seconds.",
-                    Config:GetSetting('WaypointDelay') - (Globals.GetTimeSeconds() - self.TempSettings.LastPullOrCombatEnded))
+        if objective.id then
+            local objectiveSpawn = mq.TLO.Spawn(objective.id)
+            local objectiveDead = (objectiveSpawn() and objectiveSpawn.Dead()) or false
+            if objectiveDead or not objectiveSpawn() or (objectiveSpawn.ID() or 0) == 0 then
+                local target = mq.TLO.Target
+                if (target.ID() or 0) == objective.id or
+                    ((target.Type() or "") == "Corpse" and objective.name and (target.CleanName() or ""):find(objective.name, 1, true) ~= nil) then
+                    Core.DoCmd("/squelch /target clear")
+                end
+                self:AnnounceStop(objectiveDead and "Fight To target has died - pulls disabled." or "Fight To target despawned - pulls disabled.", true)
                 return
             end
-            self:IncrementWpId()
-            self.TempSettings.ReachedWP = false
-        end
-        -- Here we want to nav to our current waypoint. If we engage an enemy while
-        -- we are currently traveling to our waypoint, we need to set our state to
-        -- PULL_NAVINTERRUPT so that when Pulling re-engages after combat, we continue
-        -- to travel to our next waypoint.
 
-        local currentWP = self:GetCurrentWpId()
-        local wpData = self:GetWPById(currentWP)
+            local reachable, graceExpired = self:CheckReachable("id " .. objective.id)
+            if not reachable then
+                if graceExpired then
+                    self:AnnounceStop("Fight To target is unreachable - pulls disabled.", false)
+                else
+                    self:SetPullState(PullStates.PULL_WAITING_SHOULDPULL, "No nav path to target - retrying")
+                end
+                return
+            end
 
-        self:SetPullState(PullStates.PULL_MOVING_TO_WP, string.format("%0.2f, %0.2f, %0.2f", wpData.y, wpData.x, wpData.z))
-        if not self:NavToWaypoint(string.format("%0.2f, %0.2f, %0.2f", wpData.y, wpData.x, wpData.z)) then
-            self:SetPullState(PullStates.PULL_NAV_INTERRUPT, "")
-            self.TempSettings.ReachedWP = false
-            return
+            pullID = objective.id
+            source = 'objective'
         else
-            Logger.log_verbose("Pull: Reached Farm Waypoint %d.", currentWP)
-            self.TempSettings.ReachedWP = true
-            self:SetLastPullOrCombatEndedTimer()
-        end
+            local reachable, graceExpired = self:CheckReachable(Module.NavDestString(objective))
+            if not reachable then
+                if graceExpired then
+                    self:AnnounceStop("Fight To destination is unreachable - pulls disabled.", false)
+                else
+                    self:SetPullState(PullStates.PULL_WAITING_SHOULDPULL, "No nav path to destination - retrying")
+                end
+                return
+            end
 
-        self:SetPullState(PullStates.PULL_IDLE, "")
+            local travelResult, travelGraceExpired = self:TravelTick(ctx, objective, "Loc: " .. Module.FormatLoc(objective))
+            if travelResult == 'arrived' then
+                self:AnnounceStop("Arrived at the Fight To destination - pulls disabled.", true)
+            elseif travelResult == 'fail' then
+                if travelGraceExpired then
+                    self:AnnounceStop("Fight To destination is unreachable - pulls disabled.", false)
+                else
+                    self:SetPullState(PullStates.PULL_WAITING_SHOULDPULL, "Fight To travel interrupted - retrying")
+                end
+            end
+            return
+        end
+    else
+        Logger.log_debug("PULL:Finding Pull Target")
+        pullID = self:FindTarget()
+    end
+
+    if pullID == 0 and ctx.policy.scanCenter == 'waypoint' then
+        self:CircuitAdvanceTick(ctx)
+        return
+    end
+
+    if pullID == 0 then
+        self:SetPullState(PullStates.PULL_IDLE, string.format("No pullable targets within %d units", Config:GetSetting(ctx.policy.radiusSetting)))
+        Logger.log_debug("\ayNothing to pull - better luck next time")
         return
     end
 
     self:SetPullState(PullStates.PULL_IDLE, "")
+    self:OpenAttempt(ctx, pullID, source)
+end
 
-    if self.TempSettings.PullID == 0 then
-        Logger.log_debug("\ayNothing to pull - better luck next time")
-        return
+function Module:HandleCircuitTravelResult(result, wpId)
+    if result == 'arrived' then
+        Logger.log_verbose("Pull: Reached Pull Location %d.", wpId)
+        self.TempSettings.ReachedWP = true
+        self:SetLastPullOrCombatEndedTimer()
+        self:SetPullState(PullStates.PULL_IDLE, "")
+    elseif result == 'aggro' or result == 'fail' or result == 'wpdeleted' then
+        self:SetPullState(PullStates.PULL_NAV_INTERRUPT, "")
+        self.TempSettings.ReachedWP = false
     end
+end
+
+function Module:CircuitAdvanceTick(ctx)
+    -- move to next WP
+    if self.TempSettings.ReachedWP then
+        -- wait a bit if we have a waypoint delay set
+        if (Globals.GetTimeSeconds() - self.TempSettings.LastPullOrCombatEnded) < Config:GetSetting('WaypointDelay') then
+            Logger.log_verbose("PULL: Waiting for pull location delay, next attempt in %d seconds.",
+                Config:GetSetting('WaypointDelay') - (Globals.GetTimeSeconds() - self.TempSettings.LastPullOrCombatEnded))
+            return
+        end
+        self:IncrementWpId()
+        self.TempSettings.ReachedWP = false
+    end
+    -- Here we want to nav to our current waypoint. If we engage an enemy while
+    -- we are currently traveling to our waypoint, we need to set our state to
+    -- PULL_NAVINTERRUPT so that when Pulling re-engages after combat, we continue
+    -- to travel to our next waypoint.
+
+    local currentWP = self:GetCurrentWpId()
+    local wpData = self:GetWPById(currentWP)
+
+    local result = self:TravelTick(ctx, wpData, string.format("%0.2f, %0.2f, %0.2f", wpData.y, wpData.x, wpData.z), currentWP)
+    self:HandleCircuitTravelResult(result, currentWP)
+    if result == 'moving' and self.TempSettings.Travel then
+        self.TempSettings.Travel.circuitAdvance = true
+    end
+end
+
+function Module:OpenAttempt(ctx, pullID, source)
+    self.TempSettings.Travel = nil
+    self.TempSettings.AbortPull = false
 
     local start_x = mq.TLO.Me.X()
     local start_y = mq.TLO.Me.Y()
     local start_z = mq.TLO.Me.Z()
 
-    if campData.returnToCamp then
+    if ctx.campData.returnToCamp then
         Logger.log_debug("PULL:\ayRTB: Storing Camp info to return to")
-        start_x = campData.campSettings.AutoCampX
-        start_y = campData.campSettings.AutoCampY
-        start_z = campData.campSettings.AutoCampZ
+        start_x = ctx.campData.campSettings.AutoCampX
+        start_y = ctx.campData.campSettings.AutoCampY
+        start_z = ctx.campData.campSettings.AutoCampZ
     end
 
     Logger.log_debug("PULL:\ayRTB Location: %d %d %d", start_y, start_x, start_z)
@@ -2460,8 +3917,10 @@ function Module:GiveTime()
 
     mq.TLO.Me.Stand()
 
-    self:SetPullState(PullStates.PULL_NAV_TO_TARGET, string.format("Id: %d", self.TempSettings.PullID))
-    Logger.log_debug("PULL:\ayFound Target: %d - Attempting to Nav", self.TempSettings.PullID)
+    self:CheckMoveAbilities(true)
+
+    self:SetPullState(PullStates.PULL_NAV_TO_TARGET, string.format("Id: %d", pullID))
+    Logger.log_debug("PULL:\ayFound Target: %d - Attempting to Nav", pullID)
 
     local pullAbility = self.TempSettings.ValidPullAbilities[Config:GetSetting('PullAbility')]
     local startingXTargs = Targeting.GetXTHaterIDs()
@@ -2473,403 +3932,594 @@ function Module:GiveTime()
 
     Core.DoCmd("/squelch /attack off")
 
-    Movement:DoNav(false, "id %d distance=%d lineofsight=%s log=off", self.TempSettings.PullID, self:GetPullAbilityRange(), requireLOS)
+    Movement:DoNav(false, "id %d distance=%d lineofsight=%s log=off", pullID, self:GetPullAbilityRange(), requireLOS)
 
-    mq.delay(1000, function() return mq.TLO.Navigation.Active() end)
+    self.TempSettings.Attempt = {
+        targetId = pullID,
+        source = source,
+        policy = ctx.policy,
+        ability = pullAbility,
+        requireLOS = requireLOS,
+        startingXTargs = startingXTargs,
+        returnLoc = { y = start_y, x = start_x, z = start_z, },
+        startedAt = ctx.nowSec,
+        navIssuedAt = ctx.now,
+        moveDeadline = ctx.now + Config:GetSetting('MaxMoveTime') * 1000,
+    }
+end
 
-    local abortPull = false
-    local maxMove = Config:GetSetting('MaxMoveTime') * 1000
+function Module:NavToTargetTick(ctx)
+    local attempt = self.TempSettings.Attempt
 
-    while mq.TLO.Navigation.Active() do
+    if mq.TLO.Navigation.Active() then
         Logger.log_super_verbose("Pathing to pull id...")
-        if self:IsPullMode("Chain") then
+        if ctx.policy.successCheck == 'chainCount' then
             if Targeting.GetXTHaterCount() >= Config:GetSetting('ChainCount') then
                 Logger.log_debug("\awNOTICE:\ax Gained aggro -- aborting chain pull!")
-                abortPull = true
-                break
+                self:AbortNavToTarget(ctx)
+                return
             end
-            if Targeting.DiffXTHaterIDs(startingXTargs) then
+            if Targeting.DiffXTHaterIDs(attempt.startingXTargs) then
                 Logger.log_debug("\awNOTICE:\ax XTarget List Changed -- aborting chain pull!")
-                abortPull = true
-                break
+                self:AbortNavToTarget(ctx)
+                return
             end
         else
             if Targeting.GetXTHaterCount() > 0 then
                 Logger.log_debug("\awNOTICE:\ax Gained aggro -- aborting pull!")
-                abortPull = true
-                break
+                self:AbortNavToTarget(ctx)
+                return
             end
         end
 
-        if self:CheckForAbort(self.TempSettings.PullID, true) then
-            abortPull = true
-            break
+        if self:CheckAttemptAbort(attempt, true) then
+            self:AbortNavToTarget(ctx)
+            return
         end
 
         Modules:ExecModule("Movement", "CheckStuck")
+        self:CheckMoveAbilities()
 
-        mq.delay(100)
-        mq.doevents()
-        Events.DoEvents()
-
-        maxMove = maxMove - 100
-
-        if maxMove <= 0 then
+        if ctx.now >= attempt.moveDeadline then
             Logger.log_debug("\arNOTICE:\ax Pull Time Exceeded! Rescanning for a closer target.")
             -- On a long pull, periodically rescan so we can switch to a closer target if one popped.
-            if self.TempSettings.TargetSpawnID == 0 then
+            if attempt.source == 'scan' and ctx.policy.rescanToCloser and (ctx.policy.scanCenter ~= 'waypoint' or self:GetCurrentWpId() > 0) then
                 local closerID = self:FindTarget()
-                if closerID > 0 and closerID ~= self.TempSettings.PullID then
+                if closerID > 0 and closerID ~= attempt.targetId then
                     Logger.log_debug("PULL:\ayCloser target popped - switching pull to %d.", closerID)
-                    self.TempSettings.PullID = closerID
-                    Movement:DoNav(false, "id %d distance=%d lineofsight=%s log=off", closerID, self:GetPullAbilityRange(), requireLOS)
-                    mq.delay(500, function() return mq.TLO.Navigation.Active() end)
+                    attempt.targetId = closerID
+                    Movement:DoNav(false, "id %d distance=%d lineofsight=%s log=off", closerID, self:GetPullAbilityRange(), attempt.requireLOS)
+                    attempt.navIssuedAt = ctx.now
                 end
             end
-            maxMove = Config:GetSetting('MaxMoveTime') * 1000
+            attempt.moveDeadline = ctx.now + Config:GetSetting('MaxMoveTime') * 1000
+        end
+        return
+    end
+
+    if ctx.now - attempt.navIssuedAt < 1000 then return end
+
+    mq.delay("2s", function() return not mq.TLO.Me.Moving() end)
+
+    Targeting.SetTarget(attempt.targetId, true)
+
+    local abortPull = false
+
+    if mq.TLO.Target.Master.Type() == 'PC' then
+        Logger.log_debug("\atPULL::PullTarget \awPullTarget :: Spawn \am%s\aw (\at%d\aw) is Charmed Pet -- Skipping", mq.TLO.Target.CleanName(), mq.TLO.Target.ID())
+        abortPull = true
+    end
+
+    if Config:GetSetting('SafeTargeting') then
+        -- Hard coding 500 units as our radius as it's probably twice our effective spell range.
+        if Targeting.IsSpawnFightingStranger(mq.TLO.Spawn(attempt.targetId), 500) then
+            abortPull = true
         end
     end
 
-    if not abortPull then
-        mq.delay("2s", function() return not mq.TLO.Me.Moving() end)
+    local target = mq.TLO.Target
+    self:SetPullState(PullStates.PULL_PULLING, self:GetPullStateTargetInfo())
 
-        Targeting.SetTarget(self.TempSettings.PullID)
-
-        if mq.TLO.Target.Master.Type() == 'PC' then
-            Logger.log_debug("\atPULL::PullTarget \awPullTarget :: Spawn \am%s\aw (\at%d\aw) is Charmed Pet -- Skipping", mq.TLO.Target.CleanName(), mq.TLO.Target.ID())
-            abortPull = true
-        end
-
-        if Config:GetSetting('SafeTargeting') then
-            -- Hard coding 500 units as our radius as it's probably twice our effective spell range.
-            if Targeting.IsSpawnFightingStranger(mq.TLO.Spawn(self.TempSettings.PullID), 500) then
-                abortPull = true
-            end
-        end
-
-        local target = mq.TLO.Target
-        self:SetPullState(PullStates.PULL_PULLING, self:GetPullStateTargetInfo())
-
-        if target and target.ID() > 0 and not abortPull then
-            Logger.log_info("\agPulling %s [%d]", target.CleanName(), target.ID())
-
-            local successFn = function() return Targeting.GetXTHaterCount() > 0 end
-
-            if self:IsPullMode("Chain") then
-                successFn = function() return Targeting.GetXTHaterCount() >= Config:GetSetting('ChainCount') end
-            end
-
-            if Config:GetSetting('PullAbility') == PullAbilityIDToName.PetPull then -- PetPull
-                Combat.PetAttack(self.TempSettings.PullID, false)
-                self.TempSettings.PullAttemptStarted = Globals.GetTimeSeconds()
-                while not successFn() do
-                    Logger.log_super_verbose("Waiting on pet pull to finish...")
-                    Combat.PetAttack(self.TempSettings.PullID, false)
-                    if self:IsPullMode("Chain") and Targeting.DiffXTHaterIDs(startingXTargs) then
-                        break
-                    end
-
-                    if self:CheckForAbort(self.TempSettings.PullID) then
-                        break
-                    end
-                    mq.delay(10)
-                    mq.doevents()
-                    Events.DoEvents()
-                end
-
-                Core.SetPetHold()
-                Core.DoCmd("/squelch /pet back off")
-                mq.delay("1s", function() return (mq.TLO.Pet.PlayerState() or 0) == 0 end)
-                Core.DoCmd("/squelch /pet follow")
-            elseif Config:GetSetting('PullAbility') == PullAbilityIDToName.Face then -- Face pull
-                -- Make sure we're looking straight ahead at our mob and delay
-                -- until we're facing them.
-                Core.DoCmd("/look 0")
-
-                mq.delay("3s", function() return mq.TLO.Me.Heading.ShortName() == target.HeadingTo.ShortName() end)
-                self.TempSettings.PullAttemptStarted = Globals.GetTimeSeconds()
-
-                -- We will continue to fire arrows until we aggro our target
-                while not successFn() do
-                    Logger.log_super_verbose("Waiting on face pull to finish...")
-
-                    Movement:DoNav(false, "id %d distance=%d lineofsight=%s log=off", self.TempSettings.PullID, self:GetPullAbilityRange(), "on")
-
-                    if self:IsPullMode("Chain") and Targeting.DiffXTHaterIDs(startingXTargs) then
-                        Logger.log_debug("PULL:\arXtargs changed heading back to camp!")
-                        break
-                    end
-
-                    if self:CheckForAbort(self.TempSettings.PullID) then
-                        break
-                    end
-
-                    Modules:ExecModule("Movement", "CheckStuck")
-                    mq.delay(10)
-                    mq.doevents()
-                    Events.DoEvents()
-                end
-            elseif Config:GetSetting('PullAbility') == PullAbilityIDToName.Ranged then -- Ranged pull
-                -- Make sure we're looking straight ahead at our mob and delay
-                -- until we're facing them.
-                Core.DoCmd("/look 0")
-
-                mq.delay("3s", function() return mq.TLO.Me.Heading.ShortName() == target.HeadingTo.ShortName() end)
-                self.TempSettings.PullAttemptStarted = Globals.GetTimeSeconds()
-
-                -- We will continue to fire arrows until we aggro our target
-                while not successFn() do
-                    Logger.log_super_verbose("Waiting on ranged pull to finish... %s", Strings.BoolToColorString(successFn()))
-
-                    if Targeting.GetTargetDistance() > self:GetPullAbilityRange() then
-                        Movement:DoNav(false, "id %d distance=%d lineofsight=%s log=off", self.TempSettings.PullID, self:GetPullAbilityRange() / 2, requireLOS)
-                        mq.delay(maxMove, function()
-                            Modules:ExecModule("Movement", "CheckStuck")
-                            return not mq.TLO.Navigation.Active()
-                        end)
-                    end
-
-                    Core.DoCmd("/ranged %d", self.TempSettings.PullID)
-                    if self:IsPullMode("Chain") and Targeting.DiffXTHaterIDs(startingXTargs) then
-                        break
-                    end
-
-                    if self:CheckForAbort(self.TempSettings.PullID) then
-                        break
-                    end
-
-                    Modules:ExecModule("Movement", "CheckStuck")
-                    mq.delay(10)
-                    mq.doevents()
-                    Events.DoEvents()
-                end
-            elseif Config:GetSetting('PullAbility') == PullAbilityIDToName.AutoAttack then -- Auto Attack pull
-                -- Make sure we're looking straight ahead at our mob and delay
-                -- until we're facing them.
-                Core.DoCmd("/look 0")
-
-                mq.delay("3s", function() return mq.TLO.Me.Heading.ShortName() == target.HeadingTo.ShortName() end)
-                self.TempSettings.PullAttemptStarted = Globals.GetTimeSeconds()
-
-                -- We will continue to fire arrows until we aggro our target
-                while not successFn() do
-                    Logger.log_super_verbose("Waiting on autoattack pull to finish... %s", Strings.BoolToColorString(successFn()))
-                    Core.DoCmd("/attack")
-
-                    if Targeting.GetTargetDistance() > self:GetPullAbilityRange() then
-                        Movement:DoNav(false, "id %d distance=%d lineofsight=%s log=off", self.TempSettings.PullID, self:GetPullAbilityRange() / 2, requireLOS)
-                        mq.delay(maxMove, function()
-                            Modules:ExecModule("Movement", "CheckStuck")
-                            return not mq.TLO.Navigation.Active()
-                        end)
-                    end
-
-                    if self:IsPullMode("Chain") and Targeting.DiffXTHaterIDs(startingXTargs) then
-                        break
-                    end
-
-                    if self:CheckForAbort(self.TempSettings.PullID) then
-                        break
-                    end
-
-                    mq.delay(10)
-                    mq.doevents()
-                    Events.DoEvents()
-                end
-            elseif pullAbility then -- AA/Spell/Ability pull
-                self.TempSettings.PullAttemptStarted = Globals.GetTimeSeconds()
-                while not successFn() do
-                    Logger.log_super_verbose("Waiting on ability pull to finish...%s", Strings.BoolToColorString(successFn()))
-                    Targeting.SetTarget(self.TempSettings.PullID, true)
-
-                    if mq.TLO.Target.FeetWet() ~= mq.TLO.Me.FeetWet() then
-                        Logger.log_debug("\ar ALERT: Feet wet mismatch - Moving around\ax")
-                        Movement:DoNav(false, "id %d distance=%d lineofsight=%s log=off", self.TempSettings.PullID, Targeting.GetTargetDistance() * 0.9, requireLOS)
-                    end
-
-                    if Targeting.GetTargetDistance() > self:GetPullAbilityRange() then
-                        Movement:DoNav(false, "id %d distance=%d lineofsight=%s log=off", self.TempSettings.PullID, self:GetPullAbilityRange() / 2, requireLOS)
-                        mq.delay(500, function() return mq.TLO.Navigation.Active() end)
-                        mq.delay(maxMove, function()
-                            Modules:ExecModule("Movement", "CheckStuck")
-                            return not mq.TLO.Navigation.Active()
-                        end)
-                    end
-
-                    if pullAbility.Type:lower() == "ability" then
-                        if mq.TLO.Me.AbilityReady(pullAbility.id)() then
-                            local abilityName = pullAbility.AbilityName
-                            if type(abilityName) == 'function' then abilityName = abilityName() end
-                            Casting.UseAbility(abilityName)
-                        end
-                    elseif pullAbility.Type:lower() == "spell" then
-                        local abilityName = pullAbility.AbilityName
-                        if type(abilityName) == 'function' then abilityName = abilityName() end
-                        Casting.UseSpell(abilityName, self.TempSettings.PullID, false, false, 0)
-                    elseif pullAbility.Type:lower() == "disc" then
-                        local abilityName = pullAbility.AbilityName
-                        if type(abilityName) == 'function' then abilityName = abilityName() end
-                        Casting.UseDisc(mq.TLO.Spell(abilityName), self.TempSettings.PullID)
-                    elseif pullAbility.Type:lower() == "aa" then
-                        local aaName = pullAbility.AbilityName
-                        if type(aaName) == 'function' then aaName = aaName() end
-                        Casting.UseAA(aaName, self.TempSettings.PullID, false, 0)
-                    elseif pullAbility.Type:lower() == "item" then
-                        local itemName = pullAbility.ItemName
-                        if type(itemName) == 'function' then itemName = itemName() end
-                        Logger.log_debug("Attempting to pull with Item: %s", itemName)
-                        Casting.UseItem(itemName, self.TempSettings.PullID)
-                    else
-                        Logger.log_error("\arInvalid PullAbilityType: %s :: %s", pullAbility.Type, pullAbility.id)
-                    end
-
-                    if self:IsPullMode("Chain") and Targeting.DiffXTHaterIDs(startingXTargs) then
-                        break
-                    end
-
-                    if self:CheckForAbort(self.TempSettings.PullID) then
-                        break
-                    end
-
-                    Modules:ExecModule("Movement", "CheckStuck")
-                    mq.delay(10)
-                    mq.doevents()
-                    Events.DoEvents()
-                end
-            else
-                Logger.log_error("\arInvalid PullAbility: \at%d\ar - Please Select a valid Pull Ability\ax", Config:GetSetting('PullAbility'))
-            end
-
-            if successFn() then Globals.LastPulledID = self.TempSettings.PullID end
-        end
+    if target and target.ID() > 0 and not abortPull then
+        Logger.log_info("\agPulling %s [%d]", target.CleanName(), target.ID())
+        self:BeginEngage(ctx)
     else
-        Logger.log_debug("\arNOTICE:\ax Pull Aborted!")
+        self:TransitionAfterEngage(ctx)
+    end
+end
+
+function Module:AbortNavToTarget(ctx)
+    Logger.log_debug("\arNOTICE:\ax Pull Aborted!")
+    Movement:DoNav(false, "stop log=off")
+    mq.delay("2s", function() return not mq.TLO.Navigation.Active() end)
+    self:TransitionAfterEngage(ctx)
+end
+
+function Module:BeginEngage(ctx)
+    local attempt = self.TempSettings.Attempt
+    local abilityId = Config:GetSetting('PullAbility')
+    local engageKey
+    if abilityId == self.TempSettings.PullAbilityIDToName.PetPull then
+        engageKey = 'PetPull'
+    elseif abilityId == self.TempSettings.PullAbilityIDToName.Face then
+        engageKey = 'Face'
+    elseif abilityId == self.TempSettings.PullAbilityIDToName.Ranged then
+        engageKey = 'Ranged'
+    elseif abilityId == self.TempSettings.PullAbilityIDToName.AutoAttack then
+        engageKey = 'AutoAttack'
+    elseif attempt.ability then
+        engageKey = 'Generic'
+    end
+
+    if not engageKey then
+        Logger.log_error("\arInvalid PullAbility: \at%d\ar - Please Select a valid Pull Ability\ax", abilityId)
+        self:TransitionAfterEngage(ctx)
+        return
+    end
+
+    attempt.engageKey = engageKey
+
+    if engageKey == 'PetPull' then
+        Combat.PetAttack(attempt.targetId, false)
+        attempt.engageStartedAt = ctx.nowSec
+    elseif engageKey == 'Generic' then
+        attempt.engageStartedAt = ctx.nowSec
+    else
+        -- Make sure we're looking straight ahead at our mob and delay
+        -- until we're facing them.
+        Core.DoCmd("/look 0")
+        attempt.faceDeadline = ctx.now + 3000
+    end
+end
+
+function Module:PullingTick(ctx)
+    local attempt = self.TempSettings.Attempt
+    local descriptor = Module.Constants.EngageDescriptors[attempt.engageKey]
+
+    if attempt.faceDeadline then
+        if mq.TLO.Me.Heading.ShortName() == mq.TLO.Target.HeadingTo.ShortName() or ctx.now >= attempt.faceDeadline then
+            attempt.faceDeadline = nil
+            attempt.engageStartedAt = ctx.nowSec
+        else
+            return
+        end
+    end
+
+    if Module.PullSuccessCheck(ctx.policy.successCheck, Targeting.GetXTHaterCount(), Config:GetSetting('ChainCount')) then
+        self:EndEngage(ctx)
+        return
+    end
+
+    if descriptor.verboseShowsSuccess then
+        Logger.log_super_verbose(descriptor.verbose,
+            Strings.BoolToColorString(Module.PullSuccessCheck(ctx.policy.successCheck, Targeting.GetXTHaterCount(), Config:GetSetting('ChainCount'))))
+    else
+        Logger.log_super_verbose(descriptor.verbose)
+    end
+
+    local approachDone = false
+    if attempt.engageNavDeadline then
+        local waitingOnStart = descriptor.startGraceMs and (ctx.now - attempt.engageNavIssuedAt) < descriptor.startGraceMs
+        if ctx.now < attempt.engageNavDeadline and (mq.TLO.Navigation.Active() or waitingOnStart) then
+            Modules:ExecModule("Movement", "CheckStuck")
+            return
+        end
+        attempt.engageNavDeadline = nil
+        approachDone = true
+    end
+
+    if descriptor.fireBeforeApproach and descriptor.action then
+        descriptor.action(self, attempt)
+    end
+
+    if descriptor.retarget then
+        Targeting.SetTarget(attempt.targetId, true)
+    end
+
+    if descriptor.feetWetRenav and mq.TLO.Target.FeetWet() ~= mq.TLO.Me.FeetWet() then
+        Logger.log_debug("\ar ALERT: Feet wet mismatch - Moving around\ax")
+        Movement:DoNav(false, "id %d distance=%d lineofsight=%s log=off", attempt.targetId, Targeting.GetTargetDistance() * 0.9, attempt.requireLOS)
+    end
+
+    if descriptor.approach == 'abilityRange' then
+        Movement:DoNav(false, "id %d distance=%d lineofsight=%s log=off", attempt.targetId, self:GetPullAbilityRange(), descriptor.forceLOS and "on" or attempt.requireLOS)
+    elseif descriptor.approach == 'halfRange' and not approachDone then
+        if Targeting.GetTargetDistance() > self:GetPullAbilityRange() then
+            Movement:DoNav(false, "id %d distance=%d lineofsight=%s log=off", attempt.targetId, self:GetPullAbilityRange() / 2, attempt.requireLOS)
+            attempt.engageNavIssuedAt = ctx.now
+            attempt.engageNavDeadline = ctx.now + Config:GetSetting('MaxMoveTime') * 1000
+            if not descriptor.fireBeforeApproach then
+                return
+            end
+        end
+    end
+
+    if not descriptor.fireBeforeApproach and descriptor.action then
+        descriptor.action(self, attempt)
+    end
+
+    if ctx.policy.successCheck == 'chainCount' and Targeting.DiffXTHaterIDs(attempt.startingXTargs) then
+        if descriptor.chainBreakLog then
+            Logger.log_debug("PULL:\arXtargs changed heading back to camp!")
+        end
+        self:EndEngage(ctx)
+        return
+    end
+
+    if self:CheckAttemptAbort(attempt) then
+        self:EndEngage(ctx)
+        return
+    end
+
+    if descriptor.stuckCheck then
+        Modules:ExecModule("Movement", "CheckStuck")
+    end
+end
+
+function Module:EndEngage(ctx)
+    local attempt = self.TempSettings.Attempt
+
+    if attempt.engageKey == 'PetPull' then
+        Core.SetPetHold()
+        Core.DoCmd("/squelch /pet back off")
+        mq.delay("1s", function() return (mq.TLO.Pet.PlayerState() or 0) == 0 end)
+        Core.DoCmd("/squelch /pet follow")
+    end
+
+    if Module.PullSuccessCheck(ctx.policy.successCheck, Targeting.GetXTHaterCount(), Config:GetSetting('ChainCount')) then
+        Globals.LastPulledID = attempt.targetId
+    end
+
+    self:TransitionAfterEngage(ctx)
+end
+
+function Module:TransitionAfterEngage(ctx)
+    local attempt = self.TempSettings.Attempt
+
+    if ctx.policy.family == 'camp' then
+        -- Nav back to camp.
+        local returnLoc = attempt.returnLoc
+        self:SetPullState(PullStates.PULL_RETURN_TO_CAMP, string.format("Camp Loc: %0.2f %0.2f %0.2f", returnLoc.y, returnLoc.x, returnLoc.z))
+        Movement:DoNav(false, "locyxz %0.2f %0.2f %0.2f log=off %s", returnLoc.y, returnLoc.x, returnLoc.z, Config:GetSetting('PullBackwards') and "facing=backward" or "")
+        attempt.returnNavIssuedAt = ctx.now
+    else
+        self:CloseAttempt(ctx)
+    end
+end
+
+function Module:ReturnToCampTick(ctx)
+    local attempt = self.TempSettings.Attempt
+    local returnLoc = attempt.returnLoc
+
+    if self:CheckReturnAbort(attempt) then
+        Movement:DoNav(false, "stop log=off")
+        mq.delay("2s", function() return not mq.TLO.Navigation.Active() end)
+        self:CloseAttempt(ctx)
+        return
+    end
+
+    if mq.TLO.Navigation.Active() then
+        Logger.log_super_verbose("Pathing to camp...")
+        if (mq.TLO.Me.State() or ""):lower() == "feign" or mq.TLO.Me.Sitting() then
+            Logger.log_debug("PULL:Standing up to Engage Target")
+            mq.TLO.Me.Stand()
+            Movement:DoNav(false, "locyxz %0.2f %0.2f %0.2f log=off %s", returnLoc.y, returnLoc.x, returnLoc.z,
+                Config:GetSetting('PullBackwards') and "facing=backward" or "")
+            attempt.returnNavIssuedAt = ctx.now
+        end
+
+        if mq.TLO.Navigation.Paused() then
+            Movement:DoNav(false, "pause")
+        end
+
+        Modules:ExecModule("Movement", "CheckStuck")
+        self:CheckMoveAbilities()
+
+        if ctx.now - attempt.returnNavIssuedAt < 1000 * 120 then return end
+
+        Logger.log_warn("PULL: Return to camp exceeded 120s - stopping nav to force wait resolution")
         Movement:DoNav(false, "stop log=off")
         mq.delay("2s", function() return not mq.TLO.Navigation.Active() end)
     end
 
-    if self:IsPullMode("Normal") or self:IsPullMode("Chain") then
-        -- Nav back to camp.
-        self:SetPullState(PullStates.PULL_RETURN_TO_CAMP, string.format("Camp Loc: %0.2f %0.2f %0.2f", start_y, start_x, start_z))
+    if ctx.now - attempt.returnNavIssuedAt < 5000 then return end
 
-        Movement:DoNav(false, "locyxz %0.2f %0.2f %0.2f log=off %s", start_y, start_x, start_z, Config:GetSetting('PullBackwards') and "facing=backward" or "")
-        mq.delay("5s", function() return mq.TLO.Navigation.Active() end)
-
-        while mq.TLO.Navigation.Active() do
-            Logger.log_super_verbose("Pathing to camp...")
-            if mq.TLO.Me.State():lower() == "feign" or mq.TLO.Me.Sitting() then
-                Logger.log_debug("PULL:Standing up to Engage Target")
-                mq.TLO.Me.Stand()
-                Movement:DoNav(false, "locyxz %0.2f %0.2f %0.2f log=off %s", start_y, start_x, start_z, Config:GetSetting('PullBackwards') and "facing=backward" or "")
-                mq.delay("5s", function() return mq.TLO.Navigation.Active() end)
-            end
-
-            if mq.TLO.Navigation.Paused() then
-                Movement:DoNav(false, "pause")
-            end
-
-            Modules:ExecModule("Movement", "CheckStuck")
-            mq.doevents()
-            Events.DoEvents()
-            mq.delay(10)
-        end
-
-        if Math.GetDistanceSquared(mq.TLO.Me.X(), mq.TLO.Me.Y(), start_x, start_y) > Config:GetSetting('AutoCampRadius') ^ 2 then
-            Logger.log_warn("PULL: Failed to reach camp (dist %.0f) - puller is stuck in the field",
-                math.sqrt(Math.GetDistanceSquared(mq.TLO.Me.X(), mq.TLO.Me.Y(), start_x, start_y)))
-            Comms.HandleAnnounce(Comms.FormatChatEvent("Pull", "None", "Failed to return to camp - manual intervention may be needed!"),
-                Config:GetSetting('PullAnnounceGroup'), Config:GetSetting('PullAnnounce'), Config:GetSetting('AnnounceToRaidIfInRaid'))
-        end
-
-        Core.DoCmd("/face id %d", self.TempSettings.PullID)
-
-        self:SetPullState(PullStates.PULL_WAITING_ON_MOB, self:GetPullStateTargetInfo())
-
-        -- give the mob 2 mins to get to us.
-        local maxPullWait = 1000 * 120 -- 2 mins
-        -- wait for the mob to reach us.
-        while mq.TLO.Target.ID() == self.TempSettings.PullID and Targeting.GetTargetDistance() > Config:GetSetting('AutoCampRadius') and maxPullWait > 0 do
-            self:SetPullState(PullStates.PULL_WAITING_ON_MOB, self:GetPullStateTargetInfo())
-            mq.delay(100)
-            if mq.TLO.Me.Pet.Combat() then
-                Core.DoCmd("/squelch /pet back off")
-                mq.delay("1s", function() return (mq.TLO.Pet.PlayerState() or 0) == 0 end)
-                Core.DoCmd("/squelch /pet follow")
-            end
-            maxPullWait = maxPullWait - 100
-
-            if self:CheckForAbort(self.TempSettings.PullID) then
-                break
-            end
-
-            -- they ain't coming!
-            if not Targeting.IsSpawnXTHater(self.TempSettings.PullID) then
-                break
-            end
-            mq.doevents()
-            Events.DoEvents()
-        end
+    if Math.GetDistanceSquared(mq.TLO.Me.X(), mq.TLO.Me.Y(), returnLoc.x, returnLoc.y) > Config:GetSetting('AutoCampRadius') ^ 2 then
+        Logger.log_warn("PULL: Failed to reach camp (dist %.0f) - puller is stuck in the field",
+            math.sqrt(Math.GetDistanceSquared(mq.TLO.Me.X(), mq.TLO.Me.Y(), returnLoc.x, returnLoc.y)))
+        self:Announce("None", "Failed to return to camp - manual intervention may be needed!")
     end
 
-    self:SetLastPullOrCombatEndedTimer()
+    Core.DoCmd("/face id %d", attempt.targetId)
+
+    self:SetPullState(PullStates.PULL_WAITING_ON_MOB, self:GetPullStateTargetInfo())
+
+    -- give the mob 2 mins to get to us.
+    attempt.waitDeadline = ctx.now + 1000 * 120
+end
+
+function Module:WaitingOnMobTick(ctx)
+    local attempt = self.TempSettings.Attempt
+
+    -- wait for the mob to reach us.
+    if mq.TLO.Target.ID() ~= attempt.targetId or Targeting.GetTargetDistance() <= Config:GetSetting('AutoCampRadius') or ctx.now >= attempt.waitDeadline then
+        self:CloseAttempt(ctx)
+        return
+    end
+
+    self:SetPullState(PullStates.PULL_WAITING_ON_MOB, self:GetPullStateTargetInfo())
+
+    if mq.TLO.Me.Pet.Combat() then
+        Core.DoCmd("/squelch /pet back off")
+        mq.delay("1s", function() return (mq.TLO.Pet.PlayerState() or 0) == 0 end)
+        Core.DoCmd("/squelch /pet follow")
+    end
+
+    if self:CheckAttemptAbort(attempt) then
+        self:CloseAttempt(ctx)
+        return
+    end
+
+    -- they ain't coming!
+    if not Targeting.IsSpawnXTHater(attempt.targetId) then
+        self:CloseAttempt(ctx)
+        return
+    end
+end
+
+function Module:CloseAttempt(ctx)
     self.TempSettings.TargetSpawnID = 0
-    if (self:IsPullMode("Normal") or self:IsPullMode("Chain")) and campData.returnToCamp and Math.GetDistanceSquared(mq.TLO.Me.X(), mq.TLO.Me.Y(), campData.campSettings.AutoCampX, campData.campSettings.AutoCampY) > math.max(Config:GetSetting('AutoCampRadius') ^ 2, 200 ^ 2) then
+    self.TempSettings.Attempt = nil
+
+    local campRadiusSq = math.max(Config:GetSetting('AutoCampRadius') ^ 2, 200 ^ 2)
+    if ctx.policy.family == 'camp' and ctx.campData.returnToCamp and
+        Math.GetDistanceSquared(mq.TLO.Me.X(), mq.TLO.Me.Y(), ctx.campData.campSettings.AutoCampX, ctx.campData.campSettings.AutoCampY) > campRadiusSq then
         self:SetPullState(PullStates.PULL_WAITING_SHOULDPULL, "Awaiting return to camp")
     else
         self:SetPullState(PullStates.PULL_IDLE, "")
     end
 end
 
+-- Tick Dispatch
+function Module:PullTick()
+    if not Config:GetSetting('DoPull') and (self.TempSettings.EscortScopeWord or self.TempSettings.CampTravelLoc or self.TempSettings.Travel) then
+        self:ClearEscortState()
+        self.TempSettings.CampTravelLoc = nil
+        self.TempSettings.Travel = nil
+        if mq.TLO.Navigation.Active() then Movement:DoNav(false, "stop log=off") end
+    end
+
+    local ctx = self:BuildPullContext()
+
+    if not self.TempSettings.Attempt then
+        if not self:RunEntryGates(ctx) then return end
+    end
+
+    local handlerName = Module.Constants.PullStateHandlers[self.TempSettings.PullState]
+    if handlerName then self[handlerName](self, ctx) end
+end
+
+function Module:GiveTime()
+    if self.TempSettings.DeathResumeFreePass and not mq.TLO.Me.Hovering() and mq.TLO.Zone.ID() == Globals.CurZoneId and mq.TLO.Me.Instance() == Globals.CurInstanceId then
+        self.TempSettings.DeathResumeFreePass = nil
+        local campData = Modules:ExecModule("Movement", "GetCampData")
+        if campData.deathCampHold and self:NearDeathReturnPoint(campData) then
+            Modules:ExecModule("Movement", "ClearDeathCampHold")
+            Config:SetSetting('DoPull', true)
+        end
+    end
+
+    self:PullTick()
+
+    -- Hold the frame while a pull attempt is in flight so no other module acts on a half-finished pull.
+    local holdZone = mq.TLO.Zone.ID()
+    while self:IsAttemptActive() and not mq.TLO.Me.Hovering() and mq.TLO.Zone.ID() == holdZone do
+        mq.doevents()
+        Events.DoEvents()
+        mq.delay(10)
+        self:PullTick()
+    end
+end
+
+function Module:IsAttemptActive()
+    return self.TempSettings.Attempt ~= nil
+end
+
+-- Start / Stop & Roles
 function Module:SetPullTarget()
-    self.TempSettings.TargetSpawnID = mq.TLO.Target.ID()
-    table.insert(self.TempSettings.PullTargets, mq.TLO.Target)
-    self.TempSettings.PullTargetsMetaData[mq.TLO.Target.ID()] = { distance = mq.TLO.Navigation.PathLength("id " .. mq.TLO.Target.ID())(), }
+    if self:IsBusyPulling() then
+        Logger.log_info("PULL: Puller is busy - ignoring manual pull request.")
+        return
+    end
+    local targetId = mq.TLO.Target.ID()
+    if (targetId or 0) == 0 then return end
+    self.TempSettings.TargetSpawnID = targetId
+    table.insert(self.TempSettings.PullTargets, mq.TLO.Spawn("id " .. targetId))
+    self.TempSettings.PullTargetsMetaData[targetId] = { distance = mq.TLO.Navigation.PathLength("id " .. targetId)(), }
 end
 
 function Module:StartPuller()
     if Config:GetSetting('DoPull') == true then return end
+    self.TempSettings.DeathResumeFreePass = nil
+    Modules:ExecModule("Movement", "ClearDeathCampHold")
+    self.TempSettings.PausePulls = false
+    -- starting: the entry boxes are authoritative, commit them first
+    if not self:CommitLocEntry() then return end
+    local intent = self:CurrentIntent()
+    if not intent.canStart then
+        Logger.log_error("%s", intent.gapReason or intent.text)
+        return
+    end
+    if Modules:ExecModule("Movement", "GetCampData").returnToCamp and (self:GetModePolicy().family ~= 'camp' or self.TempSettings.CampTravelLoc) then
+        Modules:ExecModule("Movement", "CampOff")
+    end
+    if Config:GetSetting('PullManagePeerMovement') then
+        local zoneScope = Config:GetSetting('PullPeerScope') == 2
+        if self:GetModePolicy().family ~= 'camp' then
+            Comms.SendPeersDoCmd(zoneScope and Comms.GetZonePeers(false) or self:GroupOrRaidPeers(false), "/rgl chaseon " .. mq.TLO.Me.CleanName())
+        elseif not Modules:ExecModule("Movement", "GetCampData").returnToCamp then
+            if not self.TempSettings.CampTravelLoc then
+                Comms.SendPeersDoCmd(zoneScope and Comms.GetZonePeers(true) or self:GroupOrRaidPeers(true), "/rgl campon")
+                self:SetLastPullOrCombatEndedTimer()
+            else
+                local escortPeers = zoneScope and Comms.GetZonePeers(false) or self:GroupOrRaidPeers(false)
+                Comms.SendPeersDoCmd(escortPeers, "/rgl chaseon " .. mq.TLO.Me.CleanName())
+                if #escortPeers > 0 then
+                    self.TempSettings.EscortScopeWord = zoneScope and "in-zone peers" or ((mq.TLO.Raid.Members() or 0) > 0 and "raid" or "group")
+                    self.TempSettings.EscortPeers = escortPeers
+                end
+            end
+        end
+    elseif self:GetModePolicy().family == 'camp' and not self.TempSettings.CampTravelLoc
+        and not Modules:ExecModule("Movement", "GetCampData").returnToCamp then
+        Core.DoCmd("/rgl campon")
+        self:SetLastPullOrCombatEndedTimer()
+    end
+    self.TempSettings.LastMoveAbilityCheck = 0
     Config:SetSetting('DoPull', true)
-    Module:SetRoles()
+    self:SetRoles()
 end
 
 function Module:StopPuller()
     if Config:GetSetting('DoPull') == false then return end
+    self.TempSettings.PausePulls = false
+    self:ClearEscortState()
+    if (self.TempSettings.CampTravelLoc or self.TempSettings.Travel) and mq.TLO.Navigation.Active() then
+        Movement:DoNav(false, "stop log=off")
+    end
+    self.TempSettings.CampTravelLoc = nil
+    self.TempSettings.Travel = nil
     Config:SetSetting('DoPull', false)
-    Module:SetRoles()
+    self:SetRoles()
+    self:SetPullState(PullStates.PULL_IDLE, "")
+end
+
+function Module:Announce(who, message)
+    Comms.HandleAnnounce(Comms.FormatChatEvent("Pull", who, message), Config:GetSetting('PullAnnounceGroup'), Config:GetSetting('PullAnnounce'),
+        Config:GetSetting('AnnounceToRaidIfInRaid'))
+end
+
+function Module:AnnounceStop(message, clearObjective)
+    Logger.log_info("\ay%s\ax", message)
+    self:Announce("None", message)
+    if clearObjective then self.TempSettings.FightTo = nil end
+    self:StopPuller()
+    self:SetPullState(PullStates.PULL_IDLE, "")
 end
 
 function Module:SetRoles()
     if Config:GetSetting('AutoSetRoles') and mq.TLO.Group.Leader() == mq.TLO.Me.DisplayName() then
-        -- in hunt mode we follow around.
-
-        if self.Constants.PullModes[Config:GetSetting('PullMode')] ~= "Hunt" then
+        -- in non-camp modes we follow around.
+        local policy = self:GetModePolicy()
+        if policy.family == 'camp' then
             Core.DoCmd("/grouproles %s %s 3", Config:GetSetting('DoPull') and "set" or "unset", mq.TLO.Me.DisplayName()) -- set puller
         end
         Core.DoCmd("/grouproles set %s 2", Globals.MainAssist)                                                           -- set MA
     end
 end
 
+function Module:FixPullerMerc()
+    local pending = self.TempSettings.PullerMercPending
+    if pending then
+        local merc = mq.TLO.Spawn(pending.mercId)
+        if not merc() or (merc.Distance() or 0) < Config:GetSetting('AutoCampRadius') or Globals.GetTimeSeconds() >= pending.deadline then
+            Core.DoCmd("/grouproles set %s 3", pending.owner)
+            self.TempSettings.PullerMercPending = nil
+        end
+        return
+    end
+
+    if Globals.GetTimeSeconds() - self.TempSettings.LastPullerMercCheck < 15 then return end
+    self.TempSettings.LastPullerMercCheck = Globals.GetTimeSeconds()
+
+    if mq.TLO.Group.Leader() ~= mq.TLO.Me.DisplayName() then return end
+
+    local groupCount = mq.TLO.Group.Members()
+
+    for i = 1, groupCount do
+        local merc = mq.TLO.Group.Member(i)
+
+        if merc and merc() and Targeting.TargetIsType("Mercenary", merc) and merc.Owner.DisplayName() == mq.TLO.Group.Puller() then
+            if (merc.Distance() or 0) > Config:GetSetting('AutoCampRadius') and (merc.Owner.Distance() or 0) < Config:GetSetting('AutoCampRadius') then
+                Core.DoCmd("/grouproles unset %s 3", merc.Owner.DisplayName())
+                self.TempSettings.PullerMercPending = { mercId = merc.ID(), owner = merc.Owner.DisplayName(), deadline = Globals.GetTimeSeconds() + 10, }
+                return
+            end
+        end
+    end
+end
+
+function Module:ResetPullMachine()
+    if self.TempSettings.Attempt or self.TempSettings.Travel or self.TempSettings.CampTravelLoc then
+        if mq.TLO.Navigation.Active() then
+            Movement:DoNav(false, "stop log=off")
+        end
+    end
+    self:ClearEscortState()
+    self.TempSettings.Attempt = nil
+    self.TempSettings.Travel = nil
+    self.TempSettings.CampTravelLoc = nil
+    self.TempSettings.TargetSpawnID = 0
+    self.TempSettings.UnreachableSince = 0
+    self.TempSettings.TravelFailSince = 0
+    self:SetPullState(PullStates.PULL_IDLE, "")
+end
+
+-- Lifecycle Handlers
+function Module:NearDeathReturnPoint(campData)
+    if not Modules:ExecModule("Movement", "InCampZone") then return false end
+    local radius = Config:GetSetting('CampExceedRadius')
+    local spot = self.TempSettings.DeathSpot
+    if spot and Math.GetDistance(mq.TLO.Me.Y(), mq.TLO.Me.X(), spot.y, spot.x) <= radius then return true end
+    return Math.GetDistance(mq.TLO.Me.Y(), mq.TLO.Me.X(), campData.campSettings.AutoCampY, campData.campSettings.AutoCampX) <= radius
+end
+
 function Module:OnDeath()
     -- Death Handler
+    self:ResetPullMachine()
     if Config:GetSetting('StopPullAfterDeath') then
         Config:SetSetting('DoPull', false)
+    elseif Config:GetSetting('DoPull') then
+        Config:SetSetting('DoPull', false)
+        Modules:ExecModule("Movement", "ArmDeathCampHold")
+        self.TempSettings.DeathResumeFreePass = true
+        self.TempSettings.DeathSpot = { y = mq.TLO.Me.Y(), x = mq.TLO.Me.X(), z = mq.TLO.Me.Z(), }
     end
 end
 
 function Module:OnZone()
     -- Zone Handler
+    self:ResetPullMachine()
+    local campData = Modules:ExecModule("Movement", "GetCampData")
     if Config:GetSetting('StopPullAfterDeath') then
         Config:SetSetting('DoPull', false)
+    elseif campData.deathCampHold then
+        if self.TempSettings.DeathResumeFreePass then
+            self.TempSettings.DeathResumeFreePass = nil
+            Config:SetSetting('DoPull', false)
+        else
+            if self:NearDeathReturnPoint(campData) then
+                Modules:ExecModule("Movement", "ClearDeathCampHold")
+                Config:SetSetting('DoPull', true)
+            else
+                Modules:ExecModule("Movement", "CampOff")
+                Config:SetSetting('DoPull', false)
+            end
+        end
     else
-        local campData = Modules:ExecModule("Movement", "GetCampData")
-        Config:SetSetting('DoPull', campData.returnToCamp and campData.campSettings.CampZoneId == mq.TLO.Zone.ID())
+        Config:SetSetting('DoPull', false)
     end
+    self.TempSettings.FightTo = nil
+    self.TempSettings.HuntOrigin = nil
+    self.TempSettings.HuntAnchor = nil
+    self.TempSettings.LocationNameEdits = {}
+    self.TempSettings.LocationsToDelete = {}
     self:ClearIgnoreList()
 end
 
 function Module:DoGetState()
     -- Reture a reasonable state if queried
-    return PullStatesIDToName[self.TempSettings.PullState]
+    return Module.Constants.PullStatesIDToName[self.TempSettings.PullState]
 end
 
 function Module:SetLastPullOrCombatEndedTimer()

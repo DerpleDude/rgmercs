@@ -203,11 +203,7 @@ function MapUI:RenderCanvas(canvasWidth, canvasHeight)
 
     if addWaypointMode and isHovered and ImGui.IsMouseClicked(ImGuiMouseButton.Left) then
         local displayX, displayY = screenToWorld(mouseX, mouseY)
-        local zoneKey = mq.TLO.Zone.ShortName() or ""
-        local farmWayPoints = Config:GetSetting('FarmWayPoints') or {}
-        farmWayPoints[zoneKey] = farmWayPoints[zoneKey] or {}
-        table.insert(farmWayPoints[zoneKey], { x = -displayX, y = displayY, z = me.Z() or 0, })
-        Config:SetSetting('FarmWayPoints', farmWayPoints)
+        Modules:ExecModule("Pull", "AddLocationAt", { y = displayY, x = -displayX, z = me.Z() or 0, })
     end
 
     local viewMinX, viewMaxY = screenToWorld(canvasX, canvasY)
@@ -258,18 +254,20 @@ function MapUI:RenderCanvas(canvasWidth, canvasHeight)
     drawList:AddTriangleFilled(tip, baseMid, tailR, shadeColor)
     drawList:AddTriangle(tip, tailL, tailR, outlineColor, 1.0)
 
-    local farmWayPoints = (Config:GetSetting('FarmWayPoints', true) or {})[mq.TLO.Zone.ShortName() or ""] or {}
-    if #farmWayPoints > 0 then
-        local wpScreenPoints = {}
+    local pullLocations = (Config:GetSetting('PullLocations', true) or {})[getCurrentZoneKey()] or {}
+    if #pullLocations > 0 then
+        local circuitScreenPoints = {}
         local wpColor = ImGui.GetColorU32(ImVec4(0.30, 1.00, 0.45, 1.0))
-        for idx, point in ipairs(farmWayPoints) do
-            local sx, sy = worldToScreen(-(point.x or 0), point.y or 0)
-            table.insert(wpScreenPoints, ImVec2(sx, sy))
+        for _, entry in ipairs(pullLocations) do
+            local sx, sy = worldToScreen(-(entry.x or 0), entry.y or 0)
+            if entry.enabled then
+                table.insert(circuitScreenPoints, ImVec2(sx, sy))
+            end
             drawList:AddCircleFilled(ImVec2(sx, sy), 4, wpColor, 12)
-            drawList:AddText(ImVec2(sx + 6, sy - 8), wpColor, tostring(idx))
+            drawList:AddText(ImVec2(sx + 6, sy - 8), wpColor, entry.name)
         end
-        if #wpScreenPoints >= 2 then
-            drawList:AddPolyline(wpScreenPoints, wpColor, 0, 2.0)
+        if #circuitScreenPoints >= 2 then
+            drawList:AddPolyline(circuitScreenPoints, wpColor, 0, 2.0)
         end
     end
 

@@ -45,6 +45,7 @@ Globals.CurZoneId                     = mq.TLO.Zone.ID()
 Globals.CurInstanceId                 = mq.TLO.Me.Instance()
 Globals.CurLoadedChar                 = mq.TLO.Me.DisplayName()
 Globals.CurLoadedClass                = mq.TLO.Me.Class.ShortName()
+Globals.XTargetSlots                  = mq.TLO.Me.XTargetSlots() or 20
 Globals.CurServer                     = mq.TLO.EverQuest.Server()
 Globals.CurServerNormalized           = mq.TLO.EverQuest.Server():gsub(" ", "")
 Globals.CastResult                    = 0

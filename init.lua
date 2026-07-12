@@ -460,6 +460,7 @@ local function Main()
             Targeting.ClearSafeTargetCache()
             Targeting.ForceBurnTargetID = 0
             Globals.LastPulledID        = 0
+            Combat.PullStuckTime        = 0
             Globals.AutoTargetID        = 0
             Globals.CombatNavTargetId   = 0
             Globals.IgnoredTargetIDs    = Set.new({})

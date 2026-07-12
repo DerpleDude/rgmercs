@@ -23,6 +23,8 @@ setmetatable(Module, { __index = Base, })
 
 Module.TempSettings                = {}
 Module.TempSettings.CampZoneId     = 0
+Module.TempSettings.CampInstanceId = 0
+Module.TempSettings.DeathCampHold  = false
 Module.TempSettings.LastCmd        = ""
 Module.TempSettings.NavWasActive   = false
 
@@ -378,6 +380,7 @@ function Module:ChaseOn(nameParam)
     -- being told to chase ourselves means we're the chase target; stop chasing whoever we were following.
     if targetName == mq.TLO.Me.CleanName() then
         Logger.log_warn("\ayWarning: Attempting to chase yourself, stopping chase instead.")
+        self:CampOff()
         self:ChaseOff()
         return
     end
@@ -417,25 +420,42 @@ end
 function Module:CampOn()
     self:ChaseOff()
     Config:SetSetting('ReturnToCamp', true)
-    self.TempSettings.AutoCampX  = mq.TLO.Me.X()
-    self.TempSettings.AutoCampY  = mq.TLO.Me.Y()
-    self.TempSettings.AutoCampZ  = mq.TLO.Me.Z()
-    self.TempSettings.CampZoneId = mq.TLO.Zone.ID()
+    self.TempSettings.AutoCampX      = mq.TLO.Me.X()
+    self.TempSettings.AutoCampY      = mq.TLO.Me.Y()
+    self.TempSettings.AutoCampZ      = mq.TLO.Me.Z()
+    self.TempSettings.CampZoneId     = mq.TLO.Zone.ID()
+    self.TempSettings.CampInstanceId = mq.TLO.Me.Instance()
     Logger.log_info("\ayCamping On: (X: \at%d\ay ; Y: \at%d\ay)", self.TempSettings.AutoCampX, self.TempSettings.AutoCampY)
+    self.TempSettings.DeathCampHold = false
 end
 
 ---@return table # camp settings table
 function Module:GetCampData()
-    return { returnToCamp = (Config:GetSetting('ReturnToCamp') and self.TempSettings.CampZoneId == mq.TLO.Zone.ID()), campSettings = self.TempSettings, }
+    return {
+        returnToCamp = Config:GetSetting('ReturnToCamp') and self.TempSettings.CampZoneId == mq.TLO.Zone.ID() and
+            self.TempSettings.CampInstanceId == mq.TLO.Me.Instance(),
+        campSettings = self.TempSettings,
+        deathCampHold = self.TempSettings.DeathCampHold or false,
+    }
 end
 
 ---@return boolean
 function Module:InCampZone()
-    return self.TempSettings.CampZoneId == mq.TLO.Zone.ID()
+    return self.TempSettings.CampZoneId == mq.TLO.Zone.ID() and self.TempSettings.CampInstanceId == mq.TLO.Me.Instance()
 end
 
 function Module:CampOff()
     Config:SetSetting('ReturnToCamp', false)
+    self.TempSettings.DeathCampHold = false
+end
+
+function Module:ArmDeathCampHold()
+    if not Config:GetSetting('ReturnToCamp') then return end
+    self.TempSettings.DeathCampHold = true
+end
+
+function Module:ClearDeathCampHold()
+    self.TempSettings.DeathCampHold = false
 end
 
 function Module:DestoryCampfire()
@@ -731,7 +751,9 @@ function Module:ShouldFollow()
 end
 
 function Module:OnZone()
-    self:CampOff()
+    if not self.TempSettings.DeathCampHold then
+        self:CampOff()
+    end
     if mq.TLO.Nav.Active() then
         Movement:DoNav(true, "stop")
     end
@@ -771,7 +793,7 @@ function Module:GiveTime()
 
     self:CheckStuck()
 
-    if not self:InCampZone() and Config:GetSetting("ReturnToCamp") then
+    if Config:GetSetting("ReturnToCamp") and not self.TempSettings.DeathCampHold and not self:InCampZone() then
         Config:SetSetting("ReturnToCamp", false)
     end
 

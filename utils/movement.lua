@@ -568,15 +568,26 @@ end
 --- config settings for pull mode and camp return.
 function Movement.UpdateMapRadii()
     if Config:GetSetting('DoPull') or Config:GetSetting('ReturnToCamp') then
-        if Modules:ExecModule("Pull", "IsPullMode", "Hunt") then
-            Core.DoCmd("/squelch /mapfilter pullradius %d", Config:GetSetting('PullRadiusHunt'))
+        if Modules:ExecModule("Pull", "IsPullMode", "AreaHunt") then
+            -- the pullradius circle anchors at the player when the filter is set, so a remote hunt location would draw it in the wrong place
+            if Modules:ExecModule("Pull", "HasRemoteHuntOrigin") then
+                Core.DoCmd("/squelch /mapfilter pullradius off")
+            else
+                Core.DoCmd("/squelch /mapfilter pullradius %d", Config:GetSetting('PullRadiusHunt'))
+            end
         elseif Config:GetSetting('ReturnToCamp') then
             Core.DoCmd("/squelch /mapfilter pullradius %d", Config:GetSetting('PullRadius'))
+        else
+            Core.DoCmd("/squelch /mapfilter pullradius off")
         end
+    else
+        Core.DoCmd("/squelch /mapfilter pullradius off")
+    end
+
+    if Config:GetSetting('ReturnToCamp') and Modules:ExecModule("Movement", "InCampZone") then
         Core.DoCmd("/squelch /mapfilter campradius %d", Config:GetSetting('AutoCampRadius'))
     else
         Core.DoCmd("/squelch /mapfilter campradius off")
-        Core.DoCmd("/squelch /mapfilter pullradius off")
     end
 end
 

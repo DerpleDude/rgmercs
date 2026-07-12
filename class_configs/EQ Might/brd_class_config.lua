@@ -40,19 +40,19 @@ local Tooltips     = {
 }
 
 local _ClassConfig = {
-    _version          = "3.3 - EQ Might",
-    _author           = "Algar, Derple, Grimmier, Tiddliestix, SonicZentropy",
-    ['Modes']         = { --other modes to reorder spell priorities may be added back in at a later date.
+    _version              = "3.3 - EQ Might",
+    _author               = "Algar, Derple, Grimmier, Tiddliestix, SonicZentropy",
+    ['Modes']             = { --other modes to reorder spell priorities may be added back in at a later date.
         'General',
     },
-    ['ModeChecks']    = {
+    ['ModeChecks']        = {
         CanMez    = function() return true end,
         CanCharm  = function() return true end,
         IsMezzing = function() return Config:GetSetting('MezOn') end,
         IsCuring  = function() return Config:GetSetting('UseCure') end,
         IsRezing  = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
     },
-    ['Rez']           = {
+    ['Rez']               = {
         ['Combat']   = {
             { type = "Item", name = "RezStaff", },
         },
@@ -60,7 +60,7 @@ local _ClassConfig = {
             { type = "Item", name = "RezStaff", },
         },
     },
-    ['Cure']          = {
+    ['Cure']              = {
         ['Poison'] = {
             { type = "Song", name = "CureSong", },
         },
@@ -68,7 +68,7 @@ local _ClassConfig = {
             { type = "Song", name = "CureSong", },
         },
     },
-    ['Themes']        = {
+    ['Themes']            = {
         ['General'] = {
             { element = ImGuiCol.TitleBgActive,    color = { r = 0.50, g = 0.08, b = 0.35, a = 0.8, }, },
             { element = ImGuiCol.TableHeaderBg,    color = { r = 0.50, g = 0.08, b = 0.35, a = 0.8, }, },
@@ -89,7 +89,7 @@ local _ClassConfig = {
             { element = ImGuiCol.FrameBgActive,    color = { r = 0.50, g = 0.08, b = 0.35, a = 1.0, }, },
         },
     },
-    ['ItemSets']      = {
+    ['ItemSets']          = {
         ['RezStaff'] = {
             "Legendary Fabled Staff of Forbidden Rites",
             "Fabled Staff of Forbidden Rites",
@@ -104,7 +104,7 @@ local _ClassConfig = {
             "Traveler's Mail Chestguard",
         },
     },
-    ['AbilitySets']   = {
+    ['AbilitySets']       = {
         -- TO DO: Added Dirgle of Metala/Snare line
         -- bellow of chaos 66 dd nuke??
         ['RunBuff'] = {
@@ -285,7 +285,7 @@ local _ClassConfig = {
             "Revitalize",          -- Level 51 EQM Custom
         },
     },
-    ['Helpers']       = {
+    ['Helpers']           = {
         SwapInst = function(type)
             if not Config:GetSetting('SwapInstruments') then return end
             Logger.log_verbose("\ayBard SwapInst(): Swapping to Instrument Type: %s", type)
@@ -422,16 +422,16 @@ local _ClassConfig = {
             return duration
         end,
     },
-    ['Mez']           = {
+    ['Mez']               = {
         { type = "Song", name = "MezSong", },
         { type = "Song", name = "MezAESong", },
     },
-    ['Charm']         = {
+    ['Charm']             = {
         ['Abilities'] = {
             { name = "CharmSong", type = "Song", },
         },
     },
-    ['RotationOrder'] = {
+    ['RotationOrder']     = {
         {
             name = 'Enduring Breath',
             state = 1,
@@ -532,7 +532,7 @@ local _ClassConfig = {
             end,
         },
     },
-    ['Rotations']     = {
+    ['Rotations']         = {
         ['Burn'] = { --Order is heavy WIP
             {
                 name = "Quick Time",
@@ -911,7 +911,7 @@ local _ClassConfig = {
 
         },
     },
-    ['SpellList']     = { -- New style spell list, gemless, priority-based. Will use the first set whose conditions are met.
+    ['SpellList']         = { -- New style spell list, gemless, priority-based. Will use the first set whose conditions are met.
         {
             name = "Default Mode",
             -- cond = function(self) return true end, --Code kept here for illustration, if there is no condition to check, this line is not required
@@ -949,7 +949,7 @@ local _ClassConfig = {
             },
         },
     },
-    ['PullAbilities'] = {
+    ['PullAbilities']     = {
         {
             id = 'Boastful Bellow',
             Type = "AA",
@@ -961,7 +961,29 @@ local _ClassConfig = {
             end,
         },
     },
-    ['DefaultConfig'] = {
+    ['PullMoveAbilities'] = {
+        {
+            name = "Selo's Sonata",
+            type = "AA",
+            load_cond = function(self) return Casting.CanUseAA("Selo's Sonata") end,
+            cond = function(self, aaName)
+                return (mq.TLO.Me.Buff(aaName).Duration.TotalSeconds() or 0) < 15
+            end,
+        },
+        {
+            name = "RunBuff",
+            type = "Song",
+            load_cond = function(self) return Core.GetResolvedActionMapItem('RunBuff') and Config:GetSetting('UseRunBuff') > 1 and not Casting.CanUseAA("Selo's Sonata") end,
+            cond = function(self, songSpell)
+                if not mq.TLO.Me.Gem(songSpell.RankName())() then return false end
+                if (mq.TLO.Me.Casting.ID() or 0) == songSpell.ID() then return false end
+                local buffName = songSpell.BaseName()
+                local spellBuff = songSpell.DurationWindow() == 1 and mq.TLO.Me.Song(buffName) or mq.TLO.Me.Buff(buffName)
+                return not spellBuff()
+            end,
+        },
+    },
+    ['DefaultConfig']     = {
         ['Mode']            = {
             DisplayName = "Mode",
             Category = "Combat",
@@ -1458,7 +1480,7 @@ local _ClassConfig = {
             ConfigType = "Advanced",
         },
     },
-    ['ClassFAQ']      = {
+    ['ClassFAQ']          = {
         {
             Question = "What is the current status of this class config?",
             Answer = "This class config is currently a Work-In-Progress that was originally based off of the Project Lazarus config.\n\n" ..

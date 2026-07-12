@@ -1096,6 +1096,12 @@ function Module:GetPullAbilities()
     return self.ClassConfig.PullAbilities or {}
 end
 
+---@return table
+function Module:GetPullMoveAbilities()
+    if not self.ClassConfig then return {} end
+    return self.ClassConfig.PullMoveAbilities or {}
+end
+
 ---@param mode string
 ---@return boolean
 function Module:IsModeActive(mode)

@@ -56,25 +56,25 @@ local Tooltips     = {
 }
 
 local _ClassConfig = {
-    _version          = "2.3 - Live",
-    _author           = "Algar, Derple, Grimmier, Tiddliestix, SonicZentropy",
-    ['Modes']         = {
+    _version              = "2.3 - Live",
+    _author               = "Algar, Derple, Grimmier, Tiddliestix, SonicZentropy",
+    ['Modes']             = {
         'General',
     },
-    ['OnModeChange']  = function(self, mode)
+    ['OnModeChange']      = function(self, mode)
         local warMarch = Core.GetResolvedActionMapItem('WarMarchSong')
         if warMarch then
             self.TempSettings.MarchDuration = warMarch.MyDuration.TotalSeconds() or 0
         end
     end,
 
-    ['ModeChecks']    = {
+    ['ModeChecks']        = {
         CanMez    = function() return true end,
         CanCharm  = function() return true end,
         IsMezzing = function() return Config:GetSetting('MezOn') end,
         IsCuring  = function() return Config:GetSetting('UseCure') end,
     },
-    ['Cure']          = {
+    ['Cure']              = {
         ['Poison'] = {
             { type = "Song", name = "CureSong", },
         },
@@ -85,7 +85,7 @@ local _ClassConfig = {
             { type = "Song", name = "CureSong", },
         },
     },
-    ['Themes']        = {
+    ['Themes']            = {
         ['General'] = {
             { element = ImGuiCol.TitleBgActive,    color = { r = 0.50, g = 0.08, b = 0.35, a = 0.8, }, },
             { element = ImGuiCol.TableHeaderBg,    color = { r = 0.50, g = 0.08, b = 0.35, a = 0.8, }, },
@@ -106,7 +106,7 @@ local _ClassConfig = {
             { element = ImGuiCol.FrameBgActive,    color = { r = 0.50, g = 0.08, b = 0.35, a = 1.0, }, },
         },
     },
-    ['ItemSets']      = {
+    ['ItemSets']          = {
         ['Epic'] = {
             "Blade of Vesagran",
             "Prismatic Dragon Blade",
@@ -116,7 +116,7 @@ local _ClassConfig = {
             "Blood Drinker's Coating",
         },
     },
-    ['AbilitySets']   = {
+    ['AbilitySets']       = {
         ['RunBuffSong'] = {
             -- Selo's Accelerato not used so that we don't go back to a short duration
             -- Other songs omitted due to issues with constant reinvis, etc.
@@ -686,7 +686,7 @@ local _ClassConfig = {
             "Thousand Blades", -- Level 69
         },
     },
-    ['Helpers']       = {
+    ['Helpers']           = {
         SwapInst = function(type)
             if not Config:GetSetting('SwapInstruments') then return end
             Logger.log_verbose("\ayBard SwapInst(): Swapping to Instrument Type: %s", type)
@@ -777,7 +777,7 @@ local _ClassConfig = {
         end,
 
     },
-    ['SpellList']     = { -- New style spell list, gemless, priority-based. Will use the first set whose conditions are met.
+    ['SpellList']         = { -- New style spell list, gemless, priority-based. Will use the first set whose conditions are met.
         {
             name = "Default Mode",
             -- cond = function(self) return true end, --Code kept here for illustration, if there is no condition to check, this line is not required
@@ -854,17 +854,17 @@ local _ClassConfig = {
             },
         },
     },
-    ['Mez']           = {
+    ['Mez']               = {
         { type = "AA",   name = "Dirge of the Sleepwalker", cond = function() return Config:GetSetting('DoAAMez') end, },
         { type = "Song", name = "MezSong", },
         { type = "Song", name = "MezAESong", },
     },
-    ['Charm']         = {
+    ['Charm']             = {
         ['Abilities'] = {
             { name = "CharmSong", type = "Song", },
         },
     },
-    ['RotationOrder'] = {
+    ['RotationOrder']     = {
         {
             name = 'Enduring Breath',
             state = 1,
@@ -955,7 +955,7 @@ local _ClassConfig = {
             end,
         },
     },
-    ['Rotations']     = {
+    ['Rotations']         = {
         ['Burn'] = {
             {
                 name = "Quick Time",
@@ -1484,7 +1484,7 @@ local _ClassConfig = {
             },
         },
     },
-    ['PullAbilities'] = {
+    ['PullAbilities']     = {
         {
             id = 'Sonic Disturbance',
             Type = "AA",
@@ -1506,7 +1506,30 @@ local _ClassConfig = {
             end,
         },
     },
-    ['DefaultConfig'] = {
+    ['PullMoveAbilities'] = {
+        {
+            name = "Selo's Sonata",
+            type = "AA",
+            load_cond = function(self) return Casting.CanUseAA("Selo's Sonata") end,
+            cond = function(self, aaName)
+                local aaBuff = mq.TLO.Me.AltAbility(aaName).Spell.Trigger(1)() or ""
+                return (mq.TLO.Me.Buff(aaBuff).Duration.TotalSeconds() or 0) < 15
+            end,
+        },
+        {
+            name = "RunBuffSong",
+            type = "Song",
+            load_cond = function(self) return Core.GetResolvedActionMapItem('RunBuffSong') and Config:GetSetting('UseRunBuff') > 1 and not Casting.CanUseAA("Selo's Sonata") end,
+            cond = function(self, songSpell)
+                if not mq.TLO.Me.Gem(songSpell.RankName())() then return false end
+                if (mq.TLO.Me.Casting.ID() or 0) == songSpell.ID() then return false end
+                local buffName = songSpell.BaseName()
+                local spellBuff = songSpell.DurationWindow() == 1 and mq.TLO.Me.Song(buffName) or mq.TLO.Me.Buff(buffName)
+                return not spellBuff()
+            end,
+        },
+    },
+    ['DefaultConfig']     = {
         ['Mode']            = {
             DisplayName = "Mode",
             Type = "Custom",
@@ -2220,7 +2243,7 @@ local _ClassConfig = {
             Answer = "Unfortunately, MQ currently reports the buff falling off early; we are examining possible fixes at this time.",
         },
     },
-    ['ClassFAQ']      = {
+    ['ClassFAQ']          = {
         {
             Question = "What is the current status of this class config?",
             Answer = "This class config is a current release aimed at official servers.\n\n" ..

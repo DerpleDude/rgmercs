@@ -99,17 +99,15 @@ end
 ---@param ... string
 ---@return boolean
 function Base:HandleBind(cmd, ...)
-    local params = ...
-
     if self.CommandHandlers[cmd:lower()] ~= nil then
-        self.CommandHandlers[cmd:lower()].handler(self, params)
+        self.CommandHandlers[cmd:lower()].handler(self, ...)
         return true
     end
 
     -- try to process as a substring
     for bindCmd, bindData in pairs(self.CommandHandlers or {}) do
         if Strings.StartsWith(bindCmd, cmd) then
-            bindData.handler(self, params)
+            bindData.handler(self, ...)
             return true
         end
     end

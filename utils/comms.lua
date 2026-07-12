@@ -108,6 +108,7 @@ end
 --- @param data table? The data payload for the event.
 function Comms.SendMessage(peer, module, event, data)
     local char, server = Comms.GetNameAndServerFromPeer(peer)
+    if not char or not server then return end
     Comms.Actors.send({ mailbox = 'RGMercs', script = 'rgmercs', server = server, character = char, }, {
         From = Comms.GetPeerName(),
         Script = Comms.ScriptName,
@@ -156,6 +157,72 @@ function Comms.SendAllPeersDoCmd(inZoneOnly, includeSelf, cmd, ...)
     end
 end
 
+--- Sends a /cmd to each peer entry in the given list, running locally for self when present.
+function Comms.SendPeersDoCmd(peers, cmd, ...)
+    for _, peer in ipairs(peers) do
+        Comms.SendPeerDoCmd(peer.key, cmd, ...)
+    end
+end
+
+--- Returns fresh same-server/zone/instance peer entries ({ name, key, data }); memberCheck filters non-self peers when given.
+function Comms.GetFilteredPeers(includeSelf, memberCheck)
+    includeSelf = includeSelf or false
+    local peers = {}
+    local myName = Comms.GetPeerName()
+    local myServer = mq.TLO.EverQuest.Server() or ""
+    local myZone = mq.TLO.Zone.ID() or 0
+    local myInst = mq.TLO.Me.Instance() or 0
+
+    for peer, heartbeat in pairs(Comms.PeersHeartbeats) do
+        local data = heartbeat.Data
+        local isSelf = peer == myName
+        local fresh = (Globals.GetTimeSeconds() - (heartbeat.LastHeartbeat or 0)) <= 2
+        if data and (isSelf or fresh) and data.Server == myServer and data.ZoneId == myZone and data.InstanceId == myInst then
+            local include = includeSelf
+            if not isSelf then
+                include = not memberCheck or memberCheck(data.Name)
+            end
+
+            if include then
+                table.insert(peers, { name = data.Name, key = peer, data = data, })
+            end
+        end
+    end
+
+    -- the heartbeat store may not carry our own entry, so add it when requested
+    if includeSelf then
+        local haveSelf = false
+        for _, entry in ipairs(peers) do
+            if entry.key == myName then
+                haveSelf = true
+                break
+            end
+        end
+
+        if not haveSelf then
+            local selfHb = Comms.GetPeerHeartbeat(myName)
+            table.insert(peers, { name = mq.TLO.Me.DisplayName(), key = myName, data = selfHb and selfHb.Data or {}, })
+        end
+    end
+
+    return peers
+end
+
+--- Returns fresh peer entries ({ name, key, data }) in our zone and instance, honoring includeSelf.
+function Comms.GetZonePeers(includeSelf)
+    return Comms.GetFilteredPeers(includeSelf)
+end
+
+--- Returns fresh in-zone peer entries ({ name, key, data }) that are in our group, honoring includeSelf.
+function Comms.GetGroupPeers(includeSelf)
+    return Comms.GetFilteredPeers(includeSelf, function(name) return mq.TLO.Group.Member(name)() ~= nil end)
+end
+
+--- Returns fresh in-zone peer entries ({ name, key, data }) that are in our raid, honoring includeSelf.
+function Comms.GetRaidPeers(includeSelf)
+    return Comms.GetFilteredPeers(includeSelf, function(name) return mq.TLO.Raid.Member(name)() ~= nil end)
+end
+
 --- Broadcasts the player's full state (HP, mana, target, buffs,
 --- position, etc.) to all peers at most once per second, then
 --- updates own entry in PeersHeartbeats. forceSend bypasses the
@@ -176,66 +243,66 @@ function Comms.SendHeartbeat(forceSend)
 
     Comms.LastHeartbeat = Globals.GetTimeSeconds()
     local heartBeat = {
-        From          = Comms.GetPeerName(),
-        Name          = Globals.CurLoadedChar,
-        Server        = mq.TLO.EverQuest.Server(),
-        Zone          = mq.TLO.Zone.Name(),
-        ZoneShortName = mq.TLO.Zone.ShortName(),
-        ZoneId        = mq.TLO.Zone.ID(),
-        InstanceId    = mq.TLO.Me.Instance(),
-        ID            = mq.TLO.Me.ID(),
-        Level         = mq.TLO.Me.Level(),
-        X             = mq.TLO.Me.X(),
-        Y             = mq.TLO.Me.Y(),
-        Z             = mq.TLO.Me.Z(),
-        Class         = mq.TLO.Me.Class.ShortName(),
-        Poison        = mq.TLO.Me.Poisoned(),
-        Disease       = mq.TLO.Me.Diseased(),
-        Curse         = mq.TLO.Me.Cursed(),
-        Mezzed        = mq.TLO.Me.Mezzed(),
-        Corruption    = mq.TLO.Me.Corrupted(),
-        Stunned       = mq.TLO.Me.Stunned(),
-        HPs           = mq.TLO.Me.Dead() and 0 or mq.TLO.Me.PctHPs(),
-        Mana          = useMana and mq.TLO.Me.PctMana() or nil,
-        Endurance     = useEnd and mq.TLO.Me.PctEndurance() or nil,
-        Target        = mq.TLO.Target.DisplayName() or "None",
-        TargetID      = mq.TLO.Target.ID() or 0,
-        AutoTargetID  = autoTargetID,
-        ForceTargetID = RGMercs and RGMercs.Globals("ForceTargetID")() or 0,
-        CharmedPetID  = RGMercs and RGMercs.Globals("MyCharmedPetID")() or 0,
-        LooseCharmID  = RGMercs and RGMercs.Globals("MyLooseCharmID")() or 0,
+        From               = Comms.GetPeerName(),
+        Name               = Globals.CurLoadedChar,
+        Server             = mq.TLO.EverQuest.Server(),
+        Zone               = mq.TLO.Zone.Name(),
+        ZoneShortName      = mq.TLO.Zone.ShortName(),
+        ZoneId             = mq.TLO.Zone.ID(),
+        InstanceId         = mq.TLO.Me.Instance(),
+        ID                 = mq.TLO.Me.ID(),
+        Level              = mq.TLO.Me.Level(),
+        X                  = mq.TLO.Me.X(),
+        Y                  = mq.TLO.Me.Y(),
+        Z                  = mq.TLO.Me.Z(),
+        Class              = mq.TLO.Me.Class.ShortName(),
+        Poison             = mq.TLO.Me.Poisoned(),
+        Disease            = mq.TLO.Me.Diseased(),
+        Curse              = mq.TLO.Me.Cursed(),
+        Mezzed             = mq.TLO.Me.Mezzed(),
+        Corruption         = mq.TLO.Me.Corrupted(),
+        Stunned            = mq.TLO.Me.Stunned(),
+        HPs                = mq.TLO.Me.Dead() and 0 or mq.TLO.Me.PctHPs(),
+        Mana               = useMana and mq.TLO.Me.PctMana() or nil,
+        Endurance          = useEnd and mq.TLO.Me.PctEndurance() or nil,
+        Target             = mq.TLO.Target.DisplayName() or "None",
+        TargetID           = mq.TLO.Target.ID() or 0,
+        AutoTargetID       = autoTargetID,
+        ForceTargetID      = RGMercs and RGMercs.Globals("ForceTargetID")() or 0,
+        CharmedPetID       = RGMercs and RGMercs.Globals("MyCharmedPetID")() or 0,
+        LooseCharmID       = RGMercs and RGMercs.Globals("MyLooseCharmID")() or 0,
         CastingGroupDispel = RGMercs and RGMercs.Globals("CastingGroupDispel")() or false,
-        TargetIsNamed = RGMercs and RGMercs.Globals("AutoTargetIsNamed")() or nil,
-        Casting       = mq.TLO.Me.Casting.ID() ~= 0 and mq.TLO.Me.Casting.RankName() or "None",
-        Burning       = RGMercs and RGMercs.Globals("LastBurnCheck")() or false,
-        PetID         = mq.TLO.Me.Pet.ID() or 0,
-        PetHPs        = mq.TLO.Me.Pet.ID() ~= 0 and (mq.TLO.Me.Pet.Dead() and 0 or mq.TLO.Me.Pet.PctHPs()) or 0,
-        PetLevel      = mq.TLO.Me.Pet.ID() ~= 0 and mq.TLO.Me.Pet.Level() or 0,
-        PetName       = mq.TLO.Me.Pet.ID() ~= 0 and mq.TLO.Me.Pet.DisplayName() or "",
-        PetTarget     = mq.TLO.Me.Pet.ID() ~= 0 and (mq.TLO.Me.Pet.Target.CleanName() or "None") or "None",
-        PetConColor   = mq.TLO.Me.Pet.ID() ~= 0 and mq.TLO.Me.Pet.ConColor() or "Grey",
-        AutoTarget    = curAutoTarget and (curAutoTarget.DisplayName() or "None") or "None",
-        UnSpentAA     = mq.TLO.Me.AAPoints(),
-        SpentAA       = mq.TLO.Me.AAPointsSpent(),
-        TotalAA       = mq.TLO.Me.AAPointsTotal(),
-        PctExp        = mq.TLO.Me.PctExp(),
-        Assist        = RGMercs and RGMercs.Globals("MainAssist")() or "Standalone", --Globals.MainAssist,
-        State         = RGMercs and (RGMercs.Globals("PauseMain")() and "Paused" or RGMercs and RGMercs.Globals("CurrentState")() or "Running") or "Standalone",
-        Chase         = RGMercs and (RGMercs.Config('ChaseOn')() and RGMercs.Config('ChaseTarget')() or "Chase Off") or "Standalone",
-        Invis         = mq.TLO.Me.Invis(),
-        FreeInventory = mq.TLO.Me.FreeInventory(3)(),
-        Buffs         = Globals.CurrentBuffs,
-        CureEffects   = Globals.CurrentCureEffects,
-        Songs         = Globals.CurrentSongs,
-        Blocked       = Globals.CurrentBlocked,
-        PetBuffs      = Globals.CurrentPetBuffs,
-        PetBlocked    = Globals.CurrentPetBlocked,
-        OpenBuffSlots = mq.TLO.Me.MaxBuffSlots() - Globals.CurrentBuffCount,
-        MaxBuffSlots  = mq.TLO.Me.MaxBuffSlots(),
-        RaidLeader    = mq.TLO.Raid.Leader() or "None",
-        GroupLeader   = mq.TLO.Group.Leader() or "None",
-        Forced        = forceSend and true or false,
-        Toasts        = Comms.OutgoingToasts,
+        TargetIsNamed      = RGMercs and RGMercs.Globals("AutoTargetIsNamed")() or nil,
+        Casting            = mq.TLO.Me.Casting.ID() ~= 0 and mq.TLO.Me.Casting.RankName() or "None",
+        Burning            = RGMercs and RGMercs.Globals("LastBurnCheck")() or false,
+        PetID              = mq.TLO.Me.Pet.ID() or 0,
+        PetHPs             = mq.TLO.Me.Pet.ID() ~= 0 and (mq.TLO.Me.Pet.Dead() and 0 or mq.TLO.Me.Pet.PctHPs()) or 0,
+        PetLevel           = mq.TLO.Me.Pet.ID() ~= 0 and mq.TLO.Me.Pet.Level() or 0,
+        PetName            = mq.TLO.Me.Pet.ID() ~= 0 and mq.TLO.Me.Pet.DisplayName() or "",
+        PetTarget          = mq.TLO.Me.Pet.ID() ~= 0 and (mq.TLO.Me.Pet.Target.CleanName() or "None") or "None",
+        PetConColor        = mq.TLO.Me.Pet.ID() ~= 0 and mq.TLO.Me.Pet.ConColor() or "Grey",
+        AutoTarget         = curAutoTarget and (curAutoTarget.DisplayName() or "None") or "None",
+        UnSpentAA          = mq.TLO.Me.AAPoints(),
+        SpentAA            = mq.TLO.Me.AAPointsSpent(),
+        TotalAA            = mq.TLO.Me.AAPointsTotal(),
+        PctExp             = mq.TLO.Me.PctExp(),
+        Assist             = RGMercs and RGMercs.Globals("MainAssist")() or "Standalone", --Globals.MainAssist,
+        State              = RGMercs and (RGMercs.Globals("PauseMain")() and "Paused" or RGMercs and RGMercs.Globals("CurrentState")() or "Running") or "Standalone",
+        Chase              = RGMercs and (RGMercs.Config('ChaseOn')() and RGMercs.Config('ChaseTarget')() or "Chase Off") or "Standalone",
+        Invis              = mq.TLO.Me.Invis(),
+        FreeInventory      = mq.TLO.Me.FreeInventory(3)(),
+        Buffs              = Globals.CurrentBuffs,
+        CureEffects        = Globals.CurrentCureEffects,
+        Songs              = Globals.CurrentSongs,
+        Blocked            = Globals.CurrentBlocked,
+        PetBuffs           = Globals.CurrentPetBuffs,
+        PetBlocked         = Globals.CurrentPetBlocked,
+        OpenBuffSlots      = mq.TLO.Me.MaxBuffSlots() - Globals.CurrentBuffCount,
+        MaxBuffSlots       = mq.TLO.Me.MaxBuffSlots(),
+        RaidLeader         = mq.TLO.Raid.Leader() or "None",
+        GroupLeader        = mq.TLO.Group.Leader() or "None",
+        Forced             = forceSend and true or false,
+        Toasts             = Comms.OutgoingToasts,
     }
     Comms.BroadcastMessage("RGMercs", "Heartbeat", heartBeat)
 

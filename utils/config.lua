@@ -3384,6 +3384,17 @@ function Config:MakeValidSetting(module, setting, value)
             Logger.log_error("\ayError: %s is a string setting and cannot accept a %s value, falling back to previous value.", setting, type(value))
             return nil
         end
+        local validValues = defaultConfig[setting].ValidValues
+        if validValues then
+            local normalizedValue = value:lower():gsub(" ", "")
+            for _, validValue in ipairs(validValues) do
+                if validValue:lower():gsub(" ", "") == normalizedValue then
+                    return validValue
+                end
+            end
+            Logger.log_error("\ayError: Invalid value '%s' for %s, falling back to previous value. Valid values: %s", value, setting, table.concat(validValues, ", "))
+            return nil
+        end
         return value
     elseif type(defaultConfig[setting].Default) == 'table' then
         if type(value) ~= "table" then

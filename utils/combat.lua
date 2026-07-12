@@ -1,20 +1,21 @@
-local mq        = require('mq')
-local Set       = require('mq.set')
-local Comms     = require("utils.comms")
-local Config    = require('utils.config')
-local Core      = require("utils.core")
-local DanNet    = require('lib.dannet.helpers')
-local Events    = require("utils.events")
-local Globals   = require('utils.globals')
-local Logger    = require("utils.logger")
-local Math      = require("utils.math")
-local Modules   = require("utils.modules")
-local Movement  = require("utils.movement")
-local Strings   = require("utils.strings")
-local Targeting = require("utils.targeting")
+local mq             = require('mq')
+local Set            = require('mq.set')
+local Comms          = require("utils.comms")
+local Config         = require('utils.config')
+local Core           = require("utils.core")
+local DanNet         = require('lib.dannet.helpers')
+local Events         = require("utils.events")
+local Globals        = require('utils.globals')
+local Logger         = require("utils.logger")
+local Math           = require("utils.math")
+local Modules        = require("utils.modules")
+local Movement       = require("utils.movement")
+local Strings        = require("utils.strings")
+local Targeting      = require("utils.targeting")
 
-local Combat    = { _version = '1.0', _name = "Combat", _author = 'Derple', }
-Combat.__index  = Combat
+local Combat         = { _version = '1.0', _name = "Combat", _author = 'Derple', }
+Combat.__index       = Combat
+Combat.PullStuckTime = 0
 
 --- Returns the current live combat state based on XTarget hater count.
 ---@return string "Combat" if there are active haters, "Downtime" otherwise.
@@ -589,6 +590,7 @@ function Combat.FindBestAutoTarget(validateFn)
 
     if Globals.LastPulledID > 0 and not Combat.ValidCombatTarget(Globals.LastPulledID) then
         Globals.LastPulledID = 0
+        Combat.PullStuckTime = 0
     end
 
     local target = mq.TLO.Target
@@ -646,7 +648,20 @@ function Combat.FindBestAutoTarget(validateFn)
                 -- unless specifically told.
 
                 if Globals.AutoTargetID == 0 then
-                    if Globals.LastPulledID > 0 and Targeting.IsSpawnXTHater(Globals.LastPulledID) then
+                    -- Hold this pass for an inbound pull so adds are left to mez and aggro tools; give up if it stops out of range.
+                    local holdForPull = Globals.LastPulledID > 0 and Targeting.IsSpawnXTHater(Globals.LastPulledID)
+
+                    if holdForPull then
+                        local pulledSpawn = mq.TLO.Spawn(Globals.LastPulledID)
+                        if pulledSpawn.Moving() or (pulledSpawn.Distance3D() or 9999) <= Config:GetSetting('AssistRange') then
+                            Combat.PullStuckTime = 0
+                        else
+                            if Combat.PullStuckTime == 0 then Combat.PullStuckTime = Globals.GetTimeMS() end
+                            holdForPull = Globals.GetTimeMS() - Combat.PullStuckTime < 10000
+                        end
+                    end
+
+                    if holdForPull then
                         Logger.log_verbose("It seems that we pulled %s(ID: %d), setting it as the initial AutoTarget.",
                             mq.TLO.Spawn(Globals.LastPulledID).CleanName() or "None", Globals.LastPulledID)
                         Globals.AutoTargetID = Globals.LastPulledID
@@ -712,6 +727,12 @@ function Combat.FindBestAutoTarget(validateFn)
     end
 
     if Globals.AutoTargetID > 0 then
+        -- Only the MA consumes the pull; a non-MA puller still needs LastPulledID to avoid dropping its inbound target.
+        if Core.IAmMA() and Globals.AutoTargetID == Globals.LastPulledID then
+            Globals.LastPulledID = 0
+            Combat.PullStuckTime = 0
+        end
+
         if assistTargetIsNamed ~= nil then
             Globals.AutoTargetIsNamed = assistTargetIsNamed
         else
@@ -961,18 +982,18 @@ function Combat.AutoCampCheck(tempConfig, bCalledFromInsideEvent)
 
     if not Config:GetSetting('ReturnToCamp') then return end
 
+    if tempConfig.DeathCampHold then return end
+
     if mq.TLO.Me.Casting() and not Core.MyClassIs("brd") then return end
 
     if Config:GetSetting('ChaseOn') then return end
 
-    if tempConfig.CampZoneId ~= mq.TLO.Zone.ID() then return end
+    if tempConfig.CampZoneId ~= mq.TLO.Zone.ID() or (tempConfig.CampInstanceId or 0) ~= (mq.TLO.Me.Instance() or 0) then return end
 
     -- let pulling module handle camp decisions while it is enabled.
     if Config:GetSetting('DoPull') then
-        local pullState = Modules:ExecModule("Pull", "GetPullState")
-
-        -- if we are idle or in groupwatch waiting its possible we wandered out of camp to loot and need to come back.
-        if pullState > 2 then
+        -- if we are idle or waiting on a watch its possible we wandered out of camp to loot and need to come back.
+        if Modules:ExecModule("Pull", "IsActivelyPulling") then
             return
         end
     end
@@ -1026,18 +1047,18 @@ function Combat.CombatCampCheck(tempConfig)
     if not Config:GetSetting('ReturnToCamp') then return end
     if not Config:GetSetting('CampLeashCombat') then return end
 
+    if tempConfig.DeathCampHold then return end
+
     if mq.TLO.Me.Casting() and not Core.MyClassIs("brd") then return end
 
     if Config:GetSetting('ChaseOn') then return end
 
-    if tempConfig.CampZoneId ~= mq.TLO.Zone.ID() then return end
+    if tempConfig.CampZoneId ~= mq.TLO.Zone.ID() or (tempConfig.CampInstanceId or 0) ~= (mq.TLO.Me.Instance() or 0) then return end
 
     -- let pulling module handle camp decisions while it is enabled.
     if Config:GetSetting('DoPull') then
-        local pullState = Modules:ExecModule("Pull", "GetPullState")
-
-        -- if we are idle or in groupwatch waiting its possible we wandered out of camp to loot and need to come back.
-        if pullState > 2 then
+        -- if we are idle or waiting on a watch its possible we wandered out of camp to loot and need to come back.
+        if Modules:ExecModule("Pull", "IsActivelyPulling") then
             return
         end
     end
