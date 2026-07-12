@@ -293,12 +293,14 @@ local _ClassConfig = {
         -- ['TouchTap'] = {
         --     "Touch of Draygun",
         -- },
-        ['BiteTap'] = {
-            "Ancient: Bite of Muram", -- Level 70
+        ['BiteTap'] = {               -- Timer 2
             "Blacktalon Bite",        -- Level 70
             "Inruku's Bite",          -- Level 67
             "Ancient: Bite of Chaos", -- Level 65
             "Zevfeer's Bite",         -- Level 62
+        },
+        ['AncientBite'] = {           -- Timer 4
+            "Ancient: Bite of Muram", -- Level 70
         },
         ['Terror'] = {
             "Terror of Vergalid", -- Level 70
@@ -1076,6 +1078,11 @@ local _ClassConfig = {
                 end,
             },
             {
+                name = "AncientBite",
+                type = "Spell",
+                tooltip = Tooltips.BiteTap,
+            },
+            {
                 name = "BiteTap",
                 type = "Spell",
                 tooltip = Tooltips.BiteTap,
@@ -1169,6 +1176,7 @@ local _ClassConfig = {
                 { name = "Terror",      cond = function(self) return Config:GetSetting('DoTerror') end, },
                 { name = "AETaunt",     cond = function(self) return Config:GetSetting('AETauntSpell') end, },
                 { name = "BiteTap", },
+                { name = "AncientBite", },
                 { name = "BondTap",     cond = function(self) return Config:GetSetting('DoBondTap') end, },
                 { name = "PoisonDot",   cond = function(self) return Config:GetSetting('DoPoisonDot') end, },
                 { name = "DireDot",     cond = function(self) return Config:GetSetting('DoDireDot') end, },
@@ -1178,6 +1186,7 @@ local _ClassConfig = {
                 { name = "HateBuff",    cond = function(self) return Config:GetSetting('DoHateBuff') and not Casting.CanUseAA("Voice of Thule") end, },
                 { name = "LifeTap2", },
                 { name = "Terror2",     cond = function(self) return Config:GetSetting('DoTerror') end, },
+                { name = "LifeTap3", },
                 { name = "Terror3",     cond = function(self) return Config:GetSetting('DoTerror') end, },
                 { name = "LifeTap3", },
                 { name = "SelfDS", },
