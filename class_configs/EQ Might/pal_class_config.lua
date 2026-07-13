@@ -366,9 +366,13 @@ return {
         },
     },
     ['AASets']            = {
-        ['Disruption'] = {
+        ['Disruption'] = { -- For pulling or mez-safe applications, use Divine Stun if that's all we have.
             "Force of Disruption",
             "Hand of Disruption",
+            "Divine Stun",
+        },
+        ['Timer2DPS'] = { -- For best DPS
+            "Disruptive Persecution",
             "Divine Stun",
         },
     },
@@ -861,8 +865,8 @@ return {
                 type = "Item",
                 load_cond = function(self) return mq.TLO.FindItem("=Xeno's Faceguard")() end,
             },
-            {
-                name = "Disruption",
+            { -- better aggro than force of disruption at current available ranks (stun is worth 1200 for any mob >18khp)
+                name = "Divine Stun",
                 type = "AA",
             },
             {
@@ -894,8 +898,8 @@ return {
                 type = "Item",
                 load_cond = function(self) return mq.TLO.FindItem("=Xeno's Faceguard")() end,
             },
-            {
-                name = "Disruption",
+            { -- better aggro than force of disruption at current available ranks (stun is worth 1200 for any mob >18khp)
+                name = "Divine Stun",
                 type = "AA",
             },
             {
@@ -1096,8 +1100,15 @@ return {
                 name = "FlameLure",
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoFlameLure') end,
-                cond = function(self, aaName, target)
+                cond = function(self, spell, target)
                     return Casting.OkayToNuke(true)
+                end,
+            },
+            {
+                name = "Timer2DPS",
+                type = "AA",
+                cond = function(self, aaName, target)
+                    return not Core.IsTanking() or not Targeting.HateToolsNeeded()
                 end,
             },
             {
