@@ -2178,7 +2178,7 @@ function Module:GiveTime()
                                     Strings.BoolToColorString(peerFound))
                                 if peerFound then
                                     target = mq.TLO.Spawn(targetPeer.Data.ID)
-                                    buffCheckPassed = target and Casting.ActorBuffCheck(item.Clicky.Spell.RankName.ID(), target, nil, clicky.skipTriggerCheck)
+                                    buffCheckPassed = target and Casting.ActorBuffCheck(itemSpell.ID(), target, nil, clicky.skipTriggerCheck)
                                 else
                                     buffCheckPassed = false
                                 end
@@ -2221,7 +2221,7 @@ function Module:GiveTime()
                             local elementCheckPassed = not Casting.ShouldSkipElement(element, target and target.ID() or 0)
 
                             if buffCheckPassed and distanceCheckPassed and readyCheckPassed and elementCheckPassed then
-                                Logger.log_verbose("\ayClicky: \awItem \am%s\aw Clicky Spell: \at%s\ag!", item.Name(), item.Clicky.Spell.RankName.Name())
+                                Logger.log_verbose("\ayClicky: \awItem \am%s\aw Clicky Spell: \at%s\ag!", item.Name(), itemSpell.Name())
                                 Casting.UseItem(item.Name(), targetId, nil, nil, not clicky.mustWait)
                                 self.TempSettings.ClickyState[clicky.itemName].lastUsed = Globals.GetTimeSeconds()
                                 clickiesUsedThisCycle = clickiesUsedThisCycle + 1
@@ -2234,7 +2234,7 @@ function Module:GiveTime()
                             else
                                 Logger.log_verbose(
                                     "\ayClicky: \awItem \am%s\aw Clicky: \at%s\ar checks failed, not using!\aw BuffCheck(%s), DistanceCheck(%s), ItemReady(%s), ElementCheck(%s)",
-                                    item.Name(), item.Clicky.Spell.RankName.Name(), Strings.BoolToColorString(buffCheckPassed), Strings.BoolToColorString(distanceCheckPassed),
+                                    item.Name(), itemSpell.Name(), Strings.BoolToColorString(buffCheckPassed), Strings.BoolToColorString(distanceCheckPassed),
                                     Strings.BoolToColorString(readyCheckPassed), Strings.BoolToColorString(elementCheckPassed))
                             end
                         end
