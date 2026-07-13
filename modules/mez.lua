@@ -437,7 +437,7 @@ function Module:EntryActive(entry)
 end
 
 function Module:FilterLoaded(list)
-    return Entries.FilterLoaded(list)
+    return Entries.FilterLoaded(list, self)
 end
 
 -- rebuild the load_cond-filtered mez list on rescan, so a load-gated entry drops from both the cast logic and the UI

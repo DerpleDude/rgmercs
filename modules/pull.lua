@@ -1304,7 +1304,7 @@ end
 -- Pull Move Abilities
 function Module:RebuildMoveAbilities()
     local moveAbilities = {}
-    for _, entry in ipairs(Entries.FilterLoaded(Modules:ExecModule("Class", "GetPullMoveAbilities"))) do
+    for _, entry in ipairs(Entries.FilterLoaded(Modules:ExecModule("Class", "GetPullMoveAbilities"), self)) do
         local entryType = (entry.type or ""):lower()
         if type(entry.name) == "string" and (entryType == "aa" or entryType == "item" or entryType == "song") then
             table.insert(moveAbilities, entry)

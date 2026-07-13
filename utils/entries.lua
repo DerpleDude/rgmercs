@@ -1,5 +1,6 @@
 local mq      = require('mq')
 local Casting = require("utils.casting")
+local Core    = require("utils.core")
 local Modules = require("utils.modules")
 
 -- Shared Entry helpers for the config-driven ability lists (Mez / Charm / Rez); the caller pre-resolves
@@ -41,11 +42,14 @@ function Entries.Ready(entry, spell, resolvedName, skipGemTimer)
     return Casting.SpellReady(spell, skipGemTimer)
 end
 
--- keep only entries whose load_cond passes (reuses the Class module's scan-time evaluator)
-function Entries.FilterLoaded(list)
+-- keep only entries whose load_cond passes (reuses the Class module's scan-time evaluator), resolving each loaded entry's name_func to its name
+function Entries.FilterLoaded(list, caller)
     local out = {}
     for _, entry in ipairs(list or {}) do
-        if Modules:ExecModule("Class", "LoadConditionPass", entry) then table.insert(out, entry) end
+        if Modules:ExecModule("Class", "LoadConditionPass", entry) then
+            if entry.name_func then entry.name = Core.SafeCallFunc("Entry name_func", entry.name_func, caller) or "Error in name_func!" end
+            table.insert(out, entry)
+        end
     end
     return out
 end

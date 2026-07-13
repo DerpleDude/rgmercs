@@ -488,7 +488,7 @@ end
 -- ===== END DEPRECATED FALLBACK (sunset 9/1/26) =====
 
 function Module:FilterLoaded(list)
-    return Entries.FilterLoaded(list)
+    return Entries.FilterLoaded(list, self)
 end
 
 -- rebuild the load_cond-filtered charm lists on rescan, so a load-gated entry drops out of both the cast logic and the UI

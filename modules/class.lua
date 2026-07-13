@@ -1598,10 +1598,7 @@ function Module:RebuildCureAbilities()
     local order = Config:GetSetting('RotationEntryOrder') or {}
     for _, bucket in ipairs({ "DetDispel", "Poison", "Disease", "Curse", "Corruption", }) do
         if (cure and cure[bucket]) or #cureClickies[bucket] > 0 then
-            local entries = Entries.FilterLoaded(cure and cure[bucket] or {})
-            for _, entry in ipairs(entries) do
-                if entry.name_func then entry.name = Core.SafeCallFunc("Cure name_func", entry.name_func, self) or "Error in name_func!" end
-            end
+            local entries = Entries.FilterLoaded(cure and cure[bucket] or {}, self)
             Rotation.ApplyEntryOrder(entries, order["Cure" .. bucket])
             self.TempSettings.CureAbilities[bucket] = Tables.ConcatTables(entries, cureClickies[bucket])
             for _, entry in ipairs(entries) do
@@ -2167,7 +2164,7 @@ function Module:RebuildRezAbilities()
     local order = Config:GetSetting('RotationEntryOrder') or {}
     for _, phase in ipairs({ "Combat", "Downtime", }) do
         if (rez and rez[phase]) or #rezClickies[phase] > 0 then
-            local entries = Entries.FilterLoaded(rez and rez[phase] or {})
+            local entries = Entries.FilterLoaded(rez and rez[phase] or {}, self)
             Rotation.ApplyEntryOrder(entries, order["Rez" .. phase])
             self.TempSettings.RezAbilities[phase] = Tables.ConcatTables(entries, rezClickies[phase])
         end
