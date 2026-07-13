@@ -11,6 +11,7 @@ return {
     _version          = "2.2 - EQ Might",
     _author           = "Derple, Algar, mackal",
     ['ModeChecks']    = {
+        IsCuring = function() return Config:GetSetting('DoCures') end,
         IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
     },
     ['Rez']           = {
@@ -19,6 +20,11 @@ return {
         },
         ['Downtime'] = {
             { type = "Item", name = "RezStaff", },
+        },
+    },
+    ['Cure']          = {
+        ['Poison'] = {
+            { type = "AA", name = "Purge Poison", selfOnly = true, },
         },
     },
     ['Modes']         = {

@@ -23,6 +23,7 @@ local _ClassConfig = {
         'DPS',
     },
     ['ModeChecks']      = {
+        IsCuring = function() return Config:GetSetting('DoCures') end,
         -- necro can AA Rez
         IsRezing = function() return Casting.CanUseAA("Convergence") and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
         CanCharm = function() return true end,
@@ -45,6 +46,11 @@ local _ClassConfig = {
                     return Casting.ReagentCheck(mq.TLO.Me.AltAbility("Convergence").Spell)
                 end,
             },
+        },
+    },
+    ['Cure']            = {
+        ['DetDispel'] = {
+            { type = "AA", name = "Embrace The Decay", selfOnly = true, },
         },
     },
     ['PetPosition']     = {

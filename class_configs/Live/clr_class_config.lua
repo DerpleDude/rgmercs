@@ -50,6 +50,7 @@ local _ClassConfig = {
             { type = "AA", name = "Group Purify Soul", },
             { type = "AA", name = "Radiant Cure", },
             { type = "AA", name = "Purify Soul",       selfOnly = true, },
+            { type = "AA", name = "Purified Spirits",  selfOnly = true, },
         },
         ['Poison'] = {
             {

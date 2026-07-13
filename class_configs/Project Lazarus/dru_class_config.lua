@@ -47,6 +47,7 @@ local _ClassConfig = {
     ['Cure']              = {
         ['DetDispel'] = {
             { type = "AA", name = "Radiant Cure", },
+            { type = "AA", name = "Purified Spirits", selfOnly = true, },
         },
         ['Poison'] = {
             {

@@ -18,6 +18,14 @@ return {
     ['Modes']         = {
         'DPS',
     },
+    ['ModeChecks']    = {
+        IsCuring = function() return Config:GetSetting('DoCures') end,
+    },
+    ['Cure']          = {
+        ['DetDispel'] = {
+            { type = "AA", name = "Agony of Absolution", selfOnly = true, },
+        },
+    },
     ['Themes']        = {
         ['DPS'] = {
             { element = ImGuiCol.TitleBgActive,    color = { r = 0.55, g = 0.05, b = 0.05, a = 0.8, }, },

@@ -15,6 +15,14 @@ return {
     ['Modes']         = {
         'DPS',
     },
+    ['ModeChecks']    = {
+        IsCuring = function() return Config:GetSetting('DoCures') end,
+    },
+    ['Cure']          = {
+        ['Poison'] = {
+            { type = "AA", name = "Purge Poison", selfOnly = true, },
+        },
+    },
     ['Themes']        = {
         ['DPS'] = {
             { element = ImGuiCol.TitleBgActive,    color = { r = 0.10, g = 0.10, b = 0.16, a = 0.8, }, },

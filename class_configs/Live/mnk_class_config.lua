@@ -13,6 +13,14 @@ local _ClassConfig = {
     ['Modes']         = {
         'DPS',
     },
+    ['ModeChecks']    = {
+        IsCuring = function() return Config:GetSetting('DoCures') end,
+    },
+    ['Cure']          = {
+        ['DetDispel'] = {
+            { type = "AA", name = "Purify Body", selfOnly = true, },
+        },
+    },
     ['Themes']        = {
         ['DPS'] = {
             { element = ImGuiCol.TitleBgActive,    color = { r = 0.35, g = 0.25, b = 0.15, a = 0.8, }, },

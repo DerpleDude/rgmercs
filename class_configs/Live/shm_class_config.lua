@@ -53,6 +53,7 @@ local _ClassConfig = {
     ['Cure']              = {
         ['DetDispel'] = {
             { type = "AA", name = "Radiant Cure", },
+            { type = "AA", name = "Purified Spirits", selfOnly = true, },
         },
         ['Poison'] = {
             { type = "Spell", name_func = function(self) return Casting.GetFirstMapItem({ 'CureSpell', 'CurePoison', }) end, },

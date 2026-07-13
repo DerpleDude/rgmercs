@@ -11,6 +11,7 @@ local _ClassConfig = {
     _version          = "2.2 - EQ Might",
     _author           = "Algar, Derple",
     ['ModeChecks']    = {
+        IsCuring = function() return Config:GetSetting('DoCures') end,
         IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
     },
     ['Rez']           = {
@@ -19,6 +20,11 @@ local _ClassConfig = {
         },
         ['Downtime'] = {
             { type = "Item", name = "RezStaff", },
+        },
+    },
+    ['Cure']          = {
+        ['DetDispel'] = {
+            { type = "AA", name = "Purify Body", selfOnly = true, },
         },
     },
     ['Modes']         = {
