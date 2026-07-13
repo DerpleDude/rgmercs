@@ -1450,7 +1450,7 @@ function Module:HealById(id)
                     self.CurrentRotation = { name = selectedRotation.name, state = selectedRotation.state or 0, }
 
                     -- If we need to heal others we should wait on the cooldown.
-                    Casting.WaitGlobalCoolDown("Healing: ")
+                    -- Casting.WaitGlobalCoolDown("Healing: ") -- Algarnote: This is dated to me, have we ever heard of AA or clickies? Let's rely on the OkayToNotHeals nowadays. Testing 7/2026
 
                     local newState, wasRun = Rotation.Run(self, self:GetHealRotationTable(selectedRotation.name), { id, },
                         self.ResolvedActionMap, selectedRotation.steps or 0, selectedRotation.state or 0,

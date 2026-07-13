@@ -769,6 +769,24 @@ Module.LogicBlocks                            = {
     },
 
     {
+        name = "Spells Are In Recovery/Cooldown",
+        cond = function(self, target, peerData, negate)
+            if negate then
+                return not mq.TLO.Me.SpellInCooldown()
+            else
+                return mq.TLO.Me.SpellInCooldown()
+            end
+        end,
+        tooltip = "Only use while spells are (not) in recovery ('global' cooldown). (Optional Negate)",
+        render_header_text = function(self, cond)
+            return string.format("Spells are %sin recovery.", cond.args[1] and "not" or "")
+        end,
+        args = {
+            { name = "Negate", type = "boolean", default = false, },
+        },
+    },
+
+    {
         name = "Target Has (High/Low) HP",
         cond = function(self, target, peerData, negate)
             if negate then
