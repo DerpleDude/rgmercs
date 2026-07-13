@@ -429,6 +429,7 @@ local _ClassConfig = {
             state = 1,
             steps = 1,
             load_cond = function() return Config:GetSetting('UseBandolier') end,
+            doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat"
@@ -458,6 +459,7 @@ local _ClassConfig = {
             name = 'Defenses',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and Targeting.IHaveAggro(100) and

@@ -394,6 +394,7 @@ _ClassConfig      = {
             state = 1,
             steps = 1,
             load_cond = function(self) return self:GetResolvedActionMapItem('SpearNuke') end,
+            doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and Targeting.AggroCheckOkay()
@@ -404,6 +405,7 @@ _ClassConfig      = {
             state = 1,
             steps = 1,
             load_cond = function(self) return not self:GetResolvedActionMapItem('SpearNuke') end,
+            doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and Targeting.AggroCheckOkay()

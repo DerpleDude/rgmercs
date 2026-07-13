@@ -366,6 +366,7 @@ local _ClassConfig = {
             state = 1,
             steps = 1,
             load_cond = function() return Core.IsTanking() end,
+            doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and mq.TLO.Me.PctHPs() > Config:GetSetting('EmergencyLockout')
@@ -408,6 +409,7 @@ local _ClassConfig = {
             name = 'Defenses',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 --need to look at rotation and decide if it should fire during emergencies. leaning towards no

@@ -418,7 +418,6 @@ local _ClassConfig = {
             timer = 0,
             doFullRotation = true,
             blockMem = true,
-            reorderable = true,
             targetId = function(self) return Combat.GetCachedCombatState() == "Combat" and Targeting.CheckForAutoTargetID() or { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
                 if Globals.InMedState then return false end

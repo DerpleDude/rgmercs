@@ -362,25 +362,7 @@ return {
         {
             name = 'DPS',
             state = 1,
-            steps = 1,
-            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
-            cond = function(self, combat_state)
-                return combat_state == "Combat"
-            end,
-        },
-        {
-            name = 'DPS2',
-            state = 1,
-            steps = 1,
-            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
-            cond = function(self, combat_state)
-                return combat_state == "Combat"
-            end,
-        },
-        {
-            name = 'DPS3',
-            state = 1,
-            steps = 1,
+            steps = 3,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat"
@@ -691,8 +673,32 @@ return {
                 end,
             },
             {
+                name = "Battle Leap",
+                type = "AA",
+                cond = function(self, aaName)
+                    return Config:GetSetting('DoBattleLeap') and not Casting.IHaveBuff("Battle Leap Warcry") and
+                        not Casting.IHaveBuff("Group Bestial Alignment")
+                        and not mq.TLO.Me.HeadWet() --Stops Leap from launching us above the water's surface
+                end,
+            },
+            {
+                name = "Dicho",
+                type = "Disc",
+            },
+            {
                 name = "Frenzy",
                 type = "Ability",
+            },
+            {
+                name = "Drawn to Blood",
+                type = "AA",
+                cond = function(self, aaName)
+                    return Targeting.GetTargetDistance() > 15
+                end,
+            },
+            {
+                name = "Bfrenzy",
+                type = "Disc",
             },
             {
                 name = "Dfrenzy",
@@ -804,34 +810,6 @@ return {
                 cond = function(self, aaName)
                     return mq.TLO.Me.PctEndurance() <= 75
                 end,
-            },
-        },
-        ['DPS2'] = {
-            {
-                name = "Battle Leap",
-                type = "AA",
-                cond = function(self, aaName)
-                    return Config:GetSetting('DoBattleLeap') and not Casting.IHaveBuff("Battle Leap Warcry") and
-                        not Casting.IHaveBuff("Group Bestial Alignment")
-                        and not mq.TLO.Me.HeadWet() --Stops Leap from launching us above the water's surface
-                end,
-            },
-            {
-                name = "Drawn to Blood",
-                type = "AA",
-                cond = function(self, aaName)
-                    return Targeting.GetTargetDistance() > 15
-                end,
-            },
-        },
-        ['DPS3'] = {
-            {
-                name = "Dicho",
-                type = "Disc",
-            },
-            {
-                name = "Bfrenzy",
-                type = "Disc",
             },
         },
     },

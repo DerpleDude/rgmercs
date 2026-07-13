@@ -378,6 +378,7 @@ return {
             name = 'DPS',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and Core.CombatActionsCheck()

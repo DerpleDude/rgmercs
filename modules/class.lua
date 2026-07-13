@@ -768,7 +768,7 @@ function Module:RenderRotationWithToggle(r, rotationTable, showRotationType)
             local reordered, resetRequested
             self.TempSettings.ShowFailedSpells, enabledRotationEntries, enabledRotationEntriesChanged, reordered, resetRequested = Ui.RenderRotationTable(r.name,
                 rotationTable[r.name],
-                self.ResolvedActionMap, r.state or 0, self.TempSettings.ShowFailedSpells, enabledRotationEntries, nil, r.reorderable)
+                self.ResolvedActionMap, r.state or 0, self.TempSettings.ShowFailedSpells, enabledRotationEntries, nil, r.reorderable ~= false)
             if reordered and r.state then r.state = 1 end
             if resetRequested then
                 if r.state then r.state = 1 end
@@ -1294,7 +1294,7 @@ function Module:GetRotations()
     local rotationEntryOrder = Config:GetSetting('RotationEntryOrder') or {}
     local function applyEntryOrder(states, tables)
         for _, rotation in ipairs(states) do
-            if rotation.reorderable then
+            if rotation.reorderable ~= false then
                 Rotation.ApplyEntryOrder(tables[rotation.name], rotationEntryOrder[rotation.name])
             end
         end

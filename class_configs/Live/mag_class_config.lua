@@ -999,6 +999,7 @@ _ClassConfig      = {
             state = 1,
             steps = 1,
             load_cond = function() return Core.IsModeActive("PetTank") end,
+            doFullRotation = true,
             targetId = function(self) return mq.TLO.Me.Pet.ID() > 0 and { mq.TLO.Me.Pet.ID(), } or {} end,
             cond = function(self, combat_state)
                 return combat_state == "Combat"
@@ -1028,6 +1029,7 @@ _ClassConfig      = {
             state = 1,
             steps = 1,
             load_cond = function(self) return self.Helpers.ShouldUseLowLevelRotation() end,
+            doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and Casting.OkayToNuke()

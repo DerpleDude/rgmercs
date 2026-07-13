@@ -546,6 +546,7 @@ local _ClassConfig = {
             state = 1,
             steps = 1,
             load_cond = function() return mq.TLO.Me.Level() < 71 end,
+            doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and Core.CombatActionsCheck()
