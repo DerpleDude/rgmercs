@@ -587,6 +587,23 @@ Binds.Handlers    = {
             Modules:ExecModule('FAQ', "FaqFind", config)
         end,
     },
+    ['options'] = {
+        usage = "/rgl options [module]",
+        about = "Opens the RGMercs Options window. If a module name is given, opens with that module's settings highlighted.",
+        handler = function(module)
+            if not module or module:len() == 0 then
+                Config:SetSetting('EnableOptionsUI', true)
+                return
+            end
+            for name in pairs(Modules:GetModuleList()) do
+                if name:lower() == module:lower() then
+                    Config:OpenOptionsUIAndHighlightModule(name)
+                    return
+                end
+            end
+            Logger.log_warn("\ayNo loaded module named '\at%s\ay' to highlight.", module)
+        end,
+    },
     ['reset_config_position'] = {
         usage = "/rgl reset_config_position",
         about = "Resets the Options Window position to the center of the screen.",
