@@ -21,5 +21,6 @@ return {
         "No_Songs_For_You",
         "Zat",
         "aspire",
+        "Hazado",
     },
 }
