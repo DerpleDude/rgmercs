@@ -366,6 +366,12 @@ local _ClassConfig = {
             "Promised Renewal", -- Level 71
         },
     },                          -- end AbilitySets
+    ['AASets']            = {
+        ['Spire'] = {
+            "Fundament: Second Spire of Divinity",
+            "Fundament: First Spire of Divinity",
+        },
+    },
     ['Helpers']           = {
         -- Artifact of Aegis is Aegis of Vie Rk. I
         PreferAegisSpell = function(self)
@@ -675,6 +681,10 @@ local _ClassConfig = {
             },
             {
                 name = "Healing Frenzy",
+                type = "AA",
+            },
+            {
+                name = "Spire",
                 type = "AA",
             },
             {

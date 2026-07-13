@@ -338,6 +338,10 @@ _ClassConfig      = {
         },
     },
     ['AASets']        = {
+        ['Spire'] = {
+            "Fundament: Second Spire of the Elements",
+            "Fundament: First Spire of the Elements",
+        },
         ['ModRod'] = {
             "Large Modulation Shard",
             "Medium Modulation Shard",
@@ -700,6 +704,10 @@ _ClassConfig      = {
             },
             {
                 name = "Host of the Elements",
+                type = "AA",
+            },
+            {
+                name = "Spire",
                 type = "AA",
             },
             {

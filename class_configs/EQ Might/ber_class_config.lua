@@ -129,6 +129,10 @@ return {
         },
     },
     ['AASets']        = {
+        ['Spire'] = {
+            "Fundament: Second Spire of Savagery",
+            "Fundament: First Spire of Savagery",
+        },
         ['RageAA'] = {
             "Cascading Rage",
             "Untamed Rage",
@@ -295,6 +299,10 @@ return {
             },
             {
                 name = "Juggernaut Surge",
+                type = "AA",
+            },
+            {
+                name = "Spire",
                 type = "AA",
             },
             {

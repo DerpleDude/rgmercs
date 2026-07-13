@@ -375,6 +375,9 @@ local _ClassConfig = {
         },
     },
     ['AASets']          = {
+        ['Spire'] = {
+            "Fundament: First Spire of Necromancy",
+        },
         ['DeadSwarm'] = {
             "Army of the Dead",
             "Wake the Dead",
@@ -811,6 +814,13 @@ local _ClassConfig = {
             {
                 name = "Swarm of Decay",
                 type = "AA",
+            },
+            {
+                name = "Spire",
+                type = "AA",
+                cond = function(self, aaName, target)
+                    return Globals.AutoTargetIsNamed and Targeting.GetAutoTargetPctHPs() <= Config:GetSetting('BurnHPThreshold')
+                end,
             },
             {
                 name = "Silent Casting",
@@ -1251,22 +1261,6 @@ local _ClassConfig = {
             Min = 1,
             Max = 3,
             ConfigType = "Advanced",
-        },
-        ['SpireChoice']       = {
-            DisplayName = "Spire Choice:",
-            Group = "Abilities",
-            Header = "Buffs",
-            Category = "Group",
-            Index = 101,
-            Tooltip = "Choose which Fundament you would like to use during burns:\n" ..
-                "First Spire: DoT Crit Chance Buff.\n" ..
-                "Second Spire: Pet Damage Proc Buff.\n" ..
-                "Third Spire: DoT Crit Damage Buff.",
-            Type = "Combo",
-            ComboOptions = Globals.Constants.SpireChoices,
-            Default = 3,
-            Min = 1,
-            Max = #Globals.Constants.SpireChoices,
         },
         ['EmergencyStart']    = {
             DisplayName = "Emergency HP%",

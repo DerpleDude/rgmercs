@@ -900,7 +900,7 @@ return {
         ['Burn'] = {
             {
                 name_func = function(self)
-                    return string.format("Fundament: %s Spire of Holiness", Core.IsTanking() and "Third" or "Second")
+                    return string.format("Fundament: %s Spire of Holiness", Core.IsTanking() and "Third" or "First")
                 end,
                 type = "AA",
             },

@@ -399,6 +399,9 @@ local _ClassConfig    = {
         },
     },
     ['AASets']        = {
+        ['Spire'] = {
+            "Fundament: Second Spire of Enchantment",
+        },
         ['ManaRestore'] = {
             "Mana Draw",
             "Gather Mana",
@@ -931,7 +934,7 @@ local _ClassConfig    = {
         },
         ['CombatSupport'] = {
             {
-                name = "Fundament: Second Spire of Enchantment",
+                name = "Spire",
                 type = "AA",
                 cond = function(self, aaName, target)
                     return Casting.GroupLowManaCount(30) > 1

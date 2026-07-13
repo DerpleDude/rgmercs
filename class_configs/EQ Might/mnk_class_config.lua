@@ -109,6 +109,12 @@ local _ClassConfig = {
             "Leopard Claw", -- Level 61
         },
     },
+    ['AASets']        = {
+        ['Spire'] = {
+            "Fundament: Second Spire of the Sensei",
+            "Fundament: First Spire of the Sensei",
+        },
+    },
     ['Helpers']       = {
     },
     ['RotationOrder'] = {
@@ -236,6 +242,10 @@ local _ClassConfig = {
             },
         },
         ['Burn'] = {
+            {
+                name = "Spire",
+                type = "AA",
+            },
             {
                 name = "Zan Fi's Whistle",
                 type = "AA",

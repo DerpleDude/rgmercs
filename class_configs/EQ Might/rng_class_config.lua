@@ -249,6 +249,12 @@ return {
         -- },
         -- TODO: Potameid Salve (small heal, cure)
     },
+    ['AASets']            = {
+        ['Spire'] = {
+            "Fundament: Second Spire of the Pathfinders",
+            "Fundament: First Spire of the Pathfinders",
+        },
+    },
     ['HealRotationOrder'] = {
         { -- configured as a backup healer, will not cast in the mainpoint
             name = 'BigHealPoint',
@@ -440,6 +446,10 @@ return {
                         Casting.UseAA("Mass Group Buff", Globals.AutoTargetID)
                     end
                 end,
+            },
+            {
+                name = "Spire",
+                type = "AA",
             },
             {
                 name = "Group Guardian of the Forest",

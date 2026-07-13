@@ -266,6 +266,11 @@ return {
             "Alacrity", -- Level 60
         },
     },
+    ['AASets']            = {
+        ['Spire'] = {
+            "Fundament: First Spire of the Savage Lord",
+        },
+    },
     ['HealRotationOrder'] = {
         { -- configured as a backup healer, will not cast in the mainpoint
             name = 'BigHealPoint',
@@ -436,7 +441,7 @@ return {
                 type = "AA",
             },
             {
-                name = "Fundament: Third Spire of the Savage Lord",
+                name = "Spire",
                 type = "AA",
             },
             {

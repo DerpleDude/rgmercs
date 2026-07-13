@@ -366,6 +366,9 @@ return {
         },
     },
     ['AASets']            = {
+        ['Spire'] = {
+            "Fundament: First Spire of Holiness",
+        },
         ['Disruption'] = { -- For pulling or mez-safe applications, use Divine Stun if that's all we have.
             "Force of Disruption",
             "Hand of Disruption",
@@ -959,6 +962,10 @@ return {
             },
         },
         ['Burn'] = {
+            {
+                name = "Spire",
+                type = "AA",
+            },
             {
                 name = "Valorous Rage",
                 type = "AA",

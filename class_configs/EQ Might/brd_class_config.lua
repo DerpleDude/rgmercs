@@ -285,6 +285,12 @@ local _ClassConfig = {
             "Revitalize",          -- Level 51 EQM Custom
         },
     },
+    ['AASets']            = {
+        ['Spire'] = {
+            "Fundament: Second Spire of the Minstrels",
+            "Fundament: First Spire of the Minstrels",
+        },
+    },
     ['Helpers']           = {
         SwapInst = function(type)
             if not Config:GetSetting('SwapInstruments') then return end
@@ -545,6 +551,11 @@ local _ClassConfig = {
             },
             {
                 name = "Funeral Dirge",
+                type = "AA",
+                midSong = true,
+            },
+            {
+                name = "Spire",
                 type = "AA",
                 midSong = true,
             },
@@ -1047,23 +1058,6 @@ local _ClassConfig = {
             Max = 4,
             RequiresLoadoutChange = true,
         },
-        ['SpireChoice']     = {
-            DisplayName = "Spire Choice:",
-            Group = "Abilities",
-            Header = "Buffs",
-            Category = "Group",
-            Index = 103,
-            Tooltip = "Choose which Fundament you would like to use during burns:\n" ..
-                "First Spire: Spell Crit Buff to Self.\n" ..
-                "Second Spire: Healing Power Buff to Self.\n" ..
-                "Third Spire: Large Group HP Buff.",
-            Type = "Combo",
-            ComboOptions = Globals.Constants.SpireChoices,
-            Default = 3,
-            Min = 1,
-            Max = #Globals.Constants.SpireChoices,
-        },
-
         -- Debuffs
         ['DoSTSlow']        = {
             DisplayName = "Use Slow (ST)",

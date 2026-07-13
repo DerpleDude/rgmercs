@@ -293,6 +293,10 @@ return {
         -- },
     },
     ['AASets']        = {
+        ['Spire'] = {
+            "Fundament: Second Spire of Arcanum",
+            "Fundament: First Spire of Arcanum",
+        },
         ['Devastation'] = {
             "Prolonged Destruction",
             "Frenzied Devastation",
@@ -496,6 +500,10 @@ return {
             },
             {
                 name = "Focus of Arcanum",
+                type = "AA",
+            },
+            {
+                name = "Spire",
                 type = "AA",
             },
             { -- Fury AA: split per element so Auto mode picks the right one on the fly each burn pass

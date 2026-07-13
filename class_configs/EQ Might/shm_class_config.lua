@@ -448,6 +448,12 @@ local _ClassConfig = {
             "Virulent Bolt",              -- Level 58 EQM Custom
         },
     },
+    ['AASets']            = {
+        ['Spire'] = {
+            "Fundament: Second Spire of Ancestors",
+            "Fundament: First Spire of Ancestors",
+        },
+    },
     ['Helpers']           = {
         ProcBuffChoice = function()
             local buffSpell = Core.GetResolvedActionMapItem('MeleeProcBuff')
@@ -836,6 +842,10 @@ local _ClassConfig = {
                         Casting.UseAA("Mass Group Buff", Globals.AutoTargetID)
                     end
                 end,
+            },
+            {
+                name = "Spire",
+                type = "AA",
             },
             {
                 name = "Focus of Arcanum",

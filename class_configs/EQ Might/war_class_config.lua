@@ -171,6 +171,10 @@ local _ClassConfig = {
         },
     },
     ['AASets']        = {
+        ['Spire'] = {
+            "Fundament: Second Spire of the Warlord",
+            "Fundament: First Spire of the Warlord",
+        },
         ['AreaTaunt'] = {
             "Enhanced Area Taunt",
             "Area Taunt",
@@ -597,9 +601,7 @@ local _ClassConfig = {
         },
         ['Burn'] = {
             {
-                name_func = function(self)
-                    return string.format("Fundament: %s Spire of the Warlord", Core.IsTanking() and "First" or "Second")
-                end,
+                name = "Spire",
                 type = "AA",
             },
             {

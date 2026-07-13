@@ -118,6 +118,12 @@ return {
             "Revitalize",          -- Level 51 EQM Custom
         },
     },
+    ['AASets']        = {
+        ['Spire'] = {
+            "Fundament: Second Spire of the Rake",
+            "Fundament: First Spire of the Rake",
+        },
+    },
     ['RotationOrder'] = {
         {
             name = 'Downtime',
@@ -210,6 +216,10 @@ return {
             },
             {
                 name = "Rogue's Fury",
+                type = "AA",
+            },
+            {
+                name = "Spire",
                 type = "AA",
             },
             {

@@ -386,6 +386,12 @@ local _ClassConfig = {
         },
         -- pact of decay ... is this a lich? level 69
     },
+    ['AASets']        = {
+        ['Spire'] = {
+            "Fundament: Second Spire of the Reavers",
+            "Fundament: First Spire of the Reavers",
+        },
+    },
     ['Helpers']       = {
         --function to determine if we have enough mobs in range to use a defensive disc
         DefensiveDiscCheck = function(printDebug)
@@ -895,6 +901,10 @@ local _ClassConfig = {
                 cond = function(self, aaName)
                     return Config:GetSetting('DoVisage')
                 end,
+            },
+            {
+                name = "Spire",
+                type = "AA",
             },
             { -- for DPS mode
                 name = "UnholyAura",
