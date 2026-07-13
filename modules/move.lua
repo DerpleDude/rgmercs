@@ -449,11 +449,13 @@ function Module:CampOff()
     self.TempSettings.DeathCampHold = false
 end
 
+--- Keeps the camp through a death - zoning out to bind would normally drop it - so pulling can resume when we make it back.
 function Module:ArmDeathCampHold()
     if not Config:GetSetting('ReturnToCamp') then return end
     self.TempSettings.DeathCampHold = true
 end
 
+--- Releases the death hold; the camp follows normal rules again.
 function Module:ClearDeathCampHold()
     self.TempSettings.DeathCampHold = false
 end

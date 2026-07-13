@@ -56,7 +56,7 @@ local Tooltips     = {
 }
 
 local _ClassConfig = {
-    _version              = "2.3 - Live",
+    _version              = "2.4 - Live",
     _author               = "Algar, Derple, Grimmier, Tiddliestix, SonicZentropy",
     ['Modes']             = {
         'General',

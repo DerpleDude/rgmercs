@@ -26,40 +26,66 @@ Module.FAQ                                = {}
 
 -- Module State
 Module.TempSettings                       = {}
+
+-- Pulls & Timers
 Module.TempSettings.LastPullOrCombatEnded = Globals.GetTimeSeconds()
-Module.TempSettings.TargetSpawnID         = 0
-Module.TempSettings.FightTo               = nil
-Module.TempSettings.HuntOrigin            = nil
-Module.TempSettings.UnreachableSince      = 0
-Module.TempSettings.TravelFailSince       = 0
-Module.TempSettings.LocEntryY             = ""
-Module.TempSettings.LocEntryX             = ""
-Module.TempSettings.LocEntryZ             = ""
-Module.TempSettings.LocEntryMode          = nil
-Module.TempSettings.CurrentWPName         = nil
-Module.TempSettings.CurrentWPIndex        = 1
-Module.TempSettings.ReachedWP             = false
-Module.TempSettings.PullTargets           = {}
-Module.TempSettings.PullTargetsMetaData   = {}
-Module.TempSettings.PullIgnoreTargets     = {}
+Module.TempSettings.PausePulls            = false
 Module.TempSettings.AbortPull             = false
-Module.TempSettings.PullListUpdated       = false
-Module.TempSettings.Attempt               = nil
-Module.TempSettings.Travel                = nil
-Module.TempSettings.CampTravelLoc         = nil
-Module.TempSettings.EscortScopeWord       = nil
-Module.TempSettings.EscortPeers           = nil
-Module.TempSettings.CampArrivalWaitStart  = nil
-Module.TempSettings.HuntAnchor            = nil
+Module.TempSettings.PullRadius            = 0
 Module.TempSettings.PullerMercPending     = nil
 Module.TempSettings.LastPullAbilityCheck  = 0
 Module.TempSettings.LastMoveAbilityCheck  = 0
 Module.TempSettings.LastPullerMercCheck   = 0
 Module.TempSettings.LastFoundGroupCorpse  = 0
 Module.TempSettings.LastTooFarAnnounce    = 0
-Module.TempSettings.PullRadius            = 0
+
+-- Targets & Scanning
+Module.TempSettings.TargetSpawnID         = 0
+Module.TempSettings.PullTargets           = {}
+Module.TempSettings.PullTargetsMetaData   = {}
+Module.TempSettings.PullIgnoreTargets     = {}
+Module.TempSettings.PullListUpdated       = false
+
+-- Attempts & Travel
+Module.TempSettings.Attempt               = nil
+Module.TempSettings.Travel                = nil
+Module.TempSettings.UnreachableSince      = 0
+Module.TempSettings.TravelFailSince       = 0
+
+-- Objectives
+Module.TempSettings.FightTo               = nil
+Module.TempSettings.HuntOrigin            = nil
+Module.TempSettings.HuntAnchor            = nil
+
+-- Circuit Waypoints
+Module.TempSettings.CurrentWPName         = nil
+Module.TempSettings.CurrentWPIndex        = 1
+Module.TempSettings.ReachedWP             = false
+
+-- Camp Travel & Escort
+Module.TempSettings.CampTravelLoc         = nil
+Module.TempSettings.EscortScopeWord       = nil
+Module.TempSettings.EscortPeers           = nil
+Module.TempSettings.CampArrivalWaitStart  = nil
+
+-- Death Resume
+Module.TempSettings.DeathResumeFreePass   = nil
+Module.TempSettings.DeathSpot             = nil
+
+-- Pull & Move Abilities
+Module.TempSettings.ValidPullAbilities    = {}
+Module.TempSettings.PullAbilityIDToName   = {}
+Module.TempSettings.PullMoveAbilities     = nil
+
+-- Location Entry & Edits
+Module.TempSettings.LocEntryY             = ""
+Module.TempSettings.LocEntryX             = ""
+Module.TempSettings.LocEntryZ             = ""
+Module.TempSettings.LocEntryMode          = nil
 Module.TempSettings.LocationsToDelete     = {}
 Module.TempSettings.LocationNameEdits     = {}
+
+-- MyPaths Import Picker
 Module.TempSettings.MyPathsData           = nil
 Module.TempSettings.MyPathsZones          = {}
 Module.TempSettings.MyPathsZoneIndex      = 1
@@ -67,6 +93,8 @@ Module.TempSettings.MyPathsPathNames      = {}
 Module.TempSettings.MyPathsPathIndex      = 1
 Module.TempSettings.MyPathsPoints         = {}
 Module.TempSettings.MyPathsChecked        = {}
+
+-- Mercs Peer Import Picker
 Module.TempSettings.DbImportSources       = nil
 Module.TempSettings.DbImportSourceLabels  = {}
 Module.TempSettings.DbImportSourceIndex   = 1
@@ -74,12 +102,6 @@ Module.TempSettings.DbImportZones         = {}
 Module.TempSettings.DbImportZoneIndex     = 1
 Module.TempSettings.DbImportPoints        = {}
 Module.TempSettings.DbImportChecked       = {}
-Module.TempSettings.PausePulls            = false
-Module.TempSettings.DeathResumeFreePass   = nil
-Module.TempSettings.DeathSpot             = nil
-Module.TempSettings.ValidPullAbilities    = {}
-Module.TempSettings.PullAbilityIDToName   = {}
-Module.TempSettings.PullMoveAbilities     = nil
 
 -- Constants
 Module.Constants                          = {}
@@ -1298,6 +1320,7 @@ function Module:GetMoveAbilities()
     return self.TempSettings.PullMoveAbilities
 end
 
+--- Fires the class config's movement buffs while pulling; we only ever start things - not ready means skip and catch a later pass.
 function Module:CheckMoveAbilities(force)
     if not Config:GetSetting('DoPullMoveAbilities') then return end
     if not force and Globals.GetTimeSeconds() - self.TempSettings.LastMoveAbilityCheck < 5 then return end
@@ -4469,6 +4492,7 @@ function Module:PullTick()
 end
 
 function Module:GiveTime()
+    -- death-resume for a rez that never zoned us (took it while hovering): if we are back near camp or where we died, start pulling again
     if self.TempSettings.DeathResumeFreePass and not mq.TLO.Me.Hovering() and mq.TLO.Zone.ID() == Globals.CurZoneId and mq.TLO.Me.Instance() == Globals.CurInstanceId then
         self.TempSettings.DeathResumeFreePass = nil
         local campData = Modules:ExecModule("Movement", "GetCampData")
@@ -4544,6 +4568,7 @@ function Module:StartPuller()
         Core.DoCmd("/rgl campon")
         self:SetLastPullOrCombatEndedTimer()
     end
+    -- we are on the render thread, so just prime the timer; the first pull tick fires move abilities right away
     self.TempSettings.LastMoveAbilityCheck = 0
     Config:SetSetting('DoPull', true)
     self:SetRoles()
@@ -4635,6 +4660,7 @@ function Module:ResetPullMachine()
 end
 
 -- Lifecycle Handlers
+--- True when we are back in the camp zone and close enough to the camp or the spot we died to resume pulling.
 function Module:NearDeathReturnPoint(campData)
     if not Modules:ExecModule("Movement", "InCampZone") then return false end
     local radius = Config:GetSetting('CampExceedRadius')
@@ -4649,6 +4675,7 @@ function Module:OnDeath()
     if Config:GetSetting('StopPullAfterDeath') then
         Config:SetSetting('DoPull', false)
     elseif Config:GetSetting('DoPull') then
+        -- pause pulls but set up to resume: keep the camp through the death, expect the zone-out to bind, and remember where we died
         Config:SetSetting('DoPull', false)
         Modules:ExecModule("Movement", "ArmDeathCampHold")
         self.TempSettings.DeathResumeFreePass = true
@@ -4663,10 +4690,12 @@ function Module:OnZone()
     if Config:GetSetting('StopPullAfterDeath') then
         Config:SetSetting('DoPull', false)
     elseif campData.deathCampHold then
+        -- we died with pulls on: the first zone (to our bind) is expected, do nothing yet
         if self.TempSettings.DeathResumeFreePass then
             self.TempSettings.DeathResumeFreePass = nil
             Config:SetSetting('DoPull', false)
         else
+            -- any zone after that: resume if it put us near the camp or where we died, otherwise drop the camp
             if self:NearDeathReturnPoint(campData) then
                 Modules:ExecModule("Movement", "ClearDeathCampHold")
                 Config:SetSetting('DoPull', true)

@@ -40,7 +40,7 @@ local Tooltips     = {
 }
 
 local _ClassConfig = {
-    _version              = "3.3 - EQ Might",
+    _version              = "3.4 - EQ Might",
     _author               = "Algar, Derple, Grimmier, Tiddliestix, SonicZentropy",
     ['Modes']             = { --other modes to reorder spell priorities may be added back in at a later date.
         'General',

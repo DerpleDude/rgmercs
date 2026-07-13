@@ -39,7 +39,7 @@ local Tooltips     = {
 }
 
 local _ClassConfig = {
-    _version              = "3.1 - Project Lazarus",
+    _version              = "3.2 - Project Lazarus",
     _author               = "Algar, Derple, Grimmier, Tiddliestix, SonicZentropy",
     ['Modes']             = { --other modes to reorder spell priorities may be added back in at a later date.
         'General',
