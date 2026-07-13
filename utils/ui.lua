@@ -1950,6 +1950,7 @@ function Ui.RenderRotationTable(name, rotationTable, resolvedActionMap, rotation
     local enabledRotationEntriesChanged = false
     local showDebugTiming = Config:GetSetting('ShowDebugTiming')
     local pendingSwap = nil
+    local pendingDrag = nil
     local resetRequested = false
     local function persistRotationOrder()
         local order = Config:GetSetting('RotationEntryOrder') or {}
@@ -2012,8 +2013,38 @@ function Ui.RenderRotationTable(name, rotationTable, resolvedActionMap, rotation
 
         for idx, entry in ipairs(rotationTable or {}) do
             ImGui.TableNextRow()
+            local mappedAction = resolvedActionMap[entry.name]
+            local typeLower = entry.type:lower()
+            local resolvedItem = nil
+            local isResolved = true
+            if typeLower == "spell" or typeLower == "song" or typeLower == "disc" then
+                isResolved = mappedAction ~= nil
+            elseif typeLower == "aa" then
+                isResolved = mq.TLO.Me.AltAbility((type(mappedAction) == "string") and mappedAction or entry.name)() ~= nil
+            elseif typeLower == "item" then
+                resolvedItem = mq.TLO.FindItem("=" .. ((type(mappedAction) == "string") and mappedAction or entry.name))
+                isResolved = (resolvedItem() and resolvedItem.Clicky()) and true or false
+            elseif typeLower == "ability" then
+                isResolved = mq.TLO.Me.Ability(entry.name)() and true or false
+            end
+            if not isResolved then ImGui.PushStyleVar(ImGuiStyleVar.Alpha, 0.5) end
             ImGui.TableNextColumn()
-            Ui.RenderText(tostring(idx))
+            if reorderable then
+                ImGui.Selectable(string.format("%d##rotdrag_%s_%d", idx, name, idx), false,
+                    bit32.bor(ImGuiSelectableFlags.SpanAllColumns, ImGuiSelectableFlags.AllowOverlap))
+                if ImGui.BeginDragDropSource() then
+                    ImGui.SetDragDropPayload("ROT_REORDER_" .. name, idx)
+                    ImGui.Text(entry.name)
+                    ImGui.EndDragDropSource()
+                end
+                if ImGui.BeginDragDropTarget() then
+                    local payload = ImGui.AcceptDragDropPayload("ROT_REORDER_" .. name)
+                    if payload then pendingDrag = { payload.Data, idx, } end
+                    ImGui.EndDragDropTarget()
+                end
+            else
+                Ui.RenderText(tostring(idx))
+            end
             if not hideRotationCols then
                 if rotationState > 0 then
                     ImGui.TableNextColumn()
@@ -2027,10 +2058,22 @@ function Ui.RenderRotationTable(name, rotationTable, resolvedActionMap, rotation
                 end
             end
             ImGui.TableNextColumn()
-            local changed = false
-            enabledRotationEntries[entry.name], changed = Ui.RenderOptionToggle(string.format("rot_%s_tggl_%d", name, idx), "",
-                enabledRotationEntries[entry.name] == nil and true or enabledRotationEntries[entry.name])
-            if changed then enabledRotationEntriesChanged = true end
+            if isResolved then
+                local changed = false
+                enabledRotationEntries[entry.name], changed = Ui.RenderOptionToggle(string.format("rot_%s_tggl_%d", name, idx), "",
+                    enabledRotationEntries[entry.name] == nil and true or enabledRotationEntries[entry.name])
+                if changed then enabledRotationEntriesChanged = true end
+            else
+                if enabledRotationEntries[entry.name] == false then
+                    enabledRotationEntries[entry.name] = true
+                    enabledRotationEntriesChanged = true
+                end
+                ImGui.BeginDisabled(true)
+                local dimGreen = Globals.Constants.Colors.Green
+                Ui.RenderFancyToggle(string.format("rot_%s_tggl_%d", name, idx), "", true, ImVec2(26, 14),
+                    ImVec4(dimGreen.x, dimGreen.y, dimGreen.z, 0.35), Globals.Constants.Colors.Red, Globals.Constants.Colors.Grey, true, false, true, nil)
+                ImGui.EndDisabled()
+            end
             if not hideRotationCols then
                 ImGui.TableNextColumn()
                 local pass, active = false, false
@@ -2058,10 +2101,8 @@ function Ui.RenderRotationTable(name, rotationTable, resolvedActionMap, rotation
             ImGui.TableNextColumn()
             if enabledRotationEntries[entry.name] == false then Ui.StrikeThroughText(entry.name) else Ui.RenderText(entry.name) end
             ImGui.TableNextColumn()
-            local mappedAction = resolvedActionMap[entry.name]
-            local typeLower = entry.type:lower()
             if typeLower == "spell" or typeLower == "song" or typeLower == "disc" then
-                if mappedAction then
+                if isResolved then
                     ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.Purple)
                     ImGui.PushStyleColor(ImGuiCol.HeaderHovered, Globals.Constants.Colors.NearBlack)
                     local rankSpell = mappedAction.RankName
@@ -2078,8 +2119,7 @@ function Ui.RenderRotationTable(name, rotationTable, resolvedActionMap, rotation
                 end
             elseif typeLower == "aa" then
                 local aaName = (type(mappedAction) == "string") and mappedAction or entry.name
-                local aaPurchased = mq.TLO.Me.AltAbility(aaName)() ~= nil
-                if aaPurchased then
+                if isResolved then
                     ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.LightBlue)
                     ImGui.PushStyleColor(ImGuiCol.HeaderHovered, Globals.Constants.Colors.NearBlack)
                     local _, clicked = ImGui.Selectable(aaName)
@@ -2096,12 +2136,11 @@ function Ui.RenderRotationTable(name, rotationTable, resolvedActionMap, rotation
                 end
             elseif typeLower == "item" then
                 local itemName = (type(mappedAction) == "string") and mappedAction or entry.name
-                local item = mq.TLO.FindItem("=" .. itemName)
-                if item() and item.Clicky() then
+                if isResolved then
                     ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.LightOrange)
                     ImGui.PushStyleColor(ImGuiCol.HeaderHovered, Globals.Constants.Colors.NearBlack)
                     local _, clicked = ImGui.Selectable(itemName)
-                    local clickySpell = item.Clicky.Spell
+                    local clickySpell = resolvedItem.Clicky.Spell
                     if clickySpell() and clicked then
                         clickySpell.Inspect()
                     end
@@ -2113,8 +2152,7 @@ function Ui.RenderRotationTable(name, rotationTable, resolvedActionMap, rotation
                     ImGui.PopStyleColor()
                 end
             elseif typeLower == "ability" then
-                local abilTrained = mq.TLO.Me.Ability(entry.name)()
-                if abilTrained then
+                if isResolved then
                     ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.LightRed)
                     Ui.RenderText(entry.name)
                     ImGui.PopStyleColor()
@@ -2148,6 +2186,7 @@ function Ui.RenderRotationTable(name, rotationTable, resolvedActionMap, rotation
                     Strings.FormatTimeMS((entry.lastTotalTimeSpent or 0) * 1000))
             end
 
+            if not isResolved then ImGui.PopStyleVar() end
             if reorderable then
                 ImGui.TableNextColumn()
                 if idx > 1 then
@@ -2174,6 +2213,11 @@ function Ui.RenderRotationTable(name, rotationTable, resolvedActionMap, rotation
     local reordered = false
     if pendingSwap and rotationTable then
         rotationTable[pendingSwap[1]], rotationTable[pendingSwap[2]] = rotationTable[pendingSwap[2]], rotationTable[pendingSwap[1]]
+        persistRotationOrder()
+        reordered = true
+    end
+    if pendingDrag and rotationTable and pendingDrag[1] ~= pendingDrag[2] then
+        table.insert(rotationTable, pendingDrag[2], table.remove(rotationTable, pendingDrag[1]))
         persistRotationOrder()
         reordered = true
     end
