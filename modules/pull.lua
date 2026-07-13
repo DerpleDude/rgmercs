@@ -67,6 +67,13 @@ Module.TempSettings.MyPathsPathNames      = {}
 Module.TempSettings.MyPathsPathIndex      = 1
 Module.TempSettings.MyPathsPoints         = {}
 Module.TempSettings.MyPathsChecked        = {}
+Module.TempSettings.DbImportSources       = nil
+Module.TempSettings.DbImportSourceLabels  = {}
+Module.TempSettings.DbImportSourceIndex   = 1
+Module.TempSettings.DbImportZones         = {}
+Module.TempSettings.DbImportZoneIndex     = 1
+Module.TempSettings.DbImportPoints        = {}
+Module.TempSettings.DbImportChecked       = {}
 Module.TempSettings.PausePulls            = false
 Module.TempSettings.DeathResumeFreePass   = nil
 Module.TempSettings.DeathSpot             = nil
@@ -1932,8 +1939,15 @@ function Module:Render()
             ImGui.PopID()
             ImGui.EndDisabled()
             ImGui.SameLine()
+            ImGui.PushID("##_small_btn_load_db")
+            if ImGui.SmallButton("Import from Mercs Peer") then
+                self:LoadDbImportSources()
+            end
+            ImGui.PopID()
+            Ui.Tooltip("Pick pull locations saved by your other characters.")
+            ImGui.SameLine()
             ImGui.PushID("##_small_btn_load_mypaths")
-            if ImGui.SmallButton("Load MyPaths") then
+            if ImGui.SmallButton("Import from MyPaths") then
                 self:LoadMyPathsFile()
             end
             ImGui.PopID()
@@ -2014,6 +2028,78 @@ function Module:Render()
                     end
                     ImGui.PopID()
                     Ui.Tooltip("Add the checked points to this path's zone as pull locations.")
+                end
+            end
+
+            if self.TempSettings.DbImportSources then
+                ImGui.AlignTextToFramePadding()
+                Ui.RenderText("Import locations from")
+                ImGui.SameLine()
+                local sourceWidth = 0
+                for _, label in ipairs(self.TempSettings.DbImportSourceLabels) do
+                    sourceWidth = math.max(sourceWidth, ImGui.CalcTextSize(label))
+                end
+                ImGui.SetNextItemWidth(sourceWidth + ImGui.GetStyle().FramePadding.x * 2 + ImGui.GetFrameHeight())
+                local newSource, sourcePressed = ImGui.Combo("##DbImportSource", self.TempSettings.DbImportSourceIndex, self.TempSettings.DbImportSourceLabels,
+                    #self.TempSettings.DbImportSourceLabels)
+                if sourcePressed and newSource ~= self.TempSettings.DbImportSourceIndex then
+                    self:SelectDbImportSource(newSource)
+                end
+                ImGui.SameLine()
+                local zoneWidth = 0
+                for _, zoneName in ipairs(self.TempSettings.DbImportZones) do
+                    zoneWidth = math.max(zoneWidth, ImGui.CalcTextSize(zoneName))
+                end
+                ImGui.SetNextItemWidth(zoneWidth + ImGui.GetStyle().FramePadding.x * 2 + ImGui.GetFrameHeight())
+                local newZone, zonePressed = ImGui.Combo("##DbImportZone", self.TempSettings.DbImportZoneIndex, self.TempSettings.DbImportZones,
+                    #self.TempSettings.DbImportZones)
+                if zonePressed and newZone ~= self.TempSettings.DbImportZoneIndex then
+                    self:SelectDbImportZone(newZone)
+                end
+                ImGui.SameLine()
+                ImGui.PushID("##_small_btn_db_import_close")
+                if ImGui.SmallButton(Icons.MD_CLOSE) then
+                    self:ClearDbImportPicker()
+                end
+                ImGui.PopID()
+                Ui.Tooltip("Close the database import picker.")
+
+                if #self.TempSettings.DbImportPoints > 0 then
+                    ImGui.PushID("##_small_btn_db_import_all")
+                    if ImGui.SmallButton("Select All") then
+                        for index = 1, #self.TempSettings.DbImportPoints do
+                            self.TempSettings.DbImportChecked[index] = true
+                        end
+                    end
+                    ImGui.PopID()
+                    ImGui.SameLine()
+                    ImGui.PushID("##_small_btn_db_import_none")
+                    if ImGui.SmallButton("Select None") then
+                        self.TempSettings.DbImportChecked = {}
+                    end
+                    ImGui.PopID()
+                    local pointsHeight = ImGui.GetFrameHeightWithSpacing() * math.min(#self.TempSettings.DbImportPoints, 10) + ImGui.GetStyle().ItemSpacing.y
+                    if ImGui.BeginChild("DbImportPoints", ImVec2(0, pointsHeight), ImGuiChildFlags.None, ImGuiWindowFlags.None) then
+                        local showDistance = (self.TempSettings.DbImportZones[self.TempSettings.DbImportZoneIndex] or "") == Module.ZoneKeyLower()
+                        local myX, myY = mq.TLO.Me.X(), mq.TLO.Me.Y()
+                        for index, point in ipairs(self.TempSettings.DbImportPoints) do
+                            ImGui.PushID("##_db_import_point_" .. tostring(index))
+                            self.TempSettings.DbImportChecked[index] = ImGui.Checkbox(string.format("%s (%s)", point.name, Module.FormatLoc(point)),
+                                self.TempSettings.DbImportChecked[index] or false) or nil
+                            if showDistance then
+                                ImGui.SameLine()
+                                Ui.RenderText(string.format("(%.0f away)", Math.GetDistance(myX, myY, point.x, point.y)))
+                            end
+                            ImGui.PopID()
+                        end
+                    end
+                    ImGui.EndChild()
+                    ImGui.PushID("##_small_btn_db_import_add")
+                    if ImGui.SmallButton("Add Selected") then
+                        self:ImportDbSelection()
+                    end
+                    ImGui.PopID()
+                    Ui.Tooltip("Add the checked locations to that zone's pull location list.")
                 end
             end
 
@@ -2675,6 +2761,89 @@ function Module:ImportMyPathsSelection()
     Config:SetSetting('PullLocations', pullLocations)
     self.TempSettings.MyPathsChecked = {}
     Logger.log_info("\axImported \at%d\ax MyPaths point%s into the \at%s\ax pull location list.", added, added == 1 and "" or "s", zoneKey)
+end
+
+-- Database Import
+function Module:ClearDbImportPicker()
+    self.TempSettings.DbImportSources = nil
+    self.TempSettings.DbImportSourceLabels = {}
+    self.TempSettings.DbImportSourceIndex = 1
+    self.TempSettings.DbImportZones = {}
+    self.TempSettings.DbImportZoneIndex = 1
+    self.TempSettings.DbImportPoints = {}
+    self.TempSettings.DbImportChecked = {}
+end
+
+function Module:LoadDbImportSources()
+    self:ClearDbImportPicker()
+    local sources = {}
+    local sourceLabels = {}
+    local myServer = mq.TLO.EverQuest.Server() or ""
+    for _, character in ipairs(Config.Db:getCharacters()) do
+        for _, class in ipairs(Config.Db:getClassesForCharacter(character.server_name, character.name)) do
+            if not Comms.IsLocalCurrent(character.name, character.server_name, class) then
+                local locations = (Config.Db:getAll(character.server_name, character.name, class, "Pull") or {})['PullLocations']
+                local zones = {}
+                for zoneKey, zoneLocations in pairs(locations or {}) do
+                    if #zoneLocations > 0 then table.insert(zones, zoneKey) end
+                end
+                if #zones > 0 then
+                    table.sort(zones)
+                    local label = character.server_name == myServer and string.format("%s (%s)", character.name, class)
+                        or string.format("%s (%s, %s)", character.name, character.server_name, class)
+                    table.insert(sources, { label = label, locations = locations, zones = zones, })
+                    table.insert(sourceLabels, label)
+                end
+            end
+        end
+    end
+    if #sources == 0 then
+        Logger.log_info("No other characters with pull locations were found in the database.")
+        return
+    end
+    self.TempSettings.DbImportSources = sources
+    self.TempSettings.DbImportSourceLabels = sourceLabels
+    self:SelectDbImportSource(1)
+end
+
+function Module:SelectDbImportSource(index)
+    self.TempSettings.DbImportSourceIndex = index
+    local source = self.TempSettings.DbImportSources[index]
+    self.TempSettings.DbImportZones = source and source.zones or {}
+    local zoneIndex = 1
+    for idx, zoneKey in ipairs(self.TempSettings.DbImportZones) do
+        if zoneKey == Module.ZoneKeyLower() then zoneIndex = idx end
+    end
+    self:SelectDbImportZone(zoneIndex)
+end
+
+function Module:SelectDbImportZone(index)
+    self.TempSettings.DbImportZoneIndex = index
+    self.TempSettings.DbImportChecked = {}
+    local source = self.TempSettings.DbImportSources[self.TempSettings.DbImportSourceIndex]
+    local zoneKey = self.TempSettings.DbImportZones[index]
+    self.TempSettings.DbImportPoints = source and zoneKey and source.locations[zoneKey] or {}
+end
+
+function Module:ImportDbSelection()
+    if not next(self.TempSettings.DbImportChecked) then
+        Logger.log_info("No database locations are checked - nothing to import.")
+        return
+    end
+    local pullLocations = Config:GetSetting('PullLocations') or {}
+    local zoneKey = self.TempSettings.DbImportZones[self.TempSettings.DbImportZoneIndex]
+    if not zoneKey then return end
+    pullLocations[zoneKey] = pullLocations[zoneKey] or {}
+    local added = 0
+    for index, point in ipairs(self.TempSettings.DbImportPoints) do
+        if self.TempSettings.DbImportChecked[index] then
+            added = added + 1
+            Module.AppendLocation(pullLocations[zoneKey], point, point.name)
+        end
+    end
+    Config:SetSetting('PullLocations', pullLocations)
+    self.TempSettings.DbImportChecked = {}
+    Logger.log_info("\axImported \at%d\ax database location%s into the \at%s\ax pull location list.", added, added == 1 and "" or "s", zoneKey)
 end
 
 -- Objective Staging
