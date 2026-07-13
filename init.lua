@@ -412,8 +412,6 @@ local function Main()
         return
     end
 
-    Core.UpdateBuffs(true)
-
     Events.DoEvents()
 
     Config:ValidatePeers()

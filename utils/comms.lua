@@ -299,6 +299,7 @@ function Comms.SendHeartbeat(forceSend)
         PetBlocked         = Globals.CurrentPetBlocked,
         OpenBuffSlots      = mq.TLO.Me.MaxBuffSlots() - Globals.CurrentBuffCount,
         MaxBuffSlots       = mq.TLO.Me.MaxBuffSlots(),
+        BuffCount          = Globals.CurrentBuffCount,
         RaidLeader         = mq.TLO.Raid.Leader() or "None",
         GroupLeader        = mq.TLO.Group.Leader() or "None",
         Forced             = forceSend and true or false,

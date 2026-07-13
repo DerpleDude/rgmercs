@@ -2356,7 +2356,8 @@ function Module:Render()
                 ImGui.TableNextColumn()
                 Ui.RenderText("Buff Count")
                 ImGui.TableNextColumn()
-                Ui.RenderText("%s", Globals.CurrentBuffCount)
+                local hbData = Comms.GetPeerHeartbeat(Comms.GetPeerName()).Data
+                Ui.RenderText("%s", hbData and hbData.BuffCount or 0)
             end
             self:RenderMoveAbilities()
             ImGui.EndTable()
@@ -3243,7 +3244,8 @@ function Module:ShouldPull(campData)
     end
 
     if Config:GetSetting('PullBuffCount') > 0 then
-        if Globals.CurrentBuffCount < Config:GetSetting('PullBuffCount') then
+        local hbData = Comms.GetPeerHeartbeat(Comms.GetPeerName()).Data
+        if (hbData and hbData.BuffCount or 99) < Config:GetSetting('PullBuffCount') then
             Logger.log_verbose("\ay::PULL:: \arAborted!\ax Waiting for Buffs! BuffCount < %d", Config:GetSetting('PullBuffCount'))
             return false, string.format("BuffCount < %d", Config:GetSetting('PullBuffCount'))
         end

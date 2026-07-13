@@ -511,10 +511,8 @@ function Core.GetChaseTarget()
 end
 
 --- Refreshes buff/song/blocked/pet-buff tables in Globals by re-reading every slot from TLO.
---- @param countOnly boolean? Rebuild only the buff table (for CurrentBuffCount); skip the songs/blocked/pet tables that only the heartbeat sender reads.
-function Core.UpdateBuffs(countOnly)
+function Core.UpdateBuffs()
     Core.GetBuffTable()
-    if countOnly then return end
     Core.GetSongTable()
     Core.GetBlockedTable()
     if Config:GetSetting('DoActorPetBuffs') then

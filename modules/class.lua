@@ -1887,6 +1887,7 @@ end
 
 -- new-model cure pass: cure myself from my own classified effects, then a group or heal-list peer that needs it (one cure per pass, self > group > heal list)
 function Module:RunCureWalk()
+    Core.GetBuffTable()
     local actorPeers = Comms.GetAllPeerHeartbeats(false)
     self.TempSettings.GroupDispelCovered = self:GroupAACureStaggered(actorPeers)
 
