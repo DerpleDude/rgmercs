@@ -27,6 +27,8 @@ local _ClassConfig = {
         -- necro can AA Rez
         IsRezing = function() return Casting.CanUseAA("Convergence") and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
         CanCharm = function() return true end,
+        CanMez    = function() return true end,
+        IsMezzing = function() return Config:GetSetting('MezOn') end,
     },
     ['Rez']             = {
         ['Combat'] = {
@@ -172,6 +174,10 @@ local _ClassConfig = {
         ['FDSpell'] = {
             -- Fd Spell
             "Death Peace", -- Level 60
+        },
+        ['MezSpell'] = {
+            -- ST Mez
+            "Screaming Terror", -- Level 22 (up to 55)   
         },
         ['CharmSpell'] = {
             -- Charm Spells >= 20
@@ -830,6 +836,9 @@ local _ClassConfig = {
             "Flesh to Venom",  -- Level 109
             "Flesh to Poison", -- Level 99
         },
+    },
+    ['Mez']           = {
+        { type = "Spell", name = "MezSpell", },
     },
     ['Charm']           = {
         ['Abilities'] = {
@@ -1521,6 +1530,7 @@ local _ClassConfig = {
                 { name = "PoisonNuke2", },
                 { name = "FireNuke", },
                 { name = "Lifetap",      cond = function(self) return Config:GetSetting('DoLifetap') end, },
+                { name = "MezSpell",     cond = function(self) return Config:GetSetting('DoSTMez') end, },
                 { name = "CharmSpell",   cond = function(self, spell) return Config:GetSetting('CharmOn') and Core.IsSelectedCharmSpell(spell) end, },
                 { name = "SnareDot",     cond = function(self) return Config:GetSetting('DoSnare') and not Casting.CanUseAA("Enchroaching Darkness") end, },
                 { name = "ScentDebuff",  cond = function(self) return Config:GetSetting('DoScentDebuff') and not Casting.CanUseAA("Scent of Thule") end, },
