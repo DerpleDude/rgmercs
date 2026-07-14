@@ -665,6 +665,21 @@ local _ClassConfig = {
                     return Casting.GroupBuffCheck(spell, target)
                 end,
             },
+            {
+                name = "SlowProcBuff",
+                type = "Spell",
+                cond = function(self, spell, target)
+                    return Targeting.TargetIsATank(target) and Casting.GroupBuffCheck(spell, target)
+                end,
+                post_activate = function(self, spell, success)
+                    local petName = mq.TLO.Me.Pet.CleanName() or "None"
+                    mq.delay("3s", function() return not mq.TLO.Me.Casting() end)
+                    if success and mq.TLO.Me.XTarget(petName)() then
+                        Comms.PrintGroupMessage("It seems %s has triggered combat due to a server bug, calling the pet back.", spell)
+                        Core.DoCmd('/pet back off')
+                    end
+                end,
+            },
         },
         ['Burn'] = {
             {
@@ -966,21 +981,6 @@ local _ClassConfig = {
                 end,
             },
             {
-                name = "SlowProcBuff",
-                type = "Spell",
-                cond = function(self, spell, target)
-                    return Targeting.TargetIsATank(target) and Casting.GroupBuffCheck(spell, target)
-                end,
-                post_activate = function(self, spell, success)
-                    local petName = mq.TLO.Me.Pet.CleanName() or "None"
-                    mq.delay("3s", function() return not mq.TLO.Me.Casting() end)
-                    if success and mq.TLO.Me.XTarget(petName)() then
-                        Comms.PrintGroupMessage("It seems %s has triggered combat due to a server bug, calling the pet back.", spell)
-                        Core.DoCmd('/pet back off')
-                    end
-                end,
-            },
-            { --Used on the entire group
                 name = "GroupFocusSpell",
                 type = "Spell",
                 cond = function(self, spell, target)

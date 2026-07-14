@@ -1156,17 +1156,6 @@ local _ClassConfig = {
             end,
         },
         {
-            name = 'CombatBuff',
-            timer = 10,
-            state = 1,
-            steps = 1,
-            load_cond = function(self) return self:GetResolvedActionMapItem('ReverseDS') or self:GetResolvedActionMapItem('WardBuff') end,
-            targetId = function(self) return { Core.GetMainAssistId(), } or {} end,
-            cond = function(self, combat_state)
-                return combat_state == "Combat" and Core.CombatActionsCheck()
-            end,
-        },
-        {
             name = 'DPS',
             state = 1,
             steps = 1,
@@ -1177,7 +1166,7 @@ local _ClassConfig = {
             end,
         },
         {
-            name = 'Combat Buffs',
+            name = 'CombatBuffs',
             state = 1,
             steps = 1,
             targetId = function(self) return Casting.GetBuffableIDs() end,
@@ -1202,25 +1191,6 @@ local _ClassConfig = {
                     if Targeting.TargetIsMyself(target) then return false end
                     local rezSearch = string.format("pccorpse %s radius 100 zradius 50", target.DisplayName())
                     return mq.TLO.SpawnCount(rezSearch)() == 0
-                end,
-            },
-        },
-        ['CombatBuff'] = {
-            {
-                name = "ReverseDS",
-                type = "Spell",
-                cond = function(self, spell, target)
-                    if not Casting.CastReady(spell) then return false end --avoid constant group buff checks
-                    return Casting.GroupBuffCheck(spell, target)
-                end,
-            },
-            {
-                name = "WardBuff",
-                type = "Spell",
-                allowDead = true,
-                cond = function(self, spell, target)
-                    if not Casting.CastReady(spell) then return false end --avoid constant group buff checks
-                    return Casting.GroupBuffCheck(spell, target)
                 end,
             },
         },
@@ -1277,14 +1247,31 @@ local _ClassConfig = {
                 type = "AA",
             },
         },
-        ['Combat Buffs'] = {
+        ['CombatBuffs'] = {
             {
                 name = "DivineBuff",
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoDivineBuff') end,
                 cond = function(self, spell, target)
-                    if not Targeting.TargetIsATank(target) then return false end
-                    return Casting.CastReady(spell) and Casting.GroupBuffCheck(spell, target)
+                    if not Casting.CastReady(spell) then return false end --avoid constant group buff checks
+                    return Targeting.TargetIsATank(target) and Casting.GroupBuffCheck(spell, target)
+                end,
+            },
+            {
+                name = "ReverseDS",
+                type = "Spell",
+                cond = function(self, spell, target)
+                    if not Casting.CastReady(spell) then return false end --avoid constant group buff checks
+                    return Targeting.TargetIsATank(target) and Casting.GroupBuffCheck(spell, target)
+                end,
+            },
+            {
+                name = "WardBuff",
+                type = "Spell",
+                allowDead = true,
+                cond = function(self, spell, target)
+                    if not Casting.CastReady(spell) then return false end --avoid constant group buff checks
+                    return Targeting.TargetIsATank(target) and Casting.GroupBuffCheck(spell, target)
                 end,
             },
         },

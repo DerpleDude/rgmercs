@@ -564,6 +564,15 @@ local _ClassConfig = {
             end,
         },
         {
+            name = 'CombatBuffs',
+            state = 1,
+            steps = 1,
+            targetId = function(self) return Casting.GetBuffableIDs() end,
+            cond = function(self, combat_state)
+                return combat_state == "Combat" and Core.CombatActionsCheck()
+            end,
+        },
+        {
             name = 'InstantRunBuff',
             state = 1,
             steps = 1,
@@ -577,7 +586,7 @@ local _ClassConfig = {
         },
     },
     ['Rotations']         = {
-        ['DPS'] = {
+        ['DPS']            = {
             {
                 name = "Epic",
                 type = "Item",
@@ -682,7 +691,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['DPS(AE)'] = {
+        ['DPS(AE)']        = {
             {
                 name = "PBAEMagic",
                 type = "Spell",
@@ -702,7 +711,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Burn'] = {
+        ['Burn']           = {
             {
                 name = "Improved Twincast",
                 type = "AA",
@@ -753,7 +762,7 @@ local _ClassConfig = {
                 type = "Item",
             },
         },
-        ['Debuff'] = {
+        ['Debuff']         = {
             { -- Fire Debuff AA, will use the first(best) available
                 name = "FireDebuffAA",
                 type = "AA",
@@ -787,7 +796,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Snare'] = {
+        ['Snare']          = {
             {
                 name = "Entrap",
                 type = "AA",
@@ -805,7 +814,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['GroupBuff'] = {
+        ['GroupBuff']      = {
             {
                 name = "Flight of Eagles",
                 type = "AA",
@@ -882,7 +891,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Downtime'] = {
+        ['Downtime']       = {
             {
                 name = "HealingAura",
                 type = "Spell",
@@ -916,7 +925,7 @@ local _ClassConfig = {
                 cond = function(self, spell) return Casting.SelfBuffCheck(spell) end,
             },
         },
-        ['PetSummon'] = {
+        ['PetSummon']      = {
             {
                 name = "PetSpell",
                 type = "Spell",
@@ -929,7 +938,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['PetBuff'] = {
+        ['PetBuff']        = {
             {
                 name = "PetHaste",
                 type = "Spell",
@@ -944,7 +953,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['ArcanumWeave'] = {
+        ['ArcanumWeave']   = {
             {
                 name = "Empowered Focus of Arcanum",
                 type = "AA",
@@ -964,6 +973,15 @@ local _ClassConfig = {
                 type = "AA",
                 cond = function(self, aaName)
                     return Casting.SelfBuffAACheck(aaName)
+                end,
+            },
+        },
+        ['CombatBuffs']    = {
+            {
+                name = "ReptileBuff",
+                type = "Spell",
+                cond = function(self, spell, target)
+                    return Targeting.TargetClassIs({ "WAR", "SHD", }, target) and Casting.GroupBuffCheck(spell, target) --does not stack with PAL innate buff
                 end,
             },
         },

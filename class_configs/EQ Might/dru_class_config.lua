@@ -603,6 +603,15 @@ local _ClassConfig = {
             end,
         },
         {
+            name = 'CombatBuffs',
+            state = 1,
+            steps = 1,
+            targetId = function(self) return Casting.GetBuffableIDs() end,
+            cond = function(self, combat_state)
+                return combat_state == "Combat" and Core.CombatActionsCheck()
+            end,
+        },
+        {
             name = 'InstantRunBuff',
             state = 1,
             steps = 1,
@@ -1014,6 +1023,15 @@ local _ClassConfig = {
                     -- if in combat, check self, out of combat, also check others
                     return (combatState == "Combat" and (mq.TLO.Me.Buff(aaBuff).Duration.TotalSeconds() or 0) < 15) or
                         (combatState == "Downtime" and Casting.GroupBuffAACheck(aaName, target))
+                end,
+            },
+        },
+        ['CombatBuffs']    = {
+            {
+                name = "ReptileBuff",
+                type = "Spell",
+                cond = function(self, spell, target)
+                    return Targeting.TargetClassIs({ "WAR", "SHD", }, target) and Casting.GroupBuffCheck(spell, target) --does not stack with PAL innate buff
                 end,
             },
         },

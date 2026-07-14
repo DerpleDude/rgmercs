@@ -699,7 +699,7 @@ local _ClassConfig = {
             end,
         },
         {
-            name = 'CombatBuff',
+            name = 'CombatSupport',
             state = 1,
             steps = 1,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
@@ -793,8 +793,32 @@ local _ClassConfig = {
                     return Casting.GroupBuffCheck(spell, target)
                 end,
             },
+            {
+                name = "Ultrafabled Rune Etched Chestplate",
+                type = "Item",
+                load_cond = function(self) return self.Helpers.SlowProcChoice() == "Chestplate" end,
+                cond = function(self, spell, target)
+                    return Targeting.TargetIsATank(target) and Casting.GroupBuffItemCheck(spell, target)
+                end,
+            },
+            {
+                name = "SlowProcBuff",
+                type = "Spell",
+                load_cond = function(self) return self.Helpers.SlowProcChoice() == "Spell" end,
+                cond = function(self, spell, target)
+                    return Targeting.TargetIsATank(target) and Casting.GroupBuffCheck(spell, target)
+                end,
+                post_activate = function(self, spell, success)
+                    local petName = mq.TLO.Me.Pet.CleanName() or "None"
+                    mq.delay("3s", function() return mq.TLO.Me.Casting() == nil end)
+                    if success and mq.TLO.Me.XTarget(petName)() then
+                        Comms.PrintGroupMessage("It seems %s has triggered combat due to a server bug, calling the pet back.", spell)
+                        Core.DoCmd('/pet back off')
+                    end
+                end,
+            },
         },
-        ['CombatBuff']     = {
+        ['CombatSupport']  = {
             {
                 name = "Companion's Blessing",
                 type = "AA",
@@ -1099,30 +1123,6 @@ local _ClassConfig = {
             },
         },
         ['GroupBuff']      = {
-            {
-                name = "Ultrafabled Rune Etched Chestplate",
-                type = "Item",
-                load_cond = function(self) return self.Helpers.SlowProcChoice() == "Chestplate" end,
-                cond = function(self, spell, target)
-                    return Targeting.TargetIsATank(target) and Casting.GroupBuffItemCheck(spell, target)
-                end,
-            },
-            {
-                name = "SlowProcBuff",
-                type = "Spell",
-                load_cond = function(self) return self.Helpers.SlowProcChoice() == "Spell" end,
-                cond = function(self, spell, target)
-                    return Targeting.TargetIsATank(target) and Casting.GroupBuffCheck(spell, target)
-                end,
-                post_activate = function(self, spell, success)
-                    local petName = mq.TLO.Me.Pet.CleanName() or "None"
-                    mq.delay("3s", function() return mq.TLO.Me.Casting() == nil end)
-                    if success and mq.TLO.Me.XTarget(petName)() then
-                        Comms.PrintGroupMessage("It seems %s has triggered combat due to a server bug, calling the pet back.", spell)
-                        Core.DoCmd('/pet back off')
-                    end
-                end,
-            },
             {
                 name = "Group Pact of the Wolf",
                 type = "AA",
