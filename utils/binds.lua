@@ -8,6 +8,7 @@ local Core             = require("utils.core")
 local Globals          = require('utils.globals')
 local Logger           = require("utils.logger")
 local Modules          = require("utils.modules")
+local OptionsUI        = require("ui.options")
 local Strings          = require("utils.strings")
 local Targeting        = require("utils.targeting")
 
@@ -602,6 +603,18 @@ Binds.Handlers    = {
                 end
             end
             Logger.log_warn("\ayNo loaded module named '\at%s\ay' to highlight.", module)
+        end,
+    },
+    ['search'] = {
+        usage = "/rgl search <text>",
+        about = "Opens the RGMercs Options window and places <text> in the search filter.",
+        handler = function(...)
+            local allText = { ..., }
+            local text
+            for _, t in ipairs(allText) do
+                text = (text and text .. " " or "") .. t
+            end
+            OptionsUI:OpenAndSetSearchFilter(text)
         end,
     },
     ['reset_config_position'] = {
