@@ -576,7 +576,11 @@ local _ClassConfig = {
             name = 'InstantRunBuff',
             state = 1,
             steps = 1,
-            targetId = function(self) return Combat.GetCachedCombatState() == "Combat" and Targeting.CheckForAutoTargetID() or Casting.GetBuffableIDs() end,
+            targetId = function(self)
+                local autoTarget = Targeting.CheckForAutoTargetID()
+                if #autoTarget > 0 then return autoTarget end
+                return Casting.GetBuffableIDs()
+            end,
             load_cond = function(self) return Config:GetSetting('DoMoveBuffs') and Casting.CanUseAA("Communion of the Cheetah") end,
             cond = function(self, combat_state)
                 local downtime = combat_state == "Downtime" and not mq.TLO.Me.Invis()

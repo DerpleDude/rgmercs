@@ -1,24 +1,24 @@
-local mq                    = require('mq')
-local Set                   = require('mq.set')
-local Comms                 = require("utils.comms")
-local Config                = require('utils.config')
-local Core                  = require('utils.core')
-local Globals               = require('utils.globals')
-local Logger                = require("utils.logger")
-local Modules               = require("utils.modules")
-local Movement              = require("utils.movement")
-local Strings               = require("utils.strings")
+local mq                        = require('mq')
+local Set                       = require('mq.set')
+local Comms                     = require("utils.comms")
+local Config                    = require('utils.config')
+local Core                      = require('utils.core')
+local Globals                   = require('utils.globals')
+local Logger                    = require("utils.logger")
+local Modules                   = require("utils.modules")
+local Movement                  = require("utils.movement")
+local Strings                   = require("utils.strings")
 
-local Targeting              = { _version = '1.0', _name = "Targeting", _author = 'Derple', }
-Targeting.__index            = Targeting
-Targeting.ForceNamed         = false
-Targeting.ForceBurnTargetID  = 0
-Targeting.SafeTargetCache    = {}
-Targeting.XTClearTime        = 0
+local Targeting                 = { _version = '1.0', _name = "Targeting", _author = 'Derple', }
+Targeting.__index               = Targeting
+Targeting.ForceNamed            = false
+Targeting.ForceBurnTargetID     = 0
+Targeting.SafeTargetCache       = {}
+Targeting.XTClearTime           = 0
 Targeting.TankingNamedCheckTime = 0
 Targeting.TankingNamedFound     = false
 
-Targeting.XTargetTypeKeywords = {
+Targeting.XTargetTypeKeywords   = {
     ["Target's Target"]      = "targetstarget",
     ["Group Tank"]           = "grouptank",
     ["Group Tank's Target"]  = "grouptanktarget",
@@ -815,17 +815,23 @@ function Targeting.BigGroupHealsNeeded()
     return (mq.TLO.Group.Injured(Config:GetSetting('BigHealPoint'))() or 0) >= Config:GetSetting('GroupInjureCnt')
 end
 
---- Returns {AutoTargetID} if AutoTargetID matches the in-game target, else {}.
+--- Returns { AutoTargetID } if there's a valid auto-target matching the in-game target, else {}.
 --- Used by rotation conditions that require being on the right target.
----@return number[] Single-element array or empty array.
+---@return number[]
 function Targeting.CheckForAutoTargetID()
-    return mq.TLO.Target.ID() == Globals.AutoTargetID and { Globals.AutoTargetID, } or {}
+    if (Globals.AutoTargetID or 0) > 0 and mq.TLO.Target.ID() == Globals.AutoTargetID then
+        return { Globals.AutoTargetID, }
+    end
+    return {}
 end
 
---- Returns {AggroTargetID} if AggroTargetID is non-zero, else {}.
----@return number[] Single-element array or empty array.
+--- Returns { AggroTargetID } if AggroTargetID is non-zero, else {}.
+---@return number[]
 function Targeting.CheckForAggroTargetID()
-    return (Globals.AggroTargetID or 0) > 0 and { Globals.AggroTargetID, } or {}
+    if (Globals.AggroTargetID or 0) > 0 then
+        return { Globals.AggroTargetID, }
+    end
+    return {}
 end
 
 --- Returns true if target is within the spell's effective range (MyRange,

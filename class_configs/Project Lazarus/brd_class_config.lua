@@ -418,7 +418,11 @@ local _ClassConfig = {
             timer = 0,
             doFullRotation = true,
             blockMem = true,
-            targetId = function(self) return Combat.GetCachedCombatState() == "Combat" and Targeting.CheckForAutoTargetID() or { mq.TLO.Me.ID(), } end,
+            targetId = function(self)
+                local autoTarget = Targeting.CheckForAutoTargetID()
+                if #autoTarget > 0 then return autoTarget end
+                return { mq.TLO.Me.ID(), }
+            end,
             cond = function(self, combat_state)
                 if Globals.InMedState then return false end
                 if combat_state == "Downtime" and mq.TLO.Me.Invis() then return false end
@@ -450,7 +454,11 @@ local _ClassConfig = {
             state = 1,
             steps = 1,
             midSong = true,
-            targetId = function(self) return Combat.GetCachedCombatState() == "Combat" and Targeting.CheckForAutoTargetID() or Casting.GetBuffableGroupIDs() end,
+            targetId = function(self)
+                local autoTarget = Targeting.CheckForAutoTargetID()
+                if #autoTarget > 0 then return autoTarget end
+                return Casting.GetBuffableGroupIDs()
+            end,
             load_cond = function(self) return Casting.CanUseAA("Selo's Sonata") end,
             cond = function(self, combat_state)
                 local downtime = combat_state == "Downtime" and not mq.TLO.Me.Invis()

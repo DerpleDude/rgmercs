@@ -345,7 +345,7 @@ local _ClassConfig = {
             name = 'Pustules',
             timer = 10,
             load_cond = function() return Config:GetSetting('DoPustules') end,
-            targetId = function(self) return { Core.GetMainAssistId(), } or {} end,
+            targetId = function(self) return Core.GetMainAssistId() > 0 and { Core.GetMainAssistId(), } or {} end,
             cond = function(self, combat_state)
                 local downtime = combat_state == "Downtime" and Casting.OkayToBuff()
                 local burning = combat_state == "Combat" and Casting.BurnCheck() and not Casting.IAmFeigning() and Core.CombatActionsCheck()
