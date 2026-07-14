@@ -949,7 +949,7 @@ local _ClassConfig    = {
                 type = "Spell",
                 load_cond = function() return Config:GetSetting('DoSpinStun') > 1 end,
                 cond = function(self, spell, target)
-                    if (Config:GetSetting('DoSpinStun') == 2 and Core.GetMainAssistPctHPs() > Config:GetSetting('EmergencyStart')) then return false end
+                    if Config:GetSetting('DoSpinStun') == 2 and (mq.TLO.Group.Injured(Config:GetSetting('EmergencyStart'))() or 0) < 1 then return false end
                     return Targeting.TargetNotStunned() and not Globals.AutoTargetIsNamed
                 end,
             },
@@ -958,7 +958,7 @@ local _ClassConfig    = {
                 type = "Spell",
                 load_cond = function() return Config:GetSetting('DoAEStun') > 1 end,
                 cond = function(self, spell, target)
-                    if (Config:GetSetting('DoAEStun') == 2 and Core.GetMainAssistPctHPs() > Config:GetSetting('EmergencyStart')) then return false end
+                    if Config:GetSetting('DoAEStun') == 2 and (mq.TLO.Group.Injured(Config:GetSetting('EmergencyStart'))() or 0) < 1 then return false end
                     return Targeting.GetXTHaterCount() >= Config:GetSetting("AECount")
                 end,
             },
@@ -967,7 +967,8 @@ local _ClassConfig    = {
                 type = "AA",
                 load_cond = function() return Config:GetSetting("DoSoothing") end,
                 cond = function(self, aaName, target)
-                    return Globals.AutoTargetIsNamed and (mq.TLO.Me.TargetOfTarget.ID() or Core.GetMainAssistId()) ~= Core.GetMainAssistId()
+                    local tankId = mq.TLO.Group.MainTank.ID() or 0
+                    return Globals.AutoTargetIsNamed and (mq.TLO.Me.TargetOfTarget.ID() or tankId) ~= tankId
                 end,
             },
             {

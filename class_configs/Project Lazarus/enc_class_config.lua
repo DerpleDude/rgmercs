@@ -789,7 +789,8 @@ local _ClassConfig = {
                 type = "AA",
                 load_cond = function() return Config:GetSetting("DoSoothing") end,
                 cond = function(self, aaName, target)
-                    return Globals.AutoTargetIsNamed and (mq.TLO.Me.TargetOfTarget.ID() or Core.GetMainAssistId()) ~= Core.GetMainAssistId()
+                    local tankId = mq.TLO.Group.MainTank.ID() or 0
+                    return Globals.AutoTargetIsNamed and (mq.TLO.Me.TargetOfTarget.ID() or tankId) ~= tankId
                 end,
             },
 

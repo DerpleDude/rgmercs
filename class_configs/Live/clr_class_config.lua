@@ -938,7 +938,7 @@ local _ClassConfig = {
                 name = "Blessing of Sanctuary",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    return target.ID() == (mq.TLO.Target.AggroHolder.ID() or 0) and target.ID() ~= Core.GetMainAssistId()
+                    return target.ID() == (mq.TLO.Target.AggroHolder.ID() or 0) and not Targeting.TargetIsTanking(target)
                 end,
             },
             {
@@ -1169,7 +1169,7 @@ local _ClassConfig = {
             name = 'CombatBuffs',
             state = 1,
             steps = 1,
-            targetId = function(self) return Casting.GetBuffableIDs() end,
+            targetId = function(self) return Casting.GetBuffableTankingIDs() end, -- change back to buffableIDs if we ever add non-tank stuff here
             cond = function(self, combat_state)
                 return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
@@ -1254,7 +1254,7 @@ local _ClassConfig = {
                 load_cond = function(self) return Config:GetSetting('DoDivineBuff') end,
                 cond = function(self, spell, target)
                     if not Casting.CastReady(spell) then return false end --avoid constant group buff checks
-                    return Targeting.TargetIsTanking(target) and Casting.GroupBuffCheck(spell, target)
+                    return Casting.GroupBuffCheck(spell, target)
                 end,
             },
             {
@@ -1262,7 +1262,7 @@ local _ClassConfig = {
                 type = "Spell",
                 cond = function(self, spell, target)
                     if not Casting.CastReady(spell) then return false end --avoid constant group buff checks
-                    return Targeting.TargetIsTanking(target) and Casting.GroupBuffCheck(spell, target)
+                    return Casting.GroupBuffCheck(spell, target)
                 end,
             },
             {
@@ -1271,7 +1271,7 @@ local _ClassConfig = {
                 allowDead = true,
                 cond = function(self, spell, target)
                     if not Casting.CastReady(spell) then return false end --avoid constant group buff checks
-                    return Targeting.TargetIsTanking(target) and Casting.GroupBuffCheck(spell, target)
+                    return Casting.GroupBuffCheck(spell, target)
                 end,
             },
         },
@@ -1458,7 +1458,7 @@ local _ClassConfig = {
                 name = "GroupSymbolBuff",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    if Config:GetSetting('AegoSymbol') == (1 or 4) or ((spell.TargetType() or ""):lower() == "single" and target.ID() ~= Core.GetMainAssistId()) then return false end
+                    if Config:GetSetting('AegoSymbol') == 1 or Config:GetSetting('AegoSymbol') == 4 or ((spell.TargetType() or ""):lower() == "single" and not Targeting.TargetIsTanking(target)) then return false end
                     return Casting.GroupBuffCheck(spell, target)
                 end,
             },

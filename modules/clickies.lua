@@ -930,15 +930,15 @@ Module.LogicBlocks                            = {
             local header = "Target is ("
             local anyChecked = false
             if cond.args[1] then
-                header = header .. "Caster or "
+                header = header .. "Caster Class or "
                 anyChecked = true
             end
             if cond.args[2] then
-                header = header .. "Melee or "
+                header = header .. "Melee Class or "
                 anyChecked = true
             end
             if cond.args[3] then
-                header = header .. "Tanking or "
+                header = header .. "Tanking Class/Role or "
                 anyChecked = true
             end
             if anyChecked then

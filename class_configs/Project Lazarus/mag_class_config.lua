@@ -695,11 +695,11 @@ _ClassConfig      = {
                 load_cond = function(self) return Config:GetSetting('DoFranticDS') end,
                 cond = function(self, spell, target)
                     local shieldSpell = Core.GetResolvedActionMapItem("FranticDS")
-                    return Casting.CastReady(shieldSpell)
+                    return Casting.CastReady(shieldSpell) and Core.GetGroupTankId() > 0
                 end,
                 custom_func = function(self)
                     local shieldSpell = Core.GetResolvedActionMapItem("FranticDS")
-                    Casting.UseSpell(shieldSpell.RankName(), Core.GetMainAssistId(), false, false, 0)
+                    Casting.UseSpell(shieldSpell.RankName(), Core.GetGroupTankId(), false, false, 0)
                 end,
             },
             {

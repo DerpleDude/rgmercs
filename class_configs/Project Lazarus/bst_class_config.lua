@@ -327,7 +327,7 @@ return {
             name = 'Vigor',
             timer = 10,
             load_cond = function() return Core.GetResolvedActionMapItem("VigorBuff") end,
-            targetId = function(self) return Core.GetMainAssistId() > 0 and { Core.GetMainAssistId(), } or {} end,
+            targetId = function(self) return Casting.GetBuffableTankingIDs() end,
             cond = function(self, combat_state)
                 local downtime = combat_state == "Downtime" and Casting.OkayToBuff()
                 local burning = combat_state == "Combat" and Casting.BurnCheck() and not Casting.IAmFeigning()

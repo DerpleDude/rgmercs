@@ -223,6 +223,12 @@ function Core.IAmGroupMT()
     return (mq.TLO.Group.MainTank.ID() or 0) == mq.TLO.Me.ID()
 end
 
+--- Returns the spawn ID of the group main tank roled character.
+---@return number The spawn ID, or 0 if no group main tank is set.
+function Core.GetGroupTankId()
+    return mq.TLO.Group.MainTank.ID() or 0
+end
+
 --- Returns the spawn ID of the configured main assist character.
 ---@return number The spawn ID, or 0 if no main assist is set or not found.
 function Core.GetMainAssistId()
