@@ -413,7 +413,7 @@ Module.CommandHandlers                       = {
                     self:QueueAbility("item", action, targetId)
                 end,
                 disc = function(self)
-                    self:QueueAbility("disc", action, targetId)
+                    self:QueueAbility("disc", action.RankName(), targetId, action)
                 end,
             }
 
@@ -2043,7 +2043,7 @@ function Module:ProcessQueuedEvents()
 
     Logger.log_debug("\ao[QueuedAbilities] Processing queued %s: %s on %s", queueData.type, queueData.name, queueData.targetId)
 
-    local success = Casting.UseEntry(queueData.type, queueData.name, queueData.targetId, { allowMem = true, })
+    local success = Casting.UseEntry(queueData.type, queueData.name, queueData.targetId, { allowMem = true, spell = queueData.spell, })
     if not success and queueData.type:lower() == "spell" then
         success = Casting.UseAA(queueData.name, queueData.targetId)
     end
@@ -2066,10 +2066,11 @@ function Module:ProcessQueuedEvents()
     return #self.TempSettings.QueuedAbilities > 0
 end
 
-function Module:QueueAbility(type, name, targetId)
+function Module:QueueAbility(type, name, targetId, spell)
     Logger.log_debug("\ayQueuing %s: %s on %s", type, name, targetId)
     table.insert(self.TempSettings.QueuedAbilities, {
         name = name,
+        spell = spell,
         targetId = targetId,
         target = mq.TLO.Spawn(targetId),
         type = type,
