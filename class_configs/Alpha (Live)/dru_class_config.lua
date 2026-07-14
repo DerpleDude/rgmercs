@@ -845,7 +845,7 @@ local _ClassConfig = {
                 type = "Spell",
                 cond = function(self, spell, target)
                     if not Targeting.GroupedWithTarget(target) then return false end
-                    return Targeting.TargetIsATank(target)
+                    return Targeting.TargetIsTanking(target)
                 end,
             },
             {
@@ -853,7 +853,7 @@ local _ClassConfig = {
                 type = "AA",
                 cond = function(self, aaName, target)
                     if not Targeting.GroupedWithTarget(target) then return false end
-                    return Targeting.TargetIsATank(target)
+                    return Targeting.TargetIsTanking(target)
                 end,
             },
             {
@@ -864,14 +864,14 @@ local _ClassConfig = {
                 name = "Spirit of the Bear",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    return Targeting.TargetIsATank(target)
+                    return Targeting.TargetIsTanking(target)
                 end,
             },
             {
                 name = "Blessing of Tunare",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    return Targeting.TargetIsATank(target)
+                    return Targeting.TargetIsTanking(target)
                 end,
             },
             {
@@ -1349,7 +1349,7 @@ local _ClassConfig = {
                 name = "Swarm of Fireflies",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    return Targeting.TargetIsATank(target) and Casting.GroupBuffAACheck(aaName, target)
+                    return Targeting.TargetIsTanking(target) and Casting.GroupBuffAACheck(aaName, target)
                 end,
             },
             {
@@ -1432,7 +1432,7 @@ local _ClassConfig = {
                 name = "Wrath of the Wild",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    return Targeting.TargetIsATank(target) and Casting.GroupBuffAACheck(aaName, target)
+                    return Targeting.TargetIsTanking(target) and Casting.GroupBuffAACheck(aaName, target)
                 end,
             },
         },
@@ -1511,7 +1511,7 @@ local _ClassConfig = {
                 name = "Barkspur",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    if not Targeting.TargetIsATank(target) or not Casting.CastReady(spell) then return false end
+                    if not Targeting.TargetIsTanking(target) or not Casting.CastReady(spell) then return false end
                     return Casting.GroupBuffCheck(spell, target, false, true)
                 end,
             },

@@ -1239,7 +1239,7 @@ local _ClassConfig = {
                 type = "AA",
                 load_cond = function(self) return Config:GetSetting('DoSalvation') end,
                 cond = function(self, aaName, target)
-                    if Targeting.TargetIsATank(target) then return false end
+                    if Targeting.TargetIsTanking(target) then return false end
                     return Casting.GroupBuffAACheck(aaName, target)
                 end,
                 post_activate = function(self, aaName, success)

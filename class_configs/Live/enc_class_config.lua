@@ -1238,7 +1238,7 @@ local _ClassConfig    = {
                 type = "Spell",
                 active_cond = function(self, spell) return mq.TLO.Me.FindBuff("id " .. tostring(spell.ID()))() ~= nil end,
                 cond = function(self, spell, target)
-                    if Config:GetSetting('RuneChoice') ~= 2 or ((spell.Level() or 0) > 73 and Targeting.TargetIsATank(target)) then return false end
+                    if Config:GetSetting('RuneChoice') ~= 2 or ((spell.Level() or 0) > 73 and Targeting.TargetIsTanking(target)) then return false end
                     return Casting.GroupBuffCheck(spell, target) and Casting.ReagentCheck(spell)
                 end,
             },
@@ -1247,7 +1247,7 @@ local _ClassConfig    = {
                 type = "Spell",
                 active_cond = function(self, spell) return mq.TLO.Me.FindBuff("id " .. tostring(spell.ID()))() ~= nil end,
                 cond = function(self, spell, target)
-                    if not Config:GetSetting('DoAggroRune') or not Targeting.TargetIsATank(target) then return false end
+                    if not Config:GetSetting('DoAggroRune') or not Targeting.TargetIsTanking(target) then return false end
                     return Casting.GroupBuffCheck(spell, target)
                 end,
             },

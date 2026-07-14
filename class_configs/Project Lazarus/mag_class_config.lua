@@ -871,7 +871,7 @@ _ClassConfig      = {
                 name = "FireShroud",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    if not Targeting.TargetIsATank(target) then return false end
+                    if not Targeting.TargetIsTanking(target) then return false end
                     return Casting.GroupBuffCheck(spell, target)
                         -- workarounds for laz
                         and Casting.AddedBuffCheck(19847, target) -- necrotic pustules

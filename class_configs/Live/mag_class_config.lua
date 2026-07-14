@@ -1755,7 +1755,7 @@ _ClassConfig      = {
                 name = "SkinDS",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    if not Targeting.TargetIsATank(target) or not Casting.CastReady(spell) then return false end
+                    if not Targeting.TargetIsTanking(target) or not Casting.CastReady(spell) then return false end
                     return Casting.GroupBuffCheck(spell, target, false, true)
                 end,
             },

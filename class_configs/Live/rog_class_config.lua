@@ -558,7 +558,7 @@ return {
                 name = "HateDebuff",
                 type = "Disc",
                 cond = function(self, discSpell)
-                    return Targeting.TargetIsATank(mq.TLO.Me.TargetOfTarget)
+                    return Targeting.TargetIsTanking(mq.TLO.Me.TargetOfTarget)
                 end,
             },
             {

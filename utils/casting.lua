@@ -1128,12 +1128,14 @@ end
 --- (DoActorPetBuffs), and assist list. Aborts on nearby corpse.
 ---@return table Deduplicated list of in-zone spawn IDs for buffing.
 function Casting.GetBuffableInZoneIDs()
-    if not Casting.AmIBuffable() then
+    -- Corpse checks only guard downtime buff cycles; in combat, rebuff regardless.
+    local inCombat = Combat.GetCachedCombatState() == "Combat"
+    if not inCombat and not Casting.AmIBuffable() then
         return {}
     end
 
     local zoneIds = Set.new({})
-    local checkCorpses = not Config:GetSetting('BuffRezables')
+    local checkCorpses = not Config:GetSetting('BuffRezables') and not inCombat
 
     -- if we are driving, check ourselves first
     if mq.TLO.EverQuest.Foreground() then
@@ -1209,12 +1211,14 @@ end
 --- pets (DoActorPetBuffs), and assist list. Aborts on nearby corpse.
 ---@return table Deduplicated list of raid spawn IDs for buffing.
 function Casting.GetBuffableRaidIDs()
-    if not Casting.AmIBuffable() then
+    -- Corpse checks only guard downtime buff cycles; in combat, rebuff regardless.
+    local inCombat = Combat.GetCachedCombatState() == "Combat"
+    if not inCombat and not Casting.AmIBuffable() then
         return {}
     end
 
     local raidIds = Set.new({})
-    local checkCorpses = not Config:GetSetting('BuffRezables')
+    local checkCorpses = not Config:GetSetting('BuffRezables') and not inCombat
 
     -- if we are driving, check ourselves first
     if mq.TLO.EverQuest.Foreground() then
@@ -1287,12 +1291,14 @@ end
 --- own pet, and non-group assist list. Aborts on nearby corpse.
 --- @return table Deduplicated list of group spawn IDs for buffing.
 function Casting.GetBuffableGroupIDs()
-    if not Casting.AmIBuffable() then
+    -- Corpse checks only guard downtime buff cycles; in combat, rebuff regardless.
+    local inCombat = Combat.GetCachedCombatState() == "Combat"
+    if not inCombat and not Casting.AmIBuffable() then
         return {}
     end
 
     local groupIds = Set.new({})
-    local checkCorpses = not Config:GetSetting('BuffRezables')
+    local checkCorpses = not Config:GetSetting('BuffRezables') and not inCombat
 
     -- if we are driving, check ourselves first
     if mq.TLO.EverQuest.Foreground() then
@@ -1349,6 +1355,56 @@ function Casting.GetBuffableGroupIDs()
     end
 
     return groupIds:toList()
+end
+
+--- Returns buff-eligible spawn IDs in the active scope that are currently tanking (same-zone peers by broadcast flag, others by tank class or group main tank).
+---@return table List of spawn IDs of buff-eligible tanks.
+function Casting.GetBuffableTankingIDs()
+    local buffableIds = Casting.GetBuffableIDs()
+    if #buffableIds == 0 then return {} end
+
+    local myServer = mq.TLO.EverQuest.Server() or ""
+    local myZoneId = mq.TLO.Zone.ID() or 0
+    local myInstance = mq.TLO.Me.Instance() or 0
+
+    -- Spawn IDs repeat across zones, so only index same-zone/instance peers to avoid id collisions.
+    local tankById = {}
+    local petIds = {}
+    for _, heartbeat in pairs(Comms.PeersHeartbeats) do
+        local data = heartbeat.Data
+        if data and data.Server == myServer and data.ZoneId == myZoneId and data.InstanceId == myInstance then
+            if type(data.IsTanking) == "boolean" and (data.ID or 0) > 0 then
+                tankById[data.ID] = data.IsTanking
+            end
+            if (data.PetID or 0) > 0 then
+                petIds[data.PetID] = true
+            end
+        end
+    end
+
+    local myId = mq.TLO.Me.ID()
+    if (mq.TLO.Me.Pet.ID() or 0) > 0 then petIds[mq.TLO.Me.Pet.ID()] = true end
+    local iAmTanking = Core.IsTanking()
+    local mainTankId = mq.TLO.Group.MainTank.ID() or 0
+
+    local tankingIds = {}
+    for _, id in ipairs(buffableIds) do
+        local isTank
+        if id == myId then
+            isTank = iAmTanking
+        elseif tankById[id] ~= nil then
+            isTank = tankById[id]
+        elseif petIds[id] then
+            isTank = false
+        else
+            -- No broadcast flag (non-peer or standalone): fall back to tank class or the group main tank.
+            local spawn = mq.TLO.Spawn(id)
+            isTank = spawn() and spawn.Type() ~= "Pet" and (Globals.Constants.RGTank:contains(spawn.Class.ShortName()) or id == mainTankId)
+        end
+        if isTank then tankingIds[#tankingIds + 1] = id end
+    end
+
+    return tankingIds
 end
 
 --- Checks if the character is currently feigning death.

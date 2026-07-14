@@ -802,7 +802,7 @@ local _ClassConfig = {
                 type = "Item",
                 load_cond = function(self) return self.Helpers.SlowProcChoice() == "Chestplate" end,
                 cond = function(self, spell, target)
-                    return Targeting.TargetIsATank(target) and Casting.GroupBuffItemCheck(spell, target)
+                    return Targeting.TargetIsTanking(target) and Casting.GroupBuffItemCheck(spell, target)
                 end,
             },
             {
@@ -810,7 +810,7 @@ local _ClassConfig = {
                 type = "Spell",
                 load_cond = function(self) return self.Helpers.SlowProcChoice() == "Spell" end,
                 cond = function(self, spell, target)
-                    return Targeting.TargetIsATank(target) and Casting.GroupBuffCheck(spell, target)
+                    return Targeting.TargetIsTanking(target) and Casting.GroupBuffCheck(spell, target)
                 end,
                 post_activate = function(self, spell, success)
                     local petName = mq.TLO.Me.Pet.CleanName() or "None"
@@ -1174,7 +1174,7 @@ local _ClassConfig = {
                 name = "EvasionBuff",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    return Targeting.TargetIsATank(target) and Casting.GroupBuffCheck(spell, target)
+                    return Targeting.TargetIsTanking(target) and Casting.GroupBuffCheck(spell, target)
                 end,
             },
             {
@@ -1201,7 +1201,7 @@ local _ClassConfig = {
                 load_cond = function(self) return Config:GetSetting('DoRegenBuff') end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell, target)
-                    if (spell.TargetType() or ""):lower() ~= "group v2" and not (Targeting.TargetIsATank(target) or Targeting.TargetIsMyself(target)) then return false end
+                    if (spell.TargetType() or ""):lower() ~= "group v2" and not (Targeting.TargetIsTanking(target) or Targeting.TargetIsMyself(target)) then return false end
                     return Casting.GroupBuffCheck(spell, target)
                 end,
             },
@@ -1237,7 +1237,7 @@ local _ClassConfig = {
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoLLHPBuff') end,
                 cond = function(self, spell, target)
-                    return Targeting.TargetIsATank(target) and Casting.GroupBuffCheck(spell, target)
+                    return Targeting.TargetIsTanking(target) and Casting.GroupBuffCheck(spell, target)
                 end,
             },
             {
@@ -1245,7 +1245,7 @@ local _ClassConfig = {
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoLLAgiBuff') end,
                 cond = function(self, spell, target)
-                    return Targeting.TargetIsATank(target) and Casting.GroupBuffCheck(spell, target)
+                    return Targeting.TargetIsTanking(target) and Casting.GroupBuffCheck(spell, target)
                 end,
             },
             {
@@ -1253,7 +1253,7 @@ local _ClassConfig = {
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoLLStaBuff') end,
                 cond = function(self, spell, target)
-                    return Targeting.TargetIsATank(target) and Casting.GroupBuffCheck(spell, target)
+                    return Targeting.TargetIsTanking(target) and Casting.GroupBuffCheck(spell, target)
                 end,
             },
             {

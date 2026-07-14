@@ -669,7 +669,7 @@ local _ClassConfig = {
                 name = "SlowProcBuff",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    return Targeting.TargetIsATank(target) and Casting.GroupBuffCheck(spell, target)
+                    return Targeting.TargetIsTanking(target) and Casting.GroupBuffCheck(spell, target)
                 end,
                 post_activate = function(self, spell, success)
                     local petName = mq.TLO.Me.Pet.CleanName() or "None"
@@ -976,7 +976,7 @@ local _ClassConfig = {
                 name = "Spirit Guardian",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    if not Targeting.TargetIsATank(target) then return false end
+                    if not Targeting.TargetIsTanking(target) then return false end
                     return Casting.GroupBuffAACheck(aaName, target)
                 end,
             },
@@ -1034,7 +1034,7 @@ local _ClassConfig = {
                 load_cond = function(self) return Config:GetSetting('DoRegenBuff') and not Core.GetResolvedActionMapItem('GroupRegenBuff') end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell, target)
-                    return (Targeting.TargetIsATank(target) or Targeting.TargetIsMyself(target)) and Casting.GroupBuffCheck(spell, target)
+                    return (Targeting.TargetIsTanking(target) or Targeting.TargetIsMyself(target)) and Casting.GroupBuffCheck(spell, target)
                 end,
             },
             {
@@ -1069,7 +1069,7 @@ local _ClassConfig = {
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoLLHPBuff') end,
                 cond = function(self, spell, target)
-                    return mq.TLO.Me.Level() < 71 and Targeting.TargetIsATank(target) and Casting.GroupBuffCheck(spell, target)
+                    return mq.TLO.Me.Level() < 71 and Targeting.TargetIsTanking(target) and Casting.GroupBuffCheck(spell, target)
                 end,
             },
             {
@@ -1077,7 +1077,7 @@ local _ClassConfig = {
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoLLAgiBuff') end,
                 cond = function(self, spell, target)
-                    return mq.TLO.Me.Level() < 71 and Targeting.TargetIsATank(target) and Casting.GroupBuffCheck(spell, target)
+                    return mq.TLO.Me.Level() < 71 and Targeting.TargetIsTanking(target) and Casting.GroupBuffCheck(spell, target)
                 end,
             },
             {
@@ -1085,7 +1085,7 @@ local _ClassConfig = {
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoLLStaBuff') end,
                 cond = function(self, spell, target)
-                    return mq.TLO.Me.Level() < 71 and Targeting.TargetIsATank(target) and Casting.GroupBuffCheck(spell, target)
+                    return mq.TLO.Me.Level() < 71 and Targeting.TargetIsTanking(target) and Casting.GroupBuffCheck(spell, target)
                 end,
             },
             {

@@ -275,6 +275,7 @@ function Comms.SendHeartbeat(forceSend)
         TargetIsNamed      = RGMercs and RGMercs.Globals("AutoTargetIsNamed")() or nil,
         Casting            = mq.TLO.Me.Casting.ID() ~= 0 and mq.TLO.Me.Casting.RankName() or "None",
         Burning            = RGMercs and RGMercs.Globals("LastBurnCheck")() or false,
+        IsTanking          = RGMercs and RGMercs.Globals("IsTanking")(),
         PetID              = mq.TLO.Me.Pet.ID() or 0,
         PetHPs             = mq.TLO.Me.Pet.ID() ~= 0 and (mq.TLO.Me.Pet.Dead() and 0 or mq.TLO.Me.Pet.PctHPs()) or 0,
         PetLevel           = mq.TLO.Me.Pet.ID() ~= 0 and mq.TLO.Me.Pet.Level() or 0,

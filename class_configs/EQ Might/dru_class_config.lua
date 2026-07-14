@@ -425,7 +425,7 @@ local _ClassConfig = {
                 type = "AA",
                 cond = function(self, aaName, target)
                     if not Targeting.GroupedWithTarget(target) then return false end
-                    return Targeting.TargetIsATank(target)
+                    return Targeting.TargetIsTanking(target)
                 end,
             },
             {
@@ -926,7 +926,7 @@ local _ClassConfig = {
                 load_cond = function() return Config:GetSetting('DoGroupDmgShield') end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell, target)
-                    if (spell.TargetType() or ""):lower() ~= "group v2" and not Targeting.TargetIsATank(target) then return false end
+                    if (spell.TargetType() or ""):lower() ~= "group v2" and not Targeting.TargetIsTanking(target) then return false end
                     return Casting.GroupBuffCheck(spell, target)
                 end,
             },
@@ -935,7 +935,7 @@ local _ClassConfig = {
                 type = "AA",
                 active_cond = function(self, aaName) return true end,
                 cond = function(self, aaName, target)
-                    if Targeting.TargetIsATank(target) then return false end
+                    if Targeting.TargetIsTanking(target) then return false end
                     return Casting.GroupBuffAACheck(aaName, target)
                 end,
             },

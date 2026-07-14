@@ -1150,7 +1150,7 @@ function Combat.FindWorstHurtGroupMember(minHPs)
                 end
 
                 -- Prioritize any tanks in the group that are under mainhealpoint, otherwise, treat them as normal group members
-                if Targeting.TargetIsATank(healTarget) and (healTarget.PctHPs() or 101) < tankPct then
+                if Targeting.TargetIsTanking(healTarget) and (healTarget.PctHPs() or 101) < tankPct then
                     tankPct = (healTarget.PctHPs() or tankPct)
                     tankId = (healTarget.PctHPs() and healTarget.ID() or tankId)
                 elseif (healTarget.PctHPs() or 101) < worstPct then

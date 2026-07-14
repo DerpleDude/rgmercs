@@ -750,6 +750,21 @@ function Targeting.TargetIsATank(target)
     return Config.Constants.RGTank:contains(target.Class.ShortName())
 end
 
+--- Returns true if target is actively tanking: self via Core.IsTanking, a peer via its broadcast IsTanking flag, otherwise tank class or the group Main Tank.
+---@param target MQSpawn Spawn to check.
+---@return boolean True if the spawn is currently tanking.
+function Targeting.TargetIsTanking(target)
+    if not (target and target()) then return false end
+    if target.ID() == mq.TLO.Me.ID() then return Core.IsTanking() end
+
+    local heartbeat = Comms.GetPeerHeartbeatByName(target.DisplayName() or "")
+    if heartbeat.Data and type(heartbeat.Data.IsTanking) == "boolean" then
+        return heartbeat.Data.IsTanking
+    end
+
+    return target.Type() ~= "Pet" and (Targeting.TargetIsATank(target) or (mq.TLO.Group.MainTank.ID() or 0) == target.ID())
+end
+
 --- Returns true if target's ID matches the player's own spawn ID.
 ---@param target MQSpawn Spawn to compare against self.
 ---@return boolean True if target is the player.

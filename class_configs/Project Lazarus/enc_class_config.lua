@@ -654,7 +654,7 @@ local _ClassConfig = {
                 type = "Spell",
                 load_cond = function() return Config:GetSetting('DoHateBuff') end,
                 cond = function(self, spell, target)
-                    if not Targeting.TargetIsATank(target) then return false end
+                    if not Targeting.TargetIsTanking(target) then return false end
                     return Casting.CastReady(spell) and Casting.GroupBuffCheck(spell, target)
                 end,
             },
@@ -702,7 +702,7 @@ local _ClassConfig = {
             --     type = "Spell",
             --     active_cond = function(self, spell) return mq.TLO.Me.FindBuff("id " .. tostring(spell.ID()))() ~= nil end,
             --     cond = function(self, spell, target)
-            --         if not Config:GetSetting('DoAggroRune') or not Targeting.TargetIsATank(target) then return false end
+            --         if not Config:GetSetting('DoAggroRune') or not Targeting.TargetIsTanking(target) then return false end
             --         return Casting.GroupBuffCheck(spell, target)
             --     end,
             -- },

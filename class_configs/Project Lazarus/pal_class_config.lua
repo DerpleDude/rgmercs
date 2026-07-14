@@ -760,7 +760,7 @@ return {
                 type = "AA",
                 load_cond = function() return Config:GetSetting('DoSalvation') end,
                 cond = function(self, aaName, target)
-                    return not Targeting.TargetIsATank(target) and Casting.GroupBuffAACheck(aaName, target)
+                    return not Targeting.TargetIsTanking(target) and Casting.GroupBuffAACheck(aaName, target)
                 end,
             },
         },

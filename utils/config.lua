@@ -1477,8 +1477,7 @@ Config.DefaultConfig                                     = {
         Header = "Buffs",
         Category = "Buff Rules",
         Index = 3,
-        Tooltip =
-        "If a PC has a corpse near us, buff them even though they are likely to get rezed. (Note: If disabled, they may still be receiving group buffs aimed at those without corpses.)",
+        Tooltip = "Allow the buff cycle to continue in downtime if buff target corpses are present (buffs in combat do not check for corpses).",
         Default = Globals.ServerEnv:lower() ~= "live",
         ConfigType = "Advanced",
     },

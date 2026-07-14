@@ -923,11 +923,11 @@ Module.LogicBlocks                            = {
         cond = function(self, target, peerData, checkCaster, checkMelee, checkTank)
             return (checkCaster and Targeting.TargetIsACaster(target)) or
                 (checkMelee and Targeting.TargetIsAMelee(target)) or
-                (checkTank and Targeting.TargetIsATank(target))
+                (checkTank and Targeting.TargetIsTanking(target))
         end,
-        tooltip = "Only use when the target class type matches this criteria.",
+        tooltip = "Only use when the target matches this criteria.",
         render_header_text = function(self, cond)
-            local header = "Target class type is ("
+            local header = "Target is ("
             local anyChecked = false
             if cond.args[1] then
                 header = header .. "Caster or "
@@ -938,7 +938,7 @@ Module.LogicBlocks                            = {
                 anyChecked = true
             end
             if cond.args[3] then
-                header = header .. "Tank or "
+                header = header .. "Tanking or "
                 anyChecked = true
             end
             if anyChecked then
@@ -951,9 +951,9 @@ Module.LogicBlocks                            = {
         end,
         cond_targets = { "Self", "Pet", "Main Assist", "Rotation Target", },
         args = {
-            { name = "Caster", type = "boolean", default = true, },
-            { name = "Melee",  type = "boolean", default = true, },
-            { name = "Tank",   type = "boolean", default = true, },
+            { name = "Caster",  type = "boolean", default = true, },
+            { name = "Melee",   type = "boolean", default = true, },
+            { name = "Tanking", type = "boolean", default = true, },
         },
     },
 
