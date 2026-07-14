@@ -144,16 +144,17 @@ local _ClassConfig = {
         },
         ['AegoBuff'] = {
             ----Use HP Type one until Temperance at 40... Group Buff at 45 (Blessing of Temperance)
-            "Hand of Conviction",     -- Level 70
-            "Hand of Virtue",         -- Level 65
-            "Blessing of Aegolism",   -- Level 60
-            "Blessing of Temperance", -- Level 45
-            "Temperance",             -- Level 40
-            "Valor",                  -- Level 32
-            "Bravery",                -- Level 22
-            "Daring",                 -- Level 17
-            "Center",                 -- Level 7
-            "Courage",                -- Level 1
+            "Hand of Conviction",        -- Level 70
+            "Hand of Virtue",            -- Level 65
+            "Ancient: Gift of Aegolism", -- Level 60
+            "Blessing of Aegolism",      -- Level 60
+            "Blessing of Temperance",    -- Level 45
+            "Temperance",                -- Level 40
+            "Valor",                     -- Level 32
+            "Bravery",                   -- Level 22
+            "Daring",                    -- Level 17
+            "Center",                    -- Level 7
+            "Courage",                   -- Level 1
         },
         ['ACBuff'] = {
             "Ward of Valiance",  -- Level 66
@@ -283,17 +284,18 @@ local _ClassConfig = {
             "Ward Undead",       -- Level 4
         },
         ['MagicNuke'] = {
-            "Chromastrike", -- Level 69, Laz specific
-            -- "Calamity",  -- Level 69, Chroma is better
-            "Reproach",     -- Level 67
-            "Order",        -- Level 65
-            "Condemnation", -- Level 62
-            "Judgment",     -- Level 56
-            "Retribution",  -- Level 44
-            "Wrath",        -- Level 29
-            "Smite",        -- Level 14
-            "Furor",        -- Level 5
-            "Strike",       -- Level 1
+            "Chromastrike",           -- Level 69, Laz specific
+            -- "Calamity",            -- Level 69, Chroma is better
+            "Reproach",               -- Level 67
+            "Ancient: Chaos Censure", -- Level 65
+            "Order",                  -- Level 65
+            "Condemnation",           -- Level 62
+            "Judgment",               -- Level 56
+            "Retribution",            -- Level 44
+            "Wrath",                  -- Level 29
+            "Smite",                  -- Level 14
+            "Furor",                  -- Level 5
+            "Strike",                 -- Level 1
         },
         -- ['HammerPet'] = {
         --     "Unswerving Hammer of Retribution", -- Level 68
