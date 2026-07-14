@@ -693,27 +693,28 @@ local _ClassConfig = {
         },
         ['LichSpell'] = {
             -- LichForm Spell
-            "Otherside XX",        -- Level 129
-            "Realmside",           -- Level 124
-            "Lunaside",            -- Level 119
-            "Gloomside",           -- Level 114
-            "Contraside",          -- Level 109
-            "Forgottenside",       -- Level 104
-            "Forsakenside",        -- Level 99
-            "Shadowside",          -- Level 94
-            "Darkside",            -- Level 89
-            "Netherside",          -- Level 84
-            "Spectralside",        -- Level 79
-            "Otherside",           -- Level 74
-            "Dark Possession",     -- Level 70
-            "Grave Pact",          -- Level 70
-            "Seduction of Saryrn", -- Level 64
-            "Arch Lich",           -- Level 60
-            "Demi Lich",           -- Level 56
-            "Lich",                -- Level 48
-            "Call of Bones",       -- Level 31
-            "Allure of Death",     -- Level 18
-            "Dark Pact",           -- Level 6
+            "Otherside XX",               -- Level 129
+            "Realmside",                  -- Level 124
+            "Lunaside",                   -- Level 119
+            "Gloomside",                  -- Level 114
+            "Contraside",                 -- Level 109
+            "Forgottenside",              -- Level 104
+            "Forsakenside",               -- Level 99
+            "Shadowside",                 -- Level 89
+            "Netherside",                 -- Level 84
+            "Spectralside",               -- Level 79
+            "Otherside",                  -- Level 74
+            "Dark Possession",            -- Level 70
+            "Grave Pact",                 -- Level 70
+            "Ancient Seduction of Chaos", -- level 65
+            "Seduction of Saryrn",        -- Level 64
+            "Ancient Master of Death",    -- level 60
+            "Arch Lich",                  -- Level 60
+            "Demi Lich",                  -- Level 56
+            "Lich",                       -- Level 48
+            "Call of Bones",              -- Level 31
+            "Allure of Death",            -- Level 18
+            "Dark Pact",                  -- Level 6
         },
         ['BestowBuff'] = {
             "Bestow Undeath X", -- Level 128
