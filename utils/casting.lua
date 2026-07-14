@@ -1316,7 +1316,7 @@ function Casting.GetBuffableGroupIDs()
             end
             groupIds:add(member.ID())
             if Config:GetSetting("DoActorPetBuffs") then
-                if #Comms.GetPeerHeartbeatByName(memberName) > 0 then
+                if Comms.GetPeerHeartbeatByName(memberName).Data then
                     local petId = member() and member.Pet.ID() or 0
                     if petId > 0 then
                         if not (member.Pet.CleanName() or "familiar"):lower():find("familiar") then
