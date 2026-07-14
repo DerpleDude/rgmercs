@@ -1,5 +1,6 @@
 local mq          = require('mq')
 local Casting     = require("utils.casting")
+local Combat      = require("utils.combat")
 local Comms       = require("utils.comms")
 local Config      = require('utils.config')
 local Core        = require("utils.core")
@@ -1361,6 +1362,10 @@ _ClassConfig      = {
                 end,
             },
             {
+                name = "Thaumaturge's Focus",
+                type = "AA",
+            },
+            {
                 name = "Servant of Ro",
                 type = "AA",
             },
@@ -1440,6 +1445,16 @@ _ClassConfig      = {
             {
                 name = "VolleyNuke",
                 type = "Spell",
+            },
+            {
+                name = "BeamNuke",
+                type = "Spell",
+                allowDead = true,
+                load_cond = function(self) return Config:GetSetting('DoAEBeam') end,
+                cond = function(self)
+                    if not Config:GetSetting('DoAEDamage') then return false end
+                    return Combat.AETargetCheck(true)
+                end,
             },
             {
                 name = "ChaoticNuke",
@@ -1755,6 +1770,7 @@ _ClassConfig      = {
                 { name = "ChaoticNuke", },
                 { name = "SwarmPet", },
                 { name = "VolleyNuke", },
+                { name = "BeamNuke",           cond = function(self) return Config:GetSetting('DoAEBeam') end, },
                 { name = "FireDD",             cond = function(self) return not Core.GetResolvedActionMapItem('SpearNuke') or self.Helpers.ShouldUseLowLevelRotation() end, },
                 { name = "BigFireDD",          cond = function(self) return self.Helpers.ShouldUseLowLevelRotation() end, },
                 { name = "MagicDD",            cond = function(self) return self.Helpers.ShouldUseLowLevelRotation() end, },
@@ -1898,6 +1914,16 @@ _ClassConfig      = {
             Index = 102,
             Tooltip = "Memorize and use your anti-summoned mob nuke line ('x the Unnatural').",
             RequiresLoadoutChange = true,
+            Default = false,
+        },
+        ['DoAEBeam']       = {
+            DisplayName = "Use Beam Spells",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "AE",
+            Index = 101,
+            RequiresLoadoutChange = true,
+            Tooltip = "**WILL BREAK MEZ** Use your Frontal AE Spells (Beam Line). **WILL BREAK MEZ**",
             Default = false,
         },
         ['DoChestClick']   = {
