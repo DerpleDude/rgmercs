@@ -681,6 +681,7 @@ return {
                             if mq.TLO.Nav.Paused() then Movement:DoNav(false, "pause") end
                         end
                     end
+                    return true
                 end,
             },
         },

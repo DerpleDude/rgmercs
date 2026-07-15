@@ -1281,7 +1281,7 @@ function Module:Render()
                         resolvedMap[entry.name] = Core.GetResolvedActionMapItem(entry.name)
                     end
                     enabled[listName] = enabled[listName] or {}
-                    local _, newEnabled, entriesChanged, _, resetRequested = Ui.RenderRotationTable("Charm" .. listName, list, resolvedMap, 0, false, enabled[listName], true, true)
+                    local newEnabled, entriesChanged, _, resetRequested = Ui.RenderRotationTable("Charm" .. listName, list, resolvedMap, 0, enabled[listName], true, true)
                     enabled[listName] = newEnabled
                     if entriesChanged then changed = true end
                     if resetRequested then self:RebuildCharmLists() end

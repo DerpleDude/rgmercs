@@ -386,6 +386,8 @@ return {
                 custom_func = function(self)
                     if not Config:GetSetting('SummonAxes') then return false end
 
+                    local summoned = false
+
                     local AxeSkills = {
                         "Corroded Axe",
                         "Blunt Axe",
@@ -442,6 +444,7 @@ return {
                         while mq.TLO.FindItemCount(itemId)() < count do
                             Logger.log_debug("\ayWe need more %d because we dont have %d - using %s", itemId, count, summonSkill)
                             self.Helpers.SummonAxe(mq.TLO.Spell(summonSkill))
+                            summoned = true
                             maxLoops = maxLoops - 1
                             if maxLoops <= 0 then return end
                         end
@@ -472,6 +475,7 @@ return {
                             end
                         end
                     end
+                    return summoned
                 end,
             },
             {
@@ -501,7 +505,9 @@ return {
                 custom_func = function(self)
                     if mq.TLO.Me.PctHPs() < 10 and mq.TLO.Me.Buff("Untamed Rage")() then
                         Core.DoCmd("/removebuff \"Untamed Rage\"")
+                        return true
                     end
+                    return false
                 end,
             },
             {

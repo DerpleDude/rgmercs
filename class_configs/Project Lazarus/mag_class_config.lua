@@ -699,7 +699,7 @@ _ClassConfig      = {
                 end,
                 custom_func = function(self)
                     local shieldSpell = Core.GetResolvedActionMapItem("FranticDS")
-                    Casting.UseSpell(shieldSpell.RankName(), Core.GetGroupTankId(), false, false, 0)
+                    return Casting.UseSpell(shieldSpell.RankName(), Core.GetGroupTankId(), false, false, 0)
                 end,
             },
             {

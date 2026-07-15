@@ -50,7 +50,6 @@ Module.TempSettings.RotationTimers           = {}
 Module.TempSettings.RezTimers                = {}
 Module.TempSettings.RezAbilities             = nil
 Module.TempSettings.CureCheckTimer           = Globals.GetTimeSeconds() -- set this out a bit so we have time to get actor data.
-Module.TempSettings.ShowFailedSpells         = false
 Module.TempSettings.ResolvingActions         = true
 Module.TempSettings.CombatModeSet            = false
 Module.TempSettings.NewCombatMode            = false
@@ -766,9 +765,9 @@ function Module:RenderRotationWithToggle(r, rotationTable, showRotationType)
                     "Denotes whether entries will be checked from the top every time the rotation is run (Full) or whether the checks start from the entry after the last one to succeed (Standard).\nLeaving combat resets the position of the check marker.")
             end
             local reordered, resetRequested
-            self.TempSettings.ShowFailedSpells, enabledRotationEntries, enabledRotationEntriesChanged, reordered, resetRequested = Ui.RenderRotationTable(r.name,
+            enabledRotationEntries, enabledRotationEntriesChanged, reordered, resetRequested = Ui.RenderRotationTable(r.name,
                 rotationTable[r.name],
-                self.ResolvedActionMap, r.state or 0, self.TempSettings.ShowFailedSpells, enabledRotationEntries, nil, r.reorderable ~= false)
+                self.ResolvedActionMap, r.state or 0, enabledRotationEntries, nil, r.reorderable ~= false)
             if reordered and r.state then r.state = 1 end
             if resetRequested then
                 if r.state then r.state = 1 end
@@ -943,7 +942,7 @@ function Module:Render()
                                 resolvedMap[entry.name] = self:GetResolvedActionMapItem(entry.name)
                             end
                             enabled[phase] = enabled[phase] or {}
-                            local _, newEnabled, entriesChanged, _, resetRequested = Ui.RenderRotationTable("Rez" .. phase, list, resolvedMap, 0, false, enabled[phase], true, true)
+                            local newEnabled, entriesChanged, _, resetRequested = Ui.RenderRotationTable("Rez" .. phase, list, resolvedMap, 0, enabled[phase], true, true)
                             enabled[phase] = newEnabled
                             if entriesChanged then changed = true end
                             if resetRequested then self:RebuildRezAbilities() end
@@ -971,7 +970,7 @@ function Module:Render()
                                 resolvedMap[entry.name] = self:GetResolvedActionMapItem(entry.name)
                             end
                             enabled[bucket] = enabled[bucket] or {}
-                            local _, newEnabled, entriesChanged, _, resetRequested = Ui.RenderRotationTable("Cure" .. bucket, list, resolvedMap, 0, false, enabled[bucket], true,
+                            local newEnabled, entriesChanged, _, resetRequested = Ui.RenderRotationTable("Cure" .. bucket, list, resolvedMap, 0, enabled[bucket], true,
                                 true)
                             enabled[bucket] = newEnabled
                             if entriesChanged then changed = true end

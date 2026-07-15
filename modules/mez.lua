@@ -285,7 +285,7 @@ function Module:Render()
                 for _, entry in ipairs(list) do
                     resolvedMap[entry.name] = Core.GetResolvedActionMapItem(entry.name)
                 end
-                local _, newEnabled, changed = Ui.RenderRotationTable("MezAbilities", list, resolvedMap, 0, false, enabled, true)
+                local newEnabled, changed = Ui.RenderRotationTable("MezAbilities", list, resolvedMap, 0, enabled, true)
                 if changed then Config:SetSetting('EnabledMezEntries', newEnabled) end
             end
             ImGui.Unindent()

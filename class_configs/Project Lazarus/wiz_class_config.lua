@@ -74,10 +74,10 @@ return {
         },
     },
     ['AbilitySets']   = {
-        ['IceClaw'] = {
-            "Claw of Vox",   -- Level 69
-            "Claw of Frost", -- Level 61
-        },
+        -- ['IceClaw'] = {
+        --     "Claw of Vox",   -- Level 69
+        --     "Claw of Frost", -- Level 61
+        -- },
         ['FireEtherealNuke'] = {
             "Ether Flame", -- Level 70
         },
@@ -169,22 +169,19 @@ return {
             "Ether Skin",   -- Level 68
             "Force Shield", -- Level 63
         },
-        ['Dispel'] = {
-            "Annul Magic",   -- Level 53
-            "Nullify Magic", -- Level 34
-            "Cancel Magic",  -- Level 11
-        },
-        ['TwincastSpell'] = {
-            "Twincast", -- Level 85
-        },
-        ['RootSpell'] = {
-            "Greater Fetter",   -- Level 61
-            "Fetter",           -- Level 58
-            "Paralyzing Earth", -- Level 48
-            "Immobilize",       -- Level 39
-            "Instill",          -- Level 17
-            "Root",             -- Level 3
-        },
+        -- ['Dispel'] = {
+        --     "Annul Magic",   -- Level 53
+        --     "Nullify Magic", -- Level 34
+        --     "Cancel Magic",  -- Level 11
+        -- },
+        -- ['RootSpell'] = {
+        --     "Greater Fetter",   -- Level 61
+        --     "Fetter",           -- Level 58
+        --     "Paralyzing Earth", -- Level 48
+        --     "Immobilize",       -- Level 39
+        --     "Instill",          -- Level 17
+        --     "Root",             -- Level 3
+        -- },
         ['SnareSpell'] = {
             "Atol's Spectral Shackles", -- Level 51
             "Bonds of Force",           -- Level 27
@@ -267,10 +264,10 @@ return {
         ['ManaWeave'] = {
             "Mana Weave", -- Level 69
         },
-        ['SwarmPet'] = {
-            -- "Solist's Frozen Sword", -- Level 69, Bugged, does not attack on Laz/Emu
-            "Flaming Sword of Xuzl", -- Level 59, homework
-        },
+        -- ['SwarmPet'] = {
+        --     -- "Solist's Frozen Sword", -- Level 69, Bugged, does not attack on Laz/Emu
+        --     "Flaming Sword of Xuzl", -- Level 59, homework
+        -- },
     },
     ['AASets']        = {
         ['Devastation'] = {

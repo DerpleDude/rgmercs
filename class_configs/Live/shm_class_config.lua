@@ -1274,7 +1274,7 @@ local _ClassConfig = {
                 end,
                 custom_func = function(self)
                     local twinHeal = Core.GetResolvedActionMapItem("TwinHealNuke")
-                    Casting.UseSpell(twinHeal.RankName(), Core.GetMainAssistId(), false, false, 0)
+                    return Casting.UseSpell(twinHeal.RankName(), Core.GetMainAssistId(), false, false, 0)
                 end,
             },
             { -- Calling "GetFirstMapItem" in a function so we don't need an entry for each of the below items... it simply chooses the "best"

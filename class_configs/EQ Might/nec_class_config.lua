@@ -614,6 +614,7 @@ local _ClassConfig = {
                 end,
                 custom_func = function(self)
                     Core.SafeCallFunc("Stop Necro Lich", self.Helpers.CancelLich, self)
+                    return true
                 end,
             },
             {
@@ -895,6 +896,7 @@ local _ClassConfig = {
                 end,
                 custom_func = function(self)
                     Core.SafeCallFunc("Stop Necro Lich", self.Helpers.CancelLich, self)
+                    return true
                 end,
             },
             {

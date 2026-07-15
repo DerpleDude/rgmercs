@@ -1984,16 +1984,14 @@ end
 ---@param rotationTable table Array of rotation entry descriptors.
 ---@param resolvedActionMap table Map of entry name → resolved spell/AA/item.
 ---@param rotationState number? Current step index (>0 shows a "Cur" column).
----@param showFailed boolean Whether to display entries whose conditions failed.
 ---@param enabledRotationEntries table Map of entry name → bool (false = skip).
 ---@param hideRotationCols boolean? If true, hides the "Cur" and "Condition Met" columns.
 ---@param reorderable boolean? If true, allows the user to reorder entries in this table.
----@return boolean showFailed The (potentially toggled) showFailed value.
 ---@return table enabledRotationEntries Updated enablement map.
 ---@return boolean changed True if any enablement setting was toggled this frame.
 ---@return boolean reordered True if an entry was reordered this frame.
 ---@return boolean resetRequested True if the user reset this list to default order this frame.
-function Ui.RenderRotationTable(name, rotationTable, resolvedActionMap, rotationState, showFailed, enabledRotationEntries, hideRotationCols, reorderable)
+function Ui.RenderRotationTable(name, rotationTable, resolvedActionMap, rotationState, enabledRotationEntries, hideRotationCols, reorderable)
     local enabledRotationEntriesChanged = false
     local showDebugTiming = Config:GetSetting('ShowDebugTiming')
     local pendingSwap = nil
@@ -2269,7 +2267,7 @@ function Ui.RenderRotationTable(name, rotationTable, resolvedActionMap, rotation
         reordered = true
     end
 
-    return showFailed, enabledRotationEntries, enabledRotationEntriesChanged, reordered, resetRequested
+    return enabledRotationEntries, enabledRotationEntriesChanged, reordered, resetRequested
 end
 
 --- Renders an animated fancy toggle switch with optional label and color options.

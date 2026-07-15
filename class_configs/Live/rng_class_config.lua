@@ -1260,7 +1260,7 @@ local _ClassConfig = {
                 name = "Ranged Nav",
                 type = "CustomFunc",
                 custom_func = function(self)
-                    Core.SafeCallFunc("Ranger Ranged Nav", self.Helpers.rangedNav)
+                    return Core.SafeCallFunc("Ranger Ranged Nav", self.Helpers.rangedNav)
                 end,
             },
         },
@@ -1639,8 +1639,8 @@ local _ClassConfig = {
     },
     ['Helpers']           = {
         rangedNav = function(reason)
-            if Config:GetSetting('DoMelee') then return end
-            if (Globals.AutoTargetID or 0) == 0 then return end
+            if Config:GetSetting('DoMelee') then return false end
+            if (Globals.AutoTargetID or 0) == 0 then return false end
 
             local bowRange = Config:GetSetting('BowRange')
 
@@ -1671,7 +1671,7 @@ local _ClassConfig = {
                         Movement:ClearLastStickTimer()
                     end
                 end
-                return
+                return true
             end
 
             if Config:GetSetting('UseRangedStick') then -- Use Ranged Stick: hold bow range with a stick.
@@ -1707,6 +1707,7 @@ local _ClassConfig = {
                     Movement:ClearLastStickTimer()
                 end
             end
+            return true
         end,
 
         PreEngage = function(target)

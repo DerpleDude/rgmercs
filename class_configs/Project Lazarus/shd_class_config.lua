@@ -602,6 +602,7 @@ local _ClassConfig = {
                 cond = function(self) return Config:GetSetting('HPCritical') and mq.TLO.Me.Buff("Visage of Death")() end,
                 custom_func = function(self)
                     Core.DoCmd("/removebuff \"Visage of Death\"")
+                    return true
                 end,
             },
         },
@@ -697,6 +698,7 @@ local _ClassConfig = {
                 cond = function(self) return Config:GetSetting('HPCritical') and mq.TLO.Me.Buff("Visage of Death")() end,
                 custom_func = function(self)
                     Core.DoCmd("/removebuff \"Visage of Death\"")
+                    return true
                 end,
             },
         },
