@@ -588,32 +588,6 @@ Module.DefaultConfig                = {
         Answer = "Uncheck Stop Pulling After Death. Your camp is kept dormant while you are dead, and pulls resume when you return near your camp or the spot you died.\n\n" ..
             "Returning anywhere else, or visiting another zone first, drops the camp and pulls stay off.",
     },
-    ['PullManagePeerMovement']                 = {
-        DisplayName = "Manage Peer Movement",
-        Group = "Movement",
-        Header = "Pulling",
-        Category = "Pull Rules",
-        Index = 10,
-        Tooltip = "Bring your peers along for the selected mode: camping with you, or chasing you for travel and hunt modes.",
-        Default = true,
-        FAQ = "How do I bring my group with me when pulling?",
-        Answer = "Enable Manage Peer Movement and select the scope (Group / Raid or In-Zone).\n\n" ..
-            "Camp modes set the camp for everyone (peers chase you to a travel destination first); travel and hunt modes set peers to chase you.\n\n" ..
-            "RGMercs never turns peer movement back off - that is up to the player.",
-    },
-    ['PullPeerScope']                          = {
-        DisplayName = "Peer Scope",
-        Group = "Movement",
-        Header = "Pulling",
-        Category = "Pull Rules",
-        Index = 11,
-        Tooltip = "Who gets moved: peers in your group / raid, or every peer in the zone.",
-        Type = "Combo",
-        ComboOptions = { "Group / Raid", "In-Zone", },
-        Default = 1,
-        Min = 1,
-        Max = 2,
-    },
     ['DoPullMoveAbilities']                    = {
         DisplayName = "Use Movement Buffs",
         Group = "Movement",
@@ -1919,26 +1893,26 @@ function Module:Render()
                 self:RenderObjectiveRow(pullModeName)
             end
 
-            local manageMovement = Config:GetSetting('PullManagePeerMovement')
+            local manageMovement = Config:GetSetting('ManagePeerMovement')
             local newManage = ImGui.Checkbox("Manage movement for my", manageMovement)
             if newManage ~= manageMovement then
-                Config:SetSetting('PullManagePeerMovement', newManage)
+                Config:SetSetting('ManagePeerMovement', newManage)
             end
-            Ui.Tooltip(self.DefaultConfig['PullManagePeerMovement'].Tooltip)
+            Ui.Tooltip(Config:GetSettingDefaults('ManagePeerMovement').Tooltip)
             ImGui.SameLine()
             ImGui.BeginDisabled(not manageMovement)
-            local scopeOptions = self.DefaultConfig['PullPeerScope'].ComboOptions
+            local scopeOptions = Config:GetSettingDefaults('PeerMovementScope').ComboOptions
             local scopeWidth = 0
             for _, option in ipairs(scopeOptions) do
                 local optionWidth = ImGui.CalcTextSize(option)
                 scopeWidth = math.max(scopeWidth, optionWidth)
             end
             ImGui.SetNextItemWidth(scopeWidth + ImGui.GetStyle().FramePadding.x * 2 + ImGui.GetFrameHeight())
-            local newScope, scopePressed = ImGui.Combo("##PullPeerScope", Config:GetSetting('PullPeerScope'), scopeOptions, #scopeOptions)
+            local newScope, scopePressed = ImGui.Combo("##PeerMovementScope", Config:GetSetting('PeerMovementScope'), scopeOptions, #scopeOptions)
             if scopePressed then
-                Config:SetSetting('PullPeerScope', newScope)
+                Config:SetSetting('PeerMovementScope', newScope)
             end
-            Ui.Tooltip(self.DefaultConfig['PullPeerScope'].Tooltip)
+            Ui.Tooltip(Config:GetSettingDefaults('PeerMovementScope').Tooltip)
             ImGui.EndDisabled()
             ImGui.SameLine()
             ImGui.AlignTextToFramePadding()
@@ -3003,9 +2977,9 @@ function Module:CurrentIntent()
     local existingCamp = campData.returnToCamp and Module.Constants.PullModePolicies[pullModeName].family == 'camp' and loc == nil
     return Module.BuildIntentSentence({
         mode = pullModeName,
-        scope = Config:GetSetting('PullPeerScope'),
-        scopeWord = Config:GetSetting('PullPeerScope') == 2 and "in-zone" or ((mq.TLO.Raid.Members() or 0) > 0 and "raid" or "group"),
-        manageMovement = Config:GetSetting('PullManagePeerMovement'),
+        scope = Config:GetSetting('PeerMovementScope'),
+        scopeWord = Config:GetSetting('PeerMovementScope') == 2 and "in-zone" or ((mq.TLO.Raid.Members() or 0) > 0 and "raid" or "group"),
+        manageMovement = Config:GetSetting('ManagePeerMovement'),
         breakCamp = breakCamp,
         existingCamp = existingCamp,
         locationSet = loc ~= nil,
@@ -4548,8 +4522,8 @@ function Module:StartPuller()
     if Modules:ExecModule("Movement", "GetCampData").returnToCamp and (self:GetModePolicy().family ~= 'camp' or self.TempSettings.CampTravelLoc) then
         Modules:ExecModule("Movement", "CampOff")
     end
-    if Config:GetSetting('PullManagePeerMovement') then
-        local zoneScope = Config:GetSetting('PullPeerScope') == 2
+    if Config:GetSetting('ManagePeerMovement') then
+        local zoneScope = Config:GetSetting('PeerMovementScope') == 2
         if self:GetModePolicy().family ~= 'camp' then
             Comms.SendPeersDoCmd(zoneScope and Comms.GetZonePeers(false) or self:GroupOrRaidPeers(false), "/rgl chaseon " .. mq.TLO.Me.CleanName())
         elseif not Modules:ExecModule("Movement", "GetCampData").returnToCamp then

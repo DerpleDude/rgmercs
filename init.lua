@@ -385,7 +385,6 @@ local function Main()
     Config:FlushDB()
     Config.Db:updateTelemetryGraphs()
 
-    Globals.IsTanking = Core.IsTanking()
     Comms.HeartbeatWatchdog()
     ItemManager.ServiceAutoInv()
 
@@ -464,7 +463,6 @@ local function Main()
             Globals.CombatNavTargetId   = 0
             Globals.IgnoredTargetIDs    = Set.new({})
             Globals.LastBurnCheck       = false
-            Globals.IsTanking           = false
             Modules:ExecModule("Pull", "SetLastPullOrCombatEndedTimer")
         end
 

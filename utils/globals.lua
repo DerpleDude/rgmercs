@@ -58,7 +58,6 @@ Globals.RezzedCorpses                 = {}
 Globals.LastCachedBuffUpdate          = {}
 Globals.SLPeerLooting                 = false
 Globals.LastBurnCheck                 = false
-Globals.IsTanking                     = false
 Globals.CurrentBuffs                  = {}
 Globals.CurrentBuffCount              = 0
 Globals.CurrentCureEffects            = {}

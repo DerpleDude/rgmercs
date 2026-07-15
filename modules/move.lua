@@ -251,7 +251,7 @@ Module.DefaultConfig   = {
 
 
     -- Camp
-    ['AutoCampRadius']    = {
+    ['AutoCampRadius']     = {
         DisplayName = "Camp Radius",
         Group = "Movement",
         Header = "Following",
@@ -269,7 +269,7 @@ Module.DefaultConfig   = {
         end,
         OnChange = function(self) Movement.UpdateMapRadii() end,
     },
-    ['CampLeashDowntime'] = {
+    ['CampLeashDowntime']  = {
         DisplayName = "Leash to Camp (Downtime)",
         Group = "Movement",
         Header = "Following",
@@ -278,7 +278,7 @@ Module.DefaultConfig   = {
         Tooltip = "Return to the exact camp location outside of combat, even if we are within the Camp Radius.",
         Default = false,
     },
-    ['CampLeashCombat']   = {
+    ['CampLeashCombat']    = {
         DisplayName = "Leash to Camp (Combat)",
         Group = "Movement",
         Header = "Following",
@@ -293,7 +293,7 @@ Module.DefaultConfig   = {
             return false, ""
         end,
     },
-    ['CampExceedRadius']  = {
+    ['CampExceedRadius']   = {
         DisplayName = "Camp Exceed Distance",
         Group = "Movement",
         Header = "Following",
@@ -311,7 +311,7 @@ Module.DefaultConfig   = {
         end,
         ConfigType = "Advanced",
     },
-    ['MaintainCampfire']  = {
+    ['MaintainCampfire']   = {
         DisplayName = "Maintain Campfire",
         Group = "Movement",
         Header = "Following",
@@ -324,7 +324,7 @@ Module.DefaultConfig   = {
         Min = 1,
         Max = #Module.Constants.CampfireTypes,
     },
-    ['DoFellow']          = {
+    ['DoFellow']           = {
         DisplayName = "Enable Fellowship Insignia",
         Group = "Movement",
         Header = "Following",
@@ -333,6 +333,23 @@ Module.DefaultConfig   = {
         Tooltip = "Official Servers: Use your fellowship insignia to automatically return to the zone you were camped in after death.",
         Default = false,
         ConfigType = "Advanced",
+    },
+    ['PeerMovementScope']  = {
+        DisplayName = "Peer Movement Scope",
+        Type = "Custom",
+        Default = 1,
+        ComboOptions = { "Group / Raid", "In-Zone", },
+        Tooltip = "Who Manage Peer Movement affects: peers in your group / raid, or every RGMercs peer in your zone.",
+        FAQ = "What does Peer Movement Scope change?",
+        Answer = "It sets who Manage Peer Movement affects: peers in your group / raid, or every RGMercs peer in your zone.",
+    },
+    ['ManagePeerMovement'] = {
+        DisplayName = "Manage Peer Movement",
+        Type = "Custom",
+        Default = true,
+        Tooltip = "When on, camp and chase actions bring the selected peers along with you.",
+        FAQ = "How do I move my group along with me?",
+        Answer = "Turn on Manage Peer Movement and pick a scope; the Movement tab's camp and chase buttons - and pulling - then act on those peers along with you.",
     },
 }
 
@@ -447,6 +464,12 @@ end
 function Module:CampOff()
     Config:SetSetting('ReturnToCamp', false)
     self.TempSettings.DeathCampHold = false
+end
+
+--- Returns the peer list for the peer movement buttons, honoring the selected scope.
+function Module:MovePeers(includeSelf)
+    if Config:GetSetting('PeerMovementScope') == 2 then return Comms.GetZonePeers(includeSelf) end
+    return (mq.TLO.Raid.Members() or 0) > 0 and Comms.GetRaidPeers(includeSelf) or Comms.GetGroupPeers(includeSelf)
 end
 
 --- Keeps the camp through a death - zoning out to bind would normally drop it - so pulling can resume when we make it back.
@@ -607,86 +630,188 @@ function Module:Render()
 
         ImGui.Separator()
 
+        local manageMovement = Config:GetSetting('ManagePeerMovement')
+        local newManage = ImGui.Checkbox("Manage movement for my", manageMovement)
+        if newManage ~= manageMovement then
+            Config:SetSetting('ManagePeerMovement', newManage)
+            manageMovement = newManage
+        end
+        Ui.Tooltip(Config:GetSettingDefaults('ManagePeerMovement').Tooltip)
+        ImGui.SameLine()
+        ImGui.BeginDisabled(not manageMovement)
+        local scopeOptions = self.DefaultConfig['PeerMovementScope'].ComboOptions
+        local scopeComboWidth = 0
+        for _, option in ipairs(scopeOptions) do
+            local optionWidth = ImGui.CalcTextSize(option)
+            scopeComboWidth = math.max(scopeComboWidth, optionWidth)
+        end
+        ImGui.SetNextItemWidth(scopeComboWidth + ImGui.GetStyle().FramePadding.x * 2 + ImGui.GetFrameHeight())
+        local newScope, scopePressed = ImGui.Combo("##PeerMovementScope", Config:GetSetting('PeerMovementScope'), scopeOptions, #scopeOptions)
+        if scopePressed then
+            Config:SetSetting('PeerMovementScope', newScope)
+        end
+        Ui.Tooltip(Config:GetSettingDefaults('PeerMovementScope').Tooltip)
+        ImGui.EndDisabled()
+        ImGui.SameLine()
+        ImGui.AlignTextToFramePadding()
+        Ui.RenderText("Peers.")
+
+        local scopeWord = Config:GetSetting('PeerMovementScope') == 2 and "Zone" or ((mq.TLO.Raid.Members() or 0) > 0 and "Raid" or "Group")
         local chaseOn = Config:GetSetting('ChaseOn')
-        if ImGui.Button(chaseOn and "Turn Chase Off" or "Turn Chase On", ImGui.GetWindowWidth() * .3, 25) then
-            if chaseOn then
-                self:ChaseOff()
+        local chasePeers = manageMovement and self:MovePeers(false) or {}
+        local myName = mq.TLO.Me.CleanName()
+        local chasingCount = 0
+        local inChaseCount = 0
+        for _, peer in ipairs(chasePeers) do
+            local chase = peer.data and peer.data.Chase
+            if chase and chase ~= "Chase Off" and chase ~= "Standalone" then
+                inChaseCount = inChaseCount + 1
+                if chase == myName then
+                    chasingCount = chasingCount + 1
+                end
+            end
+        end
+
+        ImGui.Separator()
+
+        local chaseButtonWidth = ImGui.CalcTextSize("Turn Group Chase Off") + ImGui.GetStyle().FramePadding.x * 2
+        local buttonDisabled = mq.TLO.Target() == nil or mq.TLO.Target.Type() ~= "PC"
+        local chaseTargetName = mq.TLO.Target.DisplayName() or "Error"
+        local chaseTargetWidth = ImGui.CalcTextSize(buttonDisabled and "Select a PC to Chase" or string.format("Set %s as the Group Chase Target", chaseTargetName)) +
+            ImGui.GetStyle().FramePadding.x * 2
+
+        local chaseOnLabel = manageMovement and string.format("Turn %s Chase On", scopeWord) or "Turn Chase On"
+        local chaseOffLabel = manageMovement and string.format("Turn %s Chase Off", scopeWord) or "Turn Chase Off"
+        if ImGui.Button(chaseOnLabel, chaseButtonWidth, 25) then
+            if manageMovement then
+                Comms.SendPeersDoCmd(chasePeers, "/rgl chaseon")
             else
                 self:ChaseOn()
             end
         end
-        Ui.Tooltip(
+        Ui.Tooltip(manageMovement and "Tell your peers to start chasing." or
             "If Chase is enabled without a valid chase target, your Main Assist will be used.\nFind more information about Chasing by checking the Command List or FAQs in the Options Window.")
-
         ImGui.SameLine()
+        if ImGui.Button(chaseOffLabel, chaseButtonWidth, 25) then
+            if manageMovement then
+                Comms.SendPeersDoCmd(chasePeers, "/rgl chaseoff")
+            else
+                self:ChaseOff()
+            end
+        end
+        Ui.Tooltip(manageMovement and "Tell your peers to stop chasing." or "Stop chasing your current chase target.")
 
-        local buttonDisabled = mq.TLO.Target() == nil or mq.TLO.Target.Type() ~= "PC"
         ImGui.BeginDisabled(buttonDisabled)
-        local chaseTargetText = buttonDisabled and "Select a PC to Chase" or string.format("Set %s as Chase Target", mq.TLO.Target.DisplayName() or "Error")
-        if ImGui.Button(chaseTargetText, ImGui.GetWindowWidth() * .3, 25) then
-            Config:SetSetting("ChaseTarget", mq.TLO.Target.DisplayName() or "Error")
+        local setTargetLabel
+        if buttonDisabled then
+            setTargetLabel = "Select a PC to Chase"
+        elseif manageMovement then
+            setTargetLabel = string.format("Set %s as the %s Chase Target", chaseTargetName, scopeWord)
+        else
+            setTargetLabel = string.format("Set %s as Chase Target", chaseTargetName)
+        end
+        if ImGui.Button(setTargetLabel, chaseTargetWidth, 25) then
+            if manageMovement then
+                Comms.SendPeersDoCmd(chasePeers, "/rgl chaseon " .. chaseTargetName)
+            else
+                Config:SetSetting("ChaseTarget", chaseTargetName)
+            end
         end
         ImGui.EndDisabled()
 
 
 
         local haveChaseTarget = self:ValidChaseTarget() and chaseSpawn() and chaseSpawn.ID() > 0
+        local showChaseDetails = chaseOn and haveChaseTarget
 
         if ImGui.BeginTable("ChaseInfoTable", 2, bit32.bor(ImGuiTableFlags.Borders)) then
             ImGui.TableNextColumn()
             Ui.RenderText("Chase Status")
             ImGui.TableNextColumn()
-            if not Config:GetSetting('ChaseOn') then
+            if not chaseOn then
                 Ui.RenderColoredText(Globals.Constants.BasicColors.Red, "Off")
             elseif self.TempSettings.ChaseSuppressed then
                 Ui.RenderColoredText(Globals.Constants.BasicColors.Yellow, "Suppressed (Combat)")
             else
                 Ui.RenderColoredText(Globals.Constants.BasicColors.Green, "Chasing")
             end
-            ImGui.TableNextColumn()
-            Ui.RenderText("Chase Target")
-            ImGui.TableNextColumn()
-            Ui.RenderText(self:GetChaseTarget())
-            ImGui.TableNextColumn()
-            Ui.RenderText("Distance")
-            ImGui.TableNextColumn()
-            Ui.RenderText("%d", haveChaseTarget and chaseSpawn.Distance() or 0)
-            ImGui.TableNextColumn()
-            Ui.RenderText("ID")
-            ImGui.TableNextColumn()
-            Ui.RenderText("%d", haveChaseTarget and chaseSpawn.ID() or 0)
-            ImGui.TableNextColumn()
-            Ui.RenderText("Line of Sight")
-            ImGui.TableNextColumn()
-            if chaseSpawn.LineOfSight() then
-                ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.ConditionPassColor)
-            else
-                ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.ConditionFailColor)
+
+            if manageMovement then
+                ImGui.TableNextColumn()
+                Ui.RenderText("Peers Chasing")
+                ImGui.TableNextColumn()
+                if #chasePeers == 0 then
+                    Ui.RenderColoredText(Globals.Constants.BasicColors.Grey, "None in scope")
+                else
+                    local countColor = chasingCount == #chasePeers and Globals.Constants.BasicColors.Green
+                        or Globals.Constants.BasicColors.Yellow
+                    Ui.RenderColoredText(countColor, "%d / %d", inChaseCount, #chasePeers)
+                    local lines = { string.format("%d chasing you", chasingCount), }
+                    for _, peer in ipairs(chasePeers) do
+                        local chase = peer.data and peer.data.Chase
+                        local target = (not chase or chase == "Chase Off" or chase == "Standalone") and "Off"
+                            or (chase == myName and "you" or chase)
+                        table.insert(lines, string.format("  %s: %s", peer.name, target))
+                    end
+                    Ui.Tooltip(table.concat(lines, "\n"))
+                end
             end
-            Ui.RenderText(haveChaseTarget and (chaseSpawn.LineOfSight() and Icons.FA_EYE or Icons.FA_EYE_SLASH) or "N/A")
-            ImGui.PopStyleColor(1)
-            ImGui.TableNextColumn()
-            Ui.RenderText("Loc")
-            ImGui.TableNextColumn()
-            Ui.NavEnabledLoc(haveChaseTarget and chaseSpawn.LocYXZ() or "0,0,0")
+
+            if chaseOn then
+                ImGui.TableNextColumn()
+                Ui.RenderText("Chase Target")
+                ImGui.TableNextColumn()
+                Ui.RenderText(self:GetChaseTarget())
+            end
+
+            if showChaseDetails then
+                ImGui.TableNextColumn()
+                Ui.RenderText("Distance")
+                ImGui.TableNextColumn()
+                Ui.RenderText("%d", chaseSpawn.Distance() or 0)
+                ImGui.TableNextColumn()
+                Ui.RenderText("ID")
+                ImGui.TableNextColumn()
+                Ui.RenderText("%d", chaseSpawn.ID() or 0)
+                ImGui.TableNextColumn()
+                Ui.RenderText("Line of Sight")
+                ImGui.TableNextColumn()
+                if chaseSpawn.LineOfSight() then
+                    ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.ConditionPassColor)
+                else
+                    ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.ConditionFailColor)
+                end
+                Ui.RenderText(chaseSpawn.LineOfSight() and Icons.FA_EYE or Icons.FA_EYE_SLASH)
+                ImGui.PopStyleColor(1)
+                ImGui.TableNextColumn()
+                Ui.RenderText("Loc")
+                ImGui.TableNextColumn()
+                Ui.NavEnabledLoc(chaseSpawn.LocYXZ() or "0,0,0")
+            end
             ImGui.EndTable()
         end
 
         ImGui.Separator()
 
-        if Config:GetSetting('ReturnToCamp') then
-            ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, ImGui.GetStyle().FramePadding.x, 0)
-            if ImGui.Button("Break Camp", ImGui.GetWindowWidth() * .3, 25) then
-                self:CampOff()
-            end
-            ImGui.PopStyleVar(1)
+        local returnToCamp = Config:GetSetting('ReturnToCamp')
+        local campLabel
+        if manageMovement then
+            campLabel = returnToCamp and string.format("Break %s Camp", scopeWord) or string.format("Set %s Camp Here", scopeWord)
         else
-            ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, ImGui.GetStyle().FramePadding.x, 0)
-            if ImGui.Button("Set New Camp Here", ImGui.GetWindowWidth() * .3, 25) then
+            campLabel = returnToCamp and "Break Camp" or "Set New Camp Here"
+        end
+        local campButtonWidth = ImGui.CalcTextSize("Set Group Camp Here") + ImGui.GetStyle().FramePadding.x * 2
+        ImGui.PushStyleVar(ImGuiStyleVar.FramePadding, ImGui.GetStyle().FramePadding.x, 0)
+        if ImGui.Button(campLabel, campButtonWidth, 25) then
+            if manageMovement then
+                Comms.SendPeersDoCmd(self:MovePeers(true), returnToCamp and "/rgl campoff" or "/rgl campon")
+            elseif returnToCamp then
+                self:CampOff()
+            else
                 self:CampOn()
             end
-            ImGui.PopStyleVar(1)
         end
+        ImGui.PopStyleVar(1)
         Ui.Tooltip("Find more information about Camping by checking the Command List or FAQs in the Options Window.")
 
         local me = mq.TLO.Me

@@ -87,6 +87,9 @@ local rgMercsMainType   = mq.DataType.new('RGMercsMain', {
         State = function(_, self)
             return 'string', Globals.PauseMain and "Paused" or "Running"
         end,
+        IsTanking = function(_, self)
+            return 'bool', Globals.SubmodulesLoaded and Modules:ExecModule("Class", "IsTanking") or false
+        end,
     },
 
     ToString = function(self)

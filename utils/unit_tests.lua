@@ -1,4 +1,4 @@
----@diagnostic disable: duplicate-set-field
+---@diagnostic disable: duplicate-set-field, need-check-nil
 local Combat    = require("utils.combat")
 local Globals   = require("utils.globals")
 local Logger    = require("utils.logger")
