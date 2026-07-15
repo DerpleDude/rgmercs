@@ -2118,13 +2118,15 @@ function Module:GiveTime()
 
     local maxClickiesPerCycle = Config:GetSetting('MaxClickiesPerCycle') or 0
     local clickiesUsedThisCycle = 0
-    local startingClickyIdx = maxClickiesPerCycle > 0 and self.ClickyRotationIndex or 1
     local numClickies = #clickies
+    if numClickies == 0 then return end
+    local startingClickyIdx = maxClickiesPerCycle > 0 and (((self.ClickyRotationIndex - 1) % numClickies) + 1) or 1
     local moving = mq.TLO.Me.Moving() or mq.TLO.Navigation.Active() or mq.TLO.MoveTo.Moving()
-    for clickyIdx = startingClickyIdx, numClickies do
+    for offset = 0, numClickies - 1 do
         if Globals.PauseMain or Globals.StopCast then
             break
         end
+        local clickyIdx = ((startingClickyIdx - 1 + offset) % numClickies) + 1
         local clicky = clickies[clickyIdx]
         if clicky.itemName:len() > 0 and (clicky.enabled == nil or clicky.enabled == true) then
             self.ClickyRotationIndex = (clickyIdx % numClickies) + 1
@@ -2248,7 +2250,6 @@ function Module:GiveTime()
                                         maxClickiesPerCycle, self.ClickyRotationIndex)
                                     break
                                 end
-                                break --yield to other modules between clicky uses
                             else
                                 Logger.log_verbose(
                                     "\ayClicky: \awItem \am%s\aw Clicky: \at%s\ar checks failed, not using!\aw BuffCheck(%s), DistanceCheck(%s), ItemReady(%s), ElementCheck(%s)",
