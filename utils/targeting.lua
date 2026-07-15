@@ -893,7 +893,19 @@ end
 ---@return boolean True if hate generation is appropriate this frame.
 function Targeting.HateToolsNeeded()
     if Globals.AutoTargetID == 0 or mq.TLO.Target.ID() ~= Globals.AutoTargetID then return false end
+    if Globals.NoHateTargetIDs:contains(Globals.AutoTargetID) then return false end
     return mq.TLO.Me.PctAggro() < 100 or (mq.TLO.Target.SecondaryPctAggro() or 0) > 60 or Globals.AutoTargetIsNamed
+end
+
+--- Removes no hate target IDs whose spawns are confirmed dead.
+function Targeting.PruneNoHateTargets()
+    for _, id in ipairs(Globals.NoHateTargetIDs:toList()) do
+        local spawn = mq.TLO.Spawn(id)
+        if spawn() and (spawn.Dead() or (spawn.Type() or "") == "Corpse") then
+            Logger.log_debug("PruneNoHateTargets(): %d is dead, removing from no hate targets.", id)
+            Globals.NoHateTargetIDs:remove(id)
+        end
+    end
 end
 
 --- Returns true if spawn's surname contains "'s Pet", "`s Pet", or "Doppelganger",

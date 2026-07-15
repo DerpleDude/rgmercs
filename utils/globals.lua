@@ -27,6 +27,7 @@ Globals.LastPulledID                  = 0
 Globals.CurrentState                  = "None"
 Globals.LastCombatTime                = 0
 Globals.IgnoredTargetIDs              = Set.new({})
+Globals.NoHateTargetIDs               = Set.new({})
 Globals.CharmedPetIDs                 = Set.new({})
 Globals.LooseCharms                   = {}
 -- our own single charm ids: staged for the heartbeat, which reads them cross-process via the RGMercs.Globals() scalar bridge
@@ -327,6 +328,10 @@ function Globals.SetForcedTargetId(targetId)
     if targetId and targetId > 0 then
         Globals.ForceTargetID = targetId
         if Globals.Logger then Globals.Logger.log_debug("SetForcedTargetId(): Force Target set to %d", targetId) end
+        if Globals.NoHateTargetIDs:contains(targetId) then
+            Globals.NoHateTargetIDs:remove(targetId)
+            Globals.Logger.log_debug("SetForcedTargetId(): Removed %d from no hate targets.", targetId)
+        end
     else
         if Globals.Logger then Globals.Logger.log_debug("SetForcedTargetId(): Force Target cleared from %d", Globals.ForceTargetID) end
         Globals.ForceTargetID = 0

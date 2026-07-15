@@ -211,7 +211,7 @@ function Rotation.ExecEntry(caller, entry, targetId, resolvedActionMap, bAllowMe
     if entry.type:lower() == "ability" then
         if Casting.AbilityReady(entry.name, mq.TLO.Spawn(targetId)) then
             Rotation.RunPreActivate(caller, resolvedActionMap, entry)
-            ret = Casting.UseAbility(entry.name)
+            ret = Casting.UseAbility(entry.name, targetId)
         end
         Logger.log_verbose("(Ability) Trying to use %s :: %s", entry.name, ret and "\agSuccess" or "\arFailed!")
     end

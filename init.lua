@@ -475,6 +475,8 @@ local function Main()
         end
     end
 
+    Targeting.PruneNoHateTargets()
+
     if mq.TLO.MacroQuest.GameState() ~= "INGAME" then return end
 
     if Globals.CurLoadedChar ~= mq.TLO.Me.DisplayName() then

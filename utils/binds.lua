@@ -129,6 +129,28 @@ Binds.Handlers    = {
             Logger.log_info("\awIgnored targets cleared.")
         end,
     },
+    ['nohate'] = {
+        usage = "/rgl nohate <id?>",
+        about =
+        "Will prevent this character from using hate abilities on the target or <id>. If no ID is supplied, uses the current target's ID.",
+        handler = function(targetId)
+            targetId = targetId and tonumber(targetId) or mq.TLO.Target.ID()
+            if targetId > 0 then
+                Logger.log_info("\awNo Hate Target: %d", targetId)
+                Globals.NoHateTargetIDs:add(targetId)
+            else
+                Logger.log_info("\awMarking a no hate target requires a valid supplied ID or target!")
+            end
+        end,
+    },
+    ['nohateclear'] = {
+        usage = "/rgl nohateclear",
+        about = "Will clear all no hate targets.",
+        handler = function()
+            Globals.NoHateTargetIDs = Set.new({})
+            Logger.log_info("\awNo hate targets cleared.")
+        end,
+    },
     ['forcetarget'] = {
         usage = "/rgl forcetarget <id?>",
         about =

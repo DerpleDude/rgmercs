@@ -1448,13 +1448,19 @@ function Ui.RenderForceTargetList(showPopout)
     end
 
     if Config:GetSetting('ShowFTControls') then
-        if ImGui.Button("Clear Forced Target", ImGui.GetWindowWidth() * .4, 18) then
+        local btnWidth = (ImGui.GetContentRegionAvailVec().x - ImGui.GetStyle().ItemSpacing.x * 2) / 3
+        if ImGui.Button("Clear Forced Target", btnWidth, 18) then
             Globals.SetForcedTargetId(0)
         end
         ImGui.SameLine()
 
-        if ImGui.Button("Clear Ignored Targets", ImGui.GetWindowWidth() * .4, 18) then
+        if ImGui.Button("Clear Ignored Targets", btnWidth, 18) then
             Globals.IgnoredTargetIDs = Set.new({})
+        end
+        ImGui.SameLine()
+
+        if ImGui.Button("Clear NoHate Targets", btnWidth, 18) then
+            Globals.NoHateTargetIDs = Set.new({})
         end
     end
 
@@ -1524,6 +1530,41 @@ function Ui.RenderForceTargetList(showPopout)
                         end
                     end)
 
+
+                if not checked then
+                    ImGui.PopStyleColor()
+                end
+
+                local min = ImGui.GetItemRectMinVec()
+                local max = ImGui.GetItemRectMaxVec()
+                local draw = ImGui.GetWindowDrawList()
+                draw:AddRect(min, max, IM_COL32(180, 180, 180, 180), 0.5)
+                ImGui.PopStyleVar(1)
+            end,
+        },
+        {
+            name = "NH",
+            flags = bit32.bor(ImGuiTableColumnFlags.WidthFixed),
+            width = 16.0,
+            sort = function(a, b)
+                return Globals.NoHateTargetIDs:contains(a.ID()) and 1 or 0, Globals.NoHateTargetIDs:contains(b.ID()) and 1 or 0
+            end,
+            render = function(xtarg, i)
+                local checked = Globals.NoHateTargetIDs:contains(xtarg.ID())
+                ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, ImVec2(0, 0))
+
+                if not checked then
+                    ImGui.PushStyleColor(ImGuiCol.Text, IM_COL32(52, 52, 52, 0))
+                end
+
+                Ui.InvisibleWithButtonText("##nh_btn_" .. tostring(i), Icons.FA_BAN, ImVec2(ICON_SIZE, ImGui.GetTextLineHeight()),
+                    function()
+                        if checked then
+                            Globals.NoHateTargetIDs:remove(xtarg.ID())
+                        else
+                            Globals.NoHateTargetIDs:add(xtarg.ID())
+                        end
+                    end)
 
                 if not checked then
                     ImGui.PopStyleColor()
@@ -1655,7 +1696,7 @@ function Ui.RenderForceTargetList(showPopout)
         },
     }
 
-    Ui.RenderTableData("XTargs", tableColumns,
+    Ui.RenderTableData("ForceTarget", tableColumns,
         bit32.bor(ImGuiTableFlags.NoBordersInBody, ImGuiTableFlags.Resizable, ImGuiTableFlags.RowBg, ImGuiTableFlags.Sortable, ImGuiTableFlags
             .Hideable,
             ImGuiTableFlags.Reorderable),
@@ -1707,6 +1748,12 @@ function Ui.RenderForceTargetList(showPopout)
                 ImGui.SameLine()
                 Ui.RenderText("     ")
                 Ui.Tooltip("Click here to ignore this target.")
+            end
+
+            if ImGui.TableSetColumnIndex(2) then
+                ImGui.SameLine()
+                Ui.RenderText("     ")
+                Ui.Tooltip("Click here to prevent using hate abilities on this target.")
                 ImGui.TableNextRow()
             end
 

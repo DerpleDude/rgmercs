@@ -471,7 +471,7 @@ function Combat.TankAggroScan()
         local xtarg = mq.TLO.Me.XTarget(i)
         if xtarg() then
             local xtId = xtarg.ID() or 0
-            if xtId > 0 and xtId ~= Globals.AutoTargetID and ((xtarg.Aggressive() or xtarg.TargetType():lower() == "auto hater")) then
+            if xtId > 0 and xtId ~= Globals.AutoTargetID and not Globals.NoHateTargetIDs:contains(xtId) and ((xtarg.Aggressive() or xtarg.TargetType():lower() == "auto hater")) then
                 if xtarg.PctAggro() < 100 and (xtarg.Distance() or 999) <= assistRange and Globals.Constants.RGNotMezzedAnims:contains(xtarg.Animation()) then
                     if Combat.OkToEngagePreValidateId(xtId) then
                         Logger.log_verbose("TankAggroScan: Found Aggro Target: %s (id %d).", xtarg.DisplayName(), xtId)
@@ -1368,6 +1368,7 @@ end
 ---@param printDebug boolean If true, logs verbose information about each candidate.
 ---@return boolean
 function Combat.AETauntCheck(printDebug)
+    if Globals.NoHateTargetIDs:contains(Globals.AutoTargetID) then return false end
     local xtCount = mq.TLO.Me.XTarget() or 0
     if xtCount < Config:GetSetting('AETauntCnt') then return false end
 

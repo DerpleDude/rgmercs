@@ -1855,7 +1855,7 @@ function Casting.UseEntry(entryType, name, targetId, opts)
     if entryType == "item" then return Casting.UseItem(name, targetId, opts.allowDead) end
     if entryType == "song" then return Casting.UseSong(name, targetId, opts.allowMem) end
     if entryType == "disc" then return Casting.UseDisc(opts.spell, targetId) end
-    if entryType == "ability" then return Casting.UseAbility(name) end
+    if entryType == "ability" then return Casting.UseAbility(name, targetId) end
     return Casting.UseSpell(name, targetId, opts.allowMem, opts.allowDead)
 end
 
@@ -2482,11 +2482,24 @@ end
 --- Fires a combat ability (e.g., Taunt, Kick) via /doability.
 --- @param abilityName string The name of the ability to use.
 --- @return boolean
-function Casting.UseAbility(abilityName)
+function Casting.UseAbility(abilityName, targetId)
     local me = mq.TLO.Me
+
+    local oldTargetId = mq.TLO.Target.ID()
+    if (targetId or 0) > 0 and targetId ~= oldTargetId then
+        Logger.log_debug("\awUseAbility():NOTICE:\ax Swapping target to %s [%d] to use %s", mq.TLO.Spawn(targetId).DisplayName() or "None", targetId, abilityName)
+        Targeting.SetTarget(targetId, true)
+    end
+
     Core.DoCmd("/doability %s", abilityName)
     mq.delay(50, function() return me.AbilityReady(abilityName) ~= true end)
     Logger.log_debug("Using Ability \ao =>> \ag %s \ao <<=", abilityName)
+
+    if mq.TLO.Target.ID() ~= oldTargetId and Combat.ValidCombatTarget(oldTargetId) and (oldTargetId == Globals.AutoTargetID or not Config:GetSetting('DoAutoTarget')) then
+        Logger.log_debug("UseAbility(): Retargeting previous target after ability use.")
+        Targeting.SetTarget(oldTargetId, true)
+    end
+
     return true
 end
 
