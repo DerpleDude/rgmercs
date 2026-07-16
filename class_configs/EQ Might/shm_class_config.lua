@@ -147,18 +147,18 @@ local _ClassConfig = {
             "Infusion of Spirit",          -- Level 49, Str/Dex/Sta, can use HP buff. Not sure if this is the final home for this one or not.
         },
         ['RunSpeedBuff'] = {
-            -- Run Speed Buff
             "Spirit of Bih`Li", -- Level 36
             "Pack Shrew",       -- Level 34
             "Spirit of Wolf",   -- Level 9
         },
         ['HasteBuff'] = {
-            -- Haste Buff
+            "Swift Like the Wind", -- Level 63
+            "Celerity",            -- Level 56
+            "Alacrity",            -- Level 42
+            "Quickness",           -- Level 26
+        },
+        ['GroupHasteBuff'] = {
             "Talisman of Celerity", -- Level 64
-            "Swift Like the Wind",  -- Level 63
-            "Celerity",             -- Level 56
-            "Alacrity",             -- Level 42
-            "Quickness",            -- Level 26
         },
         ['LowLvlStaBuff'] = {
             -- Low Level Stamina Buff --- I guess this may be okay for tanks (but largely a raid thing). Need to scrub which levels. Not currently used.
@@ -1100,13 +1100,20 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['PetBuff']        = {
+        ['PetBuff']        = { -- pet haste is a little messy here because pets cant receive group v2 spells without pet affinity.
             {
-                name = "HasteBuff",
+                name = "Talisman of Celerity",
+                type = "AA",
+                load_cond = function() return Config:GetSetting('DoHaste') and Casting.CanUseAA("Pet Affinity") and Casting.CanUseAA("Talisman of Celerity") end,
+                cond = function(self, aaName)
+                    return Casting.PetBuffAACheck(aaName)
+                end,
+            },
+            {
+                name_func = function(self) return Casting.GetFirstMapItem(Casting.CanUseAA("Pet Affinity") and { 'GroupHasteBuff', 'HasteBuff', } or { 'HasteBuff', }) end,
                 type = "Spell",
-                load_cond = function() return Config:GetSetting('DoHaste') and not Casting.CanUseAA("Talisman of Celerity") end,
+                load_cond = function() return Config:GetSetting('DoHaste') and not (Casting.CanUseAA("Pet Affinity") and Casting.CanUseAA("Talisman of Celerity")) end,
                 cond = function(self, spell, target)
-                    if Casting.CanUseAA("Pet Affinity") then return false end
                     return Casting.PetBuffCheck(spell)
                 end,
             },
@@ -1187,7 +1194,7 @@ local _ClassConfig = {
                 end,
             },
             {
-                name = "HasteBuff",
+                name_func = function(self) return Casting.GetFirstMapItem({ 'GroupHasteBuff', 'HasteBuff', }) end,
                 type = "Spell",
                 load_cond = function() return Config:GetSetting('DoHaste') and not Casting.CanUseAA("Talisman of Celerity") end,
                 active_cond = function(self, aaName) return mq.TLO.Me.Haste() end,

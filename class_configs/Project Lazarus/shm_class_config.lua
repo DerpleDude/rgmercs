@@ -143,12 +143,13 @@ local _ClassConfig = {
             "Spirit of Wolf",   -- Level 9
         },
         ['HasteBuff'] = {
-            -- Haste Buff - 26 - 64
+            "Swift Like the Wind", -- Level 63
+            "Celerity",            -- Level 56
+            "Alacrity",            -- Level 42
+            "Quickness",           -- Level 26
+        },
+        ['GroupHasteBuff'] = {
             "Talisman of Celerity",    -- Level 64
-            "Swift Like the Wind",     -- Level 63
-            "Celerity",                -- Level 56
-            "Alacrity",                -- Level 42
-            "Quickness",               -- Level 26
         },
         ['Unification'] = {            -- Many buffs combined: 75 Sta, 50 sta cap, 7% evasion, 5% damage
             "Talisman of Unification", -- Level 70 Laz Custom
@@ -930,28 +931,21 @@ local _ClassConfig = {
                     return Casting.SelfBuffAACheck(aaName)
                 end,
             },
-
-            -- {
-            --     -- this is emu only and lands only on your group but not yourself
-            --     name = "Pact of the Wolf",
-            --     type = "CustomFunc",
-            --     active_cond = function(self) return mq.TLO.Me.Aura("Pact of the Wolf Effect")() ~= nil end,
-            --     custom_func = function(self)
-            --         if not Config:GetSetting('DoAura') or mq.TLO.Me.Aura("Pact of the Wolf Effect")() ~= nil then return false end
-            --         Casting.UseAA("Pact of the Wolf", mq.TLO.Me.ID())
-            --         mq.delay(500, function() return Casting.AAReady('Group Pact of the Wolf') end)
-            --         Casting.UseAA("Group Pact of the Wolf", mq.TLO.Me.ID())
-            --         return true
-            --     end,
-            -- },
         },
-        ['PetBuff'] = {
+        ['PetBuff'] = { -- pet haste is a little messy here because pets cant receive group v2 spells without pet affinity.
             {
-                name = "HasteBuff",
+                name = "Talisman of Celerity",
+                type = "AA",
+                load_cond = function() return Config:GetSetting('DoHaste') and Casting.CanUseAA("Pet Affinity") and Casting.CanUseAA("Talisman of Celerity") end,
+                cond = function(self, aaName)
+                    return Casting.PetBuffAACheck(aaName)
+                end,
+            },
+            {
+                name_func = function(self) return Casting.GetFirstMapItem(Casting.CanUseAA("Pet Affinity") and { 'GroupHasteBuff', 'HasteBuff', } or { 'HasteBuff', }) end,
                 type = "Spell",
-                active_cond = function(self, aaName) return mq.TLO.Me.Haste() end,
+                load_cond = function() return Config:GetSetting('DoHaste') and not (Casting.CanUseAA("Pet Affinity") and Casting.CanUseAA("Talisman of Celerity")) end,
                 cond = function(self, spell, target)
-                    if Casting.CanUseAA("Pet Affinity") then return false end
                     return Casting.PetBuffCheck(spell)
                 end,
             },
@@ -1011,9 +1005,9 @@ local _ClassConfig = {
                 end,
             },
             {
-                name = "HasteBuff",
+                name_func = function(self) return Casting.GetFirstMapItem({ 'GroupHasteBuff', 'HasteBuff', }) end,
                 type = "Spell",
-                load_cond = function(self) return Config:GetSetting('DoHaste') and not Casting.CanUseAA("Talisman of Celerity") end,
+                load_cond = function() return Config:GetSetting('DoHaste') and not Casting.CanUseAA("Talisman of Celerity") end,
                 active_cond = function(self, aaName) return mq.TLO.Me.Haste() end,
                 cond = function(self, spell, target)
                     return Casting.GroupBuffCheck(spell, target)
