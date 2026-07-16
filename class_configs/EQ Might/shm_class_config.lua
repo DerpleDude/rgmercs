@@ -1106,7 +1106,7 @@ local _ClassConfig = {
                 type = "Spell",
                 load_cond = function() return Config:GetSetting('DoHaste') and not Casting.CanUseAA("Talisman of Celerity") end,
                 cond = function(self, spell, target)
-                    if Casting.CanUseAA("Pet Affinity") then return false end
+                    if not Casting.CanUseAA("Pet Affinity") then return false end
                     return Casting.PetBuffCheck(spell)
                 end,
             },

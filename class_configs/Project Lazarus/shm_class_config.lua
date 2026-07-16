@@ -951,7 +951,7 @@ local _ClassConfig = {
                 type = "Spell",
                 active_cond = function(self, aaName) return mq.TLO.Me.Haste() end,
                 cond = function(self, spell, target)
-                    if Casting.CanUseAA("Pet Affinity") then return false end
+                    if not Casting.CanUseAA("Pet Affinity") then return false end
                     return Casting.PetBuffCheck(spell)
                 end,
             },
