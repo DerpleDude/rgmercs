@@ -2,19 +2,20 @@ local mq           = require('mq')
 local Casting      = require("utils.casting")
 local Config       = require('utils.config')
 local Core         = require("utils.core")
+local Globals      = require('utils.globals')
 local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
-    _version              = "1.1 - Live",
-    _author               = "Derple, Grimmier",
+    _version              = "2.0 - Live",
+    _author               = "Algar, Derple",
     ['ModeChecks']        = {
+        CanCharm = function() return true end,
         IsHealing = function() return true end,
-        IsCuring  = function() return Config:GetSetting('DoCures') end,
-        IsRezing  = function()
+        IsCuring = function() return Config:GetSetting('DoCures') end,
+        IsRezing = function()
             return (Core.GetResolvedActionMapItem('RezSpell') and Targeting.GetXTHaterCount() == 0) or
                 (Casting.CanUseAA("Call of the Wild") and Config:GetSetting('DoBattleRez'))
         end,
-        CanCharm  = function() return true end,
     },
     ['Rez']               = {
         ['Combat'] = {
@@ -34,13 +35,14 @@ local _ClassConfig = {
                 name = "RezSpell",
                 cond = function(self, spell, target)
                     return Casting.DowntimeRezOkay()
+                        and not Casting.CanUseAA('Rejuvenation of Spirit')
                 end,
             },
         },
     },
     ['Modes']             = {
         'Heal',
-        'Mana',
+        'Hybrid',
     },
     ['Cure']              = {
         ['DetDispel'] = {
@@ -48,56 +50,19 @@ local _ClassConfig = {
             { type = "AA", name = "Purified Spirits", selfOnly = true, },
         },
         ['Poison'] = {
-            { type = "Spell", name_func = function(self) return Casting.GetFirstMapItem({ 'GroupCure', 'SingleTgtCure', }) end, },
+            { type = "Spell", name_func = function(self) return Casting.GetFirstMapItem({ 'GroupCure', 'CurePoison', }) end, },
+            { type = "Spell", name = "SingleCure", },
         },
         ['Disease'] = {
-            { type = "Spell", name_func = function(self) return Casting.GetFirstMapItem({ 'GroupCure', 'SingleTgtCure', }) end, },
+            { type = "Spell", name_func = function(self) return Casting.GetFirstMapItem({ 'GroupCure', 'CureDisease', }) end, },
+            { type = "Spell", name = "SingleCure", },
         },
         ['Curse'] = {
-            { type = "Spell", name_func = function(self) return Casting.GetFirstMapItem({ 'GroupCure', 'SingleTgtCure', }) end, },
+            { type = "Spell", name_func = function(self) return Casting.GetFirstMapItem({ 'GroupCure', 'CureCurse', }) end, },
+            { type = "Spell", name = "SingleCure", },
         },
         ['Corruption'] = {
-            { type = "Spell", name_func = function(self) return Casting.GetFirstMapItem({ 'CureCorrupt', 'SingleTgtCure', }) end, },
-        },
-    },
-    ['Themes']            = {
-        ['Heal'] = {
-            { element = ImGuiCol.TitleBgActive,    color = { r = 0.08, g = 0.40, b = 0.08, a = 0.8, }, },
-            { element = ImGuiCol.TableHeaderBg,    color = { r = 0.08, g = 0.40, b = 0.08, a = 0.8, }, },
-            { element = ImGuiCol.Tab,              color = { r = 0.03, g = 0.16, b = 0.03, a = 0.8, }, },
-            { element = ImGuiCol.TabSelected,      color = { r = 0.08, g = 0.40, b = 0.08, a = 0.8, }, },
-            { element = ImGuiCol.TabHovered,       color = { r = 0.08, g = 0.40, b = 0.08, a = 1.0, }, },
-            { element = ImGuiCol.Header,           color = { r = 0.03, g = 0.16, b = 0.03, a = 0.8, }, },
-            { element = ImGuiCol.HeaderActive,     color = { r = 0.08, g = 0.40, b = 0.08, a = 0.8, }, },
-            { element = ImGuiCol.HeaderHovered,    color = { r = 0.08, g = 0.40, b = 0.08, a = 1.0, }, },
-            { element = ImGuiCol.FrameBgHovered,   color = { r = 0.08, g = 0.40, b = 0.08, a = 0.7, }, },
-            { element = ImGuiCol.Button,           color = { r = 0.05, g = 0.26, b = 0.05, a = 0.8, }, },
-            { element = ImGuiCol.ButtonActive,     color = { r = 0.08, g = 0.40, b = 0.08, a = 0.8, }, },
-            { element = ImGuiCol.ButtonHovered,    color = { r = 0.08, g = 0.40, b = 0.08, a = 1.0, }, },
-            { element = ImGuiCol.TextSelectedBg,   color = { r = 0.08, g = 0.40, b = 0.08, a = 0.1, }, },
-            { element = ImGuiCol.FrameBg,          color = { r = 0.03, g = 0.16, b = 0.03, a = 0.8, }, },
-            { element = ImGuiCol.SliderGrab,       color = { r = 0.40, g = 0.90, b = 0.20, a = 0.8, }, },
-            { element = ImGuiCol.SliderGrabActive, color = { r = 0.40, g = 0.90, b = 0.20, a = 0.9, }, },
-            { element = ImGuiCol.FrameBgActive,    color = { r = 0.08, g = 0.40, b = 0.08, a = 1.0, }, },
-        },
-        ['Mana'] = {
-            { element = ImGuiCol.TitleBgActive,    color = { r = 0.20, g = 0.35, b = 0.05, a = 0.8, }, },
-            { element = ImGuiCol.TableHeaderBg,    color = { r = 0.20, g = 0.35, b = 0.05, a = 0.8, }, },
-            { element = ImGuiCol.Tab,              color = { r = 0.08, g = 0.14, b = 0.02, a = 0.8, }, },
-            { element = ImGuiCol.TabSelected,      color = { r = 0.20, g = 0.35, b = 0.05, a = 0.8, }, },
-            { element = ImGuiCol.TabHovered,       color = { r = 0.20, g = 0.35, b = 0.05, a = 1.0, }, },
-            { element = ImGuiCol.Header,           color = { r = 0.08, g = 0.14, b = 0.02, a = 0.8, }, },
-            { element = ImGuiCol.HeaderActive,     color = { r = 0.20, g = 0.35, b = 0.05, a = 0.8, }, },
-            { element = ImGuiCol.HeaderHovered,    color = { r = 0.20, g = 0.35, b = 0.05, a = 1.0, }, },
-            { element = ImGuiCol.FrameBgHovered,   color = { r = 0.20, g = 0.35, b = 0.05, a = 0.7, }, },
-            { element = ImGuiCol.Button,           color = { r = 0.13, g = 0.22, b = 0.03, a = 0.8, }, },
-            { element = ImGuiCol.ButtonActive,     color = { r = 0.20, g = 0.35, b = 0.05, a = 0.8, }, },
-            { element = ImGuiCol.ButtonHovered,    color = { r = 0.20, g = 0.35, b = 0.05, a = 1.0, }, },
-            { element = ImGuiCol.TextSelectedBg,   color = { r = 0.20, g = 0.35, b = 0.05, a = 0.1, }, },
-            { element = ImGuiCol.FrameBg,          color = { r = 0.08, g = 0.14, b = 0.02, a = 0.8, }, },
-            { element = ImGuiCol.SliderGrab,       color = { r = 0.55, g = 0.80, b = 0.15, a = 0.8, }, },
-            { element = ImGuiCol.SliderGrabActive, color = { r = 0.55, g = 0.80, b = 0.15, a = 0.9, }, },
-            { element = ImGuiCol.FrameBgActive,    color = { r = 0.20, g = 0.35, b = 0.05, a = 1.0, }, },
+            { type = "Spell", name_func = function(self) return Casting.GetFirstMapItem({ 'SingleCure', 'CureCorrupt', }) end, },
         },
     },
     ['ItemSets']          = {
@@ -107,21 +72,18 @@ local _ClassConfig = {
         },
     },
     ['AbilitySets']       = {
-        ['Alliance'] = {
-            --, Buff >= LVL102
+        --[[ ['Alliance'] = {
             "Ferntender's Covariance",  -- Level 125
             "Arboreal Atonement",       -- Level 120
             "Arbor Tender's Coalition", -- Level 115
-            "Bosquetender's Alliance",  -- Level 102
-        },
-        ['FireAura'] = {
-            -- Spell Series >= 87LVL Minimum
+            "Bosquetender's Alliance,", -- Level 102
+        }, ]]
+        --[[ ['FireAura'] = {
             "Wildspark Aura", -- Level 97
             "Wildblaze Aura", -- Level 92
             "Wildfire Aura",  -- Level 87
-        },
+        }, ]]
         ['IceAura'] = {
-            -- Spell Series >= 88LVL Minimum -- Only Heroic Aura that will be used
             "Frostfell Aura IX", -- Level 128
             "Coldburst Aura",    -- Level 123
             "Nightchill Aura",   -- Level 118
@@ -133,20 +95,44 @@ local _ClassConfig = {
             "Frostfell Aura",    -- Level 88
         },
         ['HealingAura'] = {
-            -- Healing Aura >= 55
             "Aura of Life",      -- Level 70
             "Aura of the Grove", -- Level 55
         },
-        ['SingleTgtCure'] = {
-            -- Single Target Multi-Cure >= 84
+        ['SingleCure'] = {
             "Mastery: Sanctified Blood", -- Level 128
             "Sanctified Blood",          -- Level 118
             "Expurgated Blood",          -- Level 108
             "Unblemished Blood",         -- Level 103
             "Cleansed Blood",            -- Level 99
             "Perfected Blood",           -- Level 94
-            "Purged Blood",              -- Level 89
-            "Purified Blood",            -- Level 84
+            -- "Purged Blood",              -- Level 89
+            -- "Purified Blood",            -- Level 84
+            -- "Pure Blood",                -- Level 52
+        },
+        ['CurePoison'] = {
+            "Eradicate Poison",  -- Level 58
+            "Counteract Poison", -- Level 28
+            "Cure Poison",       -- Level 5
+        },
+        ['CureDisease'] = {
+            "Eradicate Disease",  -- Level 58
+            "Counteract Disease", -- Level 28
+            "Cure Disease",       -- Level 4
+        },
+        ['CureCurse'] = {
+            "Eradicate Curse",      -- Level 54
+            "Remove Greater Curse", -- Level 54
+            "Remove Curse",         -- Level 38
+            "Remove Lesser Curse",  -- Level 23
+            "Remove Minor Curse",   -- Level 8
+        },
+        ['GroupCure'] = {
+            "Mastery: Nightwhisper's Breeze", -- Level 126
+            "Nightwhisper's Breeze",          -- Level 116
+            "Wildtender's Breeze",            -- Level 106
+            "Copsetender's Breeze",           -- Level 101
+            "Bosquetender's Breeze",          -- Level 96
+            "Fawnwalker's Breeze",            -- Level 91
         },
         ['CureCorrupt'] = {
             "Mastery: Chant of the Zelniak", -- Level 127
@@ -161,43 +147,9 @@ local _ClassConfig = {
             "Chant of the Napaea",           -- Level 64
             "Cure Corruption",               -- Level 61
         },
-        ['GroupCure'] = {
-            -- Group Multi-Cure >=91
-            "Mastery: Nightwhisper's Breeze", -- Level 126
-            "Nightwhisper's Breeze",          -- Level 116
-            "Wildtender's Breeze",            -- Level 106
-            "Copsetender's Breeze",           -- Level 101
-            "Bosquetender's Breeze",          -- Level 96
-            "Fawnwalker's Breeze",            -- Level 91
-        },
-        ['CharmSpell'] = {
-            -- Charm Spells >= 14
-            "Beast's Beckoning XVIII", -- Level 126
-            "Beast's Bestowing",       -- Level 121
-            "Beast's Bellowing",       -- Level 116
-            "Beast's Beseeching",      -- Level 106
-            "Beast's Bidding",         -- Level 101
-            "Beast's Bespelling",      -- Level 96
-            "Beast's Behest",          -- Level 91
-            "Beast's Beguiling",       -- Level 86
-            "Beast's Befriending",     -- Level 81
-            "Beast's Bewitching",      -- Level 76
-            "Beast's Beckoning",       -- Level 71
-            "Beast's Beckoning",       -- Level 71
-            "Nature's Beckon",         -- Level 70
-            "Command of Tunare",       -- Level 63
-            "Tunare's Request",        -- Level 55
-            "Call of Karana",          -- Level 52
-            "Allure of the Wild",      -- Level 43
-            "Beguile Animals",         -- Level 33
-            "Charm Animals",           -- Level 23
-            "Befriend Animal",         -- Level 13
-        },
         ['QuickHealSurge'] = {
-            -- Main Quick heal >=75
             "Adrenaline Surge XII", -- Level 129
             "Adrenaline Fury",      -- Level 124
-            "Adrenaline Spate",     -- Level 119
             "Adrenaline Spate",     -- Level 119
             "Adrenaline Deluge",    -- Level 114
             "Adrenaline Barrage",   -- Level 109
@@ -210,10 +162,8 @@ local _ClassConfig = {
             "Adrenaline Surge",     -- Level 75
         },
         ['QuickHeal'] = {
-            -- Backup Quick heal >= LVL90
             "Rejuvilation IX", -- Level 130
             "Resuscitation",   -- Level 125
-            "Sootheseance",    -- Level 120
             "Sootheseance",    -- Level 120
             "Rejuvenescence",  -- Level 115
             "Revitalization",  -- Level 110
@@ -222,8 +172,7 @@ local _ClassConfig = {
             "Invigoration",    -- Level 95
             "Rejuvilation",    -- Level 90
         },
-        ['LongHeal'] = {
-            -- Long Heal >= 1 -- skipped 10s cast heals.
+        ['HealSpell'] = {
             "Puravida XI",       -- Level 127
             "Vivavida",          -- Level 122
             "Clotavida",         -- Level 117
@@ -251,10 +200,8 @@ local _ClassConfig = {
             "Minor Healing",     -- Level 1
         },
         ['QuickGroupHeal'] = {
-            -- Quick Group heal >= LVL78
             "Survival of the Fittest XI",    -- Level 128
             "Survival of the Heroic",        -- Level 123
-            "Survival of the Unrelenting",   -- Level 118
             "Survival of the Unrelenting",   -- Level 118
             "Survival of the Favored",       -- Level 113
             "Survival of the Auspicious",    -- Level 108
@@ -266,10 +213,8 @@ local _ClassConfig = {
             "Survival of the Fittest",       -- Level 78
         },
         ['LongGroupHeal'] = {
-            -- Long Group heal >= LVL 70
             "Lunamend",        -- Level 130
             "Lunacea",         -- Level 125
-            "Lunarush",        -- Level 120
             "Lunarush",        -- Level 120
             "Lunalesce",       -- Level 115
             "Lunasalve",       -- Level 110
@@ -283,7 +228,6 @@ local _ClassConfig = {
             "Moonshadow",      -- Level 70
         },
         ['PromHeal'] = {
-            -- Promised Heals Line Druid
             "Promised Reknit X",       -- Level 127
             "Promised Regrowth",       -- Level 122
             "Promised Revivification", -- Level 117
@@ -295,8 +239,11 @@ local _ClassConfig = {
             "Promised Replenishment",  -- Level 87
             "Promised Reknit",         -- Level 82
         },
+        ['RezSpell'] = {
+            "Incarnate Anew", -- Level 59
+        },
         ['FrostDebuff'] = {
-            -- Frost Debuff Series -- >= 74LVL -- On Bar
+            -- Frost Debuff Series -- >=74LVL -- On Bar
             "Gelid Frost XI",   -- Level 129
             "Mythic Frost",     -- Level 124
             "Primal Frost",     -- Level 119
@@ -311,12 +258,10 @@ local _ClassConfig = {
             "Hoar Frost",       -- Level 74
         },
         ['RoDebuff'] = {
-            -- Ro Debuff Series -- >= 37LVL -- AA Starts at LVL (Single Target) -- On Bar Until AA
             "Grasp of Ro IX",              -- Level 126
             "Clench of Ro",                -- Level 121
             "Cinch of Ro",                 -- Level 116
             "Clasp of Ro",                 -- Level 111
-            "Cowl of Ro",                  -- Level 106
             "Cowl of Ro",                  -- Level 106
             "Crush of Ro",                 -- Level 101
             "Clutch of Ro",                -- Level 96
@@ -328,8 +273,7 @@ local _ClassConfig = {
             "Fixation of Ro",              -- Level 42
             "Ro's Fiery Sundering",        -- Level 37
         },
-        ['RoDebuffAE'] = {
-            -- Ro AE Debuff Series -- >= 97LVL -- AA Starts at LVL
+        --[[ ['RoDebuffAE'] = {
             "Pillar of Ro VII", -- Level 127
             "Visage of Ro",     -- Level 122
             "Scrutiny of Ro",   -- Level 117
@@ -337,9 +281,8 @@ local _ClassConfig = {
             "Gaze of Ro",       -- Level 107
             "Column of Ro",     -- Level 102
             "Pillar of Ro",     -- Level 97
-        },
-        ['IceBreathDebuff'] = {
-            -- Ice Breath Series >= 63LVL -- On Bar
+        }, ]]
+        ['BreathDebuff'] = {
             "Glacier Breath XIV",   -- Level 127
             "Algid Breath",         -- Level 122
             "Twilight Breath",      -- Level 117
@@ -355,8 +298,7 @@ local _ClassConfig = {
             "Glacier Breath",       -- Level 67
             "E`ci's Frosty Breath", -- Level 63
         },
-        ['SkinDebuff'] = {
-            -- Skin Debuff Series >= 73LVL -- On Bar
+        --[[ ['SkinDebuff'] = {
             "Skin to Lichen",    -- Level 118
             "Skin to Sumac",     -- Level 108
             "Skin to Seedlings", -- Level 98
@@ -365,9 +307,8 @@ local _ClassConfig = {
             "Skin to Flora",     -- Level 83
             "Skin to Mulch",     -- Level 78
             "Skin to Vines",     -- Level 73
-        },
-        ['ReptileCombatInnate'] = {
-            -- Reptile Combat Innate >= 68LVL -- On Bar
+        }, ]]
+        ['ReptileBuff'] = {
             "Skin of the Reptile XII", -- Level 129
             "Chitin of the Reptile",   -- Level 124
             "Bulwark of the Reptile",  -- Level 119
@@ -381,8 +322,7 @@ local _ClassConfig = {
             "Scales of the Reptile",   -- Level 79
             "Skin of the Reptile",     -- Level 68
         },
-        ['NaturesWrathDot'] = {
-            -- Natures Wrath DOT Line >= 75LVL -- On Bar
+        ['WrathDot'] = {
             "Nature's Blazing Wrath XII",  -- Level 130
             "Nature's Boiling Wrath",      -- Level 125
             "Nature's Sweltering Wrath",   -- Level 120
@@ -418,7 +358,6 @@ local _ClassConfig = {
             "Stinging Swarm",        -- Level 10
         },
         ['SunDot'] = {
-            -- SUN Dot Line >= 49LVL -- On Bar
             "Sunscorch XII",         -- Level 129
             "Sunscald",              -- Level 124
             "Sunpyre",               -- Level 119
@@ -429,7 +368,6 @@ local _ClassConfig = {
             "Sunbrand",              -- Level 89
             "Sunsinge",              -- Level 84
             "Sunsear",               -- Level 79
-            "Sunscorch",             -- Level 74
             "Sunscorch",             -- Level 74
             "Vengeance of the Sun",  -- Level 69
             "Vengeance of Tunare",   -- Level 64
@@ -467,8 +405,7 @@ local _ClassConfig = {
             "Immolate",              -- Level 25
             "Flame Lick",            -- Level 1
         },
-        ['RemoteMoonDD'] = {
-            -- Remote Moon DD >= 99LVL
+        ['RemoteColdNuke'] = {
             "Remote Moonfire VII", -- Level 129
             "Remote Moonshiver",   -- Level 124
             "Remote Moonchill",    -- Level 119
@@ -477,8 +414,7 @@ local _ClassConfig = {
             "Remote Moonflame",    -- Level 104
             "Remote Moonfire",     -- Level 99
         },
-        ['RemoteSunDD'] = {
-            -- Remote Sun DD >= 83LVL
+        ['RemoteFireNuke'] = {
             "Remote Sunflare X", -- Level 130
             "Remote Sunscorch",  -- Level 123
             "Remote Sunbolt",    -- Level 118
@@ -490,46 +426,47 @@ local _ClassConfig = {
             "Remote Sunflare",   -- Level 88
             "Remote Manaflux",   -- Level 83
         },
-        ['RoarDD'] = {
-            -- Roar DD >= 93LVL
-            "Katabatic Roar VIII", -- Level 128
-            "Tempest Roar",        -- Level 123
-            "Bloody Roar",         -- Level 118
-            "Typhonic Roar",       -- Level 113
-            "Cyclonic Roar",       -- Level 108
-            "Anabatic Roar",       -- Level 103
-            "Katabatic Roar",      -- Level 98
-            "Roar of Kolos",       -- Level 93
+        ['SummonedNuke'] = {
+            "Expunge the Unnatural",     -- Level 127
+            "Dismantle the Unnatural",   -- Level 122
+            "Unmend the Unnatural",      -- Level 118
+            "Obliterate the Unnatural",  -- Level 113
+            "Repudiate the Unnatural",   -- Level 108
+            "Eradicate the Unnatural",   -- Level 103
+            "Exterminate the Unnatural", -- Level 98
+            "Abolish the Divergent",     -- Level 93
+            "Annihilate the Divergent",  -- Level 88
+            "Annihilate the Anomalous",  -- Level 83
+            "Annihilate the Aberrant",   -- Level 78
+            "Annihilate the Unnatural",  -- Level 73
         },
-        ['QuickRoarDD'] = {
-            -- Quick Cast Roar Series -- will be replaced by roar at lvl 93
-            "Shattering of the Stormborn",  -- Level 126
-            "Revelry of the Stormborn",     -- Level 121
-            "Bedlam of the Stormborn",      -- Level 116
-            "Maelstrom of the Stormborn",   -- Level 111
-            "Thunderbolt of the Stormborn", -- Level 106
-            "Typhoon of the Stormborn",     -- Level 101
-            "Whirlwind of the Stormborn",   -- Level 96
-            "Cyclone of the Stormborn",     -- Level 91
-            "Shear of the Stormborn",       -- Level 86
-            "Squall of the Stormborn",      -- Level 81
-            "Tempest of the Stormborn",     -- Level 76
-            "Gale of the Stormborn",        -- Level 71
-            "Stormwatch",                   -- Level 66
-            "Storm's Fury",                 -- Level 61
-            "Dustdevil",                    -- Level 43
-            "Fury of Air",                  -- Level 30
+        ['StunNuke'] = {
+            "Katabatic Roar VIII",      -- Level 128
+            "Tempest Roar",             -- Level 123
+            "Bloody Roar",              -- Level 118
+            "Typhonic Roar",            -- Level 113
+            "Cyclonic Roar",            -- Level 108
+            "Anabatic Roar",            -- Level 103
+            "Katabatic Roar",           -- Level 98
+            "Roar of Kolos",            -- Level 93 -- transition to roar nukes
+            "Cyclone of the Stormborn", -- Level 91 -- use the fast, lower DD stuns as filler before roar is available
+            "Shear of the Stormborn",   -- Level 86
+            "Squall of the Stormborn",  -- Level 81
+            "Tempest of the Stormborn", -- Level 76
+            "Gale of the Stormborn",    -- Level 71
+            "Stormwatch",               -- Level 66
+            "Storm's Fury",             -- Level 61
+            -- "Dustdevil",                 -- Level 43, Does not Stun
+            "Fury of Air",              -- Level 30
         },
         ['DichoSpell'] = {
-            -- Dicho Spell >= 101LVL
             "Reciprocal Winds", -- Level 121
             "Ecliptic Winds",   -- Level 116
             "Composite Winds",  -- Level 111
             "Dissident Winds",  -- Level 106
             "Dichotomic Winds", -- Level 101
         },
-        ['WinterFireDD'] = {
-            -- Winters Fire DD Line >= 73LVL -- Using for Low level Fire DD as well
+        ['FireNuke'] = {
             "Winter's Wildflame XII", -- Level 128
             "Winter's Wildgale",      -- Level 123
             "Winter's Wildbrume",     -- Level 118
@@ -555,7 +492,6 @@ local _ClassConfig = {
             "Burst of Flame",         -- Level 1
         },
         ['ChillDot'] = {
-            -- Chill DOT Line -- >= 95LVL -- Used for Burns
             "Chill of the Grovetender",     -- Level 130
             "Chill of the Ferntender",      -- Level 125
             "Chill of the Dusksage Tender", -- Level 120
@@ -565,8 +501,7 @@ local _ClassConfig = {
             "Chill of the Visionary",       -- Level 100
             "Chill of the Natureward",      -- Level 95
         },
-        ['RootSpells'] = {
-            -- Root Spells
+        --[[ ['RootSpells'] = {
             "Vinelash Assault", -- Level 97
             "Vinelash Cascade", -- Level 72
             "Spore Spiral",     -- Level 69
@@ -578,10 +513,10 @@ local _ClassConfig = {
             "Enveloping Roots", -- Level 36
             "Ensnaring Roots",  -- Level 21
             "Grasping Roots",   -- Level 2
-        },
+        }, ]]
         ['SnareSpell'] = {
-            -- Snare Spells
             "Thornmaw Vines",  -- Level 97
+            "Hungry Vines",    -- Level 70
             "Serpent Vines",   -- Level 69
             "Entangle",        -- Level 61
             "Mire Thorns",     -- Level 61
@@ -589,6 +524,9 @@ local _ClassConfig = {
             "Ensnare",         -- Level 26
             "Snare",           -- Level 1
             "Tangling Weeds",  -- Level 1
+        },
+        ['TwincastSpell'] = {
+            "Twincast", -- Level 85
         },
         ['TwinHealNuke'] = {
             "Sundew Blessing X",  -- Level 128
@@ -602,7 +540,7 @@ local _ClassConfig = {
             "Sunrise Blessing",   -- Level 89
             "Sundew Blessing",    -- Level 84
         },
-        ['IceNuke'] = {
+        ['ColdNuke'] = {
             "Rime Crystals XII",      -- Level 130
             "Coldbite Crystals",      -- Level 125
             "Moonwhisper Crystals",   -- Level 120
@@ -621,7 +559,7 @@ local _ClassConfig = {
             "Frost",                  -- Level 55
             "Ice",                    -- Level 47
         },
-        ['IceRainNuke'] = {
+        --[[ ['ColdRainNuke'] = {
             "Cascade of Hail XVIII", -- Level 127
             "Unrelenting Hail",      -- Level 121
             "Howling Hail",          -- Level 116
@@ -640,8 +578,8 @@ local _ClassConfig = {
             "Avalanche",             -- Level 37
             "Pogonip",               -- Level 22
             "Cascade of Hail",       -- Level 12
-        },
-        ['ShroomPet'] = {
+        }, ]]
+        --[[ ['ShroomPet'] = {
             --Druid Mushroom DOT Pet Line >= 84LVL --used for mana savings
             "Mycelid Assault",      -- Level 124
             "Saprophyte Assault",   -- Level 119
@@ -652,14 +590,8 @@ local _ClassConfig = {
             "Myconid Assault",      -- Level 94
             "Polyporous Assault",   -- Level 89
             "Blast of Hypergrowth", -- Level 84
-        },
-        ['IceDD'] = {
-            -- Ice Nuke DD --Gap Filler
-            "Moonfire", -- Level 60
-            "Frost",    -- Level 55
-        },
+        }, ]]
         ['SelfShield'] = {
-            -- Self Shield Buff
             "Brackenbriar Coat", -- Level 128
             "Bramblespike Coat", -- Level 123
             "Shadespine Coat",   -- Level 118
@@ -682,7 +614,6 @@ local _ClassConfig = {
             "Thistlecoat",       -- Level 7
         },
         ['SelfManaRegen'] = {
-            -- Self mana Regen Buff
             "Mask of the Grovetender",     -- Level 130
             "Mask of the Ferntender",      -- Level 125
             "Mask of the Dusksage Tender", -- Level 120
@@ -714,21 +645,20 @@ local _ClassConfig = {
             "Blessing of the Direwild",   -- Level 75
             "Blessing of Steeloak",       -- Level 70
             "Blessing of the Nine",       -- Level 65
-            "Protection of the Glades",   -- Level 60 Group (All above, also group)
-            "Natureskin",                 -- Level 57 Single
-            "Protection of Nature",       -- Level 49 Group
-            "Skin like Nature",           -- Level 46 Single
-            "Protection of Diamond",      -- Level 39 Group
-            "Skin like Diamond",          -- Level 36 Single
-            "Protection of Steel",        -- Level 27 Group
-            "Skin like Steel",            -- Level 24 Single
-            "Protection of Rock",         -- Level 19 Group
-            "Skin like Rock",             -- Level 14 Single
-            "Protection of Wood",         -- Level 9 Group
-            "Skin like Wood",             -- Level 1 Single
+            "Protection of the Glades",   -- Level 60, Group (All above, also group)
+            "Natureskin",                 -- Level 57, Single
+            "Protection of Nature",       -- Level 49, Group
+            "Skin like Nature",           -- Level 46, Single
+            "Protection of Diamond",      -- Level 39, Group
+            "Skin like Diamond",          -- Level 36, Single
+            "Protection of Steel",        -- Level 27, Group
+            "Skin like Steel",            -- Level 24, Single
+            "Protection of Rock",         -- Level 19, Group
+            "Skin like Rock",             -- Level 14, Single
+            "Protection of Wood",         -- Level 9, Group
+            "Skin like Wood",             -- Level 1, Single
         },
         ['TempHPBuff'] = {
-            -- Temp Health -- Focus on Tank
             "Wild Growth X",       -- Level 127
             "Overwhelming Growth", -- Level 122
             "Fervent Growth",      -- Level 117
@@ -741,7 +671,6 @@ local _ClassConfig = {
             "Wild Growth",         -- Level 82
         },
         ['GroupRegenBuff'] = {
-            -- Group Regen BuffAll Have Long Duration HP Regen Buffs. Not Short term Heal.
             "Talisman of Perseverance XV",   -- Level 126
             "Talisman of the Unforgettable", -- Level 124
             "Talisman of the Tenacious",     -- Level 119
@@ -760,7 +689,6 @@ local _ClassConfig = {
             "Pack Regeneration",             -- Level 39
         },
         ['AtkBuff'] = {
-            -- Single Target Attack Buff for MeleeGuard
             "Mammoth's Force",    -- Level 86
             "Mammoth's Strength", -- Level 71
             "Lion's Strength",    -- Level 67
@@ -770,24 +698,39 @@ local _ClassConfig = {
             "Strength of Stone",  -- Level 34
             "Strength of Earth",  -- Level 7
         },
-        ['GroupDmgShield'] = {
-            -- Group Damage Shield -- Focus on the tank
+        ['DamageShield'] = {
             "Legacy of Brackenbriars", -- Level 127
             "Legacy of Bramblespikes", -- Level 125
             "Legacy of Bloodspikes",   -- Level 120
             "Legacy of Icebriars",     -- Level 115
+            "Icebriar Bulwark",        -- Level 112
             "Legacy of Daggerspikes",  -- Level 110
+            "Daggerspike Bulwark",     -- Level 107
             "Legacy of Daggerspurs",   -- Level 105
+            "Daggerspur Bulwark",      -- Level 102
             "Legacy of Spikethistles", -- Level 100
+            "Spikethistle Bulwark",    -- Level 97
             "Legacy of Spineburrs",    -- Level 95
+            "Spineburr Bulwark",       -- Level 92
             "Legacy of Bonebriar",     -- Level 90
+            "Bonebriar Bulwark",       -- Level 87
             "Legacy of Brierbloom",    -- Level 85
+            "Brierbloom Bulwark",      -- Level 82
             "Legacy of Viridithorns",  -- Level 80
+            "Viridifloral Bulwark",    -- Level 77
             "Legacy of Viridiflora",   -- Level 75
+            "Viridifloral Shield",     -- Level 72
             "Legacy of Nettles",       -- Level 70
             "Legacy of Bracken",       -- Level 65
+            "Shield of Bracken",       -- Level 63
             "Legacy of Thorn",         -- Level 59
+            "Shield of Blades",        -- Level 58
             "Legacy of Spike",         -- Level 49
+            "Shield of Thorns",        -- Level 47
+            "Shield of Spikes",        -- Level 37
+            "Shield of Brambles",      -- Level 27
+            "Shield of Barbs",         -- Level 17
+            "Shield of Thistles",      -- Level 7
         },
         ['MoveSpells'] = {
             "Flight of Falcons", -- Level 91
@@ -798,57 +741,63 @@ local _ClassConfig = {
             "Spirit of Wolf",    -- Level 10
         },
         ['ManaBear'] = {
-            --Druid Mana Bear Growth Line
             "Emboldened Growth", -- Level 121
             "Bolstered Growth",  -- Level 116
             "Sustaining Growth", -- Level 111
             "Nourishing Growth", -- Level 106
             "Nurturing Growth",  -- Level 96
         },
-        ['PetSpell'] = {
-            "Nature Walker's Behest", -- Level 55
+        ['CharmSpell'] = {
+            "Beast's Beckoning XVIII", -- Level 126
+            "Beast's Bestowing",       -- Level 121
+            "Beast's Bellowing",       -- Level 116
+            "Beast's Beseeching",      -- Level 106
+            "Beast's Bidding",         -- Level 101
+            "Beast's Bespelling",      -- Level 96
+            "Beast's Behest",          -- Level 91
+            "Beast's Beguiling",       -- Level 86
+            "Beast's Befriending",     -- Level 81
+            "Beast's Bewitching",      -- Level 76
+            "Beast's Beckoning",       -- Level 71
+            "Nature's Beckon",         -- Level 70
+            "Command of Tunare",       -- Level 63
+            "Tunare's Request",        -- Level 55
+            "Call of Karana",          -- Level 52
+            "Allure of the Wild",      -- Level 43
+            "Beguile Animals",         -- Level 33
+            "Charm Animals",           -- Level 23
+            "Befriend Animal",         -- Level 13
         },
-        ['RezSpell'] = {
-            "Incarnate Anew", -- Level 59
+        ['Barkspur'] = {
+            "Barkspur XIII", -- Level 126
+            "Frondbarb",     -- Level 121
+            "Duskthorn",     -- Level 116
+            "Vinespike",     -- Level 111
+            "Thornspike",    -- Level 106
+            "Daggerthorn",   -- Level 101
+            "Stemfang",      -- Level 96
+            "Vinespur",      -- Level 91
+            "Thornspur",     -- Level 86
+            "Frondspur",     -- Level 81
+            "Fernspike",     -- Level 76
+            "Fernspur",      -- Level 71
+            "Barkspur",      -- Level 70
         },
-        -- ['SingleDS'] = {
-        --     -- Updated to 125
-        --     --Single Target Damage Shield
-        --     "Bramblespike Bulwark", -- Level 122
-        --     "Nightspire Bulwark",   -- Level 117
-        --     "Icebriar Bulwark",     -- Level 112
-        --     "Daggerspike Bulwark",  -- Level 107
-        --     "Daggerspur Bulwark",   -- Level 102
-        --     "Spikethistle Bulwark", -- Level 97
-        --     "Spineburr Bulwark",    -- Level 92
-        --     "Bonebriar Bulwark",    -- Level 87
-        --     "Brierbloom Bulwark",   -- Level 82
-        --     "Viridifloral Bulwark", -- Level 77
-        --     "Viridifloral Shield",  -- Level 72
-        --     "Nettle Shield",        -- Level 67
-        --     "Shield of Bracken",    -- Level 63
-        --     "Shield of Blades",     -- Level 58
-        --     "Shield of Thorns",     -- Level 47
-        --     "Shield of Spikes",     -- Level 37
-        --     "Shield of Brambles",   -- Level 27
-        --     "Shield of Barbs",      -- Level 17
-        --     "Shield of Thistles",   -- Level 7
-        -- },
     },
     ['HealRotationOrder'] = {
-        {
-            name           = 'BigHealPoint',
-            state          = 1,
-            steps          = 1,
-            doFullRotation = true,
-            cond           = function(self, target) return Targeting.BigHealsNeeded(target) and not Targeting.TargetIsType("pet", target) end,
-        },
         {
             name = 'GroupHealPoint',
             state = 1,
             steps = 1,
             doFullRotation = true,
             cond = function(self, target) return Targeting.GroupHealsNeeded() end,
+        },
+        {
+            name = 'BigHealPoint',
+            state = 1,
+            steps = 1,
+            doFullRotation = true,
+            cond = function(self, target) return Targeting.BigHealsNeeded(target) and not Targeting.TargetIsType("pet", target) end,
         },
         {
             name = 'MainHealPoint',
@@ -859,45 +808,6 @@ local _ClassConfig = {
         },
     },
     ['HealRotations']     = {
-        ['BigHealPoint'] = {
-            {
-                name = "QuickHealSurge",
-                type = "Spell",
-            },
-            {
-                name = "QuickGroupHeal",
-                type = "Spell",
-                cond = function(self, spell, target)
-                    return Targeting.TargetIsTanking(target)
-                end,
-            },
-            {
-                name = "Blessing of Tunare",
-                type = "AA",
-                cond = function(self, aaName, target)
-                    return Targeting.TargetIsTanking(target)
-                end,
-            },
-            {
-                name = "Wildtender's Survival",
-                type = "AA",
-                cond = function(self, aaName, target)
-                    return Targeting.TargetIsTanking(target)
-                end,
-            },
-            {
-                name = "Swarm of Fireflies",
-                type = "AA",
-            },
-            {
-                name = "Convergence of Spirits",
-                type = "AA",
-            },
-            {
-                name = "Forceful Rejuvenation",
-                type = "AA",
-            },
-        },
         ['GroupHealPoint'] = {
             {
                 name = "Blessing of Tunare",
@@ -918,16 +828,76 @@ local _ClassConfig = {
                 name = "LongGroupHeal",
                 type = "Spell",
             },
-
+        },
+        ['BigHealPoint'] = {
+            {
+                name = "QuickHeal",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('QuickHealUse') == 1 end,
+            },
+            {
+                name = "QuickHealSurge",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('QuickHealSurgeUse') == 1 end,
+            },
+            {
+                name = "QuickGroupHeal",
+                type = "Spell",
+                cond = function(self, spell, target)
+                    if not Targeting.GroupedWithTarget(target) then return false end
+                    return Targeting.TargetIsTanking(target)
+                end,
+            },
+            {
+                name = "Wildtender's Survival",
+                type = "AA",
+                cond = function(self, aaName, target)
+                    if not Targeting.GroupedWithTarget(target) then return false end
+                    return Targeting.TargetIsTanking(target)
+                end,
+            },
+            {
+                name = "Convergence of Spirits",
+                type = "AA",
+            },
+            {
+                name = "Spirit of the Bear",
+                type = "AA",
+                cond = function(self, aaName, target)
+                    return Targeting.TargetIsTanking(target)
+                end,
+            },
+            {
+                name = "Blessing of Tunare",
+                type = "AA",
+                cond = function(self, aaName, target)
+                    return Targeting.TargetIsTanking(target)
+                end,
+            },
+            {
+                name = "Apothic Dragon Spine Hammer",
+                type = "Item",
+            },
+            {
+                name = "Forceful Rejuvenation",
+                type = "AA",
+            },
         },
         ['MainHealPoint'] = {
             {
                 name = "QuickHeal",
                 type = "Spell",
+                load_cond = function(self) return Config:GetSetting('QuickHealUse') == 2 end,
             },
             {
-                name = "LongHeal",
+                name = "QuickHealSurge",
                 type = "Spell",
+                load_cond = function(self) return Config:GetSetting('QuickHealSurgeUse') == 2 end,
+            },
+            {
+                name = "HealSpell",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoHealSpell') end,
             },
         },
     },
@@ -938,21 +908,11 @@ local _ClassConfig = {
         },
     },
     ['RotationOrder']     = {
-        -- Downtime doesn't have state because we run the whole rotation at once.
         {
             name = 'Downtime',
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
-                return combat_state == "Downtime" and Casting.OkayToBuff() and Casting.AmIBuffable()
-            end,
-        },
-        {
-            name = 'PetSummon',
-            targetId = function(self) return { mq.TLO.Me.ID(), } end,
-            load_cond = function(self) return Core.OnEMU() end,
-            cond = function(self, combat_state)
-                if not Config:GetSetting('DoPet') or mq.TLO.Me.Pet.ID() ~= 0 then return false end
-                return combat_state == "Downtime" and Core.CombatActionsCheck() and Casting.OkayToPetBuff() and Casting.AmIBuffable()
+                return combat_state == "Downtime" and Core.CombatActionsCheck() and Casting.OkayToBuff() and Casting.AmIBuffable()
             end,
         },
         {
@@ -961,16 +921,57 @@ local _ClassConfig = {
             steps = 1,
             targetId = function(self) return Casting.GetBuffableIDs() end,
             cond = function(self, combat_state)
-                return combat_state == "Downtime" and Casting.OkayToBuff()
+                return combat_state == "Downtime" and Core.CombatActionsCheck() and Casting.OkayToBuff()
             end,
         },
         {
-            name = 'Debuff',
+            name = 'RoDebuff',
+            state = 1,
+            steps = 1,
+            load_cond = function() return Config:GetSetting('DoRoDebuff') end,
+            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
+            cond = function(self, combat_state)
+                return combat_state == "Combat" and Core.CombatActionsCheck() and Casting.OkayToDebuff()
+            end,
+        },
+        {
+            name = 'SeasonsWrath',
             state = 1,
             steps = 1,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.OkayToDebuff()
+                return combat_state == "Combat" and Core.CombatActionsCheck() and Casting.OkayToDebuff()
+            end,
+        },
+        {
+            name = 'FrostDebuff',
+            state = 1,
+            steps = 1,
+            load_cond = function() return Config:GetSetting('DoFrostDebuff') end,
+            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
+            cond = function(self, combat_state)
+                return combat_state == "Combat" and Core.CombatActionsCheck() and Casting.OkayToDebuff()
+            end,
+        },
+        {
+            name = 'BreathDebuff',
+            state = 1,
+            steps = 1,
+            load_cond = function() return Config:GetSetting('DoBreathDebuff') end,
+            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
+            cond = function(self, combat_state)
+                return combat_state == "Combat" and Core.CombatActionsCheck() and Casting.OkayToDebuff()
+            end,
+        },
+        { --Keep things from running
+            name = 'Snare',
+            state = 1,
+            steps = 1,
+            load_cond = function() return Config:GetSetting('DoSnare') end,
+            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
+            cond = function(self, combat_state)
+                return combat_state == "Combat" and Core.CombatActionsCheck() and not Globals.AutoTargetIsNamed and
+                    Targeting.GetXTHaterCount() <= Config:GetSetting('SnareCount')
             end,
         },
         {
@@ -979,7 +980,8 @@ local _ClassConfig = {
             steps = 3,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.BurnCheck()
+                return combat_state == "Combat" and
+                    Casting.BurnCheck() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -989,155 +991,192 @@ local _ClassConfig = {
             load_cond = function(self) return Config:GetSetting('DoTwinHeal') and self:GetResolvedActionMapItem('TwinHealNuke') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Config:GetSetting('DoTwinHeal') and Core.IsHealing() and
-                    Targeting.GetTargetPctHPs() <= Config:GetSetting('AutoAssistAt')
+                return combat_state == "Combat" and Core.CombatActionsCheck()
+            end,
+        },
+        {
+            name = 'ToTHealNukes',
+            state = 1,
+            steps = 1,
+            doFullRotation = true,
+            load_cond = function(self)
+                return (Config:GetSetting('RemoteNukeElement') == 1 and self:GetResolvedActionMapItem('RemoteFireNuke')) or
+                    (Config:GetSetting('RemoteNukeElement') == 2 and self:GetResolvedActionMapItem('RemoteColdNuke'))
+            end,
+            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
+            cond = function(self, combat_state)
+                return combat_state == "Combat" and Targeting.LightHealsNeeded(mq.TLO.Me.TargetOfTarget)
+            end,
+        },
+        {
+            name = 'Barkspur',
+            state = 1,
+            steps = 1,
+            load_cond = function(self) return Config:GetSetting('DoBarkspur') and self:GetResolvedActionMapItem('Barkspur') end,
+            targetId = function(self) return Casting.GetBuffableIDs() end,
+            cond = function(self, combat_state)
+                return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
         {
             name = 'DPS',
             state = 1,
             steps = 1,
+            doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat"
+                return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
-
+        {
+            name = 'InstantRunBuff',
+            state = 1,
+            steps = 1,
+            targetId = function(self)
+                local autoTarget = Targeting.CheckForAutoTargetID()
+                if #autoTarget > 0 then return autoTarget end
+                return Casting.GetBuffableIDs()
+            end,
+            load_cond = function(self) return Config:GetSetting('DoMoveBuffs') and Casting.CanUseAA("Communion of the Cheetah") end,
+            cond = function(self, combat_state)
+                local downtime = combat_state == "Downtime" and not mq.TLO.Me.Invis()
+                local combat = combat_state == "Combat"
+                return (downtime or combat) and Core.CombatActionsCheck()
+            end,
+        },
     },
     ['Rotations']         = {
+        ['ToTHealNukes'] = {
+            {
+                name = "DichoSpell",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoDicho') end,
+                cond = function(self, spell, target)
+                    return Casting.OkayToNuke() and Targeting.MainHealsNeeded(mq.TLO.Me.TargetOfTarget)
+                end,
+            },
+            {
+                name = "RemoteFireNuke",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('RemoteNukeElement') == 1 end,
+                cond = function(self, spell, target)
+                    return Casting.OkayToNuke() and Targeting.LightHealsNeeded(mq.TLO.Me.TargetOfTarget)
+                end,
+            },
+            {
+                name = "RemoteColdNuke",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('RemoteNukeElement') == 2 end,
+                cond = function(self, spell, target)
+                    return Casting.OkayToNuke() and Targeting.LightHealsNeeded(mq.TLO.Me.TargetOfTarget)
+                end,
+            },
+        },
         ['DPS'] = {
             {
-                name = "SunrayDot",
+                name = "WrathDot",
                 type = "Spell",
-                cond = function(self, spell)
-                    return Core.IsModeActive("Heal") and Config:GetSetting('DoFire') and Casting.DotSpellCheck(spell) and Config:GetSetting('DoDot') and
-                        Casting.ReagentCheck(spell)
-                end,
-            },
-            {
-                name = "ChillDot",
-                type = "Spell",
-                cond = function(self, spell)
-                    return Core.IsModeActive("Heal") and not Config:GetSetting('DoFire') and Casting.DotSpellCheck(spell) and Config:GetSetting('DoDot')
-                end,
-            },
-            {
-                name = "Silent Casting",
-                type = "AA",
-            },
-            {
-                name = "Season's Wrath",
-                type = "AA",
-                cond = function(self, aaName)
-                    return Core.IsModeActive("Mana") and Casting.DetAACheck(aaName) and Targeting.GetTargetPctHPs() > 75
+                load_cond = function(self) return Config:GetSetting('DoWrathDot') end,
+                cond = function(self, spell, target)
+                    return Casting.OkayToNuke(true)
                 end,
             },
             {
                 name = "SunDot",
                 type = "Spell",
-                cond = function(self, spell)
-                    return Core.IsModeActive("Mana") or
-                        (Core.IsModeActive("Heal") and Config:GetSetting('DoFire')) and Casting.DotSpellCheck(spell) and Config:GetSetting('DoDot')
+                load_cond = function(self) return Config:GetSetting('DoSunDot') end,
+                cond = function(self, spell, target)
+                    return Casting.HaveManaToDot() and Casting.DotSpellCheck(spell, target) and
+                        (not Config:GetSetting('DotNamedOnly') or Globals.AutoTargetIsNamed)
                 end,
             },
             {
                 name = "HordeDot",
                 type = "Spell",
-                cond = function(self, spell)
-                    return Casting.DotSpellCheck(spell) and Config:GetSetting('DoDot')
+                load_cond = function(self) return Config:GetSetting('DoHordeDot') end,
+                cond = function(self, spell, target)
+                    return Casting.DotSpellCheck(spell, target) and
+                        (not Config:GetSetting('DotNamedOnly') or Globals.AutoTargetIsNamed or Casting.GOMCheck())
                 end,
             },
             {
-                name = "DichoSpell",
+                name = "SunrayDot",
                 type = "Spell",
-                cond = function(self, spell)
-                    return (Core.IsModeActive("Mana") or Config:GetSetting('DoNuke')) and Casting.DetSpellCheck(spell) and Targeting.GetTargetPctHPs() > 60 and
-                        mq.TLO.Me.PctMana() > 50
-                end,
-            },
-            {
-                name = "RemoteSunDD",
-                type = "Spell",
-                cond = function(self, spell)
-                    return Config:GetSetting('DoFire') and Casting.DetSpellCheck(spell) and Config:GetSetting('DoNuke') and
-                        Targeting.GetTargetPctHPs() < Config:GetSetting('NukePct')
-                end,
-            },
-            {
-                name = "RemoteMoonDD",
-                type = "Spell",
-                cond = function(self, spell)
-                    return not Config:GetSetting('DoFire') and Casting.DetSpellCheck(spell) and Config:GetSetting('DoNuke') and
-                        Targeting.GetTargetPctHPs() < Config:GetSetting('NukePct')
+                load_cond = function(self) return Config:GetSetting('SunMoonDotChoice') == 2 end,
+                cond = function(self, spell, target)
+                    return Casting.HaveManaToDot() and Casting.DotSpellCheck(spell, target) and
+                        (not Config:GetSetting('DotNamedOnly') or Globals.AutoTargetIsNamed)
                 end,
             },
             {
                 name = "MoonbeamDot",
                 type = "Spell",
-                cond = function(self, spell)
-                    return Core.IsModeActive("Mana") and Casting.DotSpellCheck(spell) and Config:GetSetting('DoDot') and
-                        Targeting.GetTargetLevel() >= mq.TLO.Me.Level()
+                load_cond = function(self) return Config:GetSetting('SunMoonDotChoice') == 3 end,
+                cond = function(self, spell, target)
+                    return Casting.HaveManaToDot() and Casting.DotSpellCheck(spell, target) and
+                        (not Config:GetSetting('DotNamedOnly') or Globals.AutoTargetIsNamed)
                 end,
             },
             {
-                name = "NaturesWrathDot",
+                name = "ChillDot",
                 type = "Spell",
-                cond = function(self, spell)
-                    return Core.IsModeActive("Mana") and Casting.DotSpellCheck(spell) and Config:GetSetting('DoDot')
+                load_cond = function(self) return Config:GetSetting('DoChillDot') end,
+                cond = function(self, spell, target)
+                    return Casting.HaveManaToDot() and Casting.DotSpellCheck(spell, target) and
+                        (not Config:GetSetting('DotNamedOnly') or Globals.AutoTargetIsNamed)
                 end,
             },
             {
-                name = "ShroomPet",
+                name = "SummonedNuke",
                 type = "Spell",
-                cond = function(self, spell)
-                    return Core.IsModeActive("Mana")
-                        and Casting.DetSpellCheck(spell) and mq.TLO.Me.PctMana() < 60
+                load_cond = function(self) return Config:GetSetting('DoSummonedNuke') end,
+                cond = function(self, spell, target)
+                    return Casting.OkayToNuke(true) and Targeting.IsSummoned(target)
                 end,
             },
             {
-                name = "WinterFireDD",
+                name = "StunNuke",
                 type = "Spell",
-                cond = function(self, spell)
-                    return Casting.DetSpellCheck(spell) and Config:GetSetting('DoFire') and Casting.OkayToNuke()
+                load_cond = function(self) return Config:GetSetting('DoStunNuke') end,
+                cond = function(self, spell, target)
+                    return Casting.OkayToNuke(true)
                 end,
             },
             {
-                name = "IceRainNuke",
+                name = "FireNuke",
                 type = "Spell",
-                cond = function(self, spell)
-                    return Core.IsModeActive("Mana") and Casting.DetSpellCheck(spell) and not Config:GetSetting('DoFire') and Config:GetSetting('DoRain') and
-                        Casting.OkayToNuke()
+                load_cond = function(self) return Config:GetSetting('DoFireNuke') end,
+                cond = function(self, spell, target)
+                    return Casting.OkayToNuke(true)
                 end,
             },
             {
-                name = "IceNuke",
+                name = "ColdNuke",
                 type = "Spell",
-                cond = function(self, spell)
-                    return Core.IsModeActive("Mana") and Casting.DetSpellCheck(spell) and not Config:GetSetting('DoFire') and
-                        Casting.OkayToNuke()
+                load_cond = function(self) return Config:GetSetting('DoColdNuke') end,
+                cond = function(self, spell, target)
+                    return Casting.OkayToNuke(true)
                 end,
             },
             {
                 name = "Nature's Frost",
                 type = "AA",
-                cond = function(self, aaName)
-                    return Core.IsModeActive("Mana") and mq.TLO.Me.PctMana() > 50 and
-                        (not Core.IsModeActive("Heal") or (Core.IsModeActive("Heal") and not Config:GetSetting('DoFire') and Casting.OkayToNuke()))
+                cond = function(self, aaName, target)
+                    return Casting.OkayToNuke(true)
                 end,
             },
             {
                 name = "Nature's Fire",
                 type = "AA",
-                cond = function(self, aaName)
-                    return mq.TLO.Me.PctMana() > 50 and Config:GetSetting('DoNuke') and
-                        (not Core.IsModeActive("Heal") or (Core.IsModeActive("Heal") and Config:GetSetting('DoFire') and Casting.OkayToNuke()))
+                cond = function(self, aaName, target)
+                    return Casting.OkayToNuke(true)
                 end,
             },
             {
                 name = "Nature's Bolt",
                 type = "AA",
-                cond = function(self, aaName)
-                    return Core.IsModeActive("Mana") and mq.TLO.Me.PctMana() > 50
+                cond = function(self, aaName, target)
+                    return Casting.OkayToNuke(true)
                 end,
             },
         },
@@ -1151,28 +1190,29 @@ local _ClassConfig = {
                 end,
             },
             {
-                name = "Nature's Boon",
-                type = "AA",
-            },
-            {
-                name = "Spirit of the Wood",
-                type = "AA",
-            },
-            {
-                name = "Swarm of the Fireflies",
-                type = "AA",
-            },
-            {
                 name = "Distant Conflagration",
                 type = "AA",
+                cond = function(self)
+                    return not mq.TLO.Me.Buff("Twincast")()
+                end,
             },
             {
-                name = "Nature's Guardian",
+                name = "Improved Twincast",
+                type = "AA",
+                cond = function(self)
+                    return not mq.TLO.Me.Buff("Twincast")()
+                end,
+            },
+            {
+                name = "Nature's Blessing",
                 type = "AA",
             },
             {
-                name = "Spirits of Nature",
+                name = "Group Spirit of the Great Wolf",
                 type = "AA",
+                cond = function(self, aaName)
+                    return Casting.SelfBuffAACheck(aaName)
+                end,
             },
             {
                 name = "Destructive Vortex",
@@ -1183,7 +1223,35 @@ local _ClassConfig = {
                 type = "AA",
             },
             {
+                name = "Spirit of the Wood",
+                type = "AA",
+            },
+            {
+                name = "Nature's Boon",
+                type = "AA",
+            },
+            {
+                name = "Nature's Guardian",
+                type = "AA",
+            },
+            {
+                name = "Spirit of Nature",
+                type = "AA",
+            },
+            {
                 name = "Spire of Nature",
+                type = "AA",
+            },
+            {
+                name = "TwincastSpell",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoTwincast') end,
+                cond = function(self)
+                    return not mq.TLO.Me.Buff("Twincast")()
+                end,
+            },
+            {
+                name = "Silent Casting",
                 type = "AA",
             },
         },
@@ -1202,64 +1270,77 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Debuff'] = {
-            {
-                name = "RoDebuff",
-                type = "Spell",
-                cond = function(self, spell) return Casting.DetSpellCheck(spell) end,
+        ['RoDebuff'] = {
+            { -- AE Ro on packs
+                name = "Vortex of Ro",
+                type = "AA",
+                load_cond = function(self) return Casting.CanUseAA("Vortex of Ro") end,
+                cond = function(self, aaName, target)
+                    if Targeting.GetXTHaterCount() < Config:GetSetting('AERoCount') then return false end
+                    local aaSpell = Casting.GetAASpell(aaName)
+                    return Casting.DetAACheck(aaName) and Casting.ReagentCheck(aaSpell and aaSpell.Trigger(1) or aaName)
+                end,
             },
-            {
+            { -- Single-target Ro on few mobs (or whenever the AE version isn't available)
                 name = "Blessing of Ro",
                 type = "AA",
                 cond = function(self, aaName, target)
+                    if Casting.CanUseAA("Vortex of Ro") and Targeting.GetXTHaterCount() >= Config:GetSetting('AERoCount') then return false end
                     local aaSpell = Casting.GetAASpell(aaName)
                     return Casting.DetAACheck(aaName) and Casting.ReagentCheck(aaSpell and aaSpell.Trigger(1) or aaName)
                 end,
             },
             {
-                name = "SkinDebuff",
+                name = "RoDebuff",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    return Casting.DetSpellCheck(spell) and not Targeting.TargetBodyIs(target, "Undead") and
-                        not Targeting.IsSummoned(target)
+                    if Casting.CanUseAA("Blessing of Ro") then return false end
+                    return Casting.DetSpellCheck(spell, target)
                 end,
             },
+        },
+        ['SeasonsWrath'] = {
             {
-                name = "IceBreathDebuff",
-                type = "Spell",
-                cond = function(self, spell, target)
-                    return not Config:GetSetting('DoFire') and Casting.DetSpellCheck(spell) and Targeting.GetAutoTargetPctHPs() < Config:GetSetting('NukePct') and
-                        Config:GetSetting('DoNuke')
+                name = "Season's Wrath",
+                type = "AA",
+                cond = function(self, aaName, target)
+                    return Casting.DetAACheck(aaName, target)
                 end,
             },
+        },
+        ['FrostDebuff'] = {
             {
                 name = "FrostDebuff",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    return not Config:GetSetting('DoFire') and Casting.DetSpellCheck(spell) and Targeting.GetAutoTargetPctHPs() < Config:GetSetting('NukePct') and
-                        Config:GetSetting('DoNuke')
+                    return Casting.DetSpellCheck(spell, target)
                 end,
             },
+        },
+        ['BreathDebuff'] = {
+            {
+                name = "BreathDebuff",
+                type = "Spell",
+                cond = function(self, spell, target)
+                    return Casting.DetSpellCheck(spell, target)
+                end,
+            },
+        },
+        ['Snare'] = {
             {
                 name = "Entrap",
                 type = "AA",
+                load_cond = function(self) return Casting.CanUseAA("Entrap") end,
                 cond = function(self, aaName, target)
-                    return Config:GetSetting('DoSnare') and Casting.DetAACheck(aaName) and Targeting.MobHasLowHP(target) and not Casting.SnareImmuneTarget(target)
+                    return Casting.DetAACheck(aaName) and Targeting.MobHasLowHP(target) and not Casting.SnareImmuneTarget(target)
                 end,
             },
             {
                 name = "SnareSpell",
                 type = "Spell",
+                load_cond = function(self) return not Casting.CanUseAA("Entrap") end,
                 cond = function(self, spell, target)
-                    if Casting.CanUseAA("Entrap") then return false end
-                    return Config:GetSetting('DoSnare') and Casting.DetSpellCheck(spell) and Targeting.MobHasLowHP(target) and not Casting.SnareImmuneTarget(target)
-                end,
-            },
-            {
-                name = "Season's Wrath",
-                type = "AA",
-                cond = function(self, aaName, target)
-                    return Casting.DetAACheck(aaName)
+                    return Casting.DetSpellCheck(spell) and Targeting.MobHasLowHP(target) and not Casting.SnareImmuneTarget(target)
                 end,
             },
         },
@@ -1272,7 +1353,7 @@ local _ClassConfig = {
                 end,
             },
             {
-                name = "GroupDmgShield",
+                name = "DamageShield",
                 type = "Spell",
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell, target)
@@ -1288,7 +1369,8 @@ local _ClassConfig = {
                 cond = function(self, aaName, target)
                     local bookSpell = self:GetResolvedActionMapItem('MoveSpells')
                     local aaSpell = Casting.GetAASpell(aaName)
-                    if not Config:GetSetting('DoRunSpeed') or (bookSpell and bookSpell.Level() or 999) > (aaSpell.Level() or 0) then return false end
+                    if Config.TempSettings.NoLevZone then return false end
+                    if not Config:GetSetting('DoMoveBuffs') or (bookSpell and bookSpell.Level() or 999) > (aaSpell.Level() or 0) then return false end
 
                     return Casting.GroupBuffAACheck(aaName, target)
                 end,
@@ -1298,8 +1380,9 @@ local _ClassConfig = {
                 type = "Spell",
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell, target)
+                    if Config.TempSettings.NoLevZone then return false end
                     local aaSpellLvl = mq.TLO.Me.AltAbility("Spirit of Eagles").Spell.Trigger(1).Level() or 0
-                    if not Config:GetSetting("DoRunSpeed") or aaSpellLvl >= (spell.Level() or 0) then return false end
+                    if not Config:GetSetting("DoMoveBuffs") or aaSpellLvl >= (spell.Level() or 0) then return false end
                     return Casting.GroupBuffCheck(spell, target)
                 end,
             },
@@ -1314,10 +1397,9 @@ local _ClassConfig = {
             {
                 name = "TempHPBuff",
                 type = "Spell",
-                active_cond = function(self, spell) return true end,
+                load_cond = function(self) return Config:GetSetting('DoTempHP') end,
                 cond = function(self, spell, target)
-                    if not Config:GetSetting('DoTempHP') then return false end
-                    return Targeting.TargetClassIs("WAR", target) and Casting.GroupBuffCheck(spell, target) --PAL/SHD have their own temp hp buff
+                    return Targeting.TargetClassIs("WAR", target) and Casting.CastReady(spell) and Casting.GroupBuffCheck(spell, target)
                 end,
             },
             {
@@ -1330,9 +1412,9 @@ local _ClassConfig = {
                 end,
             },
             {
-                name = "ReptileCombatInnate",
+                name = "ReptileBuff",
                 type = "Spell",
-                active_cond = function(self, spell) return true end,
+                load_cond = function(self) return Config:GetSetting('DoReptile') end,
                 cond = function(self, spell, target)
                     return Targeting.TargetClassIs({ "WAR", "SHD", }, target) and Casting.GroupBuffCheck(spell, target) --does not stack with PAL innate buff
                 end,
@@ -1349,25 +1431,12 @@ local _ClassConfig = {
             {
                 name = "Wrath of the Wild",
                 type = "AA",
-                active_cond = function(self, aaName) return true end,
                 cond = function(self, aaName, target)
                     return Targeting.TargetIsTanking(target) and Casting.GroupBuffAACheck(aaName, target)
                 end,
             },
         },
         ['Downtime'] = {
-            {
-                name = "SelfShield",
-                type = "Spell",
-                active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
-                cond = function(self, spell) return Casting.SelfBuffCheck(spell) end,
-            },
-            {
-                name = "SelfManaRegen",
-                type = "Spell",
-                active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
-                cond = function(self, spell) return Casting.SelfBuffCheck(spell) and not (spell.Name() == "Mask of the Hunter" and mq.TLO.Zone.Indoor()) end,
-            },
             {
                 name = "IceAura",
                 type = "Spell",
@@ -1402,8 +1471,31 @@ local _ClassConfig = {
                 type = "AA",
                 active_cond = function(self, aaName) return Casting.IHaveBuff(aaName) end,
                 cond = function(self, aaName)
+                    return Casting.SelfBuffAACheck(aaName) and mq.TLO.Me.AltAbility(aaName).Spell.RankName.Stacks()
+                end,
+            },
+            {
+                name = "Wildtender's Unity",
+                type = "AA",
+                load_cond = function(self) return Casting.CanUseAA("Wildtender's Unity") end,
+                active_cond = function(self, aaName) return Casting.IHaveBuff(aaName) end,
+                cond = function(self, aaName)
                     return Casting.SelfBuffAACheck(aaName)
                 end,
+            },
+            {
+                name = "SelfShield",
+                type = "Spell",
+                load_cond = function(self) return not Casting.CanUseAA("Wildtender's Unity") end,
+                active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
+                cond = function(self, spell) return Casting.SelfBuffCheck(spell) end,
+            },
+            {
+                name = "SelfManaRegen",
+                type = "Spell",
+                load_cond = function(self) return not Casting.CanUseAA("Wildtender's Unity") end,
+                active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
+                cond = function(self, spell) return Casting.SelfBuffCheck(spell) end,
             },
             {
                 name = "Preincarnation",
@@ -1414,351 +1506,520 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['PetSummon'] = {
+        ['Barkspur'] = {
             {
-                name = "PetSpell",
+                name = "Barkspur",
                 type = "Spell",
-                active_cond = function() return mq.TLO.Me.Pet.ID() ~= 0 end,
-                post_activate = function(self, spell, success)
-                    if success and mq.TLO.Me.Pet.ID() > 0 then
-                        mq.delay(50) -- slight delay to prevent chat bug with command issue
-                        self:SetPetHold()
-                    end
+                cond = function(self, spell, target)
+                    if not Targeting.TargetIsTanking(target) or not Casting.CastReady(spell) then return false end
+                    return Casting.GroupBuffCheck(spell, target, false, true)
+                end,
+            },
+        },
+        ['InstantRunBuff'] = {
+            {
+                name = "Communion of the Cheetah",
+                type = "AA",
+                cond = function(self, aaName, target)
+                    local aaBuff = Casting.GetAASpell(aaName).Name() or ""
+                    return (self.CombatState == "Combat" and (mq.TLO.Me.Buff(aaBuff).Duration.TotalSeconds() or 0) < 15) or
+                        (self.CombatState == "Downtime" and Casting.GroupBuffAACheck(aaName, target))
                 end,
             },
         },
     },
-    ['Spells']            = {
+    ['SpellList']         = {
         {
-            gem = 1,
+            name = "Heal Mode",
+            cond = function(self) return Core.IsModeActive("Heal") end,
             spells = {
-                {
-                    name = "DichoSpell",
-                    cond = function(self)
-                        return mq.TLO.Me.Level() >= 101 and
-                            Core.IsModeActive("Mana")
-                    end,
-                },
-                { name = "LongHeal", },
+                -- Heals
+                { name = "HealSpell",      cond = function(self) return Config:GetSetting('DoHealSpell') end, },
+                { name = "QuickHeal", },
+                { name = "QuickHealSurge", },
+                { name = "LongGroupHeal", },
+                { name = "QuickGroupHeal", },
+                { name = "PromHeal",       cond = function(self) return Config:GetSetting('MemPromHeal') end, },
+                -- Cures
+                { name = "GroupCure",      cond = function(self) return self.Helpers.MemGroupCure(self) end, },
+                { name = "CurePoison",     cond = function(self) return Config:GetSetting('MemPoisonCure') and not Core.GetResolvedActionMapItem('GroupCure') end, },
+                { name = "CureDisease",    cond = function(self) return Config:GetSetting('MemDiseaseCure') and not Core.GetResolvedActionMapItem('GroupCure') end, },
+                { name = "CureCurse",      cond = function(self) return Config:GetSetting('MemCurseCure') and not Core.GetResolvedActionMapItem('GroupCure') end, },
+                { name = "SingleCure",     cond = function(self) return Config:GetSetting('MemCorruptCure') and Core.GetResolvedActionMapItem('SingleCure') end, },
+                { name = "CureCorrupt",    cond = function(self) return Config:GetSetting('MemCorruptCure') and not Core.GetResolvedActionMapItem('SingleCure') end, },
+                -- Debuffs
+                { name = "SnareSpell",     cond = function(self) return Config:GetSetting("DoSnare") and not Casting.CanUseAA("Entrap") end, },
+                { name = "RoDebuff",       cond = function(self) return not Casting.CanUseAA("Blessing of Ro") end, },
+                { name = "FrostDebuff",    cond = function(self) return Config:GetSetting("DoFrostDebuff") end, },
+                { name = "BreathDebuff",   cond = function(self) return Config:GetSetting("DoBreathDebuff") end, },
+                -- Tank Utility
+                { name = "ReptileBuff",    cond = function(self) return Config:GetSetting('DoReptile') end, },
+                { name = "TempHPBuff",     cond = function(self) return Config:GetSetting('DoTempHP') end, },
+                -- DPS
+                { name = "RemoteFireNuke", cond = function(self) return Config:GetSetting('RemoteNukeElement') == 1 end, },
+                { name = "RemoteColdNuke", cond = function(self) return Config:GetSetting('RemoteNukeElement') == 2 end, },
+                { name = "DichoSpell",     cond = function(self) return Config:GetSetting('DoDicho') end, },
+                { name = "TwinHealNuke",   cond = function(self) return Config:GetSetting("DoTwinHeal") end, },
+                { name = "WrathDot",       cond = function(self) return Config:GetSetting("DoWrathDot") end, },
+                { name = "SunDot",         cond = function(self) return Config:GetSetting("DoSunDot") end, },
+                { name = "HordeDot",       cond = function(self) return Config:GetSetting("DoHordeDot") end, },
+                { name = "SummonedNuke",   cond = function(self) return Config:GetSetting('DoSummonedNuke') end, },
+                { name = "Barkspur",       cond = function(self) return Config:GetSetting('DoBarkspur') end, },
+                { name = "TwincastSpell",  cond = function(self) return Config:GetSetting("DoTwincast") end, },
+                { name = "StunNuke",       cond = function(self) return Config:GetSetting("DoStunNuke") end, },
+                { name = "FireNuke",       cond = function(self) return Config:GetSetting("DoFireNuke") end, },
+                { name = "ColdNuke",       cond = function(self) return Config:GetSetting("DoColdNuke") end, },
+                { name = "SunrayDot",      cond = function(self) return Config:GetSetting("SunMoonDotChoice") == 2 end, },
+                { name = "MoonbeamDot",    cond = function(self) return Config:GetSetting("SunMoonDotChoice") == 3 end, },
+                { name = "ChillDot",       cond = function(self) return Config:GetSetting("DoChillDot") end, },
             },
         },
         {
-            gem = 2,
+            name = "Hybrid Mode",
+            cond = function(self) return Core.IsModeActive("Hybrid") end,
             spells = {
-                -- [ MANA MODE ] --
-                {
-                    name = "QuickHeal",
-                    cond = function(self)
-                        return mq.TLO.Me.Level() >= 75 and
-                            Core.IsModeActive("Mana")
-                    end,
-                },
-                {
-                    name = "SnareSpell",
-                    cond = function(self)
-                        return Config:GetSetting('DoSnare')
-                            and Core.IsModeActive("Mana")
-                    end,
-                },
-                -- [ HEAL MODE ] --
-                { name = "QuickHealSurge", cond = function(self) return mq.TLO.Me.Level() >= 75 end, },
-                { name = "LongHeal",       cond = function(self) return true end, },
-                -- [ Fall Back ]--
-                { name = "WinterFireDD",   cond = function(self) return Config:GetSetting("DoFire") end, },
-                { name = "IceNuke",        cond = function(self) return true end, },
-
-            },
-        },
-        {
-            gem = 3,
-            spells = {
-                -- [ MANA MODE ] --
-                { name = "WinterFireDD",   cond = function(self) return Core.IsModeActive("Mana") end, },
-                -- [ HEAL MODE ] --
-                { name = "QuickGroupHeal", cond = function(self) return mq.TLO.Me.Level() >= 90 end, },
-                { name = "CharmSpell",     cond = function(self, spell) return Config:GetSetting('CharmOn') and Core.IsSelectedCharmSpell(spell) end, },
-                { name = "QuickRoarDD",    cond = function(self) return true end, },
-                -- [ Fall Back ]--
-                { name = "IceRainNuke",    cond = function(self) return true end, },
-            },
-        },
-        {
-            gem = 4,
-            spells = {
-                -- [ BOTH MODES ] --
-                { name = "QuickHeal",       cond = function(self) return mq.TLO.Me.Level() >= 90 end, },
-                -- [ MANA MODE ] --
-                { name = "QuickRoarDD",     cond = function(self) return Core.IsModeActive("Mana") end, },
-                -- [ HEAL MODE ] --
-                { name = "HordeDot",        cond = function(self) return true end, },
-                -- [ Fall Back ]--
-                { name = "RoDebuff",        cond = function(self) return Config:GetSetting("DoFire") end, },
-                { name = "IceBreathDebuff", cond = function(self) return true end, },
-            },
-        },
-        {
-            gem = 5,
-            spells = {
-                -- [ MANA MODE ] --
-                { name = "HordeDot",      cond = function(self) return Core.IsModeActive("Mana") end, },
-                -- [ HEAL MODE ] --
-                { name = "LongGroupHeal", cond = function(self) return mq.TLO.Me.Level() >= 70 end, },
-                { name = "SunDot",        cond = function(self) return true end, },
-                { name = "SunrayDot",     cond = function(self) return true end, },
-                -- [ Fall Back ]--
-                { name = "SunrayDot",     cond = function(self) return true end, },
-            },
-        },
-        {
-            gem = 6,
-            spells = {
-                -- [ BOTH MODES ] --
-                {
-                    name = "RemoteSunDD",
-                    cond = function(self)
-                        return mq.TLO.Me.Level() >= 83 and Config:GetSetting('DoFire')
-                    end,
-                },
-                {
-                    name = "RemoteMoonDD",
-                    cond = function(self)
-                        return mq.TLO.Me.Level() >= 83 and not Config:GetSetting('DoFire')
-                    end,
-                },
-                -- [ MANA MODE ] --
-                { name = "RoDebuff",            cond = function(self) return Core.IsModeActive("Mana") end, },
-                -- [ HEAL MODE ] --
-                { name = "SunrayDot",           cond = function(self) return mq.TLO.Me.Level() >= 73 end, },
-                { name = "ReptileCombatInnate", cond = function(self) return true end, },
-                { name = "SnareSpell",          cond = function(self) return Config:GetSetting('DoSnare') end, },
-                -- [ Fall Back ]--
-                { name = "HordeDot",            cond = function(self) return true end, },
-            },
-        },
-        {
-            gem = 7,
-            spells = {
-                -- [ MANA MODE ] --
-                { name = "MoonbeamDot",         cond = function(self) return Core.IsModeActive("Mana") end, },
-                -- [ HEAL MODE ] --
-                { name = "FrostDebuff",         cond = function(self) return mq.TLO.Me.Level() >= 74 and not Config:GetSetting('DoFire') end, },
-                { name = "ReptileCombatInnate", cond = function(self) return Casting.CanUseAA("Blessing of Ro") end, },
-                { name = "RoDebuff",            cond = function(self) return true end, },
-                -- [ Fall Back ]--
-                { name = "HordeDot",            cond = function(self) return true end, },
-                { name = "SnareSpell",          cond = function(self) return Config:GetSetting('DoSnare') end, },
-            },
-        },
-        {
-            gem = 8,
-            spells = {
-                -- [ MANA MODE ] --
-                {
-                    name = "SunDot",
-                    cond = function(self)
-                        return mq.TLO.Me.Level() >= 49 and
-                            Core.IsModeActive("Mana")
-                    end,
-                },
-                { name = "RootSpells",   cond = function(self) return Core.IsModeActive("Mana") end, },
-                -- [ HEAL MODE ] --
-                { name = "TwinHealNuke", cond = function(self) return Config:GetSetting("DoTwinHeal") end, },
-                { name = "GroupCure",    cond = function(self) return true end, },
-            },
-        },
-        {
-            gem = 9,
-            cond = function(self, gem) return mq.TLO.Me.NumGems() >= gem end,
-            spells = {
-                -- [ MANA MODE ] --
-                {
-                    name = "IceBreathDebuff",
-                    cond = function(self)
-                        return mq.TLO.Me.Level() >= 63 and
-                            Core.IsModeActive("Mana")
-                    end,
-                },
-                { name = "IceDD",           cond = function(self) return Core.IsModeActive("Mana") end, },
-                -- [ HEAL MODE ] --
-                { name = "SunDot",          cond = function(self) return Config:GetSetting("DoFire") end, },
-                { name = "IceBreathDebuff", cond = function(self) return true end, },
-            },
-        },
-        {
-            gem = 10,
-            cond = function(self, gem) return mq.TLO.Me.NumGems() >= gem end,
-            spells = {
-                -- [ MANA MODE ] --
-                { name = "NaturesWrathDot", cond = function(self) return Core.IsModeActive("Mana") end, },
-                -- [ HEAL MODE ] --
-                { name = "TempHPBuff",      cond = function(self) return true end, },
-            },
-        },
-        {
-            gem = 11,
-            cond = function(self, gem) return mq.TLO.Me.NumGems() >= gem end,
-            spells = {
-                -- [ MANA MODE ] --
-                { name = "TempHPBuff",          cond = function(self) return Core.IsModeActive("Mana") end, },
-                -- [ HEAL MODE ] --
-                { name = "DichoSpell",          cond = function(self) return mq.TLO.Me.Level() >= 101 end, },
-                { name = "GroupCure",           cond = function(self) return true end, },
-                { name = "ReptileCombatInnate", cond = function(self) return true end, },
-            },
-        },
-        {
-            gem = 12,
-            cond = function(self, gem) return mq.TLO.Me.NumGems() >= gem end,
-            spells = {
-                -- [ MANA MODE ] --
-                {
-                    name = "LongHeal",
-                    cond = function(self)
-                        return mq.TLO.Me.Level() >= 99 and
-                            Core.IsModeActive("Mana")
-                    end,
-                },
-                { name = "ChillDot",            cond = function(self) return Core.IsModeActive("Mana") end, },
-                -- [ HEAL MODE ] --
-                { name = "GroupCure",           cond = function(self) return true end, },
-                { name = "ReptileCombatInnate", cond = function(self) return true end, },
-            },
-        },
-        {
-            gem = 13,
-            cond = function(self, gem) return mq.TLO.Me.NumGems() >= gem end,
-            spells = {
-                { name = "Alliance", cond = function(self) return Config:GetSetting("DoAlliance") end, },
+                -- Heals
+                { name = "HealSpell",      cond = function(self) return Config:GetSetting('DoHealSpell') end, },
+                { name = "QuickHeal", },
+                { name = "QuickHealSurge", },
+                { name = "LongGroupHeal", },
+                { name = "QuickGroupHeal", },
+                { name = "PromHeal",       cond = function(self) return Config:GetSetting('MemPromHeal') end, },
+                -- Debuffs
+                { name = "SnareSpell",     cond = function(self) return Config:GetSetting("DoSnare") and not Casting.CanUseAA("Entrap") end, },
+                { name = "RoDebuff",       cond = function(self) return not Casting.CanUseAA("Blessing of Ro") end, },
+                { name = "FrostDebuff",    cond = function(self) return Config:GetSetting("DoFrostDebuff") end, },
+                { name = "BreathDebuff",   cond = function(self) return Config:GetSetting("DoBreathDebuff") end, },
+                -- Tank Util
+                { name = "ReptileBuff",    cond = function(self) return Config:GetSetting('DoReptile') end, },
+                { name = "TempHPBuff",     cond = function(self) return Config:GetSetting('DoTempHP') end, },
+                -- DPS
+                { name = "WrathDot",       cond = function(self) return Config:GetSetting("DoWrathDot") end, },
+                { name = "SunDot",         cond = function(self) return Config:GetSetting("DoSunDot") end, },
+                { name = "HordeDot",       cond = function(self) return Config:GetSetting("DoHordeDot") end, },
+                { name = "TwincastSpell",  cond = function(self) return Config:GetSetting("DoTwincast") end, },
+                { name = "SummonedNuke",   cond = function(self) return Config:GetSetting('DoSummonedNuke') end, },
+                { name = "FireNuke",       cond = function(self) return Config:GetSetting("DoFireNuke") end, },
+                { name = "StunNuke",       cond = function(self) return Config:GetSetting("DoStunNuke") end, },
+                -- DPS(Second Tier)
+                { name = "SunrayDot",      cond = function(self) return Config:GetSetting("SunMoonDotChoice") == 2 end, },
+                { name = "MoonbeamDot",    cond = function(self) return Config:GetSetting("SunMoonDotChoice") == 3 end, },
+                { name = "ChillDot",       cond = function(self) return Config:GetSetting("DoChillDot") end, },
+                { name = "RemoteFireNuke", cond = function(self) return Config:GetSetting('RemoteNukeElement') == 1 end, },
+                { name = "RemoteColdNuke", cond = function(self) return Config:GetSetting('RemoteNukeElement') == 2 end, },
+                { name = "ColdNuke",       cond = function(self) return Config:GetSetting("DoColdNuke") end, },
+                { name = "Barkspur",       cond = function(self) return Config:GetSetting('DoBarkspur') end, },
+                { name = "DichoSpell",     cond = function(self) return Config:GetSetting('DoDicho') end, },
+                { name = "TwinHealNuke",   cond = function(self) return Config:GetSetting("DoTwinHeal") end, },
+                -- Cures
+                { name = "GroupCure",      cond = function(self) return self.Helpers.MemGroupCure(self) end, },
+                { name = "CurePoison",     cond = function(self) return Config:GetSetting('MemPoisonCure') and not Core.GetResolvedActionMapItem('GroupCure') end, },
+                { name = "CureDisease",    cond = function(self) return Config:GetSetting('MemDiseaseCure') and not Core.GetResolvedActionMapItem('GroupCure') end, },
+                { name = "CureCurse",      cond = function(self) return Config:GetSetting('MemCurseCure') and not Core.GetResolvedActionMapItem('GroupCure') end, },
+                { name = "SingleCure",     cond = function(self) return Config:GetSetting('MemCorruptCure') and Core.GetResolvedActionMapItem('SingleCure') end, },
+                { name = "CureCorrupt",    cond = function(self) return Config:GetSetting('MemCorruptCure') and not Core.GetResolvedActionMapItem('SingleCure') end, },
             },
         },
     },
     ['Helpers']           = {
+        MemGroupCure = function(self)
+            if Config:GetSetting('MemCorruptCure') and self:GetResolvedActionMapItem('SingleCure') then return false end
+            if not self:GetResolvedActionMapItem('GroupCure') then return false end
+            return Config:GetSetting('MemPoisonCure') or Config:GetSetting('MemDiseaseCure') or Config:GetSetting('MemCurseCure')
+        end,
     },
-    --TODO: These are nearly all in need of Display and Tooltip updates.
     ['DefaultConfig']     = {
-        ['Mode']         = {
+        ['Mode']              = {
             DisplayName = "Mode",
             Category = "Combat",
+            Index = 101,
             Tooltip = "Select the Combat Mode for this Toon",
             Type = "Custom",
             RequiresLoadoutChange = true,
             Default = 1,
             Min = 1,
-            Max = 3,
-            FAQ = "What do the different Modes Do?",
-            Answer = "Heal Mode will focus on healing and buffing.\nMana Mode will focus on DPS and Mana Management.",
+            Max = 2,
+            FAQ = "What do the different Modes do?",
+            Answer = "Heal Mode prioritizes healing, cures and utility, using leftover gems for damage.\n" ..
+                "Hybrid Mode keeps the same healing core but promotes DoTs and nukes for more damage.",
         },
-        --TODO: This is confusing because it is actually a choice between fire and ice and should be rewritten (need time to update conditions above)
-        ['DoFire']       = {
-            DisplayName = "Cast Fire Spells",
-            Group = "Abilities",
-            Header = "Common",
-            Category = "Common Rules",
-            Tooltip = "if Enabled Use Fire Spells, Disabled Use Ice Spells",
-            RequiresLoadoutChange = true,
-            Default = true,
-        },
-        ['DoRain']       = {
-            DisplayName = "Cast Rain Spells",
-            Group = "Abilities",
-            Header = "Damage",
-            Category = "AE",
-            Tooltip = "Use Rain Spells",
-            Default = true,
-        },
-        ['DoRunSpeed']   = {
-            DisplayName = "Use Movement Buffs",
+        ['DoMoveBuffs']       = {
+            DisplayName = "Do Movement Buffs",
             Group = "Abilities",
             Header = "Buffs",
             Category = "Group",
-            Tooltip = "Use Run/Lev buffs.",
-            Default = true,
-            FAQ = "Sometimes I group with a bard and don't need to worry about Run Speed, can I disable it?",
-            Answer = "Yes, you can disable [DoRunSpeed] to prevent casting Run Speed spells.",
+            Index = 106,
+            Tooltip = "Cast Movement Spells/AA.",
+            Default = false,
+            FAQ = "Why am I spamming movement buffs?",
+            Answer = "Some move spells freely overwrite those of other classes, so if multiple movebuffs are being used, a buff loop may occur.\n" ..
+                "Simply turn off movement buffs for the undesired class in their class options.",
         },
-        ['DoNuke']       = {
-            DisplayName = "Cast Spells",
-            Group = "Abilities",
-            Header = "Damage",
-            Category = "Direct",
-            Tooltip = "Use Spells",
-            Default = true,
-        },
-        ['NukePct']      = {
-            DisplayName = "Nuke Pct",
-            Group = "Abilities",
-            Header = "Damage",
-            Category = "Direct",
-            Tooltip = "Use Spells",
-            Default = 90,
-            Min = 1,
-            Max = 100,
-        },
-        ['DoSnare']      = {
-            DisplayName = "Cast Snares",
-            Group = "Abilities",
-            Header = "Debuffs",
-            Category = "Snare",
-            Tooltip = "Enable casting Snare spells.",
-            Default = true,
-        },
-        ['DoChestClick'] = {
+        ['DoChestClick']      = {
             DisplayName = "Do Chest Click",
             Group = "Items",
             Header = "Clickies",
             Category = "Class Config Clickies",
+            Index = 101,
             Tooltip = "Click your chest item",
             Default = mq.TLO.MacroQuest.BuildName() ~= "Emu",
         },
-        ['DoDot']        = {
-            DisplayName = "Cast DOTs",
-            Group = "Abilities",
-            Header = "Damage",
-            Category = "Over Time",
-            Tooltip = "Enable casting Damage Over Time spells.",
-            Default = true,
-        },
-        ['DoTwinHeal']   = {
+        ['DoTwinHeal']        = {
             DisplayName = "Cast Twin Heal Nuke",
             Group = "Abilities",
             Header = "Damage",
             Category = "Direct",
-            Tooltip = "Use Twin Heal Nuke Spells",
+            Index = 101,
+            Tooltip = "Use your Twin Heal nuke line (nuke that also heals).",
+            RequiresLoadoutChange = true,
+            Default = false,
+        },
+        ['DoFireNuke']        = {
+            DisplayName = "Fire/Combo Nuke",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "Direct",
+            Index = 102,
+            Tooltip = "Use your fire nuke line, later transitioning to the fire/nuke combo (Winter's Fire).",
             RequiresLoadoutChange = true,
             Default = true,
         },
-        ['DoHPBuff']     = {
+        ['DoColdNuke']        = {
+            DisplayName = "Cold Nuke",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "Direct",
+            Index = 103,
+            Tooltip = "Use your cold nuke line.",
+            RequiresLoadoutChange = true,
+            Default = false,
+        },
+        ['DoStunNuke']        = {
+            DisplayName = "Stun Nuke",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "Direct",
+            Index = 104,
+            Tooltip = "Use your stun nuke, transitioning from the Stormborn stun line to the Roar damage nukes at level 93.",
+            RequiresLoadoutChange = true,
+            Default = true,
+        },
+        ['RemoteNukeElement'] = {
+            DisplayName = "Remote Nuke",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "Direct",
+            Index = 105,
+            Tooltip = "Pick which remote nuke to load: Fire (Remote Sun) or Cold (Remote Moon), which share a recast timer.",
+            RequiresLoadoutChange = true,
+            Type = "Combo",
+            ComboOptions = { 'Fire (Remote Sun)', 'Cold (Remote Moon)', },
+            Default = 1,
+            Min = 1,
+            Max = 2,
+        },
+        ['DoDicho']           = {
+            DisplayName = "Dicho Nuke",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "Direct",
+            Index = 106,
+            Tooltip = "Use your Dicho nuke.",
+            RequiresLoadoutChange = true,
+            Default = true,
+        },
+        ['DoSummonedNuke']    = {
+            DisplayName = "Do Summoned Nuke",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "Direct",
+            Index = 107,
+            Tooltip = "Use your anti-summoned nuke line ('x the Unnatural').",
+            RequiresLoadoutChange = true,
+            Default = false,
+        },
+        ['DoWrathDot']        = {
+            DisplayName = "Wrath Dot",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "Over Time",
+            Index = 101,
+            Tooltip = "Use your Nature's Wrath line Dot.",
+            RequiresLoadoutChange = true,
+            Default = true,
+        },
+        ['DoSunDot']          = {
+            DisplayName = "Sun Dot",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "Over Time",
+            Index = 102,
+            Tooltip = "Use your Sun line Dot.",
+            RequiresLoadoutChange = true,
+            Default = true,
+        },
+        ['DoHordeDot']        = {
+            DisplayName = "Horde Dot",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "Over Time",
+            Index = 103,
+            Tooltip = "Use your Horde line Dot.",
+            RequiresLoadoutChange = true,
+            Default = true,
+        },
+        ['SunMoonDotChoice']  = {
+            DisplayName = "Sun/Moon Dot Choice",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "Over Time",
+            Index = 104,
+            Tooltip = "Use your Sunray (fire) or Moonbeam (cold) Dot (they share a timer).",
+            RequiresLoadoutChange = true,
+            Type = "Combo",
+            ComboOptions = { 'None', 'Fire (Sunray)', 'Cold (Moonbeam)', },
+            Default = 1,
+            Min = 1,
+            Max = 3,
+        },
+        ['DoChillDot']        = {
+            DisplayName = "Chill Dot",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "Over Time",
+            Index = 105,
+            Tooltip = "Use the Chill (cold) Dot.",
+            RequiresLoadoutChange = true,
+            Default = false,
+        },
+        ['DotNamedOnly']      = {
+            DisplayName = "Only Dot Named",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "Over Time",
+            Index = 106,
+            Tooltip = "Only apply DoTs to named mobs.",
+            Default = true,
+        },
+        ['DoHPBuff']          = {
             DisplayName = "Group HP Buff",
             Group = "Abilities",
             Header = "Buffs",
             Category = "Group",
+            Index = 101,
             Tooltip = "Use your group HP Buff. Disable as desired to prevent conflicts with CLR or PAL buffs.",
             Default = true,
             FAQ = "Why am I in a buff war with my Paladin or Druid? We are constantly overwriting each other's buffs.",
             Answer = "Disable [DoHPBuff] to prevent issues with Aego/Symbol lines overwriting. Alternatively, you can adjust the settings for the other class instead.",
         },
-        ['DoTempHP']     = {
+        ['DoTempHP']          = {
             DisplayName = "Temp HP Buff",
             Group = "Abilities",
             Header = "Buffs",
             Category = "Group",
+            Index = 102,
             Tooltip = "Use Temp HP Buff (Only for WAR, other tanks have their own)",
             RequiresLoadoutChange = true,
-            Default = true,
+            Default = false,
             FAQ = "Why isn't my Temp HP Buff being used?",
-            Answer = "You either have the Temp HP Buff disabled, or you don't have a Warrior in your group (Other tanks have their own Temp HP Buff).",
+            Answer = "You either have [DoTempHP] disabled, or you don't have a Warrior in your group (Other tanks have their own Temp HP Buff).",
         },
-        ['DoGroupRegen'] = {
+        ['DoReptile']         = {
+            DisplayName = "Reptile Buff",
+            Group = "Abilities",
+            Header = "Buffs",
+            Category = "Group",
+            Index = 104,
+            Tooltip = "Keep your Reptile buff on warrior and shadowknight tanks.",
+            RequiresLoadoutChange = true,
+            Default = true,
+        },
+        ['DoGroupRegen']      = {
             DisplayName = "Group Regen Buff",
             Group = "Abilities",
             Header = "Buffs",
             Category = "Group",
+            Index = 103,
             Tooltip = "Use your Group Regen buff.",
             Default = true,
             FAQ = "Why am I spamming my Group Regen buff?",
             Answer = "Certain Shaman and Druid group regen buffs report cross-stacking. You should deselect the option on one of the PCs if they are grouped together.",
         },
-        ['HealPriority'] = {
+        ['DoTwincast']        = {
+            DisplayName = "Use Twincast Spell",
+            Group = "Abilities",
+            Header = "Buffs",
+            Category = "Self",
+            Index = 101,
+            Tooltip = "Use your Twincast spell during burns.",
+            Default = true,
+            RequiresLoadoutChange = true,
+        },
+        ['DoSnare']           = {
+            DisplayName = "Use Snares",
+            Group = "Abilities",
+            Header = "Debuffs",
+            Category = "Snare",
+            Index = 101,
+            Tooltip = "Use Snare (Snare Dot used until AA is available).",
+            Default = false,
+            RequiresLoadoutChange = true,
+        },
+        ['SnareCount']        = {
+            DisplayName = "Snare Max Mob Count",
+            Group = "Abilities",
+            Header = "Debuffs",
+            Category = "Snare",
+            Index = 102,
+            Tooltip = "Only use snare if there are [x] or fewer mobs on aggro. Helpful for AoE groups.",
+            Default = 3,
+            Min = 1,
+            Max = 99,
+        },
+        ['DoRoDebuff']        = {
+            DisplayName = "Use Ro Debuff",
+            Group = "Abilities",
+            Header = "Debuffs",
+            Category = "Resist",
+            Index = 101,
+            Tooltip = "Use the Ro debuff (lowers fire resist, AC, and attack); single-target or AE is chosen automatically by mob count.",
+            Default = true,
+            RequiresLoadoutChange = true,
+        },
+        ['AERoCount']         = {
+            DisplayName = "AE Ro Min Mobs",
+            Group = "Abilities",
+            Header = "Debuffs",
+            Category = "Resist",
+            Index = 102,
+            Tooltip = "Use the AE Ro debuff (Vortex of Ro) instead of single-target once this many mobs are on aggro.",
+            Default = 2,
+            Min = 1,
+            Max = 99,
+        },
+        ['DoFrostDebuff']     = {
+            DisplayName = "Frost Debuff",
+            Group = "Abilities",
+            Header = "Debuffs",
+            Category = "Resist",
+            Index = 103,
+            Tooltip = "Use your Frost debuff line (lowers attack and AC).",
+            Default = false,
+            RequiresLoadoutChange = true,
+        },
+        ['DoBreathDebuff']    = {
+            DisplayName = "Breath Debuff",
+            Group = "Abilities",
+            Header = "Debuffs",
+            Category = "Resist",
+            Index = 104,
+            Tooltip = "Use your Breath debuff line (lowers AC, raises cold damage taken).",
+            Default = false,
+            RequiresLoadoutChange = true,
+        },
+        ['DoBarkspur']        = {
+            DisplayName = "Use Barkspur",
+            Group = "Abilities",
+            Header = "Buffs",
+            Category = "Group",
+            Index = 105,
+            Tooltip = "Use your short duration damage shield (Barkspur line) on tanks during combat.",
+            RequiresLoadoutChange = true,
+            Default = false,
+        },
+        ['DoHealSpell']       = {
+            DisplayName = "Use Heal Spell",
+            Group = "Abilities",
+            Header = "Recovery",
+            Category = "General Healing",
+            Index = 101,
+            Tooltip = "Use your standard single-target heal spell.",
+            RequiresLoadoutChange = true,
+            Default = mq.TLO.Me.Level() < 110,
+        },
+        ['QuickHealUse']      = {
+            DisplayName = "Quick Heal Use:",
+            Group = "Abilities",
+            Header = "Recovery",
+            Category = "General Healing",
+            Index = 102,
+            Tooltip = "Use the fast single-target heal (Rejuvilation line) as an emergency (Big) or standard (Main) heal.",
+            RequiresLoadoutChange = true,
+            Type = "Combo",
+            ComboOptions = { 'Emergency Use(BigHeal)', 'Standard Use(MainHeal)', },
+            Default = 2,
+            Min = 1,
+            Max = 2,
+        },
+        ['QuickHealSurgeUse'] = {
+            DisplayName = "Quick Surge Heal Use:",
+            Group = "Abilities",
+            Header = "Recovery",
+            Category = "General Healing",
+            Index = 103,
+            Tooltip = "Use the burst single-target heal (Adrenaline line) as an emergency (Big) or standard (Main) heal.",
+            RequiresLoadoutChange = true,
+            Type = "Combo",
+            ComboOptions = { 'Emergency Use(BigHeal)', 'Standard Use(MainHeal)', },
+            Default = 2,
+            Min = 1,
+            Max = 2,
+        },
+        ['MemPromHeal']       = {
+            DisplayName = "Mem Promised Heal",
+            Group = "Abilities",
+            Header = "Recovery",
+            Category = "General Healing",
+            Index = 104,
+            Tooltip = "Memorize the Promised (delayed) heal. Please note this ability use is not automated; this memorization option is for manual use (e.g, pre-pull, etc).",
+            RequiresLoadoutChange = true,
+            Default = false,
+        },
+        ['MemPoisonCure']     = {
+            DisplayName = "Mem Poison Cure",
+            Group = "Abilities",
+            Header = "Recovery",
+            Category = "Curing",
+            Index = 101,
+            Tooltip = "Memorize a poison cure for combat use (individual cure early, group cure once learned). We will already use this spell in downtime as needed.",
+            RequiresLoadoutChange = true,
+            Default = false,
+            ConfigType = "Advanced",
+        },
+        ['MemDiseaseCure']    = {
+            DisplayName = "Mem Disease Cure",
+            Group = "Abilities",
+            Header = "Recovery",
+            Category = "Curing",
+            Index = 102,
+            Tooltip = "Memorize a disease cure for combat use (individual cure early, group cure once learned). We will already use this spell in downtime as needed.",
+            RequiresLoadoutChange = true,
+            Default = false,
+            ConfigType = "Advanced",
+        },
+        ['MemCurseCure']      = {
+            DisplayName = "Mem Curse Cure",
+            Group = "Abilities",
+            Header = "Recovery",
+            Category = "Curing",
+            Index = 103,
+            Tooltip = "Memorize a curse cure for combat use (individual cure early, group cure once learned). We will already use this spell in downtime as needed.",
+            RequiresLoadoutChange = true,
+            Default = false,
+            ConfigType = "Advanced",
+        },
+        ['MemCorruptCure']    = {
+            DisplayName = "Mem Corrupt Cure",
+            Group = "Abilities",
+            Header = "Recovery",
+            Category = "Curing",
+            Index = 104,
+            Tooltip = "Memorize a corruption cure for combat use (chant cure early, single-target cure once learned). We will already use this spell in downtime as needed.",
+            RequiresLoadoutChange = true,
+            Default = false,
+            ConfigType = "Advanced",
+        },
+        ['HealPriority']      = {
             DisplayName = "Healing Priority",
             Group = "Abilities",
             Header = "Recovery",
@@ -1773,15 +2034,5 @@ local _ClassConfig = {
             ConfigType = "Advanced",
         },
     },
-    ['ClassFAQ']          = {
-        {
-            Question = "What is the current status of this class config?",
-            Answer = "This class config is a current release aimed at official servers.\n\n" ..
-                "  This config is largely a port from older code, and has seen only minor adjustments. It has been flagged for revamp when we have the chance!\n\n" ..
-                "  Community effort and feedback are required for robust, resilient class configs, and PRs are highly encouraged!",
-            Settings_Used = "",
-        },
-    },
 }
-
 return _ClassConfig

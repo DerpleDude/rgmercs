@@ -290,6 +290,7 @@ Globals.Constants.CasterMercStances = { "balanced", "burn", "burnae", }
 Globals.Constants.HPBarStyles       = { "Multi-Color", "Con-Color", }
 
 Globals.Constants.DeprecatedConfigs = {
+    ['DRU'] = { "Alpha (Live)", },
     ['NEC'] = { "Alpha (Live)", },
     ['PAL'] = { "Alpha (Live)", },
 }
