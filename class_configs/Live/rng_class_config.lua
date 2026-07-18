@@ -59,7 +59,7 @@ local Tooltips  = {
     SnareSpells         = "Spell Line: Decrease Enemy Movement Speed",
     FireFist            = "Spell Line: Self Increase Attack",
     DsBuff              = "Spell Line: Damage Shield",
-    SkinLike            = "Spell Line: Increase AC + Increase Max HP",
+    HPTypeOne           = "Spell Line: Increase AC + Increase Max HP",
     MoveSpells          = "Spell Line: Increase Movement Speed",
     Alliance            = "Spell Line: Alliance (Requires Multiple of Same Class). Adds Fire Damage to other Ranger Spells and triggers a massive Fire and Cold Nuke",
     Cloak               = "Spell Line: Melee Absorb Proc + ATK/AC/Fire Resist Debuff",
@@ -738,7 +738,20 @@ local _ClassConfig = {
             "Shield of Brambles",      -- Level 43
             "Shield of Thistles",      -- Level 24
         },
-        ['SkinLike'] = {
+        ['HPTypeOne'] = {
+            "Grovewood Coat",    -- Level 129
+            "Glitterine Coat",   -- Level 124
+            "Dusksage Coat",     -- Level 119
+            "Obsidian Coat",     -- Level 114
+            "Blackscale",        -- Level 109
+            "Ravencoat",         -- Level 104
+            "Shadowscale",       -- Level 99
+            "Shadowcoat",        -- Level 94
+            "Mottlecoat",        -- Level 89
+            "Mottlescale",       -- Level 84
+            "Ravenscale",        -- Level 79
+            "Obsidian Skin",     -- Level 74
+            "Onyx Skin",         -- Level 70
             "Natureskin",        -- Level 65
             "Skin Like Nature",  -- Level 59
             "Skin Like Diamond", -- Level 54
@@ -1030,9 +1043,9 @@ local _ClassConfig = {
                 end,
             },
             {
-                name = "SkinLike",
+                name = "HPTypeOne",
                 type = "Spell",
-                tooltip = Tooltips.SkinLike,
+                tooltip = Tooltips.HPTypeOne,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
                     return Casting.SelfBuffCheck(spell)
