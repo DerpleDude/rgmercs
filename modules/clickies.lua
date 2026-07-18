@@ -2188,7 +2188,7 @@ function Module:GiveTime()
                                     and Casting.ResolveBuffCheck(itemSpell.ID(), target, nil, clicky.skipTriggerCheck)
                             elseif clicky.target == "Auto Target" then
                                 target = Targeting.GetAutoTarget()
-                                buffCheckPassed = target and Casting.TargetBuffCheck(itemSpell.ID(), target)
+                                buffCheckPassed = target and Casting.TargetBuffCheck(itemSpell.ID(), target, false, itemSpell.HasSPA(0)(), clicky.skipTriggerCheck)
                             elseif clicky.target == "Mercs Peer" then
                                 targetPeer = Comms.GetPeerHeartbeatByName(clicky.mercs_peer_name or "")
                                 local peerFound = (targetPeer and targetPeer.Data
@@ -2301,18 +2301,24 @@ function Module:GetClickiesForRotations(clickyCombatState, rotationName)
                 mustWait = clicky.mustWait,
                 cond = function(caller, itemName, targetSpawn)
                     if not Casting.ItemReady(itemName) then return false end
+
+                    local item = mq.TLO.FindItem(itemName)
+                    local itemSpell = item and item.Clicky and item.Clicky.Spell
+                    if not (itemSpell and itemSpell()) then return false end
+
                     local buffCheckPassed = true
 
                     if targetSpawn.ID() == mq.TLO.Me.ID() then
-                        buffCheckPassed = Casting.SelfBuffItemCheck(clicky.itemName, nil, clicky.skipTriggerCheck)
+                        buffCheckPassed = Casting.LocalBuffCheck(itemSpell.ID(), nil, clicky.skipTriggerCheck)
                     elseif targetSpawn.ID() == mq.TLO.Me.Pet.ID() then
                         ---@diagnostic disable-next-line: cast-local-type
-                        buffCheckPassed = mq.TLO.Me.Pet.ID() > 0 and Casting.PetBuffItemCheck(clicky.itemName, nil, clicky.skipTriggerCheck)
+                        buffCheckPassed = mq.TLO.Me.Pet.ID() > 0 and Casting.LocalPetBuffCheck(itemSpell.ID(), nil, clicky.skipTriggerCheck)
                     elseif targetSpawn.Type() == "PC" then
                         ---@diagnostic disable-next-line: cast-local-type
-                        buffCheckPassed = Casting.GroupBuffItemCheck(clicky.itemName, targetSpawn, nil, clicky.skipTriggerCheck)
+                        buffCheckPassed = Casting.LevelCheckPass(itemSpell, targetSpawn)
+                            and Casting.ResolveBuffCheck(itemSpell.ID(), targetSpawn, nil, clicky.skipTriggerCheck)
                     else ---@diagnostic disable-next-line: cast-local-type
-                        buffCheckPassed = Casting.DetItemCheck(clicky.itemName, targetSpawn)
+                        buffCheckPassed = Casting.TargetBuffCheck(itemSpell.ID(), targetSpawn, false, itemSpell.HasSPA(0)(), clicky.skipTriggerCheck)
                     end
 
                     if not buffCheckPassed then return false end
