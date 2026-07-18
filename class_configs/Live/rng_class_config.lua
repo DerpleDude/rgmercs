@@ -1043,15 +1043,6 @@ local _ClassConfig = {
                 end,
             },
             {
-                name = "HPTypeOne",
-                type = "Spell",
-                tooltip = Tooltips.HPTypeOne,
-                active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
-                cond = function(self, spell)
-                    return Casting.SelfBuffCheck(spell)
-                end,
-            },
-            {
                 name = "Cloak",
                 type = "Spell",
                 tooltip = Tooltips.Cloak,
@@ -1116,6 +1107,15 @@ local _ClassConfig = {
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell, target)
                     return Casting.GroupBuffCheck(spell, target)
+                end,
+            },
+            {
+                name = "HPTypeOne",
+                type = "Spell",
+                tooltip = Tooltips.HPTypeOne,
+                active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
+                cond = function(self, spell)
+                    return Casting.GroupBuffCheck(spell)
                 end,
             },
             {
