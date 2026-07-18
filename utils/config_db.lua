@@ -820,6 +820,97 @@ function DB:setServerValue(serverName, module, key, value, vtype)
     return ok
 end
 
+--- Atomically writes key under module and deletes every oldModule row; on a busy DB nothing is written, queued, or cached - the caller retries next init.
+---@param serverName string
+---@param oldModule  string  Legacy module whose rows are removed in the same transaction
+---@param module     string
+---@param key        string
+---@param value      any
+---@return boolean  true on success, false on busy/failure
+function DB:migrateServerModule(serverName, oldModule, module, key, value)
+    local serverId = self:upsertServer(serverName)
+    if not serverId then return false end
+    local vtype = inferType(value)
+    local upsert = self:_prepare([[
+        INSERT INTO server_config(server_id, module, key, value_type, value)
+        VALUES(?,?,?,?,?)
+        ON CONFLICT(server_id, module, key)
+        DO UPDATE SET value_type=excluded.value_type, value=excluded.value;
+    ]])
+    if not upsert then return false end
+    local delete = self:_prepare([[
+        DELETE FROM server_config WHERE server_id=? AND module=?;
+    ]])
+    if not delete then
+        upsert:finalize()
+        return false
+    end
+    if not self:_exec("BEGIN IMMEDIATE TRANSACTION;") then
+        upsert:finalize()
+        delete:finalize()
+        return false
+    end
+    upsert:bind(1, serverId)
+    upsert:bind(2, module)
+    upsert:bind(3, key)
+    upsert:bind(4, vtype)
+    upsert:bind(5, serialize(value, vtype))
+    local ok = self:_step(upsert)
+    upsert:finalize()
+    if ok then
+        delete:bind(1, serverId)
+        delete:bind(2, oldModule)
+        ok = self:_step(delete)
+    end
+    delete:finalize()
+    if not ok then
+        self:_exec("ROLLBACK;")
+        return false
+    end
+    self:_exec("COMMIT;")
+    if self._collectStats then
+        self._telemetry.inserts = self._telemetry.inserts + 1
+        self._telemetry.deletes = self._telemetry.deletes + 1
+    end
+    self:_serverCacheSet(serverName, module, key, value)
+    self:_serverCacheDelModule(serverName, oldModule)
+    return true
+end
+
+---@param serverName string
+---@param module     string
+---@param key        string
+---@param value      any
+---@param vtype      string|nil  Inferred if omitted
+---@return boolean  true on success (row inserted or already present; fetched row cached), false if busy (write NOT queued, cache untouched)
+function DB:seedServerValue(serverName, module, key, value, vtype)
+    local serverId = self:upsertServer(serverName)
+    if not serverId then return false end
+    vtype = vtype or inferType(value)
+    local text = serialize(value, vtype)
+    local stmt = self:_prepare([[
+        INSERT INTO server_config(server_id, module, key, value_type, value)
+        VALUES(?,?,?,?,?)
+        ON CONFLICT(server_id, module, key)
+        DO NOTHING;
+    ]])
+    if not stmt then return false end
+    stmt:bind(1, serverId)
+    stmt:bind(2, module)
+    stmt:bind(3, key)
+    stmt:bind(4, vtype)
+    stmt:bind(5, text)
+    local ok = self:_step(stmt)
+    stmt:finalize()
+    if self._collectStats and ok and self._db:changes() > 0 then
+        self._telemetry.inserts = self._telemetry.inserts + 1
+    end
+    if ok then
+        self:_fetchServerValue(serverName, module, key)
+    end
+    return ok
+end
+
 ---@param serverName string
 ---@param module     string
 ---@param settings   table  { key -> value }

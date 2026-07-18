@@ -2,7 +2,7 @@
 --
 -- Run from the RGMercs debug window (it must execute in RGMercs's Lua state):
 --
---     package.loaded['utils.db_management_test'] = nil; require('utils.db_management_test').RunAll()
+--     package.loaded['tests.db_management_test'] = nil; require('tests.db_management_test').RunAll()
 --
 -- It operates on sentinel characters on a fake server ("rgtestsrv") inside the live config DB,
 -- exercises the real CopySettings / ResetSettings / DeleteSettings / DBManagement.RequestRescan
@@ -19,13 +19,13 @@ local Globals      = require('utils.globals')
 local Modules      = require('utils.modules')
 local OptionsUI    = require('ui.options')
 
-local M = {}
+local M            = {}
 
-local SRV  = "rgtestsrv" -- starts with a lowercase letter on purpose: exercises GetPeerName's first-letter normalization
-local CLS  = "WAR"
-local CLS2 = "SHD"
+local SRV          = "rgtestsrv" -- starts with a lowercase letter on purpose: exercises GetPeerName's first-letter normalization
+local CLS          = "WAR"
+local CLS2         = "SHD"
 
-local pass, fail = 0, 0
+local pass, fail   = 0, 0
 local function check(label, cond, detail)
     if cond then
         pass = pass + 1
@@ -91,8 +91,12 @@ function M.RunAll()
     local unseededMod
     for _, m in ipairs(allMods) do
         local inT = false
-        for _, t in ipairs(testMods) do if t == m then inT = true; break end end
-        if not inT then unseededMod = m; break end
+        for _, t in ipairs(testMods) do if t == m then
+                inT = true; break
+            end end
+        if not inT then
+            unseededMod = m; break
+        end
     end
 
     local rescanMod
@@ -104,13 +108,17 @@ function M.RunAll()
 
     local noRescanMod
     for _, m in ipairs(testMods) do
-        if not hasFlag(m, function(d) return d.RequiresLoadoutChange end) then noRescanMod = m; break end
+        if not hasFlag(m, function(d) return d.RequiresLoadoutChange end) then
+            noRescanMod = m; break
+        end
     end
 
     local customMod, customKey
     for _, m in ipairs(allMods) do
         for k, d in pairs(Config.moduleDefaultSettings[m]) do
-            if d.Type == "Custom" and d.Default ~= nil then customMod, customKey = m, k; break end
+            if d.Type == "Custom" and d.Default ~= nil then
+                customMod, customKey = m, k; break
+            end
         end
         if customMod then break end
     end
@@ -127,8 +135,12 @@ function M.RunAll()
         if t == "table" then return { __rgt__ = true, } end
         return v
     end
-    local function buildSeed(md) local s = {}; for _, e in ipairs(keysWithDefault(md)) do s[e.k] = seedVal(e.d) end; return s end
-    local function buildDefaults(md) local s = {}; for _, e in ipairs(keysWithDefault(md)) do s[e.k] = e.d.Default end; return s end
+    local function buildSeed(md)
+        local s = {}; for _, e in ipairs(keysWithDefault(md)) do s[e.k] = seedVal(e.d) end; return s
+    end
+    local function buildDefaults(md)
+        local s = {}; for _, e in ipairs(keysWithDefault(md)) do s[e.k] = e.d.Default end; return s
+    end
     local function setM(c, cl, m, t) Config.Db:setAll(SRV, c, cl, m, t) end
     local function getM(c, cl, m) return Config.Db:getAll(SRV, c, cl, m) or {} end
     local function wipe(c, cl) for _, m in ipairs(allMods) do Config.Db:deleteModule(SRV, c, cl, m) end end
@@ -259,13 +271,17 @@ function M.RunAll()
 
         local function makeExecRecorder(onRescan)
             return function(self, mod, fn, ...)
-                if mod == "Class" and fn == "RescanLoadout" then onRescan(); return end
+                if mod == "Class" and fn == "RescanLoadout" then
+                    onRescan(); return
+                end
                 return sv.ExecModule(self, mod, fn, ...)
             end
         end
         local function makeSendRecorder(onRescan)
             return function(peer, mod, evt, ...)
-                if evt == "RescanLoadout" then onRescan(peer, mod, evt); return end
+                if evt == "RescanLoadout" then
+                    onRescan(peer, mod, evt); return
+                end
                 return sv.SendMessage(peer, mod, evt, ...)
             end
         end
@@ -318,7 +334,9 @@ function M.RunAll()
 
     -- Cleanup sentinel rows + characters (best effort)
     for _, c in ipairs(sentinelChars) do
-        pcall(function() wipe(c, CLS); wipe(c, CLS2) end)
+        pcall(function()
+            wipe(c, CLS); wipe(c, CLS2)
+        end)
         pcall(function() Config.Db:deleteCharacter(SRV, c) end)
     end
 

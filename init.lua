@@ -296,7 +296,7 @@ local function RGInit(...)
     if Config:GetSetting("RunSelfTestsOnStartup") then
         initPctComplete = 15
         initMsg = "Running Self Tests..."
-        Config.UnitTestsPass = require('utils.unit_tests').RunAll()
+        Config.UnitTestsPass = require('tests.unit_tests').RunAll()
     end
 
     initPctComplete = 20
@@ -509,7 +509,7 @@ local function Main()
     else
         if Globals.CurrentState == "Combat" then
             local targetId = Targeting.GetTargetID()
-            local ignored = Globals.IgnoredTargetIDs:contains(targetId)                         -- don't target something in our ignore list
+            local ignored = Targeting.IsDeniedTargetId(targetId)                                -- don't target something in our ignore list
             local pullTarget = Config:GetSetting('DoPull') and targetId == Globals.LastPulledID -- don't clear your pull target while its traveling to you
             local assistHater = Core.IAmMA() and Targeting.IsSpawnXTHater(targetId)             -- don't clear a targeted hater as MA unless it is ignored
 

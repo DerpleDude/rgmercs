@@ -3,6 +3,7 @@ local Icons           = require('mq.ICONS')
 local ImGui           = require('ImGui')
 local Config          = require('utils.config')
 local Modules         = require('utils.modules')
+local Strings         = require('utils.strings')
 local Ui              = require('utils.ui')
 
 local MapUI           = { _version = '1.0', _name = "MapUI", _author = 'Derple', }
@@ -288,14 +289,7 @@ function MapUI:RenderCanvas(canvasWidth, canvasHeight)
 
     local spawnRadius = math.max(Config:GetSetting('TargetRadius'), 100)
     local npcsMaxRenderCount = math.max(Config:GetSetting('MaxMapNPCsToRender'), 40)
-    local allowedNames = {}
-    for _, name in ipairs(Config:GetZoneList(Modules.ModuleList["Pull"]:ActivePullList('PullAllowList'), nil, true)) do
-        allowedNames[name] = true
-    end
-    local deniedNames = {}
-    for _, name in ipairs(Config:GetZoneList(Modules.ModuleList["Pull"]:ActivePullList('PullDenyList'), nil, true)) do
-        deniedNames[name] = true
-    end
+    local allowedNames, deniedNames = Modules.ModuleList["Pull"]:GetPullListSets()
     local allowColor = ImGui.GetColorU32(ImVec4(0.30, 1.00, 0.45, 1.0))
     local denyColor = ImGui.GetColorU32(ImVec4(1.00, 0.55, 0.10, 1.0))
     local hoveredSpawn = nil
@@ -310,7 +304,7 @@ function MapUI:RenderCanvas(canvasWidth, canvasHeight)
             local alpha = inside and 0.9 or 0.55
             local cleanLower = (spawn.CleanName() or ""):lower()
             local isChest = cleanLower:match("^a.*chest$") ~= nil and (spawn.Race() or "") == "Chest"
-            local isNamed = Modules:ExecModule("Named", "IsNamed", spawn)
+            local isNamed = Modules:ExecModule("Spawns", "IsNamed", spawn)
             if isChest or isNamed then
                 local starColor = isChest and ImGui.GetColorU32(ImVec4(1.0, 0.84, 0.0, 1.0)) or allowColor
                 local starPts = {}
@@ -323,9 +317,10 @@ function MapUI:RenderCanvas(canvasWidth, canvasHeight)
             else
                 drawList:AddCircleFilled(ImVec2(sx, sy), 3, ImGui.GetColorU32(ImVec4(r, g, b, alpha)), 10)
             end
-            if allowedNames[spawn.CleanName()] then
+            local pullListKey = Strings.TrimSpaces(cleanLower)
+            if allowedNames[pullListKey] then
                 drawList:AddCircle(ImVec2(sx, sy), 6, allowColor, 12, 1.5)
-            elseif deniedNames[spawn.CleanName()] then
+            elseif deniedNames[pullListKey] then
                 drawList:AddLine(ImVec2(sx - 5, sy - 5), ImVec2(sx + 5, sy + 5), denyColor, 1.5)
                 drawList:AddLine(ImVec2(sx - 5, sy + 5), ImVec2(sx + 5, sy - 5), denyColor, 1.5)
             end

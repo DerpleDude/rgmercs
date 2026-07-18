@@ -42,6 +42,10 @@ Module.TempSettings.TargetSpawnID         = 0
 Module.TempSettings.PullTargets           = {}
 Module.TempSettings.PullIgnoreTargets     = {}
 Module.TempSettings.PullListUpdated       = false
+Module.TempSettings.PullAllowSet          = {}
+Module.TempSettings.PullDenySet           = {}
+Module.TempSettings.HavePullAllowEntries  = false
+Module.TempSettings.HavePullDenyEntries   = false
 
 -- Attempts & Travel
 Module.TempSettings.Attempt               = nil
@@ -374,7 +378,9 @@ Module.DefaultConfig                = {
         Tooltip = "Enable pulling",
         Default = false,
         Type = "Custom",
-        OnChange = function(self) Movement.UpdateMapRadii() end,
+        OnChange = function(self)
+            Movement.UpdateMapRadii()
+        end,
     },
     ['PullAbility']                            = {
         DisplayName = "Pull Ability",
@@ -2429,27 +2435,6 @@ function Module:ActivePullList(baseName)
     return Config:GetSetting('UseSharedPullLists') and (baseName .. "Shared") or baseName
 end
 
----@param listName string
----@return boolean
-function Module:HaveList(listName)
-    return #Config:GetZoneList(self:ActivePullList(listName)) > 0
-end
-
----@param listName string
----@param mobName string
----@param defaultNoList boolean # Default to return if there is no list.
----@return boolean
-function Module:IsMobInList(listName, mobName, defaultNoList)
-    -- no list so everything is allowed.
-    if not self:HaveList(listName) then return defaultNoList end
-
-    for _, v in ipairs(Config:GetZoneList(self:ActivePullList(listName))) do
-        if v == mobName then return true end
-    end
-
-    return false
-end
-
 ---@param list string
 ---@param mobName string
 function Module:AddMobToList(list, mobName)
@@ -2464,8 +2449,32 @@ end
 
 function Module:FlagPullListUpdated()
     if Config:GetSetting('DoPull') then
+        -- only flag a rescan while actively pulling
         self.TempSettings.PullListUpdated = true
     end
+end
+
+function Module.CompilePullListSet(personal, shared, useShared)
+    local set = {}
+    local hasEntries = false
+    for _, name in ipairs(useShared and shared or personal) do
+        set[Strings.TrimSpaces(name):lower()] = true
+        hasEntries = true
+    end
+    return set, hasEntries
+end
+
+function Module:RefreshPullListSets()
+    local useShared = Config:GetSetting('UseSharedPullLists')
+    self.TempSettings.PullAllowSet, self.TempSettings.HavePullAllowEntries = Module.CompilePullListSet(
+        Config:GetZoneList('PullAllowList'), Config:GetZoneList('PullAllowListShared'), useShared)
+    self.TempSettings.PullDenySet, self.TempSettings.HavePullDenyEntries = Module.CompilePullListSet(
+        Config:GetZoneList('PullDenyList'), Config:GetZoneList('PullDenyListShared'), useShared)
+end
+
+function Module:GetPullListSets()
+    self:RefreshPullListSets()
+    return self.TempSettings.PullAllowSet, self.TempSettings.PullDenySet
 end
 
 function Module:ClearIgnoreList()
@@ -3440,6 +3449,7 @@ end
 
 -- Target Scanning
 function Module:GetPullableSpawns()
+    self:RefreshPullListSets()
     local maxPathRange = Config:GetSetting('MaxPathRange')
     local policy = self:GetModePolicy()
 
@@ -3506,13 +3516,13 @@ function Module:GetPullableSpawns()
             end
         end
 
-        if self:HaveList("PullAllowList") then
-            if self:IsMobInList("PullAllowList", spawn.CleanName(), true) == false then
+        if self.TempSettings.HavePullAllowEntries then
+            if not self.TempSettings.PullAllowSet[Strings.TrimSpaces(spawn.CleanName() or ""):lower()] then
                 Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \ar -> Not Found in Allow List!", spawnName, spawn.ID())
                 return false
             end
-        elseif self:HaveList("PullDenyList") then
-            if self:IsMobInList("PullDenyList", spawn.CleanName(), false) == true then
+        elseif self.TempSettings.HavePullDenyEntries then
+            if self.TempSettings.PullDenySet[Strings.TrimSpaces(spawn.CleanName() or ""):lower()] then
                 Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \ar -> Found in Deny List!", spawnName, spawn.ID())
                 return false
             end

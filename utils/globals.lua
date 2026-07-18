@@ -28,6 +28,8 @@ Globals.CurrentState                  = "None"
 Globals.LastCombatTime                = 0
 Globals.IgnoredTargetIDs              = Set.new({})
 Globals.NoHateTargetIDs               = Set.new({})
+Globals.ZoneDenyNames                 = {}
+Globals.ZoneHasDeny                   = false
 Globals.CharmedPetIDs                 = Set.new({})
 Globals.LooseCharms                   = {}
 -- our own single charm ids: staged for the heartbeat, which reads them cross-process via the RGMercs.Globals() scalar bridge

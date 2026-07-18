@@ -1139,7 +1139,7 @@ local _ClassConfig = {
             Header = "Utility",
             Category = "Emergency",
             Index = 102,
-            Tooltip = "Use your Feign AA when you have aggro at low health or aggro on a mob detected as a 'named' by RGMercs (see Named tab)..",
+            Tooltip = "Use your Feign AA when you have aggro at low health or aggro on a mob detected as a 'named' by RGMercs (see Spawns tab)..",
             Default = true,
         },
 

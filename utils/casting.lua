@@ -3001,7 +3001,7 @@ end
 
 --- Returns true if a spell of the given element should be skipped against this spawn.
 --- Only fires when targetId matches the current auto-target. Combines the global
---- Skip<Element>Spells toggle with the per-mob elemental immunity flag from the Named List.
+--- Skip<Element>Spells toggle with the per-mob elemental immunity flag from the Spawn List.
 --- Buffs, heals, and group abilities against non-auto-target spawns are never affected.
 ---@param element string Element name ("Fire"/"Cold"/"Magic"/"Poison"/"Disease").
 ---@param targetId number Spawn ID of the intended cast target.

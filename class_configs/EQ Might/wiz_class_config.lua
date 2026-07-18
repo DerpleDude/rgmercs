@@ -316,7 +316,7 @@ return {
 
         -- Resolves the currently-active element based on ElementMode.
         -- Auto: prefers Fire, then Cold, then Magic, skipping any element the auto-target is
-        -- immune to (per the Named List) or one toggled off via Skip<X>Spells.
+        -- immune to (per the Spawn List) or one toggled off via Skip<X>Spells.
         PickElement = function()
             local mode = Config:GetSetting('ElementMode') or 1
             if mode == 2 then return "Fire" end
@@ -885,7 +885,7 @@ return {
             FAQ = "How does Element Mode work?",
             Answer =
                 "   The 'Element Mode' setting determines which element you will use in combat. All three element lines (Fire/Cold/Magic) are memorized regardless of mode, so you can change mode in combat freely.\n\n" ..
-                "   Auto mode prefers Fire, then Cold, then Magic, automatically skipping any element your target is immune to (per the Named List) or any element you've globally toggled off via the Skip <Element> Spells settings. The explicit modes (Fire/Cold/Magic) lock to that element regardless of immunity data.\n\n" ..
+                "   Auto mode prefers Fire, then Cold, then Magic, automatically skipping any element your target is immune to (per the Spawn List) or any element you've globally toggled off via the Skip <Element> Spells settings. The explicit modes (Fire/Cold/Magic) lock to that element regardless of immunity data.\n\n" ..
                 "   Heads up: explicit modes still respect the global Skip <Element> Spells toggles. If you pick Fire mode here but have SkipFireSpells enabled in your combat settings, the global skip wins and Fire casts will be blocked - you'll need to clear the conflicting toggle, or pick a different element here.\n\n" ..
                 "   Fury AA buffs follow whatever element is active each burn pass - in Auto mode, this means Fury can swap mid-burn as the target changes.\n\n" ..
                 "   In Auto mode, the script buffs the Fire familiar (Ro's Flaming) and leaves it alone. Explicit modes buff the matching familiar. To change familiars in Auto, briefly switch ElementMode to Cold or Magic to let the script buff that one, then switch back - the buff persists.\n\n" ..

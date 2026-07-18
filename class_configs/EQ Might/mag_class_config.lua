@@ -496,7 +496,7 @@ _ClassConfig      = {
     ['Helpers']       = {
         -- Resolves the currently-active element based on ElementMode.
         -- Auto: prefers Fire, then Magic, skipping either if the auto-target is immune
-        -- (per the Named List) or toggled off via Skip<X>Spells.
+        -- (per the Spawn List) or toggled off via Skip<X>Spells.
         PickElement = function()
             local mode = Config:GetSetting('ElementMode') or 1
             if mode == 2 then return "Fire" end
@@ -1079,7 +1079,7 @@ _ClassConfig      = {
             FAQ = "How does Element Mode work?",
             Answer =
                 "   The 'Element Mode' setting determines which element your nukes will use. Fire and Magic spell lines are always memorized so you can change mode in combat freely.\n\n" ..
-                "   Auto mode prefers Fire, then Magic, automatically skipping either if your target is immune (per the Named List) or if you've globally toggled that element off via the Skip <Element> Spells settings. The explicit modes (Fire/Magic) lock to that element regardless of immunity data.\n\n" ..
+                "   Auto mode prefers Fire, then Magic, automatically skipping either if your target is immune (per the Spawn List) or if you've globally toggled that element off via the Skip <Element> Spells settings. The explicit modes (Fire/Magic) lock to that element regardless of immunity data.\n\n" ..
                 "   Heads up: explicit modes still respect the global Skip <Element> Spells toggles. If you pick Fire mode here but have SkipFireSpells enabled in your combat settings, the global skip wins and Fire casts will be blocked - you'll need to clear the conflicting toggle, or pick a different element here.",
         },
         ['DoSwarmPet']     = {

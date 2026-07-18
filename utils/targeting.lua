@@ -42,14 +42,38 @@ Targeting.XTargetTypeKeywords   = {
     ["Mercenary Target"]     = "mercenarytarget",
 }
 
---- Returns true if spawn qualifies as a named mob per the Named module,
+--- Returns true if spawn qualifies as a named mob per the Spawns module,
 --- ignoring spawns below the NamedMinLevel config setting.
 ---@param spawn MQSpawn The spawn to check.
 ---@return boolean True if the spawn is a named mob.
 function Targeting.IsNamed(spawn)
     if not spawn or not spawn() then return false end
     if (spawn.Level() or 0) < Config:GetSetting("NamedMinLevel") then return false end
-    return Modules:ExecModule("Named", "IsNamed", spawn) or false
+    return Modules:ExecModule("Spawns", "IsNamed", spawn) or false
+end
+
+--- Returns true if spawn is barred from auto-targeting (session ignore or zone deny); force-target overrides both.
+---@param spawn MQSpawn The spawn to check.
+---@return boolean True if the spawn is denied.
+function Targeting.IsDeniedTarget(spawn)
+    local spawnId = spawn and spawn.ID() or 0
+    if spawnId <= 0 then return false end
+    if spawnId == Globals.ForceTargetID or spawnId == Globals.ForceCombatID then return false end
+    if Globals.IgnoredTargetIDs:contains(spawnId) then return true end
+    if not Globals.ZoneHasDeny then return false end
+    if Globals.ZoneDenyNames[Strings.TrimSpaces(spawn.CleanName() or ""):lower()] then return true end
+    return false
+end
+
+--- Id form of IsDeniedTarget; resolves the spawn only when the zone has deny entries.
+---@param spawnId number Spawn ID to check.
+---@return boolean True if the spawn is denied.
+function Targeting.IsDeniedTargetId(spawnId)
+    if (spawnId or 0) <= 0 then return false end
+    if spawnId == Globals.ForceTargetID or spawnId == Globals.ForceCombatID then return false end
+    if Globals.IgnoredTargetIDs:contains(spawnId) then return true end
+    if not Globals.ZoneHasDeny then return false end
+    return Targeting.IsDeniedTarget(mq.TLO.Spawn(spawnId))
 end
 
 --- Thin wrapper around Core.SetTarget; exists to avoid a breaking API change.

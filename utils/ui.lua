@@ -1465,9 +1465,20 @@ function Ui.RenderForceTargetList(showPopout)
     end
 
     -- flashy highlights
-    local Colors       = Globals.Constants.BasicColors
-    local hlColorOne   = Globals.Constants.Colors.FTHighlight
-    local hlColorTwo   = ImVec4(hlColorOne.x * .8, hlColorOne.y * .8, hlColorOne.z * .8, hlColorOne.w)
+    local Colors     = Globals.Constants.BasicColors
+    local hlColorOne = Globals.Constants.Colors.FTHighlight
+    local hlColorTwo = ImVec4(hlColorOne.x * .8, hlColorOne.y * .8, hlColorOne.z * .8, hlColorOne.w)
+
+    local denyListed = {}
+    local function isDenyListed(xtarg)
+        if not Globals.ZoneHasDeny then return false end
+        local cached = denyListed[xtarg]
+        if cached == nil then
+            cached = Globals.ZoneDenyNames[Strings.TrimSpaces(xtarg.CleanName() or ""):lower()] ~= nil
+            denyListed[xtarg] = cached
+        end
+        return cached
+    end
 
     local tableColumns = {
         {
@@ -1511,27 +1522,31 @@ function Ui.RenderForceTargetList(showPopout)
             flags = bit32.bor(ImGuiTableColumnFlags.WidthFixed),
             width = 16.0,
             sort = function(a, b)
-                return Globals.IgnoredTargetIDs:contains(a.ID()) and 1 or 0, Globals.IgnoredTargetIDs:contains(b.ID()) and 1 or 0
+                return (Globals.IgnoredTargetIDs:contains(a.ID()) or isDenyListed(a)) and 1 or 0, (Globals.IgnoredTargetIDs:contains(b.ID()) or isDenyListed(b)) and 1 or 0
             end,
             render = function(xtarg, i)
-                local checked = Globals.IgnoredTargetIDs:contains(xtarg.ID())
+                local sessionHit = Globals.IgnoredTargetIDs:contains(xtarg.ID())
+                local denyHit = isDenyListed(xtarg)
                 ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, ImVec2(0, 0))
 
-                if not checked then
-                    ImGui.PushStyleColor(ImGuiCol.Text, IM_COL32(52, 52, 52, 0))
+                if not sessionHit then
+                    if denyHit then
+                        ImGui.PushStyleColor(ImGuiCol.Text, Colors.Grey)
+                    else
+                        ImGui.PushStyleColor(ImGuiCol.Text, IM_COL32(52, 52, 52, 0))
+                    end
                 end
 
-                Ui.InvisibleWithButtonText("##ig_btn_" .. tostring(i), Icons.MD_CLOSE, ImVec2(ICON_SIZE, ImGui.GetTextLineHeight()),
-                    function()
-                        if checked then
-                            Globals.IgnoredTargetIDs:remove(xtarg.ID())
-                        else
-                            Globals.IgnoredTargetIDs:add(xtarg.ID())
-                        end
-                    end)
+                local clickFn = nil
+                if sessionHit then
+                    clickFn = function() Globals.IgnoredTargetIDs:remove(xtarg.ID()) end
+                elseif not denyHit then
+                    clickFn = function() Globals.IgnoredTargetIDs:add(xtarg.ID()) end
+                end
 
+                Ui.InvisibleWithButtonText("##ig_btn_" .. tostring(i), Icons.MD_CLOSE, ImVec2(ICON_SIZE, ImGui.GetTextLineHeight()), clickFn)
 
-                if not checked then
+                if not sessionHit then
                     ImGui.PopStyleColor()
                 end
 
@@ -1540,6 +1555,10 @@ function Ui.RenderForceTargetList(showPopout)
                 local draw = ImGui.GetWindowDrawList()
                 draw:AddRect(min, max, IM_COL32(180, 180, 180, 180), 0.5)
                 ImGui.PopStyleVar(1)
+
+                if denyHit and not sessionHit and xtarg.ID() ~= Globals.ForceTargetID and xtarg.ID() ~= Globals.ForceCombatID then
+                    Ui.Tooltip("This target is denied on the Spawns tab. Force-targeting will engage it anyway.")
+                end
             end,
         },
         {
@@ -1747,7 +1766,7 @@ function Ui.RenderForceTargetList(showPopout)
             if ImGui.TableSetColumnIndex(1) then
                 ImGui.SameLine()
                 Ui.RenderText("     ")
-                Ui.Tooltip("Click here to ignore this target.")
+                Ui.Tooltip("Click here to ignore this target this session; a gray X marks a persistent deny, managed on the Spawns tab.")
             end
 
             if ImGui.TableSetColumnIndex(2) then

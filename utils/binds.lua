@@ -110,7 +110,7 @@ Binds.Handlers    = {
     ['ignoretarget'] = {
         usage = "/rgl ignoretarget <id?>",
         about =
-        "Will force target to be ignored when picking your assist target as the MA.",
+        "Ignores a mob for auto-targeting for this session only. If no ID is entered, your target is used.",
         handler = function(targetId)
             targetId = targetId and tonumber(targetId) or mq.TLO.Target.ID()
             if targetId > 0 then
@@ -286,7 +286,7 @@ Binds.Handlers    = {
     },
     ['namedadd'] = {
         usage = "/rgl namedadd <Name>",
-        about = "Adds <Name> to the User Named List for the current zone. If no name is entered, your target's name is used.",
+        about = "Sets the Named flag for a mob in the current zone. If no name is entered, your target's name is used.",
         handler = function(name)
             if not name then
                 if not mq.TLO.Target() then
@@ -299,7 +299,8 @@ Binds.Handlers    = {
                 end
                 name = mq.TLO.Target.CleanName()
             end
-            Modules.ModuleList.Named:AddNamedToCustomList(name)
+            Modules.ModuleList.Spawns:AddNamedToCustomList(name)
+            Logger.log_info("\ag[Spawn List] \ay%s\ax flagged Named in this zone.", name)
         end,
     },
     ['nameddelete'] = {
@@ -311,12 +312,13 @@ Binds.Handlers    = {
                 Logger.log_error("/rgl nameddelete - no argument given and no valid target exists!")
                 return
             end
-            Modules.ModuleList.Named:DeleteNamedFromCustomList(arg1)
+            Modules.ModuleList.Spawns:DeleteNamedFromCustomList(arg1)
+            Logger.log_info("\ag[Spawn List] \ay%s\ax Named flag cleared.", tostring(arg1))
         end,
     },
     ['nameddeny'] = {
         usage = "/rgl nameddeny [Name]",
-        about = "Marks a mob as NOT named in the current zone, suppressing the built-in default and any overlay. If no name is entered, your target's name is used.",
+        about = "Marks a mob as NOT named in the current zone, overriding built-in named status. If no name is entered, your target's name is used.",
         handler = function(name)
             if not name then
                 if not mq.TLO.Target() then
@@ -329,7 +331,8 @@ Binds.Handlers    = {
                 end
                 name = mq.TLO.Target.CleanName()
             end
-            Modules.ModuleList.Named:DenyNamedFromCustomList(name)
+            Modules.ModuleList.Spawns:AddNotNamedToCustomList(name)
+            Logger.log_info("\ag[Spawn List] \ay%s\ax flagged Not Named in this zone.", name)
         end,
     },
     ['immuneadd'] = {
@@ -353,7 +356,7 @@ Binds.Handlers    = {
                 end
                 name = mq.TLO.Target.CleanName()
             end
-            Config:ZoneRegistrySetSubFlag(name, "CustomNamedList", match.group, match.canonical, true)
+            Config:ZoneRegistrySetSubFlag(name, "SpawnList", match.group, match.canonical, true)
             Logger.log_info("\ag[Immune] \ay%s\ax marked %s-immune in this zone.", name, match.canonical)
         end,
     },
@@ -371,8 +374,72 @@ Binds.Handlers    = {
                 Logger.log_error("/rgl immunedelete - no name given and no valid target exists!")
                 return
             end
-            Config:ZoneRegistryClearFlag(arg1, "CustomNamedList", match.group, match.canonical)
+            Config:ZoneRegistryClearFlag(arg1, "SpawnList", match.group, match.canonical)
             Logger.log_info("\ag[Immune] \ay%s\ax cleared %s flag.", tostring(arg1), match.canonical)
+        end,
+    },
+    ['spawnadd'] = {
+        usage = "/rgl spawnadd [Name]",
+        about = "Adds a mob to the Spawn List for the current zone with no flags set. If no name is entered, your target's name is used.",
+        handler = function(name)
+            if not name then
+                if not mq.TLO.Target() then
+                    Logger.log_error("/rgl spawnadd - no name given and no valid target exists!")
+                    return
+                end
+                if not Targeting.TargetIsType("NPC") then
+                    Logger.log_error("/rgl spawnadd - target must be an NPC!")
+                    return
+                end
+                name = mq.TLO.Target.CleanName()
+            end
+            Modules.ModuleList.Spawns:AddSpawnToList(name)
+            Logger.log_info("\ag[Spawn List] \ay%s\ax added with no flags.", name)
+        end,
+    },
+    ['spawndelete'] = {
+        usage = "/rgl spawndelete [Name]",
+        about = "Removes a mob and all of its flags from the Spawn List for the current zone. If no name is entered, your target's name is used.",
+        handler = function(arg1)
+            if not arg1 then arg1 = mq.TLO.Target.CleanName() end
+            if not arg1 then
+                Logger.log_error("/rgl spawndelete - no argument given and no valid target exists!")
+                return
+            end
+            Modules.ModuleList.Spawns:DeleteEntryFromCustomList(arg1)
+            Logger.log_info("\ag[Spawn List] \ay%s\ax removed.", tostring(arg1))
+        end,
+    },
+    ['spawndeny'] = {
+        usage = "/rgl spawndeny [Name]",
+        about = "Sets the Deny flag for a mob in the current zone, persistently preventing it from being your auto-target. If no name is entered, your target's name is used.",
+        handler = function(name)
+            if not name then
+                if not mq.TLO.Target() then
+                    Logger.log_error("/rgl spawndeny - no name given and no valid target exists!")
+                    return
+                end
+                if not Targeting.TargetIsType("NPC") then
+                    Logger.log_error("/rgl spawndeny - target must be an NPC!")
+                    return
+                end
+                name = mq.TLO.Target.CleanName()
+            end
+            Modules.ModuleList.Spawns:AddDenyToCustomList(name)
+            Logger.log_info("\ag[Spawn List] \ay%s\ax flagged Deny - will not be auto-targeted.", name)
+        end,
+    },
+    ['spawndenydelete'] = {
+        usage = "/rgl spawndenydelete [Name]",
+        about = "Clears the Deny flag for a mob in the current zone. If no name is entered, your target's name is used.",
+        handler = function(arg1)
+            if not arg1 then arg1 = mq.TLO.Target.CleanName() end
+            if not arg1 then
+                Logger.log_error("/rgl spawndenydelete - no argument given and no valid target exists!")
+                return
+            end
+            Modules.ModuleList.Spawns:DeleteDenyFromCustomList(arg1)
+            Logger.log_info("\ag[Spawn List] \ay%s\ax Deny flag cleared.", tostring(arg1))
         end,
     },
     ['backoff'] = {

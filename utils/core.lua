@@ -161,12 +161,12 @@ function Core.UnCheckPlugins(t)
 end
 
 --- Warns if MQ2SpawnMaster is loaded but is an outdated non-RG build
---- that lacks the HasSpawn TLO field required by the Named module.
+--- that lacks the HasSpawn TLO field required by the Spawns module.
 function Core.CheckSpawnMasterVersion()
     if mq.TLO.Plugin("MQ2SpawnMaster").IsLoaded() then
         ---@diagnostic disable-next-line: undefined-field
         if mq.TLO.SpawnMaster == nil or mq.TLO.SpawnMaster.HasSpawn == nil then
-            Logger.log_warning("\ar MQ2SpawnMaster issue detected! \aw Plugin out of date or from a non-RG build! Named funcionality may be impeded.")
+            Logger.log_warning("\ar MQ2SpawnMaster issue detected! \aw Plugin out of date or from a non-RG build! Named detection may be impeded.")
         end
     end
 end

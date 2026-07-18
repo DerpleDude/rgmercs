@@ -861,12 +861,12 @@ Config.DefaultConfig                                     = {
         Category = "Common Rules",
         Index = 6,
         Tooltip = "Don't use spells with a fire resist type (as long as they aren't flagged in the config to ignore this check).\n" ..
-            "This is a top-level setting that can be freely toggled without changing spell loadout. Refer to the Named List FAQs for more details.",
+            "This is a top-level setting that can be freely toggled without changing spell loadout. Refer to the Spawn List FAQs for more details.",
         Default = false,
         ConfigType = "Advanced",
         FAQ = "How do the Skip <Element> Spells settings work?",
         Answer = "If a skip is enabled, no entry whose underlying spell uses that element as a resist (fire/cold/magic/poison/disease) will be used.\n\n" ..
-            "Meant as a quick \"turn off for this fight\" override. For persistent per-mob behavior, use the Named module tab to flag specific mobs.\n\n" ..
+            "Meant as a quick \"turn off for this fight\" override. For persistent per-mob behavior, use the Spawns module tab to flag specific mobs.\n\n" ..
             "Note that some entries may intentionally ignore this check with the 'IgnoreImmuneCheck' flag.",
     },
     ['SkipColdSpells']             = {
@@ -876,7 +876,7 @@ Config.DefaultConfig                                     = {
         Category = "Common Rules",
         Index = 7,
         Tooltip = "Don't use spells with a cold resist type (as long as they aren't flagged in the config to ignore this check).\n" ..
-            "This is a top-level setting that can be freely toggled without changing spell loadout. Refer to the Named List FAQs for more details.",
+            "This is a top-level setting that can be freely toggled without changing spell loadout. Refer to the Spawn List FAQs for more details.",
         Default = false,
         ConfigType = "Advanced",
     },
@@ -887,7 +887,7 @@ Config.DefaultConfig                                     = {
         Category = "Common Rules",
         Index = 8,
         Tooltip = "Don't use spells with a magic resist type (as long as they aren't flagged in the config to ignore this check).\n" ..
-            "This is a top-level setting that can be freely toggled without changing spell loadout. Refer to the Named List FAQs for more details.",
+            "This is a top-level setting that can be freely toggled without changing spell loadout. Refer to the Spawn List FAQs for more details.",
         Default = false,
         ConfigType = "Advanced",
     },
@@ -898,7 +898,7 @@ Config.DefaultConfig                                     = {
         Category = "Common Rules",
         Index = 9,
         Tooltip = "Don't use spells with a poison resist type (as long as they aren't flagged in the config to ignore this check).\n" ..
-            "This is a top-level setting that can be freely toggled without changing spell loadout. Refer to the Named List FAQs for more details.",
+            "This is a top-level setting that can be freely toggled without changing spell loadout. Refer to the Spawn List FAQs for more details.",
         Default = false,
         ConfigType = "Advanced",
     },
@@ -909,7 +909,7 @@ Config.DefaultConfig                                     = {
         Category = "Common Rules",
         Index = 10,
         Tooltip = "Don't use spells with a disease resist type (as long as they aren't flagged in the config to ignore this check).\n" ..
-            "This is a top-level setting that can be freely toggled without changing spell loadout. Refer to the Named List FAQs for more details.",
+            "This is a top-level setting that can be freely toggled without changing spell loadout. Refer to the Spawn List FAQs for more details.",
         Default = false,
         ConfigType = "Advanced",
     },
@@ -920,14 +920,14 @@ Config.DefaultConfig                                     = {
         Category = "Common Rules",
         Index = 11,
         Tooltip = "Use immunity data shipped with RGMercs (if available) to automatically determine whether to skip a spell.\n" ..
-            "Refer to the Named List FAQs for more details.",
+            "Refer to the Spawn List FAQs for more details.",
         Default = true,
         ConfigType = "Advanced",
-        OnChange = function() Modules:ExecModule("Named", "InvalidateNamedList") end,
+        OnChange = function() Modules:ExecModule("Spawns", "InvalidateSpawnList") end,
         FAQ = "What does the Use Immune Data setting do?",
-        Answer = "The RGMercs named list *may* contain known immunity data for nameds - elemental (Fire/Cold/Magic/Poison/Disease) or status (Slow/Snare/Stun). " ..
+        Answer = "The built-in RGMercs Spawn List *may* contain known immunity data for nameds - elemental (Fire/Cold/Magic/Poison/Disease) or status (Slow/Snare/Stun). " ..
             "When this setting is enabled, RGMercs will use that data to automatically avoid casting spells those mobs are immune to.\n\n" ..
-            "Disable this if you'd prefer to rely only on your own custom flags, added via the Named module tab or the /rgl immuneadd command. " ..
+            "Disable this if you'd prefer to rely only on your own custom flags, added via the Spawns module tab or the /rgl immuneadd command. " ..
             "Your custom entries are never affected by this toggle.\n\n" ..
             "Note: shipped flags are added only for mobs that are *effectively immune* (a resist value so high the spell will never land in practice). " ..
             "Currently, this data has only been added for most named on the EQ Might or Project Might servers, as they heavily rely on elemental resists. This information does not matter on many other servers.",
@@ -1895,7 +1895,7 @@ Config.DefaultConfig                                     = {
         Header = "Burning",
         Category = "Burning",
         Index = 5,
-        Tooltip = "Automatically use Burn rotations when we are fighting a named mob(must be present in RGMerc Named List or detected with SpawnMaster or Alert Master).",
+        Tooltip = "Automatically use Burn rotations when we are fighting a named mob (must be present on the RGMercs Spawn List or detected with SpawnMaster or Alert Master).",
         Default = true,
         ConfigType = "Advanced",
     },
@@ -3773,7 +3773,12 @@ function Config:SaveModuleSettings(module, settings)
     local settingsCategories = self:GetModuleSettingCategories(module):toList() or {}
 
     for setting, value in pairs(settings) do
-        self:SettingDbWrite(module, setting, value)
+        if Config.TempSettings.SettingToScopeCache[setting] == "server" then
+            -- seed only, never overwrite existing rows
+            self.Db:seedServerValue(Globals.ServerEnv, module, setting, value)
+        else
+            self:SettingDbWrite(module, setting, value)
+        end
     end
     Logger.log_debug("\agModule %s - save settings requested!", module)
 
@@ -4070,36 +4075,41 @@ function Config:GetZoneList(listName, zoneKey, failOk)
     return (self:GetSetting(listName, failOk) or {})[zoneKey] or {}
 end
 
---- Removes a zone registry entry if it has no remaining flags set.
---- @param zoneTbl table The zone's mob table (`list[zoneKey]`).
---- @param name string Mob name (key).
-function Config:PruneRegistryEntryIfEmpty(zoneTbl, name)
-    local entry = zoneTbl[name]
-    if not entry then return end
-    if not entry.named
-        and (not entry.elementalImmunities or not next(entry.elementalImmunities))
-        and (not entry.statusImmunities or not next(entry.statusImmunities)) then
-        zoneTbl[name] = nil
-    end
+function Config:ZoneRegistryDefaultZoneKey(list)
+    local zoneFull = (mq.TLO.Zone.Name() or ""):lower()
+    if list[zoneFull] and next(list[zoneFull]) ~= nil then return zoneFull end
+    return (mq.TLO.Zone.ShortName() or ""):lower()
 end
 
---- Sets a top-level flag on a zone registry entry (currently just 'named').
+function Config:ZoneRegistryAddEntry(name, listName, zoneKey)
+    name = Strings.TrimSpaces(name)
+    if not name or name == "" then return end
+    local list = self:GetSetting(listName) or {}
+    zoneKey = zoneKey or self:ZoneRegistryDefaultZoneKey(list)
+    list[zoneKey] = list[zoneKey] or {}
+    if list[zoneKey][name] then return end
+    list[zoneKey][name] = {}
+    self:SetSetting(listName, list)
+end
+
+--- Sets a top-level flag on a zone registry entry ('named' or 'deny').
 --- @param name string Mob name (key).
 --- @param listName string The setting name of the zone registry.
---- @param group string Top-level flag name; only 'named' is supported here.
---- @param value boolean New flag value (nil clears).
---- @param zoneKey string? Optional zone short name (lowercase). Defaults to current zone.
+--- @param group string Top-level flag name ('named' or 'deny').
+--- @param value boolean New flag value; stored raw for 'named' (true/false), 'deny' always stores true.
+--- @param zoneKey string? Optional zone key (lowercase). Defaults to the current zone's active section.
 function Config:ZoneRegistrySetFlag(name, listName, group, value, zoneKey)
     name = Strings.TrimSpaces(name)
     if not name or name == "" then return end
-    zoneKey = zoneKey or (mq.TLO.Zone.ShortName() or ""):lower()
     local list = self:GetSetting(listName) or {}
+    zoneKey = zoneKey or self:ZoneRegistryDefaultZoneKey(list)
     list[zoneKey] = list[zoneKey] or {}
     list[zoneKey][name] = list[zoneKey][name] or {}
     if group == 'named' then
-        list[zoneKey][name].named = value and true or nil
+        list[zoneKey][name].named = value
+    elseif group == 'deny' then
+        list[zoneKey][name].deny = true
     end
-    self:PruneRegistryEntryIfEmpty(list[zoneKey], name)
     self:SetSetting(listName, list)
 end
 
@@ -4109,48 +4119,48 @@ end
 --- @param group string Sub-table name ('resists' or 'immunities').
 --- @param key string Element/effect key within the group (e.g. 'Fire', 'Slow').
 --- @param value boolean New flag value (nil clears the sub-flag).
---- @param zoneKey string? Optional zone short name (lowercase). Defaults to current zone.
+--- @param zoneKey string? Optional zone key (lowercase). Defaults to the current zone's active section.
 function Config:ZoneRegistrySetSubFlag(name, listName, group, key, value, zoneKey)
     name = Strings.TrimSpaces(name)
     if not name or name == "" then return end
-    zoneKey = zoneKey or (mq.TLO.Zone.ShortName() or ""):lower()
     local list = self:GetSetting(listName) or {}
+    zoneKey = zoneKey or self:ZoneRegistryDefaultZoneKey(list)
     list[zoneKey] = list[zoneKey] or {}
     list[zoneKey][name] = list[zoneKey][name] or {}
     local entry = list[zoneKey][name]
     entry[group] = entry[group] or {}
     entry[group][key] = value and true or nil
     if not next(entry[group]) then entry[group] = nil end
-    self:PruneRegistryEntryIfEmpty(list[zoneKey], name)
     self:SetSetting(listName, list)
 end
 
 --- Clears a flag on a zone registry entry. Early-returns (no SetSetting) when the entry doesn't exist,
 --- avoiding redundant OnChange/broadcast cycles on no-op clears.
---- For group='named', the named flag is cleared. For other groups, subKey must be provided.
+--- For group='named' or 'deny', that flag is cleared. For other groups, subKey must be provided.
 --- @param name string Mob name (key).
 --- @param listName string The setting name of the zone registry.
---- @param group string Top-level flag or sub-table name ('named'/'elementalImmunities'/'statusImmunities').
+--- @param group string Top-level flag or sub-table name ('named'/'deny'/'elementalImmunities'/'statusImmunities').
 --- @param subKey string? Sub-key within the group (required when group is 'elementalImmunities' or 'statusImmunities').
---- @param zoneKey string? Optional zone short name (lowercase). Defaults to current zone.
+--- @param zoneKey string? Optional zone key (lowercase). Defaults to the current zone's active section.
 function Config:ZoneRegistryClearFlag(name, listName, group, subKey, zoneKey)
     name = Strings.TrimSpaces(name)
     if not name or name == "" then return end
-    zoneKey = zoneKey or (mq.TLO.Zone.ShortName() or ""):lower()
     local list = self:GetSetting(listName) or {}
+    zoneKey = zoneKey or self:ZoneRegistryDefaultZoneKey(list)
     local zoneTbl = list[zoneKey]
     if not zoneTbl then return end
     local entry = zoneTbl[name]
     if not entry then return end
     if group == 'named' then
         entry.named = nil
+    elseif group == 'deny' then
+        entry.deny = nil
     elseif subKey then
         if entry[group] then
             entry[group][subKey] = nil
             if not next(entry[group]) then entry[group] = nil end
         end
     end
-    self:PruneRegistryEntryIfEmpty(zoneTbl, name)
     self:SetSetting(listName, list)
 end
 

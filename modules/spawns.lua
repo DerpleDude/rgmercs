@@ -1,37 +1,36 @@
--- Sample Named Class Module
-local mq           = require('mq')
-local Icons        = require('mq.ICONS')
-local Base         = require("modules.base")
-local Config       = require('utils.config')
-local Core         = require("utils.core")
-local Globals      = require("utils.globals")
-local Logger       = require("utils.logger")
-local Modules      = require("utils.modules")
-local NamedDefault = require("namedlist.named_default")
-local NamedEQMight = require("namedlist.named_eqmight")
-local NamedLazarus = require("namedlist.named_lazarus")
-local Strings      = require("utils.strings")
-local Targeting    = require("utils.targeting")
-local Ui           = require("utils.ui")
+-- Sample Spawns Class Module
+local mq        = require('mq')
+local Icons     = require('mq.ICONS')
+local Base      = require("modules.base")
+local Config    = require('utils.config')
+local Core      = require("utils.core")
+local Globals   = require("utils.globals")
+local Modules   = require("utils.modules")
+local Strings   = require("utils.strings")
+local Targeting = require("utils.targeting")
+local Ui        = require("utils.ui")
 
-local Module       = { _version = '1.1', _name = "Named", _author = 'Derple, Algar, Grimmier', }
-Module.__index     = Module
+local Module    = { _version = '1.1', _name = "Spawns", _author = 'Derple, Algar, Grimmier', }
+Module.__index  = Module
 setmetatable(Module, { __index = Base, })
 
 Module.CachedNamedList = {}
-Module.ShowDownNamed = false
+Module.ShowDownNamed   = false
 Module.CommandHandlers = {}
 
 Module.NamedList       = {}
 Module.LastNamedCheck  = 0
 Module.LastRenderTime  = 0
 
-Module.DefNamedBase    = NamedDefault or {}
-Module.DefNamedOverlay = (Core.OnMight() and NamedEQMight) or (Core.OnLaz() and NamedLazarus) or {}
+Module.DefSpawnList    = Core.OnMight() and require('spawnlist.eqmight') or Core.OnLaz() and require('spawnlist.lazarus') or require('spawnlist.live')
 
-Module.FlagOrder = { { kind = "named", key = nil, label = "Named", }, }
-for _, e in ipairs(Globals.Constants.ResistTypes)     do table.insert(Module.FlagOrder, { kind = "elementalImmunities", key = e, label = e, }) end
-for _, e in ipairs(Globals.Constants.ImmunityEffects) do table.insert(Module.FlagOrder, { kind = "statusImmunities",    key = e, label = e, }) end
+Module.FlagOrder       = {
+    { kind = "named", value = true,   label = "Named",       section = "Targeting", },
+    { kind = "named", value = false,  label = "Not Named",   section = "Targeting", },
+    { kind = "deny",  label = "Deny", section = "Targeting", },
+}
+for _, e in ipairs(Globals.Constants.ResistTypes) do table.insert(Module.FlagOrder, { kind = "elementalImmunities", key = e, label = e, section = "Elemental Immunity", }) end
+for _, e in ipairs(Globals.Constants.ImmunityEffects) do table.insert(Module.FlagOrder, { kind = "statusImmunities", key = e, label = e, section = "Status Immunity", }) end
 
 function Module:FlagSummary(entry)
     local parts = {}
@@ -39,6 +38,9 @@ function Module:FlagSummary(entry)
         table.insert(parts, "Not Named")
     elseif entry.named then
         table.insert(parts, "Named")
+    end
+    if entry.deny then
+        table.insert(parts, "Deny")
     end
     for _, key in ipairs(Globals.Constants.ResistTypes) do
         if entry.elementalImmunities and entry.elementalImmunities[key] then table.insert(parts, key) end
@@ -69,16 +71,16 @@ Module.DefaultConfig = {
         Type = "Custom",
         Default = false,
     },
-    ['CustomNamedList'] = {
-        DisplayName = "Custom Named List",
+    ['SpawnList'] = {
+        DisplayName = "Zone Spawn List",
         Type = "Custom",
         Default = {},
         Scope = "server",
-        OnChange = function() Modules:ExecModule("Named", "InvalidateNamedList") end,
-        FAQ = "Can I add my own named NPCs and immunity flags to RGMercs?",
-        Answer = "Open the Named module tab and add your current target via the Custom Named List editor. " ..
-            "Each row's Flags combo toggles Named, elemental immunity flags (Fire/Cold/Magic/Poison/Disease), and status immunity flags (Slow/Snare/Stun). " ..
-            "CLI alternatives: /rgl namedadd, /rgl nameddeny (suppress a built-in named), and /rgl immuneadd (plus matching delete commands).\n\n" ..
+        OnChange = function() Modules:ExecModule("Spawns", "InvalidateSpawnList") end,
+        FAQ = "Can I add my own named NPCs, immunity flags, or denied targets to RGMercs?",
+        Answer = "Open the Spawns module tab and add your current target via the Zone Spawn List editor. " ..
+            "Each row's Flags combo toggles Named/Not Named, Deny (never auto-target this mob), elemental immunity flags (Fire/Cold/Magic/Poison/Disease), and status immunity flags (Slow/Snare/Stun). " ..
+            "CLI alternatives: /rgl spawnadd, /rgl spawndeny, /rgl namedadd, /rgl nameddeny, and /rgl immuneadd; remove with /rgl spawndelete, /rgl spawndenydelete, /rgl nameddelete, and /rgl immunedelete.\n\n" ..
             "This per-server, per-zone list is shared in real-time with all RGMercs peers on this machine.",
     },
 }
@@ -89,25 +91,35 @@ Module.FAQ           = {
         Answer =
             "  RGMercs default class configs fully support burning, using defenses, or other special actions on Named mobs, " ..
             "however, your target must be identified as such. There are several ways to make this happen:\n\n" ..
-            "  1) Add Named NPCs using the UI on the Named module tab, or using the CLI (search the command list for \"named\").\n\n" ..
-            "  2) The built-in Named List: RGMercs has a list of known nameds per zone. If a mob is on the list, RGMercs treats it as a Named automatically.\n\n" ..
+            "  1) Add the mob to the Zone Spawn List on the Spawns module tab and set the Named flag, or use /rgl namedadd.\n\n" ..
+            "  2) The built-in Spawn List: RGMercs ships a list of known nameds per zone for your server. If a mob is on the list, RGMercs treats it as a Named automatically.\n\n" ..
             "  3) SpawnMaster (optional): If 'Check SM For Named' is enabled and MQ2SpawnMaster is loaded, RGMercs queries it via TLO. Useful if you already maintain SpawnMaster watch lists.\n\n" ..
             "  4) Alert Master (optional): If 'Check AM For Named' is enabled and the Alert Master script is loaded, RGMercs queries it via TLO. Useful if you already maintain Alert Master alert lists.\n\n" ..
-            "  Specific feedback on missing, incorrect, or otherwise erroneous entries on the built-in RGMercs Named List is always welcome!\n\n",
+            "  Specific feedback on missing, incorrect, or otherwise erroneous entries on the built-in RGMercs Spawn List is always welcome!\n\n",
         Settings_Used = "",
     },
     {
-        Question = "How does the Named List handle resists and immunities?",
+        Question = "How does the Spawn List handle resists and immunities?",
         Answer =
-            "  The Named List is a per-zone, per-mob registry. Each entry can carry any combination of:\n\n" ..
+            "  The Spawn List is a per-zone, per-mob registry. Each entry can carry any combination of:\n\n" ..
             "  * Named flag - treat the mob as a named (enables burns and other named-specific actions).\n" ..
             "  * Elemental immunity flags - Fire, Cold, Magic, Poison, Disease. Rotation entries whose spell uses a flagged resist type are skipped on this mob.\n" ..
             "  * Status immunity flags - Slow, Snare, Stun. Rotation entries that gate on the corresponding immunity will respect the flag.\n\n" ..
             "  These checks only apply to your combat auto-target - buffs, heals, and group abilities are not affected.\n\n" ..
-            "  Add or edit flags from the Named module tab (Flags combo on each row), or via /rgl immuneadd and /rgl immunedelete (which accept both elemental and status keywords).\n\n" ..
+            "  Add or edit flags from the Spawns module tab (Flags combo on each row), or via /rgl immuneadd and /rgl immunedelete (which accept both elemental and status keywords).\n\n" ..
             "  RGMercs ships built-in immunity data for some mobs (see the 'Use Immune Data' setting). " ..
             "Specific feedback on missing or erroneous entries is always welcome!",
         Settings_Used = "UseImmuneData, SkipFireSpells, SkipColdSpells, SkipMagicSpells, SkipPoisonSpells, SkipDiseaseSpells",
+    },
+    {
+        Question = "Can I have RGMercs never auto-target certain mobs in a zone (e.g. boss adds)?",
+        Answer =
+            "  Yes. Open the Spawns module tab, target the mob, click \"Add Target To List\", then check the Deny flag in the row's Flags combo. " ..
+            "CLI: /rgl spawndeny and /rgl spawndenydelete operate on your current target or a supplied name.\n\n" ..
+            "  Deny is per-zone and per-server, and shared in real-time with all RGMercs peers on this machine. " ..
+            "Force-target overrides deny - to engage a denied mob, force-target it via the Force Target window or /rgl forcetarget.\n\n" ..
+            "  For a temporary, this-session-only version, use the IT column in the Force Target window or /rgl ignoretarget instead.",
+        Settings_Used = "",
     },
 }
 
@@ -115,16 +127,79 @@ function Module:New()
     return Base.New(self)
 end
 
+-- ===== DEPRECATED MIGRATION (sunset 1/1/27 - one-shot 'Named' -> 'Spawns' settings copy; delete this whole block) =====
+function Module:MergeZoneRegistries(oldList, newList)
+    local merged = {}
+    for zoneKey, zoneTbl in pairs(oldList or {}) do
+        merged[zoneKey] = {}
+        for mobName, entry in pairs(zoneTbl) do
+            merged[zoneKey][mobName] = entry
+        end
+    end
+    for zoneKey, zoneTbl in pairs(newList or {}) do
+        merged[zoneKey] = merged[zoneKey] or {}
+        for mobName, entry in pairs(zoneTbl) do
+            merged[zoneKey][mobName] = entry
+        end
+    end
+    return merged
+end
+
+function Module:LoadSettings()
+    Base.LoadSettings(self, function()
+        local oldList = Config.Db:getServerValue(Globals.ServerEnv, 'Named', 'CustomNamedList')
+        if oldList ~= nil then
+            for zoneKey, zoneTbl in pairs(oldList) do
+                if type(zoneTbl) == "table" and #zoneTbl > 0 and type(zoneTbl[1]) == "string" then
+                    local converted = {}
+                    for _, mobName in ipairs(zoneTbl) do
+                        converted[mobName] = { named = true, }
+                    end
+                    oldList[zoneKey] = converted
+                end
+            end
+            for _, zoneTbl in pairs(oldList) do
+                if type(zoneTbl) == "table" then
+                    local renames = {}
+                    for mobName in pairs(zoneTbl) do
+                        if type(mobName) == "string" then
+                            local trimmed = Strings.TrimSpaces(mobName)
+                            if trimmed ~= mobName and trimmed and trimmed ~= "" then
+                                renames[mobName] = trimmed
+                            end
+                        end
+                    end
+                    for mobName, trimmed in pairs(renames) do
+                        zoneTbl[trimmed] = zoneTbl[trimmed] or zoneTbl[mobName]
+                        zoneTbl[mobName] = nil
+                    end
+                end
+            end
+            local newList = Config.Db:getServerValue(Globals.ServerEnv, 'Spawns', 'SpawnList')
+            local merged = newList and self:MergeZoneRegistries(oldList, newList) or oldList
+            Config.Db:migrateServerModule(Globals.ServerEnv, 'Named', 'Spawns', 'SpawnList', merged)
+        end
+        Config.Db:deleteModule(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, 'Named')
+    end)
+end
+
+-- ===== END DEPRECATED MIGRATION (sunset 1/1/27) =====
+
 function Module:Render()
-    self.LastRenderTime = Globals.GetTimeSeconds()
     Base.Render(self)
-    self:RenderZoneNamed()
     ImGui.NewLine()
-    self:RenderCustomNamedList()
+    self:RenderZoneNamed()
+    self:RenderZoneSpawnList()
+end
+
+function Module:OnZone()
+    self.LastZoneID = -1
+    Globals.ZoneDenyNames = {}
+    Globals.ZoneHasDeny = false
 end
 
 function Module:GiveTime()
-    -- Main Module logic goes here.
+    self:RefreshSpawnCache()
     if Globals.GetTimeSeconds() - self.LastRenderTime >= 2 then return end
     if Globals.GetTimeSeconds() - self.LastNamedCheck > 1 then
         self.LastNamedCheck = Globals.GetTimeSeconds()
@@ -132,125 +207,82 @@ function Module:GiveTime()
     end
 end
 
---- Migrates legacy CustomNamedList array shape to the registry shape.
---- Legacy: { [zone] = { "Mob1", "Mob2", ... } }
---- New:    { [zone] = { ["Mob1"] = { named = true }, ... } }
-function Module:MigrateCustomNamedListShape()
-    local raw = Config:GetSetting('CustomNamedList') or {}
-    local dirty = false
-    for zoneKey, zoneTbl in pairs(raw) do
-        if type(zoneTbl) == "table" and #zoneTbl > 0 and type(zoneTbl[1]) == "string" then
-            local converted = {}
-            for _, mobName in ipairs(zoneTbl) do
-                converted[mobName] = { named = true, }
-            end
-            raw[zoneKey] = converted
-            dirty = true
-        end
-    end
-    -- Normalize keys: trim leading/trailing whitespace on existing entries (older entries may
-    -- have been written with spaces from CleanName() before the write-side strip was added).
-    for zoneKey, zoneTbl in pairs(raw) do
-        if type(zoneTbl) == "table" then
-            for mobName, entry in pairs(zoneTbl) do
-                if type(mobName) == "string" then
-                    local trimmed = Strings.TrimSpaces(mobName)
-                    if trimmed ~= mobName and trimmed and trimmed ~= "" then
-                        zoneTbl[trimmed] = zoneTbl[trimmed] or entry
-                        zoneTbl[mobName] = nil
-                        dirty = true
-                    end
-                end
-            end
-        end
-    end
-    if dirty then
-        Config:SetSetting('CustomNamedList', raw)
-        Logger.log_info("\ayCustomNamedList normalized (legacy shape and/or whitespace keys).")
-    end
-end
-
-function Module:IngestDefEntry(item, mergeImmunities)
+function Module:IngestDefEntry(namedList, item, mergeImmunities)
     if type(item) == "string" then
         local key = item:lower()
-        local e = self.NamedList[key] or {}
+        local e = namedList[key] or {}
         e.named = true
         e.displayName = e.displayName or item
-        self.NamedList[key] = e
+        namedList[key] = e
     elseif type(item) == "table" and item.name then
         local key = item.name:lower()
-        local e = self.NamedList[key] or {}
+        local e = namedList[key] or {}
         e.displayName = e.displayName or item.name
         if item.named ~= false then e.named = true end
         if mergeImmunities then
             if item.elementalImmunities then e.elementalImmunities = item.elementalImmunities end
-            if item.statusImmunities    then e.statusImmunities    = item.statusImmunities    end
+            if item.statusImmunities then e.statusImmunities = item.statusImmunities end
         end
-        self.NamedList[key] = e
+        namedList[key] = e
     end
 end
 
---- Caches the named list in the zone
-function Module:RefreshNamedCache()
-    local curZone = mq.TLO.Zone.ID()
-    if self.LastZoneID == curZone and Globals.GetTimeSeconds() - (self.LastCacheRefresh or 0) < 1 then return end
+function Module:CompileSpawnList(shipped, user, zoneFull, zoneShort, mergeImmunities)
+    local namedList = {}
+    local shippedSection = shipped[zoneFull]
+    if not (shippedSection and next(shippedSection) ~= nil) then shippedSection = shipped[zoneShort] end
+    for _, item in ipairs(shippedSection or {}) do
+        self:IngestDefEntry(namedList, item, mergeImmunities)
+    end
+
+    local denyNames, hasDeny = {}, false
+    local userSection = user[zoneFull]
+    if not (userSection and next(userSection) ~= nil) then userSection = user[zoneShort] end
+    for mobName, userEntry in pairs(userSection or {}) do
+        if type(userEntry) == "table" then
+            local key = mobName:lower()
+            local e = namedList[key] or {}
+            e.displayName = e.displayName or mobName
+            if userEntry.named == false then
+                e.named = false
+            elseif userEntry.named then
+                e.named = true
+            end
+            if userEntry.elementalImmunities then
+                e.elementalImmunities = e.elementalImmunities or {}
+                for k, v in pairs(userEntry.elementalImmunities) do e.elementalImmunities[k] = v end
+            end
+            if userEntry.statusImmunities then
+                e.statusImmunities = e.statusImmunities or {}
+                for k, v in pairs(userEntry.statusImmunities) do e.statusImmunities[k] = v end
+            end
+            if userEntry.deny then
+                denyNames[Strings.TrimSpaces(mobName):lower()] = true
+                hasDeny = true
+            end
+            namedList[key] = e
+        end
+    end
+    return namedList, denyNames, hasDeny
+end
+
+--- Compiles and publishes the zone spawn list (registry plus deny products) when the zone or user list changes.
+function Module:RefreshSpawnCache()
+    if self.LastZoneID == Globals.CurZoneId and Globals.GetTimeSeconds() - (self.LastCacheRefresh or 0) < 1 then return end
     self.LastCacheRefresh = Globals.GetTimeSeconds()
     -- LastUserList identity catches cross-instance edits; local edits invalidate via OnChange.
-    local userList = Config:GetSetting('CustomNamedList') or {}
-    if self.LastZoneID ~= curZone or self.LastUserList ~= userList then
-        self:MigrateCustomNamedListShape()
-        userList = Config:GetSetting('CustomNamedList') or {}
-
-        self.LastZoneID = curZone
+    local userList = Config:GetSetting('SpawnList') or {}
+    if self.LastZoneID ~= Globals.CurZoneId or self.LastUserList ~= userList then
+        self.LastZoneID = Globals.CurZoneId
         self.LastUserList = userList
-        self.NamedList = {}
-
-        local mergeImmunities = Config:GetSetting('UseImmuneData')
-        local zoneFull = (mq.TLO.Zone.Name() or ""):lower()
-        local zoneShort = (mq.TLO.Zone.ShortName() or ""):lower()
-
-        for _, item in ipairs(self.DefNamedBase[zoneFull] or {}) do
-            self:IngestDefEntry(item, mergeImmunities)
-        end
-
-        for _, item in ipairs(self.DefNamedBase[zoneShort] or {}) do
-            self:IngestDefEntry(item, mergeImmunities)
-        end
-
-        for _, item in ipairs(self.DefNamedOverlay[zoneFull] or {}) do
-            self:IngestDefEntry(item, mergeImmunities)
-        end
-
-        for _, item in ipairs(self.DefNamedOverlay[zoneShort] or {}) do
-            self:IngestDefEntry(item, mergeImmunities)
-        end
-
-        for mobName, userEntry in pairs(userList[zoneShort] or {}) do
-            if type(userEntry) == "table" then
-                local key = mobName:lower()
-                local e = self.NamedList[key] or {}
-                e.displayName = e.displayName or mobName
-                if userEntry.named == false then
-                    e.named = false
-                elseif userEntry.named then
-                    e.named = true
-                end
-                if userEntry.elementalImmunities then
-                    e.elementalImmunities = e.elementalImmunities or {}
-                    for k, v in pairs(userEntry.elementalImmunities) do e.elementalImmunities[k] = v end
-                end
-                if userEntry.statusImmunities then
-                    e.statusImmunities = e.statusImmunities or {}
-                    for k, v in pairs(userEntry.statusImmunities) do e.statusImmunities[k] = v end
-                end
-                self.NamedList[key] = e
-            end
-        end
+        self.NamedList, Globals.ZoneDenyNames, Globals.ZoneHasDeny = self:CompileSpawnList(self.DefSpawnList, userList,
+            (mq.TLO.Zone.Name() or ""):lower(), (mq.TLO.Zone.ShortName() or ""):lower(),
+            Config:GetSetting('UseImmuneData'))
     end
 end
 
 function Module:CheckZoneNamed()
-    self:RefreshNamedCache()
+    self:RefreshSpawnCache()
     local upNameds = {}
     local tmpTbl = {}
 
@@ -263,10 +295,10 @@ function Module:CheckZoneNamed()
         if name then
             local key = name:lower()
             table.insert(tmpTbl, {
-                Name      = name,
-                Spawn     = spawn,
-                Distance  = spawn and spawn.Distance() or 9999,
-                Loc       = spawn and spawn.LocYXZ() or "0,0,0",
+                Name       = name,
+                Spawn      = spawn,
+                Distance   = spawn and spawn.Distance() or 9999,
+                Loc        = spawn and spawn.LocYXZ() or "0,0,0",
                 Immunities = self:ImmunitySummary(self.NamedList[key]),
             })
             upNameds[key] = true
@@ -300,7 +332,7 @@ function Module:IsNamed(spawn)
 
     if Targeting.ForceNamed then return true end
 
-    self:RefreshNamedCache()
+    self:RefreshSpawnCache()
 
     local cleanNameFixed = spawn.CleanName()
     if cleanNameFixed then
@@ -327,31 +359,49 @@ function Module:IsNamed(spawn)
     return false
 end
 
+--- Sets the Named flag on a mob in the current zone's Spawn List.
 function Module:AddNamedToCustomList(npcName)
-    Config:ZoneRegistrySetFlag(npcName, 'CustomNamedList', 'named', true)
+    Config:ZoneRegistrySetFlag(npcName, 'SpawnList', 'named', true)
 end
 
+--- Clears the Named or Not Named flag on a mob in the current zone's Spawn List.
 function Module:DeleteNamedFromCustomList(arg1)
-    Config:ZoneRegistryClearFlag(arg1, 'CustomNamedList', 'named')
+    Config:ZoneRegistryClearFlag(arg1, 'SpawnList', 'named')
 end
 
-function Module:DenyNamedFromCustomList(npcName)
-    Config:ZoneRegistrySetFlag(npcName, 'CustomNamedList', 'named', false)
+--- Sets the Not Named flag on a mob, overriding any shipped named entry.
+function Module:AddNotNamedToCustomList(npcName)
+    Config:ZoneRegistrySetFlag(npcName, 'SpawnList', 'named', false)
 end
 
---- Removes a mob entry entirely from CustomNamedList (regardless of which flags are set).
---- Used by the UI trash button to match the original delete UX.
+--- Adds a bare flagless row for a mob to the current zone's Spawn List.
+function Module:AddSpawnToList(name)
+    Config:ZoneRegistryAddEntry(name, 'SpawnList')
+end
+
+--- Sets the Deny flag on a mob so it is never auto-targeted.
+function Module:AddDenyToCustomList(npcName)
+    Config:ZoneRegistrySetFlag(npcName, 'SpawnList', 'deny', true)
+end
+
+--- Clears the Deny flag on a mob in the current zone's Spawn List.
+function Module:DeleteDenyFromCustomList(arg1)
+    Config:ZoneRegistryClearFlag(arg1, 'SpawnList', 'deny')
+end
+
+--- Removes a mob entry entirely from SpawnList (regardless of which flags are set).
 function Module:DeleteEntryFromCustomList(mobName, zoneKey)
-    zoneKey = zoneKey or (mq.TLO.Zone.ShortName() or ""):lower()
-    local list = Config:GetSetting('CustomNamedList') or {}
+    mobName = Strings.TrimSpaces(mobName)
+    local list = Config:GetSetting('SpawnList') or {}
+    zoneKey = zoneKey or Config:ZoneRegistryDefaultZoneKey(list)
     if list[zoneKey] and list[zoneKey][mobName] then
         list[zoneKey][mobName] = nil
-        Config:SetSetting('CustomNamedList', list)
+        Config:SetSetting('SpawnList', list)
     end
 end
 
 function Module:GetRegistryEntry(mobName)
-    self:RefreshNamedCache()
+    self:RefreshSpawnCache()
     mobName = Strings.TrimSpaces(mobName)
     if not mobName then return nil end
     return self.NamedList[mobName:lower()] or nil
@@ -374,7 +424,7 @@ end
 function Module:GetImmuneFlags(cleanName)
     local elementalImmunities, statusImmunities = {}, {}
     if not cleanName or cleanName == "" then return elementalImmunities, statusImmunities end
-    self:RefreshNamedCache()
+    self:RefreshSpawnCache()
     for _, element in ipairs(Globals.Constants.ResistTypes) do
         if self:HasElementalImmunity(cleanName, element) then elementalImmunities[element] = true end
     end
@@ -384,10 +434,11 @@ function Module:GetImmuneFlags(cleanName)
     return elementalImmunities, statusImmunities
 end
 
---- Invalidates the cached named list (forcing a rebuild next access) and refreshes the
---- auto-target immunity profile immediately. Called from OnChange when the list or UseImmuneData changes.
-function Module:InvalidateNamedList()
+--- Invalidates the cached spawn list, recompiles and republishes it immediately, and refreshes the
+--- auto-target immunity profile. Called from OnChange when the list or UseImmuneData changes.
+function Module:InvalidateSpawnList()
     self.LastZoneID = -1
+    self:RefreshSpawnCache()
     self:RefreshAutoTargetProfile()
 end
 
@@ -401,6 +452,8 @@ function Module:RefreshAutoTargetProfile()
 end
 
 function Module:RenderZoneNamed()
+    if not ImGui.CollapsingHeader("Zone Named") then return end
+    self.LastRenderTime = Globals.GetTimeSeconds()
     self.ShowDownNamed, _ = Ui.RenderOptionToggle("ShowDown", "Show Downed Named", self.ShowDownNamed)
 
     if ImGui.BeginTable("Zone Named", 5, bit32.bor(ImGuiTableFlags.Borders, ImGuiTableFlags.Resizable)) then
@@ -463,25 +516,26 @@ function Module:RenderZoneNamed()
     end
 end
 
-function Module:RenderCustomNamedList()
-    if ImGui.CollapsingHeader("Custom Named List") then
+function Module:RenderZoneSpawnList()
+    if ImGui.CollapsingHeader("Zone Spawn List") then
         local invalidTarget = not (mq.TLO.Target() and Targeting.TargetIsType("NPC"))
         ImGui.BeginDisabled(invalidTarget)
         ImGui.PushID("##_small_btn_add_target_custom_named")
         if ImGui.SmallButton(invalidTarget and "Select an NPC to Add" or "Add Target To List") then
-            self:AddNamedToCustomList(mq.TLO.Target.CleanName())
+            self:AddSpawnToList(mq.TLO.Target.CleanName())
         end
         ImGui.PopID()
         ImGui.EndDisabled()
 
-        if ImGui.BeginTable("CustomNamedList", 3, bit32.bor(ImGuiTableFlags.Borders, ImGuiTableFlags.Resizable)) then
-            ImGui.TableSetupColumn('Name', ImGuiTableColumnFlags.WidthFixed, 130.0)
+        if ImGui.BeginTable("SpawnList", 3, bit32.bor(ImGuiTableFlags.Borders, ImGuiTableFlags.Resizable)) then
+            ImGui.TableSetupColumn('Name', ImGuiTableColumnFlags.WidthFixed, 250.0)
             ImGui.TableSetupColumn('Flags', ImGuiTableColumnFlags.WidthStretch, 1.0)
             ImGui.TableSetupColumn('Del', ImGuiTableColumnFlags.WidthFixed, 30.0)
             ImGui.TableHeadersRow()
 
-            local zoneKey = (mq.TLO.Zone.ShortName() or ""):lower()
-            local zoneList = (Config:GetSetting('CustomNamedList') or {})[zoneKey] or {}
+            local spawnList = Config:GetSetting('SpawnList') or {}
+            local zoneKey = Config:ZoneRegistryDefaultZoneKey(spawnList)
+            local zoneList = spawnList[zoneKey] or {}
 
             local names = {}
             for k, _ in pairs(zoneList) do table.insert(names, k) end
@@ -504,28 +558,36 @@ function Module:RenderCustomNamedList()
                     ImGui.SetTooltip(summary)
                 end
                 if opened then
-                    local prevKind
+                    local prevSection
                     for _, f in ipairs(self.FlagOrder) do
-                        if f.kind ~= prevKind then
-                            if f.kind == "elementalImmunities" then
-                                ImGui.SeparatorText("Elemental Immunity")
-                            elseif f.kind == "statusImmunities" then
-                                ImGui.SeparatorText("Status Immunity")
-                            end
-                            prevKind = f.kind
+                        if f.section ~= prevSection then
+                            ImGui.SeparatorText(f.section)
+                            prevSection = f.section
                         end
                         local current
                         if f.kind == "named" then
-                            current = entry.named == true
+                            current = entry.named == f.value
+                        elseif f.kind == "deny" then
+                            current = entry.deny == true
                         else
-                            current = entry[f.kind] and entry[f.kind][f.key] == true
+                            current = (entry[f.kind] and entry[f.kind][f.key]) == true
                         end
                         local newValue = ImGui.Checkbox(f.label, current)
                         if newValue ~= current then
                             if f.kind == "named" then
-                                Config:ZoneRegistrySetFlag(mobName, "CustomNamedList", "named", newValue, zoneKey)
+                                if newValue then
+                                    Config:ZoneRegistrySetFlag(mobName, "SpawnList", "named", f.value, zoneKey)
+                                else
+                                    Config:ZoneRegistryClearFlag(mobName, "SpawnList", "named", nil, zoneKey)
+                                end
+                            elseif f.kind == "deny" then
+                                if newValue then
+                                    Config:ZoneRegistrySetFlag(mobName, "SpawnList", "deny", true, zoneKey)
+                                else
+                                    Config:ZoneRegistryClearFlag(mobName, "SpawnList", "deny", nil, zoneKey)
+                                end
                             else
-                                Config:ZoneRegistrySetSubFlag(mobName, "CustomNamedList", f.kind, f.key, newValue, zoneKey)
+                                Config:ZoneRegistrySetSubFlag(mobName, "SpawnList", f.kind, f.key, newValue, zoneKey)
                             end
                         end
                     end

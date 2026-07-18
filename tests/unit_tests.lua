@@ -2,6 +2,7 @@
 local Combat    = require("utils.combat")
 local Globals   = require("utils.globals")
 local Logger    = require("utils.logger")
+local Strings   = require("utils.strings")
 local Targeting = require("utils.targeting")
 
 local UnitTests = {}
@@ -281,7 +282,44 @@ function UnitTests.RunAll()
         assertEq("ValidMAXTarget: ignored id rejected", Combat.ValidMAXTarget(ignored), false)
         Globals.IgnoredTargetIDs:remove(7)
 
+        -- in ignored list but force-targeted accepted
+        local forcedIgnored = validSpawn(8)
+        Globals.IgnoredTargetIDs:add(8)
+        Globals.ForceTargetID = 8
+        assertEq("ValidMAXTarget: forced target overrides ignored id", Combat.ValidMAXTarget(forcedIgnored), true)
+        Globals.ForceTargetID = 0
+        Globals.IgnoredTargetIDs:remove(8)
+
+        -- deny name present but ZoneHasDeny false accepted
+        local savedDenyNames, savedHasDeny = Globals.ZoneDenyNames, Globals.ZoneHasDeny
+        Globals.ZoneDenyNames = { mob = true, }
+        Globals.ZoneHasDeny = false
+        assertEq("ValidMAXTarget: deny name inert when ZoneHasDeny false", Combat.ValidMAXTarget(validSpawn(9)), true)
+
+        -- deny active but force-targeted / force-combat accepted
+        Globals.ZoneHasDeny = true
+        Globals.ForceTargetID = 10
+        assertEq("ValidMAXTarget: forced target overrides zone deny", Combat.ValidMAXTarget(validSpawn(10)), true)
+        Globals.ForceTargetID = 0
+        Globals.ForceCombatID = 11
+        assertEq("ValidMAXTarget: forced combat id overrides zone deny", Combat.ValidMAXTarget(validSpawn(11)), true)
+        Globals.ForceCombatID = 0
+        Globals.ZoneDenyNames = savedDenyNames
+        Globals.ZoneHasDeny = savedHasDeny
+
         Targeting.IsTempPet = origIsTempPet
+    end
+
+    -- IsDeniedTarget tests
+    do
+        Globals.IgnoredTargetIDs:add(36)
+        assertEq("IsDeniedTargetId: session ignored id rejected", Targeting.IsDeniedTargetId(36), true)
+        Globals.ForceTargetID = 36
+        assertEq("IsDeniedTargetId: force target overrides session ignore", Targeting.IsDeniedTargetId(36), false)
+        Globals.ForceTargetID = 0
+        Globals.IgnoredTargetIDs:remove(36)
+
+        assertEq("IsDeniedTargetId: zero id passes", Targeting.IsDeniedTargetId(0), false)
     end
 
     -- IsTempPet tests
@@ -340,6 +378,77 @@ function UnitTests.RunAll()
         ---@diagnostic disable-next-line: param-type-mismatch
         assertEq("InSpellRange: nil spell", Targeting.InSpellRange(nil, nearSpawn), false)
     end
+
+    -- Spawns spawn list compile tests
+    do
+        local Spawns = require("modules.spawns")
+        local shipped = { testzone = { "Shipped Named", { name = "Immunity Mob", named = false, elementalImmunities = { Fire = true, }, }, }, }
+
+        local namedList = Spawns:CompileSpawnList(shipped, {}, "test zone name", "testzone", true)
+        assertEq("CompileSpawnList: shipped string entry named", namedList["shipped named"].named, true)
+        assertEq("CompileSpawnList: immunity-only entry not named", namedList["immunity mob"].named, nil)
+        assertEq("CompileSpawnList: immunity-only entry keeps immunities", namedList["immunity mob"].elementalImmunities.Fire, true)
+
+        -- named tri-state: user false suppresses, true forces, bare row inherits
+        namedList = Spawns:CompileSpawnList(shipped, { testzone = { ["Shipped Named"] = { named = false, }, }, }, "test zone name", "testzone", true)
+        assertEq("CompileSpawnList: user false suppresses shipped named", namedList["shipped named"].named, false)
+        namedList = Spawns:CompileSpawnList(shipped, { testzone = { ["Immunity Mob"] = { named = true, }, }, }, "test zone name", "testzone", true)
+        assertEq("CompileSpawnList: user true forces named", namedList["immunity mob"].named, true)
+        namedList = Spawns:CompileSpawnList(shipped, { testzone = { ["Shipped Named"] = {}, }, }, "test zone name", "testzone", true)
+        assertEq("CompileSpawnList: bare user row inherits shipped named", namedList["shipped named"].named, true)
+
+        -- deny products
+        local _, denyNames, hasDeny = Spawns:CompileSpawnList({}, { testzone = { [" Deny Mob "] = { deny = true, }, }, }, "test zone name", "testzone", true)
+        assertEq("CompileSpawnList: deny key trimmed and lowered", denyNames["deny mob"], true)
+        assertEq("CompileSpawnList: hasDeny set", hasDeny, true)
+        _, denyNames, hasDeny = Spawns:CompileSpawnList({}, { testzone = { ["Deny Mob"] = { named = true, }, }, }, "test zone name", "testzone", true)
+        assertEq("CompileSpawnList: no deny flags no hasDeny", hasDeny, false)
+        assertEq("CompileSpawnList: no deny flags empty set", next(denyNames), nil)
+
+        -- long/short replace rule, per source
+        local shippedBoth = { ["long zone"] = { "Long Shipped", }, shortzone = { "Short Shipped", }, }
+        local userBoth = { ["long zone"] = { ["Long User"] = { named = true, }, }, shortzone = { ["Short User"] = { named = true, }, }, }
+        namedList = Spawns:CompileSpawnList(shippedBoth, userBoth, "long zone", "shortzone", true)
+        assertEq("CompileSpawnList: shipped long replaces shipped short", namedList["long shipped"] ~= nil, true)
+        assertEq("CompileSpawnList: shipped short not consulted", namedList["short shipped"], nil)
+        assertEq("CompileSpawnList: user long replaces user short", namedList["long user"] ~= nil, true)
+        assertEq("CompileSpawnList: user short not consulted", namedList["short user"], nil)
+
+        namedList = Spawns:CompileSpawnList({ ["long zone"] = { "Long Shipped", }, }, { shortzone = { ["Short User"] = { named = true, }, }, }, "long zone", "shortzone", true)
+        assertEq("CompileSpawnList: mixed shipped long used", namedList["long shipped"] ~= nil, true)
+        assertEq("CompileSpawnList: mixed user short used", namedList["short user"] ~= nil, true)
+        namedList = Spawns:CompileSpawnList({ shortzone = { "Short Shipped", }, }, { ["long zone"] = { ["Long User"] = { named = true, }, }, }, "long zone", "shortzone", true)
+        assertEq("CompileSpawnList: mixed shipped short used", namedList["short shipped"] ~= nil, true)
+        assertEq("CompileSpawnList: mixed user long used", namedList["long user"] ~= nil, true)
+
+        -- emptied {} long section falls back to short
+        namedList = Spawns:CompileSpawnList({ ["long zone"] = {}, shortzone = { "Short Shipped", }, }, { ["long zone"] = {}, shortzone = { ["Short User"] = { named = true, }, }, },
+            "long zone", "shortzone", true)
+        assertEq("CompileSpawnList: empty shipped long falls back to short", namedList["short shipped"] ~= nil, true)
+        assertEq("CompileSpawnList: empty user long falls back to short", namedList["short user"] ~= nil, true)
+    end
+
+    -- ===== DEPRECATED MIGRATION TESTS (sunset 1/1/27 - delete this whole block with the Spawns migration) =====
+    -- Spawns registry merge tests
+    do
+        local Spawns = require("modules.spawns")
+        local oldList = {
+            zonea = { ["Conflict Mob"] = { named = true, }, ["Old Only"] = { deny = true, }, },
+            zoneb = { ["Old Zone Mob"] = { named = true, }, },
+        }
+        local newList = {
+            zonea = { ["Conflict Mob"] = { named = false, }, ["New Only"] = { named = true, }, },
+            zonec = { ["New Zone Mob"] = { deny = true, }, },
+        }
+        local merged = Spawns:MergeZoneRegistries(oldList, newList)
+        assertEq("MergeZoneRegistries: conflict pair new wins", merged.zonea["Conflict Mob"].named, false)
+        assertEq("MergeZoneRegistries: old-only pair kept", merged.zonea["Old Only"].deny, true)
+        assertEq("MergeZoneRegistries: new-only pair kept", merged.zonea["New Only"].named, true)
+        assertEq("MergeZoneRegistries: old-only zone kept", merged.zoneb["Old Zone Mob"].named, true)
+        assertEq("MergeZoneRegistries: new-only zone kept", merged.zonec["New Zone Mob"].deny, true)
+        assertEq("MergeZoneRegistries: nil inputs give empty result", next(Spawns:MergeZoneRegistries(nil, nil)), nil)
+    end
+    -- ===== END DEPRECATED MIGRATION TESTS (sunset 1/1/27) =====
 
     -- Pull ParseLocArgs tests
     do
@@ -546,6 +655,35 @@ function UnitTests.RunAll()
             BuildIntentSentence({ mode = "FightTo", fightToKind = "loc", loc = loc, }), true, nil)
         checkSentence("Intent FightTo none",
             BuildIntentSentence({ mode = "FightTo", fightToKind = "none", }), false, "Set a Fight To target first.")
+    end
+
+    -- Pull list set compile tests
+    do
+        local CompilePullListSet = require("modules.pull").CompilePullListSet
+
+        local personal = { "Fippy Darkpaw", " a gnoll pup ", "MISCASED Mob", }
+        local shared = { "Shared Only", }
+
+        local set, hasEntries = CompilePullListSet(personal, shared, false)
+        assertEq("CompilePullListSet: personal has entries", hasEntries, true)
+        assertEq("CompilePullListSet: miscased entry live after folding", set["miscased mob"], true)
+        assertEq("CompilePullListSet: spaced entry trimmed", set["a gnoll pup"], true)
+        for _, candidate in ipairs({ "Fippy Darkpaw", "fippy darkpaw", " a gnoll pup ", "a gnoll pup", "MISCASED Mob", "miscased mob", "Unlisted Mob", "Shared Only", }) do
+            local found = false
+            for _, name in ipairs(personal) do
+                if Strings.TrimSpaces(name):lower() == Strings.TrimSpaces(candidate):lower() then found = true end
+            end
+            assertEq(string.format("CompilePullListSet: parity for '%s'", candidate), set[Strings.TrimSpaces(candidate):lower()] == true, found)
+        end
+
+        set, hasEntries = CompilePullListSet(personal, shared, true)
+        assertEq("CompilePullListSet: useShared selects shared list", set["shared only"], true)
+        assertEq("CompilePullListSet: useShared excludes personal list", set["fippy darkpaw"], nil)
+        assertEq("CompilePullListSet: shared has entries", hasEntries, true)
+
+        set, hasEntries = CompilePullListSet({}, shared, false)
+        assertEq("CompilePullListSet: empty active list no entries", hasEntries, false)
+        assertEq("CompilePullListSet: empty active list empty set", next(set), nil)
     end
 
     Logger.log_info("UnitTests: Self tests complete. Passed: %d, Failed: %d", passed, failed)

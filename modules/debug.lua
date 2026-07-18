@@ -100,8 +100,7 @@ function Module:Exec(scriptText)
     locals.Modules      = setmetatable({}, { __index = require('utils.modules'), })
     locals.Movement     = setmetatable({}, { __index = require('utils.movement'), })
     locals.Ui           = setmetatable({}, { __index = require('utils.ui'), })
-    locals.NamedDefault = setmetatable({}, { __index = require('namedlist.named_default'), })
-    locals.NamedEQMight = setmetatable({}, { __index = require('namedlist.named_eqmight'), })
+    locals.DefSpawnList = setmetatable({}, { __index = require('modules.spawns').DefSpawnList, })
     locals.Rotation     = setmetatable({}, { __index = require('utils.rotation'), })
     locals.Strings      = setmetatable({}, { __index = require('utils.strings'), })
     locals.Tables       = setmetatable({}, { __index = require('utils.tables'), })
@@ -314,16 +313,16 @@ function Module:RenderCompletion()
         self.completionSuppressed = true
     end
 
-    local lineHeight  = ImGui.GetTextLineHeightWithSpacing()
-    local dropX       = self.hintBarScreenPos.x
-    local dropY       = self.hintBarScreenPos.y
-    local dropW       = ImGui.GetWindowWidth() * 0.98
-    local scrollbarW  = ImGui.GetStyle().ScrollbarSize
+    local lineHeight = ImGui.GetTextLineHeightWithSpacing()
+    local dropX      = self.hintBarScreenPos.x
+    local dropY      = self.hintBarScreenPos.y
+    local dropW      = ImGui.GetWindowWidth() * 0.98
+    local scrollbarW = ImGui.GetStyle().ScrollbarSize
     -- when more items than COMPLETE_MAX, a scrollbar will appear inside the child
-    local willScroll  = #items > COMPLETE_MAX
+    local willScroll = #items > COMPLETE_MAX
     -- desc goes on its own indented line, so available width is nearly the full dropW
-    local indent      = ImGui.GetStyle().IndentSpacing
-    local descAvailW  = dropW - indent - 4 - (willScroll and scrollbarW or 0)
+    local indent     = ImGui.GetStyle().IndentSpacing
+    local descAvailW = dropW - indent - 4 - (willScroll and scrollbarW or 0)
 
     -- precompute wrapped lines per item so childH is tall enough
     local itemLines  = {}

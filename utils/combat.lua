@@ -253,8 +253,8 @@ function Combat.ValidMAXTarget(target)
         return false
     end
 
-    if Globals.IgnoredTargetIDs:contains(spawnId) then
-        Logger.log_verbose("ValidateMATarget: Spawn ID %d is in ignored target list", spawnId)
+    if Targeting.IsDeniedTarget(target) then
+        Logger.log_verbose("ValidateMATarget: Spawn ID %d is session-ignored or deny-listed", spawnId)
         return false
     end
 
@@ -512,7 +512,7 @@ function Combat.GetMainAssistTargetID()
             Logger.log_verbose("\atGetMainAssistTargetID\aw() \ayFindAutoTarget Assist's Forced Target via Actors :: %s (%s). Ignoring mob aggressiveness.",
                 assistTarget.CleanName() or "None", forceTargId)
             if heartbeat.Data.TargetIsNamed == nil then
-                Globals.AutoTargetIsNamed = Modules:ExecModule("Named", "IsNamed", assistTarget) or false
+                Globals.AutoTargetIsNamed = Modules:ExecModule("Spawns", "IsNamed", assistTarget) or false
                 assistTargetIsNamed = Globals.AutoTargetIsNamed
             else
                 Globals.AutoTargetIsNamed = heartbeat.Data.TargetIsNamed
@@ -530,7 +530,7 @@ function Combat.GetMainAssistTargetID()
                 Logger.log_verbose("\atGetMainAssistTargetID\aw() \ayFindAutoTarget Assist's Target via Actors :: %s (%s)",
                     assistTarget.CleanName() or "None", targetID)
                 if heartbeat.Data.TargetIsNamed == nil then
-                    Globals.AutoTargetIsNamed = Modules:ExecModule("Named", "IsNamed", assistTarget) or false
+                    Globals.AutoTargetIsNamed = Modules:ExecModule("Spawns", "IsNamed", assistTarget) or false
                     assistTargetIsNamed = Globals.AutoTargetIsNamed
                 else
                     Globals.AutoTargetIsNamed = heartbeat.Data.TargetIsNamed
@@ -615,7 +615,7 @@ function Combat.FindBestAutoTarget(validateFn)
         Logger.log_verbose("FindAutoTarget() ==> I am MA!")
         if Globals.ForceTargetID ~= 0 then
             local forceSpawn = mq.TLO.Spawn(Globals.ForceTargetID)
-            if forceSpawn and forceSpawn() and not forceSpawn.Dead() then
+            if Combat.ValidCombatTarget(Globals.ForceTargetID) then
                 if Globals.AutoTargetID ~= Globals.ForceTargetID then
                     Globals.AutoTargetID = Globals.ForceTargetID
                     Logger.log_debug("FindAutoTarget(): Forced Targeting: \ag%s\ax [ID: \ag%d\ax]", forceSpawn.CleanName() or "None", forceSpawn.ID())
@@ -740,7 +740,7 @@ function Combat.FindBestAutoTarget(validateFn)
         end
 
         local cleanName = mq.TLO.Spawn(Globals.AutoTargetID).CleanName() or ""
-        local elementalImmunities, statusImmunities = Modules:ExecModule("Named", "GetImmuneFlags", cleanName)
+        local elementalImmunities, statusImmunities = Modules:ExecModule("Spawns", "GetImmuneFlags", cleanName)
         Globals.AutoTargetElementalImmunities = elementalImmunities or {}
         Globals.AutoTargetStatusImmunities = statusImmunities or {}
     end
@@ -792,8 +792,8 @@ function Combat.OkToEngagePreValidateId(targetId)
         return false
     end
 
-    if Globals.IgnoredTargetIDs:contains(targetId) then
-        Logger.log_verbose("\ayOkToEngagePrevalidate check for %s(ID: %d) - Target is in IgnoredTargetIDs --> Not Engaging", targetName, targetId)
+    if Targeting.IsDeniedTarget(target) then
+        Logger.log_verbose("\ayOkToEngagePrevalidate check for %s(ID: %d) - Target is session-ignored or deny-listed --> Not Engaging", targetName, targetId)
         return false
     end
 
@@ -873,8 +873,8 @@ function Combat.OkToEngage(autoTargetId)
         return false
     end
 
-    if Globals.IgnoredTargetIDs:contains(targetId) then
-        Logger.log_verbose("\ayOkToEngage check for %s(ID: %d) - Target is in IgnoredTargetIDs --> Not Engaging", targetName, targetId)
+    if Targeting.IsDeniedTarget(target) then
+        Logger.log_verbose("\ayOkToEngage check for %s(ID: %d) - Target is session-ignored or deny-listed --> Not Engaging", targetName, targetId)
         return false
     end
 
