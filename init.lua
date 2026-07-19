@@ -447,7 +447,7 @@ local function Main()
             Core.DoCmd("/squelch /face fast")
         end
 
-        if Config:GetSetting('DoMed') == 3 then
+        if Config:GetSetting('DoMed') ~= 1 then
             Casting.AutoMed()
         end
     else
