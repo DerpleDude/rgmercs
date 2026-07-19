@@ -231,7 +231,8 @@ local _ClassConfig = {
             "Echoes of the Past", -- Level 70 Laz Custom
         },
         ['ResistDebuff'] = {
-            "Harmony of Sound", -- Level 65
+            "Harmony of Sound",   -- Level 65
+            "Occlusion of Sound", -- Level 55
         },
         ['BellowSong'] = {
             "Bellow of Chaos", -- Level 66
@@ -546,7 +547,7 @@ local _ClassConfig = {
             {
                 name = "AESlowSong",
                 type = "Song",
-                load_cond = function(self) return Config:GetSetting("DoAESlow") end,
+                load_cond = function() return Config:GetSetting('DoAESlow') end,
                 cond = function(self, songSpell, target)
                     return Casting.DetSpellCheck(songSpell) and Targeting.GetXTHaterCount() > 2 and not mq.TLO.Target.Slowed() and
                         not Casting.SlowImmuneTarget(target)
@@ -555,7 +556,7 @@ local _ClassConfig = {
             {
                 name = "SlowSong",
                 type = "Song",
-                load_cond = function(self) return Config:GetSetting("DoSTSlow") end,
+                load_cond = function() return Config:GetSetting('DoSTSlow') end,
                 cond = function(self, songSpell, target)
                     return Casting.DetSpellCheck(songSpell) and not mq.TLO.Target.Slowed() and not Casting.SlowImmuneTarget(target)
                 end,
@@ -563,7 +564,7 @@ local _ClassConfig = {
             {
                 name = "ResistDebuff",
                 type = "Song",
-                load_cond = function(self) return Config:GetSetting("DoResistDebuff") end,
+                load_cond = function() return Config:GetSetting('DoResistDebuff') end,
                 cond = function(self, songSpell)
                     return Casting.DetSpellCheck(songSpell)
                 end,
@@ -571,7 +572,7 @@ local _ClassConfig = {
             {
                 name = "DispelSong",
                 type = "Song",
-                load_cond = function(self) return Config:GetSetting("DoDispel") end,
+                load_cond = function() return Config:GetSetting('DoDispel') end,
                 cond = function(self, songSpell)
                     return mq.TLO.Target.Beneficial() ~= nil
                 end,

@@ -264,9 +264,8 @@ local _ClassConfig = {
             "Song of the Storm", -- Level 61
         },
         ['ResistDebuff'] = {
-            "Ancient: Chaos Chant", -- Level 65 EQM: -15 all resists
-            "Harmony of Sound",     -- Level 65
-            "Occlusion of Sound",   -- Level 55
+            "Harmony of Sound",   -- Level 65
+            "Occlusion of Sound", -- Level 55
         },
         ['MitigationSong'] = {
             "Song of the Dryads", -- Level 71
@@ -618,30 +617,34 @@ local _ClassConfig = {
             {
                 name = "AESlowSong",
                 type = "Song",
+                load_cond = function() return Config:GetSetting('DoAESlow') end,
                 cond = function(self, songSpell, target)
-                    return Config:GetSetting("DoAESlow") and Casting.DetSpellCheck(songSpell) and Targeting.GetXTHaterCount() > 2 and not mq.TLO.Target.Slowed() and
+                    return Casting.DetSpellCheck(songSpell) and Targeting.GetXTHaterCount() > 2 and not mq.TLO.Target.Slowed() and
                         not Casting.SlowImmuneTarget(target)
                 end,
             },
             {
                 name = "SlowSong",
                 type = "Song",
+                load_cond = function() return Config:GetSetting('DoSTSlow') end,
                 cond = function(self, songSpell, target)
-                    return Config:GetSetting("DoSTSlow") and Casting.DetSpellCheck(songSpell) and not mq.TLO.Target.Slowed() and not Casting.SlowImmuneTarget(target)
+                    return Casting.DetSpellCheck(songSpell) and not mq.TLO.Target.Slowed() and not Casting.SlowImmuneTarget(target)
                 end,
             },
             {
                 name = "ResistDebuff",
                 type = "Song",
+                load_cond = function() return Config:GetSetting('DoResistDebuff') end,
                 cond = function(self, songSpell)
-                    return Config:GetSetting('DoResistDebuff') and Casting.DetSpellCheck(songSpell)
+                    return Casting.DetSpellCheck(songSpell)
                 end,
             },
             {
                 name = "DispelSong",
                 type = "Song",
+                load_cond = function() return Config:GetSetting('DoDispel') end,
                 cond = function(self, songSpell)
-                    return Config:GetSetting('DoDispel') and mq.TLO.Target.Beneficial() ~= nil
+                    return mq.TLO.Target.Beneficial() ~= nil
                 end,
             },
         },
@@ -1093,7 +1096,7 @@ local _ClassConfig = {
             Header = "Debuffs",
             Category = "Resist",
             Index = 101,
-            Tooltip = "Use the Ancient: Chaos Chant or Harmony of Sound Resist Debuff.",
+            Tooltip = "Use the Occlusion/Harmony of Sound Resist Debuff.",
             RequiresLoadoutChange = true,
             Default = false,
         },

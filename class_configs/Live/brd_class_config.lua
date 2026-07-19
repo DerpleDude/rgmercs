@@ -685,6 +685,10 @@ local _ClassConfig = {
         ['ThousandBlades'] = {
             "Thousand Blades", -- Level 69
         },
+        ['ResistDebuff'] = {
+            "Harmony of Sound",   -- Level 65
+            "Occlusion of Sound", -- Level 55
+        },
     },
     ['Helpers']           = {
         SwapInst = function(type)
@@ -789,6 +793,7 @@ local _ClassConfig = {
                 { name = "SlowSong",      cond = function(self) return Config:GetSetting('DoSTSlow') end, },
                 { name = "AESlowSong",    cond = function(self) return Config:GetSetting('DoAESlow') end, },
                 { name = "DispelSong",    cond = function(self) return Config:GetSetting('DoDispel') end, },
+                { name = "ResistDebuff",  cond = function(self) return Config:GetSetting('DoResistDebuff') end, },
                 { name = "CureSong",      cond = function(self) return Config:GetSetting('UseCure') end, },
                 { name = "RunBuffSong",   cond = function(self) return Config:GetSetting('UseRunBuff') > 1 and not Casting.CanUseAA("Selo's Sonata") end, },
                 { name = "EndBreathSong", cond = function(self) return Config:GetSetting('UseEndBreath') end, },
@@ -900,7 +905,7 @@ local _ClassConfig = {
             name = 'Debuff',
             state = 1,
             steps = 1,
-            load_cond = function() return Config:GetSetting("DoSTSlow") or Config:GetSetting("DoAESlow") or Config:GetSetting("DoDispel") end,
+            load_cond = function() return Config:GetSetting("DoSTSlow") or Config:GetSetting("DoAESlow") or Config:GetSetting("DoResistDebuff") or Config:GetSetting("DoDispel") end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and Casting.OkayToDebuff() and Core.CombatActionsCheck()
@@ -1033,23 +1038,32 @@ local _ClassConfig = {
             {
                 name = "AESlowSong",
                 type = "Song",
-                load_cond = function(self) return Config:GetSetting('DoAESlow') end,
+                load_cond = function() return Config:GetSetting('DoAESlow') end,
                 cond = function(self, songSpell, target)
-                    return Casting.DetSpellCheck(songSpell) and Targeting.GetXTHaterCount() > 2 and not mq.TLO.Target.Slowed() and not Casting.SlowImmuneTarget(target)
+                    return Casting.DetSpellCheck(songSpell) and Targeting.GetXTHaterCount() > 2 and not mq.TLO.Target.Slowed() and
+                        not Casting.SlowImmuneTarget(target)
                 end,
             },
             {
                 name = "SlowSong",
                 type = "Song",
-                load_cond = function(self) return Config:GetSetting('DoSTSlow') end,
+                load_cond = function() return Config:GetSetting('DoSTSlow') end,
                 cond = function(self, songSpell, target)
                     return Casting.DetSpellCheck(songSpell) and not mq.TLO.Target.Slowed() and not Casting.SlowImmuneTarget(target)
                 end,
             },
             {
+                name = "ResistDebuff",
+                type = "Song",
+                load_cond = function() return Config:GetSetting('DoResistDebuff') end,
+                cond = function(self, songSpell)
+                    return Casting.DetSpellCheck(songSpell)
+                end,
+            },
+            {
                 name = "DispelSong",
                 type = "Song",
-                load_cond = function(self) return Config:GetSetting('DoDispel') end,
+                load_cond = function() return Config:GetSetting('DoDispel') end,
                 cond = function(self, songSpell)
                     return mq.TLO.Target.Beneficial() ~= nil
                 end,
@@ -1598,6 +1612,16 @@ local _ClassConfig = {
             Category = "Slow",
             Index = 102,
             Tooltip = Tooltips.AESlowSong,
+            RequiresLoadoutChange = true,
+            Default = false,
+        },
+        ['DoResistDebuff']  = {
+            DisplayName = "Use Resist Debuff",
+            Group = "Abilities",
+            Header = "Debuffs",
+            Category = "Resist",
+            Index = 101,
+            Tooltip = "Use the Occlusion/Harmony of Sound Resist Debuff.",
             RequiresLoadoutChange = true,
             Default = false,
         },
