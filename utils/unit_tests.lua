@@ -430,7 +430,6 @@ function UnitTests.RunAll()
             local abortCtx = {
                 pausePulls = false,
                 pullListUpdated = false,
-                abortPull = false,
                 doPull = true,
                 pauseMain = false,
                 spawnGone = false,
@@ -455,7 +454,6 @@ function UnitTests.RunAll()
             assertEq(string.format("DecideAbort %s: clean ctx", attempt.source), DecideAbort(attempt, baseCtx()), nil)
             assertEq(string.format("DecideAbort %s: paused", attempt.source), DecideAbort(attempt, baseCtx({ pausePulls = true, })), 'paused')
             assertEq(string.format("DecideAbort %s: list updated", attempt.source), DecideAbort(attempt, baseCtx({ pullListUpdated = true, })), 'listUpdated')
-            assertEq(string.format("DecideAbort %s: user abort", attempt.source), DecideAbort(attempt, baseCtx({ abortPull = true, })), 'userAbort')
             assertEq(string.format("DecideAbort %s: pause main", attempt.source), DecideAbort(attempt, baseCtx({ pauseMain = true, })), 'disabled')
             assertEq(string.format("DecideAbort %s: spawn gone", attempt.source), DecideAbort(attempt, baseCtx({ spawnGone = true, })), 'spawnGone')
         end
@@ -484,7 +482,6 @@ function UnitTests.RunAll()
         assertEq("DecideUserAbort: clean ctx", DecideUserAbort(baseCtx(), 'scan'), nil)
         assertEq("DecideUserAbort: paused", DecideUserAbort(baseCtx({ pausePulls = true, }), 'scan'), 'paused')
         assertEq("DecideUserAbort: list updated", DecideUserAbort(baseCtx({ pullListUpdated = true, }), 'scan'), 'listUpdated')
-        assertEq("DecideUserAbort: user abort", DecideUserAbort(baseCtx({ abortPull = true, }), 'scan'), 'userAbort')
         assertEq("DecideUserAbort: pause main", DecideUserAbort(baseCtx({ pauseMain = true, }), 'scan'), 'disabled')
         assertEq("DecideUserAbort: DoPull off aborts", DecideUserAbort(baseCtx({ doPull = false, }), 'scan'), 'disabled')
         assertEq("DecideUserAbort: manual exempt from DoPull off", DecideUserAbort(baseCtx({ doPull = false, }), 'manual'), nil)

@@ -30,8 +30,6 @@ Module.TempSettings                       = {}
 -- Pulls & Timers
 Module.TempSettings.LastPullOrCombatEnded = Globals.GetTimeSeconds()
 Module.TempSettings.PausePulls            = false
-Module.TempSettings.AbortPull             = false
-Module.TempSettings.PullRadius            = 0
 Module.TempSettings.PullerMercPending     = nil
 Module.TempSettings.LastPullAbilityCheck  = 0
 Module.TempSettings.LastMoveAbilityCheck  = 0
@@ -42,7 +40,6 @@ Module.TempSettings.LastTooFarAnnounce    = 0
 -- Targets & Scanning
 Module.TempSettings.TargetSpawnID         = 0
 Module.TempSettings.PullTargets           = {}
-Module.TempSettings.PullTargetsMetaData   = {}
 Module.TempSettings.PullIgnoreTargets     = {}
 Module.TempSettings.PullListUpdated       = false
 
@@ -263,7 +260,6 @@ Module.Constants.PullAbilities      = {
 Module.Constants.AbortLogMessages   = {
     paused = "\ar ALERT: Aborting pull - paused at user's request \ax",
     listUpdated = "\ar ALERT: Aborting pull due to change in pull allow or deny list. \ax",
-    userAbort = "\ar ALERT: Aborting pull on user request. \ax",
     disabled = "\ar ALERT: Pulling Disabled at user request. \ax",
     spawnGone = "PULL:\ar ALERT: Aborting mob died or despawned \ax",
     stranger = "PULL:\ar ALERT: Aborting mob is fighting a stranger and safe targeting is enabled! \ax",
@@ -976,6 +972,7 @@ Module.CommandHandlers              = {
         usage = "/rgl pullstop",
         about = "Disables pulling.",
         handler = function(self, ...)
+            self:ClearObjective()
             self:StopPuller()
             return true
         end,
@@ -1365,7 +1362,6 @@ end
 function Module.DecideUserAbort(abortCtx, source)
     if abortCtx.pausePulls then return 'paused' end
     if abortCtx.pullListUpdated then return 'listUpdated' end
-    if abortCtx.abortPull then return 'userAbort' end
     if (not abortCtx.doPull and source ~= 'manual') or abortCtx.pauseMain then return 'disabled' end
     return nil
 end
@@ -1818,6 +1814,7 @@ function Module:Render()
                 ImGui.BeginDisabled(startGated)
                 if ImGui.Button(Config:GetSetting('DoPull') and "Stop Pulls" or "Start Pulls", -1, 25) then
                     if Config:GetSetting('DoPull') then
+                        self:ClearObjective()
                         self:StopPuller()
                     else
                         self:StartPuller()
@@ -3048,8 +3045,7 @@ function Module:TravelTick(ctx, loc, reason, circuitWpId)
         return 'aggro'
     end
 
-    if self.TempSettings.PausePulls or self.TempSettings.AbortPull or not Config:GetSetting('DoPull') or Globals.PauseMain then
-        self.TempSettings.AbortPull = false
+    if self.TempSettings.PausePulls or not Config:GetSetting('DoPull') or Globals.PauseMain then
         Movement:DoNav(false, "stop log=off")
         self.TempSettings.Travel = nil
         return 'aborted'
@@ -3449,9 +3445,9 @@ function Module:GetPullableSpawns()
 
     local metaDataCache = {}
 
-    self.TempSettings.PullRadius = Config:GetSetting(policy.radiusSetting)
+    local pullRadius = Config:GetSetting(policy.radiusSetting)
 
-    local pullRadiusSqr = self.TempSettings.PullRadius * self.TempSettings.PullRadius
+    local pullRadiusSqr = pullRadius * pullRadius
 
     local checkX, checkY, checkZ = mq.TLO.Me.X(), mq.TLO.Me.Y(), mq.TLO.Me.Z()
 
@@ -3611,7 +3607,6 @@ function Module:FindTarget()
     local pullTargets, metaData = self:GetPullableSpawns()
 
     self.TempSettings.PullTargets = pullTargets
-    self.TempSettings.PullTargetsMetaData = metaData
 
     if #pullTargets > 0 then
         local pullTarget = pullTargets[1]
@@ -3635,7 +3630,6 @@ function Module:CheckAttemptAbort(attempt, bNavigating)
     local abortCtx = {
         pausePulls = self.TempSettings.PausePulls,
         pullListUpdated = self.TempSettings.PullListUpdated,
-        abortPull = self.TempSettings.AbortPull,
         doPull = Config:GetSetting('DoPull'),
         pauseMain = Globals.PauseMain,
         spawnGone = not spawn or spawn.Dead() or not spawn.ID() or spawn.ID() == 0,
@@ -3665,8 +3659,6 @@ function Module:CheckAttemptAbort(attempt, bNavigating)
     Logger.log_debug(Module.Constants.AbortLogMessages[reason])
     if reason == 'listUpdated' then
         self.TempSettings.PullListUpdated = false
-    elseif reason == 'userAbort' then
-        self.TempSettings.AbortPull = false
     elseif reason == 'timeout' then
         table.insert(self.TempSettings.PullIgnoreTargets, mq.TLO.Spawn(attempt.targetId))
     elseif reason == 'objectiveTimeout' then
@@ -3682,7 +3674,6 @@ function Module:CheckReturnAbort(attempt)
     local reason = Module.DecideUserAbort({
         pausePulls = self.TempSettings.PausePulls,
         pullListUpdated = self.TempSettings.PullListUpdated,
-        abortPull = self.TempSettings.AbortPull,
         doPull = Config:GetSetting('DoPull'),
         pauseMain = Globals.PauseMain,
     }, attempt.source)
@@ -3691,8 +3682,6 @@ function Module:CheckReturnAbort(attempt)
     Logger.log_debug(Module.Constants.AbortLogMessages[reason])
     if reason == 'listUpdated' then
         self.TempSettings.PullListUpdated = false
-    elseif reason == 'userAbort' then
-        self.TempSettings.AbortPull = false
     end
     return true
 end
@@ -4063,7 +4052,6 @@ end
 
 function Module:OpenAttempt(ctx, pullID, source)
     self.TempSettings.Travel = nil
-    self.TempSettings.AbortPull = false
 
     local start_x = mq.TLO.Me.X()
     local start_y = mq.TLO.Me.Y()
@@ -4504,7 +4492,6 @@ function Module:SetPullTarget()
     if (targetId or 0) == 0 then return end
     self.TempSettings.TargetSpawnID = targetId
     table.insert(self.TempSettings.PullTargets, mq.TLO.Spawn("id " .. targetId))
-    self.TempSettings.PullTargetsMetaData[targetId] = { distance = mq.TLO.Navigation.PathLength("id " .. targetId)(), }
 end
 
 function Module:StartPuller()
@@ -4550,6 +4537,13 @@ function Module:StartPuller()
     self:SetRoles()
 end
 
+function Module:ClearObjective()
+    self.TempSettings.FightTo = nil
+    self.TempSettings.HuntOrigin = nil
+    self.TempSettings.HuntAnchor = nil
+    self.TempSettings.LocEntryY, self.TempSettings.LocEntryX, self.TempSettings.LocEntryZ = "", "", ""
+end
+
 function Module:StopPuller()
     if Config:GetSetting('DoPull') == false then return end
     self.TempSettings.PausePulls = false
@@ -4572,7 +4566,7 @@ end
 function Module:AnnounceStop(message, clearObjective)
     Logger.log_info("\ay%s\ax", message)
     self:Announce("None", message)
-    if clearObjective then self.TempSettings.FightTo = nil end
+    if clearObjective then self:ClearObjective() end
     self:StopPuller()
     self:SetPullState(PullStates.PULL_IDLE, "")
 end
@@ -4683,9 +4677,7 @@ function Module:OnZone()
     else
         Config:SetSetting('DoPull', false)
     end
-    self.TempSettings.FightTo = nil
-    self.TempSettings.HuntOrigin = nil
-    self.TempSettings.HuntAnchor = nil
+    self:ClearObjective()
     self.TempSettings.LocationNameEdits = {}
     self.TempSettings.LocationsToDelete = {}
     self:ClearIgnoreList()
