@@ -230,7 +230,8 @@ return {
                 type = "AA",
                 load_cond = function(self) return Config:GetSetting('DoVetAA') end,
                 cond = function(self, aaName)
-                    return mq.TLO.Me.PctHPs() < 35 and not mq.TLO.Me.Buff("Battle Focus Effect")()
+                    local battleFocus = Core.GetResolvedActionMapItem('BattleFocus')
+                    return mq.TLO.Me.PctHPs() < 35 and not (battleFocus and Casting.IHaveBuff(battleFocus.Trigger(1)))
                 end,
             },
             {
@@ -364,7 +365,6 @@ return {
             {
                 name = "AxeThrow",
                 type = "Disc",
-                load_cond = function(self) return Config:GetSetting('UseAxeThrow') and Core.GetResolvedActionMapItem('AxeThrow') end,
                 cond = function(self, discSpell, target)
                     return Casting.DetSpellCheck(discSpell, target)
                 end,
@@ -372,7 +372,6 @@ return {
             {
                 name = "FrenzyDisc",
                 type = "Disc",
-                load_cond = function(self) return not (Config:GetSetting('UseAxeThrow') and Core.GetResolvedActionMapItem('AxeThrow')) end,
                 cond = function(self, discSpell, target)
                     return Casting.DetSpellCheck(discSpell, target)
                 end,
@@ -450,16 +449,6 @@ return {
             Index = 101,
             Tooltip = "Use the Battle Leap AA on cooldown.",
             Default = true,
-        },
-        ['UseAxeThrow']    = {
-            DisplayName = "Use Axe Throw",
-            Group = "Abilities",
-            Header = "Damage",
-            Category = "Direct",
-            Index = 102,
-            Tooltip = "Use Vigorous Axe Throw as your timer-10 disc instead of Frenzy (falls back to Frenzy if unavailable).",
-            Default = true,
-            RequiresLoadoutChange = true,
         },
         ['DoSnare']        = {
             DisplayName = "Do Snare",

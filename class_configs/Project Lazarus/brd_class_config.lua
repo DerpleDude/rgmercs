@@ -251,9 +251,9 @@ local _ClassConfig = {
         ['SpellMitSong'] = {
             "Niv's Symphonic", -- Level 71 Laz Custom
         },
-        -- ['Doppelganger'] = {
-        --     "One Bard Band", -- Level 71 Laz Custom, verify existence and source
-        -- },
+        ['SwarmpetSong'] = {
+            "One Bard Band", -- Level 71 Laz Custom
+        },
     },
     ['Charm']             = {
         ['Abilities'] = {
@@ -557,6 +557,14 @@ local _ClassConfig = {
                 load_cond = function(self) return Config:GetSetting('UseSpellAbsorb') end,
                 cond = function(self, songSpell)
                     return Casting.CastReady(songSpell)
+                end,
+            },
+            {
+                name = "SwarmpetSong",
+                type = "Song",
+                load_cond = function(self) return Config:GetSetting('UseSwarmPet') end,
+                cond = function(self, songSpell)
+                    return Globals.AutoTargetIsNamed
                 end,
             },
         },
@@ -882,6 +890,7 @@ local _ClassConfig = {
                 { name = "GroupRegenSong",  cond = function(self) return Config:GetSetting('RegenSong') == 2 end, },
                 { name = "AreaRegenSong",   cond = function(self) return Config:GetSetting('RegenSong') == 3 end, },
                 -- personal dps
+                { name = "SwarmpetSong",    cond = function(self) return Config:GetSetting('UseSwarmPet') end, },
                 { name = "AmpSong",         cond = function(self) return Config:GetSetting('UseAmp') > 1 end, },
                 { name = "Jonthan",         cond = function(self) return Config:GetSetting('UseJonthan') > 1 end, },
                 { name = "BellowSong",      cond = function(self) return Config:GetSetting('UseBellow') end, },
@@ -1394,6 +1403,16 @@ local _ClassConfig = {
             Category = "Direct",
             Index = 101,
             Tooltip = "Use your Bellow of Chaos DD song.\nWe will only use this song when over the Reserve Mana Pct, unless we are burning.",
+            RequiresLoadoutChange = true,
+            Default = false,
+        },
+        ['UseSwarmPet']     = {
+            DisplayName = "Use Swarm Pet",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "Direct",
+            Index = 102,
+            Tooltip = "Use your swarm pet song on named targets.",
             RequiresLoadoutChange = true,
             Default = false,
         },
