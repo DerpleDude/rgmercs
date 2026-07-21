@@ -7,7 +7,7 @@ local Globals   = require("utils.globals")
 local Targeting = require("utils.targeting")
 
 return {
-    _version              = "1.5 - Project Lazarus",
+    _version              = "1.6 - Project Lazarus",
     _author               = "Derple, Algar",
     ['Modes']             = {
         'DPS',
@@ -73,10 +73,15 @@ return {
         },
         ['Icelance2'] = {
             -- Lance 2 Timer 11 Ice Nuke Fast Cast
+            "Roaring Sleet",   -- Level 71 Laz Custom, - Timer 11
             "Glacier Spear",   -- Level 69, - Timer 11
             "Trushar's Frost", -- Level 65, - Timer 11
             "Ice Shard",       -- Level 54, - Timer 11
             "Ice Spear",       -- Level 33, - Timer 11
+        },
+        ['IceLance3'] = {
+            -- Lance 3 Timer 11 Ice Nuke - opt-in Ravenous Ice (higher damage/hate) via UseRavenousIce
+            "Ravenous Ice", -- Level 71 Laz Custom, - Timer 11
         },
         ['EndemicDot'] = {
             -- Disease DoT Instant Cast
@@ -103,17 +108,19 @@ return {
             "Drowsy",          -- Level 20
         },
         ['HealSpell'] = {
-            "Muada's Mending",   -- Level 67
-            "Trushar's Mending", -- Level 65
-            "Chloroblast",       -- Level 62
-            "Greater Healing",   -- Level 57
-            "Spirit Salve",      -- Level 48
-            "Healing",           -- Level 36
-            "Light Healing",     -- Level 20
-            "Minor Healing",     -- Level 6
-            "Salve",             -- Level 1
+            "Swift Salve of the Stillmoon", -- Level 71 Laz Custom
+            "Muada's Mending",              -- Level 67
+            "Trushar's Mending",            -- Level 65
+            "Chloroblast",                  -- Level 62
+            "Greater Healing",              -- Level 57
+            "Spirit Salve",                 -- Level 48
+            "Healing",                      -- Level 36
+            "Light Healing",                -- Level 20
+            "Minor Healing",                -- Level 6
+            "Salve",                        -- Level 1
         },
         ['PetHealSpell'] = {
+            "Sha's Urgent Renewal",    -- Level 71 Laz Custom
             "Healing of Mikkily",      -- Level 66
             "Healing of Sorsha",       -- Level 61
             "Sha's Restoration",       -- Level 55
@@ -152,34 +159,37 @@ return {
             "Spirit of Sha", -- Level 70 Laz Custom
         },
         ['PetGrowl'] = {
-            "Growl of the Panther", -- Level 69
-            "Growl of the Leopard", -- Level 61
+            "Growl of the Mountain Puma", -- Level 71 Laz Custom
+            "Growl of the Panther",       -- Level 69
+            "Growl of the Leopard",       -- Level 61
         },
         ['PetDamageProc'] = {
-            "Spirit of Oroshar",      -- Level 70
-            "Spirit of Irionu",       -- Level 68
-            "Spirit of Rellic",       -- Level 63
-            "Spirit of Flame",        -- Level 56
-            "Spirit of Snow",         -- Level 54
-            "Spirit of the Storm",    -- Level 53
-            "Spirit of Wind",         -- Level 51
-            "Spirit of Vermin",       -- Level 46
-            "Spirit of the Scorpion", -- Level 38
-            "Spirit of Inferno",      -- Level 28
-            "Spirit of the Blizzard", -- Level 18
-            "Spirit of Lightning",    -- Level 13
+            "Roaring Spirit of Tirranun", -- Level 71 Laz Custom
+            "Spirit of Oroshar",          -- Level 70
+            "Spirit of Irionu",           -- Level 68
+            "Spirit of Rellic",           -- Level 63
+            "Spirit of Flame",            -- Level 56
+            "Spirit of Snow",             -- Level 54
+            "Spirit of the Storm",        -- Level 53
+            "Spirit of Wind",             -- Level 51
+            "Spirit of Vermin",           -- Level 46
+            "Spirit of the Scorpion",     -- Level 38
+            "Spirit of Inferno",          -- Level 28
+            "Spirit of the Blizzard",     -- Level 18
+            "Spirit of Lightning",        -- Level 13
         },
         ['RunSpeedBuff'] = {
             "Spirit of Wolf", -- Level 24
         },
         ['ManaRegenBuff'] = {
             --Mana/Hp/End Regen Buff*
-            "Spiritual Rejuvenation", -- Level 70 Laz Custom
-            "Spiritual Ascendance",   -- Level 69
-            "Spiritual Dominion",     -- Level 64
-            "Spiritual Purity",       -- Level 59
-            "Spiritual Radiance",     -- Level 52
-            "Spiritual Light",        -- Level 41
+            "Spiritual Enlightenment", -- Level 71 Laz Custom
+            "Spiritual Rejuvenation",  -- Level 70 Laz Custom
+            "Spiritual Ascendance",    -- Level 69
+            "Spiritual Dominion",      -- Level 64
+            "Spiritual Purity",        -- Level 59
+            "Spiritual Radiance",      -- Level 52
+            "Spiritual Light",         -- Level 41
         },
         ['PetBlockSpell'] = {
             "Feral Guard",           -- Level 69
@@ -200,6 +210,7 @@ return {
             "Inner Fire",         -- Level 7
         },
         ['AtkHPBuff'] = {
+            "Spiritual Vibrance", -- Level 71 Laz Custom
             "Spiritual Vitality", -- Level 67
             "Spiritual Vigor",    -- Level 62
             "Spiritual Strength", -- Level 60
@@ -220,8 +231,15 @@ return {
             "Protective Spirit Discipline", -- Level 55
         },
         ['VigorBuff'] = {
-            "Feral Vigor", -- Level 69
+            "Feral Mettle", -- Level 71 Laz Custom
+            "Feral Vigor",  -- Level 69
         },
+        ['BurstHeal'] = {
+            "Feral Exigency", -- Level 71 Laz Custom
+        },
+        -- ['DrakeNuke'] = {
+        --     "Ancient: Drake's Breath", -- Level 71 Laz Custom, verify existence and source
+        -- },
     },
     ['HealRotationOrder'] = {
         { -- configured as a backup healer, will not cast in the mainpoint
@@ -235,6 +253,11 @@ return {
     },
     ['HealRotations']     = {
         ['BigHealPoint'] = {
+            {
+                name = "BurstHeal",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoBurstHeal') end,
+            },
             {
                 name = "HealSpell",
                 type = "Spell",
@@ -549,8 +572,17 @@ return {
                 end,
             },
             {
+                name = "IceLance3",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('UseRavenousIce') and Core.GetResolvedActionMapItem('IceLance3') end,
+                cond = function(self, spell, target)
+                    return Casting.OkayToNuke()
+                end,
+            },
+            {
                 name = "Icelance2",
                 type = "Spell",
+                load_cond = function(self) return not (Config:GetSetting('UseRavenousIce') and Core.GetResolvedActionMapItem('IceLance3')) end,
                 cond = function(self, spell, target)
                     return Casting.OkayToNuke()
                 end,
@@ -735,6 +767,13 @@ return {
                 end,
             },
             {
+                name = "PetBlockSpell",
+                type = "Spell",
+                cond = function(self, spell)
+                    return Casting.CastReady(spell) and Casting.PetBuffCheck(spell)
+                end,
+            },
+            {
                 name = "Fortify Companion",
                 type = "AA",
                 active_cond = function(self, aaName) return mq.TLO.Me.PetBuff(aaName)() ~= nil end,
@@ -774,11 +813,13 @@ return {
             name = "Default Mode",
             -- cond = function(self) return true end, --Code kept here for illustration, if there is no condition to check, this line is not required
             spells = {
+                { name = "BurstHeal",     cond = function(self) return Config:GetSetting('DoBurstHeal') end, },
                 { name = "HealSpell",     cond = function(self) return Config:GetSetting('DoHeals') end, },
                 { name = "PetHealSpell",  cond = function(self) return Config:GetSetting('DoPetHealSpell') end, },
                 { name = "SlowSpell",     cond = function(self) return Config:GetSetting('DoSlow') end, },
                 { name = "Icelance1", },
-                { name = "Icelance2", },
+                { name = "IceLance3",     cond = function(self) return Config:GetSetting('UseRavenousIce') and Core.GetResolvedActionMapItem('IceLance3') end, },
+                { name = "Icelance2",     cond = function(self) return not (Config:GetSetting('UseRavenousIce') and Core.GetResolvedActionMapItem('IceLance3')) end, },
                 { name = "BloodDot",      cond = function(self) return Config:GetSetting('DoDot') end, },
                 { name = "EndemicDot",    cond = function(self) return Config:GetSetting('DoDot') end, },
                 { name = "SwarmPet", },
@@ -878,6 +919,16 @@ return {
             Default = true,
             RequiresLoadoutChange = true,
         },
+        ['DoBurstHeal']    = {
+            DisplayName = "Do Burst Heal",
+            Group = "Abilities",
+            Header = "Recovery",
+            Category = "General Healing",
+            Index = 103,
+            Tooltip = "Mem and cast Feral Exigency, a large single-target burst heal, at your big-heal point.",
+            Default = true,
+            RequiresLoadoutChange = true,
+        },
         ['PetHealPct']     = {
             DisplayName = "Pet Heal Spell HP%",
             Group = "Abilities",
@@ -957,6 +1008,16 @@ return {
             Index = 101,
             Tooltip = "Enable casting Damage Over Time spells.",
             Default = true,
+            RequiresLoadoutChange = true,
+        },
+        ['UseRavenousIce'] = {
+            DisplayName = "Use Ravenous Ice",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "Direct",
+            Index = 101,
+            Tooltip = "If available, use Ravenous Ice as your timer 11 nuke (higher damage, higher mana cost, added hate).",
+            Default = false,
             RequiresLoadoutChange = true,
         },
         ['DotNamedOnly']   = {

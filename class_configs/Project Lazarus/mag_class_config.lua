@@ -11,7 +11,7 @@ local Logger      = require("utils.logger")
 local Targeting   = require("utils.targeting")
 
 _ClassConfig      = {
-    _version          = "1.4 - Project Lazarus",
+    _version          = "1.5 - Project Lazarus",
     _author           = "Derple, Morisato, Algar",
     ['Modes']         = {
         'DPS',
@@ -76,9 +76,11 @@ _ClassConfig      = {
             "Raging Servant", -- Level 70
         },
         ['SpearNuke'] = {
+            -- "Ancient: Spear of Molten Slag", -- Level 71 Laz Custom, verify existence and source
             "Spear of Ro", -- Level 70
         },
         ['ChaoticNuke'] = {
+            "Fickle Inferno",          -- Level 71 Laz Custom
             "Fickle Fire",             -- Level 69
         },
         ['FireDD'] = {                 --Mix of Fire Nukes and Bolts appropriate for use at lower levels.
@@ -105,10 +107,12 @@ _ClassConfig      = {
             "Shock of Blades",         -- Level 7
         },
         ['QuickMagicDD'] = {
+            "Blade Rend",   -- Level 71 Laz Custom
             "Blade Strike", -- Level 68
             "Black Steel",  -- Level 63
         },
         ['SelfShield'] = {
+            "Ward of the Conjurer", -- Level 71 Laz Custom
             "Elemental Aura",       -- Level 66
             "Shield of Maelin",     -- Level 64
             "Shield of the Arcane", -- Level 61
@@ -125,6 +129,7 @@ _ClassConfig      = {
             "Pyrilen Skin",               -- Level 68
         },
         ['LongDurDmgShield'] = {
+            "Circle of Magmaskin",   -- Level 71 Laz Custom
             "Circle of Fireskin",    -- Level 70
             "Fireskin",              -- Level 66
             "Maelstrom of Ro",       -- Level 63
@@ -144,13 +149,15 @@ _ClassConfig      = {
             "Transon's Phantasmal Protection", -- Level 58
         },
         ['PetAura'] = {
-            "Rathe's Strength", -- Level 70
-            "Earthen Strength", -- Level 55
+            "Monolithic Strength", -- Level 71 Laz Custom
+            "Rathe's Strength",    -- Level 70
+            "Earthen Strength",    -- Level 55
         },
         ['FireShroud'] = {
             "Burning Aura", -- Level 68
         },
         ['PetHealSpell'] = {
+            "Goner's Urgent Renewal",       -- Level 71 Laz Custom
             "Renewal of Jerikor",           -- Level 69
             "Planar Renewal",               -- Level 64
             "Transon's Elemental Renewal",  -- Level 60
@@ -274,6 +281,7 @@ _ClassConfig      = {
             "Summon Orb", -- Level 45
         },
         ['Bladegusts'] = {
+            "Burning Bladestorm", -- Level 71 Laz Custom
             "Burning Bladegusts", -- Level 69 Laz Custom
         },
         ['PBAE2'] = {
@@ -286,7 +294,8 @@ _ClassConfig      = {
             "Shock of Myriad Minions", -- Level 70 Laz Custom
         },
         ['FranticDS'] = {
-            "Frantic Flames", -- Level 71 Laz Custom
+            "Frantic Blaze",  -- Level 71 Laz Custom
+            "Frantic Flames", -- Level 70 Laz Custom
         },
     },
     ['AASets']        = {

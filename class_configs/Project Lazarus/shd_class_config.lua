@@ -78,7 +78,7 @@ local Tooltips     = {
 }
 
 local _ClassConfig = {
-    _version          = "2.5 - Project Lazarus",
+    _version          = "2.6 - Project Lazarus",
     _author           = "Algar, Derple",
     ['ModeChecks']    = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
@@ -153,9 +153,10 @@ local _ClassConfig = {
     },
     ['AbilitySets']   = {
         ['Mantle'] = {
-            "Soul Shield", -- Level 69
-            "Soul Guard",  -- Level 61
-            "Ichor Guard", -- Level 56, Timer 5
+            "Soul Carapace", -- Level 71 Laz Custom
+            "Soul Shield",   -- Level 69
+            "Soul Guard",    -- Level 61
+            "Ichor Guard",   -- Level 56, Timer 5
         },
         ['BlockDisc'] = {
             "Rampart Discipline",    -- Level 70 Laz Custom
@@ -176,20 +177,21 @@ local _ClassConfig = {
             "Leering Corpse", -- Level 7
         },
         ['PetHaste'] = {
-            "Rune of Decay",         -- Level 69
-            "Augmentation of Death", -- Level 64
-            "Augment Death",         -- Level 60
-            "Strengthen Death",      -- Level 29
+            "Rune of Decay",          -- Level 69
+            "Augmentation of Death",  -- Level 64
+            "Augment Death",          -- Level 60
+            "Strengthen Death",       -- Level 29
         },
-        ['Shroud'] = {               -- HP Tap Proc
-            "Shroud of Discord",     -- Level 67, -- Buff Slot 1 <
-            "Black Shroud",          -- Level 65
-            "Shroud of Chaos",       -- Level 63
-            "Shroud of Death",       -- Level 55
+        ['Shroud'] = {                -- HP Tap Proc
+            "Shroud of the Accursed", -- Level 71 Laz Custom
+            "Shroud of Discord",      -- Level 67, -- Buff Slot 1 <
+            "Black Shroud",           -- Level 65
+            "Shroud of Chaos",        -- Level 63
+            "Shroud of Death",        -- Level 55
         },
-        ['Mental'] = {               -- Mana Tap Proc
-            "Mental Horror",         -- Level 65, --Buff Slot 1 >
-            "Mental Corruption",     -- Level 52
+        ['Mental'] = {                -- Mana Tap Proc
+            "Mental Horror",          -- Level 65, --Buff Slot 1 >
+            "Mental Corruption",      -- Level 52
         },
         ['Skin'] = {
             "Decrepit Skin", -- Level 70
@@ -198,9 +200,10 @@ local _ClassConfig = {
             "Banshee Aura", -- Level 54
         },
         ['CloakHP'] = {
-            "Cloak of Discord",    -- Level 70
-            "Cloak of Luclin",     -- Level 65
-            "Cloak of the Akheva", -- Level 60
+            "Cloak of the Corrupter", -- Level 71 Laz Custom
+            "Cloak of Discord",       -- Level 70
+            "Cloak of Luclin",        -- Level 65
+            "Cloak of the Akheva",    -- Level 60
         },
         ['CallAtk'] = {
             "Call of Darkness", -- Level 54
@@ -214,7 +217,8 @@ local _ClassConfig = {
             "Blood of Pain",    -- Level 41
         },
         ['AEPoisonDot'] = {
-            "Blood of Inruku", -- Level 68
+            "Blood of the Harbinger", -- Level 71 Laz Custom
+            "Blood of Inruku",        -- Level 68
         },
         ['SpearNuke'] = {
             "Spear of Plague",  -- Level 54
@@ -223,6 +227,7 @@ local _ClassConfig = {
             "Spike of Disease", -- Level 1
         },
         ['AESpearNuke'] = {
+            -- "Ancient: Spear of Lanys", -- Level 71 Laz Custom, verify existence and source
             "Spear of Muram", -- Level 69
             "Miasmic Spear",  -- Level 65
             "Spear of Decay", -- Level 64
@@ -233,6 +238,7 @@ local _ClassConfig = {
             "Vampiric Curse", -- Level 57
         },
         ['LifeTap'] = {
+            "Touch of the Shadows",  -- Level 71 Laz Custom
             "Touch of the Devourer", -- Level 70
             "Touch of Inruku",       -- Level 67
             "Touch of Innoruuk",     -- Level 65
@@ -247,6 +253,7 @@ local _ClassConfig = {
             "Lifetap",               -- Level 8
         },
         ['LifeTap2'] = {
+            "Touch of the Shadows",  -- Level 71 Laz Custom
             "Touch of the Devourer", -- Level 70
             "Touch of Inruku",       -- Level 67
             "Touch of Innoruuk",     -- Level 65
@@ -261,6 +268,7 @@ local _ClassConfig = {
             "Lifetap",               -- Level 8
         },
         ['AELifeTap'] = {
+            "Grasp of Ju'rek", -- Level 71 Laz Custom
             "Grasp of Lhranc", -- Level 69 Laz Custom
         },
         ['BiteTap'] = {
@@ -270,22 +278,25 @@ local _ClassConfig = {
             "Zevfeer's Bite",         -- Level 62
         },
         ['Terror'] = {
-            "Terror of Discord",  -- Level 67
-            "Terror of Thule",    -- Level 63
-            "Terror of Terris",   -- Level 59
-            "Terror of Death",    -- Level 53
-            "Terror of Shadows",  -- Level 42
-            "Terror of Darkness", -- Level 33
+            "Terror of Lavaspinner's Lair", -- Level 71 Laz Custom
+            "Terror of Discord",            -- Level 67
+            "Terror of Thule",              -- Level 63
+            "Terror of Terris",             -- Level 59
+            "Terror of Death",              -- Level 53
+            "Terror of Shadows",            -- Level 42
+            "Terror of Darkness",           -- Level 33
         },
         ['Terror2'] = {
-            "Terror of Discord",  -- Level 67
-            "Terror of Thule",    -- Level 63
-            "Terror of Terris",   -- Level 59
-            "Terror of Death",    -- Level 53
-            "Terror of Shadows",  -- Level 42
-            "Terror of Darkness", -- Level 33
+            "Terror of Lavaspinner's Lair", -- Level 71 Laz Custom
+            "Terror of Discord",            -- Level 67
+            "Terror of Thule",              -- Level 63
+            "Terror of Terris",             -- Level 59
+            "Terror of Death",              -- Level 53
+            "Terror of Shadows",            -- Level 42
+            "Terror of Darkness",           -- Level 33
         },
         ['PowerTapAC'] = {
+            "Theft of Misery", -- Level 71 Laz Custom
             "Theft of Agony",  -- Level 70
             "Theft of Pain",   -- Level 68
             "Aura of Pain",    -- Level 63
@@ -314,6 +325,7 @@ local _ClassConfig = {
             "Disease Cloud",     -- Level 5
         },
         ['HateBuff'] = {         --9 minute reuse makes these somewhat ridiculous to gem on the fly.
+            "Voice of Emoush",   -- Level 71 Laz Custom
             "Voice of Innoruuk", -- Level 70, 15% hate, 150pt DS (slot 9), 15% decrease DS Mit (VoT AA is still better for tanking at 24%, but they stack. DS smexy) Laz Custom
             "Voice of Thule",    -- Level 65, 12% hate
             "Voice of Terris",   -- Level 60, 10% hate

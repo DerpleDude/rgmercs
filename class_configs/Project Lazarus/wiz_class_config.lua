@@ -13,7 +13,7 @@ local Logger    = require("utils.logger")
 local Targeting = require("utils.targeting")
 
 return {
-    _version          = "2.0 - Project Lazarus",
+    _version          = "2.1 - Project Lazarus",
     _author           = "Derple, Algar",
     ['Modes']         = {
         'DPS',
@@ -79,12 +79,15 @@ return {
         --     "Claw of Frost", -- Level 61
         -- },
         ['FireEtherealNuke'] = {
+            "Ether Blaze", -- Level 71 Laz Custom
             "Ether Flame", -- Level 70
         },
         ['ChaosNuke'] = {
+            -- "Ancient: Chaos Elements", -- Level 71 Laz Custom, verify existence and source
             "Chaos Flame", -- Level 70
         },
         ['WildNuke'] = {
+            "Wildmagic Salvo", -- Level 71 Laz Custom
             "Wildmagic Burst", -- Level 68
         },
         ['FireNuke'] = {
@@ -148,16 +151,17 @@ return {
             "Tishan's Clash",   -- Level 19
         },
         ['SelfHPBuff'] = {
-            "Ether Shield",         -- Level 66
-            "Shield of Maelin",     -- Level 64
-            "Shield of the Arcane", -- Level 61
-            "Shield of the Magi",   -- Level 54
-            "Arch Shielding",       -- Level 44
-            "Greater Shielding",    -- Level 33
-            "Major Shielding",      -- Level 23
-            "Shielding",            -- Level 15
-            "Lesser Shielding",     -- Level 6
-            "Minor Shielding",      -- Level 1
+            "Bolster of the Sorcerer", -- Level 71 Laz Custom
+            "Ether Shield",            -- Level 66
+            "Shield of Maelin",        -- Level 64
+            "Shield of the Arcane",    -- Level 61
+            "Shield of the Magi",      -- Level 54
+            "Arch Shielding",          -- Level 44
+            "Greater Shielding",       -- Level 33
+            "Major Shielding",         -- Level 23
+            "Shielding",               -- Level 15
+            "Lesser Shielding",        -- Level 6
+            "Minor Shielding",         -- Level 1
         },
         ['FamiliarBuff'] = {
             "Greater Familiar", -- Level 60
@@ -166,8 +170,12 @@ return {
             "Minor Familiar",   -- Level 25
         },
         ['SelfRune1'] = {
-            "Ether Skin",   -- Level 68
-            "Force Shield", -- Level 63
+            "Supernal Skin", -- Level 71 Laz Custom
+            "Ether Skin",    -- Level 68
+            "Force Shield",  -- Level 63
+        },
+        ['ArcaneSanctuary'] = {
+            "Arcane Sanctuary", -- Level 71 Laz Custom
         },
         -- ['Dispel'] = {
         --     "Annul Magic",   -- Level 53
@@ -191,7 +199,8 @@ return {
             "Lesser Evacuate", -- Level 18
         },
         ['HarvestSpell'] = {
-            "Harvest", -- Level 32
+            "Serenity Harvest", -- Level 71 Laz Custom
+            "Harvest",          -- Level 32
         },
         ['JoltSpell'] = {
             "Ancient: Greater Concussion", -- Level 60
@@ -261,13 +270,18 @@ return {
         ['MagicJyll'] = {
             "Jyll's Static Pulse", -- Level 53
         },
-        ['ManaWeave'] = {
-            "Mana Weave", -- Level 69
+        ['WeaveNuke'] = {
+            "Ethereal Weave", -- Level 71 Laz Custom
+            "Mana Weave",     -- Level 69
         },
-        -- ['SwarmPet'] = {
-        --     -- "Solist's Frozen Sword", -- Level 69, Bugged, does not attack on Laz/Emu
-        --     "Flaming Sword of Xuzl", -- Level 59, homework
-        -- },
+        ['AEStunNuke'] = {
+            "Eruption of Telakemara", -- Level 71 Laz Custom
+        },
+        ['SwarmPet'] = {
+            "Evoker's Pyromantic Blade", -- Level 71 Laz Custom
+            -- "Solist's Frozen Sword", -- Level 69, Bugged, does not attack on Laz/Emu
+            -- "Flaming Sword of Xuzl", -- Level 59, homework
+        },
     },
     ['AASets']        = {
         ['Devastation'] = {
@@ -305,7 +319,11 @@ return {
             return Targeting.GetTargetDistance() >= Config:GetSetting('RainDistance') and Targeting.MobNotLowHP(target)
         end,
         HasWeaveRotation = function()
-            return Core.GetResolvedActionMapItem('ManaWeave') and Core.GetResolvedActionMapItem('FireEtherealNuke')
+            return Core.GetResolvedActionMapItem('WeaveNuke') and Core.GetResolvedActionMapItem('FireEtherealNuke')
+        end,
+        UseHarvestSpell = function()
+            local harvest = Core.GetResolvedActionMapItem('HarvestSpell')
+            return (harvest and harvest.RankName.Name() == "Serenity Harvest") or not Casting.CanUseAA("Harvest of Druzzil")
         end,
     },
     ['RotationOrder'] = {
@@ -358,7 +376,7 @@ return {
             end,
         },
         {
-            name = 'DPS(Level70)',
+            name = 'DPS(HighLevel)',
             state = 1,
             steps = 1,
             load_cond = function(self) return self.Helpers.HasWeaveRotation() end,
@@ -587,7 +605,7 @@ return {
             {
                 name = "HarvestSpell",
                 type = "Spell",
-                load_cond = function(self) return not Casting.CanUseAA("Harvest of Druzzil") end,
+                load_cond = function(self) return self.Helpers.UseHarvestSpell() end,
                 allowDead = true,
                 cond = function(self)
                     return mq.TLO.Me.PctMana() < Config:GetSetting('CombatHarvestManaPct')
@@ -600,13 +618,26 @@ return {
                 type = "AA",
             },
         },
-        ['DPS(Level70)'] = {
+        ['DPS(HighLevel)'] = {
             {
-                name = "ManaWeave",
+                name = "WeaveNuke",
                 type = "Spell",
                 cond = function(self, spell, target)
                     return not Casting.IHaveBuff("Weave of Power")
                 end,
+            },
+            {
+                name = "AEStunNuke",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoAEStunNuke') end,
+                cond = function(self, spell, target)
+                    return Combat.AETargetCheck(true)
+                end,
+            },
+            {
+                name = "SwarmPet",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoSwarmPet') end,
             },
             {
                 name = "ChaosNuke",
@@ -692,6 +723,11 @@ return {
         },
         ['DPS(PBAE)'] = {
             {
+                name = "AEStunNuke",
+                type = "Spell",
+                allowDead = true,
+            },
+            {
                 name = "PBTimer4",
                 type = "Spell",
                 allowDead = true,
@@ -741,6 +777,14 @@ return {
                     return Casting.SelfBuffCheck(spell)
                 end,
             },
+            {
+                name = "ArcaneSanctuary",
+                type = "Spell",
+                active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
+                cond = function(self, spell)
+                    return Casting.SelfBuffCheck(spell)
+                end,
+            },
             { --Familiar AA, will use the first(best) one found
                 name = "FamiliarAA",
                 type = "AA",
@@ -769,7 +813,7 @@ return {
             {
                 name = "HarvestSpell",
                 type = "Spell",
-                load_cond = function(self) return not Casting.CanUseAA("Harvest of Druzzil") end,
+                load_cond = function(self) return self.Helpers.UseHarvestSpell() end,
                 cond = function(self, spell)
                     return Casting.CastReady(spell) and mq.TLO.Me.PctMana() < Config:GetSetting('HarvestManaPct')
                 end,
@@ -803,7 +847,7 @@ return {
         {
             name = "Default Mode",
             spells = {
-                { name = "ManaWeave",        cond = function(self) return self.Helpers.HasWeaveRotation() end, },
+                { name = "WeaveNuke",        cond = function(self) return self.Helpers.HasWeaveRotation() end, },
                 { name = "FireNuke",         cond = function(self) return not self.Helpers.HasWeaveRotation() and Config:GetSetting('ElementChoice') == 1 end, },
                 { name = "IceNuke",          cond = function(self) return not self.Helpers.HasWeaveRotation() and Config:GetSetting('ElementChoice') == 2 end, },
                 { name = "MagicNuke",        cond = function(self) return not self.Helpers.HasWeaveRotation() and Config:GetSetting('ElementChoice') == 3 end, },
@@ -825,10 +869,12 @@ return {
                     end,
                 },
                 { name = "ChaosNuke",    cond = function(self) return self.Helpers.HasWeaveRotation() end, },
-                { name = "HarvestSpell", cond = function() return not Casting.CanUseAA("Harvest of Druzzil") end, },
+                { name = "HarvestSpell", cond = function(self) return self.Helpers.UseHarvestSpell() end, },
                 { name = "SnareSpell",   cond = function() return Config:GetSetting('DoSnare') and not Casting.CanUseAA("Atol's Shackles") end, },
                 { name = "StunSpell",    cond = function() return Config:GetSetting('DoStun') end, },
                 { name = "JoltSpell",    cond = function() return not Casting.CanUseAA("Concussive Intuition") end, },
+                { name = "SwarmPet",     cond = function() return Config:GetSetting('DoSwarmPet') end, },
+                { name = "AEStunNuke",   cond = function() return Config:GetSetting('DoAEStunNuke') end, },
                 { name = "PBTimer4",     cond = function() return Core.IsModeActive('PBAE') end, },
                 { name = "FireJyll",     cond = function() return Core.IsModeActive('PBAE') end, },
                 { name = "IceJyll",      cond = function() return Core.IsModeActive('PBAE') end, },
@@ -904,6 +950,26 @@ return {
             Min = 0,
             Max = 100,
         },
+        ['DoAEStunNuke']         = {
+            DisplayName = "Do AE Stun Nuke",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "Direct",
+            Index = 105,
+            Tooltip = "Use your targeted AE stun nuke on clustered mobs during your main rotation.",
+            RequiresLoadoutChange = true,
+            Default = true,
+        },
+        ['DoSwarmPet']           = {
+            DisplayName = "Do Swarm Pet",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "Direct",
+            Index = 106,
+            Tooltip = "Use your swarm pet spell.",
+            RequiresLoadoutChange = true,
+            Default = false,
+        },
 
         -- Utility
         ['JoltAggro']            = {
@@ -969,7 +1035,7 @@ return {
             Index = 102,
             ConfigType = "Advanced",
             Tooltip = "What Mana % to hit before using a harvest spell or aa in Combat.",
-            Default = 60,
+            Default = 40,
             Min = 1,
             Max = 99,
         },

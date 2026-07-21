@@ -7,7 +7,7 @@ local Globals      = require("utils.globals")
 local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
-    _version              = "3.0 - Project Lazarus",
+    _version              = "3.1 - Project Lazarus",
     _author               = "Algar, Derple",
     ['ModeChecks']        = {
         IsHealing = function() return true end,
@@ -131,10 +131,11 @@ local _ClassConfig = {
     ['AbilitySets']       = {
         ['GroupFocusSpell'] = {
             -- Focus Spell - Group Spells will be used on everyone
-            "Talisman of Wunshi",   -- Level 70, - Group
-            "Focus of the Seventh", -- Level 65, - Group
-            "Khura's Focusing",     -- Level 60, - Group
-            "Infusion of Spirit",   -- Level 49, Str/Dex/Sta, can use HP buff. Not sure if this is the final home for this one or not.
+            "Talisman of the Stillmoon", -- Level 71 Laz Custom
+            "Talisman of Wunshi",        -- Level 70, - Group
+            "Focus of the Seventh",      -- Level 65, - Group
+            "Khura's Focusing",          -- Level 60, - Group
+            "Infusion of Spirit",        -- Level 49, Str/Dex/Sta, can use HP buff. Not sure if this is the final home for this one or not.
         },
         ['RunSpeedBuff'] = {
             -- Run Speed Buff - 9 - 74
@@ -152,6 +153,7 @@ local _ClassConfig = {
             "Talisman of Celerity",    -- Level 64
         },
         ['Unification'] = {            -- Many buffs combined: 75 Sta, 50 sta cap, 7% evasion, 5% damage
+            "Talisman of Coalescence", -- Level 71 Laz Custom
             "Talisman of Unification", -- Level 70 Laz Custom
         },
         ['LowLvlStaBuff'] = {
@@ -254,13 +256,15 @@ local _ClassConfig = {
             "Listless Power",    -- Level 29, Definitely not worth
         },
         ['MeleeProcBuff'] = {
-            "Talisman of the Panther", -- Level 71
+            "Talisman of the Cougar",  -- Level 71 Laz Custom
+            "Talisman of the Panther", -- Level 70
             "Spirit of the Panther",   -- Level 69
             "Spirit of the Leopard",   -- Level 61
             "Spirit of the Jaguar",    -- Level 57
             "Spirit of the Puma",      -- Level 50
         },
         ['SlowProcBuff'] = {
+            "Shadowy Sloth",   -- Level 71 Laz Custom
             "Lingering Sloth", -- Level 68
         },
         ['RezSpell'] = {
@@ -270,6 +274,7 @@ local _ClassConfig = {
             'Reanimation',    -- Level 29 Laz Custom
         },
         ['HealSpell'] = {
+            -- "Ancient: Emoush's Mending", -- Level 71 Laz Custom, verify existence and source
             "Ancient: Wilslik's Mending", -- Level 70
             "Yoppa's Mending",            -- Level 68
             "Daluda's Mending",           -- Level 65
@@ -296,18 +301,19 @@ local _ClassConfig = {
             "Ghost of Renewal", -- Level 70
         },
         ['SnareHot'] = {
-            "Transcendent Torpor", -- Level 70 Laz Custom
-            "Torpor",              -- Level 60
-            "Stoicism",            -- Level 44
+            "Transcendental Torpor", -- Level 71 Laz Custom
+            "Transcendent Torpor",   -- Level 70 Laz Custom
+            "Torpor",                -- Level 60
+            "Stoicism",              -- Level 44
         },
-        ['SingleHot'] = {          -- some elixirs given to shm/dru on laz
-            "Spiritual Serenity",  -- Level 70
-            "Breath of Trushar",   -- Level 65
-            "Quiescence",          -- Level 65
+        ['SingleHot'] = {            -- some elixirs given to shm/dru on laz
+            "Spiritual Serenity",    -- Level 70
+            "Breath of Trushar",     -- Level 65
+            "Quiescence",            -- Level 65
             -- "Celestial Elixir", -- Level 65, Quiescence same level and better
-            "Celestial Healing",   -- Level 49
-            "Celestial Health",    -- Level 35
-            "Celestial Remedy",    -- Level 25
+            "Celestial Healing",     -- Level 49
+            "Celestial Health",      -- Level 35
+            "Celestial Remedy",      -- Level 25
         },
         ['CanniSpell'] = {
             -- Convert Health to Mana - Level  23 -
@@ -349,6 +355,7 @@ local _ClassConfig = {
         },
         ['CurseDot'] = {
             -- Curse Dot 1 Stacking: Curse - Long Dot(30s) - Level 34+
+            "Curse of Emoush",  -- Level 71 Laz Custom
             "Curse of Sisslak", -- Level 69
             "Bane",             -- Level 64
             "Anathema",         -- Level 54
@@ -357,6 +364,7 @@ local _ClassConfig = {
         },
         ['SaryrnDot'] = {
             -- Stacking: Blood of Saryrn - Long Dot(42s) - Level 8+
+            "Blood of Volkara",         -- Level 71 Laz Custom
             "Nectar of Pain",           -- Level 70
             "Blood of Saryrn",          -- Level 65
             "Ancient: Scourge of Nife", -- Level 60
@@ -368,19 +376,26 @@ local _ClassConfig = {
         },
         ['UltorDot'] = {
             ---, Stacking: Breath of Ultor - Long Dot(84s) - Level 4+
-            "Breath of Wunshi",      -- Level 67
-            "Breath of Ultor",       -- Level 64
-            "Pox of Bertoxxulous",   -- Level 59
-            "Plague",                -- Level 49
-            "Scourge",               -- Level 31
-            "Affliction",            -- Level 19
-            "Sicken",                -- Level 4
+            "Breath of Shadows",       -- Level 71 Laz Custom
+            "Breath of Wunshi",        -- Level 67
+            "Breath of Ultor",         -- Level 64
+            "Pox of Bertoxxulous",     -- Level 59
+            "Plague",                  -- Level 49
+            "Scourge",                 -- Level 31
+            "Affliction",              -- Level 19
+            "Sicken",                  -- Level 4
         },
-        ['AEDot'] = {                -- do homework for Laz
-            "Blood of Yoppa",        -- Level 70
+        ['AEDot'] = {                  -- do homework for Laz
+            "Blood of Yoppa",          -- Level 70
         },
-        ['PetSpell'] = {             --We need to add handling for commune to get the mammoth/etc
+        ['PetSpell'] = {               --We need to add handling for commune to get the mammoth/etc
             -- Pet Spell - 32+
+            "Gray Elephant Companion", -- Level 71 Laz Custom
+            -- "Cunning Lioness Companion", -- Level 71 Laz Custom
+            -- "Black Scorpion Companion",  -- Level 71 Laz Custom
+            -- "Wooly Rhino Companion",     -- Level 71 Laz Custom
+            -- "Blood Raptor Companion",    -- Level 71 Laz Custom
+            -- "Sea Cow Companion",         -- Level 71 Laz Custom
             "Commune with the Wild", -- Level 70 Laz Custom
             "Farrel's Companion",    -- Level 67
             "True Spirit",           -- Level 61

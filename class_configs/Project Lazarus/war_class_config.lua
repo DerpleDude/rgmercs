@@ -10,7 +10,7 @@ local Logger       = require("utils.logger")
 local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
-    _version          = "3.0 - Project Lazarus",
+    _version          = "3.1 - Project Lazarus",
     _author           = "Algar, Derple",
     ['ModeChecks']    = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
@@ -73,24 +73,29 @@ local _ClassConfig = {
         },
     },
     ['AbilitySets']   = {
-        ['StandDisc'] = {           -- Timer 2
-            "Stonewall Discipline", -- Level 65, no lost movement on laz, more mitigation than defensive
-            "Defensive Discipline", -- Level 55
-            "Evasive Discipline",   -- Level 52
+        ['StandDisc'] = {             -- Timer 1
+            "Final Stand Discipline", -- Level 71 Laz Custom
+            "Stonewall Discipline",   -- Level 65, no lost movement on laz, more mitigation than defensive
+            "Defensive Discipline",   -- Level 55
+            "Evasive Discipline",     -- Level 52
         },
-        ['Fortitude'] = {           -- Timer 3
-            "Fortitude Discipline", -- Level 59
-            "Furious Discipline",   -- Level 56
+        ['Fortitude'] = {             -- Timer 2
+            -- "Ancient: Impervious Discipline", -- Level 71 Laz Custom, verify existence and source
+            "Fortitude Discipline",   -- Level 59
+            "Furious Discipline",     -- Level 56
         },
-        ['GroupACBuff'] = {         -- Has Commanding Voice (Dodge Buff) baked in
-            "Field Armorer",        -- Level 65
+        ['GroupACBuff'] = {           -- Has Commanding Voice (Dodge Buff) baked in
+            "Field Conqueror",        -- Level 71 Laz Custom
+            "Field Armorer",          -- Level 65
         },
         ['AEBlades'] = {
+            "Maelstrom Blade", -- Level 71 Laz Custom
             "Vortex Blade",    -- Level 69
             "Cyclone Blade",   -- Level 65
             "Whirlwind Blade", -- Level 61
         },
         ['AddHate'] = {
+            "Roaring Hatred",        -- Level 71 Laz Custom
             "Ancient: Chaos Cry",    -- Level 65
             "Bellow of the Mastruq", -- Level 65
             "Incite",                -- Level 63
@@ -99,21 +104,25 @@ local _ClassConfig = {
             "Provoke",               -- Level 20
         },
         ['AbsorbTaunt'] = {
+            "Jeer", -- Level 71 Laz Custom
             "Mock", -- Level 65
         },
         ['EndRegen'] = {
-            "Third Wind Discipline", -- Level 70, also does HP Laz Custom
-            "Second Wind",           -- Level 65
+            "Fourth Wind Discipline", -- Level 71 Laz Custom
+            "Third Wind Discipline",  -- Level 70, also does HP Laz Custom
+            "Second Wind",            -- Level 65
         },
         ['AuraBuff'] = {
-            "Champion's Aura", -- Level 70
-            "Myrmidon's Aura", -- Level 55
+            "Vanquisher's Aura", -- Level 71 Laz Custom
+            "Champion's Aura",   -- Level 70
+            "Myrmidon's Aura",   -- Level 55
         },
         ['Attention'] = {
             "Unyielding Attention", -- Level 71
             "Undivided Attention",  -- Level 65
         },
         ['Onslaught'] = {
+            -- "Ancient: Malicious Onslaught", -- Level 71 Laz Custom, verify existence and source
             "Brutal Onslaught Discipline", -- Level 68
             "Savage Onslaught Discipline", -- Level 65
         },
@@ -125,10 +134,16 @@ local _ClassConfig = {
             "Throat Jab", -- Level 69
         },
         ['Flaunt'] = {
-            "Flaunt",                      -- Level 70 Laz Custom
+            "Flaunt", -- Level 70 Laz Custom
         },
-        ['ShockDisc'] = {                  -- Timer 7, defensive stun proc
-            "Shocking Defense Discipline", -- Level 70
+        -- ['ShockDisc'] = {                  -- Timer 6, defensive stun proc
+        --     "Shocking Defense Discipline", -- Level 70
+        -- },
+        ['Scowl'] = {                    -- Timer 8, opt-in taunt + melee absorb via UseScowl (shares timer with AddHate)
+            "Scowl",                     -- Level 71 Laz Custom
+        },
+        ['MaxEffort'] = {                -- Timer 6, endurance-fueled melee absorb
+            "Maximum Effort Discipline", -- Level 71 Laz Custom
         },
     },
     ['AASets']        = {
@@ -332,8 +347,17 @@ local _ClassConfig = {
                 type = "AA",
             },
             {
+                name = "Scowl",
+                type = "Disc",
+                load_cond = function(self) return Config:GetSetting('UseScowl') and Core.GetResolvedActionMapItem('Scowl') end,
+                cond = function(self, discSpell)
+                    return Casting.DetSpellCheck(discSpell)
+                end,
+            },
+            {
                 name = "AddHate",
                 type = "Disc",
+                load_cond = function(self) return not (Config:GetSetting('UseScowl') and Core.GetResolvedActionMapItem('Scowl')) end,
                 cond = function(self, discSpell)
                     return Casting.DetSpellCheck(discSpell)
                 end,
@@ -366,8 +390,17 @@ local _ClassConfig = {
                 type = "AA",
             },
             {
+                name = "Scowl",
+                type = "Disc",
+                load_cond = function(self) return Config:GetSetting('UseScowl') and Core.GetResolvedActionMapItem('Scowl') end,
+                cond = function(self, discSpell)
+                    return Casting.DetSpellCheck(discSpell)
+                end,
+            },
+            {
                 name = "AddHate",
                 type = "Disc",
+                load_cond = function(self) return not (Config:GetSetting('UseScowl') and Core.GetResolvedActionMapItem('Scowl')) end,
                 cond = function(self, discSpell)
                     return Casting.DetSpellCheck(discSpell)
                 end,
@@ -492,6 +525,13 @@ local _ClassConfig = {
                 type = "AA",
                 cond = function(self, aaName)
                     return self.Helpers.DefenseBuffCheck(self)
+                end,
+            },
+            {
+                name = "MaxEffort",
+                type = "Disc",
+                cond = function(self, discSpell)
+                    return Casting.NoDiscActive() and self.Helpers.DefenseBuffCheck(self)
                 end,
             },
             {
@@ -734,6 +774,16 @@ local _ClassConfig = {
             Tooltip = "Use AE hatred Discs and AA (see FAQ for specifics).",
             RequiresLoadoutChange = true,
             Default = true,
+        },
+        ['UseScowl']        = {
+            DisplayName = "Use Scowl",
+            Group = "Abilities",
+            Header = "Tanking",
+            Category = "Hate Tools",
+            Index = 102,
+            Tooltip = "Use Scowl for a taunt and melee absorb instead of your timer 8 hate disc.",
+            RequiresLoadoutChange = true,
+            Default = false,
         },
 
         --Defenses

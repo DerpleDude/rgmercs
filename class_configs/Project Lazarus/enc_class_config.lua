@@ -10,7 +10,7 @@ local Logger       = require("utils.logger")
 local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
-    _version          = "1.4 - Project Lazarus",
+    _version          = "1.5 - Project Lazarus",
     _author           = "Derple, Grimmier, Algar, Robban",
     ['ModeChecks']    = {
         CanMez    = function() return true end,
@@ -67,11 +67,13 @@ local _ClassConfig = {
             "Aura of Endless Glamour", -- Level 65
         },
         ['GroupHasteBuff'] = {
-            "Hastening of Salik",  -- Level 70
-            "Vallon's Quickening", -- Level 65
-            "Speed of the Brood",  -- Level 60
+            "Hastening of Ellowind", -- Level 71 Laz Custom
+            "Hastening of Salik",    -- Level 70
+            "Vallon's Quickening",   -- Level 65
+            "Speed of the Brood",    -- Level 60
         },
         ['SingleHasteBuff'] = {
+            "Speed of Ellowind",   -- Level 71 Laz Custom
             "Speed of Salik",      -- Level 67
             "Speed of Vallon",     -- Level 62
             "Visions of Grandeur", -- Level 60
@@ -83,6 +85,7 @@ local _ClassConfig = {
             "Quickness",           -- Level 15
         },
         ['ManaRegen'] = {
+            "Voice of Intuition",         -- Level 71 Laz Custom
             "Voice of Clairvoyance",      -- Level 70
             "Clairvoyance",               -- Level 68
             "Voice of Quellious",         -- Level 65
@@ -98,11 +101,13 @@ local _ClassConfig = {
             "Ward of Bedazzlement", -- Level 65
         },
         ['NdtBuff'] = {
-            "Boon of the Legion",  -- Level 67 Laz Custom
-            "Night's Dark Terror", -- Level 63
-            "Boon of the Garou",   -- Level 40
+            "Boon of the Sentinel", -- Level 71 Laz Custom
+            "Boon of the Legion",   -- Level 67 Laz Custom
+            "Night's Dark Terror",  -- Level 63
+            "Boon of the Garou",    -- Level 40
         },
         ['SelfHPBuff'] = {
+            "Presidio of the Seer", -- Level 71 Laz Custom
             "Mystic Shield",        -- Level 66
             "Shield of Maelin",     -- Level 64
             "Shield of the Arcane", -- Level 61
@@ -162,6 +167,7 @@ local _ClassConfig = {
         },
         ['CharmSpell'] = {
             --  "Ancient: Voice of Muram", -- Level 70 3m dur/10m reuse
+            "Whispers of Emoush", -- Level 71 Laz Custom
             "True Name",          -- Level 70
             "Compel",             -- Level 68
             "Command of Druzzil", -- Level 64
@@ -199,12 +205,13 @@ local _ClassConfig = {
             "Taper Enchantment",       -- Level 1
         },
         ['TashSpell'] = {
-            "Echo of Tashan", -- Level 70
-            "Howl of Tashan", -- Level 61
-            "Tashanian",      -- Level 57
-            "Tashania",       -- Level 41
-            "Tashani",        -- Level 18
-            "Tashina",        -- Level 2
+            "Edict of Tashan", -- Level 71 Laz Custom
+            "Echo of Tashan",  -- Level 70
+            "Howl of Tashan",  -- Level 61
+            "Tashanian",       -- Level 57
+            "Tashania",        -- Level 41
+            "Tashani",         -- Level 18
+            "Tashina",         -- Level 2
         },
         -- ['ManaDrainNuke'] = {
         --     "Torment of Scio",   -- Level 63
@@ -224,9 +231,11 @@ local _ClassConfig = {
             "Shallow Breath",     -- Level 1
         },
         ['MindDot'] = {
+            -- "Ancient: Mind Implosion", -- Level 71 Laz Custom, verify existence and source
             "Mind Shatter", -- Level 70
         },
         ['MagicNuke'] = {
+            "Hysteria",                 -- Level 71 Laz Custom
             "Ancient: Neurosis",        -- Level 70
             "Psychosis",                -- Level 68
             "Ancient: Chaos Madness",   -- Level 65
@@ -323,10 +332,14 @@ local _ClassConfig = {
             "Unified Alacrity", -- Level 71 Laz Custom
         },
         ['ColoredNuke'] = {
-            "Colored Chaos", -- Level 69
+            "Chromatic Chaos", -- Level 71 Laz Custom
+            "Colored Chaos",   -- Level 69
         },
         ['Chromaburst'] = {
             "Chromaburst", -- Level 70
+        },
+        ['UrgentRune'] = {
+            "Urgent Rune of Destiny", -- Level 71 Laz Custom
         },
     },
     ['AASets']        = {
@@ -377,6 +390,20 @@ local _ClassConfig = {
             targetId = function(self) return Casting.GetBuffableIDs() end,
             cond = function(self, combat_state)
                 return combat_state == "Downtime" and Casting.OkayToBuff()
+            end,
+        },
+        { -- Dual-state emergency group rune: tanks in combat, whole group in downtime
+            name = 'UrgentRune',
+            state = 1,
+            steps = 1,
+            load_cond = function() return Config:GetSetting('DoUrgentRune') end,
+            targetId = function(self)
+                return Globals.CurrentState == "Combat" and Casting.GetBuffableTankingIDs() or Casting.GetBuffableIDs()
+            end,
+            cond = function(self, combat_state)
+                local downtime = combat_state == "Downtime" and Casting.OkayToBuff()
+                local combat = combat_state == "Combat"
+                return (downtime or combat) and Core.CombatActionsCheck()
             end,
         },
         { --Pet Buffs if we have one, timer because we don't need to constantly check this
@@ -746,6 +773,16 @@ local _ClassConfig = {
                 end,
             },
         },
+        ['UrgentRune'] = {
+            {
+                name = "UrgentRune",
+                type = "Spell",
+                active_cond = function(self, spell) return mq.TLO.Me.FindBuff("id " .. tostring(spell.ID()))() ~= nil end,
+                cond = function(self, spell, target)
+                    return Casting.CastReady(spell) and Casting.GroupBuffCheck(spell, target)
+                end,
+            },
+        },
         ['CombatSupport'] = {
             {
                 name = "Fundament: Second Spire of Enchantment",
@@ -1089,6 +1126,7 @@ local _ClassConfig = {
                 { name = "MindDot",          cond = function(self) return Config:GetSetting('DoMindDot') end, },
                 { name = "StrangleDot",      cond = function(self) return Config:GetSetting('DoStrangleDot') end, },
                 { name = "HateBuff",         cond = function(self) return Config:GetSetting('DoHateBuff') end, },
+                { name = "UrgentRune",       cond = function(self) return Config:GetSetting('DoUrgentRune') end, },
                 { name = "SingleRune",       cond = function(self) return Config:GetSetting('RuneChoice') == 1 end, },
                 { name = "GroupRune",        cond = function(self) return Config:GetSetting('RuneChoice') == 2 end, },
                 { name = "GroupSpellShield", cond = function(self) return Config:GetSetting('DoGroupSpellShield') end, },
@@ -1167,7 +1205,7 @@ local _ClassConfig = {
             Tooltip = "Select which line of Rune spells you prefer to use.\nPlease note that after level 73, the group rune has a built-in hate reduction when struck.",
             Type = "Combo",
             ComboOptions = { 'Single Target', 'Group', 'Off', },
-            Default = 2,
+            Default = 3,
             Min = 1,
             Max = 3,
             RequiresLoadoutChange = true,
@@ -1199,6 +1237,16 @@ local _ClassConfig = {
             Category = "Group",
             Index = 105,
             Tooltip = "Enable casting your Melee Proc Buff (Night's Dark Terror Line) on melee.",
+            RequiresLoadoutChange = true,
+            Default = true,
+        },
+        ['DoUrgentRune']       = {
+            DisplayName = "Cast Urgent Rune",
+            Group = "Abilities",
+            Header = "Buffs",
+            Category = "Group",
+            Index = 107,
+            Tooltip = "Cast Urgent Rune of Destiny, an instant emergency group melee absorb (tank in combat, group in downtime).",
             RequiresLoadoutChange = true,
             Default = true,
         },

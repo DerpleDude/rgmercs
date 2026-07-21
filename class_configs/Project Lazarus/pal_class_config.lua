@@ -10,7 +10,7 @@ local Logger      = require("utils.logger")
 local Targeting   = require("utils.targeting")
 
 return {
-    _version              = "2.0 - Project Lazarus",
+    _version              = "2.1 - Project Lazarus",
     _author               = "Derple, Algar",
     ['ModeChecks']        = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
@@ -120,10 +120,11 @@ return {
         },
         ['DDProc'] = {
             --- Fury Proc Strike
-            "Pious Fury",   -- Level 68, 250pt, + 250pt if undead
-            "Holy Order",   -- Level 65, 180pt
-            "Pious Might",  -- Level 63, 150pt
-            "Divine Might", -- Level 45, 65pt
+            "Virtuous Fervor", -- Level 71 Laz Custom
+            "Pious Fury",      -- Level 68, 250pt, + 250pt if undead
+            "Holy Order",      -- Level 65, 180pt
+            "Pious Might",     -- Level 63, 150pt
+            "Divine Might",    -- Level 45, 65pt
         },
         ['UndeadProc'] = {
             --- Undead Proc Strike : does not stack with Fury Proc, will be used until Fury is available even if setting not enabled.
@@ -132,6 +133,7 @@ return {
             "Instrument of Nife", -- Level 26, 243pt
         },
         ['StunTimer5'] = {
+            "Force of the Sentinel",   -- Level 71 Laz Custom
             "Ancient: Force of Jeron", -- Level 70
             "Ancient: Force of Chaos", -- Level 65
             "Force of Akera",          -- Level 53
@@ -139,10 +141,11 @@ return {
             "Desist",                  -- Level 13, - Not Timer 5, use for TLP Low Level Stun
         },
         ['StunTimer4'] = {
-            "Force of Piety",  -- Level 66
-            "Force of Akilae", -- Level 62
-            "Force",           -- Level 52, - Not Timer 4, use for TLP Low Level Stun
-            "Cease",           -- Level 7, - Not Timer 4, use for TLP Low Level Stun
+            "Force of the Sacred", -- Level 71 Laz Custom
+            "Force of Piety",      -- Level 66
+            "Force of Akilae",     -- Level 62
+            "Force",               -- Level 52, - Not Timer 4, use for TLP Low Level Stun
+            "Cease",               -- Level 7, - Not Timer 4, use for TLP Low Level Stun
         },
         ['AegoBuff'] = {
             --- Pally Aegolism
@@ -163,13 +166,15 @@ return {
         --     "Resolution",        -- Level 60
         -- },
         ['Brells'] = {
-            "Brell's Vibrant Barricade",   -- Level 70 Laz Custom
-            "Brell's Brawny Bulwark",      -- Level 69
-            "Brell's Stalwart Shield",     -- Level 65
-            "Brell's Mountainous Barrier", -- Level 60
-            "Brell's Steadfast Aegis",     -- Level 49
+            "Brell's Unshakable Barricade", -- Level 71 Laz Custom
+            "Brell's Vibrant Barricade",    -- Level 70 Laz Custom
+            "Brell's Brawny Bulwark",       -- Level 69
+            "Brell's Stalwart Shield",      -- Level 65
+            "Brell's Mountainous Barrier",  -- Level 60
+            "Brell's Steadfast Aegis",      -- Level 49
         },
         ['WaveHeal'] = {
+            "Wave of the Stillmoon",  -- Level 71 Laz Custom
             "Wave of Piety",          -- Level 70
             "Wave of Trushar",        -- Level 65
             "Wave of Marr",           -- Level 65
@@ -178,6 +183,7 @@ return {
             "Wave of Life",           -- Level 44
         },
         ['WaveHeal2'] = {
+            "Wave of the Stillmoon",  -- Level 71 Laz Custom
             "Wave of Piety",          -- Level 70
             "Wave of Trushar",        -- Level 65
             "Wave of Marr",           -- Level 65
@@ -193,6 +199,7 @@ return {
         },
         ['ArmorSelfBuff'] = {
             --- Self Buff Armor Line Ac/Hp/Mana regen
+            "Armor of the Savior",   -- Level 71 Laz Custom
             "Armor of the Champion", -- Level 69
             "Armor of the Crusader", -- Level 64 Laz Custom
             "Armor of the Divine",   -- Level 60 Laz Custom
@@ -250,8 +257,9 @@ return {
         },
         ['HealReceivedAura'] = {
             -- Aura Buffs
-            "Blessed Aura", -- Level 70
-            "Holy Aura",    -- Level 55
+            "Benevolent Aura", -- Level 71 Laz Custom
+            "Blessed Aura",    -- Level 70
+            "Holy Aura",       -- Level 55
         },
         ['UndeadNuke'] = {
             -- Undead Nuke
@@ -283,6 +291,7 @@ return {
             "Reanimation",    -- Level 22
         },
         ['PBAEStun'] = {
+            "The Silent Decree",  -- Level 71 Laz Custom
             "The Silent Command", -- Level 65, does damage
         },
         ['AEStun'] = {            --Targeted AE
@@ -297,9 +306,11 @@ return {
             "Sanctification Discipline", -- Level 60
         },
         ['TwinHealNuke'] = {
-            "Justice of Marr", -- Level 71 Laz Custom
+            -- "Ancient: Justice of Firiona", -- Level 71 Laz Custom, verify existence and source
+            "Justice of Marr", -- Level 70
         },
         ['GuardDisc'] = {
+            "Aegis of Righteousness", -- Level 71 Laz Custom
             "Guard of Righteousness", -- Level 69
             "Guard of Humility",      -- Level 61
             "Guard of Piety",         -- Level 56

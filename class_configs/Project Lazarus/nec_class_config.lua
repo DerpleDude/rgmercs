@@ -7,7 +7,7 @@ local Globals      = require("utils.globals")
 local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
-    _version            = "2.0 - Project Lazarus",
+    _version            = "2.1 - Project Lazarus",
     _author             = "Algar, Derple",
     ['Modes']           = {
         'DPS',
@@ -75,18 +75,20 @@ local _ClassConfig = {
     },
     ['AbilitySets']     = {
         ['SelfHPBuff'] = {
-            "Shadow Guard",         -- Level 66
-            "Shield of Maelin",     -- Level 64
-            "Shield of the Arcane", -- Level 61
-            "Shield of the Magi",   -- Level 54
-            "Arch Shielding",       -- Level 41
-            "Greater Shielding",    -- Level 33
-            "Major Shielding",      -- Level 24
-            "Shielding",            -- Level 16
-            "Lesser Shielding",     -- Level 8
-            "Minor Shielding",      -- Level 1
+            "Sacrilege of the Wraith", -- Level 71 Laz Custom
+            "Shadow Guard",            -- Level 66
+            "Shield of Maelin",        -- Level 64
+            "Shield of the Arcane",    -- Level 61
+            "Shield of the Magi",      -- Level 54
+            "Arch Shielding",          -- Level 41
+            "Greater Shielding",       -- Level 33
+            "Major Shielding",         -- Level 24
+            "Shielding",               -- Level 16
+            "Lesser Shielding",        -- Level 8
+            "Minor Shielding",         -- Level 1
         },
         ['SelfRune'] = {
+            "Dull Agony",   -- Level 71 Laz Custom
             "Dull Pain",    -- Level 69
             "Force Shield", -- Level 63
             "Manaskin",     -- Level 52
@@ -105,6 +107,7 @@ local _ClassConfig = {
             "Dominate Undead", -- Level 18
         },
         ['LifeTap'] = {
+            -- "Ancient: Despair of Vishimtar", -- Level 71 Laz Custom, verify existence and source
             "Ancient: Touch of Orshilak", -- Level 70
             "Soulspike",                  -- Level 67
             "Touch of Mujaki",            -- Level 61
@@ -119,18 +122,20 @@ local _ClassConfig = {
             "Lifespike",                  -- Level 3
             "Lifetap",                    -- Level 1
         },
-        -- ['DurationTap'] = {
-        --     "Fang of Death",        -- Level 68
-        --     "Night's Beckon",       -- Level 65
-        --     "Saryrn's Kiss",        -- Level 62
-        --     "Vexing Replenishment", -- Level 57
-        --     "Bond of Death",        -- Level 49
-        --     "Auspice",              -- Level 45
-        --     "Vampiric Curse",       -- Level 29
-        --     "Shadow Compact",       -- Level 17
-        --     "Leech",                -- Level 9
-        -- },
+        ['DurationTap'] = {
+            "Yearning of Death", -- Level 71 Laz Custom
+            -- "Fang of Death",        -- Level 68
+            -- "Night's Beckon",       -- Level 65
+            -- "Saryrn's Kiss",        -- Level 62
+            -- "Vexing Replenishment", -- Level 57
+            -- "Bond of Death",        -- Level 49
+            -- "Auspice",              -- Level 45
+            -- "Vampiric Curse",       -- Level 29
+            -- "Shadow Compact",       -- Level 17
+            -- "Leech",                -- Level 9
+        },
         ['PoisonNuke'] = {
+            "Ritual of Blood",      -- Level 71 Laz Custom
             "Call for Blood",       -- Level 68
             "Acikin",               -- Level 66
             "Neurotoxin",           -- Level 61
@@ -141,6 +146,7 @@ local _ClassConfig = {
             "Shock of Poison",      -- Level 21
         },
         ['FireDot'] = {
+            "Molten Pyre",             -- Level 71 Laz Custom
             "Dread Pyre",              -- Level 70
             "Pyre of Mori",            -- Level 69
             "Night Fire",              -- Level 65
@@ -168,6 +174,7 @@ local _ClassConfig = {
             "Dark Nightmare",         -- Level 67
         },
         ['PlagueDot'] = {
+            "Malignant Plague", -- Level 71 Laz Custom
             "Chaos Plague",     -- Level 66
             "Dark Plague",      -- Level 61
             "Cessation of Cor", -- Level 56
@@ -182,7 +189,8 @@ local _ClassConfig = {
         --     "Disease Cloud",    -- Level 1
         -- },
         ['PoisonDotDD'] = {
-            "Venom of Anguish", -- Level 69
+            "Venom of the Accursed Nest", -- Level 71 Laz Custom
+            "Venom of Anguish",           -- Level 69
         },
         ['PoisonDot'] = {
             "Chaos Venom",        -- Level 70
@@ -278,14 +286,16 @@ local _ClassConfig = {
         --     "Guard of Calliav",      -- Level 58
         --     "Ward of Calliav",       -- Level 49
         -- },
-        ['PetHealSpell'] = {  -- Also has cure effect for pet
-            "Dark Salve",     -- Level 69
-            "Touch of Death", -- Level 64
-            "Renew Bones",    -- Level 26
-            "Mend Bones",     -- Level 7
+        ['PetHealSpell'] = {          -- Also has cure effect for pet
+            "Goner's Urgent Renewal", -- Level 71 Laz Custom
+            "Dark Salve",             -- Level 69
+            "Touch of Death",         -- Level 64
+            "Renew Bones",            -- Level 26
+            "Mend Bones",             -- Level 7
         },
         ['Pustules'] = {
-            "Necrotic Pustules", -- Level 65
+            "Pestilent Pustules", -- Level 71 Laz Custom
+            "Necrotic Pustules",  -- Level 65
         },
         -- ['GroupLeech'] = {
         --     "Night Stalker",            -- Level 65
@@ -571,12 +581,18 @@ local _ClassConfig = {
                 name = "PoisonDotDD",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    if Globals.AutoTargetIsNamed then return false end
                     return Casting.DotSpellCheck(spell, target)
                 end,
             },
             {
                 name = "FireDot",
+                type = "Spell",
+                cond = function(self, spell, target)
+                    return Casting.DotSpellCheck(spell, target)
+                end,
+            },
+            {
+                name = "PlagueDot",
                 type = "Spell",
                 cond = function(self, spell, target)
                     return Casting.DotSpellCheck(spell, target)
@@ -597,17 +613,9 @@ local _ClassConfig = {
                 end,
             },
             {
-                name = "PlagueDot",
+                name = "DurationTap",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    return Casting.DotSpellCheck(spell, target)
-                end,
-            },
-            {
-                name = "PoisonDotDD",
-                type = "Spell",
-                cond = function(self, spell, target)
-                    if not Globals.AutoTargetIsNamed then return false end
                     return Casting.DotSpellCheck(spell, target)
                 end,
             },
@@ -930,16 +938,17 @@ local _ClassConfig = {
                 { name = "PoisonNuke", },
                 { name = "PoisonDotDD", },
                 { name = "FireDot", },
-                { name = "FireDot2",     cond = function(self) return mq.TLO.Me.Book("Dread Pyre")() end, },
-                { name = "CurseDot", },
-                { name = "CurseDot2",    cond = function(self) return mq.TLO.Me.Book("Ancient: Curse of Mori")() end, },
-                { name = "PoisonDot", },
                 { name = "PlagueDot", },
+                { name = "CurseDot", },
+                { name = "PoisonDot", },
+                { name = "DurationTap", },
                 { name = "LichSpell",    cond = function(self) return Config:GetSetting('DoLich') end, },
                 { name = "Pustules",     cond = function(self) return Config:GetSetting('DoPustules') end, },
                 { name = "OrbNuke",      cond = function(self) return Config:GetSetting('DoOrbNuke') end, },
                 { name = "LifeTap",      cond = function(self) return Config:GetSetting('DoLifetap') end, },
                 { name = "UndeadNuke",   cond = function(self) return Config:GetSetting('DoUndeadNuke') end, },
+                { name = "FireDot2",     cond = function(self) return mq.TLO.Me.Book("Dread Pyre")() end, },
+                { name = "CurseDot2",    cond = function(self) return mq.TLO.Me.Book("Ancient: Curse of Mori")() end, },
             },
         },
     },

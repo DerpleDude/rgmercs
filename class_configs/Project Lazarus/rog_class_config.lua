@@ -9,7 +9,7 @@ local Strings   = require("utils.strings")
 local Targeting = require("utils.targeting")
 
 return {
-    _version          = "2.1 - Project Lazarus",
+    _version          = "2.2 - Project Lazarus",
     _author           = "Derple, Algar, mackal",
     ['Modes']         = {
         'DPS',
@@ -56,6 +56,7 @@ return {
     },
     ['AbilitySets']   = {
         ['ThiefBuff'] = {
+            "Outlaw's Glare", -- Level 71 Laz Custom
             "Brigand's Gaze", -- Level 70 Laz Custom
             "Thief's Eyes",   -- Level 65
         },
@@ -63,13 +64,16 @@ return {
             "Kinesthetics Discipline", -- Level 57
         },
         ['Duelist'] = {
-            "Duelist Discipline", -- Level 59
+            "Assailant Discipline", -- Level 71 Laz Custom
+            "Duelist Discipline",   -- Level 59
         },
         ['ChanceDisc'] = {
-            "Twisted Chance Discipline", -- Level 65
-            "Deadeye Discipline",        -- Level 54
+            "Twisted Fortune Discipline", -- Level 71 Laz Custom
+            "Twisted Chance Discipline",  -- Level 65
+            "Deadeye Discipline",         -- Level 54
         },
         ['Frenzied'] = {
+            "Frenetic Stabbing Discipline", -- Level 71 Laz Custom
             "Frenzied Stabbing Discipline", -- Level 70
         },
         ['SneakAttack'] = {
@@ -82,13 +86,16 @@ return {
             "Sneak Attack",          -- Level 20
         },
         ['FellStrike'] = {
+            -- "Ancient: Incursion", -- Level 71 Laz Custom, verify existence and source
             "Assault", -- Level 70, on Laz
         },
         ['Pinpoint'] = {
+            "Pinpoint Weakness",      -- Level 71 Laz Custom
             "Pinpoint Vulnerability", -- Level 69, on Laz
         },
         ['EndRegen'] = {
-            "Third Wind Discipline", -- Level 70 Laz Custom
+            "Fourth Wind Discipline", -- Level 71 Laz Custom
+            "Third Wind Discipline",  -- Level 70 Laz Custom
             -- "Second Wind",        -- Level 65
         },
         ['CADisc'] = {
@@ -101,7 +108,14 @@ return {
             "Deadly Precision Discipline", -- Level 63
         },
         ['Nimble'] = {
+            "Lithe Discipline",  -- Level 71 Laz Custom
             "Nimble Discipline", -- Level 55
+        },
+        ['ReprisalDisc'] = {     -- Manual use only for now, reprisal does not fire unless the rune is broken
+            "Arcane Reprisal",   -- Level 71 Laz Custom
+        },
+        ['DaggerThrow'] = {
+            "Vigorous Dagger Throw", -- Level 71 Laz Custom
         },
     },
     ['RotationOrder'] = {
@@ -284,6 +298,10 @@ return {
                 type = "Disc",
             },
             {
+                name = "DaggerThrow",
+                type = "Disc",
+            },
+            {
                 name = "Twisted Shank",
                 type = "AA",
             },
@@ -315,7 +333,8 @@ return {
                 type = "AA",
                 load_cond = function(self) return Config:GetSetting('DoVetAA') end,
                 cond = function(self, aaName)
-                    return mq.TLO.Me.PctHPs() < 35 and not mq.TLO.Me.Buff("Nimble Effect")()
+                    local nimble = Core.GetResolvedActionMapItem('Nimble')
+                    return mq.TLO.Me.PctHPs() < 35 and not (nimble and Casting.IHaveBuff(nimble.Trigger(1)))
                 end,
             },
             {

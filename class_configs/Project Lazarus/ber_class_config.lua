@@ -2,12 +2,13 @@ local mq        = require('mq')
 local Casting   = require("utils.casting")
 local Combat    = require("utils.combat")
 local Config    = require('utils.config')
+local Core      = require("utils.core")
 local Globals   = require("utils.globals")
 local Logger    = require("utils.logger")
 local Targeting = require("utils.targeting")
 
 return {
-    _version          = "2.0 - Project Lazarus",
+    _version          = "2.1 - Project Lazarus",
     _author           = "Algar, Derple",
     ['Modes']         = {
         'DPS',
@@ -45,7 +46,8 @@ return {
     },
     ['AbilitySets']   = {
         ['EndRegen'] = {
-            "Third Wind Discipline", -- Level 70 Laz Custom
+            "Fourth Wind Discipline", -- Level 71 Laz Custom
+            "Third Wind Discipline",  -- Level 70 Laz Custom
             -- "Second Wind",        -- Level 65
         },
         ['BerAura'] = {
@@ -56,20 +58,24 @@ return {
             "Overpowering Frenzy", -- Level 65
         },
         ['VolleyDisc'] = {
+            -- "Ancient: Annihilator's Volley", -- Level 71 Laz Custom, verify existence and source
             "Destroyer's Volley", -- Level 69
             "Rage Volley",        -- Level 61
         },
         ['FlurryDisc'] = {
-            "Vengeful Flurry Discipline", -- Level 70
+            "Rancorous Flurry Discipline", -- Level 71 Laz Custom
+            "Vengeful Flurry Discipline",  -- Level 70
         },
         ['RageDisc'] = {
-            "Blind Rage Discipline",    -- Level 58
-            "Cleaving Rage Discipline", -- Level 54
+            "Cleaving Madness Discipline", -- Level 71 Laz Custom
+            -- "Blind Rage Discipline",       -- Level 58
+            "Cleaving Rage Discipline",    -- Level 54
         },
         ['AngerDisc'] = {
             "Cleaving Anger Discipline", -- Level 65
         },
         ['CryDisc'] = {
+            "Cry of Catastrophe",        -- Level 71 Laz Custom
             "Battle Cry of the Mastruq", -- Level 65
             "Ancient: Cry of Chaos",     -- Level 65
             "War Cry of Dravel",         -- Level 64
@@ -78,10 +84,10 @@ return {
             "Battle Cry",                -- Level 30
         },
         ['GroupCrit'] = {
-            "Cry Havoc", -- Level 65
+            "Cry Havoc",            -- Level 65
         },
-        ['Scream'] = { -- Stun, Throwing/Archery Dmg taken debuff
-            "Bloodcurdling Scream", -- Level 70 Laz Custom
+        ['Scream'] = {              -- Stun, Throwing/Archery Dmg taken debuff
+            "Bloodcurdling Scream", -- Level 71 Laz Custom
             "Bewildering Scream",   -- Level 70 Laz Custom
             "Unsettling Scream",    -- Level 65
         },
@@ -97,11 +103,19 @@ return {
             "Leg Cut",          -- Level 32
             "Leg Strike",       -- Level 8
         },
-        ['DmgModProc'] = {
-            "Unpredictable Rage Discipline", -- Level 66
+        ['Timer6Disc'] = {
+            "Wounding Rage",                 -- Level 71 Laz Custom, offensive attack-proc buff
+            "Unpredictable Rage Discipline", -- Level 66, defensive proc when struck
         },
         ['BattleFocus'] = {
+            -- "Combat Focus Discipline", -- Level 71 Laz Custom, verify existence and source
             "Battle Focus Discipline", -- Level 59
+        },
+        ['ReprisalDisc'] = {           -- Manual use only for now, reprisal does not fire unless the rune is broken
+            "Arcane Reprisal",         -- Level 71 Laz Custom
+        },
+        ['AxeThrow'] = {
+            "Vigorous Axe Throw", -- Level 71 Laz Custom
         },
     },
     ['AASets']        = {
@@ -266,7 +280,7 @@ return {
                 type = "AA",
             },
             {
-                name = "DmgModProc",
+                name = "Timer6Disc",
                 type = "Disc",
             },
         },
@@ -348,8 +362,17 @@ return {
                 end,
             },
             {
+                name = "AxeThrow",
+                type = "Disc",
+                load_cond = function(self) return Config:GetSetting('UseAxeThrow') and Core.GetResolvedActionMapItem('AxeThrow') end,
+                cond = function(self, discSpell, target)
+                    return Casting.DetSpellCheck(discSpell, target)
+                end,
+            },
+            {
                 name = "FrenzyDisc",
                 type = "Disc",
+                load_cond = function(self) return not (Config:GetSetting('UseAxeThrow') and Core.GetResolvedActionMapItem('AxeThrow')) end,
                 cond = function(self, discSpell, target)
                     return Casting.DetSpellCheck(discSpell, target)
                 end,
@@ -427,6 +450,16 @@ return {
             Index = 101,
             Tooltip = "Use the Battle Leap AA on cooldown.",
             Default = true,
+        },
+        ['UseAxeThrow']    = {
+            DisplayName = "Use Axe Throw",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "Direct",
+            Index = 102,
+            Tooltip = "Use Vigorous Axe Throw as your timer-10 disc instead of Frenzy (falls back to Frenzy if unavailable).",
+            Default = true,
+            RequiresLoadoutChange = true,
         },
         ['DoSnare']        = {
             DisplayName = "Do Snare",

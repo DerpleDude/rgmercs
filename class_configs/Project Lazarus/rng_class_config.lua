@@ -9,7 +9,7 @@ local Movement  = require("utils.movement")
 local Targeting = require("utils.targeting")
 
 return {
-    _version              = "2.0 - Project Lazarus",
+    _version              = "2.1 - Project Lazarus",
     _author               = "Algar",
     ['ModeChecks']        = {
         IsHealing = function() return Config:GetSetting('DoHeals') end,
@@ -50,6 +50,7 @@ return {
     },
     ['AbilitySets']       = {
         ['PredatorBuff'] = {          -- Groupv2 Atk Buff
+            "Snarl of the Predator",  -- Level 71 Laz Custom
             "Howl of the Predator",   -- Level 69
             "Spirit of the Predator", -- Level 64
             "Call of the Predator",   -- Level 60
@@ -70,17 +71,20 @@ return {
             "Skin like Wood",         -- Level 7
         },
         ['EyeBuff'] = {               -- Self Archery Buff
+            "Eyes of the Drake",      -- Level 71 Laz Custom
             "Eyes of the Hawk",       -- Level 70 Laz Custom
             "Eyes of the Owl",        -- Level 65
             "Eyes of the Eagle",      -- Level 59 Laz Custom
         },
         ['FireNukeT1'] = {            -- ST Fire DD, Timer 1, 30s Recast
+            "Embers of the Delve",    -- Level 71 Laz Custom
             "Hearth Embers",          -- Level 69
             "Sylvan Burn",            -- Level 65
             "Call of Flame",          -- Level 49
             "Flaming Arrow",          -- Level 29
         },
         ['ColdNukeT2'] = {            -- ST Cold DD, Timer 2, 30s Recast
+            "Frost of the Ascent",    -- Level 71 Laz Custom
             "Frost Wind",             -- Level 68
             "Icewind",                -- Level 52
         },
@@ -95,6 +99,7 @@ return {
             "Burning Arrow",          -- Level 39
         },
         ['DDProc'] = {
+            "Call of Storms",    -- Level 71 Laz Custom
             "Call of Lightning", -- Level 70, Double damage against humanoids on Laz
             "Cry of Thunder",    -- Level 65
             "Call of Ice",       -- Level 58
@@ -106,6 +111,7 @@ return {
         --     "Nature's Rebuke", -- Level 64
         -- },
         ['SelfBuff'] = {
+            "Ward of the Stalker",    -- Level 71 Laz Custom
             "Ward of the Hunter",     -- Level 70
             "Protection of the Wild", -- Level 65
             "Warder's Protection",    -- Level 60
@@ -116,6 +122,7 @@ return {
             "Hail of Arrows",         -- Level 65
         },
         ['FocusedHail'] = {           -- ST multihit archery attack
+            -- "Ancient: Focused Barrage of Arrows", -- Level 71 Laz Custom, verify existence and source
             "Focused Hail of Arrows", -- Level 69 Laz Custom
         },
         ['Dispel'] = {
@@ -125,8 +132,9 @@ return {
             "Cancel Magic",     -- Level 30
         },
         ['Heartshot'] = {
-            "Heartslit", -- Level 68 Laz Custom
-            "Heartshot", -- Level 65
+            "Heartshatter", -- Level 71 Laz Custom
+            "Heartslit",    -- Level 68 Laz Custom
+            "Heartshot",    -- Level 65
         },
         ['RegenBuff'] = {
             "Hunter's Vigor",        -- Level 68
@@ -143,20 +151,22 @@ return {
             "Thistlecoat",           -- Level 13
         },
         ['GuardBuff'] = {            -- ST AC DS Buff
+            "Guard of Thundercrest", -- Level 71 Laz Custom
             "Guard of the Earth",    -- Level 67
             "Call of the Rathe",     -- Level 62
             "Call of Earth",         -- Level 50
             "Riftwind's Protection", -- Level 25
         },
         ['HealSpell'] = {
-            "Sylvan Water",    -- Level 67
-            "Sylvan Light",    -- Level 65
-            "Chloroblast",     -- Level 62
-            "Greater Healing", -- Level 57
-            "Healing",         -- Level 38
-            "Light Healing",   -- Level 21
-            "Minor Healing",   -- Level 8
-            "Salve",           -- Level 1
+            "Swift Salve of the Stillmoon", -- Level 71 Laz Custom
+            "Sylvan Water",                 -- Level 67
+            "Sylvan Light",                 -- Level 65
+            "Chloroblast",                  -- Level 62
+            "Greater Healing",              -- Level 57
+            "Healing",                      -- Level 38
+            "Light Healing",                -- Level 21
+            "Minor Healing",                -- Level 8
+            "Salve",                        -- Level 1
         },
         ['SwarmDot'] = {
             "Locust Swarm",      -- Level 67
@@ -167,6 +177,7 @@ return {
             "Stinging Swarm",    -- Level 25
         },
         ['KickDisc'] = {         -- 2-hit kick attack
+            -- "Jolting Thunderkicks", -- Level 71 Laz Custom, verify existence and source
             "Jolting Snapkicks", -- Level 66
         },
         ['Bullseye'] = {
@@ -329,6 +340,10 @@ return {
         },
     },
     ['Helpers']           = {
+        HaveSelfWard = function(self)
+            local ward = Core.GetResolvedActionMapItem('SelfBuff')
+            return ward and Casting.IHaveBuff(ward) or false
+        end,
         rangedNav = function(reason)
             if Config:GetSetting('DoMelee') then return false end
             if (Globals.AutoTargetID or 0) == 0 then return false end
@@ -624,7 +639,7 @@ return {
                 name = "PredatorBuff",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    return Casting.GroupBuffCheck(spell, target) and not (Targeting.TargetIsMyself(target) and mq.TLO.Me.Buff("Ward of the Hunter")())
+                    return Casting.GroupBuffCheck(spell, target) and not (Targeting.TargetIsMyself(target) and self.Helpers.HaveSelfWard(self))
                 end,
             },
             {
@@ -632,14 +647,14 @@ return {
                 type = "Spell",
                 cond = function(self, spell, target)
                     if not Config:GetSetting('DoStrengthBuff') then return false end
-                    return Casting.GroupBuffCheck(spell, target) and not (Targeting.TargetIsMyself(target) and mq.TLO.Me.Buff("Ward of the Hunter")())
+                    return Casting.GroupBuffCheck(spell, target) and not (Targeting.TargetIsMyself(target) and self.Helpers.HaveSelfWard(self))
                 end,
             },
             {
                 name = "GuardBuff",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    return Casting.GroupBuffCheck(spell, target) and not (Targeting.TargetIsMyself(target) and mq.TLO.Me.Buff("Ward of the Hunter")())
+                    return Casting.GroupBuffCheck(spell, target) and not (Targeting.TargetIsMyself(target) and self.Helpers.HaveSelfWard(self))
                 end,
             },
             {

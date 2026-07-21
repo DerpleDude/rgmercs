@@ -39,7 +39,7 @@ local Tooltips     = {
 }
 
 local _ClassConfig = {
-    _version              = "3.2 - Project Lazarus",
+    _version              = "3.3 - Project Lazarus",
     _author               = "Algar, Derple, Grimmier, Tiddliestix, SonicZentropy",
     ['Modes']             = { --other modes to reorder spell priorities may be added back in at a later date.
         'General',
@@ -98,6 +98,7 @@ local _ClassConfig = {
             "Tarew's Aquatic Ayre", -- Level 16
         },
         ['AriaSong'] = {
+            -- "Ancient: Draconic Might", -- Level 71 Laz Custom, verify existence and source
             "Ancient: Call of Power",    -- Level 70
             "Eriki's Psalm of Power",    -- Level 69
             "Yelhun's Mystic Call",      -- Level 68
@@ -116,6 +117,7 @@ local _ClassConfig = {
             "Aura of Insight",  -- Level 55
         },
         ['GroupRegenSong'] = {
+            "Cantata of Nife",               -- Level 71 Laz Custom
             "Cantata of Life",               -- Level 67
             "Wind of Marr",                  -- Level 62
             "Cantata of Replenishment",      -- Level 55
@@ -125,6 +127,7 @@ local _ClassConfig = {
             "Hymn of Restoration",           -- Level 6, hp only
         },
         ['AreaRegenSong'] = {
+            "Chorus of Nife",          -- Level 71 Laz Custom
             "Chorus of Life",          -- Level 69
             "Chorus of Marr",          -- Level 64
             "Ancient: Lcea's Lament",  -- Level 60
@@ -222,21 +225,35 @@ local _ClassConfig = {
             "Kelin's Lugubrious Lament", -- Level 8, (Max Mob Level of 60)
         },
         ['ThousandBlades'] = {
+            "Endless Blades",  -- Level 71 Laz Custom
             "Thousand Blades", -- Level 69
         },
         ['StormBlade'] = {
-            "Storm Blade Flourish", -- Level 69 Laz Custom
+            "Squall Blade Flourish", -- Level 71 Laz Custom
+            "Storm Blade Flourish",  -- Level 69 Laz Custom
         },
         ['SpellAbsorbSong'] = {
-            "Echoes of the Past", -- Level 70 Laz Custom
+            "Echoes of the Ancient", -- Level 71 Laz Custom
+            "Echoes of the Past",    -- Level 70 Laz Custom
         },
         ['ResistDebuff'] = {
+            "Symphony of Sound",  -- Level 71 Laz Custom
             "Harmony of Sound",   -- Level 65
             "Occlusion of Sound", -- Level 55
         },
         ['BellowSong'] = {
+            -- "Bellow of Shadows", -- Level 71 Laz Custom, verify existence and source
             "Bellow of Chaos", -- Level 66
         },
+        ['ReprisalDisc'] = {   -- Manual use only for now, reprisal does not fire unless the rune is broken
+            "Arcane Reprisal", -- Level 71 Laz Custom
+        },
+        ['SpellMitSong'] = {
+            "Niv's Symphonic", -- Level 71 Laz Custom
+        },
+        -- ['Doppelganger'] = {
+        --     "One Bard Band", -- Level 71 Laz Custom, verify existence and source
+        -- },
     },
     ['Charm']             = {
         ['Abilities'] = {
@@ -635,6 +652,14 @@ local _ClassConfig = {
                 end,
             },
             {
+                name = "SpellMitSong",
+                type = "Song",
+                load_cond = function(self) return Config:GetSetting('UseSpellMit') > 1 end,
+                cond = function(self, songSpell)
+                    return self.Helpers.CheckSongStateUse(self, "UseSpellMit") and self.Helpers.RefreshBuffSong(self, songSpell)
+                end,
+            },
+            {
                 name = "RunBuff",
                 type = "Song",
                 load_cond = function(self) return Config:GetSetting('UseRunBuff') > 1 and not Casting.CanUseAA("Selo's Sonata") end,
@@ -703,7 +728,7 @@ local _ClassConfig = {
                 cond = function(self, songSpell, target)
                     if target.ID() == mq.TLO.Me.ID() then return false end
                     if not Casting.BurnCheck() and mq.TLO.Me.PctMana() <= Config:GetSetting('ReserveManaPct') then return false end
-                    return Config:GetSetting('UseStormBlade') == 3 or self.Helpers.RefreshBuffSong(self, mq.TLO.Spell("Storm Blade"))
+                    return Config:GetSetting('UseStormBlade') == 3 or self.Helpers.RefreshBuffSong(self, mq.TLO.Spell(songSpell.Name():match("(.+) Flourish")))
                 end,
             },
             {
@@ -849,6 +874,7 @@ local _ClassConfig = {
                 -- major group buffs
                 { name = "AriaSong",        cond = function(self) return Config:GetSetting('UseAria') > 1 end, },
                 { name = "WarMarchSong",    cond = function(self) return Config:GetSetting('UseMarch') > 1 end, },
+                { name = "SpellMitSong",    cond = function(self) return Config:GetSetting('UseSpellMit') > 1 end, },
                 { name = "StormBlade",      cond = function(self) return Config:GetSetting('UseStormBlade') > 1 end, },
                 { name = "ArcaneSong",      cond = function(self) return Config:GetSetting('UseArcane') > 1 end, },
                 { name = "ResistSong",      cond = function(self) return Config:GetSetting('UseResist') > 1 end, },
@@ -1267,12 +1293,12 @@ local _ClassConfig = {
             RequiresLoadoutChange = true,
         },
         ['UseStormBlade']   = {
-            DisplayName = "Use Storm Blade Flourish",
+            DisplayName = "Use Storm Blade Line",
             Group = "Abilities",
             Header = "Buffs",
             Category = "Group",
             Index = 107,
-            Tooltip = "Use your Storm Blade Flourish (on hit, triggers a proc buff).\n We will only use this song when over the Reserve Mana Pct, unless we are burning.",
+            Tooltip = "Use your Storm Blade line (on hit, triggers a proc buff).\n We will only use this song when over the Reserve Mana Pct, unless we are burning.",
             Type = "Combo",
             ComboOptions = { 'Never', 'To Maintain Buff', 'Whenever Possible', },
             Default = 2,
@@ -1287,6 +1313,20 @@ local _ClassConfig = {
             Category = "Group",
             Index = 106,
             Tooltip = Tooltips.ArcaneSong,
+            Type = "Combo",
+            ComboOptions = { 'Never', 'In-Combat Only', 'Always', 'Out-of-Combat Only', },
+            Default = 1,
+            Min = 1,
+            Max = 4,
+            RequiresLoadoutChange = true,
+        },
+        ['UseSpellMit']     = {
+            DisplayName = "Use Spell Mit",
+            Group = "Abilities",
+            Header = "Buffs",
+            Category = "Group",
+            Index = 108,
+            Tooltip = "Sing your group spell-damage mitigation song.",
             Type = "Combo",
             ComboOptions = { 'Never', 'In-Combat Only', 'Always', 'Out-of-Combat Only', },
             Default = 1,

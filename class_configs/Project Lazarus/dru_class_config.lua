@@ -7,7 +7,7 @@ local Globals      = require("utils.globals")
 local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
-    _version              = "2.0 - Lazarus",
+    _version              = "2.1 - Lazarus",
     _author               = "Algar",
     ['ModeChecks']        = {
         CanCharm = function() return true end,
@@ -113,6 +113,7 @@ local _ClassConfig = {
         },
         ['HealSpell'] = {
             -- Long Heal >= 1 -- skipped 10s cast heals.
+            -- "Ancient: Chlorobalm", -- Level 71 Laz Custom, verify existence and source
             "Ancient: Chlorobon",          -- Level 70
             "Chlorotrope",                 -- Level 68
             "Sylvan Infusion",             -- Level 65
@@ -137,6 +138,7 @@ local _ClassConfig = {
             "Word of Health",              -- Level 40
         },
         ['ATKDebuff'] = {                  -- ATK Debuff
+            "Sun's Blistering Corona",     -- Level 71 Laz Custom
             "Sun's Corona",                -- Level 67
             "Ro's Illumination",           -- Level 62
         },
@@ -149,6 +151,7 @@ local _ClassConfig = {
             "Ro's Fiery Sundering",        -- Level 37
         },
         ['ColdDebuff'] = {                 -- Cold/AC Debuff
+            "Breath of the Ascent",        -- Level 71 Laz Custom
             "Glacier Breath",              -- Level 67
             "E`ci's Frosty Breath",        -- Level 63
         },
@@ -212,6 +215,7 @@ local _ClassConfig = {
             "Burst of Flame",          -- Level 1
         },
         ['IceNuke'] = {
+            "Ascent Frost",           -- Level 71 Laz Custom
             "Ancient: Glacier Frost", -- Level 70
             "Glitterfrost",           -- Level 70
             "Ancient: Chaos Frost",   -- Level 65
@@ -244,6 +248,7 @@ local _ClassConfig = {
             "Mask of the Stalker", -- Level 60
         },
         ['HPTypeOne'] = {
+            "Blessing of Spiritoak",    -- Level 71 Laz Custom
             "Blessing of Steeloak",     -- Level 70 Group
             -- "Steeloak Skin",            -- Level 68 Single
             "Blessing of the Nine",     -- Level 65 Group
@@ -262,6 +267,7 @@ local _ClassConfig = {
             "Skin like Wood",           -- Level 1 Single
         },
         ['GroupRegenBuff'] = {
+            "Blessing of Moss",          -- Level 71 Laz Custom
             "Blessing of Oak",           -- Level 69
             "Blessing of Replenishment", -- Level 63
             "Regrowth of the Grove",     -- Level 58
@@ -297,10 +303,12 @@ local _ClassConfig = {
             "Spirit of Wolf",   -- Level 10
         },
         ['PetSpell'] = {
+            "Nature Seeker's Behest",   -- Level 71 Laz Custom
             "Nature Wanderer's Behest", -- Level 70 Laz Custom
             "Nature Walker's Behest",   -- Level 55
         },
         ['Dawnstrike'] = {              -- I think better to just spam solstice strike
+            "Dawnflame",                -- Level 71 Laz Custom
             "Dawnstrike",               -- Level 70
         },
         -- ['BurstDS'] = { -- Laz specific, short duration 210pt damge shield
@@ -335,6 +343,9 @@ local _ClassConfig = {
         ['TwinHealNuke'] = {
             "Sunburst Blessing", -- Level 70, Laz Custom, description wrong, target mob
         },
+        ['HealBoostNuke'] = {
+            "Sunburst Devotion", -- Level 71 Laz Custom
+        },
         ['PBAEMagic'] = {
             "Earth Shiver", -- Level 66
             "Catastrophe",  -- Level 61
@@ -361,7 +372,8 @@ local _ClassConfig = {
             "Lesser Succor", -- Level 18
         },
         ['QuickGroupHeal'] = {
-            "Moon Shadow", -- Level 70 Laz Custom
+            "Lunar Shadow", -- Level 71 Laz Custom
+            "Moon Shadow",  -- Level 70 Laz Custom
         },
     },
     ['AASets']            = {
@@ -656,6 +668,15 @@ local _ClassConfig = {
                 cond = function(self, spell, target)
                     if Config:GetSetting('StunNukeUse') == 2 and not mq.TLO.Me.Song("Wrath of the Wilderness")() then return false end
                     return Casting.HaveManaToNuke() and Targeting.TargetNotStunned() and not Globals.AutoTargetIsNamed
+                end,
+            },
+            {
+                name = "HealBoostNuke",
+                type = "Spell",
+                load_cond = function() return Config:GetSetting('HealBoostNukeUse') > 1 end,
+                cond = function(self, spell, target)
+                    if Config:GetSetting('HealBoostNukeUse') == 2 and not mq.TLO.Me.Song("Wrath of the Wilderness")() then return false end
+                    return Casting.OkayToNuke()
                 end,
             },
             { -- in-game description is incorrect, mob must be targeted.
@@ -1041,6 +1062,7 @@ local _ClassConfig = {
                 { name = "CureCurse",      cond = function(self) return Config:GetSetting('KeepCurseMemmed') end, },
                 { name = "EvacSpell",      cond = function(self) return Config:GetSetting('KeepEvacMemmed') and not Casting.CanUseAA("Exodus") end, },
                 { name = "StunNuke",       cond = function(self) return Config:GetSetting('StunNukeUse') > 1 end, },
+                { name = "HealBoostNuke",  cond = function(self) return Config:GetSetting('HealBoostNukeUse') > 1 end, },
                 { name = "TwinHealNuke",   cond = function(self) return Config:GetSetting('TwinHealNukeUse') > 1 end, },
                 { name = "Dawnstrike",     cond = function(self) return Config:GetSetting('DawnstrikeUse') > 1 end, },
                 { name = "FireNuke",       cond = function(self) return Config:GetSetting('FireNukeUse') > 1 end, },
@@ -1288,6 +1310,20 @@ local _ClassConfig = {
             Category = "Direct",
             Index = 105,
             Tooltip = "Use your Dawnstrike spell (quick nuke with a chance to proc a self- beneficial or detrimental spell damage buff.).",
+            RequiresLoadoutChange = true,
+            Type = "Combo",
+            ComboOptions = { 'Never', 'Epic Procs Only', 'All Combat', },
+            Default = 3,
+            Min = 1,
+            Max = 3,
+        },
+        ['HealBoostNukeUse']  = {
+            DisplayName = "Heal Boost Nuke",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "Direct",
+            Index = 106,
+            Tooltip = "Use your Sunburst Devotion nuke (fire damage that also buffs your healing for a short time).",
             RequiresLoadoutChange = true,
             Type = "Combo",
             ComboOptions = { 'Never', 'Epic Procs Only', 'All Combat', },

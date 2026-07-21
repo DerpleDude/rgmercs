@@ -8,7 +8,7 @@ local Logger       = require("utils.logger")
 local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
-    _version          = "2.1 - Project Lazarus",
+    _version          = "2.2 - Project Lazarus",
     _author           = "Algar, Derple",
     ['Modes']         = {
         'DPS',
@@ -55,19 +55,23 @@ local _ClassConfig = {
     },
     ['AbilitySets']   = {
         ['EndRegen'] = {
-            "Third Wind Discipline", -- Level 70 Laz Custom
-            -- "Second Wind",        -- Level 65
+            "Fourth Wind Discipline", -- Level 71 Laz Custom
+            "Third Wind Discipline",  -- Level 70 Laz Custom
+            -- "Second Wind",         -- Level 65
         },
         ['MonkAura'] = {
-            "Master's Aura",   -- Level 65
-            "Disciple's Aura", -- Level 55
+            "Grandmaster's Aura", -- Level 71 Laz Custom
+            "Master's Aura",      -- Level 65
+            "Disciple's Aura",    -- Level 55
         },
         ['Fang'] = {
+            -- "Ancient: Arachnid Fang", -- Level 71 Laz Custom, verify existence and source
             "Dragon Fang",          -- Level 69
             "Clawstriker's Flurry", -- Level 65
         },
         ['FistsOfWu'] = {
-            "Fists of Wu", -- Level 65
+            "Fists of Thundercrest", -- Level 71 Laz Custom
+            "Fists of Wu",           -- Level 65
         },
         ['MeleeMit'] = {
             "Impenetrable Discipline", -- Level 65
@@ -75,6 +79,7 @@ local _ClassConfig = {
             "Stonestance Discipline",  -- Level 51
         },
         ['FistDisc'] = {
+            "Stormfist Discipline",   -- Level 71 Laz Custom
             "Scaledfist Discipline",  -- Level 65
             "Ashenhand Discipline",   -- Level 60
             "Thunderkick Discipline", -- Level 52
@@ -84,7 +89,8 @@ local _ClassConfig = {
             "Heel of Kanji", -- Level 65
         },
         ['Speed'] = {
-            "Speed Focus Discipline", -- Level 63
+            "Velocity Focus Discipline", -- Level 71 Laz Custom
+            "Speed Focus Discipline",    -- Level 63
         },
         ['Palm'] = {
             "Crystalpalm Discipline",   -- Level 70
@@ -92,7 +98,14 @@ local _ClassConfig = {
             "Innerflame Discipline",    -- Level 56
         },
         ['Voiddance'] = {
-            "Voiddance Discipline", -- Level 54
+            "Dragondance Discipline", -- Level 71 Laz Custom
+            "Voiddance Discipline",   -- Level 54
+        },
+        ['ReprisalDisc'] = {          -- Manual use only for now, reprisal does not fire unless the rune is broken
+            "Arcane Reprisal",        -- Level 71 Laz Custom
+        },
+        ['Fists'] = {
+            "Wheel of Fists", -- Level 71 Laz Custom
         },
         -- ['ResistantDisc'] = {
         --     "Dreamwalk Discipline", -- Level 66
@@ -100,6 +113,11 @@ local _ClassConfig = {
         -- },
     },
     ['Helpers']       = {
+        DodgeDiscActive = function(self)
+            local dodgeDisc = Core.GetResolvedActionMapItem('Voiddance')
+            if not dodgeDisc then return false end
+            return Casting.IHaveBuff(dodgeDisc.Trigger(1))
+        end,
     },
     ['RotationOrder'] = {
         {
@@ -200,7 +218,7 @@ local _ClassConfig = {
                 name = "MeleeMit",
                 type = "Disc",
                 cond = function(self, discSpell)
-                    return mq.TLO.Me.PctHPs() < 35 and not mq.TLO.Me.Buff("Voiddance Effect")()
+                    return mq.TLO.Me.PctHPs() < 35 and not self.Helpers.DodgeDiscActive(self)
                 end,
             },
             {
@@ -208,7 +226,7 @@ local _ClassConfig = {
                 type = "AA",
                 load_cond = function(self) return Config:GetSetting('DoVetAA') end,
                 cond = function(self, aaName)
-                    return mq.TLO.Me.PctHPs() < 35 and not mq.TLO.Me.Buff("Voiddance Effect")()
+                    return mq.TLO.Me.PctHPs() < 35 and not self.Helpers.DodgeDiscActive(self)
                 end,
             },
             {
@@ -325,6 +343,10 @@ local _ClassConfig = {
                 cond = function(self, aaName, target)
                     return Casting.DetAACheck(aaName, target)
                 end,
+            },
+            {
+                name = "Fists",
+                type = "Disc",
             },
             {
                 name = "Fang",

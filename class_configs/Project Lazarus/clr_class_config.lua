@@ -7,7 +7,7 @@ local Globals      = require("utils.globals")
 local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
-    _version              = "2.2 - Project Lazarus",
+    _version              = "2.3 - Project Lazarus",
     _author               = "Algar, Derple, Robban",
     ['ModeChecks']        = {
         IsHealing = function() return true end,
@@ -102,6 +102,7 @@ local _ClassConfig = {
         --     "Ward of Retribution", -- Level 69
         -- },
         ['HealingLight'] = {
+            -- "Ancient: Sacred Remedy", -- Level 71, verify existence and source
             "Ancient: Hallowed Light", -- Level 70
             "Pious Light",             -- Level 68
             "Holy Light",              -- Level 65
@@ -122,6 +123,7 @@ local _ClassConfig = {
             "Remedy",                  -- Level 51
         },
         ['Renewal'] = {                -- Level 70 +, large heal, slower cast
+            "Urgent Renewal",          -- Level 71 Laz Custom
             "Desperate Renewal",       -- Level 70
         },
         ['GroupHeal'] = {
@@ -136,6 +138,7 @@ local _ClassConfig = {
         },
         ['SelfHPBuff'] = {
             --Self Buff for Mana Regen and armor
+            "Armor of the Sacred",            -- Level 71 Laz Custom
             "Armor of the Pious",             -- Level 70
             "Armor of the Zealot",            -- Level 65
             "Ancient: High Priest's Bulwark", -- Level 60
@@ -144,6 +147,7 @@ local _ClassConfig = {
         },
         ['AegoBuff'] = {
             ----Use HP Type one until Temperance at 40... Group Buff at 45 (Blessing of Temperance)
+            "Hand of Allegiance",     -- Level 71 Laz Custom
             "Hand of Conviction",     -- Level 70
             "Hand of Virtue",         -- Level 65
             "Blessing of Aegolism",   -- Level 60
@@ -166,6 +170,7 @@ local _ClassConfig = {
             "Holy Armor",        -- Level 1
         },
         ['SingleVieBuff'] = {
+            "Aegis of Vie",      -- Level 71 Laz Custom
             "Panoply of Vie",    -- Level 67
             "Bulwark of Vie",    -- Level 62
             "Protection of Vie", -- Level 54
@@ -174,6 +179,7 @@ local _ClassConfig = {
         },
         ['GroupSymbolBuff'] = {
             ----Group Symbols
+            "Symbol of Elushar", -- Level 71
             "Balikor's Mark",    -- Level 70
             "Kazad's Mark",      -- Level 63
             "Marzin's Mark",     -- Level 60
@@ -195,11 +201,13 @@ local _ClassConfig = {
         },
         ['DivineBuff'] = {
             --Divine Buffs REQUIRES extra spell slot because of the 90s recast
+            "Divine Redemption",   -- Level 71 Laz Custom
             "Divine Intervention", -- Level 60
             "Death Pact",          -- Level 51
         },
         ['TwinHealNuke'] = {
-            "Vigilant Condemnation", -- Level 71 Laz Custom
+            "Vigilant Censure",      -- Level 71 Laz Custom
+            "Vigilant Condemnation", -- Level 70 Laz Custom
         },
         ['RezSpell'] = {
             "Spiritual Awakening", -- Level 65 Laz Custom
@@ -223,8 +231,9 @@ local _ClassConfig = {
             "Celestial Remedy",  -- Level 19
         },
         ['GroupElixir'] = {
-            "Elixir of Divinity", -- Level 70
-            "Ethereal Elixir",    -- Level 60
+            "Elixir of Redemption", -- Level 71 Laz Custom
+            "Elixir of Divinity",   -- Level 70
+            "Ethereal Elixir",      -- Level 60
         },
         ['SpellBlessing'] = {
             "Aura of Devotion",      -- Level 69
@@ -262,6 +271,7 @@ local _ClassConfig = {
             "Yaulp V",           -- Level 56, first rank with haste/mana regen. We won't use it before this.
         },
         ['StunTimer6'] = {       -- Timer 6 Stun, Fast Cast, Level 63+ (with ToT Heal 88+)
+            "Sound of Zeal",     -- Level 71 Laz Custom
             "Sound of Divinity", -- Level 68, works up to level 70
             "Sound of Might",    -- Level 63
             --Filler before this
@@ -283,6 +293,7 @@ local _ClassConfig = {
             "Ward Undead",       -- Level 4
         },
         ['MagicNuke'] = {
+            "Chromablast",  -- Level 71 Laz Custom
             "Chromastrike", -- Level 69, Laz specific
             -- "Calamity",  -- Level 69, Chroma is better
             "Reproach",     -- Level 67
