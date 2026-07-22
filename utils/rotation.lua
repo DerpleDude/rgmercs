@@ -161,10 +161,6 @@ function Rotation.ExecEntry(caller, entry, targetId, resolvedActionMap, bAllowMe
 
         if not spell or not spell() then return false end
 
-        if entry.waitReadyTime then
-            Casting.WaitCastReady(spell, type(entry.waitReadyTime) == "function" and entry.waitReadyTime() or entry.waitReadyTime, true)
-        end
-
         if Casting.SpellReady(spell, bAllowMem) then
             Rotation.RunPreActivate(caller, resolvedActionMap, entry)
             ret, isGroup = Casting.UseSpell(spell.RankName(), targetId, bAllowMem, entry.allowDead, entry.retries)

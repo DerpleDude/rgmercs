@@ -777,6 +777,7 @@ local _ClassConfig    = {
         ['MezPBAESpell'] = {
             "Docility XII",        -- Level 128
             "Wonderment",          -- Level 123
+            "63916",               -- Level 118, Bewilderment - deconflicts duplicate at Level 72
             "Neutralize",          -- Level 113
             "Perplex",             -- Level 108
             "Bafflement",          -- Level 103
@@ -786,7 +787,6 @@ local _ClassConfig    = {
             "Docility",            -- Level 83
             "Visions of Kirathas", -- Level 78
             "Dreams of Veldyn",    -- Level 73
-            "Bewilderment",        -- Level 72
             "Circle of Dreams",    -- Level 68
             "Word of Morell",      -- Level 62
             "Entrancing Lights",   -- Level 30
@@ -803,7 +803,7 @@ local _ClassConfig    = {
             "Baffle",                   -- Level 87
             "Befuddle",                 -- Level 82
             "Mystify",                  -- Level 77
-            "Bewilderment",             -- Level 72
+            "10647",                    -- Level 72, Bewilderment - deconflicts duplicate at Level 118
             "Euphoria",                 -- Level 69
             "Felicity",                 -- Level 67
             "Bliss",                    -- Level 64

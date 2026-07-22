@@ -1218,7 +1218,6 @@ local _ClassConfig = {
                 name = "DiseaseSlow",
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoDiseaseSlow') end,
-                waitReadyTime = function() return Config:GetSetting('DiseaseSlowWaitTime') end,
                 cond = function(self, spell, target)
                     return not mq.TLO.Target.Slowed() and Casting.DetSpellCheck(spell) and not Casting.SlowImmuneTarget(target)
                 end,
@@ -1757,7 +1756,7 @@ local _ClassConfig = {
         },
     },
     ['DefaultConfig']     = {
-        ['Mode']                = {
+        ['Mode']              = {
             DisplayName = "Mode",
             Category = "Combat",
             Tooltip = "Select the Combat Mode for this Toon",
@@ -1772,7 +1771,7 @@ local _ClassConfig = {
         },
 
         --DPS
-        ['DoHealDPS']           = {
+        ['DoHealDPS']         = {
             DisplayName = "Heal Mode DPS",
             Group = "Abilities",
             Header = "Common",
@@ -1784,7 +1783,7 @@ local _ClassConfig = {
             FAQ = "I feel that my Shaman is too concerned with DPS, dots and nukes, what can be done?",
             Answer = "Disabling Use HealDPS will stop the use of these spells. You can control which individual spells you mem with their respective settings.",
         },
-        ['DoNuke']              = {
+        ['DoNuke']            = {
             DisplayName = "Use Nukes",
             Group = "Abilities",
             Header = "Damage",
@@ -1796,7 +1795,7 @@ local _ClassConfig = {
             RequiresLoadoutChange = true,
             Default = true,
         },
-        ['DoTwinHealNuke']      = {
+        ['DoTwinHealNuke']    = {
             DisplayName = "Twin Heal Nuke",
             Group = "Abilities",
             Header = "Damage",
@@ -1810,7 +1809,7 @@ local _ClassConfig = {
             Answer =
             "Due to the nature of automation, we are likely to have the time to do so, and it helps hedge our bets against spike damage. Drivers that manually target switch may wish to disable this setting to allow for more cross-dotting. ",
         },
-        ['DoPoisonDot']         = {
+        ['DoPoisonDot']       = {
             DisplayName = "Use Poison DoTs",
             Group = "Abilities",
             Header = "Damage",
@@ -1822,7 +1821,7 @@ local _ClassConfig = {
             RequiresLoadoutChange = true,
             Default = true,
         },
-        ['DoDiseaseDot']        = {
+        ['DoDiseaseDot']      = {
             DisplayName = "Use Disease DoTs",
             Group = "Abilities",
             Header = "Damage",
@@ -1834,7 +1833,7 @@ local _ClassConfig = {
             RequiresLoadoutChange = true,
             Default = true,
         },
-        ['DoCurseDot']          = {
+        ['DoCurseDot']        = {
             DisplayName = "Use Curse DoTs",
             Group = "Abilities",
             Header = "Damage",
@@ -1848,7 +1847,7 @@ local _ClassConfig = {
         },
 
         -- Healing
-        ['DoHealOverTime']      = {
+        ['DoHealOverTime']    = {
             DisplayName = "Use HoTs",
             Group = "Abilities",
             Header = "Recovery",
@@ -1861,7 +1860,7 @@ local _ClassConfig = {
             FAQ = "Why does my Shaman randomly use HoTs in downtime?",
             Answer = "Maintaining HoTs prevents emergencies and hopefully allows for better DPS. It also grants Synergy Procs at high level.",
         },
-        ['MemCureSpell']        = {
+        ['MemCureSpell']      = {
             DisplayName = "Mem Cure Spell",
             Group = "Abilities",
             Header = "Recovery",
@@ -1874,7 +1873,7 @@ local _ClassConfig = {
             Default = true,
             ConfigType = "Advanced",
         },
-        ['DoChestClick']        = {
+        ['DoChestClick']      = {
             DisplayName = "Do Chest Click",
             Group = "Items",
             Header = "Clickies",
@@ -1886,7 +1885,7 @@ local _ClassConfig = {
             Answer = "Most classes have useful abilities on their equipped chest after level 75 or so. The SHM's is generally a healing tool (emergency group heal).",
         },
         --Canni
-        ['DoAACanni']           = {
+        ['DoAACanni']         = {
             DisplayName = "Use AA Canni",
             Group = "Abilities",
             Header = "Recovery",
@@ -1896,7 +1895,7 @@ local _ClassConfig = {
             Default = true,
             ConfigType = "Advanced",
         },
-        ['AACanniManaPct']      = {
+        ['AACanniManaPct']    = {
             DisplayName = "AA Canni Mana %",
             Group = "Abilities",
             Header = "Recovery",
@@ -1908,7 +1907,7 @@ local _ClassConfig = {
             Max = 100,
             ConfigType = "Advanced",
         },
-        ['AACanniMinHP']        = {
+        ['AACanniMinHP']      = {
             DisplayName = "AA Canni HP %",
             Group = "Abilities",
             Header = "Recovery",
@@ -1920,7 +1919,7 @@ local _ClassConfig = {
             Max = 100,
             ConfigType = "Advanced",
         },
-        ['DoSpellCanni']        = {
+        ['DoSpellCanni']      = {
             DisplayName = "Use Spell Canni",
             Group = "Abilities",
             Header = "Recovery",
@@ -1931,7 +1930,7 @@ local _ClassConfig = {
             Default = true,
             ConfigType = "Advanced",
         },
-        ['SpellCanniManaPct']   = {
+        ['SpellCanniManaPct'] = {
             DisplayName = "Spell Canni Mana %",
             Group = "Abilities",
             Header = "Recovery",
@@ -1943,7 +1942,7 @@ local _ClassConfig = {
             Max = 100,
             ConfigType = "Advanced",
         },
-        ['SpellCanniMinHP']     = {
+        ['SpellCanniMinHP']   = {
             DisplayName = "Spell Canni HP %",
             Group = "Abilities",
             Header = "Recovery",
@@ -1955,7 +1954,7 @@ local _ClassConfig = {
             Max = 100,
             ConfigType = "Advanced",
         },
-        ['DoCombatCanni']       = {
+        ['DoCombatCanni']     = {
             DisplayName = "Canni in Combat",
             Group = "Abilities",
             Header = "Recovery",
@@ -1967,7 +1966,7 @@ local _ClassConfig = {
             ConfigType = "Advanced",
         },
         --Buffs
-        ['UseEpic']             = {
+        ['UseEpic']           = {
             DisplayName = "Epic Use:",
             Group = "Items",
             Header = "Clickies",
@@ -1981,7 +1980,7 @@ local _ClassConfig = {
             Max = 3,
             ConfigType = "Advanced",
         },
-        ['DoRunSpeed']          = {
+        ['DoRunSpeed']        = {
             DisplayName = "Do Run Speed",
             Group = "Abilities",
             Header = "Buffs",
@@ -1993,7 +1992,7 @@ local _ClassConfig = {
             FAQ = "Why are my buffers in a run speed buff war?",
             Answer = "Many run speed spells freely stack and overwrite each other, you will need to disable Run Speed Buffs on some of the buffers.",
         },
-        ['DoGroupShrink']       = {
+        ['DoGroupShrink']     = {
             DisplayName = "Group Shrink",
             Group = "Abilities",
             Header = "Buffs",
@@ -2006,7 +2005,7 @@ local _ClassConfig = {
             Answer =
             "For simplicity, the check to use it is keyed to the Shaman's height, rather than checking each group member. Also, the AA isn't available until level 80 (on official servers).",
         },
-        ['DoTempHP']            = {
+        ['DoTempHP']          = {
             DisplayName = "Temp HP Buff",
             Group = "Abilities",
             Header = "Buffs",
@@ -2016,7 +2015,7 @@ local _ClassConfig = {
             RequiresLoadoutChange = true,
             Default = false,
         },
-        ['DoAura']              = {
+        ['DoAura']            = {
             DisplayName = "Use Aura",
             Group = "Abilities",
             Header = "Buffs",
@@ -2026,7 +2025,7 @@ local _ClassConfig = {
             Default = true,
             ConfigType = "Advanced",
         },
-        ['DoRegenBuff']         = {
+        ['DoRegenBuff']       = {
             DisplayName = "Regen Buff",
             Group = "Abilities",
             Header = "Buffs",
@@ -2038,7 +2037,7 @@ local _ClassConfig = {
             FAQ = "Why am I spamming my Group Regen buff?",
             Answer = "Certain Shaman and Druid group regen buffs report cross-stacking. You should deselect the option on one of the PCs if they are grouped together.",
         },
-        ['DoHaste']             = {
+        ['DoHaste']           = {
             DisplayName = "Use Haste",
             Group = "Abilities",
             Header = "Buffs",
@@ -2050,7 +2049,7 @@ local _ClassConfig = {
             FAQ = "Why aren't I casting Talisman of Celerity or other haste buffs?",
             Answer = "Even with Use Haste enabled, these buffs are part of your Focus spell (Unity) at very high levels, so they may not be needed.",
         },
-        ['DoSelfWard']          = {
+        ['DoSelfWard']        = {
             DisplayName = "Do Self Ward",
             Group = "Abilities",
             Header = "Buffs",
@@ -2059,7 +2058,7 @@ local _ClassConfig = {
             Tooltip = "Use your Ward of... self-heal ward buff line.",
             Default = true,
         },
-        ['DoVetAA']             = {
+        ['DoVetAA']           = {
             DisplayName = "Use Vet AA",
             Group = "Abilities",
             Header = "Buffs",
@@ -2071,7 +2070,7 @@ local _ClassConfig = {
             RequiresLoadoutChange = true,
         },
         --Debuffs
-        ['DoSTMalo']            = {
+        ['DoSTMalo']          = {
             DisplayName = "Do ST Malo",
             Group = "Abilities",
             Header = "Debuffs",
@@ -2081,7 +2080,7 @@ local _ClassConfig = {
             RequiresLoadoutChange = true,
             Default = true,
         },
-        ['DoAEMalo']            = {
+        ['DoAEMalo']          = {
             DisplayName = "Do AE Malo",
             Group = "Abilities",
             Header = "Debuffs",
@@ -2091,7 +2090,7 @@ local _ClassConfig = {
             RequiresLoadoutChange = true,
             Default = true,
         },
-        ['DoSTSlow']            = {
+        ['DoSTSlow']          = {
             DisplayName = "Do ST Slow",
             Group = "Abilities",
             Header = "Debuffs",
@@ -2101,7 +2100,7 @@ local _ClassConfig = {
             RequiresLoadoutChange = true,
             Default = true,
         },
-        ['DoAESlow']            = {
+        ['DoAESlow']          = {
             DisplayName = "Do AE Slow",
             Group = "Abilities",
             Header = "Debuffs",
@@ -2111,7 +2110,7 @@ local _ClassConfig = {
             RequiresLoadoutChange = true,
             Default = true,
         },
-        ['AESlowCount']         = {
+        ['AESlowCount']       = {
             DisplayName = "AE Slow Count",
             Group = "Abilities",
             Header = "Debuffs",
@@ -2123,7 +2122,7 @@ local _ClassConfig = {
             Max = 10,
             ConfigType = "Advanced",
         },
-        ['AEMaloCount']         = {
+        ['AEMaloCount']       = {
             DisplayName = "AE Malo Count",
             Group = "Abilities",
             Header = "Debuffs",
@@ -2135,7 +2134,7 @@ local _ClassConfig = {
             Max = 10,
             ConfigType = "Advanced",
         },
-        ['DoDiseaseSlow']       = {
+        ['DoDiseaseSlow']     = {
             DisplayName = "Disease Slow",
             Group = "Abilities",
             Header = "Debuffs",
@@ -2146,19 +2145,7 @@ local _ClassConfig = {
             Default = false,
             ConfigType = "Advanced",
         },
-        ['DiseaseSlowWaitTime'] = {
-            DisplayName = "Disease Slow Wait",
-            Group = "Abilities",
-            Header = "Debuffs",
-            Category = "Slow",
-            Index = 105,
-            Tooltip = "Maximum amount of time (in miliseconds) to wait for Disease Slow to be ready before giving up.",
-            Default = 100,
-            Min = 0,
-            Max = 10000,
-            ConfigType = "Advanced",
-        },
-        ['DoLLHPBuff']          = {
+        ['DoLLHPBuff']        = {
             DisplayName = "HP Buff (LowLvl)",
             Group = "Abilities",
             Header = "Buffs",
@@ -2168,7 +2155,7 @@ local _ClassConfig = {
             Default = false,
             ConfigType = "Advanced",
         },
-        ['DoLLAgiBuff']         = {
+        ['DoLLAgiBuff']       = {
             DisplayName = "Agility Buff (LowLvl)",
             Group = "Abilities",
             Header = "Buffs",
@@ -2178,7 +2165,7 @@ local _ClassConfig = {
             Default = false,
             ConfigType = "Advanced",
         },
-        ['DoLLStaBuff']         = {
+        ['DoLLStaBuff']       = {
             DisplayName = "Stamina Buff (LowLvl)",
             Group = "Abilities",
             Header = "Buffs",
@@ -2188,7 +2175,7 @@ local _ClassConfig = {
             Default = false,
             ConfigType = "Advanced",
         },
-        ['DoLLStrBuff']         = {
+        ['DoLLStrBuff']       = {
             DisplayName = "Strength Buff (LowLvl)",
             Group = "Abilities",
             Header = "Buffs",
@@ -2198,7 +2185,7 @@ local _ClassConfig = {
             Default = false,
             ConfigType = "Advanced",
         },
-        ['HealPriority']        = {
+        ['HealPriority']      = {
             DisplayName = "Healing Priority",
             Group = "Abilities",
             Header = "Recovery",

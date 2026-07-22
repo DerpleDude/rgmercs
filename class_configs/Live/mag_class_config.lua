@@ -370,7 +370,7 @@ _ClassConfig      = {
             -- Use at the start of the DPS loop
             "Searing Skin XI",            -- Level 128
             "Boiling Skin",               -- Level 123
-            "Scorching Skin",             -- Level 118
+            "63715",                      -- Level 118, Scorching Skin - deconflicts duplicate at Level 73
             "Burning Skin",               -- Level 113
             "Blistering Skin",            -- Level 108
             "Coronal Skin",               -- Level 103
@@ -379,7 +379,7 @@ _ClassConfig      = {
             "Blazing Skin",               -- Level 88
             "Torrid Skin",                -- Level 83
             "Searing Skin",               -- Level 78
-            -- "Scorching Skin",          -- Level 73, shares its name with the 118 rank; only the book's first match resolves
+            "10720",                      -- Level 73, Scorching Skin - deconflicts duplicate at Level 118
             "Ancient: Veil of Pyrilonus", -- Level 70
             "Pyrilen Skin",               -- Level 68
         },

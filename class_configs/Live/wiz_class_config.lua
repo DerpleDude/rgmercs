@@ -104,9 +104,9 @@ return {
             "Cloudburst Lightningstrike", -- Level 122
             "Cloudburst Joltstrike",      -- Level 117
             "Cloudburst Stormbolt",       -- Level 112
+            "56794",                      -- Level 107, Cloudburst Thunderbolt - deconflicts duplicate at Level 97
             "Cloudburst Stormstrike",     -- Level 102
-            "Cloudburst Thunderbolt",     -- Level 97
-            "Cloudburst Thunderbolt",     -- Level 97
+            "35876",                      -- Level 97, Cloudburst Thunderbolt - deconflicts duplicate at Level 107
             "Cloudburst Tempest",         -- Level 92
             "Cloudburst Storm",           -- Level 87
             "Cloudburst Levin",           -- Level 82
@@ -294,6 +294,7 @@ return {
             "Lightning Maelstrom",           -- Level 118
             "Lightning Roar",                -- Level 113
             "Lightning Tempest",             -- Level 108
+            "44623",                         -- Level 103, Lightning Storm - deconflicts duplicate at Level 23
             "Lightning Squall",              -- Level 98
             "Lightning Swarm",               -- Level 93
             "Lightning Helix",               -- Level 88
@@ -305,7 +306,6 @@ return {
             "Voltaic Draught",               -- Level 54
             "Rend",                          -- Level 47
             "Lightning Shock",               -- Level 37
-            "Lightning Storm",               -- Level 23
             "Garrison's Mighty Mana Shock",  -- Level 18
             "Shock of Lightning",            -- Level 10
         },
@@ -377,6 +377,7 @@ return {
         ['SelfRune1'] = {
             "Aegis of Feish",             -- Level 126
             "Aegis of Remembrance",       -- Level 121
+            "63576",                      -- Level 118, Scales of the Crystalwing - deconflicts duplicate at Level 73
             "Aegis of the Umbra",         -- Level 116
             "Aegis of the Crystalwing",   -- Level 113
             "Armor of Wirn",              -- Level 108
@@ -386,7 +387,7 @@ return {
             "Dermis of the Crystalwing",  -- Level 88
             "Squamae of the Crystalwing", -- Level 83
             "Laminae of the Crystalwing", -- Level 78
-            "Scales of the Crystalwing",  -- Level 73
+            "10810",                      -- Level 73, Scales of the Crystalwing - deconflicts duplicate at Level 118
             "Ether Skin",                 -- Level 68
             "Force Shield",               -- Level 63
         },
@@ -456,6 +457,7 @@ return {
         ['JoltSpell'] = {
             "Mindfreeze X",                -- Level 127
             "Spinalfreeze",                -- Level 122
+            "67443",                       -- Level 121, Concussive Blast - deconflicts duplicate at Level 71
             "Cerebrumfreeze",              -- Level 117
             "Neurofreeze",                 -- Level 112
             "Cortexfreeze",                -- Level 107
@@ -463,10 +465,11 @@ return {
             "Skullfreeze",                 -- Level 97
             "Thoughtfreeze",               -- Level 92
             "Brainfreeze",                 -- Level 87
+            "26523",                       -- Level 86, Concussive Burst - deconflicts duplicate at Level 76
             "Mindfreeze",                  -- Level 82
             "Concussive Flash",            -- Level 81
-            "Concussive Burst",            -- Level 76
-            "Concussive Blast",            -- Level 71
+            "15393",                       -- Level 76, Concussive Burst - deconflicts duplicate at Level 86
+            "10782",                       -- Level 71, Concussive Blast - deconflicts duplicate at Level 121
             "Ancient: Greater Concussion", -- Level 60
             "Concussion",                  -- Level 37
         },

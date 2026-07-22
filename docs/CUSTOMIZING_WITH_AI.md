@@ -92,6 +92,8 @@ Two key relationships:
 
 Reordering a spell/disc set does **not** change which one is used — the highest-level usable option always wins (listed highest-first only for readability). AA and item sets *do* go by list order. See "Change which option a set uses" below to change a pick.
 
+A member may be a **spell ID in quotes** — `"43478", -- Level 102, Frozen Wind`. Use it where two spells share one name: a name resolves to the lowest-ID match, which may be the wrong level. The ID still upgrades to your highest known rank.
+
 ### `Rotations` example
 
 ```lua

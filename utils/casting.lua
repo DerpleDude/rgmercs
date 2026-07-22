@@ -14,7 +14,7 @@ local Strings      = require("utils.strings")
 local Tables       = require("utils.tables")
 local Targeting    = require("utils.targeting")
 
-local Casting      = { _version = '2.0', _name = "Casting", _author = 'Derple, Algar', }
+local Casting      = { _version = '2.1', _name = "Casting", _author = 'Derple, Algar', }
 Casting.__index    = Casting
 Casting.Memorizing = false
 
@@ -27,6 +27,14 @@ Casting.UseGem     = mq.TLO.Me.NumGems()
 function Casting.IsGroupSpell(targetType)
     if not targetType then return false end
     return Globals.Constants.GroupTargetTypes:contains(targetType)
+end
+
+--- Checks if a spell target type is self.
+--- @param targetType string|nil The TargetType() value from a spell.
+--- @return boolean
+function Casting.IsSelfSpell(targetType)
+    if not targetType then return false end
+    return targetType:lower() == "self"
 end
 
 --- Simple (no trigger or stacking checks) check to see if the player has a buff. Can pass a spell(userdata), ID, or effect name(string).
@@ -1445,6 +1453,9 @@ function Casting.MemorizeSpell(gem, spell, waitSpellReady, maxWait)
     end
     local aggressiveMem      = Config:GetSetting('AggressivelyMemorizeSpells')
     local aggressiveMemTimer = Config:GetSetting('AggressivelyMemorizeTimer') * 1000
+
+    -- Algarnote: Not sure where to put this, but there is a very edge-case bug that can cause us to memorize a lower level spell of the same name, since we can't use ID.
+    -- /memspell (MQ) and /memspellslot (EQ) will memorize the first available by book position, which is generally the low level spell. Delete old spell, or swap positions in book to resolve... or add ID to /memspell
     local cmd                = string.format("/memspell %d \"%s\"", gem, spell)
 
     Logger.log_info("\atMemorizeSpell\aw():\ag Meming \aw%s in \agslot %d", spell, gem)
@@ -1686,16 +1697,17 @@ end
 function Casting.SpellReady(spell, skipGemTimer)
     if not spell or not spell() then return false end
 
-    local ready = mq.TLO.Me.SpellReady(spell.RankName.Name())()
-    local bookCheck = (mq.TLO.Me.Book(spell.RankName.Name())() or 0) > 0
+    local rankSpell = spell.RankName
+    local ready = mq.TLO.Me.SpellReady(rankSpell.Name())()
+    local bookCheck = (mq.TLO.Me.Book(rankSpell.Name())() or 0) > 0
     local silenced = mq.TLO.Me.Silenced() ~= nil
 
-    Logger.log_verbose("SpellReady for %s(%d): Silenced (%s), BookCheck(%s), ReadyCheck(%s), Memorization Allowed (%s).", spell.RankName(), spell.ID(),
+    Logger.log_verbose("SpellReady for %s(%d): Silenced (%s), BookCheck(%s), ReadyCheck(%s), Memorization Allowed (%s).", rankSpell.Name(), rankSpell.ID(),
         Strings.BoolToColorString(silenced), Strings.BoolToColorString(bookCheck), Strings.BoolToColorString(ready), Strings.BoolToColorString(skipGemTimer or false))
 
     if silenced or not bookCheck or (not ready and not skipGemTimer) then return false end
 
-    return Casting.CastCheck(spell)
+    return Casting.CastCheck(rankSpell)
 end
 
 --- Checks if a given song is ready to be sung: verifies the player is not silenced, has the song in their spellbook, and that the gem timer has expired (unless skipGemTimer is true), then runs CastCheck for mana/endurance/control/movement conditions.
@@ -1705,16 +1717,17 @@ end
 function Casting.SongReady(songSpell, skipGemTimer)
     if not songSpell or not songSpell() then return false end
 
-    local ready = mq.TLO.Me.SpellReady(songSpell.RankName.Name())()
-    local bookCheck = mq.TLO.Me.Book(songSpell.RankName.Name())() ~= nil
+    local rankSong = songSpell.RankName
+    local ready = mq.TLO.Me.SpellReady(rankSong.Name())()
+    local bookCheck = mq.TLO.Me.Book(rankSong.Name())() ~= nil
     local silenced = mq.TLO.Me.Silenced() ~= nil
 
-    Logger.log_verbose("SongReady for %s(%d): Silenced (%s), BookCheck(%s), ReadyCheck(%s), Memorization Allowed (%s).", songSpell.RankName(), songSpell.ID(),
+    Logger.log_verbose("SongReady for %s(%d): Silenced (%s), BookCheck(%s), ReadyCheck(%s), Memorization Allowed (%s).", rankSong.Name(), rankSong.ID(),
         Strings.BoolToColorString(silenced), Strings.BoolToColorString(bookCheck), Strings.BoolToColorString(ready), Strings.BoolToColorString(skipGemTimer or false))
 
     if silenced or not bookCheck or (not ready and not skipGemTimer) then return false end
 
-    return Casting.CastCheck(songSpell)
+    return Casting.CastCheck(rankSong)
 end
 
 --- True if the spell's gem is off its own recast timer (it may still be briefly blocked by the global cooldown).
@@ -1744,13 +1757,14 @@ end
 function Casting.DiscReady(discSpell)
     if not discSpell or not discSpell() then return false end
 
-    local ready = mq.TLO.Me.CombatAbilityReady(discSpell.RankName.Name())()
+    local rankDisc = discSpell.RankName
+    local ready = mq.TLO.Me.CombatAbilityReady(rankDisc.Name())()
 
-    Logger.log_verbose("DiscReady for %s(%d): Ready(%s)", discSpell.RankName.Name(), discSpell.ID(), Strings.BoolToColorString(ready))
+    Logger.log_verbose("DiscReady for %s(%d): Ready(%s)", rankDisc.Name(), rankDisc.ID(), Strings.BoolToColorString(ready))
 
     if not ready then return false end
 
-    return Casting.CastCheck(discSpell, true)
+    return Casting.CastCheck(rankDisc, true)
 end
 
 --- Verifies AltAbilityReady is true for the named AA and then runs CastCheck against the AA's associated spell to confirm mana/endurance/movement/control conditions are met.
@@ -1896,7 +1910,9 @@ function Casting.UseSpell(spellName, targetId, bAllowMem, bAllowDead, retryCount
         Core.DoCmd("/autoinv")
     end
 
-    local targetSpawn = mq.TLO.Spawn(targetId)
+    local selfTargeted = Casting.IsSelfSpell(spell.TargetType())
+    local spellTargetId = selfTargeted and me.ID() or targetId
+    local targetSpawn = mq.TLO.Spawn(spellTargetId)
 
     if not Casting.LevelCheckPass(spell, targetSpawn) then
         Logger.log_debug("\ayUseSpell(): \arCasting %s failed level check with target=%d and spell=%d", spellName,
@@ -1931,7 +1947,7 @@ function Casting.UseSpell(spellName, targetId, bAllowMem, bAllowDead, retryCount
     end
 
     local spellRange = Casting.GetSpellRange(spell)
-    if targetId ~= me.ID() and targetSpawn() and Targeting.GetTargetDistance(targetSpawn) > spellRange then
+    if spellTargetId ~= me.ID() and targetSpawn() and Targeting.GetTargetDistance(targetSpawn) > spellRange then
         Logger.log_debug("\ayUseSpell(): \arTried to cast %s on %s but they are too far away", spellName, targetSpawn.DisplayName() or "None")
         return false
     end
@@ -1965,7 +1981,7 @@ function Casting.UseSpell(spellName, targetId, bAllowMem, bAllowDead, retryCount
     Casting.ActionPrep()
 
     local oldTargetId = mq.TLO.Target.ID()
-    if targetId > 0 and targetId ~= oldTargetId then
+    if not selfTargeted and targetId > 0 and targetId ~= oldTargetId then
         if Config:GetSetting('StopAttackForPCs') and me.Combat() and (targetSpawn.Type() or ""):lower() == "pc" then -- don't use helper here, don't want fallback to current target
             Logger.log_debug("\awUseSpell():NOTICE:\ax Turning off autoattack to cast on a PC.")
             Core.DoCmd("/attack off")
@@ -1986,7 +2002,7 @@ function Casting.UseSpell(spellName, targetId, bAllowMem, bAllowDead, retryCount
         cmd = cmd,
         readyCheck = readyCheck,
         actionName = spellName,
-        targetId = targetId,
+        targetId = spellTargetId,
         bAllowDead = bAllowDead or false,
         spellRange = spellRange,
         castTime = castTime,
@@ -2036,10 +2052,12 @@ function Casting.UseSong(songName, targetId, bAllowMem, retryCount)
         Core.DoCmd("/autoinv")
     end
 
-    local targetSpawn = mq.TLO.Spawn(targetId)
+    local selfTargeted = Casting.IsSelfSpell(songSpell.TargetType())
+    local spellTargetId = selfTargeted and me.ID() or targetId
+    local targetSpawn = mq.TLO.Spawn(spellTargetId)
 
     local spellRange = Casting.GetSpellRange(songSpell)
-    if targetId ~= me.ID() and targetSpawn() and Targeting.GetTargetDistance(targetSpawn) > spellRange then
+    if spellTargetId ~= me.ID() and targetSpawn() and Targeting.GetTargetDistance(targetSpawn) > spellRange then
         Logger.log_debug("\ayUseSong(): \arTried to cast %s on %s but they are too far away", songName, targetSpawn.DisplayName() or "None")
         return false
     end
@@ -2071,7 +2089,7 @@ function Casting.UseSong(songName, targetId, bAllowMem, retryCount)
     Casting.ActionPrep()
 
     local oldTargetId = mq.TLO.Target.ID()
-    if targetId > 0 and targetId ~= oldTargetId and targetId ~= me.ID() then
+    if not selfTargeted and targetId > 0 and targetId ~= oldTargetId and targetId ~= me.ID() then
         if Config:GetSetting('StopAttackForPCs') and me.Combat() and (targetSpawn.Type() or ""):lower() == "pc" then -- don't use helper here, don't want fallback to current target
             Logger.log_debug("\awUseSong():NOTICE:\ax Turning off autoattack to cast on a PC.")
             Core.DoCmd("/attack off")
@@ -2159,8 +2177,8 @@ function Casting.UseSong(songName, targetId, bAllowMem, retryCount)
         local clipDelay = mq.TLO.EverQuest.Ping() * Config:GetSetting('SongClipDelayFact')
 
         -- for performance, lets check for the buffs on buffsongs and exit this delay early if possible.
-        -- -- If it is targeting me but doesn't have a buff (or doesn't have a properly detected buff), we are no worse off than the static delay.
-        if targetId == me.ID() then
+        -- -- If it lands on me but doesn't have a buff (or doesn't have a properly detected buff), we are no worse off than the static delay.
+        if spellTargetId == me.ID() or Casting.IsGroupSpell(songSpell.TargetType()) then
             -- For expediency, just check for the base rank in case they are f2p without unlockers and rk2 spells scribed. If we need the exact spell later, GetUseableSpellId will check their unlocker status and get the correct ID
             local buffName = songSpell.BaseName()
             local durWindow = songSpell.DurationWindow()
@@ -2211,22 +2229,25 @@ function Casting.UseDisc(discSpell, targetId, fireAndForget)
 
     if not discSpell or not discSpell() then return false end
 
-    local discName = discSpell.RankName.Name()
-    local castTime = discSpell.MyCastTime() or 0
+    local rankDisc = discSpell.RankName
+    local discName = rankDisc.Name()
+    local castTime = rankDisc.MyCastTime() or 0
+    local selfTargeted = Casting.IsSelfSpell(rankDisc.TargetType())
+    local spellTargetId = selfTargeted and me.ID() or targetId
 
     if (mq.TLO.Window("CastingWindow").Open() or me.Casting()) and not Casting.CanActMidSong(castTime) then
         Logger.log_debug("\ayUseDisc(): \arCan't use %s - Casting Window Open", discName)
         return false
     end
 
-    if me.CurrentEndurance() < discSpell.EnduranceCost() then
+    if me.CurrentEndurance() < rankDisc.EnduranceCost() then
         Logger.log_debug("\ayUseDisc(): \arCan't use %s - insufficient endurance", discName)
         return false
     end
 
-    local spellRange = Casting.GetSpellRange(discSpell)
-    if targetId ~= me.ID() then
-        local targetSpawn = mq.TLO.Spawn(targetId)
+    local spellRange = Casting.GetSpellRange(rankDisc)
+    if spellTargetId ~= me.ID() then
+        local targetSpawn = mq.TLO.Spawn(spellTargetId)
         if targetSpawn() and Targeting.GetTargetDistance(targetSpawn) > spellRange then
             Logger.log_debug("\ayUseDisc(): \arTried to cast %s on %s but they are too far away", discName, targetSpawn.DisplayName() or "None")
             return false
@@ -2244,7 +2265,7 @@ function Casting.UseDisc(discSpell, targetId, fireAndForget)
     end
 
     local oldTargetId = mq.TLO.Target.ID()
-    if targetId > 0 and targetId ~= oldTargetId then
+    if not selfTargeted and targetId > 0 and targetId ~= oldTargetId then
         local targetSpawn = mq.TLO.Spawn(targetId)
         if Config:GetSetting('StopAttackForPCs') and me.Combat() and (targetSpawn.Type() or ""):lower() == "pc" then -- don't use helper here, don't want fallback to current target
             Logger.log_debug("\awUseDisc():NOTICE:\ax Turning off autoattack to cast on a PC.")
@@ -2263,7 +2284,7 @@ function Casting.UseDisc(discSpell, targetId, fireAndForget)
         cmd = cmd,
         readyCheck = readyCheck,
         actionName = discName,
-        targetId = targetId,
+        targetId = spellTargetId,
         bAllowDead = true,
         spellRange = spellRange,
         castTime = castTime,
@@ -2277,7 +2298,7 @@ function Casting.UseDisc(discSpell, targetId, fireAndForget)
         Targeting.SetTarget(oldTargetId, true)
     end
 
-    return Casting.CastSucceeded(readyCheck, false), Casting.IsGroupSpell(discSpell.TargetType())
+    return Casting.CastSucceeded(readyCheck, false), Casting.IsGroupSpell(rankDisc.TargetType())
 end
 
 function Casting.GetSpellRange(spell)
@@ -2413,7 +2434,9 @@ function Casting.UseAA(aaName, targetId, bAllowDead, retryCount, fireAndForget)
         return false
     end
 
-    local targetSpawn = mq.TLO.Spawn(targetId)
+    local selfTargeted = Casting.IsSelfSpell(aaSpell.TargetType())
+    local spellTargetId = selfTargeted and me.ID() or targetId
+    local targetSpawn = mq.TLO.Spawn(spellTargetId)
 
     -- TEMP 6/26: FeetWet swim-state check disabled - a flyer flying above a pool (e.g. Hartini in Stillmoon) reports FeetWet but its feet aren't actually wet, blocking all casts. Not a verified EQ mechanic.
     -- if targetSpawn() and targetSpawn.FeetWet() ~= me.FeetWet() then
@@ -2434,7 +2457,7 @@ function Casting.UseAA(aaName, targetId, bAllowDead, retryCount, fireAndForget)
     end
 
     local spellRange = Casting.GetSpellRange(aaSpell)
-    if targetId ~= me.ID() and targetSpawn() and Targeting.GetTargetDistance(targetSpawn) > spellRange then
+    if spellTargetId ~= me.ID() and targetSpawn() and Targeting.GetTargetDistance(targetSpawn) > spellRange then
         Logger.log_debug("\ayUseAA(): \arTried to cast %s on %s but they are too far away", aaName, targetSpawn.DisplayName() or "None")
         return false
     end
@@ -2442,7 +2465,7 @@ function Casting.UseAA(aaName, targetId, bAllowDead, retryCount, fireAndForget)
     Casting.ActionPrep()
 
     local oldTargetId = mq.TLO.Target.ID()
-    if targetId > 0 and targetId ~= oldTargetId then
+    if not selfTargeted and targetId > 0 and targetId ~= oldTargetId then
         if Config:GetSetting('StopAttackForPCs') and me.Combat() and (targetSpawn.Type() or ""):lower() == "pc" then -- don't use helper here, don't want fallback to current target
             Logger.log_debug("\awUseAA():NOTICE:\ax Turning off autoattack to cast on a PC.")
             Core.DoCmd("/attack off")
@@ -2462,7 +2485,7 @@ function Casting.UseAA(aaName, targetId, bAllowDead, retryCount, fireAndForget)
         cmd = cmd,
         readyCheck = readyCheck,
         actionName = aaName,
-        targetId = targetId,
+        targetId = spellTargetId,
         bAllowDead = bAllowDead or false,
         spellRange = spellRange,
         castTime = castTime,
@@ -2531,8 +2554,10 @@ function Casting.UseItem(itemName, targetId, bAllowDead, retryCount, fireAndForg
     end
 
     local castTime = (item.Clicky() and item.Clicky.CastTime()) or item.CastTime() or 0
-    local itemSpell = item.Spell
+    local itemSpell = item.Clicky.Spell
     local targetType = itemSpell and itemSpell.TargetType()
+    local selfTargeted = Casting.IsSelfSpell(targetType)
+    local spellTargetId = selfTargeted and me.ID() or targetId
 
     if (mq.TLO.Window("CastingWindow").Open() or me.Casting()) and not Casting.CanActMidSong(castTime) then
         Logger.log_debug("\ayUseItem(): \arCan't use %s - Casting Window Open", itemName)
@@ -2540,15 +2565,15 @@ function Casting.UseItem(itemName, targetId, bAllowDead, retryCount, fireAndForg
     end
 
     local spellRange = Casting.GetSpellRange(itemSpell)
-    if targetId and targetId ~= me.ID() then
-        local targetSpawn = mq.TLO.Spawn(targetId)
+    if spellTargetId and spellTargetId ~= me.ID() then
+        local targetSpawn = mq.TLO.Spawn(spellTargetId)
         if targetSpawn and targetSpawn() and Targeting.GetTargetDistance(targetSpawn) > spellRange then
             Logger.log_debug("\ayUseItem(): \arTried to use %s on %s but they are too far away", itemName, targetSpawn and targetSpawn.DisplayName() or "None")
             return false
         end
     end
 
-    if targetId and targetId == me.ID() then
+    if spellTargetId and spellTargetId == me.ID() then
         if Casting.IHaveBuff(item.Clicky.SpellID()) then
             Logger.log_debug("\ayUseItem(): \arTried to use %s - clicky already active or won't stack", itemName)
             return false
@@ -2570,7 +2595,7 @@ function Casting.UseItem(itemName, targetId, bAllowDead, retryCount, fireAndForg
     Casting.ActionPrep()
 
     local oldTargetId = mq.TLO.Target.ID()
-    if targetId and targetId > 0 and targetId ~= oldTargetId then
+    if not selfTargeted and targetId and targetId > 0 and targetId ~= oldTargetId then
         local targetSpawn = mq.TLO.Spawn(targetId)
         if Config:GetSetting('StopAttackForPCs') and me.Combat() and (targetSpawn.Type() or ""):lower() == "pc" then -- don't use helper here, don't want fallback to current target
             Logger.log_debug("\awUseItem():NOTICE:\ax Turning off autoattack to cast on a PC.")
@@ -2590,7 +2615,7 @@ function Casting.UseItem(itemName, targetId, bAllowDead, retryCount, fireAndForg
         cmd = cmd,
         readyCheck = readyCheck,
         actionName = itemName,
-        targetId = targetId,
+        targetId = spellTargetId,
         -- default true (unlike UseAA/UseSpell) so rez clickies still fire on dead targets
         bAllowDead = bAllowDead ~= false,
         spellRange = spellRange,
@@ -2652,7 +2677,7 @@ function Casting.WaitCastFinish(targetId, bAllowDead, spellRange, castTime)
                 Logger.log_debug("WaitCastFinish(): Canceled casting %s because spellTarget(%d, range %d) is out of spell range(%d)", currentCast, target.ID(),
                     Targeting.GetTargetDistance(), spellRange)
                 return
-            elseif target() and target.ID() ~= Targeting.GetTargetID() then
+            elseif target() and not Targeting.TargetIsMyself(target) and target.ID() ~= Targeting.GetTargetID() then
                 Logger.log_debug("WaitCastFinish(): Warning your spellTarget(%d) for %s is no longer your currentTarget(%d)", target.ID(), currentCast, Targeting.GetTargetID())
             end
         end
@@ -2695,17 +2720,15 @@ function Casting.WaitCastFinish(targetId, bAllowDead, spellRange, castTime)
     end
 end
 
---- Polls Me.SpellReady every 1 ms until the spell's gem timer has cleared or maxWait (ms) expires; aborts early if combat begins (unless ignoreCombat is true) or if the spell leaves the player's book due to a persona change. Adds a ping-scaled delay after the spell becomes ready to account for server lag.
+--- Polls Me.SpellReady every 20 ms until the spell's gem timer has cleared or maxWait (ms) expires; aborts early if combat begins or if the spell leaves the player's book due to a persona change. Adds a ping-scaled delay after the spell becomes ready to account for server lag.
 --- @param spell string The name of the spell to wait for.
 --- @param maxWait number The maximum amount of time (in miliseconds) to wait for the spell to be ready.
---- @param ignoreCombat? boolean Whether to ignore combat status while waiting.
-function Casting.WaitCastReady(spell, maxWait, ignoreCombat)
-    if not ignoreCombat then ignoreCombat = false end
+function Casting.WaitCastReady(spell, maxWait)
     while not mq.TLO.Me.SpellReady(spell)() and maxWait > 0 do
         mq.delay(20)
         mq.doevents()
         Events.DoEvents()
-        if not ignoreCombat and Targeting.GetXTHaterCount() > 0 then
+        if Targeting.GetXTHaterCount() > 0 then
             Logger.log_debug("I was interrupted by combat while waiting to cast %s.", spell)
             return
         end

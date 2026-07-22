@@ -299,11 +299,11 @@ local _ClassConfig = {
             "Protective Acceptance",   -- Level 125
             "Protective Revelation",   -- Level 120
             "Protective Consecration", -- Level 115
+            "55488",                   -- Level 110, Protective Devotion - deconflicts duplicate at Level 90
             "Protective Proclamation", -- Level 105
             "Protective Allegiance",   -- Level 100
             "Protective Dedication",   -- Level 95
-            "Protective Devotion",     -- Level 90
-            "Protective Devotion",     -- Level 90
+            "25390",                   -- Level 90, Protective Devotion - deconflicts duplicate at Level 110
             "Protective Confession",   -- Level 85
         },
         ['Aego'] = {
@@ -548,13 +548,14 @@ local _ClassConfig = {
         --     "Assuring Words",  -- Level 121
         --     "Tranquil Words",  -- Level 116
         --     "Placating Words", -- Level 111
+        --     "55347",           -- Level 106, Soothe - deconflicts duplicate at Level 25
         --     "Dulcify",         -- Level 101
         --     "Reconcile",       -- Level 96
         --     "Mollify",         -- Level 91
         --     "Propitiate",      -- Level 86
         --     "Pacify",          -- Level 49
         --     "Calm",            -- Level 43
-        --     "Soothe",          -- Level 25
+        --     "501",             -- Level 25, Soothe - deconflicts duplicate at Level 106
         --     "Lull",            -- Level 10
         -- },
         ['TouchHeal'] = {

@@ -1840,7 +1840,7 @@ function Module:RenderClickiesWithConditions(type, clickies)
                 target = 'Self',
                 iconId = tonumber((mq.TLO.Cursor.Icon() or 500) - 500) or 0,
                 combat_state = 'Any',
-                no_target_change = targetType == "Self" or targetType == "Group v1" or targetType == "AE v1",
+                no_target_change = targetType == "Self" or targetType == "Group v1" or targetType == "AE PC v1",
                 skipTriggerCheck = true,
                 conditions = {},
             })
@@ -2222,15 +2222,9 @@ function Module:GiveTime()
 
                             -- distance check
                             local distanceCheckPassed = true
-                            if targetId and targetId ~= mq.TLO.Me.ID() then
-                                local spellRange = itemSpell.MyRange() or 0
-
-                                if spellRange == 0 then
-                                    local aeRange = itemSpell.AERange() or 0
-                                    spellRange = aeRange > 0 and aeRange or 200
-                                end
-
-                                if Targeting.GetTargetDistance(target) > spellRange then
+                            local spellTargetId = Casting.IsSelfSpell(itemSpell and itemSpell.TargetType()) and mq.TLO.Me.ID() or targetId
+                            if spellTargetId and spellTargetId ~= mq.TLO.Me.ID() then
+                                if Targeting.GetTargetDistance(target) > Casting.GetSpellRange(itemSpell) then
                                     Logger.log_verbose("\ayClicky: \arTried to use item on targetId %s they are too far away!!", target and target.DisplayName() or "None")
                                     distanceCheckPassed = false
                                 end

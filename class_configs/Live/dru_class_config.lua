@@ -365,10 +365,11 @@ local _ClassConfig = {
             "Sunflame",              -- Level 109
             "Sunflash",              -- Level 104
             "Sunblaze",              -- Level 99
+            "28948",                 -- Level 94, Sunscorch - deconflicts duplicate at Level 74
             "Sunbrand",              -- Level 89
             "Sunsinge",              -- Level 84
             "Sunsear",               -- Level 79
-            "Sunscorch",             -- Level 74
+            "9902",                  -- Level 74, Sunscorch - deconflicts duplicate at Level 94
             "Vengeance of the Sun",  -- Level 69
             "Vengeance of Tunare",   -- Level 64
             "Vengeance of Nature",   -- Level 55
@@ -751,6 +752,7 @@ local _ClassConfig = {
             "Beast's Beckoning XVIII", -- Level 126
             "Beast's Bestowing",       -- Level 121
             "Beast's Bellowing",       -- Level 116
+            "59263",                   -- Level 111, Beast's Beckoning - deconflicts duplicate at Level 71
             "Beast's Beseeching",      -- Level 106
             "Beast's Bidding",         -- Level 101
             "Beast's Bespelling",      -- Level 96
@@ -758,7 +760,7 @@ local _ClassConfig = {
             "Beast's Beguiling",       -- Level 86
             "Beast's Befriending",     -- Level 81
             "Beast's Bewitching",      -- Level 76
-            "Beast's Beckoning",       -- Level 71
+            "9923",                    -- Level 71, Beast's Beckoning - deconflicts duplicate at Level 111
             "Nature's Beckon",         -- Level 70
             "Command of Tunare",       -- Level 63
             "Tunare's Request",        -- Level 55

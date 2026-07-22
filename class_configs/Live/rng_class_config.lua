@@ -178,7 +178,7 @@ local _ClassConfig = {
         ['ColdNukeT2'] = {
             "Gelid Wind",      -- Level 122
             "Restless Wind",   -- Level 112
-            "Frozen Wind",     -- Level 102, name is shared with a Level 63 timer 3 spell
+            "43478",           -- Level 102, Frozen Wind - deconflicts duplicate in ColdNukeT3
             "Rime-Laced Wind", -- Level 92
             "Windwhip Bite",   -- Level 82
             "Icefall Chill",   -- Level 72
@@ -193,7 +193,7 @@ local _ClassConfig = {
             "Biting Wind",         -- Level 87
             "Rimefall Bite",       -- Level 77
             "Ancient: North Wind", -- Level 70
-            "Frozen Wind",         -- Level 63, name is shared with a Level 102 timer 2 spell
+            "3418",                -- Level 63, Frozen Wind - deconflicts duplicate in ColdNukeT2
         },
         ['SummerNuke'] = {
             "Summer's Dew XII",  -- Level 129

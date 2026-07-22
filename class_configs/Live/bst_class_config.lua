@@ -387,13 +387,14 @@ return {
             "Growl of the Clouded Leopard", -- Level 119
             "Growl of the Lioness",         -- Level 114
             "Growl of the Sabretooth",      -- Level 109
+            "45152",                        -- Level 104, Growl of the Leopard - deconflicts duplicate at Level 61
             "Growl of the Snow Leopard",    -- Level 99
             "Growl of the Lion",            -- Level 94
             "Growl of the Tiger",           -- Level 89
             "Growl of the Jaguar",          -- Level 84
             "Growl of the Puma",            -- Level 79
             "Growl of the Panther",         -- Level 69
-            "Growl of the Leopard",         -- Level 61
+            "6740",                         -- Level 61, Growl of the Leopard - deconflicts duplicate at Level 104
         },
         ['PetHealProc'] = {
             --Pet Heal proc buff*
@@ -436,22 +437,22 @@ return {
         },
         ['UnityBuff'] = {
             -- --Combined ManaRegenBuff and AtkHPBuff
-            "Feralist's Unity VII", -- Level 130
-            "Wildfang's Unity",     -- Level 125
-            "Chieftain's Unity",    -- Level 120
-            "Reclaimer's Unity",    -- Level 115
-            "Feralist's Unity",     -- Level 110
-            "Stormblood's Unity",   -- Level 105
-            "Spiritual Unity",      -- Level 100
+            "73030",              -- Level 130, Feralist's Unity VII - deconflicts duplicate granted by AA/item
+            "Wildfang's Unity",   -- Level 125
+            "Chieftain's Unity",  -- Level 120
+            "Reclaimer's Unity",  -- Level 115
+            "Feralist's Unity",   -- Level 110
+            "Stormblood's Unity", -- Level 105
+            "Spiritual Unity",    -- Level 100
         },
         ['KillShotBuff'] = {
             --Pet Dmg Absorb + HoT buff*
             "Warder's Alliance",     -- Level 121
             "Symbiotic Alliance",    -- Level 116
             "Natural Alliance",      -- Level 111
+            "57344",                 -- Level 106, Natural Cooperation - deconflicts duplicate at Level 96
             "Natural Affiliation",   -- Level 101
-            "Natural Cooperation",   -- Level 96
-            "Natural Cooperation",   -- Level 96
+            "36456",                 -- Level 96, Natural Cooperation - deconflicts duplicate at Level 106
             "Natural Collaboration", -- Level 91
         },
         ['RunSpeedBuff'] = {
@@ -570,6 +571,7 @@ return {
         ['AtkHPBuff'] = {
             "Spiritual Vigor XV",     -- Level 127
             "Spiritual Valiancy",     -- Level 122
+            "64092",                  -- Level 117, Spiritual Vigor - deconflicts duplicate at Level 62
             "Spiritual Vehemence",    -- Level 112
             "Spiritual Vibrancy",     -- Level 107
             "Spiritual Vivification", -- Level 102
@@ -580,8 +582,7 @@ return {
             "Spiritual Vivacity",     -- Level 77
             "Spiritual Vim",          -- Level 72
             "Spiritual Vitality",     -- Level 67
-            "Spiritual Vigor",        -- Level 62
-            "Spiritual Vigor",        -- Level 62
+            "3456",                   -- Level 62, Spiritual Vigor - deconflicts duplicate at Level 117
             "Spiritual Strength",     -- Level 60
             --Single Target Atk+HP Buff* - Does Not Stack with Pally brells or Ranger Buff - is Middle ground Buff has HP & Atk
             "Spiritual Brawn",        -- Level 42
