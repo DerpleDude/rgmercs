@@ -13,7 +13,7 @@ return {
         'DPS',
     },
     ['ModeChecks']        = {
-        IsHealing = function() return true end,
+        IsHealing = function() return Config:GetSetting('DoHealSpell') end,
         IsCuring = function() return Config:GetSetting('DoCures') end,
     },
     ['Cure']              = {
@@ -685,7 +685,7 @@ return {
             state = 1,
             steps = 1,
             doFullRotation = true,
-            load_cond = function() return Config:GetSetting('DoHeals') end,
+            load_cond = function() return Config:GetSetting('DoHealSpell') end,
             cond = function(self, target) return Targeting.MainHealsNeeded(target) end,
         },
     },
@@ -1416,7 +1416,7 @@ return {
                 { name = "PoiBite", },
                 { name = "Maelstrom", },
                 { name = "FrozenPoi", },
-                { name = "HealSpell",    cond = function() return Config:GetSetting('DoHeals') end, },
+                { name = "HealSpell",    cond = function() return Config:GetSetting('DoHealSpell') end, },
                 { name = "PetHealSpell", cond = function() return Config:GetSetting('DoPetHealSpell') end, },
                 { name = "PetHealProc", },
                 { name = "SwarmPet",     cond = function() return Config:GetSetting('DoSwarmPet') end, },
@@ -1571,7 +1571,7 @@ return {
                 "For those situations where swarm pet DPS is greatly boosted (BRD SHM and MAG in group comes to mind), you can enable Do Swarm Pet to summon them outside of Feralgia.",
         },
         -- General Healing
-        ['DoHeals']        = {
+        ['DoHealSpell']    = {
             DisplayName = "Do Heal Spell",
             Group = "Abilities",
             Header = "Recovery",

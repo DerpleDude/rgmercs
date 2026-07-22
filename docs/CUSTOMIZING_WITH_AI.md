@@ -500,7 +500,6 @@ The configs RGMercs ships with are good study material. Default configs are prov
 
 GitHub:
 - All class configs: <https://github.com/DerpleDude/rgmercs/tree/main/class_configs>
-- Annotated example (note: may lag the newest patterns): <https://github.com/DerpleDude/rgmercs/blob/main/class_configs/example_class_config.lua>
 
 ### Helper modules
 

@@ -13,7 +13,7 @@ return {
         'DPS',
     },
     ['ModeChecks']        = {
-        IsHealing = function() return Config:GetSetting('DoHeals') end,
+        IsHealing = function() return Config:GetSetting('DoHealSpell') or Config:GetSetting('DoBurstHeal') end,
         IsCuring = function() return Config:GetSetting('DoCures') end,
     },
     ['Cure']              = {
@@ -247,7 +247,7 @@ return {
             state = 1,
             steps = 1,
             doFullRotation = true,
-            load_cond = function() return Config:GetSetting('DoHeals') end,
+            load_cond = function() return Config:GetSetting('DoHealSpell') or Config:GetSetting('DoBurstHeal') end,
             cond = function(self, target) return Targeting.BigHealsNeeded(target) end,
         },
     },
@@ -261,6 +261,7 @@ return {
             {
                 name = "HealSpell",
                 type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoHealSpell') end,
             },
         },
     },
@@ -814,7 +815,7 @@ return {
             -- cond = function(self) return true end, --Code kept here for illustration, if there is no condition to check, this line is not required
             spells = {
                 { name = "BurstHeal",     cond = function(self) return Config:GetSetting('DoBurstHeal') end, },
-                { name = "HealSpell",     cond = function(self) return Config:GetSetting('DoHeals') end, },
+                { name = "HealSpell",     cond = function(self) return Config:GetSetting('DoHealSpell') end, },
                 { name = "PetHealSpell",  cond = function(self) return Config:GetSetting('DoPetHealSpell') end, },
                 { name = "SlowSpell",     cond = function(self) return Config:GetSetting('DoSlow') end, },
                 { name = "Icelance1", },
@@ -980,7 +981,7 @@ return {
             Default = false,
         },
         --Spells/Abilities
-        ['DoHeals']        = {
+        ['DoHealSpell']    = {
             DisplayName = "Do PC Heals",
             Group = "Abilities",
             Header = "Recovery",

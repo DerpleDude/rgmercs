@@ -17,7 +17,7 @@ return {
         RelocateAA = function() return Casting.CanUseAA("Companion's Relocation") and "Companion's Relocation" end,
     },
     ['ModeChecks']        = {
-        IsHealing = function() return Config:GetSetting('DoHeals') end,
+        IsHealing = function() return Config:GetSetting('DoHealSpell') end,
         IsCuring = function() return Config:GetSetting('DoCures') end,
         IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
     },
@@ -277,7 +277,7 @@ return {
             state = 1,
             steps = 1,
             doFullRotation = true,
-            load_cond = function() return Config:GetSetting('DoHeals') end,
+            load_cond = function() return Config:GetSetting('DoHealSpell') end,
             cond = function(self, target) return Targeting.BigHealsNeeded(target) end,
         },
     },
@@ -850,7 +850,7 @@ return {
             name = "Default Mode",
             -- cond = function(self) return true end, --Code kept here for illustration, if there is no condition to check, this line is not required
             spells = {
-                { name = "HealSpell",    cond = function(self) return Config:GetSetting('DoHeals') end, },
+                { name = "HealSpell",    cond = function(self) return Config:GetSetting('DoHealSpell') end, },
                 { name = "PetHealSpell", cond = function(self) return Config:GetSetting('DoPetHealSpell') end, },
                 {
                     name = "SlowSpell",
@@ -1028,7 +1028,7 @@ return {
             Default = true,
         },
         --Spells/Abilities
-        ['DoHeals']        = {
+        ['DoHealSpell']        = {
             DisplayName = "Do PC Heals",
             Group = "Abilities",
             Header = "Recovery",

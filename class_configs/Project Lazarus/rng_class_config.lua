@@ -12,7 +12,7 @@ return {
     _version              = "2.1 - Project Lazarus",
     _author               = "Algar",
     ['ModeChecks']        = {
-        IsHealing = function() return Config:GetSetting('DoHeals') end,
+        IsHealing = function() return Config:GetSetting('DoHealSpell') end,
     },
     ['Modes']             = {
         'DPS',
@@ -141,7 +141,7 @@ return {
             "Regrowth",              -- Level 64
             "Chloroplast",           -- Level 55
         },
-        ['CoatBuff'] = {             -- Self DS
+        ['CoatDS'] = {               -- Self DS
             "Briarcoat",             -- Level 68
             "Bladecoat",             -- Level 63
             "Thorncoat",             -- Level 60
@@ -250,7 +250,7 @@ return {
             state = 1,
             steps = 1,
             doFullRotation = true,
-            load_cond = function() return Config:GetSetting('DoHeals') end,
+            load_cond = function() return Config:GetSetting('DoHealSpell') end,
             cond = function(self, target) return Targeting.BigHealsNeeded(target) end,
         },
     },
@@ -326,7 +326,7 @@ return {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Core.CombatActionsCheck() and (Config:GetSetting('DoHeals') and Casting.OkayToNuke() or Targeting.AggroCheckOkay())
+                return combat_state == "Combat" and Core.CombatActionsCheck() and (Config:GetSetting('DoHealSpell') and Casting.OkayToNuke() or Targeting.AggroCheckOkay())
             end,
         },
         {
@@ -544,7 +544,7 @@ return {
                 name = "Outrider's Evasion",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    return Targeting.IHaveAggro(100) and mq.TLO.Me.ActiveDisc() ~= "Weapon Shield Discipline"
+                    return Targeting.IHaveAggro(100) and (mq.TLO.Me.ActiveDisc() or "Weapon Shield Discipline") ~= "Weapon Shield Discipline"
                 end,
             },
             {
@@ -735,7 +735,7 @@ return {
                 end,
             },
             {
-                name = "CoatBuff",
+                name = "CoatDS",
                 type = "Spell",
                 cond = function(self, spell, target)
                     return Casting.SelfBuffCheck(spell)
@@ -769,7 +769,7 @@ return {
             name = "Default Mode",
             -- cond = function(self) return true end, --Code kept here for illustration, if there is no condition to check, this line is not required
             spells = {
-                { name = "HealSpell",   cond = function(self) return Config:GetSetting('DoHeals') end, },
+                { name = "HealSpell",   cond = function(self) return Config:GetSetting('DoHealSpell') end, },
                 { name = "SnareSpell",  cond = function(self) return Config:GetSetting('DoSnare') and not Casting.CanUseAA('Entrap') end, },
                 { name = "SwarmDot",    cond = function(self) return Config:GetSetting('DoSwarmDot') end, },
                 { name = "FireNukeT1", },
@@ -983,7 +983,7 @@ return {
         },
 
         --Utility
-        ['DoHeals']        = {
+        ['DoHealSpell']    = {
             DisplayName = "Do Heals",
             Group = "Abilities",
             Header = "Recovery",
