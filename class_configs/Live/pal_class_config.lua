@@ -915,21 +915,28 @@ local _ClassConfig = {
     },
     ['Charm']             = {
         ['Assist'] = {
-            { name = "HealTaunt",   type = "Spell", },
-            { name = "Audacity",    type = "Spell",   cond = function(self, spell, target) return Casting.DetSpellCheck(spell, target) end, },
+            { name = "HealTaunt",   type = "Spell",   load_cond = function(self) return Core.IsTanking() end, },
+            {
+                name = "Audacity",
+                type = "Spell",
+                load_cond = function(self) return Core.IsTanking() end,
+                cond = function(self, spell, target) return Casting.DetSpellCheck(spell, target) end,
+            },
             { name = "Disruption",  type = "AA", },
             { name = "Taunt",       type = "Ability", },
-            { name = "CrushTimer5", type = "Spell",   load_cond = function(self) return Config:GetSetting('Timer5Choice') == 1 end, },
-            { name = "CrushTimer6", type = "Spell",   load_cond = function(self) return Config:GetSetting('Timer6Choice') == 1 end, },
+            { name = "CrushTimer5", type = "Spell",   load_cond = function(self) return Core.IsTanking() and Config:GetSetting('Timer5Choice') == 1 end, },
+            { name = "CrushTimer6", type = "Spell",   load_cond = function(self) return Core.IsTanking() and Config:GetSetting('Timer6Choice') == 1 end, },
             {
                 name = "StunTimer5",
                 type = "Spell",
                 load_cond = function(self)
-                    return Config:GetSetting('Timer5Choice') == 2 or ((Config:GetSetting('Timer5Choice') == 1)) and not Core.GetResolvedActionMapItem('CrushTimer5')
+                    if not Core.IsTanking() then return false end
+                    local timerChoice = Config:GetSetting('Timer5Choice')
+                    return timerChoice == 2 or (timerChoice == 1 and not Core.GetResolvedActionMapItem('CrushTimer5'))
                 end,
             },
-            { name = "StunTimer4", type = "Spell", load_cond = function(self) return Config:GetSetting('Timer4Choice') end, },
-            { name = "StunTimer6", type = "Spell", load_cond = function(self) return Config:GetSetting('Timer6Choice') == 2 end, },
+            { name = "StunTimer4", type = "Spell", load_cond = function(self) return Core.IsTanking() and Config:GetSetting('Timer4Choice') end, },
+            { name = "StunTimer6", type = "Spell", load_cond = function(self) return Core.IsTanking() and Config:GetSetting('Timer6Choice') == 2 end, },
         },
     },
     ['RotationOrder']     = {
@@ -1370,7 +1377,8 @@ local _ClassConfig = {
                 name = "StunTimer5",
                 type = "Spell",
                 load_cond = function(self)
-                    return Config:GetSetting('Timer5Choice') == 2 or ((Config:GetSetting('Timer5Choice') == 1)) and not Core.GetResolvedActionMapItem('CrushTimer5')
+                    local timerChoice = Config:GetSetting('Timer5Choice')
+                    return timerChoice == 2 or (timerChoice == 1 and not Core.GetResolvedActionMapItem('CrushTimer5'))
                 end,
             },
             {
@@ -1710,29 +1718,31 @@ local _ClassConfig = {
             {
                 name = "CrushTimer5",
                 type = "Spell",
-                load_cond = function(self) return Config:GetSetting('Timer5Choice') == 1 end,
+                load_cond = function(self) return Core.IsTanking() and Config:GetSetting('Timer5Choice') == 1 end,
             },
             {
                 name = "CrushTimer6",
                 type = "Spell",
-                load_cond = function(self) return Config:GetSetting('Timer6Choice') == 1 end,
+                load_cond = function(self) return Core.IsTanking() and Config:GetSetting('Timer6Choice') == 1 end,
             },
             {
                 name = "StunTimer5",
                 type = "Spell",
                 load_cond = function(self)
-                    return Config:GetSetting('Timer5Choice') == 2 or ((Config:GetSetting('Timer5Choice') == 1)) and not Core.GetResolvedActionMapItem('CrushTimer5')
+                    if not Core.IsTanking() then return false end
+                    local timerChoice = Config:GetSetting('Timer5Choice')
+                    return timerChoice == 2 or (timerChoice == 1 and not Core.GetResolvedActionMapItem('CrushTimer5'))
                 end,
             },
             {
                 name = "StunTimer4",
                 type = "Spell",
-                load_cond = function(self) return Config:GetSetting('Timer4Choice') end,
+                load_cond = function(self) return Core.IsTanking() and Config:GetSetting('Timer4Choice') end,
             },
             {
                 name = "StunTimer6",
                 type = "Spell",
-                load_cond = function(self) return Config:GetSetting('Timer6Choice') == 2 end,
+                load_cond = function(self) return Core.IsTanking() and Config:GetSetting('Timer6Choice') == 2 end,
             },
             {
                 name = "Disruption",
@@ -1967,7 +1977,7 @@ local _ClassConfig = {
             ComboOptions = { 'Crush', 'Standard Stun', 'Disabled', },
             Default = mq.TLO.Me.Level() < 99 and 1 or 3,
             Min = 1,
-            Max = 4,
+            Max = 3,
             ConfigType = "Advanced",
         },
         ['Timer6Choice']      = {

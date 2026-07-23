@@ -1432,6 +1432,7 @@ local _ClassConfig = {
             {
                 name = "FleshBuff",
                 type = "Spell",
+                load_cond = function(self) return not Config:GetSetting('DoUnity') or not Casting.CanUseAA("Mortifier's Unity") end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
                     return mq.TLO.Me.PctHPs() > Config:GetSetting('EmergencyStart') and Casting.SelfBuffCheck(spell)
@@ -1612,6 +1613,7 @@ local _ClassConfig = {
             Header = "Buffs",
             Category = "Self",
             Tooltip = "Enable casting Mortifiers Unity.",
+            RequiresLoadoutChange = true,
             Default = true,
             Index = 101,
         },

@@ -521,8 +521,8 @@ return {
     ['Charm']             = {
         ['Assist'] = {
             { name = "Taunt",               type = "Ability", },
-            { name = "StunTimer5",          type = "Spell", },
-            { name = "StunTimer4",          type = "Spell", },
+            { name = "StunTimer5",          type = "Spell",   load_cond = function(self) return Core.IsTanking() end, },
+            { name = "StunTimer4",          type = "Spell",   load_cond = function(self) return Core.IsTanking() end, },
             { name = "Force of Disruption", type = "AA", },
         },
     },
@@ -997,10 +997,12 @@ return {
             {
                 name = "StunTimer5",
                 type = "Spell",
+                load_cond = function(self) return Core.IsTanking() end,
             },
             {
                 name = "StunTimer4",
                 type = "Spell",
+                load_cond = function(self) return Core.IsTanking() end,
             },
             {
                 name = "TwinHealNuke",

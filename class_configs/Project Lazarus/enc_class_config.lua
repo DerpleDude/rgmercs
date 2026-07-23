@@ -360,12 +360,32 @@ local _ClassConfig = {
             { name = "CharmSpell", type = "Spell", },
         },
         ['PreCharm']  = {
-            { name = "TashSpell", type = "Spell", cond = function(self, spell, target) return not target.Tashed() end, },
+            {
+                name = "TashSpell",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoTash') end,
+                cond = function(self, spell, target) return not target.Tashed() end,
+            },
         },
         ['Assist']    = {
-            { name = "SpinStunSpell", type = "Spell", cond = function(self, spell, target) return Targeting.TargetNotStunned() end, },
-            { name = "PBAEStunSpell", type = "Spell", cond = function(self, spell, target) return Targeting.TargetNotStunned() and Targeting.InSpellRange(spell, target) end, },
-            { name = "TashSpell",     type = "Spell", cond = function(self, spell, target) return Casting.DetSpellCheck(spell, target) end, },
+            {
+                name = "SpinStunSpell",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoSpinStun') > 1 end,
+                cond = function(self, spell, target) return Targeting.TargetNotStunned() end,
+            },
+            {
+                name = "PBAEStunSpell",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoAEStun') > 1 end,
+                cond = function(self, spell, target) return Targeting.TargetNotStunned() and Targeting.InSpellRange(spell, target) end,
+            },
+            {
+                name = "TashSpell",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoTash') end,
+                cond = function(self, spell, target) return Casting.DetSpellCheck(spell, target) end,
+            },
         },
     },
     ['RotationOrder'] = {
@@ -922,7 +942,7 @@ local _ClassConfig = {
             {
                 name = "ColoredNuke",
                 type = "Spell",
-                load_cond = function() return Config:GetSetting("DoNuke") end,
+                load_cond = function() return Config:GetSetting("DoColored") end,
                 cond = function(self)
                     return Casting.OkayToNuke()
                 end,
@@ -955,7 +975,7 @@ local _ClassConfig = {
             {
                 name = "MagicNuke",
                 type = "Spell",
-                load_cond = function() return Config:GetSetting("DoColored") end,
+                load_cond = function() return Config:GetSetting("DoNuke") end,
                 cond = function(self, spell, target)
                     return Casting.OkayToNuke()
                 end,

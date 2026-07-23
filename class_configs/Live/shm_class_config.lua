@@ -1336,6 +1336,7 @@ local _ClassConfig = {
                     return Casting.GetFirstMapItem({ "FastPoisonNuke", "PoisonNuke", "IceNuke", })
                 end,
                 type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoNuke') end,
                 cond = function(self, spell, target)
                     return Casting.OkayToNuke(true)
                 end,

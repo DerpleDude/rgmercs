@@ -566,14 +566,15 @@ return {
             {
                 name = "TouchHeal",
                 type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoTouchHeal') end,
             },
         },
     },
     ['Charm']             = {
         ['Assist'] = {
             { name = "Taunt",            type = "Ability", },
-            { name = "StunTimer5",       type = "Spell", },
-            { name = "StunTimer4",       type = "Spell", },
+            { name = "StunTimer5",       type = "Spell",   load_cond = function(self) return Core.IsTanking() end, },
+            { name = "StunTimer4",       type = "Spell",   load_cond = function(self) return Core.IsTanking() end, },
             { name = "Xeno's Faceguard", type = "Item",    load_cond = function(self) return mq.TLO.FindItem("=Xeno's Faceguard")() end, },
             { name = "Disruption",       type = "AA", },
         },
@@ -940,6 +941,7 @@ return {
                 name = "PBAEStun",
                 type = "Spell",
                 allowDead = true,
+                load_cond = function(self) return Config:GetSetting('AEStunUse') > 1 end,
                 cond = function(self, spell, target)
                     return Config:GetSetting('DoAEDamage')
                 end,
@@ -1045,16 +1047,6 @@ return {
         },
         ['Combat'] = {
             {
-                name = "PBAEStun",
-                type = "Spell",
-                load_cond = function(self) return Core.IsTanking() end,
-                allowDead = true,
-                cond = function(self, spell, target)
-                    if not Config:GetSetting('DoAEDamage') then return false end
-                    return Combat.AETargetCheck(true)
-                end,
-            },
-            {
                 name = "ForHonor",
                 type = "Spell",
                 load_cond = function(self) return Core.IsTanking() end,
@@ -1065,16 +1057,12 @@ return {
             {
                 name = "StunTimer4",
                 type = "Spell",
-                cond = function(self, spell, target)
-                    return Targeting.TargetNotStunned() and (Core.IsTanking() or not Casting.StunImmuneTarget(target))
-                end,
+                load_cond = function(self) return Core.IsTanking() end,
             },
             {
                 name = "StunTimer5",
                 type = "Spell",
-                cond = function(self, spell, target)
-                    return Targeting.TargetNotStunned() and (Core.IsTanking() or not Casting.StunImmuneTarget(target))
-                end,
+                load_cond = function(self) return Core.IsTanking() end,
             },
             {
                 name = "SereneStun",

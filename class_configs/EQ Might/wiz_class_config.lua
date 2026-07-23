@@ -571,6 +571,7 @@ return {
             {
                 name = "JoltSpell",
                 type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoJoltSpell') end,
                 cond = function(self)
                     return mq.TLO.Me.PctAggro() > Config:GetSetting('JoltAggro')
                 end,

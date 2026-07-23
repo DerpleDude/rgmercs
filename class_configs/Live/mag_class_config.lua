@@ -929,7 +929,7 @@ _ClassConfig      = {
             {
                 name = "MaloDebuff",
                 type = "Spell",
-                load_cond = function() return not Casting.CanUseAA("Malaise") end,
+                load_cond = function() return Config:GetSetting('DoMalo') and not Casting.CanUseAA("Malaise") end,
                 cond = function(self, spell, target)
                     return Casting.DetSpellCheck(spell, target)
                 end,
@@ -1536,6 +1536,7 @@ _ClassConfig      = {
             {
                 name = "MaloDebuff",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('DoMalo') end,
                 cond = function(self, spell, target)
                     if Casting.CanUseAA("Malaise") then return false end
                     return Casting.DetSpellCheck(spell)

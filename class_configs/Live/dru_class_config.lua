@@ -1,5 +1,6 @@
 local mq           = require('mq')
 local Casting      = require("utils.casting")
+local Combat       = require("utils.combat")
 local Config       = require('utils.config')
 local Core         = require("utils.core")
 local Globals      = require('utils.globals')
@@ -1034,16 +1035,18 @@ local _ClassConfig = {
             name = 'InstantRunBuff',
             state = 1,
             steps = 1,
+            timer = function(self) return Combat.GetCachedCombatState() == "Combat" and 15 or 1 end,
             targetId = function(self)
                 local autoTarget = Targeting.CheckForAutoTargetID()
                 if #autoTarget > 0 then return autoTarget end
+                if Combat.GetCachedCombatState() == "Combat" then return { mq.TLO.Me.ID(), } end
                 return Casting.GetBuffableIDs()
             end,
             load_cond = function(self) return Config:GetSetting('DoMoveBuffs') and Casting.CanUseAA("Communion of the Cheetah") end,
             cond = function(self, combat_state)
                 local downtime = combat_state == "Downtime" and not mq.TLO.Me.Invis()
                 local combat = combat_state == "Combat"
-                return (downtime or combat) and Core.CombatActionsCheck()
+                return downtime or combat
             end,
         },
     },
@@ -1523,9 +1526,8 @@ local _ClassConfig = {
                 name = "Communion of the Cheetah",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    local aaBuff = Casting.GetAASpell(aaName).Name() or ""
-                    return (self.CombatState == "Combat" and (mq.TLO.Me.Buff(aaBuff).Duration.TotalSeconds() or 0) < 15) or
-                        (self.CombatState == "Downtime" and Casting.GroupBuffAACheck(aaName, target))
+                    -- use at rotation timer interval in combat, check for need outside
+                    return self.CombatState == "Combat" or (self.CombatState == "Downtime" and Casting.GroupBuffAACheck(aaName, target))
                 end,
             },
         },

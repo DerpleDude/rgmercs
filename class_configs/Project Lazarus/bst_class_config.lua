@@ -525,6 +525,7 @@ return {
             {
                 name = "PetSpell",
                 type = "Spell",
+                load_cond = function(self) return Config:GetSetting('KeepPetMemmed') end,
                 cond = function(self, spell)
                     return mq.TLO.Me.Pet.ID() == 0
                 end,
@@ -978,6 +979,7 @@ return {
             Category = "Pet Summoning",
             Index = 101,
             Tooltip = "Keep your pet spell memorized (allows combat resummoning).",
+            RequiresLoadoutChange = true,
             Default = false,
         },
         --Spells/Abilities

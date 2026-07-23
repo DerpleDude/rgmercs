@@ -726,6 +726,7 @@ return {
                 name = "AEStunNuke",
                 type = "Spell",
                 allowDead = true,
+                load_cond = function(self) return Config:GetSetting('DoAEStunNuke') end,
             },
             {
                 name = "PBTimer4",

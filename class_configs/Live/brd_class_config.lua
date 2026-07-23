@@ -808,7 +808,7 @@ local _ClassConfig = {
                     end,
                 },
                 {
-                    name = "SpellDamageSong",
+                    name = "SpellDmgSong",
                     cond = function(self)
                         return not Core.GetResolvedActionMapItem('AriaSong') and Config:GetSetting('LLAria') == 3 and Config:GetSetting('UseAria') > 1
                     end,
@@ -954,15 +954,17 @@ local _ClassConfig = {
             state = 1,
             steps = 1,
             midSong = true,
+            timer = function(self) return Combat.GetCachedCombatState() == "Combat" and 15 or 1 end,
             targetId = function(self)
                 local autoTarget = Targeting.CheckForAutoTargetID()
                 if #autoTarget > 0 then return autoTarget end
+                if Combat.GetCachedCombatState() == "Combat" then return { mq.TLO.Me.ID(), } end
                 return Casting.GetBuffableGroupIDs()
             end,
             load_cond = function(self) return Casting.CanUseAA("Selo's Sonata") end,
             cond = function(self, combat_state)
                 local downtime = combat_state == "Downtime" and not mq.TLO.Me.Invis()
-                local combat = combat_state == "Combat" and Core.CombatActionsCheck()
+                local combat = combat_state == "Combat"
                 return downtime or combat
             end,
         },
@@ -1495,12 +1497,9 @@ local _ClassConfig = {
                 type = "AA",
                 midSong = true,
                 cond = function(self, aaName, target)
-                    -- Selo AA triggers Accelerando or Accelerato depending on rank.
-                    local aaBuff = mq.TLO.Me.AltAbility(aaName).Spell.Trigger(1)() or ""
                     local combatState = Combat.GetCachedCombatState()
-                    -- if in combat, check self, out of combat, also check others
-                    return (combatState == "Combat" and (mq.TLO.Me.Buff(aaBuff).Duration.TotalSeconds() or 0) < 15) or
-                        (combatState == "Downtime" and Casting.GroupBuffAACheck(aaName, target))
+                    -- use at rotation timer interval in combat, check for need outside
+                    return combatState == "Combat" or (combatState == "Downtime" and Casting.GroupBuffAACheck(aaName, target))
                 end,
             },
         },

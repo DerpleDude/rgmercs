@@ -856,6 +856,7 @@ local _ClassConfig = {
                 name = "AETaunt",
                 type = "Spell",
                 tooltip = Tooltips.AETaunt,
+                load_cond = function(self) return Config:GetSetting('AETauntSpell') end,
                 cond = function(self, spell, target)
                     return mq.TLO.Me.PctHPs() > Config:GetSetting('EmergencyStart')
                 end,
@@ -1271,11 +1272,11 @@ local _ClassConfig = {
         {
             id = 'LifeTap3',
             Type = "Spell",
-            DisplayName = function() return Core.GetResolvedActionMapItem('LifeTap2').RankName.Name() or "" end,
-            AbilityName = function() return Core.GetResolvedActionMapItem('LifeTap2').RankName.Name() or "" end,
+            DisplayName = function() return Core.GetResolvedActionMapItem('LifeTap3').RankName.Name() or "" end,
+            AbilityName = function() return Core.GetResolvedActionMapItem('LifeTap3').RankName.Name() or "" end,
             AbilityRange = 200,
             cond = function(self)
-                local resolvedSpell = Core.GetResolvedActionMapItem('LifeTap2')
+                local resolvedSpell = Core.GetResolvedActionMapItem('LifeTap3')
                 if not resolvedSpell then return false end
                 return mq.TLO.Me.Gem(resolvedSpell.RankName.Name() or "")() ~= nil
             end,
@@ -1505,6 +1506,7 @@ local _ClassConfig = {
             Category = "Hate Tools",
             Index = 103,
             Tooltip = "Use your AE Taunt spell line.",
+            RequiresLoadoutChange = true,
             Default = true,
             ConfigType = "Advanced",
         },

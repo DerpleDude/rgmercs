@@ -1111,8 +1111,18 @@ local _ClassConfig = {
     },
     ['Charm']             = {
         ['Assist'] = {
-            { name = "LowLevelStun", type = "Spell", cond = function(self, spell, target) return Targeting.TargetNotStunned() end, },
-            { name = "StunTimer6",   type = "Spell", cond = function(self, spell, target) return Targeting.TargetNotStunned() end, },
+            {
+                name = "LowLevelStun",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoLLStun') and mq.TLO.Me.Level() < 59 end,
+                cond = function(self, spell, target) return Targeting.TargetNotStunned() end,
+            },
+            {
+                name = "StunTimer6",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoHealStun') end,
+                cond = function(self, spell, target) return Targeting.TargetNotStunned() end,
+            },
         },
     },
     ['RotationOrder']     = {
@@ -1336,6 +1346,7 @@ local _ClassConfig = {
                 name = "GroupElixir",
                 type = "Spell",
                 allowDead = true,
+                load_cond = function(self) return Config:GetSetting('DoHealOverTime') end,
                 cond = function(self, spell)
                     if (mq.TLO.Me.Level() < 101 and not Casting.GOMCheck()) then return false end
                     return (mq.TLO.Me.Song(spell).Duration.TotalSeconds() or 0) < 15

@@ -795,6 +795,7 @@ local _ClassConfig = {
                 name = "AETaunt",
                 type = "Spell",
                 tooltip = Tooltips.AETaunt,
+                load_cond = function(self) return Config:GetSetting('AETauntSpell') end,
                 cond = function(self, spell, target)
                     return mq.TLO.Me.PctHPs() > Config:GetSetting('EmergencyStart')
                 end,
@@ -1437,6 +1438,7 @@ local _ClassConfig = {
             Category = "Hate Tools",
             Index = 103,
             Tooltip = "Use your AE Taunt spell line.",
+            RequiresLoadoutChange = true,
             Default = true,
             ConfigType = "Advanced",
         },

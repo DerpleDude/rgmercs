@@ -422,7 +422,7 @@ local _ClassConfig    = {
             {
                 name = "TashRod",
                 type = "Item",
-                load_cond = function(self) return self.Helpers.PreferTashItem(self) end,
+                load_cond = function(self) return Config:GetSetting('DoTash') and self.Helpers.PreferTashItem(self) end,
                 cond = function(self, itemName, target)
                     return not
                         target.Tashed()
@@ -431,7 +431,7 @@ local _ClassConfig    = {
             {
                 name = "TashSpell",
                 type = "Spell",
-                load_cond = function(self) return not self.Helpers.PreferTashItem(self) end,
+                load_cond = function(self) return Config:GetSetting('DoTash') and not self.Helpers.PreferTashItem(self) end,
                 cond = function(self, spell, target)
                     return not target
                         .Tashed()
@@ -439,12 +439,22 @@ local _ClassConfig    = {
             },
         },
         ['Assist']    = {
-            { name = "SpinStunSpell", type = "Spell", cond = function(self, spell, target) return Targeting.TargetNotStunned() end, },
-            { name = "PBAEStunSpell", type = "Spell", cond = function(self, spell, target) return Targeting.TargetNotStunned() and Targeting.InSpellRange(spell, target) end, },
+            {
+                name = "SpinStunSpell",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoSpinStun') > 1 end,
+                cond = function(self, spell, target) return Targeting.TargetNotStunned() end,
+            },
+            {
+                name = "PBAEStunSpell",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoAEStun') > 1 end,
+                cond = function(self, spell, target) return Targeting.TargetNotStunned() and Targeting.InSpellRange(spell, target) end,
+            },
             {
                 name = "TashRod",
                 type = "Item",
-                load_cond = function(self) return self.Helpers.PreferTashItem(self) end,
+                load_cond = function(self) return Config:GetSetting('DoTash') and self.Helpers.PreferTashItem(self) end,
                 cond = function(
                     self, itemName, target)
                     return Casting.DetItemCheck(itemName, target)
@@ -453,7 +463,7 @@ local _ClassConfig    = {
             {
                 name = "TashSpell",
                 type = "Spell",
-                load_cond = function(self) return not self.Helpers.PreferTashItem(self) end,
+                load_cond = function(self) return Config:GetSetting('DoTash') and not self.Helpers.PreferTashItem(self) end,
                 cond = function(
                     self, spell, target)
                     return Casting.DetSpellCheck(spell, target)
@@ -1133,7 +1143,7 @@ local _ClassConfig    = {
             {
                 name = "MagicNuke",
                 type = "Spell",
-                load_cond = function() return Config:GetSetting("DoColored") end,
+                load_cond = function() return Config:GetSetting("DoNuke") end,
                 cond = function(self, spell, target)
                     return Casting.OkayToNuke()
                 end,
@@ -1541,16 +1551,16 @@ local _ClassConfig    = {
             RequiresLoadoutChange = true,
             Default = true,
         },
-        ['DoColored']          = {
-            DisplayName = "Colored Chaos",
-            Group = "Abilities",
-            Header = "Damage",
-            Category = "Direct",
-            Index = 102,
-            Tooltip = "Use the Colored Chaos magic nuke.",
-            RequiresLoadoutChange = true,
-            Default = true,
-        },
+        -- ['DoColored']          = {
+        --     DisplayName = "Colored Chaos",
+        --     Group = "Abilities",
+        --     Header = "Damage",
+        --     Category = "Direct",
+        --     Index = 102,
+        --     Tooltip = "Use the Colored Chaos magic nuke.",
+        --     RequiresLoadoutChange = true,
+        --     Default = true,
+        -- },
         ['DoStrangleDot']      = {
             DisplayName = "Strangle Dot",
             Group = "Abilities",

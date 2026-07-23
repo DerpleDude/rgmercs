@@ -891,11 +891,26 @@ local _ClassConfig    = {
             { type = "Spell", name = "CharmCommand", },
         },
         ['PreCharm']  = {
-            { name = "TashSpell", type = "Spell", cond = function(self, spell, target) return not target.Tashed() end, },
+            {
+                name = "TashSpell",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoTash') end,
+                cond = function(self, spell, target) return not target.Tashed() end,
+            },
         },
         ['Assist']    = {
-            { name = "PBAEStunSpell", type = "Spell", cond = function(self, spell, target) return Targeting.TargetNotStunned() and Targeting.InSpellRange(spell, target) end, },
-            { name = "TashSpell",     type = "Spell", cond = function(self, spell, target) return Casting.DetSpellCheck(spell, target) end, },
+            {
+                name = "PBAEStunSpell",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoAEStun') > 1 end,
+                cond = function(self, spell, target) return Targeting.TargetNotStunned() and Targeting.InSpellRange(spell, target) end,
+            },
+            {
+                name = "TashSpell",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoTash') end,
+                cond = function(self, spell, target) return Casting.DetSpellCheck(spell, target) end,
+            },
         },
     },
     ['RotationOrder'] = {
@@ -1375,14 +1390,6 @@ local _ClassConfig    = {
         },
         ['DPS(Default)'] = {
             {
-                name = "TwinCastMez",
-                type = "Spell",
-                cond = function(self, spell, target)
-                    if Config:GetSetting('TwincastMez') ~= 3 or Modules:ExecModule("Mez", "IsMezImmune", target.ID()) then return false end
-                    return not Casting.IHaveBuff(spell) and not mq.TLO.Me.Buff("Twincast")()
-                end,
-            },
-            {
                 name = "MindDot",
                 type = "Spell",
                 cond = function(self, spell, target)
@@ -1412,6 +1419,14 @@ local _ClassConfig    = {
                 cond = function(self, spell, target)
                     if not Config:GetSetting('DoManaDrain') then return false end
                     return (target.CurrentMana() or 0) > 10 and Casting.OkayToNuke()
+                end,
+            },
+            {
+                name = "TwinCastMez",
+                type = "Spell",
+                cond = function(self, spell, target)
+                    if Config:GetSetting('TwincastMez') ~= 3 or Modules:ExecModule("Mez", "IsMezImmune", target.ID()) then return false end
+                    return not Casting.IHaveBuff(spell) and not mq.TLO.Me.Buff("Twincast")()
                 end,
             },
         },
@@ -1451,19 +1466,19 @@ local _ClassConfig    = {
                     return Casting.OkayToNuke()
                 end,
             },
+            { --used when the chanter or group members are low mana
+                name = "ManaTapNuke",
+                type = "Spell",
+                cond = function(self, spell, target)
+                    return (mq.TLO.Group.LowMana(80)() or -1) > 1 or not Casting.HaveManaToNuke()
+                end,
+            },
             {
                 name = "TwinCastMez",
                 type = "Spell",
                 cond = function(self, spell, target)
                     if Config:GetSetting('TwincastMez') ~= 3 or Modules:ExecModule("Mez", "IsMezImmune", target.ID()) then return false end
                     return not Casting.IHaveBuff(spell) and not mq.TLO.Me.Buff("Improved Twincast")()
-                end,
-            },
-            { --used when the chanter or group members are low mana
-                name = "ManaTapNuke",
-                type = "Spell",
-                cond = function(self, spell, target)
-                    return (mq.TLO.Group.LowMana(80)() or -1) > 1 or not Casting.HaveManaToNuke()
                 end,
             },
         },

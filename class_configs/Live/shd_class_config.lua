@@ -873,8 +873,11 @@ local _ClassConfig = {
             steps = 1,
             doFullRotation = true,
             load_cond = function()
-                return Core.IsTanking() and
-                    ((Config:GetSetting('AETauntSpell') > 1 and Core.GetResolvedActionMapItem('AETaunt')) or (Config:GetSetting('AETauntAA') and (Casting.CanUseAA("Explosion of Spite") or Casting.CanUseAA("Explosion of Hatred"))))
+                if not Core.IsTanking() then return false end
+                local setting = Config:GetSetting('AETauntSpell')
+                local tauntSpell = (setting == 3 or (setting == 2 and not Casting.CanUseAA("Explosion of Hatred"))) and Core.GetResolvedActionMapItem('AETaunt')
+                local hateAA = Config:GetSetting('AETauntAA') and (Casting.CanUseAA("Explosion of Spite") or Casting.CanUseAA("Explosion of Hatred"))
+                return tauntSpell or hateAA or (Config:GetSetting('DoAELifeTap') and Config:GetSetting('DoAEDamage'))
             end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
@@ -1096,6 +1099,7 @@ local _ClassConfig = {
                 name = "Skin",
                 type = "Spell",
                 tooltip = Tooltips.Skin,
+                load_cond = function(self) return Core.IsTanking() end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
                     return spell.RankName.Stacks() and (mq.TLO.Me.Buff(spell).Duration.TotalSeconds() or 0) < 60
@@ -1115,6 +1119,7 @@ local _ClassConfig = {
                 name = "HealBurn",
                 type = "Spell",
                 tooltip = Tooltips.HealBurn,
+                load_cond = function(self) return Core.IsTanking() end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
                     return spell.RankName.Stacks() and (mq.TLO.Me.Buff(spell).Duration.TotalSeconds() or 0) < 30
@@ -1369,6 +1374,11 @@ local _ClassConfig = {
                 name = "AETaunt",
                 type = "Spell",
                 tooltip = Tooltips.AETaunt,
+                load_cond = function(self)
+                    if not Core.IsTanking() then return false end
+                    local setting = Config:GetSetting('AETauntSpell')
+                    return setting == 3 or (setting == 2 and not Casting.CanUseAA("Explosion of Hatred"))
+                end,
                 cond = function(self, spell, target)
                     return mq.TLO.Me.PctHPs() > Config:GetSetting('EmergencyStart')
                 end,

@@ -2414,10 +2414,18 @@ function Module:GiveTime()
             Logger.log_verbose("\aw:::RUN ROTATION::: \arSkipping Rotation: %s because it is disabled in the settings.", r.name)
         else
             self.TempSettings.RotationTimers[r.name] = self.TempSettings.RotationTimers[r.name] or 0
-            if r.timer then -- see if we've waited the rotation timer out.
-                timeCheckPassed = ((Globals.GetTimeSeconds() - self.TempSettings.RotationTimers[r.name]) >= r.timer)
-            else            -- default to only processing Downtime rotations once per second if no timer is specified.
+            local rotationTimer = r.timer
+            if type(rotationTimer) == "function" then
+                rotationTimer = Core.SafeCallFunc(string.format("Rotation Timer for %s", r.name), rotationTimer, self)
+                if type(rotationTimer) ~= "number" then
+                    Logger.log_error("\arRotation timer for \at%s\ar did not return a number, defaulting to 1 second.", r.name)
+                    rotationTimer = 1
+                end
+            end
+            if not rotationTimer then     -- default to only processing Downtime rotations once per second if no timer is specified.
                 timeCheckPassed = self.CombatState ~= "Downtime" and true or ((Globals.GetTimeSeconds() - self.TempSettings.RotationTimers[r.name]) >= 1)
+            elseif rotationTimer > 0 then -- see if we've waited the rotation timer out.
+                timeCheckPassed = ((Globals.GetTimeSeconds() - self.TempSettings.RotationTimers[r.name]) >= rotationTimer)
             end
 
             if timeCheckPassed then
@@ -2445,8 +2453,8 @@ function Module:GiveTime()
                 Logger.log_verbose(
                     "\ay:::TEST ROTATION::: => \at%s :: Skipped due to timer! Last Run: %s Next Run %s", r.name,
                     Strings.FormatTime(Globals.GetTimeSeconds() - self.TempSettings.RotationTimers[r.name]),
-                    Strings.FormatTime((r.timer or 1) - (Globals.GetTimeSeconds() - self.TempSettings.RotationTimers[r.name])))
-                if r.timer then r.lastCondCheck = false end --update rotation UI when rotation doesn't fire due to timer check
+                    Strings.FormatTime((rotationTimer or 1) - (Globals.GetTimeSeconds() - self.TempSettings.RotationTimers[r.name])))
+                if rotationTimer then r.lastCondCheck = false end --update rotation UI when rotation doesn't fire due to timer check
             end
         end
     end
