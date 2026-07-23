@@ -435,7 +435,7 @@ return {
         },
         -- Poison
         ['PoisonName']      = {
-            DisplayName = "Poison Item",
+            DisplayName = "Poison to Apply",
             Group = "Items",
             Header = "Clickies",
             Category = "Class Config Clickies",
@@ -444,7 +444,7 @@ return {
             Default = "",
         },
         ['PoisonClicky']    = {
-            DisplayName = "Poison Clicky",
+            DisplayName = "Poison Summon Clicky",
             Group = "Items",
             Header = "Clickies",
             Category = "Class Config Clickies",

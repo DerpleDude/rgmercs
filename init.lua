@@ -418,11 +418,6 @@ local function Main()
 
     notifyZoning = true
 
-    if mq.TLO.Me.NumGems() ~= Casting.UseGem then
-        -- sometimes this can get out of sync.
-        Casting.UseGem = mq.TLO.Me.NumGems()
-    end
-
     if Globals.PauseMain then
         mq.delay(100)
         mq.doevents()

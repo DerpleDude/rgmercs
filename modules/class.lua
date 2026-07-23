@@ -54,6 +54,11 @@ Module.TempSettings.ResolvingActions         = true
 Module.TempSettings.CombatModeSet            = false
 Module.TempSettings.NewCombatMode            = false
 Module.TempSettings.ForceRepackGems          = false
+Module.TempSettings.MaxGems                  = mq.TLO.Me.NumGems()
+Module.TempSettings.GemEditing               = false
+Module.TempSettings.GemDraftOrder            = {}
+Module.TempSettings.GemDraftEnabled          = {}
+Module.TempSettings.GemDraftReset            = false
 Module.TempSettings.LastFastPathTime         = 0
 Module.TempSettings.CombatModeChangeTime     = 0
 Module.TempSettings.MissingSpells            = {}
@@ -281,17 +286,6 @@ Module.CommandHandlers                       = {
             return true
         end,
     },
-    reordergems = {
-        usage = "/rgl reordergems",
-        about = "Repack your spell bar into priority order, ignoring current placement.",
-        handler = function(self)
-            self:ReorderGems()
-
-            Logger.log_info("\awGem reorder initiated.")
-
-            return true
-        end,
-    },
     enablerotationentry = {
         usage = "/rgl enablerotationentry \"<Name>\"",
         about = "Enables <Name> Rotation Entry",
@@ -473,6 +467,18 @@ function Module:LoadSettings()
             Default = {},
         }
 
+        self.ClassConfig.DefaultConfig['SpellGemOrder'] = {
+            DisplayName = "SpellGemOrder",
+            Type = "Custom",
+            Default = {},
+        }
+
+        self.ClassConfig.DefaultConfig['EnabledSpellGems'] = {
+            DisplayName = "EnabledSpellGems",
+            Type = "Custom",
+            Default = {},
+        }
+
         self.ClassConfig.DefaultConfig['EnabledRezEntries'] = {
             DisplayName = "EnabledRezEntries",
             Type = "Custom",
@@ -586,6 +592,255 @@ function Module:ReorderGems()
     self.TempSettings.NewCombatMode = true
 end
 
+function Module:MaintainSwapGem()
+    local numGems = mq.TLO.Me.NumGems()
+    if numGems ~= self.TempSettings.MaxGems then
+        self.TempSettings.MaxGems = numGems
+        self:RescanLoadout()
+    end
+    if Casting.UseGem > numGems or not Casting.IsGemEnabled(Casting.UseGem) then
+        for gem = numGems, 1, -1 do
+            if Casting.IsGemEnabled(gem) then
+                Casting.UseGem = gem
+                break
+            end
+        end
+    end
+end
+
+function Module:SnapshotGemDraft()
+    if not self.SpellLoadOut then return end
+    local numGems = mq.TLO.Me.NumGems()
+
+    local order = {}
+    for gem = 1, numGems do
+        if Casting.IsGemEnabled(gem) then
+            local entry = self.SpellLoadOut[gem]
+            if entry and entry.selectedSpellData then table.insert(order, entry.selectedSpellData.name) end
+        end
+    end
+    self.TempSettings.GemDraftOrder = order
+
+    local enabled = {}
+    for gem = 1, numGems do
+        if not Casting.IsGemEnabled(gem) then enabled[gem] = false end
+    end
+    self.TempSettings.GemDraftEnabled = enabled
+end
+
+function Module:BeginGemAdjust()
+    self:SnapshotGemDraft()
+    self.TempSettings.GemDraftReset = false
+    self.TempSettings.GemEditing = true
+end
+
+function Module:ResetGemAdjust()
+    local order = {}
+    for gem = 1, mq.TLO.Me.NumGems() do
+        local entry = self.SpellLoadOut and self.SpellLoadOut[gem]
+        if entry and entry.selectedSpellData then table.insert(order, entry.selectedSpellData.name) end
+    end
+    self.TempSettings.GemDraftOrder = order
+    self.TempSettings.GemDraftEnabled = {}
+    self.TempSettings.GemDraftReset = true
+end
+
+function Module:CancelGemAdjust()
+    self.TempSettings.GemEditing = false
+    self.TempSettings.GemDraftReset = false
+    self.TempSettings.GemDraftOrder = {}
+    self.TempSettings.GemDraftEnabled = {}
+end
+
+function Module:ApplyGemAdjust()
+    local order = Config:GetSetting('SpellGemOrder') or {}
+    if self.TempSettings.GemDraftReset then
+        order[self.LoadOutName] = nil
+    else
+        order[self.LoadOutName] = self.TempSettings.GemDraftOrder
+    end
+    Config:SetSetting('SpellGemOrder', order)
+    Config:SetSetting('EnabledSpellGems', self.TempSettings.GemDraftEnabled)
+    self.TempSettings.GemEditing = false
+    self.TempSettings.GemDraftReset = false
+    self:ReorderGems()
+    Logger.log_info("\awGem adjustments applied.")
+end
+
+--- Renders the interactive spell-gem loadout: per-gem enable toggles and priority reordering, editable only while in gem-adjust mode.
+--- @param loadoutTable table Map of gem slot → { spell, selectedSpellData } entries.
+function Module:RenderGemLoadoutTable(loadoutTable)
+    local numGems = mq.TLO.Me.NumGems() or 0
+    if numGems == 0 then return end
+
+    local loadOutName = self.LoadOutName
+    local editing = self.TempSettings.GemEditing
+
+    local activeEnabled
+    if editing then
+        activeEnabled = self.TempSettings.GemDraftEnabled
+    else
+        activeEnabled = Config:GetSetting('EnabledSpellGems') or {}
+    end
+
+    local hasOrder
+    if editing then
+        hasOrder = #self.TempSettings.GemDraftOrder > 0
+    else
+        hasOrder = (Config:GetSetting('SpellGemOrder') or {})[loadOutName] ~= nil
+    end
+
+    local enabledCount = 0
+    local swapGem = nil
+    for gem = 1, numGems do
+        if activeEnabled[gem] ~= false then
+            enabledCount = enabledCount + 1
+            swapGem = gem
+        end
+    end
+
+    local entryByName = {}
+    for gem = 1, numGems do
+        local entry = loadoutTable[gem]
+        if entry and entry.selectedSpellData then entryByName[entry.selectedSpellData.name] = entry end
+    end
+
+    local orderedNames
+    if editing then
+        orderedNames = self.TempSettings.GemDraftOrder
+    else
+        orderedNames = {}
+        for gem = 1, numGems do
+            if activeEnabled[gem] ~= false and loadoutTable[gem] and loadoutTable[gem].selectedSpellData then
+                table.insert(orderedNames, loadoutTable[gem].selectedSpellData.name)
+            end
+        end
+    end
+
+    local display = {}
+    local gemToPos = {}
+    local gemInsert = {}
+    local placedCount = 0
+    for gem = 1, numGems do
+        gemInsert[gem] = placedCount + 1
+        if activeEnabled[gem] ~= false then
+            local name = orderedNames[placedCount + 1]
+            if name then
+                placedCount = placedCount + 1
+                display[gem] = entryByName[name]
+                gemToPos[gem] = placedCount
+            end
+        end
+    end
+
+    local pendingSwap = nil
+    local pendingDrag = nil
+    local toggleGem = nil
+
+    if ImGui.BeginTable("GemLoadout", 7, bit32.bor(ImGuiTableFlags.Resizable, ImGuiTableFlags.Borders)) then
+        ImGui.TableSetupColumn('Icon', ImGuiTableColumnFlags.WidthFixed, 20.0)
+        ImGui.TableSetupColumn('Gem', ImGuiTableColumnFlags.WidthFixed, 40.0)
+        ImGui.TableSetupColumn('Enable', ImGuiTableColumnFlags.WidthFixed, 30.0)
+        ImGui.TableSetupColumn('Set Name', ImGuiTableColumnFlags.WidthStretch)
+        ImGui.TableSetupColumn('Level', ImGuiTableColumnFlags.WidthFixed, 40.0)
+        ImGui.TableSetupColumn('Rank Name', ImGuiTableColumnFlags.WidthStretch)
+        ImGui.TableSetupColumn("##reorder", ImGuiTableColumnFlags.WidthFixed, 55.0)
+        ImGui.TableHeadersRow()
+
+        for gem = 1, numGems do
+            local enabled = activeEnabled[gem] ~= false
+            local data = display[gem]
+            ImGui.TableNextRow()
+
+            ImGui.TableNextColumn()
+            if data then Ui.DrawInspectableSpellIcon(data.spell) end
+
+            ImGui.TableNextColumn()
+            ImGui.Selectable(string.format("%d##gemrow_%d", gem, gem), false,
+                bit32.bor(ImGuiSelectableFlags.SpanAllColumns, ImGuiSelectableFlags.AllowOverlap))
+            if editing and data and ImGui.BeginDragDropSource() then
+                ImGui.SetDragDropPayload("GEM_REORDER", gemToPos[gem])
+                ImGui.Text(data.selectedSpellData.name or "")
+                ImGui.EndDragDropSource()
+            end
+            if editing and ImGui.BeginDragDropTarget() then
+                local payload = ImGui.AcceptDragDropPayload("GEM_REORDER")
+                if payload then pendingDrag = { payload.Data, gemInsert[gem], } end
+                ImGui.EndDragDropTarget()
+            end
+
+            ImGui.TableNextColumn()
+            ImGui.BeginDisabled(not editing)
+            local newState, changed = Ui.RenderOptionToggle(string.format("gem_enable_%d", gem), "", enabled)
+            ImGui.EndDisabled()
+            Ui.Tooltip("Turn off to keep RGMercs from using this gem.")
+            if changed and (newState or enabledCount > 1) then toggleGem = gem end
+
+            ImGui.TableNextColumn()
+            if not enabled then
+                ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.Grey)
+                Ui.RenderText("User Defined")
+                ImGui.PopStyleColor()
+            elseif data then
+                Ui.RenderText(data.selectedSpellData.name or "")
+            end
+
+            ImGui.TableNextColumn()
+            if data then Ui.RenderText(tostring(data.spell.Level())) end
+
+            ImGui.TableNextColumn()
+            if data then
+                local _, clicked = ImGui.Selectable(data.spell.RankName())
+                if clicked then data.spell.RankName.Inspect() end
+                Ui.Tooltip(string.format("%s: %s (click to inspect)", data.selectedSpellData.name or "Spell", data.spell.RankName() or "Unknown"))
+                if gem == swapGem and hasOrder and (data.spell.RecastTime() or 0) >= 30000 then
+                    ImGui.SameLine()
+                    ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.ConditionFailColor)
+                    Ui.RenderText(Icons.MD_WARNING)
+                    ImGui.PopStyleColor()
+                    Ui.Tooltip("This long-refresh spell is parked in the last slot and will not be relocated while a custom order is set.")
+                end
+            end
+
+            ImGui.TableNextColumn()
+            local pos = gemToPos[gem]
+            if pos then
+                ImGui.BeginDisabled(not editing)
+                if pos > 1 then
+                    ImGui.PushID(string.format("gem_up_%d", gem))
+                    if ImGui.SmallButton(Icons.FA_CHEVRON_UP) then pendingSwap = { pos, pos - 1, } end
+                    ImGui.PopID()
+                else
+                    ImGui.InvisibleButton("##gem_upspace_" .. gem, ImVec2(22, 1))
+                end
+                ImGui.SameLine()
+                if pos < placedCount then
+                    ImGui.PushID(string.format("gem_dn_%d", gem))
+                    if ImGui.SmallButton(Icons.FA_CHEVRON_DOWN) then pendingSwap = { pos, pos + 1, } end
+                    ImGui.PopID()
+                else
+                    ImGui.InvisibleButton("##gem_dnspace_" .. gem, ImVec2(22, 1))
+                end
+                ImGui.EndDisabled()
+            end
+        end
+
+        ImGui.EndTable()
+    end
+
+    if toggleGem then
+        local gems = self.TempSettings.GemDraftEnabled
+        if gems[toggleGem] == false then gems[toggleGem] = nil else gems[toggleGem] = false end
+        self.TempSettings.GemDraftReset = false
+    elseif pendingSwap then
+        orderedNames[pendingSwap[1]], orderedNames[pendingSwap[2]] = orderedNames[pendingSwap[2]], orderedNames[pendingSwap[1]]
+        self.TempSettings.GemDraftReset = false
+    elseif pendingDrag and pendingDrag[1] ~= pendingDrag[2] then
+        table.insert(orderedNames, math.min(pendingDrag[2], #orderedNames), table.remove(orderedNames, pendingDrag[1]))
+        self.TempSettings.GemDraftReset = false
+    end
+end
+
 function Module:SetCombatMode(mode)
     if not Tables.TableContains(self.ClassConfig.Modes, mode) then
         Logger.log_error("\ayInvalid Mode: \am%s", mode)
@@ -632,11 +887,13 @@ function Module:ComputedLoadoutMatchesCurrent()
 
     local me = mq.TLO.Me
     for gem = 1, me.NumGems() do
-        local entry = candidate[gem]
-        local computedRank = entry and entry.spell and entry.spell.RankName() or nil
-        if computedRank ~= me.Gem(gem)() then
-            self.ResolvedActionMap = savedMap
-            return false
+        if Casting.IsGemEnabled(gem) then
+            local entry = candidate[gem]
+            local computedRank = entry and entry.spell and entry.spell.RankName() or nil
+            if computedRank ~= me.Gem(gem)() then
+                self.ResolvedActionMap = savedMap
+                return false
+            end
         end
     end
     return true
@@ -861,20 +1118,49 @@ function Module:Render()
         if ImGui.CollapsingHeader(string.format("Spell Loadout (%s)", self.LoadOutName)) then
             ImGui.Indent()
             if self.ClassConfig.SpellList then
-                if ImGui.SmallButton("Reorder Gems") then
-                    self:ReorderGems()
-                    Logger.log_info("\awGem reorder initiated.")
+                self:RenderGemLoadoutTable(self.SpellLoadOut)
+            elseif Tables.GetTableSize(self.SpellLoadOut) > 0 then
+                Ui.RenderLoadoutTable(self.SpellLoadOut)
+            end
+
+            if self.ClassConfig.SpellList then
+                local style = ImGui.GetStyle()
+                if self.TempSettings.GemEditing then
+                    local resetLabel = self.TempSettings.GemDraftReset and "Reset Pending" or "Reset"
+                    local width = ImGui.CalcTextSizeVec("Apply" .. "Cancel" .. resetLabel).x + style.FramePadding.x * 6 + style.ItemSpacing.x * 2
+                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvailVec().x - width)
+                    ImGui.PushStyleColor(ImGuiCol.Button, Globals.Constants.Colors.ConditionPassColor)
+                    if ImGui.SmallButton("Apply") then self:ApplyGemAdjust() end
+                    ImGui.PopStyleColor()
+                    Ui.Tooltip("Save your gem changes and re-memorize to match.")
+                    ImGui.SameLine()
+                    ImGui.PushStyleColor(ImGuiCol.Button, Globals.Constants.Colors.ConditionFailColor)
+                    if ImGui.SmallButton("Cancel") then self:CancelGemAdjust() end
+                    ImGui.PopStyleColor()
+                    Ui.Tooltip("Discard your changes and leave adjust mode.")
+                    ImGui.SameLine()
+                    if ImGui.SmallButton(resetLabel) then self:ResetGemAdjust() end
+                    Ui.Tooltip("Reset all gems to the default priority order and re-enable every gem.")
+                else
+                    local width = ImGui.CalcTextSizeVec("Adjust Gems").x + style.FramePadding.x * 2
+                    if self.TempSettings.NewCombatMode then
+                        width = width + style.ItemSpacing.x + ImGui.CalcTextSizeVec("Rescan Pending").x
+                    end
+                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvailVec().x - width)
+                    if ImGui.SmallButton("Adjust Gems") then self:BeginGemAdjust() end
+                    Ui.Tooltip("Unlock the gem controls to reorder gems and enable or disable them.")
+                    if self.TempSettings.NewCombatMode then
+                        ImGui.SameLine()
+                        ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.Yellow)
+                        Ui.RenderText("Rescan Pending")
+                        ImGui.PopStyleColor()
+                    end
                 end
-                Ui.Tooltip("Repack your spell bar into priority order.")
             else
                 if ImGui.SmallButton("Reload Spells") then
                     self:RescanLoadout()
                     Logger.log_info("\awManual loadout scan initiated.")
                 end
-            end
-
-            if Tables.GetTableSize(self.SpellLoadOut) > 0 then
-                Ui.RenderLoadoutTable(self.SpellLoadOut)
             end
             ImGui.Unindent()
             ImGui.Separator()
@@ -2295,6 +2581,7 @@ function Module:GiveTime()
     local combat_state = Combat.GetCachedCombatState()
 
     if not self.ClassConfig or not self.ModuleLoaded then return end
+    self:MaintainSwapGem()
     local enabledRotations = Config:GetSetting('EnabledRotations') or {}
 
     local me               = mq.TLO.Me

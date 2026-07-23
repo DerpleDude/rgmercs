@@ -499,8 +499,15 @@ function Rotation.SetSpellLoadOutByPriority(caller, spellList, forceRepack)
     local spellLoadOut = {}
     local listName = "Error: No Valid List Found!"
 
-    local numGems = mq.TLO.Me.NumGems()
-    local swapGem = numGems
+    local enabledGems = {}
+    for gem = 1, mq.TLO.Me.NumGems() do
+        if Casting.IsGemEnabled(gem) then table.insert(enabledGems, gem) end
+    end
+    if #enabledGems == 0 then
+        for gem = 1, mq.TLO.Me.NumGems() do table.insert(enabledGems, gem) end
+    end
+    local numGems = #enabledGems
+    local swapGem = enabledGems[numGems]
     Casting.UseGem = swapGem
 
     local desired = {}
@@ -527,7 +534,7 @@ function Rotation.SetSpellLoadOutByPriority(caller, spellList, forceRepack)
                     if pass and bookSpell and not picked[rankName] then
                         local recastMs = bestSpell.RecastTime() or 0
                         local isLong = recastMs >= 30000
-                        table.insert(desired, { selectedSpellData = s, spell = bestSpell, rankName = rankName, isLong = isLong, })
+                        table.insert(desired, { selectedSpellData = s, spell = bestSpell, rankName = rankName, isLong = isLong, name = s.name, })
                         picked[rankName] = true
                         Logger.log_debug("    ==> \aydesired[%d]\ay = \at%s\ax (recast \am%.1fs\ax, \ag%s\ax)", #desired, rankName, recastMs / 1000,
                             isLong and "long" or "short")
@@ -547,52 +554,63 @@ function Rotation.SetSpellLoadOutByPriority(caller, spellList, forceRepack)
         end
     end
 
-    local swapOccupantIdx = nil
-    if #desired >= numGems then
-        for i = #desired, 1, -1 do
-            if not desired[i].isLong then
-                swapOccupantIdx = i
-                break
-            end
-        end
-        if not swapOccupantIdx then
-            swapOccupantIdx = #desired
-        end
-    end
-
-    if swapOccupantIdx then
-        local occ = desired[swapOccupantIdx]
-        spellLoadOut[swapGem] = { selectedSpellData = occ.selectedSpellData, spell = occ.spell, }
-        Logger.log_debug("\aySwap slot \am%d\ay = \at%s\ax (lowest-priority %s)", swapGem, occ.rankName,
-            occ.isLong and "long-refresh fallback" or "short-refresh")
-        table.remove(desired, swapOccupantIdx)
-    end
-
-    local nonSwapOpen = {}
-    for g = 1, numGems - 1 do nonSwapOpen[g] = true end
-
-    if not forceRepack then
-        for i = #desired, 1, -1 do
+    local savedOrder = (Config:GetSetting('SpellGemOrder') or {})[listName]
+    if savedOrder ~= nil and #savedOrder > 0 then
+        Rotation.ApplyEntryOrder(desired, savedOrder)
+        for i = 1, #desired do
             local d = desired[i]
-            for g = 1, numGems - 1 do
-                if nonSwapOpen[g] and mq.TLO.Me.Gem(g)() == d.rankName then
-                    spellLoadOut[g] = { selectedSpellData = d.selectedSpellData, spell = d.spell, }
-                    nonSwapOpen[g] = false
-                    table.remove(desired, i)
-                    Logger.log_debug("\ay  Stable: \at%s\ay kept in gem \am%d", d.rankName, g)
+            spellLoadOut[enabledGems[i]] = { selectedSpellData = d.selectedSpellData, spell = d.spell, }
+        end
+    else
+        local swapOccupantIdx = nil
+        if #desired >= numGems then
+            for i = #desired, 1, -1 do
+                if not desired[i].isLong then
+                    swapOccupantIdx = i
                     break
                 end
             end
+            if not swapOccupantIdx then
+                swapOccupantIdx = #desired
+            end
         end
-    end
 
-    for _, d in ipairs(desired) do
-        for g = 1, numGems - 1 do
-            if nonSwapOpen[g] then
-                spellLoadOut[g] = { selectedSpellData = d.selectedSpellData, spell = d.spell, }
-                nonSwapOpen[g] = false
-                Logger.log_debug("\ay  Fill: gem \am%d\ay = \at%s", g, d.rankName)
-                break
+        if swapOccupantIdx then
+            local occ = desired[swapOccupantIdx]
+            spellLoadOut[swapGem] = { selectedSpellData = occ.selectedSpellData, spell = occ.spell, }
+            Logger.log_debug("\aySwap slot \am%d\ay = \at%s\ax (lowest-priority %s)", swapGem, occ.rankName,
+                occ.isLong and "long-refresh fallback" or "short-refresh")
+            table.remove(desired, swapOccupantIdx)
+        end
+
+        local nonSwapOpen = {}
+        for i = 1, numGems - 1 do nonSwapOpen[enabledGems[i]] = true end
+
+        if not forceRepack then
+            for i = #desired, 1, -1 do
+                local d = desired[i]
+                for gemIndex = 1, numGems - 1 do
+                    local g = enabledGems[gemIndex]
+                    if nonSwapOpen[g] and mq.TLO.Me.Gem(g)() == d.rankName then
+                        spellLoadOut[g] = { selectedSpellData = d.selectedSpellData, spell = d.spell, }
+                        nonSwapOpen[g] = false
+                        table.remove(desired, i)
+                        Logger.log_debug("\ay  Stable: \at%s\ay kept in gem \am%d", d.rankName, g)
+                        break
+                    end
+                end
+            end
+        end
+
+        for _, d in ipairs(desired) do
+            for gemIndex = 1, numGems - 1 do
+                local g = enabledGems[gemIndex]
+                if nonSwapOpen[g] then
+                    spellLoadOut[g] = { selectedSpellData = d.selectedSpellData, spell = d.spell, }
+                    nonSwapOpen[g] = false
+                    Logger.log_debug("\ay  Fill: gem \am%d\ay = \at%s", g, d.rankName)
+                    break
+                end
             end
         end
     end

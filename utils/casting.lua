@@ -1438,6 +1438,13 @@ function Casting.CastReady(spell)
     return mq.TLO.Me.SpellReady(spell.RankName.Name())()
 end
 
+--- Returns whether RGMercs may manage the given spell gem slot; false when the user has disabled it.
+--- @param gem number The gem slot number to check.
+--- @return boolean enabled True unless the gem is explicitly disabled.
+function Casting.IsGemEnabled(gem)
+    return (Config:GetSetting('EnabledSpellGems') or {})[gem] ~= false
+end
+
 --- Issues /memspell for the given gem slot and polls until the slot shows the spell (and the gem is ready if waitSpellReady is true) or maxWait (ms) expires. Aborts early if aggro is gained, the player starts moving or casting, or the spell leaves the book due to a persona change. If AggressivelyMemorizeSpells is set and the gem stays empty past the configured timer, resends the /memspell command.
 --- @param gem number The gem slot number where the spell should be memorized.
 --- @param spell string The name of the spell to memorize.
