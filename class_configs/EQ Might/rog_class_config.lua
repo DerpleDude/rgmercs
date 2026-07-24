@@ -152,14 +152,23 @@ return {
             end,
         },
         {
-            name = 'Emergency',
+            name = 'Emergency(Health)',
             state = 1,
             steps = 1,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return Targeting.GetXTHaterCount() > 0 and
-                    (mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') or (Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 99))
+                return Targeting.GetXTHaterCount() > 0 and Core.AtEmergencyHP()
+            end,
+        },
+        {
+            name = 'Emergency(Aggro)',
+            state = 1,
+            steps = 1,
+            doFullRotation = true,
+            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
+            cond = function(self, combat_state)
+                return Targeting.IHaveAggro(100) and (Core.AtEmergencyHP() or Globals.AutoTargetIsNamed)
             end,
         },
         {
@@ -192,7 +201,7 @@ return {
         },
     },
     ['Rotations']     = {
-        ['Burn'] = {
+        ['Burn']              = {
             {
                 name = "PoisonGuide",
                 type = "Disc",
@@ -227,7 +236,7 @@ return {
                 type = "AA",
             },
         },
-        ['BurnDisc'] = {
+        ['BurnDisc']          = {
             {
                 name = "Frenzied",
                 type = "Disc",
@@ -252,7 +261,7 @@ return {
                 type = "Disc",
             },
         },
-        ['Aggro Management'] = {
+        ['Aggro Management']  = {
             {
                 name = "Escape",
                 type = "AA",
@@ -281,7 +290,7 @@ return {
                 type = "AA",
             },
         },
-        ['DPS'] = {
+        ['DPS']               = {
             {
                 name = "Epic",
                 type = "Item",
@@ -316,19 +325,18 @@ return {
                 end,
             },
         },
-        ['Emergency'] = {
+        ['Emergency(Health)'] = {
             {
                 name = "Revitalize",
                 type = "Disc",
-                cond = function(self, discSpell, target)
-                    return mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart')
-                end,
             },
             {
                 name = "HealingDisc",
                 type = "Disc",
                 load_cond = function(self) return Config:GetSetting('DoHealingDisc') end,
             },
+        },
+        ['Emergency(Aggro)']  = {
             {
                 name = "Tumble",
                 type = "AA",
@@ -336,12 +344,9 @@ return {
             {
                 name = "CADisc",
                 type = "Disc",
-                cond = function(self, discSpell)
-                    return Targeting.IHaveAggro(100)
-                end,
             },
         },
-        ['Downtime'] = {
+        ['Downtime']          = {
             {
                 name = "ThiefBuff",
                 type = "Disc",
@@ -393,7 +398,7 @@ return {
                 end,
             },
         },
-        ['GroupBuff'] = { -- Added to anchor clickies to
+        ['GroupBuff']         = { -- Added to anchor clickies to
 
         },
     },
@@ -414,10 +419,6 @@ return {
                     Strings.BoolToColorString(Config:GetSetting("DoOpener")), Strings.BoolToColorString(mq.TLO.Me.AbilityReady("Hide")()),
                     mq.TLO.Me.AbilityTimer("Hide")(), Strings.BoolToColorString(mq.TLO.Me.Invis()))
             end
-        end,
-        UnwantedAggroCheck = function(self)
-            if Targeting.GetXTHaterCount() == 0 or Core.IsTanking() or mq.TLO.Group.Puller.ID() == mq.TLO.Me.ID() then return false end
-            return Targeting.IHaveAggro(100)
         end,
     },
     ['DefaultConfig'] = {
@@ -481,24 +482,12 @@ return {
             Tooltip = "Use Sneak Attack line to start combat (e.g, Daggerslash).",
             Default = true,
         },
-        ['EmergencyStart']  = {
-            DisplayName = "Emergency HP%",
-            Group = "Abilities",
-            Header = "Damage",
-            Category = "AE",
-            Index = 101,
-            Tooltip = "Your HP % before we begin to use emergency mitigation abilities.",
-            Default = 50,
-            Min = 1,
-            Max = 100,
-            ConfigType = "Advanced",
-        },
         ['DoHealingDisc']   = {
             DisplayName = "Do Healing Disc",
             Group = "Abilities",
             Header = "Utility",
             Category = "Emergency",
-            Index = 102,
+            Index = 101,
             Tooltip = "Use the EQM Custom 'Healing Will/Determination' Disc to heal yourself in emergencies.",
             Default = false,
             RequiresLoadoutChange = true,

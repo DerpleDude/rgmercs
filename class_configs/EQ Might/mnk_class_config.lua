@@ -134,14 +134,23 @@ local _ClassConfig = {
             end,
         },
         {
-            name = 'Emergency',
+            name = 'Emergency(Health)',
             state = 1,
             steps = 1,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return Targeting.GetXTHaterCount() > 0 and not Casting.IAmFeigning() and
-                    (mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') or (Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 99))
+                return Targeting.GetXTHaterCount() > 0 and not mq.TLO.Me.Feigning() and Core.AtEmergencyHP()
+            end,
+        },
+        {
+            name = 'Emergency(Aggro)',
+            state = 1,
+            steps = 1,
+            doFullRotation = true,
+            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
+            cond = function(self, combat_state)
+                return not mq.TLO.Me.Feigning() and Targeting.IHaveAggro(100) and (Core.AtEmergencyHP() or Globals.AutoTargetIsNamed)
             end,
         },
         {
@@ -150,7 +159,7 @@ local _ClassConfig = {
             steps = 4,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.BurnCheck() and not Casting.IAmFeigning()
+                return combat_state == "Combat" and Casting.BurnCheck() and not mq.TLO.Me.Feigning()
             end,
         },
         {
@@ -169,7 +178,7 @@ local _ClassConfig = {
             steps = 1,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and not Casting.IAmFeigning()
+                return combat_state == "Combat" and not mq.TLO.Me.Feigning()
             end,
         },
         {
@@ -178,12 +187,12 @@ local _ClassConfig = {
             steps = 1,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and not Casting.IAmFeigning()
+                return combat_state == "Combat" and not mq.TLO.Me.Feigning()
             end,
         },
     },
     ['Rotations']     = {
-        ['Downtime'] = {
+        ['Downtime']          = {
             {
                 name = "MonkAura",
                 type = "Disc",
@@ -195,14 +204,35 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Emergency'] = {
+        ['Emergency(Health)'] = {
+            {
+                name = "Mend",
+                type = "Ability",
+            },
+            {
+                name = "Epic",
+                type = "Item",
+            },
+            {
+                name = "HealingDisc",
+                type = "Disc",
+                load_cond = function(self) return Config:GetSetting('DoHealingDisc') end,
+            },
+        },
+        ['Emergency(Aggro)']  = {
             {
                 name = "Imitate Death",
                 type = "AA",
                 load_cond = function(self) return Config:GetSetting('AggroFeign') end,
                 cond = function(self, aaName, target)
-                    if Core.IsTanking() then return false end
-                    return (mq.TLO.Me.PctHPs() <= 40 and Targeting.IHaveAggro(100)) or (Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 99)
+                    return Casting.OkayToCombatEscape()
+                end,
+            },
+            {
+                name = "MeleeMit",
+                type = "Disc",
+                cond = function(self, discName)
+                    return Core.AtCriticalHP()
                 end,
             },
             {
@@ -210,37 +240,11 @@ local _ClassConfig = {
                 type = "Ability",
                 load_cond = function(self) return Config:GetSetting('AggroFeign') end,
                 cond = function(self, abilityName)
-                    return Targeting.IHaveAggro(80) and not Core.IsTanking()
+                    return Casting.OkayToCombatEscape()
                 end,
-            },
-            {
-                name = "MeleeMit",
-                type = "Disc",
-                cond = function(self, discName)
-                    return mq.TLO.Me.PctHPs() < 35
-                end,
-            },
-            {
-                name = "Mend",
-                type = "Ability",
-                cond = function(self, abilityName)
-                    return mq.TLO.Me.PctHPs() < Config:GetSetting('EmergencyStart')
-                end,
-            },
-            {
-                name = "HealingDisc",
-                type = "Disc",
-                load_cond = function(self) return Config:GetSetting('DoHealingDisc') end,
-                cond = function(self, discName)
-                    return mq.TLO.Me.PctHPs() < Config:GetSetting('EmergencyStart')
-                end,
-            },
-            {
-                name = "Epic",
-                type = "Item",
             },
         },
-        ['Burn'] = {
+        ['Burn']              = {
             {
                 name = "Spire",
                 type = "AA",
@@ -269,7 +273,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['BurnDisc'] = {
+        ['BurnDisc']          = {
             {
                 name = "Heel",
                 type = "Disc",
@@ -287,7 +291,7 @@ local _ClassConfig = {
                 type = "Disc",
             },
         },
-        ['CombatBuff'] = {
+        ['CombatBuff']        = {
             {
                 name = "FistsOfWu",
                 type = "Disc",
@@ -296,7 +300,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['DPS'] = {
+        ['DPS']               = {
             {
                 name = "Eye Gouge",
                 type = "AA",
@@ -321,7 +325,7 @@ local _ClassConfig = {
                 type = "Ability",
             },
         },
-        ['GroupBuff'] = { -- Added to anchor clickies to
+        ['GroupBuff']         = { -- Added to anchor clickies to
 
         },
     },
@@ -365,22 +369,10 @@ local _ClassConfig = {
             Group = "Abilities",
             Header = "Utility",
             Category = "Emergency",
-            Index = 102,
+            Index = 101,
             Tooltip = "Use your Feign AA when you have aggro at low health or aggro on a mob detected as a 'named' by RGMercs (see Spawns tab)..",
             Default = true,
             RequiresLoadoutChange = true,
-        },
-        ['EmergencyStart']  = {
-            DisplayName = "Emergency HP%",
-            Group = "Abilities",
-            Header = "Utility",
-            Category = "Emergency",
-            Index = 101,
-            Tooltip = "Your HP % before we begin to use emergency mitigation abilities.",
-            Default = 50,
-            Min = 1,
-            Max = 100,
-            ConfigType = "Advanced",
         },
         ['DoHealingDisc']   = {
             DisplayName = "Do Healing Disc",

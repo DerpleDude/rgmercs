@@ -521,14 +521,13 @@ local _ClassConfig = {
             end,
         },
         {
-            name = 'Emergency',
+            name = 'Emergency(Aggro)',
             state = 1,
             steps = 1,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return Targeting.GetXTHaterCount() > 0 and
-                    (mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') or (Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 99))
+                return Targeting.IHaveAggro(100) and (Core.AtEmergencyHP() or Globals.AutoTargetIsNamed)
             end,
         },
         {
@@ -631,7 +630,7 @@ local _ClassConfig = {
         },
     },
     ['Rotations']         = {
-        ['DPS']            = {
+        ['DPS']              = {
             {
                 name = "Epic",
                 type = "Item",
@@ -728,7 +727,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['DPS(AE)']        = {
+        ['DPS(AE)']          = {
             {
                 name = "PBAEMagic",
                 type = "Spell",
@@ -748,7 +747,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Burn']           = {
+        ['Burn']             = {
             {
                 name = "Improved Twincast",
                 type = "AA",
@@ -797,13 +796,16 @@ local _ClassConfig = {
                 type = "AA",
             },
         },
-        ['Emergency']      = {
+        ['Emergency(Aggro)'] = {
             {
                 name = "Cover Tracks",
                 type = "AA",
+                cond = function(self, aaName)
+                    return Casting.OkayToCombatEscape()
+                end,
             },
         },
-        ['Slow']           = {
+        ['Slow']             = {
             {
                 name = "ColdSlow",
                 type = "Spell",
@@ -812,7 +814,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Debuff']         = {
+        ['Debuff']           = {
             { -- Fire Debuff AA, will use the first(best) available
                 name = "FireDebuffAA",
                 type = "AA",
@@ -846,7 +848,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Snare']          = {
+        ['Snare']            = {
             {
                 name = "Entrap",
                 type = "AA",
@@ -864,7 +866,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['GroupBuff']      = {
+        ['GroupBuff']        = {
             {
                 name = "Flight of Eagles",
                 type = "AA",
@@ -942,7 +944,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Downtime']       = {
+        ['Downtime']         = {
             {
                 name = "HealingAura",
                 type = "Spell",
@@ -976,7 +978,7 @@ local _ClassConfig = {
                 cond = function(self, spell) return Casting.SelfBuffCheck(spell) end,
             },
         },
-        ['PetSummon']      = {
+        ['PetSummon']        = {
             {
                 name = "Artifact of Nature Spirit",
                 type = "Item",
@@ -1004,7 +1006,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['PetBuff']        = {
+        ['PetBuff']          = {
             {
                 name = "PetHaste",
                 type = "Spell",
@@ -1019,7 +1021,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['InstantRunBuff'] = {
+        ['InstantRunBuff']   = {
             {
                 name = "Communion of the Cheetah",
                 type = "AA",
@@ -1030,7 +1032,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['CombatBuffs']    = {
+        ['CombatBuffs']      = {
             {
                 name = "ReptileBuff",
                 type = "Spell",
@@ -1422,22 +1424,10 @@ local _ClassConfig = {
             Group = "Abilities",
             Header = "Utility",
             Category = "Emergency",
-            Index = 102,
+            Index = 101,
             Tooltip = "Keep (Lesser) Succor memorized.",
             Default = false,
             RequiresLoadoutChange = true,
-        },
-        ['EmergencyStart']    = {
-            DisplayName = "Emergency HP%",
-            Group = "Abilities",
-            Header = "Utility",
-            Category = "Emergency",
-            Index = 101,
-            Tooltip = "Your HP % before we begin to use emergency mitigation abilities.",
-            Default = 50,
-            Min = 1,
-            Max = 100,
-            ConfigType = "Advanced",
         },
         ['UseDonorPet']       = {
             DisplayName = "Summon Nature Spirit",

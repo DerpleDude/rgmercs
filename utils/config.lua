@@ -1447,6 +1447,28 @@ Config.DefaultConfig                                     = {
         Default = true,
         ConfigType = "Advanced",
     },
+    ['EmergencyStart']             = {
+        DisplayName = "Emergency HP%",
+        Group = "Abilities",
+        Header = "Utility",
+        Category = "Emergency",
+        Index = 2,
+        Tooltip = "Your HP % before we begin to use emergency mitigation abilities.",
+        Default = Globals.Constants.RGTank:contains(mq.TLO.Me.Class.ShortName()) and 40 or 50,
+        Min = 1,
+        Max = 100,
+    },
+    ['HPCritical']                 = {
+        DisplayName = "Critical HP%",
+        Group = "Abilities",
+        Header = "Utility",
+        Category = "Emergency",
+        Index = 3,
+        Tooltip = "Your HP % before we resort to our deepest emergency abilities.",
+        Default = Globals.Constants.RGTank:contains(mq.TLO.Me.Class.ShortName()) and 20 or 30,
+        Min = 1,
+        Max = 100,
+    },
 
     -- Buffs/Rules
     ['DoBuffs']                    = {
@@ -3653,7 +3675,7 @@ function Config:RegisterModuleSettings(module, settings, defaultSettings, faq, f
         end
 
         if Config.TempSettings.SettingToModuleCache[setting] ~= nil then
-            Logger.log_error(
+            Logger.log_verbose(
                 "\ay[Setting] \arError: Key %s exists in multiple settings tables: \aw%s \arand \aw%s! Keeping first but this should be fixed!",
                 setting,
                 Config.TempSettings.SettingToModuleCache[setting], module)

@@ -1419,10 +1419,18 @@ function Casting.GetBuffableTankingIDs()
     return tankingIds
 end
 
+-- DEPRECATED 7/26 - sunset 10/1/26. Shim for custom configs; use mq.TLO.Me.Feigning() directly. DELETE at sunset.
 --- Checks if the character is currently feigning death.
 --- @return boolean True if the character is feigning death, false otherwise.
 function Casting.IAmFeigning()
     return mq.TLO.Me.Feigning()
+end
+
+--- Checks if we are safe to use abilities that remove us from combat/aggro.
+---@return boolean True Return true if no conditions exist that would make a combat escape undesirable
+function Casting.OkayToCombatEscape()
+    if Core.IsTanking() or mq.TLO.Group.Puller.ID() == mq.TLO.Me.ID() then return false end
+    return true
 end
 
 --- Returns true if the spell's ranked name is currently memorized in any gem slot on the spellbar (Me.Gem returns non-nil for that name).
@@ -1570,6 +1578,15 @@ end
 function Casting.DiscOnCoolDown(actionMapName)
     local disc = Core.GetResolvedActionMapItem(actionMapName)
     return not (disc and mq.TLO.Me.CombatAbilityReady(disc.RankName())())
+end
+
+--- Resolves the action map entry to a disc and returns true if its trigger buff is on us.
+---@param actionMapName string The action map entry name to resolve.
+---@return boolean True if the resolved disc's trigger effect is active on us.
+function Casting.DiscTriggerActive(actionMapName)
+    local disc = Core.GetResolvedActionMapItem(actionMapName)
+    if not disc then return false end
+    return Casting.IHaveBuff(disc.Trigger(1))
 end
 
 --- Exact-name FindItem lookup; returns true if the item exists and
@@ -2819,7 +2836,7 @@ end
 function Casting.AutoMed()
     local me = mq.TLO.Me
     if Config:GetSetting('DoMed') == 1 then return end
-    if Casting.IAmFeigning() then return end
+    if me.Feigning() then return end
 
     if me.Mount.ID() and not mq.TLO.Zone.Indoor() then
         Logger.log_verbose("Sit check returning early due to mount.")
@@ -2953,7 +2970,7 @@ end
 --- feigning, invisible, and EMU bards.
 function Casting.ClickModRod()
     local me = mq.TLO.Me
-    if not Globals.Constants.RGCasters:contains(me.Class.ShortName()) or me.PctMana() > Config:GetSetting('ModRodManaPct') or me.PctHPs() < 60 or Casting.IAmFeigning() or mq.TLO.Me.Invis() or (Core.MyClassIs("BRD") and Core.OnEMU()) then
+    if not Globals.Constants.RGCasters:contains(me.Class.ShortName()) or me.PctMana() > Config:GetSetting('ModRodManaPct') or me.PctHPs() < 60 or me.Feigning() or me.Invis() or (Core.MyClassIs("BRD") and Core.OnEMU()) then
         return
     end
 

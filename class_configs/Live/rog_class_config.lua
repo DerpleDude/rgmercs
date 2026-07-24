@@ -302,14 +302,23 @@ return {
             end,
         },
         {
-            name = 'Emergency',
+            name = 'Emergency(Health)',
             state = 1,
             steps = 1,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return Targeting.GetXTHaterCount() > 0 and
-                    (mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') or (Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 99))
+                return Targeting.GetXTHaterCount() > 0 and Core.AtEmergencyHP()
+            end,
+        },
+        {
+            name = 'Emergency(Aggro)',
+            state = 1,
+            steps = 1,
+            doFullRotation = true,
+            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
+            cond = function(self, combat_state)
+                return Targeting.IHaveAggro(100) and (Core.AtEmergencyHP() or Globals.AutoTargetIsNamed)
             end,
         },
         {
@@ -341,7 +350,7 @@ return {
         },
     },
     ['Rotations']     = {
-        ['Burn'] = {
+        ['Burn']              = {
             {
                 name = "Frenzied",
                 type = "Disc",
@@ -431,7 +440,7 @@ return {
                 load_cond = function(self) return Config:GetSetting('DoVetAA') end,
             },
         },
-        ['Aggro Management'] = {
+        ['Aggro Management']  = {
             {
                 name = "Escape",
                 type = "AA",
@@ -458,7 +467,7 @@ return {
                 end,
             },
         },
-        ['CombatBuff'] = {
+        ['CombatBuff']        = {
             {
                 name = "Epic",
                 type = "Item",
@@ -526,7 +535,7 @@ return {
                 end,
             },
         },
-        ['DPS'] = {
+        ['DPS']               = {
             {
                 name = "Backstab",
                 type = "Ability",
@@ -577,19 +586,7 @@ return {
                 end,
             },
         },
-        ['Emergency'] = {
-            {
-                name = "Armor of Experience",
-                type = "AA",
-                load_cond = function(self) return Config:GetSetting('DoVetAA') end,
-                cond = function(self, aaName)
-                    return mq.TLO.Me.PctHPs() < 35
-                end,
-            },
-            {
-                name = "Tumble",
-                type = "AA",
-            },
+        ['Emergency(Health)'] = {
             {
                 name = "Coating",
                 type = "Item",
@@ -598,15 +595,26 @@ return {
                     return Casting.SelfBuffItemCheck(itemName)
                 end,
             },
+        },
+        ['Emergency(Aggro)']  = {
+            {
+                name = "Tumble",
+                type = "AA",
+            },
             {
                 name = "CADisc",
                 type = "Disc",
-                cond = function(self, discSpell)
-                    return Targeting.IHaveAggro(100)
+            },
+            {
+                name = "Armor of Experience",
+                type = "AA",
+                load_cond = function(self) return Config:GetSetting('DoVetAA') end,
+                cond = function(self, aaName)
+                    return Core.AtCriticalHP()
                 end,
             },
         },
-        ['Downtime'] = {
+        ['Downtime']          = {
             {
                 name = "ThiefBuff",
                 type = "Disc",
@@ -660,7 +668,7 @@ return {
                 end,
             },
         },
-        ['Hide & Sneak'] = {
+        ['Hide & Sneak']      = {
             {
                 name = "Hide & Sneak",
                 type = "CustomFunc",
@@ -729,10 +737,6 @@ return {
             end
             return true
         end,
-        UnwantedAggroCheck = function(self)
-            if Targeting.GetXTHaterCount() == 0 or Core.IsTanking() or mq.TLO.Group.Puller.ID() == mq.TLO.Me.ID() then return false end
-            return Targeting.IHaveAggro(100)
-        end,
     },
     ['DefaultConfig'] = {
         ['Mode']            = {
@@ -797,18 +801,6 @@ return {
             Index = 101,
             Tooltip = "Use Sneak Attack line to start combat (e.g, Daggerslash).",
             Default = true,
-        },
-        ['EmergencyStart']  = {
-            DisplayName = "Emergency HP%",
-            Group = "Abilities",
-            Header = "Utility",
-            Category = "Emergency",
-            Index = 101,
-            Tooltip = "Your HP % before we begin to use emergency mitigation abilities.",
-            Default = 50,
-            Min = 1,
-            Max = 100,
-            ConfigType = "Advanced",
         },
         ['HideAggro']       = {
             DisplayName = "Hide Aggro%",

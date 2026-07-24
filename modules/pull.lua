@@ -4366,7 +4366,7 @@ function Module:ReturnToCampTick(ctx)
 
     if mq.TLO.Navigation.Active() then
         Logger.log_super_verbose("Pathing to camp...")
-        if (mq.TLO.Me.State() or ""):lower() == "feign" or mq.TLO.Me.Sitting() then
+        if mq.TLO.Me.Feigning() or mq.TLO.Me.Sitting() then
             Logger.log_debug("PULL:Standing up to Engage Target")
             mq.TLO.Me.Stand()
             Movement:DoNav(false, "locyxz %0.2f %0.2f %0.2f log=off %s", returnLoc.y, returnLoc.x, returnLoc.z,

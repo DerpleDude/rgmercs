@@ -407,7 +407,7 @@ local _ClassConfig = {
             load_cond = function() return Core.IsTanking() and Config:GetSetting('TankAggroScan') end,
             targetId = function(self) return Targeting.CheckForAggroTargetID() end,
             cond = function(self, combat_state)
-                if mq.TLO.Me.PctHPs() <= Config:GetSetting('HPCritical') then return false end
+                if Core.AtCriticalHP() then return false end
                 return combat_state == "Combat"
             end,
         },
@@ -419,7 +419,7 @@ local _ClassConfig = {
             load_cond = function() return Core.IsTanking() end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                if mq.TLO.Me.PctHPs() <= Config:GetSetting('HPCritical') then return false end
+                if Core.AtCriticalHP() then return false end
                 return combat_state == "Combat" and Targeting.HateToolsNeeded()
             end,
         },
@@ -434,7 +434,7 @@ local _ClassConfig = {
             end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                if mq.TLO.Me.PctHPs() <= Config:GetSetting('HPCritical') then return false end
+                if Core.AtCriticalHP() then return false end
                 return combat_state == "Combat" and Combat.AETauntCheck(true)
             end,
         },
@@ -456,7 +456,7 @@ local _ClassConfig = {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart')
+                return combat_state == "Combat" and Core.AtEmergencyHP()
             end,
         },
         { --Prioritized in their own rotation to help keep HP topped to the desired level, includes emergency abilities
@@ -492,7 +492,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting('DoSnare') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                if mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') then return false end
+                if Core.AtEmergencyHP() then return false end
                 return combat_state == "Combat" and not Globals.AutoTargetIsNamed and Targeting.GetXTHaterCount() <= Config:GetSetting('SnareCount')
             end,
         },
@@ -502,7 +502,7 @@ local _ClassConfig = {
             steps = 4,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                if mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') then return false end
+                if Core.AtEmergencyHP() then return false end
                 return combat_state == "Combat" and Casting.BurnCheck() and Core.CombatActionsCheck()
             end,
         },
@@ -512,13 +512,13 @@ local _ClassConfig = {
             steps = 1,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                if mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') then return false end
+                if Core.AtEmergencyHP() then return false end
                 return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
     },
     ['Rotations']     = {
-        ['Downtime'] = {
+        ['Downtime']               = {
             {
                 name = "Touch of the Cursed",
                 type = "AA",
@@ -615,15 +615,15 @@ local _ClassConfig = {
                 name = "Emergency Visage Cancel",
                 desc = "Removes VoD at Critical HP",
                 type = "CustomFunc",
-                load_cond = function(self) Casting.CanUseAA("Visage of Death") end,
-                cond = function(self) return Config:GetSetting('HPCritical') and mq.TLO.Me.Buff("Visage of Death")() end,
+                load_cond = function(self) return Casting.CanUseAA("Visage of Death") end,
+                cond = function(self) return Core.AtCriticalHP() and mq.TLO.Me.Buff("Visage of Death")() end,
                 custom_func = function(self)
                     Core.DoCmd("/removebuff \"Visage of Death\"")
                     return true
                 end,
             },
         },
-        ['PetSummon'] = {
+        ['PetSummon']              = {
             {
                 name = "PetSpell",
                 type = "Spell",
@@ -641,7 +641,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['PetBuff'] = {
+        ['PetBuff']                = {
             {
                 name = "PetHaste",
                 type = "Spell",
@@ -660,19 +660,10 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['EmergencyDefenses'] = {
+        ['EmergencyDefenses']      = {
             --Note that in Tank Mode, defensive discs are preemptively cycled on named in the (non-emergency) Defenses rotation
             --Abilities should be placed in order of lowest to highest triggered HP thresholds
             --Some conditionals are commented out while I tweak percentages (or determine if they are necessary)
-            {
-                name = "Armor of Experience",
-                type = "AA",
-                tooltip = Tooltips.ArmorofExperience,
-                load_cond = function(self) return Config:GetSetting('DoVetAA') end,
-                cond = function(self)
-                    return mq.TLO.Me.PctHPs() <= Config:GetSetting('HPCritical')
-                end,
-            },
             {
                 name = "OoW_Chest",
                 type = "Item",
@@ -711,11 +702,20 @@ local _ClassConfig = {
                 name = "Emergency Visage Cancel",
                 desc = "Removes VoD at Critical HP",
                 type = "CustomFunc",
-                load_cond = function(self) Casting.CanUseAA("Visage of Death") end,
-                cond = function(self) return Config:GetSetting('HPCritical') and mq.TLO.Me.Buff("Visage of Death")() end,
+                load_cond = function(self) return Casting.CanUseAA("Visage of Death") end,
+                cond = function(self) return Core.AtCriticalHP() and mq.TLO.Me.Buff("Visage of Death")() end,
                 custom_func = function(self)
                     Core.DoCmd("/removebuff \"Visage of Death\"")
                     return true
+                end,
+            },
+            {
+                name = "Armor of Experience",
+                type = "AA",
+                tooltip = Tooltips.ArmorofExperience,
+                load_cond = function(self) return Config:GetSetting('DoVetAA') end,
+                cond = function(self)
+                    return Core.AtCriticalHP()
                 end,
             },
         },
@@ -742,7 +742,7 @@ local _ClassConfig = {
                 load_cond = function(self) return Config:GetSetting('DoTerror') end,
             },
         },
-        ['HateTools(AutoTarget)'] = {
+        ['HateTools(AutoTarget)']  = {
             {
                 name = "Taunt",
                 type = "Ability",
@@ -785,7 +785,7 @@ local _ClassConfig = {
                 load_cond = function(self) return Config:GetSetting('DoTerror') end,
             },
         },
-        ['AEHateTools'] = {
+        ['AEHateTools']            = {
             {
                 name = "Explosion of Hatred",
                 type = "AA",
@@ -802,11 +802,11 @@ local _ClassConfig = {
                 tooltip = Tooltips.AETaunt,
                 load_cond = function(self) return Config:GetSetting('AETauntSpell') end,
                 cond = function(self, spell, target)
-                    return mq.TLO.Me.PctHPs() > Config:GetSetting('EmergencyStart')
+                    return not Core.AtEmergencyHP()
                 end,
             },
         },
-        ['Burn'] = {
+        ['Burn']                   = {
             {
                 name = "Visage of Death",
                 type = "AA",
@@ -882,7 +882,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Snare'] = {
+        ['Snare']                  = {
             {
                 name = "Encroaching Darkness",
                 tooltip = Tooltips.EncroachingDarkness,
@@ -901,7 +901,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Defenses'] = {
+        ['Defenses']               = {
             {
                 name = "Mantle",
                 type = "Disc",
@@ -928,7 +928,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['LifeTaps'] = {
+        ['LifeTaps']               = {
             --Full rotation to make sure we use these in priority for emergencies
             {
                 name = "Leech Touch",
@@ -936,7 +936,7 @@ local _ClassConfig = {
                 tooltip = Tooltips.LeechTouch,
                 cond = function(self, aaName, target)
                     if Config:GetSetting('DoLeechTouch') == 2 then return false end
-                    return mq.TLO.Me.PctHPs() <= Config:GetSetting('HPCritical')
+                    return Core.AtCriticalHP()
                 end,
             },
             {
@@ -967,7 +967,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Combat'] = {
+        ['Combat']                 = {
             {
                 name = "AESpearNuke",
                 type = "Spell",
@@ -1075,7 +1075,7 @@ local _ClassConfig = {
                 tooltip = Tooltips.Slam,
             },
         },
-        ['Weapon Management'] = {
+        ['Weapon Management']      = {
             {
                 name = "Equip Shield",
                 type = "CustomFunc",
@@ -1469,31 +1469,6 @@ local _ClassConfig = {
             Index = 102,
             Tooltip = "The HP % where we will use defensive actions like discs, epics, etc.\nNote that fighting a named will also trigger these actions.",
             Default = 60,
-            Min = 1,
-            Max = 100,
-            ConfigType = "Advanced",
-        },
-        ['EmergencyStart']  = {
-            DisplayName = "Emergency Start",
-            Group = "Abilities",
-            Header = "Tanking",
-            Category = "Defenses",
-            Index = 103,
-            Tooltip = "The HP % before all but essential rotations are cut in favor of emergency or defensive abilities.",
-            Default = 40,
-            Min = 1,
-            Max = 100,
-            ConfigType = "Advanced",
-        },
-        ['HPCritical']      = {
-            DisplayName = "HP Critical",
-            Group = "Abilities",
-            Header = "Tanking",
-            Category = "Defenses",
-            Index = 104,
-            Tooltip =
-            "The HP % that we will use abilities like Leechcurse and Leech Touch.\nMost other rotations are cut to give our full focus to survival.",
-            Default = 20,
             Min = 1,
             Max = 100,
             ConfigType = "Advanced",

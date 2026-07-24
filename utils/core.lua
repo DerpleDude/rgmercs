@@ -372,6 +372,18 @@ function Core.IsModeActive(mode)
     return Modules:ExecModule("Class", "IsModeActive", mode)
 end
 
+--- Returns true if our HP has fallen to the Emergency HP% threshold.
+---@return boolean True if we are at or below the Emergency HP% setting.
+function Core.AtEmergencyHP()
+    return mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart')
+end
+
+--- Returns true if our HP has fallen to the Critical HP% threshold.
+---@return boolean True if we are at or below the Critical HP% setting.
+function Core.AtCriticalHP()
+    return mq.TLO.Me.PctHPs() <= Config:GetSetting('HPCritical')
+end
+
 --- Returns true if the class module reports the character is in tank mode.
 ---@return boolean True if actively tanking.
 function Core.IsTanking()

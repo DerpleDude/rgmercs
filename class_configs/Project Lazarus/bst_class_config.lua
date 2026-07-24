@@ -298,14 +298,23 @@ return {
             end,
         },
         {
-            name = 'Emergency',
+            name = 'Emergency(Health)',
             state = 1,
             steps = 1,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return Targeting.GetXTHaterCount() > 0 and
-                    (mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') or (Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 99))
+                return Targeting.GetXTHaterCount() > 0 and not mq.TLO.Me.Feigning() and Core.AtEmergencyHP()
+            end,
+        },
+        {
+            name = 'Emergency(Aggro)',
+            state = 1,
+            steps = 1,
+            doFullRotation = true,
+            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
+            cond = function(self, combat_state)
+                return not mq.TLO.Me.Feigning() and Targeting.IHaveAggro(100) and (Core.AtEmergencyHP() or Globals.AutoTargetIsNamed)
             end,
         },
         {
@@ -354,7 +363,7 @@ return {
             targetId = function(self) return Casting.GetBuffableTankingIDs() end,
             cond = function(self, combat_state)
                 local downtime = combat_state == "Downtime" and Casting.OkayToBuff()
-                local burning = combat_state == "Combat" and Casting.BurnCheck() and not Casting.IAmFeigning()
+                local burning = combat_state == "Combat" and Casting.BurnCheck() and not mq.TLO.Me.Feigning()
                 return (downtime or burning) and Core.CombatActionsCheck()
             end,
         },
@@ -394,7 +403,7 @@ return {
         end,
     },
     ['Rotations']         = {
-        ['Burn']           = {
+        ['Burn']              = {
             {
                 name = "Bestial Bloodrage",
                 type = "AA",
@@ -445,7 +454,7 @@ return {
                 load_cond = function(self) return Config:GetSetting('DoVetAA') end,
             },
         },
-        ['Slow']           = {
+        ['Slow']              = {
             {
                 name = "SlowSpell",
                 type = "Spell",
@@ -454,27 +463,12 @@ return {
                 end,
             },
         },
-        ['Emergency']      = {
-            {
-                name = "Armor of Experience",
-                type = "AA",
-                load_cond = function(self) return Config:GetSetting('DoVetAA') end,
-                cond = function(self, aaName)
-                    return mq.TLO.Me.PctHPs() < 35
-                end,
-            },
+        ['Emergency(Health)'] = {
             {
                 name = "Warder's Gift",
                 type = "AA",
                 cond = function(self, aaName)
                     return (mq.TLO.Me.Pet.PctHPs() or 0) > 50
-                end,
-            },
-            {
-                name = "Protection of the Warder",
-                type = "AA",
-                cond = function(self, aaName)
-                    return Targeting.IHaveAggro(100)
                 end,
             },
             {
@@ -485,6 +479,12 @@ return {
                     return Casting.SelfBuffItemCheck(itemName)
                 end,
             },
+        },
+        ['Emergency(Aggro)']  = {
+            {
+                name = "Protection of the Warder",
+                type = "AA",
+            },
             {
                 name = "ProtDisc",
                 type = "Disc",
@@ -492,8 +492,16 @@ return {
                     return Casting.NoDiscActive()
                 end,
             },
+            {
+                name = "Armor of Experience",
+                type = "AA",
+                load_cond = function(self) return Config:GetSetting('DoVetAA') end,
+                cond = function(self, aaName)
+                    return Core.AtCriticalHP()
+                end,
+            },
         },
-        ['PetHealing']     = {
+        ['PetHealing']        = {
             {
                 name = "Companion's Blessing",
                 type = "AA",
@@ -515,13 +523,13 @@ return {
                 load_cond = function(self) return Config:GetSetting('DoPetHealSpell') end,
             },
         },
-        ['FocusedParagon'] = {
+        ['FocusedParagon']    = {
             {
                 name = "Focused Paragon of Spirits",
                 type = "AA",
             },
         },
-        ['DPS']            = {
+        ['DPS']               = {
             {
                 name = "PetSpell",
                 type = "Spell",
@@ -590,7 +598,7 @@ return {
                 end,
             },
         },
-        ['Weaves']         = {
+        ['Weaves']            = {
             {
                 name = "Roar of Thunder",
                 type = "AA",
@@ -624,7 +632,7 @@ return {
                 type = "AA",
             },
         },
-        ['GroupBuff']      = {
+        ['GroupBuff']         = {
             {
                 name = "RunSpeedBuff",
                 type = "Spell",
@@ -680,7 +688,7 @@ return {
                 end,
             },
         },
-        ['PetSummon']      = {
+        ['PetSummon']         = {
             {
                 name = "PetSpell",
                 type = "Spell",
@@ -695,7 +703,7 @@ return {
                 end,
             },
         },
-        ['Downtime']       = {
+        ['Downtime']          = {
             {
                 name = "Gelid Rending",
                 type = "AA",
@@ -708,7 +716,7 @@ return {
                 end,
             },
         },
-        ['PetBuff']        = {
+        ['PetBuff']           = {
             {
                 name = "Epic",
                 type = "Item",
@@ -791,7 +799,7 @@ return {
                 end,
             },
         },
-        ['Growl']          = {
+        ['Growl']             = {
             {
                 name = "PetGrowl",
                 type = "Spell",
@@ -800,7 +808,7 @@ return {
                 end,
             },
         },
-        ['Vigor']          = {
+        ['Vigor']             = {
             {
                 name = "VigorBuff",
                 type = "Spell",
@@ -1063,18 +1071,6 @@ return {
             RequiresLoadoutChange = true,
         },
         --Combat
-        ['EmergencyStart'] = {
-            DisplayName = "Emergency HP%",
-            Group = "Abilities",
-            Header = "Utility",
-            Category = "Emergency",
-            Index = 101,
-            Tooltip = "Your HP % before we begin to use emergency mitigation abilities.",
-            Default = 50,
-            Min = 1,
-            Max = 100,
-            ConfigType = "Advanced",
-        },
         ['DoCoating']      = {
             DisplayName = "Use Coating",
             Group = "Items",

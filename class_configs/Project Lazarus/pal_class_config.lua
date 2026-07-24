@@ -551,7 +551,7 @@ return {
             load_cond = function() return Core.IsTanking() and Config:GetSetting('TankAggroScan') end,
             targetId = function(self) return Targeting.CheckForAggroTargetID() end,
             cond = function(self, combat_state)
-                if mq.TLO.Me.PctHPs() <= Config:GetSetting('HPCritical') then return false end
+                if Core.AtCriticalHP() then return false end
                 return combat_state == "Combat"
             end,
         },
@@ -563,7 +563,7 @@ return {
             load_cond = function() return Core.IsTanking() end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                if mq.TLO.Me.PctHPs() <= Config:GetSetting('HPCritical') then return false end
+                if Core.AtCriticalHP() then return false end
                 return combat_state == "Combat" and Targeting.HateToolsNeeded()
             end,
         },
@@ -580,7 +580,7 @@ return {
             end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                if mq.TLO.Me.PctHPs() <= Config:GetSetting('HPCritical') then return false end
+                if Core.AtCriticalHP() then return false end
                 return combat_state == "Combat" and Combat.AETauntCheck(true)
             end,
         },
@@ -602,7 +602,7 @@ return {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart')
+                return combat_state == "Combat" and Core.AtEmergencyHP()
             end,
         },
         { --Prioritized in their own rotation to help keep HP topped to the desired level, includes emergency abilities
@@ -637,7 +637,7 @@ return {
             steps = 4,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                if mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') then return false end
+                if Core.AtEmergencyHP() then return false end
                 return combat_state == "Combat" and Casting.BurnCheck() and Core.CombatActionsCheck()
             end,
         },
@@ -652,7 +652,7 @@ return {
             end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                if not Config:GetSetting('DoAEDamage') or (Core.IsTanking() and mq.TLO.Me.PctHPs() <= Config:GetSetting('HPCritical')) then return false end
+                if not Config:GetSetting('DoAEDamage') or (Core.IsTanking() and Core.AtCriticalHP()) then return false end
                 return combat_state == "Combat" and Combat.AETargetCheck(true) and Core.CombatActionsCheck()
             end,
         },
@@ -662,13 +662,13 @@ return {
             steps = 1,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                if mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') then return false end
+                if Core.AtEmergencyHP() then return false end
                 return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
     },
     ['Rotations']         = {
-        ['Downtime'] = {
+        ['Downtime']               = {
             {
                 name = "Yaulp",
                 type = "AA",
@@ -717,7 +717,7 @@ return {
                 end,
             },
         },
-        ['GroupBuff'] = {
+        ['GroupBuff']              = {
             {
                 name = "AegoBuff",
                 type = "Spell",
@@ -769,18 +769,10 @@ return {
                 end,
             },
         },
-        ['EmergencyDefenses'] = {
+        ['EmergencyDefenses']      = {
             --Note that in Tank Mode, defensive discs are preemptively cycled on named in the (non-emergency) Defenses rotation
             --Abilities should be placed in order of lowest to highest triggered HP thresholds
             --Some conditionals are commented out while I tweak percentages (or determine if they are necessary)
-            {
-                name = "Armor of Experience",
-                type = "AA",
-                load_cond = function(self) return Config:GetSetting('DoVetAA') end,
-                cond = function(self)
-                    return mq.TLO.Me.PctHPs() <= Config:GetSetting('HPCritical')
-                end,
-            },
             {
                 name = "OoW_Chest",
                 type = "Item",
@@ -807,6 +799,14 @@ return {
                     return Casting.NoDiscActive() and Casting.DiscOnCoolDown('BlockDisc') and Casting.DiscOnCoolDown('GuardDisc')
                 end,
             },
+            {
+                name = "Armor of Experience",
+                type = "AA",
+                load_cond = function(self) return Config:GetSetting('DoVetAA') end,
+                cond = function(self)
+                    return Core.AtCriticalHP()
+                end,
+            },
         },
         ['HateTools(AggroTarget)'] = {
             {
@@ -826,7 +826,7 @@ return {
                 type = "Ability",
             },
         },
-        ['HateTools(AutoTarget)'] = {
+        ['HateTools(AutoTarget)']  = {
             { --8min reuse, save for we still can't get a mob back after trying to taunt
                 name = "Ageless Enmity",
                 type = "AA",
@@ -861,7 +861,7 @@ return {
                 end,
             },
         },
-        ['AEHateTools'] = {
+        ['AEHateTools']            = {
             {
                 name = "Beacon of the Righteous",
                 type = "AA",
@@ -884,7 +884,7 @@ return {
                 end,
             },
         },
-        ['AECombat'] = {
+        ['AECombat']               = {
             {
                 name = "AEStun",
                 type = "Spell",
@@ -902,7 +902,7 @@ return {
                 load_cond = function(self) return mq.TLO.FindItem("=Forsaken Fayguard Bladecatcher")() end,
             },
         },
-        ['Burn'] = {
+        ['Burn']                   = {
             {
                 name_func = function(self)
                     return string.format("Fundament: %s Spire of Holiness", Core.IsTanking() and "Third" or "First")
@@ -941,7 +941,7 @@ return {
                 end,
             },
         },
-        ['Defenses'] = {
+        ['Defenses']               = {
             {
                 name = "GuardDisc",
                 type = "Disc",
@@ -963,7 +963,7 @@ return {
                 type = "AA",
             },
         },
-        ['ToTHeals'] = {
+        ['ToTHeals']               = {
             {
                 name = "Gift of Life",
                 type = "AA",
@@ -987,7 +987,7 @@ return {
                 load_cond = function(self) return Config:GetSetting('DoLightHeal') == 2 end,
             },
         },
-        ['Combat'] = {
+        ['Combat']                 = {
             {
                 name = "StunTimer5",
                 type = "Spell",
@@ -1059,7 +1059,7 @@ return {
                 load_cond = function(self) return mq.TLO.Me.Ability("Slam")() end,
             },
         },
-        ['Weapon Management'] = {
+        ['Weapon Management']      = {
             {
                 name = "Equip Shield",
                 type = "CustomFunc",
@@ -1200,31 +1200,6 @@ return {
             Index = 102,
             Tooltip = "The HP % where we will use defensive actions like discs, epics, etc.\nNote that fighting a named will also trigger these actions.",
             Default = 60,
-            Min = 1,
-            Max = 100,
-            ConfigType = "Advanced",
-        },
-        ['EmergencyStart']    = {
-            DisplayName = "Emergency Start",
-            Group = "Abilities",
-            Header = "Tanking",
-            Category = "Defenses",
-            Index = 103,
-            Tooltip = "The HP % before all but essential rotations are cut in favor of emergency or defensive abilities.",
-            Default = 40,
-            Min = 1,
-            Max = 100,
-            ConfigType = "Advanced",
-        },
-        ['HPCritical']        = {
-            DisplayName = "HP Critical",
-            Group = "Abilities",
-            Header = "Tanking",
-            Category = "Defenses",
-            Index = 104,
-            Tooltip =
-            "The HP % that we will use abilities like Lay on Hands or Gift of Life.\nMost other rotations are cut to give our full focus to survival.",
-            Default = 20,
             Min = 1,
             Max = 100,
             ConfigType = "Advanced",

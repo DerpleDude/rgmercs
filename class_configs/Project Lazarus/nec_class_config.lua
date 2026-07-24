@@ -357,19 +357,18 @@ local _ClassConfig = {
             targetId = function(self) return Casting.GetBuffableTankingIDs() end,
             cond = function(self, combat_state)
                 local downtime = combat_state == "Downtime" and Casting.OkayToBuff()
-                local burning = combat_state == "Combat" and Casting.BurnCheck() and not Casting.IAmFeigning() and Core.CombatActionsCheck()
+                local burning = combat_state == "Combat" and Casting.BurnCheck() and not mq.TLO.Me.Feigning() and Core.CombatActionsCheck()
                 return downtime or burning
             end,
         },
         {
-            name = 'Emergency',
+            name = 'Emergency(Aggro)',
             state = 1,
             steps = 1,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return Targeting.GetXTHaterCount() > 0 and
-                    (mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') or (Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 99))
+                return not mq.TLO.Me.Feigning() and Targeting.IHaveAggro(100) and (Core.AtEmergencyHP() or Globals.AutoTargetIsNamed)
             end,
         },
         {
@@ -387,7 +386,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting('ScentDebuffUse') == 2 end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and not Casting.IAmFeigning() and Casting.OkayToDebuff() and Core.CombatActionsCheck()
+                return combat_state == "Combat" and not mq.TLO.Me.Feigning() and Casting.OkayToDebuff() and Core.CombatActionsCheck()
             end,
         },
         { -- On Laz, this hits slightly different resists, and in different slots, it is a choice.
@@ -397,7 +396,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting('ScentDebuffUse') == 3 end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and not Casting.IAmFeigning() and Casting.OkayToDebuff() and Core.CombatActionsCheck()
+                return combat_state == "Combat" and not mq.TLO.Me.Feigning() and Casting.OkayToDebuff() and Core.CombatActionsCheck()
             end,
         },
         { --Keep things from running
@@ -418,7 +417,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and
-                    Casting.BurnCheck() and not Casting.IAmFeigning() and Core.CombatActionsCheck()
+                    Casting.BurnCheck() and not mq.TLO.Me.Feigning() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -428,7 +427,7 @@ local _ClassConfig = {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and not Casting.IAmFeigning() and Targeting.MobNotLowHP(Targeting.GetAutoTarget()) and Core.CombatActionsCheck()
+                return combat_state == "Combat" and not mq.TLO.Me.Feigning() and Targeting.MobNotLowHP(Targeting.GetAutoTarget()) and Core.CombatActionsCheck()
             end,
         },
         {
@@ -438,7 +437,7 @@ local _ClassConfig = {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and not Casting.IAmFeigning() and Targeting.MobHasLowHP(Targeting.GetAutoTarget()) and Core.CombatActionsCheck()
+                return combat_state == "Combat" and not mq.TLO.Me.Feigning() and Targeting.MobHasLowHP(Targeting.GetAutoTarget()) and Core.CombatActionsCheck()
             end,
         },
         {
@@ -447,7 +446,7 @@ local _ClassConfig = {
             steps = 1,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and not Casting.IAmFeigning()
+                return combat_state == "Combat" and not mq.TLO.Me.Feigning()
             end,
         },
         {
@@ -457,19 +456,18 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting('DoArcanumWeave') and Casting.CanUseAA("Acute Focus of Arcanum") end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and not Casting.IAmFeigning() and not mq.TLO.Me.Buff("Focus of Arcanum")() and Core.CombatActionsCheck()
+                return combat_state == "Combat" and not mq.TLO.Me.Feigning() and not mq.TLO.Me.Buff("Focus of Arcanum")() and Core.CombatActionsCheck()
             end,
         },
     },
     ['Rotations']       = {
-        ['Emergency']       = {
+        ['Emergency(Aggro)'] = {
             {
                 name = "Death's Effigy",
                 type = "AA",
                 cond = function(self, aaName, target)
                     if not Config:GetSetting('AggroFeign') then return false end
-                    if Config:GetSetting('CharmOn') and mq.TLO.Me.Pet.ID() > 0 then return false end
-                    return (Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 99) or (mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') and Targeting.IHaveAggro(100))
+                    return Casting.OkayToCombatEscape()
                 end,
             },
             {
@@ -480,11 +478,11 @@ local _ClassConfig = {
                 name = "Harm Shield",
                 type = "AA",
                 cond = function(self, aaName)
-                    return (mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') and Targeting.IHaveAggro(100))
+                    return Core.AtCriticalHP()
                 end,
             },
         },
-        ['Scent(Terris)']   = {
+        ['Scent(Terris)']    = {
             {
                 name = "Scent of Terris",
                 type = "AA",
@@ -502,7 +500,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Scent(Midnight)'] = {
+        ['Scent(Midnight)']  = {
             {
                 name = "ScentDebuff2",
                 type = "Spell",
@@ -511,7 +509,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Snare']           = {
+        ['Snare']            = {
             {
                 name = "Encroaching Darkness",
                 type = "AA",
@@ -529,7 +527,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['CombatBuff']      = {
+        ['CombatBuff']       = {
             {
                 name = "Death Bloom",
                 type = "AA",
@@ -575,7 +573,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['DPS(MobHighHP)']  = {
+        ['DPS(MobHighHP)']   = {
             {
                 name = "PoisonDotDD",
                 type = "Spell",
@@ -656,7 +654,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['DPS(MobLowHP)']   = {
+        ['DPS(MobLowHP)']    = {
             {
                 name = "OrbNuke",
                 type = "Spell",
@@ -692,7 +690,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Burn']            = {
+        ['Burn']             = {
             {
                 name = "OoW_Chest",
                 type = "Item",
@@ -774,7 +772,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['PetHealing']      = {
+        ['PetHealing']       = {
             {
                 name = "Companion's Blessing",
                 type = "AA",
@@ -796,7 +794,7 @@ local _ClassConfig = {
                 load_cond = function(self) return Config:GetSetting('DoPetHealSpell') end,
             },
         },
-        ['ArcanumWeave']    = {
+        ['ArcanumWeave']     = {
             {
                 name = "Empowered Focus of Arcanum",
                 type = "AA",
@@ -819,7 +817,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Downtime']        = {
+        ['Downtime']         = {
             {
                 name = "SelfHPBuff",
                 type = "Spell",
@@ -864,7 +862,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['PetSummon']       = {
+        ['PetSummon']        = {
             {
                 name_func = function(self)
                     return string.format("%sPetSpell", self.ClassConfig.DefaultConfig.PetType.ComboOptions[Config:GetSetting('PetType')])
@@ -883,7 +881,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['PetBuff']         = {
+        ['PetBuff']          = {
             {
                 name = "PetHaste",
                 type = "Spell",
@@ -898,7 +896,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Pustules']        = {
+        ['Pustules']         = {
             {
                 name = "Pustules",
                 type = "Spell",
@@ -1120,24 +1118,12 @@ local _ClassConfig = {
             Min = 1,
             Max = #Globals.Constants.SpireChoices,
         },
-        ['EmergencyStart']    = {
-            DisplayName = "Emergency HP%",
-            Group = "Abilities",
-            Header = "Utility",
-            Category = "Emergency",
-            Index = 101,
-            Tooltip = "Your HP % before we begin to use emergency mitigation abilities.",
-            Default = 50,
-            Min = 1,
-            Max = 100,
-            ConfigType = "Advanced",
-        },
         ['AggroFeign']        = {
             DisplayName = "Emergency Feign",
             Group = "Abilities",
             Header = "Utility",
             Category = "Emergency",
-            Index = 102,
+            Index = 101,
             Tooltip = "Use your Feign AA when you have aggro at low health or aggro on a mob detected as a 'named' by RGMercs (see Spawns tab)..",
             Default = true,
         },

@@ -413,10 +413,6 @@ local _ClassConfig = {
             end
             return false
         end,
-        UnwantedAggroCheck = function(self)
-            if Targeting.GetXTHaterCount() == 0 or Core.IsTanking() or mq.TLO.Group.Puller.ID() == mq.TLO.Me.ID() then return false end
-            return Targeting.IHaveAggro(100)
-        end,
         DotSongCheck = function(songSpell) --Check dot stacking, stop dotting when HP threshold is reached based on mob type, can't use utils function because we try to refresh just as the dot is ending
             if not songSpell or not songSpell() then return false end
             return songSpell.StacksTarget() and Targeting.MobNotLowHP(Targeting.GetAutoTarget())
@@ -467,14 +463,25 @@ local _ClassConfig = {
             end,
         },
         {
-            name = 'Emergency',
+            name = 'Emergency(Health)',
             state = 1,
             steps = 1,
             midSong = true,
             doFullRotation = true,
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
-                return Targeting.GetXTHaterCount() > 0 and (mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') or self.Helpers.UnwantedAggroCheck(self))
+                return Targeting.GetXTHaterCount() > 0 and Core.AtEmergencyHP()
+            end,
+        },
+        {
+            name = 'Emergency(Aggro)',
+            state = 1,
+            steps = 1,
+            midSong = true,
+            doFullRotation = true,
+            targetId = function(self) return { mq.TLO.Me.ID(), } end,
+            cond = function(self, combat_state)
+                return Targeting.IHaveAggro(100) and (Core.AtEmergencyHP() or Globals.AutoTargetIsNamed)
             end,
         },
         {
@@ -547,7 +554,7 @@ local _ClassConfig = {
         },
     },
     ['Rotations']         = {
-        ['Burn'] = { --Order is heavy WIP
+        ['Burn']              = { --Order is heavy WIP
             {
                 name = "Quick Time",
                 type = "AA",
@@ -615,7 +622,7 @@ local _ClassConfig = {
                 midSong = true,
             },
         },
-        ['Debuff'] = {
+        ['Debuff']            = {
             {
                 name = "AESlowSong",
                 type = "Song",
@@ -650,7 +657,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Combat'] = {
+        ['Combat']            = {
             {
                 name = "Epic",
                 type = "Item",
@@ -675,7 +682,7 @@ local _ClassConfig = {
                 midSong = true,
             },
         },
-        ['Enduring Breath'] = {
+        ['Enduring Breath']   = {
             {
                 name = "EndBreathSong",
                 type = "Song",
@@ -684,7 +691,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Melody'] = {
+        ['Melody']            = {
             {
                 name = "AreaAriaSong",
                 type = "Song",
@@ -851,7 +858,7 @@ local _ClassConfig = {
                 custom_func = function(self) return self.Helpers.RefreshExpiringSong(self) end,
             },
         },
-        ['Downtime'] = {
+        ['Downtime']          = {
             {
                 name = "DPSAura",
                 type = "Song",
@@ -865,40 +872,32 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Emergency'] = {
+        ['Emergency(Health)'] = {
+            {
+                name = "Revitalize",
+                type = "Disc",
+                midSong = true,
+            },
+            {
+                name = "Hymn of the Last Stand",
+                type = "AA",
+                midSong = true,
+            },
+        },
+        ['Emergency(Aggro)']  = {
             {
                 name = "Fading Memories",
                 type = "AA",
                 midSong = true,
                 load_cond = function(self) return Config:GetSetting('UseFading') and Casting.CanUseAA('Fading Memories') end,
                 cond = function(self, aaName)
-                    if Config:GetSetting('CharmOn') and mq.TLO.Me.Pet.ID() > 0 then return false end
-                    return (mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') or Globals.AutoTargetIsNamed) and self.Helpers.UnwantedAggroCheck(self)
-                end,
-            },
-            {
-                name = "Revitalize",
-                type = "Disc",
-                midSong = true,
-                cond = function(self, discSpell, target)
-                    return mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart')
-                end,
-            },
-            {
-                name = "Hymn of the Last Stand",
-                type = "AA",
-                midSong = true,
-                cond = function(self, aaName)
-                    return mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart')
+                    return Casting.OkayToCombatEscape()
                 end,
             },
             {
                 name = "Shield of Notes",
                 type = "AA",
                 midSong = true,
-                cond = function(self, aaName)
-                    return mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart')
-                end,
             },
             {
                 name = "Protective",
@@ -917,7 +916,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['InstantRunBuff'] = {
+        ['InstantRunBuff']    = {
             {
                 name = "Selo's Sonata",
                 type = "AA",
@@ -929,7 +928,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['GroupBuff'] = { -- Added to anchor clickies to
+        ['GroupBuff']         = { -- Added to anchor clickies to
 
         },
     },
@@ -1146,25 +1145,13 @@ local _ClassConfig = {
             Group = "Abilities",
             Header = "Utility",
             Category = "Emergency",
-            Index = 102,
+            Index = 101,
             Tooltip = "Use Fading Memories when you have aggro and you aren't the Main Assist.",
             Default = true,
             ConfigType = "Advanced",
             FAQ = "Why is my Bard regularly using Fading Memories",
             Answer = "When Use Combat Escape is enabled, Fading Memories will be used when the Bard has any unwanted aggro.\n" ..
                 "This helps the common issue of bards gaining aggro from singing before a tank has the chance to secure it.",
-        },
-        ['EmergencyStart']  = {
-            DisplayName = "Emergency HP%",
-            Group = "Abilities",
-            Header = "Utility",
-            Category = "Emergency",
-            Index = 101,
-            Tooltip = "Your HP % before we begin to use emergency mitigation abilities.",
-            Default = 50,
-            Min = 1,
-            Max = 100,
-            ConfigType = "Advanced",
         },
 
         -- Healing

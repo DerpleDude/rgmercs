@@ -199,7 +199,7 @@ local _ClassConfig = {
             return false
         end,
         BurnDiscCheck = function(self)
-            if mq.TLO.Me.ActiveDisc.Name() == "Fortitude Discipline" or mq.TLO.Me.PctHPs() < Config:GetSetting('EmergencyStart') then return false end
+            if mq.TLO.Me.ActiveDisc.Name() == "Fortitude Discipline" or Core.AtEmergencyHP() then return false end
             local burnDisc = { "Onslaught", "StrikeDisc", "Steelwrath", }
             for _, buffName in ipairs(burnDisc) do
                 local resolvedDisc = self:GetResolvedActionMapItem(buffName)
@@ -262,7 +262,7 @@ local _ClassConfig = {
             load_cond = function() return Core.IsTanking() and Config:GetSetting('TankAggroScan') end,
             targetId = function(self) return Targeting.CheckForAggroTargetID() end,
             cond = function(self, combat_state)
-                if mq.TLO.Me.PctHPs() <= Config:GetSetting('HPCritical') then return false end
+                if Core.AtCriticalHP() then return false end
                 return combat_state == "Combat"
             end,
         },
@@ -274,7 +274,7 @@ local _ClassConfig = {
             load_cond = function() return Core.IsTanking() end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                if mq.TLO.Me.PctHPs() <= Config:GetSetting('HPCritical') then return false end
+                if Core.AtCriticalHP() then return false end
                 return combat_state == "Combat" and Targeting.HateToolsNeeded()
             end,
         },
@@ -290,7 +290,7 @@ local _ClassConfig = {
             end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                if mq.TLO.Me.PctHPs() <= Config:GetSetting('HPCritical') then return false end
+                if Core.AtCriticalHP() then return false end
                 return combat_state == "Combat" and Combat.AETauntCheck(true)
             end,
         },
@@ -312,7 +312,7 @@ local _ClassConfig = {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart')
+                return combat_state == "Combat" and Core.AtEmergencyHP()
             end,
         },
         { --Defensive actions used proactively to prevent emergencies
@@ -337,7 +337,7 @@ local _ClassConfig = {
             steps = 4,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                if mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') then return false end
+                if Core.AtEmergencyHP() then return false end
                 return combat_state == "Combat" and Casting.BurnCheck() and Core.CombatActionsCheck()
             end,
         },
@@ -358,13 +358,13 @@ local _ClassConfig = {
             steps = 1,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                if mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') then return false end
+                if Core.AtEmergencyHP() then return false end
                 return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
     },
     ['Rotations']     = {
-        ['Downtime'] = {
+        ['Downtime']               = {
             {
                 name = "AuraBuff",
                 type = "Disc",
@@ -418,7 +418,7 @@ local _ClassConfig = {
                 type = "AA",
             },
         },
-        ['HateTools(AutoTarget)'] = {
+        ['HateTools(AutoTarget)']  = {
             {
                 name = "Taunt",
                 type = "Ability",
@@ -463,7 +463,7 @@ local _ClassConfig = {
                 type = "AA",
             },
         },
-        ['AEHateTools'] = {
+        ['AEHateTools']            = {
             {
                 name = "BladeDisc",
                 type = "Disc",
@@ -484,14 +484,14 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['EmergencyDefenses'] = {
+        ['EmergencyDefenses']      = {
             --Note that in Tank Mode, defensive discs are preemptively cycled on named in the (non-emergency) Defenses rotation
             --Abilities should be placed in order of lowest to highest triggered HP thresholds
             {
                 name = "Revitalize",
                 type = "Disc",
                 cond = function(self, discSpell, target)
-                    return mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart')
+                    return Core.AtEmergencyHP()
                 end,
             },
             {
@@ -521,7 +521,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Weapon Management'] = {
+        ['Weapon Management']      = {
             {
                 name = "Equip Shield",
                 type = "CustomFunc",
@@ -547,7 +547,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Defenses'] = {
+        ['Defenses']               = {
             {
                 name = "Protective",
                 type = "Disc",
@@ -599,7 +599,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Burn'] = {
+        ['Burn']                   = {
             {
                 name = "Spire",
                 type = "AA",
@@ -650,13 +650,13 @@ local _ClassConfig = {
                 name = "BattlecryHeal",
                 type = "Disc",
                 cond = function(self, discSpell, target)
-                    return mq.TLO.Me.PctHPs() < Config:GetSetting('EmergencyStart') or Targeting.BigGroupHealsNeeded()
+                    return Core.AtEmergencyHP() or Targeting.BigGroupHealsNeeded()
                 end,
             },
         },
-        ['Buffs'] = {
+        ['Buffs']                  = {
         },
-        ['Combat'] = {
+        ['Combat']                 = {
             {
                 name = "EndRegen",
                 type = "Disc",
@@ -831,31 +831,6 @@ local _ClassConfig = {
             Index = 102,
             Tooltip = "The HP % where we will use defensive actions like discs, epics, etc.\nNote that fighting a named will also trigger these actions.",
             Default = 60,
-            Min = 1,
-            Max = 100,
-            ConfigType = "Advanced",
-        },
-        ['EmergencyStart']  = {
-            DisplayName = "Emergency Start",
-            Group = "Abilities",
-            Header = "Tanking",
-            Category = "Defenses",
-            Index = 103,
-            Tooltip = "The HP % before all but essential rotations are cut in favor of emergency or defensive abilities.",
-            Default = 40,
-            Min = 1,
-            Max = 100,
-            ConfigType = "Advanced",
-        },
-        ['HPCritical']      = {
-            DisplayName = "HP Critical",
-            Group = "Abilities",
-            Header = "Tanking",
-            Category = "Defenses",
-            Index = 104,
-            Tooltip =
-            "The HP % that most other rotations are cut to give our full focus to survival.",
-            Default = 20,
             Min = 1,
             Max = 100,
             ConfigType = "Advanced",

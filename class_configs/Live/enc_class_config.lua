@@ -976,6 +976,16 @@ local _ClassConfig    = {
             end,
         },
         {
+            name = 'Emergency(Aggro)',
+            state = 1,
+            steps = 1,
+            doFullRotation = true,
+            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
+            cond = function(self, combat_state)
+                return Targeting.IHaveAggro(100) and (Core.AtEmergencyHP() or Globals.AutoTargetIsNamed)
+            end,
+        },
+        {
             name = 'Burn',
             state = 1,
             steps = 3,
@@ -1043,7 +1053,7 @@ local _ClassConfig    = {
         end,
     },
     ['Rotations']     = {
-        ['Downtime'] = {
+        ['Downtime']         = {
             {
                 name = "Orator's Unity",
                 type = "AA",
@@ -1152,7 +1162,7 @@ local _ClassConfig    = {
                 end,
             },
         },
-        ['PetSummon'] = {
+        ['PetSummon']        = {
             {
                 name = "PetSpell",
                 type = "Spell",
@@ -1166,7 +1176,7 @@ local _ClassConfig    = {
                 end,
             },
         },
-        ['PetBuff'] = {
+        ['PetBuff']          = {
             {
                 name = "PetBuffSpell",
                 type = "Spell",
@@ -1182,7 +1192,7 @@ local _ClassConfig    = {
             },
 
         },
-        ['GroupBuff'] = {
+        ['GroupBuff']        = {
             {
                 name = "ManaRegen",
                 type = "Spell",
@@ -1276,7 +1286,7 @@ local _ClassConfig    = {
                 end,
             },
         },
-        ['Dispel'] = {
+        ['Dispel']           = {
             {
                 name = "Eradicate Magic",
                 type = "AA",
@@ -1293,7 +1303,43 @@ local _ClassConfig    = {
                 end,
             },
         },
-        ['CombatSupport'] = {
+        ['Emergency(Aggro)'] = {
+            {
+                name = "Self Stasis",
+                type = "AA",
+                cond = function(self, aaName)
+                    return Casting.OkayToCombatEscape()
+                end,
+                post_activate = function(self, aaName, success)
+                    if not success then return end
+                    mq.delay(1000, function() return mq.TLO.Me.Buff("Self Stasis")() ~= nil end)
+                    if mq.TLO.Me.Buff("Self Stasis")() then
+                        Comms.PrintGroupMessage("We're out of combat, removing the Self Stasis buff so we can act again.")
+                        Core.DoCmd('/removebuff =Self Stasis')
+                    end
+                end,
+            },
+            {
+                name = "Arcane Whisper",
+                type = "AA",
+                cond = function(self, aaName, target)
+                    return Globals.AutoTargetIsNamed
+                end,
+            },
+            {
+                name = "Doppelganger",
+                type = "AA",
+            },
+            {
+                name = "Beguiler's Banishment",
+                type = "AA",
+                load_cond = function() return Config:GetSetting("DoBeguilers") end,
+                cond = function(self, aaName)
+                    return mq.TLO.SpawnCount("npc radius 20")() > 2
+                end,
+            },
+        },
+        ['CombatSupport']    = {
             {
                 name = "Glyph Spray",
                 type = "AA",
@@ -1316,79 +1362,15 @@ local _ClassConfig    = {
                     return Casting.DetSpellCheck(spell) and Targeting.GetXTHaterCount() >= Config:GetSetting('AECount')
                 end,
             },
-
-            {
-                name = "Self Stasis",
-                type = "AA",
-                cond = function(self, aaName)
-                    if Config:GetSetting('CharmOn') and mq.TLO.Me.Pet.ID() > 0 then return false end
-                    return mq.TLO.Me.TargetOfTarget.ID() == mq.TLO.Me.ID() and mq.TLO.Target.ID() == Globals.AutoTargetID
-                end,
-                post_activate = function(self, aaName, success)
-                    if not success then return end
-                    mq.delay(1000, function() return mq.TLO.Me.Buff("Self Stasis")() ~= nil end)
-                    if mq.TLO.Me.Buff("Self Stasis")() then
-                        Comms.PrintGroupMessage("We're out of combat, removing the Self Stasis buff so we can act again.")
-                        Core.DoCmd('/removebuff =Self Stasis')
-                    end
-                end,
-            },
-            -- { --This can interrupt spellcasting which can just make something worse. Let us trust healers and tanks.
-            --     name = "Dimensional Instability",
-            --     type = "AA",
-            --     cond = function(self, aaName)
-            --         return mq.TLO.Me.TargetOfTarget.ID() == mq.TLO.Me.ID() and mq.TLO.Target.ID() == Globals.AutoTargetID and mq.TLO.Me.PctHPs() <= 30
-            --     end,
-            -- },
-            {
-                name = "Beguiler's Directed Banishment",
-                type = "AA",
-                cond = function(self, aaName, target)
-                    if target.ID() == Globals.AutoTargetID then return false end
-                    return mq.TLO.Me.PctAggro() > 99 and mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart')
-                end,
-
-            },
-            {
-                name = "Beguiler's Banishment",
-                type = "AA",
-                cond = function(self, aaName)
-                    return Targeting.IHaveAggro(100) and mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') and mq.TLO.SpawnCount("npc radius 20")() > 2
-                end,
-
-            },
-            {
-                name = "Doppelganger",
-                type = "AA",
-                cond = function(self, aaName)
-                    return Targeting.IHaveAggro(100) and mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart')
-                end,
-            },
-            -- { --This can interrupt spellcasting which can just make something worse. Let us trust healers and tanks.
-            --     name = "Dimensional Shield",
-            --     type = "AA",
-            --     cond = function(self, aaName)
-            --         return mq.TLO.Me.TargetOfTarget.ID() == mq.TLO.Me.ID() and mq.TLO.Target.ID() == Globals.AutoTargetID and mq.TLO.Me.PctHPs() <= 80            --     end,
-
-            -- },
-            {
-                name = "Arcane Whisper",
-                type = "AA",
-                cond = function(self, aaName, target)
-                    return Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() >= 90
-                end,
-
-            },
             {
                 name = "Silent Casting",
                 type = "AA",
                 cond = function(self, aaName, target)
                     return Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() >= 60
                 end,
-
             },
         },
-        ['DPS(Default)'] = {
+        ['DPS(Default)']     = {
             {
                 name = "MindDot",
                 type = "Spell",
@@ -1430,7 +1412,7 @@ local _ClassConfig    = {
                 end,
             },
         },
-        ['DPS(ModernEra)'] = {
+        ['DPS(ModernEra)']   = {
             {
                 name = "DichoSpell",
                 type = "Spell",
@@ -1482,7 +1464,7 @@ local _ClassConfig    = {
                 end,
             },
         },
-        ['Burn'] = {
+        ['Burn']             = {
             {
                 name = "Illusions of Grandeur",
                 type = "AA",
@@ -1530,7 +1512,7 @@ local _ClassConfig    = {
                 type = "AA",
             },
         },
-        ['Tash'] = {
+        ['Tash']             = {
             {
                 name = "Bite of Tashani",
                 type = "AA",
@@ -1547,7 +1529,7 @@ local _ClassConfig    = {
                 end,
             },
         },
-        ['CripSlow'] = {
+        ['CripSlow']         = {
             {
                 name = "Enveloping Helix",
                 type = "AA",
@@ -1806,6 +1788,16 @@ local _ClassConfig    = {
             Default = 3,
             Max = 15,
         },
+        ['DoBeguilers']        = {
+            DisplayName = "Do Beguiler's",
+            Group = "Abilities",
+            Header = "Utility",
+            Category = "Emergency",
+            Index = 101,
+            RequiresLoadoutChange = true,
+            Tooltip = "Use Beguiler's Banishment AA when you have aggro.",
+            Default = false,
+        },
         ['DoAEStun']           = {
             DisplayName = "PBAE Stun use:",
             Group = "Abilities",
@@ -1840,18 +1832,6 @@ local _ClassConfig    = {
                 "Disabled: We will use our standard ST Mez in Gem 1.\n" ..
                 "As ST Mez: We will use the Twincast Mez as our ST Mez in Gem 1.\n" ..
                 "As Mez and to Trigger Twincast: As above and we will also use this spell in combat to trigger the twincast effect.",
-        },
-        ['EmergencyStart']     = {
-            DisplayName = "Emergency Start",
-            Group = "Abilities",
-            Header = "Utility",
-            Category = "Emergency",
-            Index = 101,
-            Tooltip = "The HP % emergency abilities will be used (Abilities used depend on whose health is low, the ENC or the MA).",
-            Default = 50,
-            Min = 1,
-            Max = 100,
-            ConfigType = "Advanced",
         },
         ['DoChestClick']       = {
             DisplayName = "Do Chest Click",

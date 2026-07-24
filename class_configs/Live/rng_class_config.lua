@@ -779,13 +779,10 @@ local _ClassConfig = {
                     mq.TLO.Me.PctMana() or 0, Config:GetSetting('ManaToNuke'), Strings.BoolToColorString(Casting.SpellReady(openerAbility)))
             end
         end,
-        UnwantedAggroCheck = function(self)
-            if Targeting.GetXTHaterCount() == 0 or Core.IsTanking() or mq.TLO.Group.Puller.ID() == mq.TLO.Me.ID() then return false end
-            return Targeting.IHaveAggro(100)
-        end,
-        DefensesActive = function(self)
-            return not Casting.IHaveBuff("Outrider's Evasion") and (mq.TLO.Me.ActiveDisc() or "Weapon Shield Discipline") ~= "Weapon Shield Discipline" and
-                not Casting.IHaveBuff("Armor of Experience")
+        AnyDefenseUp = function(self)
+            local weaponShield = Core.GetResolvedActionMapItem('WeaponShield')
+            return Casting.IHaveBuff(Casting.GetAASpell("Outrider's Evasion").ID()) or Casting.IHaveBuff(Casting.GetAASpell("Armor of Experience").ID()) or
+                (weaponShield and mq.TLO.Me.ActiveDisc.Name() == weaponShield.RankName()) or false
         end,
     },
     ['HealRotationOrder'] = {
@@ -836,13 +833,13 @@ local _ClassConfig = {
             end,
         },
         {
-            name = 'Emergency',
+            name = 'Emergency(Aggro)',
             state = 1,
             steps = 1,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return Targeting.GetXTHaterCount() > 0 and (mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') or (Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 99))
+                return Targeting.IHaveAggro(100) and (Core.AtEmergencyHP() or Globals.AutoTargetIsNamed)
             end,
         },
         {
@@ -924,7 +921,7 @@ local _ClassConfig = {
         },
     },
     ['Rotations']         = {
-        ['Downtime'] = {
+        ['Downtime']           = {
             {
                 name = "EndRegen",
                 type = "Disc",
@@ -1082,7 +1079,7 @@ local _ClassConfig = {
                 cond = function(self, aaName) return not Core.IsTanking() and Casting.SelfBuffAACheck(aaName) end,
             },
         },
-        ['GroupBuff'] = {
+        ['GroupBuff']          = {
             { -- From Level 100 this delivers SingleCloakDS, PredatorBuff and StrengthBuff to the whole group.
                 name = "ShoutBuff",
                 type = "Spell",
@@ -1176,13 +1173,13 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Emergency'] = {
+        ['Emergency(Aggro)']   = {
             {
                 name = "Cover Tracks",
                 type = "AA",
                 load_cond = function(self) return Config:GetSetting('DoCoverTracks') and Casting.CanUseAA("Cover Tracks") end,
                 cond = function(self, aaName)
-                    return self.Helpers.UnwantedAggroCheck(self)
+                    return Casting.OkayToCombatEscape()
                 end,
             },
             {
@@ -1197,14 +1194,14 @@ local _ClassConfig = {
                 name = "Outrider's Evasion",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    return not self.Helpers.DefensesActive()
+                    return not self.Helpers.AnyDefenseUp(self)
                 end,
             },
             {
                 name = "WeaponShield",
                 type = "Disc",
                 cond = function(self, discSpell, target)
-                    return not self.Helpers.DefensesActive() and Casting.NoDiscActive()
+                    return not self.Helpers.AnyDefenseUp(self) and Casting.NoDiscActive()
                 end,
             },
             {
@@ -1212,11 +1209,11 @@ local _ClassConfig = {
                 type = "AA",
                 load_cond = function(self) return Config:GetSetting('DoVetAA') end,
                 cond = function(self, aaName)
-                    return mq.TLO.Me.PctHPs() < 35 and not self.Helpers.DefensesActive()
+                    return Core.AtCriticalHP() and not self.Helpers.AnyDefenseUp(self)
                 end,
             },
         },
-        ['Aggro Management'] = {
+        ['Aggro Management']   = {
             {
                 name = "Silent Strikes",
                 type = "AA",
@@ -1230,7 +1227,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Debuff'] = {
+        ['Debuff']             = {
             {
                 name = "Elemental Arrow",
                 type = "AA",
@@ -1239,7 +1236,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Snare'] = {
+        ['Snare']              = {
             {
                 name = "Entrap",
                 type = "AA",
@@ -1257,7 +1254,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Dispel'] = {
+        ['Dispel']             = {
             {
                 name = "Entropy of Nature",
                 type = "AA",
@@ -1274,7 +1271,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Burn'] = {
+        ['Burn']               = {
             {
                 name = "Auspice of the Hunter",
                 type = "AA",
@@ -1366,7 +1363,7 @@ local _ClassConfig = {
                 load_cond = function(self) return Config:GetSetting('DoVetAA') end,
             },
         },
-        ['DPS'] = {
+        ['DPS']                = {
             {
                 name = "CalledShotsArrow",
                 type = "Spell",
@@ -1488,7 +1485,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Weaves'] = {
+        ['Weaves']             = {
             {
                 name = "ReflexStrike",
                 type = "Disc",
@@ -1954,17 +1951,6 @@ local _ClassConfig = {
             Default = false,
             RequiresLoadoutChange = true,
         },
-        ['EmergencyStart']      = {
-            DisplayName = "Emergency HP%",
-            Group = "Abilities",
-            Header = "Utility",
-            Category = "Emergency",
-            Index = 101,
-            Tooltip = "Your HP % before we begin to use emergency mitigation abilities.",
-            Default = 50,
-            Min = 1,
-            Max = 100,
-        },
         ['JoltAggro']           = {
             DisplayName = "Aggro Shed %",
             Group = "Abilities",
@@ -1991,7 +1977,7 @@ local _ClassConfig = {
             Group = "Abilities",
             Header = "Utility",
             Category = "Emergency",
-            Index = 102,
+            Index = 101,
             Tooltip = "Use Cover Tracks to escape combat in an emergency.",
             Default = false,
             RequiresLoadoutChange = true,

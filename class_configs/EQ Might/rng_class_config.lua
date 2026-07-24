@@ -305,14 +305,13 @@ return {
             end,
         },
         {
-            name = 'Emergency',
+            name = 'Emergency(Aggro)',
             state = 1,
             steps = 1,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return Targeting.GetXTHaterCount() > 0 and
-                    (mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') or (Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 99))
+                return Targeting.IHaveAggro(100) and (Core.AtEmergencyHP() or Globals.AutoTargetIsNamed)
             end,
         },
         { --Keep things from running
@@ -548,10 +547,13 @@ return {
                 end,
             },
         },
-        ['Emergency']          = {
+        ['Emergency(Aggro)']   = {
             {
                 name = "Cover Tracks",
                 type = "AA",
+                cond = function(self, aaName)
+                    return Casting.OkayToCombatEscape()
+                end,
             },
             {
                 name = "Protection of the Spirit Wolf",
@@ -561,14 +563,15 @@ return {
                 name = "Outrider's Evasion",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    return Targeting.IHaveAggro(100) and (mq.TLO.Me.ActiveDisc() or "Weapon Shield Discipline") ~= "Weapon Shield Discipline"
+                    local weaponShield = Core.GetResolvedActionMapItem('WeaponShield')
+                    return not (weaponShield and mq.TLO.Me.ActiveDisc.Name() == weaponShield.RankName())
                 end,
             },
             {
                 name = "WeaponShield",
                 type = "Disc",
                 cond = function(self, discName, target)
-                    return Targeting.IHaveAggro(100) and not mq.TLO.Me.Song("Outrider's Evasion")() and Casting.NoDiscActive()
+                    return not Casting.IHaveBuff(Casting.GetAASpell("Outrider's Evasion").ID()) and Casting.NoDiscActive()
                 end,
             },
             {
@@ -922,7 +925,7 @@ return {
 
 
         --Combat
-        ['DoSwarmDot']     = {
+        ['DoSwarmDot']   = {
             DisplayName = "Swarm Dot",
             Group = "Abilities",
             Header = "Damage",
@@ -932,7 +935,7 @@ return {
             Default = true,
             RequiresLoadoutChange = true,
         },
-        ['DotNamedOnly']   = {
+        ['DotNamedOnly'] = {
             DisplayName = "Only Dot Named",
             Group = "Abilities",
             Header = "Damage",
@@ -941,7 +944,7 @@ return {
             Tooltip = "Any selected dot above will only be used on a named mob.",
             Default = true,
         },
-        ['UseEpic']        = {
+        ['UseEpic']      = {
             DisplayName = "Epic Use:",
             Group = "Items",
             Header = "Clickies",
@@ -954,21 +957,9 @@ return {
             Min = 1,
             Max = 3,
         },
-        ['EmergencyStart'] = {
-            DisplayName = "Emergency HP%",
-            Group = "Abilities",
-            Header = "Utility",
-            Category = "Emergency",
-            Index = 101,
-            Tooltip = "Your HP % before we begin to use emergency mitigation abilities.",
-            Default = 50,
-            Min = 1,
-            Max = 100,
-            ConfigType = "Advanced",
-        },
 
         --Utility
-        ['DoHealSpell']    = {
+        ['DoHealSpell']  = {
             DisplayName = "Do Heals",
             Group = "Abilities",
             Header = "Recovery",
@@ -978,7 +969,7 @@ return {
             Default = true,
             RequiresLoadoutChange = true,
         },
-        ['DoJoltSpell']    = {
+        ['DoJoltSpell']  = {
             DisplayName = "Do Jolt Spell",
             Group = "Abilities",
             Header = "Utility",
@@ -988,7 +979,7 @@ return {
             Default = true,
             RequiresLoadoutChange = true,
         },
-        ['DoSnare']        = {
+        ['DoSnare']      = {
             DisplayName = "Use Snares",
             Group = "Abilities",
             Header = "Debuffs",
@@ -998,7 +989,7 @@ return {
             Default = false,
             RequiresLoadoutChange = true,
         },
-        ['SnareCount']     = {
+        ['SnareCount']   = {
             DisplayName = "Snare Max Mob Count",
             Group = "Abilities",
             Header = "Debuffs",
@@ -1009,7 +1000,7 @@ return {
             Min = 1,
             Max = 99,
         },
-        ['HealPriority']   = {
+        ['HealPriority'] = {
             DisplayName = "Healing Priority",
             Group = "Abilities",
             Header = "Recovery",

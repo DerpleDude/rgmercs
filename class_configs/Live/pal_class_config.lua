@@ -962,7 +962,7 @@ local _ClassConfig = {
             load_cond = function() return Core.IsTanking() and Config:GetSetting('TankAggroScan') end,
             targetId = function(self) return Targeting.CheckForAggroTargetID() end,
             cond = function(self, combat_state)
-                if mq.TLO.Me.PctHPs() <= Config:GetSetting('HPCritical') then return false end
+                if Core.AtCriticalHP() then return false end
                 return combat_state == "Combat"
             end,
         },
@@ -974,7 +974,7 @@ local _ClassConfig = {
             load_cond = function() return Core.IsTanking() end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                if mq.TLO.Me.PctHPs() <= Config:GetSetting('HPCritical') then return false end
+                if Core.AtCriticalHP() then return false end
                 return combat_state == "Combat" and Targeting.HateToolsNeeded()
             end,
         },
@@ -986,7 +986,7 @@ local _ClassConfig = {
             load_cond = function() return Core.IsTanking() and Config:GetSetting('AETauntAA') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                if mq.TLO.Me.PctHPs() <= Config:GetSetting('HPCritical') then return false end
+                if Core.AtCriticalHP() then return false end
                 return combat_state == "Combat" and Combat.AETauntCheck(true)
             end,
         },
@@ -1008,7 +1008,7 @@ local _ClassConfig = {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart')
+                return combat_state == "Combat" and Core.AtEmergencyHP()
             end,
         },
         { --Prioritized in their own rotation to help keep HP topped to the desired level, includes emergency abilities
@@ -1043,7 +1043,7 @@ local _ClassConfig = {
             steps = 1,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                if mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') then return false end
+                if Core.AtEmergencyHP() then return false end
                 return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
@@ -1053,7 +1053,7 @@ local _ClassConfig = {
             steps = 4,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                if mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') then return false end
+                if Core.AtEmergencyHP() then return false end
                 return combat_state == "Combat" and Casting.BurnCheck() and Core.CombatActionsCheck()
             end,
         },
@@ -1063,7 +1063,7 @@ local _ClassConfig = {
             steps = 1,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                if mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') then return false end
+                if Core.AtEmergencyHP() then return false end
                 return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
@@ -1073,13 +1073,13 @@ local _ClassConfig = {
             steps = 1,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                if mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') then return false end
+                if Core.AtEmergencyHP() then return false end
                 return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
     },
     ['Rotations']         = {
-        ['Downtime'] = {
+        ['Downtime']               = {
             {
                 name = "EndRegen",
                 type = "Disc",
@@ -1212,7 +1212,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['GroupBuff'] = {
+        ['GroupBuff']              = {
             {
                 name = "Brells",
                 type = "Spell",
@@ -1256,15 +1256,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['EmergencyDefenses'] = {
-            {
-                name = "Armor of Experience",
-                type = "AA",
-                load_cond = function(self) return Config:GetSetting('DoVetAA') end,
-                cond = function(self, aaName)
-                    return mq.TLO.Me.PctHPs() < Config:GetSetting('HPCritical')
-                end,
-            },
+        ['EmergencyDefenses']      = {
             --Note that on named we may already have a mantle/carapace running already, could make this remove other discs, but meh, Shield Flash still a thing.
             {
                 name = "Deflection",
@@ -1275,7 +1267,7 @@ local _ClassConfig = {
                     end
                 end,
                 cond = function(self, discSpell)
-                    return mq.TLO.Me.PctHPs() <= Config:GetSetting('HPCritical') and Casting.NoDiscActive() and
+                    return Core.AtCriticalHP() and Casting.NoDiscActive() and
                         (mq.TLO.Me.AltAbilityTimer("Shield Flash")() or 0) < 234000
                 end,
             },
@@ -1332,6 +1324,14 @@ local _ClassConfig = {
             {
                 name = "Forceful Rejuvenation",
                 type = "AA",
+            },
+            {
+                name = "Armor of Experience",
+                type = "AA",
+                load_cond = function(self) return Config:GetSetting('DoVetAA') end,
+                cond = function(self, aaName)
+                    return Core.AtCriticalHP()
+                end,
             },
         },
         ['HateTools(AggroTarget)'] = {
@@ -1390,7 +1390,7 @@ local _ClassConfig = {
                 load_cond = function(self) return Config:GetSetting('Timer6Choice') == 2 end,
             },
         },
-        ['HateTools(AutoTarget)'] = {
+        ['HateTools(AutoTarget)']  = {
             {
                 name = "Disruption",
                 type = "AA",
@@ -1463,7 +1463,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['AEHateTools'] = {
+        ['AEHateTools']            = {
             {
                 name = "Heroic Leap",
                 type = "AA",
@@ -1480,7 +1480,7 @@ local _ClassConfig = {
                 type = "AA",
             },
         },
-        ['Debuff'] = {
+        ['Debuff']                 = {
             {
                 name = "Audacity",
                 type = "Spell",
@@ -1499,7 +1499,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Burn'] = {
+        ['Burn']                   = {
             {
                 name = "Valorous Rage",
                 type = "AA",
@@ -1578,7 +1578,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Defenses'] = {
+        ['Defenses']               = {
             {
                 name = "MeleeMit",
                 type = "Disc",
@@ -1611,7 +1611,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['ToTHeals'] = {
+        ['ToTHeals']               = {
             {
                 name = "Dicho",
                 type = "Spell",
@@ -1642,7 +1642,7 @@ local _ClassConfig = {
                 load_cond = function() return Config:GetSetting("DoLightHeal") end,
             },
         },
-        ['CombatWeave'] = {
+        ['CombatWeave']            = {
             { --Used if the group could benefit from the heal
                 name = "ReflexStrike",
                 type = "Disc",
@@ -1676,7 +1676,7 @@ local _ClassConfig = {
                 type = "Ability",
             },
         },
-        ['Combat'] = {
+        ['Combat']                 = {
             {
                 name = "ForHonor",
                 type = "Spell",
@@ -1748,7 +1748,7 @@ local _ClassConfig = {
                 load_cond = function(self) return Core.IsTanking() end,
             },
         },
-        ['Weapon Management'] = {
+        ['Weapon Management']      = {
             {
                 name = "Equip Shield",
                 type = "CustomFunc",
@@ -2036,31 +2036,6 @@ local _ClassConfig = {
             Index = 102,
             Tooltip = "The HP % where we will use defensive actions like discs, epics, etc.\nNote that fighting a named will also trigger these actions.",
             Default = 60,
-            Min = 1,
-            Max = 100,
-            ConfigType = "Advanced",
-        },
-        ['EmergencyStart']    = {
-            DisplayName = "Emergency Start",
-            Group = "Abilities",
-            Header = "Tanking",
-            Category = "Defenses",
-            Index = 103,
-            Tooltip = "The HP % before all but essential rotations are cut in favor of emergency or defensive abilities.",
-            Default = 40,
-            Min = 1,
-            Max = 100,
-            ConfigType = "Advanced",
-        },
-        ['HPCritical']        = {
-            DisplayName = "HP Critical",
-            Group = "Abilities",
-            Header = "Tanking",
-            Category = "Defenses",
-            Index = 104,
-            Tooltip =
-            "The HP % that we will use abilities like Lay on Hands or Gift of Life.\nMost other rotations are cut to give our full focus to survival.",
-            Default = 20,
             Min = 1,
             Max = 100,
             ConfigType = "Advanced",

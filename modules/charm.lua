@@ -910,7 +910,7 @@ function Module:CharmAssistNeeded()
 
     local healClear = Core.OkayToNotHeal(Config:GetSetting('HealPriority', true))
     local mezClear = Core.OkayToNotMez(Config:GetSetting('PriorityMez'))
-    local hpOk = (mq.TLO.Me.PctHPs() or 100) > (Config:GetSetting('HPCritical', true) or Config:GetSetting('EmergencyStart', true) or 0)
+    local hpOk = not Core.AtCriticalHP()
     -- only scan for a loose charm once the cheaper gates pass
     local result = healClear and mezClear and hpOk and self:FindLooseCharmToAssist() > 0
 

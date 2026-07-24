@@ -322,14 +322,23 @@ return {
             end,
         },
         {
-            name = 'Emergency',
+            name = 'Emergency(Health)',
             state = 1,
             steps = 1,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return Targeting.GetXTHaterCount() > 0 and
-                    (mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') or (Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 99))
+                return Targeting.GetXTHaterCount() > 0 and not mq.TLO.Me.Feigning() and Core.AtEmergencyHP()
+            end,
+        },
+        {
+            name = 'Emergency(Aggro)',
+            state = 1,
+            steps = 1,
+            doFullRotation = true,
+            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
+            cond = function(self, combat_state)
+                return not mq.TLO.Me.Feigning() and Targeting.IHaveAggro(100) and (Core.AtEmergencyHP() or Globals.AutoTargetIsNamed)
             end,
         },
         {
@@ -413,7 +422,7 @@ return {
         end,
     },
     ['Rotations']         = {
-        ['Burn']           = {
+        ['Burn']              = {
             {
                 name = "Bestial Bloodrage",
                 type = "AA",
@@ -474,7 +483,7 @@ return {
                 type = "Spell",
             },
         },
-        ['Slow']           = {
+        ['Slow']              = {
             {
                 name = "Legendary Armband of Muada",
                 type = "Item",
@@ -497,7 +506,7 @@ return {
                 end,
             },
         },
-        ['Emergency']      = {
+        ['Emergency(Health)'] = {
             {
                 name = "Warder's Gift",
                 type = "AA",
@@ -505,12 +514,11 @@ return {
                     return (mq.TLO.Me.Pet.PctHPs() or 0) > 50
                 end,
             },
+        },
+        ['Emergency(Aggro)']  = {
             {
                 name = "Protection of the Warder",
                 type = "AA",
-                cond = function(self, aaName)
-                    return Targeting.IHaveAggro(100)
-                end,
             },
             {
                 name = "ProtDisc",
@@ -520,7 +528,7 @@ return {
                 end,
             },
         },
-        ['PetHealing']     = {
+        ['PetHealing']        = {
             {
                 name = "Companion's Blessing",
                 type = "AA",
@@ -538,13 +546,13 @@ return {
                 load_cond = function(self) return Config:GetSetting('DoPetHealSpell') end,
             },
         },
-        ['FocusedParagon'] = {
+        ['FocusedParagon']    = {
             {
                 name = "Focused Paragon of Spirits",
                 type = "AA",
             },
         },
-        ['Growl']          = {
+        ['Growl']             = {
             {
                 name = "PetGrowl",
                 type = "Spell",
@@ -553,7 +561,7 @@ return {
                 end,
             },
         },
-        ['DPS']            = {
+        ['DPS']               = {
             {
                 name = "PetSpell",
                 type = "Spell",
@@ -620,7 +628,7 @@ return {
                 end,
             },
         },
-        ['Weaves']         = {
+        ['Weaves']            = {
             {
                 name = "Roar of Thunder",
                 type = "AA",
@@ -658,7 +666,7 @@ return {
                 type = "AA",
             },
         },
-        ['GroupBuff']      = {
+        ['GroupBuff']         = {
             {
                 name = "RunSpeedBuff",
                 type = "Spell",
@@ -729,7 +737,7 @@ return {
                 end,
             },
         },
-        ['PetSummon']      = {
+        ['PetSummon']         = {
             {
                 name = "Razorclaw",
                 type = "Item",
@@ -757,7 +765,7 @@ return {
                 end,
             },
         },
-        ['Downtime']       = {
+        ['Downtime']          = {
             {
                 name = "Gelid Rending",
                 type = "AA",
@@ -770,7 +778,7 @@ return {
                 end,
             },
         },
-        ['PetBuff']        = {
+        ['PetBuff']           = {
             {
                 name = "Epic",
                 type = "Item",
@@ -1102,18 +1110,6 @@ return {
         },
         --Combat
 
-        ['EmergencyStart'] = {
-            DisplayName = "Emergency HP%",
-            Group = "Abilities",
-            Header = "Utility",
-            Category = "Emergency",
-            Index = 101,
-            Tooltip = "Your HP % before we begin to use emergency mitigation abilities.",
-            Default = 50,
-            Min = 1,
-            Max = 100,
-            ConfigType = "Advanced",
-        },
         ['HealPriority']   = {
             DisplayName = "Healing Priority",
             Group = "Abilities",

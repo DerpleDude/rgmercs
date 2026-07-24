@@ -465,14 +465,13 @@ local _ClassConfig = {
             end,
         },
         {
-            name = 'Emergency',
+            name = 'Emergency(Aggro)',
             state = 1,
             steps = 1,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return Targeting.GetXTHaterCount() > 0 and
-                    (mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') or (Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 99))
+                return Targeting.IHaveAggro(100) and (Core.AtEmergencyHP() or Globals.AutoTargetIsNamed)
             end,
         },
         { --AA Stuns, Runes, etc, moved from previous home in DPS
@@ -529,7 +528,7 @@ local _ClassConfig = {
         end,
     },
     ['Rotations']     = {
-        ['Downtime'] = {
+        ['Downtime']         = {
             {
                 name = "Eldritch Rune",
                 type = "AA",
@@ -630,7 +629,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['PetSummon'] = {
+        ['PetSummon']        = {
             {
                 name = "PetSpell",
                 type = "Spell",
@@ -644,7 +643,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['PetBuff'] = {
+        ['PetBuff']          = {
             {
                 name = "SingleHasteBuff",
                 type = "Spell",
@@ -667,7 +666,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['GroupBuff'] = {
+        ['GroupBuff']        = {
             {
                 name = "HasteManaCombo",
                 type = "Spell",
@@ -793,7 +792,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['UrgentRune'] = {
+        ['UrgentRune']       = {
             {
                 name = "UrgentRune",
                 type = "Spell",
@@ -803,7 +802,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['CombatSupport'] = {
+        ['CombatSupport']    = {
             {
                 name = "Fundament: Second Spire of Enchantment",
                 type = "AA",
@@ -852,13 +851,12 @@ local _ClassConfig = {
             },
 
         },
-        ['Emergency'] = {
+        ['Emergency(Aggro)'] = {
             {
                 name = "Self Stasis",
                 type = "AA",
                 cond = function(self, aaName)
-                    if Config:GetSetting('CharmOn') and mq.TLO.Me.Pet.ID() > 0 then return false end
-                    return mq.TLO.Me.TargetOfTarget.ID() == mq.TLO.Me.ID() and mq.TLO.Target.ID() == Globals.AutoTargetID
+                    return Casting.OkayToCombatEscape()
                 end,
                 post_activate = function(self, aaName, success)
                     if not success then return end
@@ -868,42 +866,6 @@ local _ClassConfig = {
                         Core.DoCmd('/removebuff =Self Stasis')
                     end
                 end,
-            },
-            {
-                name = "Veil of Mindshadow",
-                type = "AA",
-                cond = function(self, aaName)
-                    return Casting.SelfBuffAACheck(aaName)
-                end,
-            },
-            {
-                name = "Beguiler's Directed Banishment",
-                type = "AA",
-                load_cond = function() return Config:GetSetting("DoBeguilers") end,
-                cond = function(self, aaName, target)
-                    if target.ID() == Globals.AutoTargetID then return false end
-                    return Targeting.IHaveAggro(100) and not Globals.AutoTargetIsNamed
-                end,
-            },
-            {
-                name = "Beguiler's Banishment",
-                type = "AA",
-                load_cond = function() return Config:GetSetting("DoBeguilers") end,
-                cond = function(self, aaName)
-                    return Targeting.IHaveAggro(100) and mq.TLO.SpawnCount("npc radius 20")() > 2
-                end,
-            },
-
-            {
-                name = "Doppelganger",
-                type = "AA",
-                cond = function(self, aaName)
-                    return Targeting.IHaveAggro(100)
-                end,
-            },
-            {
-                name = "Color Shock",
-                type = "AA",
             },
             {
                 name = "Arcane Whisper",
@@ -919,8 +881,31 @@ local _ClassConfig = {
                     return Casting.SelfBuffAACheck(aaName)
                 end,
             },
+            {
+                name = "Veil of Mindshadow",
+                type = "AA",
+                cond = function(self, aaName)
+                    return Casting.SelfBuffAACheck(aaName)
+                end,
+            },
+            {
+                name = "Color Shock",
+                type = "AA",
+            },
+            {
+                name = "Doppelganger",
+                type = "AA",
+            },
+            {
+                name = "Beguiler's Banishment",
+                type = "AA",
+                load_cond = function() return Config:GetSetting("DoBeguilers") end,
+                cond = function(self, aaName)
+                    return mq.TLO.SpawnCount("npc radius 20")() > 2
+                end,
+            },
         },
-        ['Dispel'] = {
+        ['Dispel']           = {
             {
                 name = "Dispel",
                 type = "Spell",
@@ -930,7 +915,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['DPS'] = {
+        ['DPS']              = {
             { -- This triggers two nukes so we cast it whether the dot is up or not. Treat is as a nuke.
                 name = "MindDot",
                 type = "Spell",
@@ -981,7 +966,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Burn'] = {
+        ['Burn']             = {
             {
                 name = "Illusions of Grandeur",
                 type = "AA",
@@ -1056,7 +1041,7 @@ local _ClassConfig = {
                 type = "Item",
             },
         },
-        ['Tash'] = {
+        ['Tash']             = {
             {
                 name = "Bite of Tashani",
                 type = "AA",
@@ -1073,7 +1058,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Slow'] = {
+        ['Slow']             = {
             {
                 name = "Enveloping Helix",
                 type = "AA",
@@ -1100,7 +1085,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['ArcanumWeave'] = {
+        ['ArcanumWeave']     = {
             {
                 name = "Empowered Focus of Arcanum",
                 type = "AA",
@@ -1399,18 +1384,6 @@ local _ClassConfig = {
             Max = 3,
             ConfigType = "Advanced",
         },
-        ['EmergencyStart']     = {
-            DisplayName = "Emergency Start",
-            Group = "Abilities",
-            Header = "Utility",
-            Category = "Emergency",
-            Index = 101,
-            Tooltip = "The HP % emergency abilities will be used (Abilities used depend on whose health is low, the ENC or the MA).",
-            Default = 50,
-            Min = 1,
-            Max = 100,
-            ConfigType = "Advanced",
-        },
         ['DoSoothing']         = {
             DisplayName = "Do Soothing Words",
             Group = "Abilities",
@@ -1426,9 +1399,9 @@ local _ClassConfig = {
             Group = "Abilities",
             Header = "Utility",
             Category = "Emergency",
-            Index = 102,
+            Index = 101,
             RequiresLoadoutChange = true,
-            Tooltip = "Use Beguiler's (Directed) Banishment AA when you have aggro.",
+            Tooltip = "Use Beguiler's Banishment AA when you have aggro.",
             Default = false,
         },
 

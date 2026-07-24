@@ -111,7 +111,7 @@ function Combat.EngageTarget(autoTargetId)
 
     local target = mq.TLO.Target
 
-    if (mq.TLO.Me.Feigning() or mq.TLO.Me.State():lower() == "feign") and Config:GetSetting('AutoStandFD') then
+    if mq.TLO.Me.Feigning() and Config:GetSetting('AutoStandFD') then
         mq.TLO.Me.Stand()
     end
 

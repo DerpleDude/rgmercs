@@ -734,14 +734,23 @@ return {
             end,
         },
         {
-            name = 'Emergency',
+            name = 'Emergency(Health)',
             state = 1,
             steps = 1,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return Targeting.GetXTHaterCount() > 0 and
-                    (mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') or (Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 99))
+                return Targeting.GetXTHaterCount() > 0 and not mq.TLO.Me.Feigning() and Core.AtEmergencyHP()
+            end,
+        },
+        {
+            name = 'Emergency(Aggro)',
+            state = 1,
+            steps = 1,
+            doFullRotation = true,
+            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
+            cond = function(self, combat_state)
+                return not mq.TLO.Me.Feigning() and Targeting.IHaveAggro(100) and (Core.AtEmergencyHP() or Globals.AutoTargetIsNamed)
             end,
         },
         {
@@ -821,7 +830,7 @@ return {
         end,
     },
     ['Rotations']         = {
-        ['Burn'] = {
+        ['Burn']              = {
             {
                 name = "Group Bestial Alignment",
                 type = "AA",
@@ -925,7 +934,7 @@ return {
                 load_cond = function(self) return Config:GetSetting('DoVetAA') end,
             },
         },
-        ['Slow'] = {
+        ['Slow']              = {
             {
                 name = "Sha's Reprisal",
                 type = "AA",
@@ -944,35 +953,12 @@ return {
                 end,
             },
         },
-        ['Emergency'] = {
-            {
-                name = "Falsified Death",
-                type = "AA",
-                cond = function(self, aaName, target)
-                    if not Config:GetSetting('AggroFeign') then return false end
-                    return (mq.TLO.Me.PctHPs() <= 40 and Targeting.IHaveAggro(100)) or (Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 99) and not Core.IsTanking()
-                end,
-            },
-            {
-                name = "Armor of Experience",
-                type = "AA",
-                load_cond = function(self) return Config:GetSetting('DoVetAA') end,
-                cond = function(self, aaName)
-                    return mq.TLO.Me.PctHPs() < 35
-                end,
-            },
+        ['Emergency(Health)'] = {
             {
                 name = "Warder's Gift",
                 type = "AA",
                 cond = function(self, aaName)
                     return (mq.TLO.Me.Pet.PctHPs() or 0) > 50
-                end,
-            },
-            {
-                name = "Protection of the Warder",
-                type = "AA",
-                cond = function(self, aaName)
-                    return Targeting.IHaveAggro(100)
                 end,
             },
             {
@@ -984,13 +970,35 @@ return {
                 end,
             },
         },
-        ['FocusedParagon'] = {
+        ['Emergency(Aggro)']  = {
+            {
+                name = "Falsified Death",
+                type = "AA",
+                cond = function(self, aaName, target)
+                    if not Config:GetSetting('AggroFeign') then return false end
+                    return Casting.OkayToCombatEscape()
+                end,
+            },
+            {
+                name = "Protection of the Warder",
+                type = "AA",
+            },
+            {
+                name = "Armor of Experience",
+                type = "AA",
+                load_cond = function(self) return Config:GetSetting('DoVetAA') end,
+                cond = function(self, aaName)
+                    return Core.AtCriticalHP()
+                end,
+            },
+        },
+        ['FocusedParagon']    = {
             {
                 name = "Focused Paragon of Spirits",
                 type = "AA",
             },
         },
-        ['PetHealing'] = {
+        ['PetHealing']        = {
             {
                 name = "Mend Companion",
                 type = "AA",
@@ -1011,7 +1019,7 @@ return {
                 load_cond = function(self) return Config:GetSetting('DoPetHealSpell') end,
             },
         },
-        ['DPS'] = {
+        ['DPS']               = {
             {
                 name = "PetSpell",
                 type = "Spell",
@@ -1120,7 +1128,7 @@ return {
                 end,
             },
         },
-        ['Weaves'] = {
+        ['Weaves']            = {
             {
                 name = "Round Kick",
                 type = "Ability",
@@ -1194,7 +1202,7 @@ return {
                 end,
             },
         },
-        ['GroupBuff'] = {
+        ['GroupBuff']         = {
             {
                 name = "RunSpeedBuff",
                 type = "Spell",
@@ -1259,7 +1267,7 @@ return {
                 end,
             },
         },
-        ['PetSummon'] = {
+        ['PetSummon']         = {
             {
                 name = "PetSpell",
                 type = "Spell",
@@ -1274,7 +1282,7 @@ return {
                 end,
             },
         },
-        ['Downtime'] = {
+        ['Downtime']          = {
             {
                 name = "EndRegen",
                 type = "Disc",
@@ -1320,7 +1328,7 @@ return {
                 end,
             },
         },
-        ['PetBuff'] = {
+        ['PetBuff']           = {
             {
                 name = "Epic",
                 type = "Item",
@@ -1683,18 +1691,6 @@ return {
             Tooltip = "Use your AE Roar (Timer 11) spell line.",
             Default = false,
             RequiresLoadoutChange = true,
-        },
-        ['EmergencyStart'] = {
-            DisplayName = "Emergency HP%",
-            Group = "Abilities",
-            Header = "Utility",
-            Category = "Emergency",
-            Index = 101,
-            Tooltip = "Your HP % before we begin to use emergency mitigation abilities.",
-            Default = 50,
-            Min = 1,
-            Max = 100,
-            ConfigType = "Advanced",
         },
         ['AggroFeign']     = {
             DisplayName = "Emergency Feign",

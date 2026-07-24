@@ -872,14 +872,23 @@ local _ClassConfig = {
             end,
         },
         {
-            name = 'Emergency',
+            name = 'Emergency(Health)',
             state = 1,
             steps = 1,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return Targeting.GetXTHaterCount() > 0 and
-                    (mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') or (Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 99))
+                return Targeting.GetXTHaterCount() > 0 and not mq.TLO.Me.Feigning() and Core.AtEmergencyHP()
+            end,
+        },
+        {
+            name = 'Emergency(Aggro)',
+            state = 1,
+            steps = 1,
+            doFullRotation = true,
+            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
+            cond = function(self, combat_state)
+                return not mq.TLO.Me.Feigning() and Targeting.IHaveAggro(100) and (Core.AtEmergencyHP() or Globals.AutoTargetIsNamed)
             end,
         },
         {
@@ -897,7 +906,7 @@ local _ClassConfig = {
             load_cond = function() return Config:GetSetting('DoScentDebuff') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and not Casting.IAmFeigning() and Casting.OkayToDebuff() and Core.CombatActionsCheck()
+                return combat_state == "Combat" and not mq.TLO.Me.Feigning() and Casting.OkayToDebuff() and Core.CombatActionsCheck()
             end,
         },
         { --Keep things from running
@@ -908,7 +917,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and not Globals.AutoTargetIsNamed and Targeting.GetXTHaterCount() <= Config:GetSetting('SnareCount') and
-                    not Casting.IAmFeigning() and Core.CombatActionsCheck()
+                    not mq.TLO.Me.Feigning() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -918,7 +927,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and
-                    Casting.BurnCheck() and not Casting.IAmFeigning() and Core.CombatActionsCheck()
+                    Casting.BurnCheck() and not mq.TLO.Me.Feigning() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -928,7 +937,7 @@ local _ClassConfig = {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and not Casting.IAmFeigning() and Targeting.MobNotLowHP(Targeting.GetAutoTarget()) and Core.CombatActionsCheck()
+                return combat_state == "Combat" and not mq.TLO.Me.Feigning() and Targeting.MobNotLowHP(Targeting.GetAutoTarget()) and Core.CombatActionsCheck()
             end,
         },
         {
@@ -938,12 +947,12 @@ local _ClassConfig = {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and not Casting.IAmFeigning() and Targeting.MobHasLowHP(Targeting.GetAutoTarget()) and Core.CombatActionsCheck()
+                return combat_state == "Combat" and not mq.TLO.Me.Feigning() and Targeting.MobHasLowHP(Targeting.GetAutoTarget()) and Core.CombatActionsCheck()
             end,
         },
     },
     ['Rotations']       = {
-        ['Lich Management'] = {
+        ['Lich Management']   = {
             {
                 name = "LichSpell",
                 type = "Spell",
@@ -982,33 +991,9 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Emergency']       = {
-            {
-                name = "Death's Effigy",
-                type = "AA",
-                cond = function(self, aaName, target)
-                    if not Config:GetSetting('AggroFeign') then return false end
-                    if Config:GetSetting('CharmOn') and mq.TLO.Me.Pet.ID() > 0 then return false end
-                    return (Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 99) or (mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') and Targeting.IHaveAggro(100))
-                end,
-            },
-            {
-                name = "Death Peace",
-                type = "AA",
-                cond = function(self, aaName)
-                    if not Config:GetSetting('AggroFeign') then return false end
-                    return (Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 99) or (mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') and Targeting.IHaveAggro(100))
-                end,
-            },
+        ['Emergency(Health)'] = {
             {
                 name = "Dying Grasp",
-                type = "AA",
-                cond = function(self, aaName)
-                    return mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart')
-                end,
-            },
-            {
-                name = "Embalmer's Carapace",
                 type = "AA",
             },
             {
@@ -1017,7 +1002,29 @@ local _ClassConfig = {
                 load_cond = function(self) return Config:GetSetting('DoLifetap') end,
             },
         },
-        ['Scent']           = {
+        ['Emergency(Aggro)']  = {
+            {
+                name = "Death's Effigy",
+                type = "AA",
+                cond = function(self, aaName, target)
+                    if not Config:GetSetting('AggroFeign') then return false end
+                    return Casting.OkayToCombatEscape()
+                end,
+            },
+            {
+                name = "Embalmer's Carapace",
+                type = "AA",
+            },
+            {
+                name = "Death Peace",
+                type = "AA",
+                cond = function(self, aaName)
+                    if not Config:GetSetting('AggroFeign') then return false end
+                    return Casting.OkayToCombatEscape()
+                end,
+            },
+        },
+        ['Scent']             = {
             {
                 name = "Scent of Thule",
                 type = "AA",
@@ -1033,7 +1040,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['DPS(MobHighHP)']  = {
+        ['DPS(MobHighHP)']    = {
             {
                 name = "DurationTap",
                 type = "Spell",
@@ -1194,7 +1201,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['DPS(MobLowHP)']   = {
+        ['DPS(MobLowHP)']     = {
             {
                 name = "Lifetap",
                 type = "Spell",
@@ -1233,7 +1240,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Snare']           = {
+        ['Snare']             = {
             {
                 name = "Encroaching Darkness",
                 type = "AA",
@@ -1251,7 +1258,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Burn']            = { -- TODO: Needs optimization. For now its all just kinda thrown in. --Algar
+        ['Burn']              = { -- TODO: Needs optimization. For now its all just kinda thrown in. --Algar
             {
                 name = "Scent of Thule",
                 type = "AA",
@@ -1355,7 +1362,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['PetHealing']      = {
+        ['PetHealing']        = {
             {
                 name = "Mend Companion",
                 type = "AA",
@@ -1376,7 +1383,7 @@ local _ClassConfig = {
                 load_cond = function(self) return Config:GetSetting('DoPetHealSpell') end,
             },
         },
-        ['Downtime']        = {
+        ['Downtime']          = {
             {
                 name = "Mortifier's Unity",
                 type = "AA",
@@ -1438,7 +1445,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['PetSummon']       = { --TODO: Double check these lists to ensure someone leveling doesn't have to change options to keep pets current at lower levels
+        ['PetSummon']         = { --TODO: Double check these lists to ensure someone leveling doesn't have to change options to keep pets current at lower levels
             {
                 name_func = function(self)
                     return string.format("%sPetSpell", self.ClassConfig.DefaultConfig.PetType.ComboOptions[Config:GetSetting('PetType')])
@@ -1457,7 +1464,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['PetBuff']         = {
+        ['PetBuff']           = {
             {
                 name = "PetHaste",
                 type = "Spell",
@@ -1732,24 +1739,12 @@ local _ClassConfig = {
             RequiresLoadoutChange = true,
             Default = true,
         },
-        ['EmergencyStart']    = {
-            DisplayName = "Emergency HP%",
-            Group = "Abilities",
-            Header = "Utility",
-            Category = "Emergency",
-            Index = 101,
-            Tooltip = "Your HP % before we begin to use emergency mitigation abilities.",
-            Default = 50,
-            Min = 1,
-            Max = 100,
-            ConfigType = "Advanced",
-        },
         ['AggroFeign']        = {
             DisplayName = "Emergency Feign",
             Group = "Abilities",
             Header = "Utility",
             Category = "Emergency",
-            Index = 102,
+            Index = 101,
             Tooltip = "Use your Feign AA when you have aggro at low health or aggro on a mob detected as a 'named' by RGMercs (see Spawns tab)..",
             Default = true,
         },

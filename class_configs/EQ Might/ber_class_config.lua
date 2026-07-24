@@ -159,14 +159,23 @@ return {
             end,
         },
         {
-            name = 'Emergency',
+            name = 'Emergency(Health)',
             state = 1,
             steps = 1,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return Targeting.GetXTHaterCount() > 0 and
-                    (mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') or (Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 99))
+                return Targeting.GetXTHaterCount() > 0 and Core.AtEmergencyHP()
+            end,
+        },
+        {
+            name = 'Emergency(Aggro)',
+            state = 1,
+            steps = 1,
+            doFullRotation = true,
+            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
+            cond = function(self, combat_state)
+                return Targeting.IHaveAggro(100) and (Core.AtEmergencyHP() or Globals.AutoTargetIsNamed)
             end,
         },
         { --Keep things from running
@@ -209,7 +218,7 @@ return {
         },
     },
     ['Rotations']     = {
-        ['Buffs'] = {
+        ['Buffs']              = {
             {
                 name = "BerAura",
                 type = "Disc",
@@ -225,38 +234,31 @@ return {
                 end,
             },
         },
-        ['Emergency'] = {
+        ['Emergency(Health)']  = {
             {
                 name = "Revitalize",
                 type = "Disc",
-                cond = function(self, discSpell, target)
-                    return mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart')
-                end,
-            },
-            {
-                name = "Uncanny Resilience",
-                type = "AA",
-                cond = function(self, aaName)
-                    return Targeting.IHaveAggro(100)
-                end,
             },
             {
                 name = "HealingDisc",
                 type = "Disc",
                 load_cond = function(self) return Config:GetSetting('DoHealingDisc') end,
-                cond = function(self, discName)
-                    return mq.TLO.Me.PctHPs() < Config:GetSetting('EmergencyStart')
-                end,
             },
+        },
+        ['Emergency(Aggro)']   = {
             {
                 name = "Self Preservation",
                 type = "AA",
                 cond = function(self, aaName)
-                    return Targeting.IHaveAggro(100)
+                    return Casting.OkayToCombatEscape()
                 end,
             },
+            {
+                name = "Uncanny Resilience",
+                type = "AA",
+            },
         },
-        ['Snare'] = {
+        ['Snare']              = {
             {
                 name = "SnareStrike",
                 type = "Disc",
@@ -291,7 +293,7 @@ return {
                 type = "Disc",
             },
         },
-        ['Burn'] = {
+        ['Burn']               = {
             {
                 name = "OoW_Chest",
                 type = "Item",
@@ -347,7 +349,7 @@ return {
                 end,
             },
         },
-        ['DPS'] = {
+        ['DPS']                = {
             {
                 name = "Epic",
                 type = "Item",
@@ -386,14 +388,14 @@ return {
                 end,
             },
         },
-        ['GroupBuff'] = { -- Added to anchor clickies to
+        ['GroupBuff']          = { -- Added to anchor clickies to
 
         },
     },
     ['Helpers']       = {
     },
     ['DefaultConfig'] = {
-        ['Mode']           = {
+        ['Mode']          = {
             DisplayName = "Mode",
             Category = "Combat",
             Tooltip = "Select the Combat Mode for this Toon",
@@ -407,7 +409,7 @@ return {
         },
 
         --Equipment
-        ['UseEpic']        = {
+        ['UseEpic']       = {
             DisplayName = "Epic Use:",
             Group = "Items",
             Header = "Clickies",
@@ -423,7 +425,7 @@ return {
         },
 
         -- Combat
-        ['DoBattleLeap']   = {
+        ['DoBattleLeap']  = {
             DisplayName = "Do Battle Leap",
             Group = "Abilities",
             Header = "Damage",
@@ -432,7 +434,7 @@ return {
             Tooltip = "Use the Battle Leap AA on cooldown.",
             Default = true,
         },
-        ['DoSnare']        = {
+        ['DoSnare']       = {
             DisplayName = "Do Snare",
             Group = "Abilities",
             Header = "Debuffs",
@@ -441,7 +443,7 @@ return {
             Tooltip = "Snare opponents with low health.",
             Default = false,
         },
-        ['SnareCount']     = {
+        ['SnareCount']    = {
             DisplayName = "Snare Max Mob Count",
             Group = "Abilities",
             Header = "Debuffs",
@@ -452,7 +454,7 @@ return {
             Min = 1,
             Max = 99,
         },
-        ['DoStun']         = {
+        ['DoStun']        = {
             DisplayName = "Do Stun",
             Group = "Abilities",
             Header = "Debuffs",
@@ -463,24 +465,12 @@ return {
             FAQ = "Why am I using Stun discs on an immune mob?",
             Answer = "If enabled, these abilities fires blindly. You can turn it off in your Class options.",
         },
-        ['EmergencyStart'] = {
-            DisplayName = "Emergency HP%",
-            Group = "Abilities",
-            Header = "Utility",
-            Category = "Emergency",
-            Index = 101,
-            Tooltip = "Your HP % before we begin to use emergency mitigation abilities.",
-            Default = 50,
-            Min = 1,
-            Max = 100,
-            ConfigType = "Advanced",
-        },
-        ['DoHealingDisc']  = {
+        ['DoHealingDisc'] = {
             DisplayName = "Do Healing Disc",
             Group = "Abilities",
             Header = "Utility",
             Category = "Emergency",
-            Index = 102,
+            Index = 101,
             Tooltip = "Use the EQM Custom 'Healing Will/Determination' Disc to heal yourself in emergencies.",
             Default = false,
             RequiresLoadoutChange = true,

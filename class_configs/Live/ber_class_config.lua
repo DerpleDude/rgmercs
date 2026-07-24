@@ -538,7 +538,7 @@ return {
                 end,
             },
         },
-        ['Snare'] = {
+        ['Snare']    = {
             {
                 name = "SnareDisc",
                 type = "Disc",
@@ -697,7 +697,7 @@ return {
                 end,
             },
         },
-        ['DPS'] = {
+        ['DPS']      = {
             {
                 name = "Epic",
                 type = "Item",

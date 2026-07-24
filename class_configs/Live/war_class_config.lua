@@ -322,7 +322,7 @@ local _ClassConfig = {
             return true
         end,
         BurnDiscCheck = function(self)
-            if mq.TLO.Me.ActiveDisc.Name() == "Fortitude Discipline" or mq.TLO.Me.PctHPs() < Config:GetSetting('EmergencyStart') then return false end
+            if mq.TLO.Me.ActiveDisc.Name() == "Fortitude Discipline" or Core.AtEmergencyHP() then return false end
             local burnDisc = { "Onslaught", "MightyStrike", "ChargeDisc", "OffensiveDisc", }
             for _, buffName in ipairs(burnDisc) do
                 local resolvedDisc = self:GetResolvedActionMapItem(buffName)
@@ -362,7 +362,7 @@ local _ClassConfig = {
             load_cond = function() return Core.IsTanking() and Config:GetSetting('TankAggroScan') end,
             targetId = function(self) return Targeting.CheckForAggroTargetID() end,
             cond = function(self, combat_state)
-                if mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyLockout') then return false end
+                if Core.AtCriticalHP() then return false end
                 return combat_state == "Combat"
             end,
         },
@@ -374,7 +374,7 @@ local _ClassConfig = {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and mq.TLO.Me.PctHPs() > Config:GetSetting('EmergencyLockout') and Targeting.HateToolsNeeded()
+                return combat_state == "Combat" and not Core.AtCriticalHP() and Targeting.HateToolsNeeded()
             end,
         },
         { --Actions that establish or maintain hatred
@@ -386,7 +386,7 @@ local _ClassConfig = {
             load_cond = function() return Core.IsTanking() and Config:GetSetting('DoAETaunt') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Combat.AETauntCheck(true) and mq.TLO.Me.PctHPs() > Config:GetSetting('EmergencyLockout')
+                return combat_state == "Combat" and Combat.AETauntCheck(true) and not Core.AtCriticalHP()
             end,
         },
         { --Defensive actions triggered by low HP
@@ -396,7 +396,7 @@ local _ClassConfig = {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart')
+                return combat_state == "Combat" and Core.AtEmergencyHP()
             end,
         },
         { --Dynamic weapon swapping if UseBandolier is toggled
@@ -418,7 +418,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 --need to look at rotation and decide if it should fire during emergencies. leaning towards no
-                return combat_state == "Combat" and Core.IsTanking() and (mq.TLO.Me.PctHPs() < Config:GetSetting('EmergencyStart') or
+                return combat_state == "Combat" and Core.IsTanking() and (Core.AtEmergencyHP() or
                     Targeting.TankingXTNamed() or self.Helpers.DefensiveDiscCheck(true))
             end,
         },
@@ -428,7 +428,7 @@ local _ClassConfig = {
             steps = 4,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.BurnCheck() and mq.TLO.Me.PctHPs() > Config:GetSetting('EmergencyLockout') and Core.CombatActionsCheck()
+                return combat_state == "Combat" and Casting.BurnCheck() and not Core.AtEmergencyHP() and Core.CombatActionsCheck()
             end,
         },
         {
@@ -448,12 +448,12 @@ local _ClassConfig = {
             steps = 1,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and mq.TLO.Me.PctHPs() > Config:GetSetting('EmergencyLockout') and Core.CombatActionsCheck()
+                return combat_state == "Combat" and not Core.AtEmergencyHP() and Core.CombatActionsCheck()
             end,
         },
     },
     ['Rotations']     = {
-        ['Downtime'] = {
+        ['Downtime']               = {
             {
                 name = "EndRegen",
                 type = "Disc",
@@ -525,7 +525,7 @@ local _ClassConfig = {
                 type = "Disc",
             },
         },
-        ['HateTools(AutoTarget)'] = {
+        ['HateTools(AutoTarget)']  = {
             {
                 name = "Attention",
                 type = "Disc",
@@ -557,7 +557,7 @@ local _ClassConfig = {
                 type = "Disc",
             },
         },
-        ['AEHateTools'] = {
+        ['AEHateTools']            = {
             {
                 name = "Area Taunt",
                 type = "AA",
@@ -574,22 +574,14 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['EmergencyDefenses'] = {
+        ['EmergencyDefenses']      = {
             --Note that in Tank Mode, defensive discs are preemptively cycled on named in the (non-emergency) Defenses rotation
             --Abilities should be placed in order of lowest to highest triggered HP thresholds
-            {
-                name = "Armor of Experience",
-                type = "AA",
-                load_cond = function(self) return Config:GetSetting('DoVetAA') end,
-                cond = function(self, aaName)
-                    return mq.TLO.Me.PctHPs() < 25
-                end,
-            },
             {
                 name = "Fortitude",
                 type = "Disc",
                 cond = function(self, discSpell)
-                    return mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyLockout') and not Casting.IHaveBuff("Flash of Anger") and
+                    return Core.AtCriticalHP() and not Casting.IHaveBuff("Flash of Anger") and
                         not Casting.IHaveBuff("Blade Whirl")
                 end,
             },
@@ -623,8 +615,16 @@ local _ClassConfig = {
                     return Core.IsTanking() and self.Helpers.DiscOverwriteCheck(self)
                 end,
             },
+            {
+                name = "Armor of Experience",
+                type = "AA",
+                load_cond = function(self) return Config:GetSetting('DoVetAA') end,
+                cond = function(self, aaName)
+                    return Core.AtCriticalHP()
+                end,
+            },
         },
-        ['Weapon Management'] = {
+        ['Weapon Management']      = {
             {
                 name = "Equip Shield",
                 type = "CustomFunc",
@@ -650,7 +650,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Defenses'] = {
+        ['Defenses']               = {
             --helper function(s) for ability stacking checks may reduce code, but this is functional.
             { --shares effect with modern chest click
                 name = "DichoShield",
@@ -720,7 +720,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Buffs'] = {
+        ['Buffs']                  = {
             {
                 name = "GroupACBuff",
                 type = "Disc",
@@ -774,7 +774,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Burn'] = {
+        ['Burn']                   = {
             {
                 name = "Spire of the Warlord",
                 type = "AA",
@@ -852,7 +852,7 @@ local _ClassConfig = {
                 load_cond = function(self) return Config:GetSetting('DoVetAA') end,
             },
         },
-        ['Combat'] = {
+        ['Combat']                 = {
             {
                 name = "ShieldHit",
                 type = "Disc",
@@ -956,7 +956,7 @@ local _ClassConfig = {
         },
     },
     ['DefaultConfig'] = {
-        ['Mode']             = {
+        ['Mode']            = {
             DisplayName = "Mode",
             Category = "Combat",
             Tooltip = "Select the Combat Mode for this Toon",
@@ -968,7 +968,7 @@ local _ClassConfig = {
             FAQ = "What do the different Modes Do?",
             Answer = "Warriors have a Tank mode and a DPS Mode.",
         },
-        ['DoBattleLeap']     = {
+        ['DoBattleLeap']    = {
             DisplayName = "Do Battle Leap",
             Group = "Abilities",
             Header = "Damage",
@@ -976,7 +976,7 @@ local _ClassConfig = {
             Tooltip = "Do Battle Leap",
             Default = true,
         },
-        ['DoPress']          = {
+        ['DoPress']         = {
             DisplayName = "Do Press the Attack",
             Group = "Abilities",
             Header = "Debuffs",
@@ -984,7 +984,7 @@ local _ClassConfig = {
             Tooltip = "Use the Press to Attack stun/push AA.",
             Default = false,
         },
-        ['DoSnare']          = {
+        ['DoSnare']         = {
             DisplayName = "Use Snares",
             Group = "Abilities",
             Header = "Debuffs",
@@ -992,7 +992,7 @@ local _ClassConfig = {
             Tooltip = "Enable casting Snare abilities.",
             Default = true,
         },
-        ['DoVetAA']          = {
+        ['DoVetAA']         = {
             DisplayName = "Use Vet AA",
             Group = "Abilities",
             Header = "Buffs",
@@ -1003,7 +1003,7 @@ local _ClassConfig = {
             ConfigType = "Advanced",
             RequiresLoadoutChange = true,
         },
-        ['DoAETaunt']        = {
+        ['DoAETaunt']       = {
             DisplayName = "Do AE Taunts",
             Group = "Abilities",
             Header = "Tanking",
@@ -1017,7 +1017,7 @@ local _ClassConfig = {
         },
 
         --Defenses
-        ['DiscCount']        = {
+        ['DiscCount']       = {
             DisplayName = "Def. Disc. Count",
             Group = "Abilities",
             Header = "Tanking",
@@ -1029,33 +1029,9 @@ local _ClassConfig = {
             Max = 10,
             ConfigType = "Advanced",
         },
-        ['EmergencyStart']   = {
-            DisplayName = "Emergency Start",
-            Group = "Abilities",
-            Header = "Tanking",
-            Category = "Defenses",
-            Index = 102,
-            Tooltip = "Your HP % before we begin to use emergency abilities.",
-            Default = 55,
-            Min = 1,
-            Max = 100,
-            ConfigType = "Advanced",
-        },
-        ['EmergencyLockout'] = {
-            DisplayName = "Emergency Only",
-            Group = "Abilities",
-            Header = "Tanking",
-            Category = "Defenses",
-            Index = 103,
-            Tooltip = "Your HP % before standard DPS rotations are cut in favor of emergency abilities.",
-            Default = 35,
-            Min = 1,
-            Max = 100,
-            ConfigType = "Advanced",
-        },
 
         --Equipment
-        ['DoChestClick']     = {
+        ['DoChestClick']    = {
             DisplayName = "Do Chest Click",
             Group = "Items",
             Header = "Clickies",
@@ -1064,7 +1040,7 @@ local _ClassConfig = {
             Tooltip = "Click your equipped chest.",
             Default = mq.TLO.MacroQuest.BuildName() ~= "Emu",
         },
-        ['DoCharmClick']     = {
+        ['DoCharmClick']    = {
             DisplayName = "Do Charm Click",
             Group = "Items",
             Header = "Clickies",
@@ -1073,7 +1049,7 @@ local _ClassConfig = {
             Tooltip = "Click your charm for Geomantra.",
             Default = false,
         },
-        ['DoCoating']        = {
+        ['DoCoating']       = {
             DisplayName = "Use Coating",
             Group = "Items",
             Header = "Clickies",
@@ -1082,7 +1058,7 @@ local _ClassConfig = {
             Tooltip = "Click your Blood/Spirit Drinker's Coating when defenses are triggered.",
             Default = false,
         },
-        ['UseBandolier']     = {
+        ['UseBandolier']    = {
             DisplayName = "Dynamic Weapon Swap",
             Group = "Items",
             Header = "Bandolier",
@@ -1092,7 +1068,7 @@ local _ClassConfig = {
             RequiresLoadoutChange = true,
             Default = false,
         },
-        ['EquipShield']      = {
+        ['EquipShield']     = {
             DisplayName = "Equip Shield",
             Group = "Items",
             Header = "Bandolier",
@@ -1104,7 +1080,7 @@ local _ClassConfig = {
             Max = 100,
             ConfigType = "Advanced",
         },
-        ['EquipDW']          = {
+        ['EquipDW']         = {
             DisplayName = "Equip DW",
             Group = "Items",
             Header = "Bandolier",
@@ -1116,7 +1092,7 @@ local _ClassConfig = {
             Max = 100,
             ConfigType = "Advanced",
         },
-        ['NamedShieldLock']  = {
+        ['NamedShieldLock'] = {
             DisplayName = "Shield on Named",
             Group = "Items",
             Header = "Bandolier",
@@ -1127,7 +1103,7 @@ local _ClassConfig = {
             FAQ = "Why does my WAR switch to a Shield on puny gray named?",
             Answer = "The Shield on Named option doesn't check levels, so feel free to disable this setting (or Bandolier swapping entirely) if you are farming fodder.",
         },
-        ['DoEpic']           = {
+        ['DoEpic']          = {
             DisplayName = "Do Epic",
             Group = "Items",
             Header = "Clickies",
