@@ -1,6 +1,5 @@
 local mq           = require('mq')
 local Casting      = require("utils.casting")
-local Comms        = require("utils.comms")
 local Config       = require('utils.config')
 local Core         = require("utils.core")
 local Globals      = require("utils.globals")
@@ -1246,17 +1245,6 @@ local _ClassConfig = {
             Min = 1,
             Max = 100,
             ConfigType = "Advanced",
-        },
-    },
-    ['ClassFAQ']        = {
-        {
-            Question = "What is the current status of this class config?",
-            Answer = "This class config is a current release customized specifically for Project Lazarus server.\n\n" ..
-                "  This config should perform admirably from start to endgame.\n\n" ..
-                "  Clickies that aren't already included should be managed via the clickies tab, or by customizing the config to add them directly.\n" ..
-                "  Additionally, those wishing more fine-tune control for specific encounters or raids should customize this config to their preference. \n\n" ..
-                "  Community effort and feedback are required for robust, resilient class configs, and PRs are highly encouraged!",
-            Settings_Used = "",
         },
     },
 }

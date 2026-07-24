@@ -76,8 +76,8 @@ local Tooltips     = {
 }
 
 local _ClassConfig = {
-    -- Added BladeDisc line for AE taunt, return spears to ST
-    _version          = "2.6 - EQ Might",
+    -- Added low level proc self-buffs, separated the proc lines by buff slot
+    _version          = "2.7 - EQ Might",
     _author           = "Algar, Derple",
     ['ModeChecks']    = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
@@ -192,18 +192,20 @@ local _ClassConfig = {
             "Augment Death",           -- Level 60
             "Strengthen Death",        -- Level 29
         },
-        ['Shroud'] = {                 -- HP Tap Proc
+        ['Shroud'] = {                 -- HP Tap Proc, Buff Slot 1
             "Shroud of the Nightborn", -- Level 71
-            "Shroud of Discord",       -- Level 67 Buff Slot 1 <
+            "Shroud of Discord",       -- Level 67
             "Black Shroud",            -- Level 65
             "Shroud of Chaos",         -- Level 63
             "Shroud of Death",         -- Level 55
+            "Scream of Death",         -- Level 37
+            "Vampiric Embrace",        -- Level 22
         },
-        ['Horror'] = {                 -- HP Tap Proc
+        ['Horror'] = {                 -- HP Tap Proc, Buff Slot 2
             "Marrowthirst Horror",     -- Level 70
         },
-        ['Mental'] = {                 -- Mana Tap Proc
-            "Mental Horror",           -- Level 65 Buff Slot 1 >
+        ['Mental'] = {                 -- Mana Tap Proc, Buff Slot 1
+            "Mental Horror",           -- Level 65
             "Mental Corruption",       -- Level 52
         },
         ['Skin'] = {
@@ -594,7 +596,10 @@ local _ClassConfig = {
                 name = "Shroud",
                 type = "Spell",
                 tooltip = Tooltips.Shroud,
-                load_cond = function(self) return Config:GetSetting('ProcChoice') == 1 end,
+                load_cond = function(self)
+                    return Config:GetSetting('ProcChoice') == 1 or
+                        (Config:GetSetting('ProcChoice') == 2 and not Core.GetResolvedActionMapItem('Mental'))
+                end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
                     return Casting.SelfBuffCheck(spell)
@@ -604,6 +609,7 @@ local _ClassConfig = {
                 name = "Horror",
                 type = "Spell",
                 tooltip = Tooltips.Horror,
+                load_cond = function(self) return Config:GetSetting('ProcChoice') ~= 3 end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
                     return Casting.SelfBuffCheck(spell)
@@ -1309,12 +1315,12 @@ local _ClassConfig = {
             Max = 99,
         },
         ['ProcChoice']        = {
-            DisplayName = "Proc Self-Buff Choice:",
+            DisplayName = "Buff Slot 1 Proc:",
             Group = "Abilities",
             Header = "Buffs",
             Category = "Self",
             Index = 101,
-            Tooltip = "Choose which proc you prefer, if any.",
+            Tooltip = "Choose which line fills buff slot 1; the Horror line fills slot 2 unless disabled.",
             Type = "Combo",
             ComboOptions = { 'HP Proc: Shroud Line', 'Mana Proc: Mental Line', 'Disabled', },
             Default = 1,
@@ -1605,16 +1611,6 @@ local _ClassConfig = {
             Default = true,
             FAQ = "Why does my SHD switch to a Shield on puny gray named?",
             Answer = "The Shield on Named option doesn't check levels, so feel free to disable this setting (or Bandolier swapping entirely) if you are farming fodder.",
-        },
-    },
-    ['ClassFAQ']      = {
-        {
-            Question = "What is the current status of this class config?",
-            Answer = "This class config is currently a Work-In-Progress that was originally based off of the Project Lazarus config.\n\n" ..
-                "  Up until level 71, it should work quite well, but may need some clickies managed on the clickies tab.\n\n" ..
-                "  After level 68, however, there hasn't been any playtesting... some AA may need to be added or removed still, and some Laz-specific entries may remain.\n\n" ..
-                "  Community effort and feedback are required for robust, resilient class configs, and PRs are highly encouraged!",
-            Settings_Used = "",
         },
     },
 }

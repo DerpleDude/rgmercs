@@ -760,16 +760,10 @@ return {
             },
             {
                 name_func = function(self)
-                    local proc = "Proc Buff Disabled"
                     local procChoice = Config:GetSetting('ProcChoice')
-                    if procChoice < 3 then
-                        if not Core.GetResolvedActionMapItem("DDProc") or procChoice == 2 then
-                            proc = "UndeadProc"
-                        else
-                            proc = "DDProc"
-                        end
-                        return proc
-                    end
+                    if procChoice >= 3 then return "Proc Buff Disabled" end
+                    if not Core.GetResolvedActionMapItem("DDProc") or procChoice == 2 then return "UndeadProc" end
+                    return "DDProc"
                 end,
                 type = "Spell",
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
@@ -1592,16 +1586,6 @@ return {
             Max = 2,
             Tooltip = "When to yield offensive rotations for healing:\n1 - Ignore (never)\n2 - Big Heal Point",
             ConfigType = "Advanced",
-        },
-    },
-    ['ClassFAQ']          = {
-        {
-            Question = "What is the current status of this class config?",
-            Answer = "This class config is currently a Work-In-Progress that was originally based off of the Project Lazarus config.\n\n" ..
-                "  Up until level 71, it should work quite well, but may need some clickies managed on the clickies tab.\n\n" ..
-                "  After level 68, however, there hasn't been any playtesting... some AA may need to be added or removed still, and some Laz-specific entries may remain.\n\n" ..
-                "  Community effort and feedback are required for robust, resilient class configs, and PRs are highly encouraged!",
-            Settings_Used = "",
         },
     },
 }

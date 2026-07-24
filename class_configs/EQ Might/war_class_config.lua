@@ -655,14 +655,6 @@ local _ClassConfig = {
             },
         },
         ['Buffs'] = {
-            {
-                name = "Infused by Rage",
-                type = "AA",
-                load_cond = function(self) return Core.IsTanking() end,
-                cond = function(self, aaName)
-                    return Casting.SelfBuffAACheck(aaName)
-                end,
-            },
         },
         ['Combat'] = {
             {
@@ -921,16 +913,6 @@ local _ClassConfig = {
             Default = true,
             FAQ = "Why does my WAR switch to a Shield on puny gray named?",
             Answer = "The Shield on Named option doesn't check levels, so feel free to disable this setting (or Bandolier swapping entirely) if you are farming fodder.",
-        },
-    },
-    ['ClassFAQ']      = {
-        {
-            Question = "What is the current status of this class config?",
-            Answer = "This class config is currently a Work-In-Progress that was originally based off of the Project Lazarus config.\n\n" ..
-                "  Up until level 71, it should work quite well, but may need some clickies managed on the clickies tab.\n\n" ..
-                "  After level 65, expect performance to degrade somewhat as not all EQMight custom spells or items are added, and some Laz-specific entries may remain.\n\n" ..
-                "  Community effort and feedback are required for robust, resilient class configs, and PRs are highly encouraged!",
-            Settings_Used = "",
         },
     },
 }

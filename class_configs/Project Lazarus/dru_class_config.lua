@@ -877,7 +877,7 @@ local _ClassConfig = {
                 type = "Spell",
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell, target)
-                    return Targeting.TargetIsAMelee(target) and Casting.GroupBuffCheck(spell, target)
+                    return Targeting.TargetIsAMelee(target) and Casting.GroupBuffCheck(spell, target) and Casting.AddedBuffCheck(10821, target) -- Talisman of Coalescence
                 end,
             },
             {
@@ -1506,15 +1506,6 @@ local _ClassConfig = {
         },
     },
     ['ClassFAQ']          = {
-        {
-            Question = "What is the current status of this class config?",
-            Answer = "This class config is a current release customized specifically for Project Lazarus server.\n\n" ..
-                "  This config should perform admirably from start to endgame.\n\n" ..
-                "  Clickies that aren't already included should be managed via the clickies tab, or by customizing the config to add them directly.\n" ..
-                "  Additionally, those wishing more fine-tune control for specific encounters or raids should customize this config to their preference. \n\n" ..
-                "  Community effort and feedback are required for robust, resilient class configs, and PRs are highly encouraged!",
-            Settings_Used = "",
-        },
         {
             Question = "Why would I only want to nuke on an 'Epic Proc'",
             Answer = "Epic 1.5, 2,0, and 2.5 worn foci have the chance to proc 'Wrath of the Wilderness', which makes your next nuke an instant cast.",

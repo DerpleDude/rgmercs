@@ -1489,15 +1489,6 @@ local _ClassConfig = {
     },
     ['ClassFAQ']          = {
         {
-            Question = "What is the current status of this class config?",
-            Answer = "This class config is a current release customized specifically for Project Lazarus server.\n\n" ..
-                "  This config should perform admirably from start to endgame.\n\n" ..
-                "  Clickies that aren't already included should be managed via the clickies tab, or by customizing the config to add them directly.\n" ..
-                "  Additionally, those wishing more fine-tune control for specific encounters or raids should customize this config to their preference. \n\n" ..
-                "  Community effort and feedback are required for robust, resilient class configs, and PRs are highly encouraged!",
-            Settings_Used = "",
-        },
-        {
             Question = "How does Bard meditation function?",
             Answer = "Bards can elect to med using the same settings as other classes. If a bard begins to med, they will stop singing any songs in the Melody rotation.\n\n" ..
                 "  Using the default class configs, the combat rotations will still be used. Thus, there is generally little or no support for in-combat meditation for Bard.\n\n" ..

@@ -10,7 +10,6 @@
 
 local mq           = require('mq')
 local Casting      = require("utils.casting")
-local Comms        = require("utils.comms")
 local Config       = require('utils.config')
 local Core         = require("utils.core")
 local Globals      = require("utils.globals")
@@ -1917,16 +1916,6 @@ local _ClassConfig = {
             Min = 1,
             Max = 100,
             ConfigType = "Advanced",
-        },
-    },
-    ['ClassFAQ']        = {
-        {
-            Question = "What is the current status of this class config?",
-            Answer = "This class config is a current release aimed at official servers.\n\n" ..
-                "  This config is largely a port from older code, and has seen only minor adjustments. It has been flagged for revamp when we have the chance!\n\n" ..
-                " Some revamps have occured to provide more spell/dot options, but it's still rough around the edges!\n\n" ..
-                "  Community effort and feedback are required for robust, resilient class configs, and PRs are highly encouraged!",
-            Settings_Used = "",
         },
     },
 }

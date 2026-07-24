@@ -705,16 +705,10 @@ return {
             },
             {
                 name_func = function(self)
-                    local proc = "Proc Buff Disabled"
                     local procChoice = Config:GetSetting('ProcChoice')
-                    if procChoice < 3 then
-                        if not Core.GetResolvedActionMapItem("DDProc") or procChoice == 2 then
-                            proc = "UndeadProc"
-                        else
-                            proc = "DDProc"
-                        end
-                        return proc
-                    end
+                    if procChoice >= 3 then return "Proc Buff Disabled" end
+                    if not Core.GetResolvedActionMapItem("DDProc") or procChoice == 2 then return "UndeadProc" end
+                    return "DDProc"
                 end,
                 type = "Spell",
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
@@ -1558,17 +1552,6 @@ return {
             Max = 2,
             Tooltip = "When to yield offensive rotations for healing:\n1 - Ignore (never)\n2 - Big Heal Point",
             ConfigType = "Advanced",
-        },
-    },
-    ['ClassFAQ']          = {
-        {
-            Question = "What is the current status of this class config?",
-            Answer = "This class config is a current release customized specifically for Project Lazarus server.\n\n" ..
-                "  This config should perform admirably from start to endgame.\n\n" ..
-                "  Clickies that aren't already included should be managed via the clickies tab, or by customizing the config to add them directly.\n" ..
-                "  Additionally, those wishing more fine-tune control for specific encounters or raids should customize this config to their preference. \n\n" ..
-                "  Community effort and feedback are required for robust, resilient class configs, and PRs are highly encouraged!",
-            Settings_Used = "",
         },
     },
 }

@@ -1,16 +1,16 @@
-local mq          = require('mq')
-local Casting     = require("utils.casting")
-local Combat      = require("utils.combat")
-local Comms       = require("utils.comms")
-local Config      = require('utils.config')
-local Core        = require("utils.core")
-local DanNet      = require('lib.dannet.helpers')
-local Globals     = require("utils.globals")
-local ItemManager = require("utils.item_manager")
-local Logger      = require("utils.logger")
-local Targeting   = require("utils.targeting")
+local mq           = require('mq')
+local Casting      = require("utils.casting")
+local Combat       = require("utils.combat")
+local Comms        = require("utils.comms")
+local Config       = require('utils.config')
+local Core         = require("utils.core")
+local DanNet       = require('lib.dannet.helpers')
+local Globals      = require("utils.globals")
+local ItemManager  = require("utils.item_manager")
+local Logger       = require("utils.logger")
+local Targeting    = require("utils.targeting")
 
-_ClassConfig      = {
+local _ClassConfig = {
     _version          = "1.5 - Project Lazarus",
     _author           = "Derple, Morisato, Algar",
     ['Modes']         = {
@@ -1250,17 +1250,6 @@ _ClassConfig      = {
             Tooltip = "Weave Empowered/Enlighted/Acute Focus of Arcanum into your standard combat routine (Focus of Arcanum is saved for burns).",
             RequiresLoadoutChange = true, --this setting is used as a load condition
             Default = true,
-        },
-    },
-    ['ClassFAQ']      = {
-        {
-            Question = "What is the current status of this class config?",
-            Answer = "This class config is a current release customized specifically for Project Lazarus server.\n\n" ..
-                "  This config should perform admirably from start to endgame.\n\n" ..
-                "  Clickies that aren't already included should be managed via the clickies tab, or by customizing the config to add them directly.\n" ..
-                "  Additionally, those wishing more fine-tune control for specific encounters or raids should customize this config to their preference. \n\n" ..
-                "  Community effort and feedback are required for robust, resilient class configs, and PRs are highly encouraged!",
-            Settings_Used = "",
         },
     },
 }

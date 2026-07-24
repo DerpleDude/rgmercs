@@ -169,23 +169,23 @@ return {
             "Vexatious Puncture",      -- Level 109
             "Disassociative Puncture", -- Level 104
         },
-        ['EndRegen'] = {
-            --Timer 13, can't be used in combat
-            "Breather",    -- Level 101
-            "Rest",        -- Level 96
-            "Reprieve",    -- Level 91
-            "Respite",     -- Level 86
-            "Fourth Wind", -- Level 82
-            "Third Wind",  -- Level 77
-            "Second Wind", -- Level 72
+        ['EndRegen'] = {               --Timer 13, can't be used in combat
+            "Breather",                -- Level 101
+            "Rest",                    -- Level 96
+            "Reprieve",                -- Level 91
+            "Respite",                 -- Level 86
         },
-        ['CombatEndRegen'] = {
-            --Timer 13, can be used in combat.
-            "Hiatus V",        -- Level 126
-            "Convalesce",      -- Level 121
-            "Night's Calming", -- Level 116
-            "Relax",           -- Level 111
-            "Hiatus",          -- Level 106
+        ['CombatEndRegen'] = {         --Timer 13, can be used in combat
+            "Hiatus V",                -- Level 126
+            "Convalesce",              -- Level 121
+            "Night's Calming",         -- Level 116
+            "Relax",                   -- Level 111
+            "Hiatus",                  -- Level 106
+        },
+        ['WindEndRegen'] = {           --Timer 13, can be used in combat, 36 minute reuse
+            "Fourth Wind",             -- Level 82
+            "Third Wind",              -- Level 77
+            "Second Wind",             -- Level 72
         },
         ['CADisc'] = {
             "Counterattack Discipline", -- Level 53
@@ -496,6 +496,14 @@ return {
                 end,
             },
             {
+                name = "WindEndRegen",
+                type = "Disc",
+                load_cond = function(self) return not Core.GetResolvedActionMapItem("EndRegen") and not Core.GetResolvedActionMapItem("CombatEndRegen") end,
+                cond = function(self, discSpell)
+                    return mq.TLO.Me.PctEndurance() < 15
+                end,
+            },
+            {
                 name = "Alliance",
                 type = "Disc",
                 cond = function(self, discSpell)
@@ -609,14 +617,22 @@ return {
             {
                 name = "EndRegen",
                 type = "Disc",
+                load_cond = function(self) return not Core.GetResolvedActionMapItem("CombatEndRegen") end,
                 cond = function(self, discSpell)
-                    if self:GetResolvedActionMapItem("CombatEndRegen") then return false end
                     return mq.TLO.Me.PctEndurance() < 15
                 end,
             },
             {
                 name = "CombatEndRegen",
                 type = "Disc",
+                cond = function(self, discSpell)
+                    return mq.TLO.Me.PctEndurance() < 15
+                end,
+            },
+            {
+                name = "WindEndRegen",
+                type = "Disc",
+                load_cond = function(self) return not Core.GetResolvedActionMapItem("EndRegen") and not Core.GetResolvedActionMapItem("CombatEndRegen") end,
                 cond = function(self, discSpell)
                     return mq.TLO.Me.PctEndurance() < 15
                 end,
@@ -849,16 +865,6 @@ return {
             Index = 107,
             Tooltip = "Click your Blood/Spirit Drinker's Coating in an emergency.",
             Default = false,
-        },
-    },
-    ['ClassFAQ']      = {
-        {
-            Question = "What is the current status of this class config?",
-            Answer = "This class config is a current release aimed at official servers.\n\n" ..
-                "  This config should perform well from from start to endgame, but a TLP or emu player may find it to be lacking exact customization for a specific era.\n\n" ..
-                "  Additionally, those wishing more fine-tune control for specific encounters or raids should customize this config to their preference. \n\n" ..
-                "  Community effort and feedback are required for robust, resilient class configs, and PRs are highly encouraged!",
-            Settings_Used = "",
         },
     },
 }

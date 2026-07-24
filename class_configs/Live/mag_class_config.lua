@@ -1,16 +1,15 @@
-local mq          = require('mq')
-local Casting     = require("utils.casting")
-local Combat      = require("utils.combat")
-local Comms       = require("utils.comms")
-local Config      = require('utils.config')
-local Core        = require("utils.core")
-local DanNet      = require('lib.dannet.helpers')
-local Globals     = require("utils.globals")
-local ItemManager = require("utils.item_manager")
-local Logger      = require("utils.logger")
-local Targeting   = require("utils.targeting")
+local mq           = require('mq')
+local Casting      = require("utils.casting")
+local Combat       = require("utils.combat")
+local Config       = require('utils.config')
+local Core         = require("utils.core")
+local DanNet       = require('lib.dannet.helpers')
+local Globals      = require("utils.globals")
+local ItemManager  = require("utils.item_manager")
+local Logger       = require("utils.logger")
+local Targeting    = require("utils.targeting")
 
-_ClassConfig      = {
+local _ClassConfig = {
     _version              = "1.4 - Live",
     _author               = "Derple, Morisato, Algar",
     ['ModeChecks']        = {
@@ -1995,16 +1994,6 @@ _ClassConfig      = {
             Tooltip = "Use your short duration damage shield (Skin line) on tanks during combat.",
             RequiresLoadoutChange = true,
             Default = false,
-        },
-    },
-    ['ClassFAQ']          = {
-        {
-            Question = "What is the current status of this class config?",
-            Answer = "This class config is a current release aimed at official servers.\n\n" ..
-                "  This config should perform well from from start to endgame, but a TLP or emu player may find it to be lacking exact customization for a specific era.\n\n" ..
-                "  Additionally, those wishing more fine-tune control for specific encounters or raids should customize this config to their preference. \n\n" ..
-                "  Community effort and feedback are required for robust, resilient class configs, and PRs are highly encouraged!",
-            Settings_Used = "",
         },
     },
 }

@@ -663,20 +663,18 @@ local _ClassConfig = {
             "Stormwall Coalition", -- Level 114
             "Holy Alliance",       -- Level 104
         },
-        ['EndRegen'] = {
-            --Timer 13, can't be used in combat
-            "Breather", -- Level 101
-            "Rest",     -- Level 96
-            "Reprieve", -- Level 91
-            "Respite",  -- Level 86
+        ['EndRegen'] = {           --Timer 13, can't be used in combat
+            "Breather",            -- Level 101
+            "Rest",                -- Level 96
+            "Reprieve",            -- Level 91
+            "Respite",             -- Level 86
         },
-        ['CombatEndRegen'] = {
-            --Timer 13, can be used in combat.
-            "Hiatus V",        -- Level 126
-            "Convalesce",      -- Level 121
-            "Night's Calming", -- Level 116
-            "Relax",           -- Level 111
-            "Hiatus",          -- Level 106
+        ['CombatEndRegen'] = {     --Timer 13, can be used in combat
+            "Hiatus V",            -- Level 126
+            "Convalesce",          -- Level 121
+            "Night's Calming",     -- Level 116
+            "Relax",               -- Level 111
+            "Hiatus",              -- Level 106
         },
         ['MeleeMit'] = {
             "Impede",    -- Level 128
@@ -2258,15 +2256,6 @@ local _ClassConfig = {
             Max = 2,
             Tooltip = "When to yield offensive rotations for healing:\n1 - Ignore (never)\n2 - Big Heal Point",
             ConfigType = "Advanced",
-        },
-    },
-    ['ClassFAQ']          = {
-        {
-            Question = "What is the current status of this class config?",
-            Answer = "This class config is an Alpha config, lacking playtesting.\n\n" ..
-                "  The defaults are aimed towards late game live tanking, but it has the options for other modes or methods.\n\n" ..
-                "  Community effort and feedback are required for robust, resilient class configs, and PRs are highly encouraged!",
-            Settings_Used = "",
         },
     },
 }

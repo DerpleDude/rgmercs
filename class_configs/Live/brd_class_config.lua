@@ -2275,14 +2275,6 @@ local _ClassConfig = {
     },
     ['ClassFAQ']          = {
         {
-            Question = "What is the current status of this class config?",
-            Answer = "This class config is a current release aimed at official servers.\n\n" ..
-                "  This config should perform well from from start to endgame, but a TLP or emu player may find it to be lacking exact customization for a specific era.\n\n" ..
-                "  Additionally, those wishing more fine-tune control for specific encounters or raids should customize this config to their preference. \n\n" ..
-                "  Community effort and feedback are required for robust, resilient class configs, and PRs are highly encouraged!",
-            Settings_Used = "",
-        },
-        {
             Question = "How does Bard meditation function?",
             Answer = "Bards can elect to med using the same settings as other classes. If a bard begins to med, they will stop singing any songs in the Melody rotation.\n\n" ..
                 "  Using the default class configs, the combat rotations will still be used. Thus, there is generally little or no support for in-combat meditation for Bard.\n\n" ..

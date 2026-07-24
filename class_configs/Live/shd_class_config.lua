@@ -77,7 +77,7 @@ local Tooltips     = {
 }
 
 local _ClassConfig = {
-    _version          = "3.1 - Live",
+    _version          = "3.2 - Live",
     _author           = "Algar, Derple",
     ['ModeChecks']    = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
@@ -185,15 +185,13 @@ local _ClassConfig = {
             -- "Umbral Carapace",    -- Level 78
             -- "Soul Carapace",      -- Level 73, Timer 5
         },
-        ['EndRegen'] = {
-            --Timer 13, can't be used in combat
-            "Breather", -- Level 101
-            "Rest",     -- Level 96
-            "Reprieve", -- Level 91
-            "Respite",  -- Level 86
+        ['EndRegen'] = {       --Timer 13, can't be used in combat
+            "Breather",        -- Level 101
+            "Rest",            -- Level 96
+            "Reprieve",        -- Level 91
+            "Respite",         -- Level 86
         },
-        ['CombatEndRegen'] = {
-            --Timer 13, can be used in combat.
+        ['CombatEndRegen'] = { --Timer 13, can be used in combat
             "Hiatus V",        -- Level 126
             "Convalesce",      -- Level 121
             "Night's Calming", -- Level 116
@@ -280,7 +278,7 @@ local _ClassConfig = {
             "Augment Death",             -- Level 60
             "Strengthen Death",          -- Level 29
         },
-        ['Shroud'] = {                   --Some Shrouds listed under the Horror Line as ProcChoice=HP buff slot 1 at lower levels.
+        ['Shroud'] = {                   -- HP Tap Proc, Buff Slot 1
             "Shroud of Elonik",          -- Level 127
             "Shroud of Rimeclaw",        -- Level 122
             "Shroud of Zelinstein",      -- Level 117
@@ -293,8 +291,14 @@ local _ClassConfig = {
             "Shroud of the Blightborn",  -- Level 82
             "Shroud of the Gloomborn",   -- Level 77
             "Shroud of the Nightborn",   -- Level 72
+            "Shroud of Discord",         -- Level 67
+            "Black Shroud",              -- Level 65
+            "Shroud of Chaos",           -- Level 63
+            "Shroud of Death",           -- Level 55
+            "Scream of Death",           -- Level 37
+            "Vampiric Embrace",          -- Level 22
         },
-        ['Horror'] = {                   -- HP Tap Proc
+        ['Horror'] = {                   -- HP Tap Proc, Buff Slot 2
             "Husk Devourer's Horror",    -- Level 126
             "Mortimus' Horror",          -- Level 121
             "Brightfeld's Horror",       -- Level 116
@@ -306,22 +310,18 @@ local _ClassConfig = {
             "Amygdalan Horror",          -- Level 86
             "Mindshear Horror",          -- Level 81
             "Soulthirst Horror",         -- Level 76
-            "Marrowthirst Horror",       -- Level 71, -- Buff Slot 2 >
-            "Shroud of Discord",         -- Level 67, -- Buff Slot 1 <
-            "Black Shroud",              -- Level 65
-            "Shroud of Chaos",           -- Level 63
-            "Shroud of Death",           -- Level 55
+            "Marrowthirst Horror",       -- Level 71
         },
-        ['Mental'] = {                   -- Mana Tap Proc
+        ['Mental'] = {                   -- Mana Tap Proc, Buff Slot 2
             "Mental Horror VIII",        -- Level 126
             "Mental Wretchedness",       -- Level 121
             "Mental Anguish",            -- Level 116
             "Mental Torment",            -- Level 111
             "Mental Fright",             -- Level 106
             "Mental Dread",              -- Level 101
-            "Mental Terror",             -- Level 96, --Buff Slot 2 <
-            -- Slot 1 procs; conflict with Shroud at lvl 72-95.
-            -- "Mental Horror",             -- Level 65, --Buff Slot 1 >
+            "Mental Terror",             -- Level 96
+            -- Slot 1 procs, outclassed by the Shroud line that already holds slot 1 at these levels.
+            -- "Mental Horror",             -- Level 65
             -- "Mental Corruption",         -- Level 52
         },
         ['Skin'] = {
@@ -986,14 +986,16 @@ local _ClassConfig = {
             {
                 name = "EndRegen",
                 type = "Disc",
+                tooltip = Tooltips.EndRegen,
+                load_cond = function(self) return not Core.GetResolvedActionMapItem("CombatEndRegen") end,
                 cond = function(self, discSpell)
-                    if self:GetResolvedActionMapItem("CombatEndRegen") then return false end
                     return mq.TLO.Me.PctEndurance() < 15
                 end,
             },
             {
                 name = "CombatEndRegen",
                 type = "Disc",
+                tooltip = Tooltips.CombatEndRegen,
                 cond = function(self, discSpell)
                     return mq.TLO.Me.PctEndurance() < 15
                 end,
@@ -1004,7 +1006,8 @@ local _ClassConfig = {
                 tooltip = Tooltips.DLUA,
                 active_cond = function(self, aaName) return Casting.IHaveBuff(mq.TLO.Me.AltAbility(aaName).Spell.Trigger(2).ID() or 0) end,
                 cond = function(self, aaName, target)
-                    if Config:GetSetting('ProcChoice') ~= 1 then return false end
+                    if Config:GetSetting('ProcChoice') == 3 then return false end
+                    if Config:GetSetting('ProcChoice') == 2 and Casting.CanUseAA("Dark Lord's Unity (Beza)") then return false end
                     return Casting.SelfBuffAACheck(aaName)
                 end,
             },
@@ -1022,6 +1025,7 @@ local _ClassConfig = {
                 name = "Shroud",
                 type = "Spell",
                 tooltip = Tooltips.Shroud,
+                load_cond = function(self) return Config:GetSetting('ProcChoice') ~= 3 end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
                     return self.Helpers.SingleBuffCheck() and Casting.SelfBuffCheck(spell)
@@ -1031,7 +1035,10 @@ local _ClassConfig = {
                 name = "Horror",
                 type = "Spell",
                 tooltip = Tooltips.Horror,
-                load_cond = function(self) return Config:GetSetting('ProcChoice') == 1 end,
+                load_cond = function(self)
+                    return Config:GetSetting('ProcChoice') == 1 or
+                        (Config:GetSetting('ProcChoice') == 2 and not Core.GetResolvedActionMapItem('Mental'))
+                end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
                     return self.Helpers.SingleBuffCheck() and Casting.SelfBuffCheck(spell)
@@ -1960,12 +1967,12 @@ local _ClassConfig = {
             RequiresLoadoutChange = true,
         },
         ['ProcChoice']        = {
-            DisplayName = "HP/Mana Proc:",
+            DisplayName = "Buff Slot 2 Proc:",
             Group = "Abilities",
             Header = "Buffs",
             Category = "Self",
             Index = 102,
-            Tooltip = "Prefer HP Proc and DLU(Azia) or Mana Proc and DLU(Beza)",
+            Tooltip = "Choose which line fills buff slot 2; the Shroud line fills slot 1 unless disabled.",
             Type = "Combo",
             ComboOptions = { 'HP Proc: Horror Line, DLU(Azia)', 'Mana Proc: Mental Line, DLU(Beza)', 'Disabled', },
             Default = 1,
@@ -2366,16 +2373,6 @@ local _ClassConfig = {
             Default = true,
             FAQ = "Why does my SHD switch to a Shield on puny gray named?",
             Answer = "The Shield on Named option doesn't check levels, so feel free to disable this setting (or Bandolier swapping entirely) if you are farming fodder.",
-        },
-    },
-    ['ClassFAQ']      = {
-        {
-            Question = "What is the current status of this class config?",
-            Answer = "This class config is a current release aimed at official servers.\n\n" ..
-                "  This config should perform well from from start to endgame, but a TLP or emu player may find it to be lacking exact customization for a specific era.\n\n" ..
-                "  Additionally, those wishing more fine-tune control for specific encounters or raids should customize this config to their preference. \n\n" ..
-                "  Community effort and feedback are required for robust, resilient class configs, and PRs are highly encouraged!",
-            Settings_Used = "",
         },
     },
 }

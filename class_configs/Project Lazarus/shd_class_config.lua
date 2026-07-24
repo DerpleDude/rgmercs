@@ -78,7 +78,7 @@ local Tooltips     = {
 }
 
 local _ClassConfig = {
-    _version          = "2.6 - Project Lazarus",
+    _version          = "2.7 - Project Lazarus",
     _author           = "Algar, Derple",
     ['ModeChecks']    = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
@@ -182,15 +182,17 @@ local _ClassConfig = {
             "Augment Death",          -- Level 60
             "Strengthen Death",       -- Level 29
         },
-        ['Shroud'] = {                -- HP Tap Proc
+        ['Shroud'] = {                -- HP Tap Proc, Buff Slot 1
             "Shroud of the Accursed", -- Level 71 Laz Custom
-            "Shroud of Discord",      -- Level 67, -- Buff Slot 1 <
+            "Shroud of Discord",      -- Level 67
             "Black Shroud",           -- Level 65
             "Shroud of Chaos",        -- Level 63
             "Shroud of Death",        -- Level 55
+            "Scream of Death",        -- Level 37
+            "Vampiric Embrace",       -- Level 22
         },
-        ['Mental'] = {                -- Mana Tap Proc
-            "Mental Horror",          -- Level 65, --Buff Slot 1 >
+        ['Mental'] = {                -- Mana Tap Proc, Buff Slot 1
+            "Mental Horror",          -- Level 65
             "Mental Corruption",      -- Level 52
         },
         ['Skin'] = {
@@ -528,7 +530,10 @@ local _ClassConfig = {
                 name = "Shroud",
                 type = "Spell",
                 tooltip = Tooltips.Shroud,
-                load_cond = function(self) return Config:GetSetting('ProcChoice') == 1 end,
+                load_cond = function(self)
+                    return Config:GetSetting('ProcChoice') == 1 or
+                        (Config:GetSetting('ProcChoice') == 2 and not Core.GetResolvedActionMapItem('Mental'))
+                end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
                     return Casting.SelfBuffCheck(spell)
@@ -1231,14 +1236,14 @@ local _ClassConfig = {
             Max = 99,
         },
         ['ProcChoice']      = {
-            DisplayName = "Proc Self-Buff Choice:",
+            DisplayName = "Buff Slot 1 Proc:",
             Group = "Abilities",
             Header = "Buffs",
             Category = "Self",
             Index = 101,
-            Tooltip = "Choose which proc you prefer, if any.",
+            Tooltip = "Choose which line fills buff slot 1; the HP line is used until a mana proc is available.",
             Type = "Combo",
-            ComboOptions = { 'HP Proc: Shroud Line', 'Mana Proc: Mental Line,', 'Disabled', },
+            ComboOptions = { 'HP Proc: Shroud Line', 'Mana Proc: Mental Line', 'Disabled', },
             Default = 1,
             Min = 1,
             Max = 3,
@@ -1548,17 +1553,6 @@ local _ClassConfig = {
             Default = true,
             FAQ = "Why does my SHD switch to a Shield on puny gray named?",
             Answer = "The Shield on Named option doesn't check levels, so feel free to disable this setting (or Bandolier swapping entirely) if you are farming fodder.",
-        },
-    },
-    ['ClassFAQ']      = {
-        {
-            Question = "What is the current status of this class config?",
-            Answer = "This class config is a current release customized specifically for Project Lazarus server.\n\n" ..
-                "  This config should perform admirably from start to endgame.\n\n" ..
-                "  Clickies that aren't already included should be managed via the clickies tab, or by customizing the config to add them directly.\n" ..
-                "  Additionally, those wishing more fine-tune control for specific encounters or raids should customize this config to their preference. \n\n" ..
-                "  Community effort and feedback are required for robust, resilient class configs, and PRs are highly encouraged!",
-            Settings_Used = "",
         },
     },
 }
