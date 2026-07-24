@@ -158,7 +158,6 @@ local function RGMercsGUI()
                 ImGui.End()
                 if not openFT then
                     Config:SetSetting('PopOutForceTarget', false)
-                    showFT = false
                 end
             end
             if Config:GetSetting('PopOutMercsStatus') then
@@ -171,7 +170,6 @@ local function RGMercsGUI()
                 ImGui.End()
                 if not openMS then
                     Config:SetSetting('PopOutMercsStatus', false)
-                    showMS = false
                 end
             end
             if Config:GetSetting('PopOutConsole') then
@@ -183,7 +181,6 @@ local function RGMercsGUI()
                 ImGui.End()
                 if not openConsole then
                     Config:SetSetting('PopOutConsole', false)
-                    showConsole = false
                 end
             end
 
@@ -602,7 +599,7 @@ end
 
 -- Global Messaging callback
 ---@diagnostic disable-next-line: unused-local
-local script_actor = Comms.Actors.register('RGMercs', function(message)
+local script_actor = Comms.Actors.register('RGMercs', function(message) -- luacheck: ignore 211
     local msg = message()
 
     if msg.Script ~= Comms.ScriptName then

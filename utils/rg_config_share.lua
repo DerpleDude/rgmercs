@@ -9,8 +9,8 @@ local base64        = {
     -- encoding
     enc = function(data)
         return ((data:gsub('.', function(x)
-            local r, b = '', x:byte()
-            for i = 8, 1, -1 do r = r .. (math.floor(b % 2 ^ i) - math.floor(b % 2 ^ (i - 1)) > 0 and '1' or '0') end
+            local r, charByte = '', x:byte()
+            for i = 8, 1, -1 do r = r .. (math.floor(charByte % 2 ^ i) - math.floor(charByte % 2 ^ (i - 1)) > 0 and '1' or '0') end
             return r;
         end) .. '0000'):gsub('%d%d%d?%d?%d?%d?', function(x)
             if (#x < 6) then return '' end

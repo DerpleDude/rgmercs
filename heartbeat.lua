@@ -52,7 +52,7 @@ local function MercHeartbeatUI()
     ImGui.SetNextWindowSize(ImVec2(1200, 400), ImGuiCond.FirstUseEver)
     local display = ImGui.GetIO().DisplaySize
     ImGui.SetNextWindowPos(ImVec2(display.x * 0.5 - 600, display.y * 0.5 - 200), ImGuiCond.FirstUseEver)
-    local showUI = true
+    local showUI
     openGUI, showUI = ImGui.Begin("Mercs Status (Heartbeat)###MercsHeartbeatStandalone", openGUI)
     if showUI then
         Ui.RenderMercsStatus()
@@ -65,7 +65,7 @@ Logger.log_info("heartbeat.lua: type \ag/heartbeat stop\ax to exit.")
 
 -- Receive handler: log inbound heartbeats into Comms.PeersHeartbeats.
 ---@diagnostic disable-next-line: unused-local
-local script_actor = Comms.Actors.register('RGMercs-Heartbeat', function(message)
+local script_actor = Comms.Actors.register('RGMercs-Heartbeat', function(message) -- luacheck: ignore 211
     local msg = message()
     if not msg or msg.Script ~= Comms.ScriptName then
         return

@@ -116,7 +116,7 @@ function UnitTests.RunAll()
         local result         = Combat.ProcessXTarget(spawnA, 100, noNamePref, lowHpPref, false, primaryTarget, fallbackTarget, false, 0)
         assertEq("ProcessXTarget lowHpPref: no immediate return", result, nil)
         assertEq("ProcessXTarget lowHpPref: kill bucket updated", primaryTarget.id, 1)
-        result = Combat.ProcessXTarget(spawnB, 100, noNamePref, lowHpPref, false, primaryTarget, fallbackTarget, false, 0)
+        Combat.ProcessXTarget(spawnB, 100, noNamePref, lowHpPref, false, primaryTarget, fallbackTarget, false, 0)
         assertEq("ProcessXTarget lowHpPref: lower hp wins", primaryTarget.id, 2)
     end
 

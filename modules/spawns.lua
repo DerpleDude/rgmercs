@@ -454,7 +454,7 @@ end
 function Module:RenderZoneNamed()
     if not ImGui.CollapsingHeader("Zone Named") then return end
     self.LastRenderTime = Globals.GetTimeSeconds()
-    self.ShowDownNamed, _ = Ui.RenderOptionToggle("ShowDown", "Show Downed Named", self.ShowDownNamed)
+    self.ShowDownNamed = Ui.RenderOptionToggle("ShowDown", "Show Downed Named", self.ShowDownNamed)
 
     if ImGui.BeginTable("Zone Named", 5, bit32.bor(ImGuiTableFlags.Borders, ImGuiTableFlags.Resizable)) then
         ImGui.TableSetupColumn('Name', (ImGuiTableColumnFlags.WidthFixed), 250.0)

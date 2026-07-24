@@ -3458,41 +3458,38 @@ end
 --- @param tempOnly boolean?: The new value to assign to the setting.
 --- @param noCallback boolean?: If true, the setting will be updated without triggering the OnChange callback.
 function Config:SetSetting(setting, value, tempOnly, noCallback)
-    local settingModuleName = "Core"
-    local beforeUpdate = ""
-
-    settingModuleName, setting = self:MakeValidSettingName(setting)
+    local settingModuleName, cleanSetting = self:MakeValidSettingName(setting)
 
     if settingModuleName == "None" then
         Logger.log_error("Setting %s was not found!", setting)
         return
     end
 
-    local oldValue = Config:GetSetting(setting)
+    local oldValue = Config:GetSetting(cleanSetting)
     local defaultConfig = self:GetModuleDefaultSettings(settingModuleName)
 
-    local cleanValue = self:MakeValidSetting(settingModuleName, setting, value)
-    _, beforeUpdate = Config:GetUsageText(setting, false, defaultConfig, true)
+    local cleanValue = self:MakeValidSetting(settingModuleName, cleanSetting, value)
+    local _, beforeUpdate = Config:GetUsageText(cleanSetting, false, defaultConfig, true)
     if cleanValue ~= nil then
         if tempOnly then
-            self.moduleTempSettings[settingModuleName][setting] = cleanValue
+            self.moduleTempSettings[settingModuleName][cleanSetting] = cleanValue
         else
-            self:SettingDbWrite(settingModuleName, setting, cleanValue)
-            if Config.TempSettings.SettingToScopeCache[setting] == "server" then
-                self.moduleTempSettings[settingModuleName][setting] = nil
+            self:SettingDbWrite(settingModuleName, cleanSetting, cleanValue)
+            if Config.TempSettings.SettingToScopeCache[cleanSetting] == "server" then
+                self.moduleTempSettings[settingModuleName][cleanSetting] = nil
             else
-                self.moduleTempSettings[settingModuleName][setting] = cleanValue
+                self.moduleTempSettings[settingModuleName][cleanSetting] = cleanValue
             end
         end
     else
-        Logger.log_info("\ayFailed to update setting %s, invalid value supplied.", setting)
+        Logger.log_info("\ayFailed to update setting %s, invalid value supplied.", cleanSetting)
     end
 
-    if defaultConfig[setting].RequiresLoadoutChange then
+    if defaultConfig[cleanSetting].RequiresLoadoutChange then
         Modules:ExecModule("Class", "RescanLoadout")
     end
 
-    local _, afterUpdate = Config:GetUsageText(setting, false, defaultConfig)
+    local _, afterUpdate = Config:GetUsageText(cleanSetting, false, defaultConfig)
 
     local valueChanged = oldValue ~= cleanValue
     if type(cleanValue) == "table" and type(oldValue) == "table" then
@@ -3501,16 +3498,16 @@ function Config:SetSetting(setting, value, tempOnly, noCallback)
     end
 
     if valueChanged then
-        Logger.log_debug("(%s) \ag%s\aw is now:\ax %-5s \ay[Previous:\ax %s\ay]", settingModuleName, setting, afterUpdate, beforeUpdate)
+        Logger.log_debug("(%s) \ag%s\aw is now:\ax %-5s \ay[Previous:\ax %s\ay]", settingModuleName, cleanSetting, afterUpdate, beforeUpdate)
 
-        if defaultConfig[setting].OnChange and noCallback ~= true then
-            defaultConfig[setting].OnChange(oldValue, cleanValue)
+        if defaultConfig[cleanSetting].OnChange and noCallback ~= true then
+            defaultConfig[cleanSetting].OnChange(oldValue, cleanValue)
         end
     end
 
     -- broadcast the change to any listeners.
     Comms.BroadcastMessage(self._name, "UpdatePeerSetSetting",
-        { peer = Comms.GetPeerName(), module = settingModuleName, setting = setting, value = cleanValue, })
+        { peer = Comms.GetPeerName(), module = settingModuleName, setting = cleanSetting, value = cleanValue, })
 end
 
 --- Temporarily sets a setting
@@ -3633,8 +3630,6 @@ function Config:RegisterModuleSettings(module, settings, defaultSettings, faq, f
         return
     end
 
-    local settingsChanged = false
-
     --Centralize category creation and setup the FAQs
     local settingCategories = Set.new({})
     for k, v in pairs(defaultSettings or {}) do
@@ -3645,8 +3640,7 @@ function Config:RegisterModuleSettings(module, settings, defaultSettings, faq, f
     end
 
     -- ResolveDefaults only to detect missing/changed keys that need a db write
-    local resolvedSettings
-    resolvedSettings, settingsChanged = Config.ResolveDefaults(defaultSettings, settings, module)
+    local resolvedSettings, settingsChanged = Config.ResolveDefaults(defaultSettings, settings, module)
 
     self.moduleTempSettings[module] = {}
     self.moduleDefaultSettings[module] = defaultSettings

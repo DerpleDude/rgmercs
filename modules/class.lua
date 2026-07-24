@@ -11,7 +11,6 @@ local Config      = require('utils.config')
 local Core        = require("utils.core")
 local DanNet      = require('lib.dannet.helpers')
 local Entries     = require("utils.entries")
-local Events      = require("utils.events")
 local Globals     = require('utils.globals')
 local Logger      = require("utils.logger")
 local Modules     = require("utils.modules")
@@ -393,20 +392,20 @@ Module.CommandHandlers                       = {
             targetId = targetId or (mq.TLO.Target.ID() > 0 and mq.TLO.Target.ID() or mq.TLO.Me.ID())
 
             local actionHandlers = {
-                spell = function(self)
-                    self:QueueAbility("spell", action.RankName(), targetId)
+                spell = function(classModule)
+                    classModule:QueueAbility("spell", action.RankName(), targetId)
                 end,
-                song = function(self)
-                    self:QueueAbility("song", action.RankName(), targetId)
+                song = function(classModule)
+                    classModule:QueueAbility("song", action.RankName(), targetId)
                 end,
-                aa = function(self)
-                    self:QueueAbility("aa", action, targetId)
+                aa = function(classModule)
+                    classModule:QueueAbility("aa", action, targetId)
                 end, --AFAIK we don't have any AA mapped, but, future proof.
-                item = function(self)
-                    self:QueueAbility("item", action, targetId)
+                item = function(classModule)
+                    classModule:QueueAbility("item", action, targetId)
                 end,
-                disc = function(self)
-                    self:QueueAbility("disc", action.RankName(), targetId, action)
+                disc = function(classModule)
+                    classModule:QueueAbility("disc", action.RankName(), targetId, action)
                 end,
             }
 
@@ -988,7 +987,6 @@ function Module:RenderQueuedAbilities()
 end
 
 function Module:RenderRotationWithToggle(r, rotationTable, showRotationType)
-    local enabledRotationEntriesChanged = false
     local rotationName = r.name
     local enabledRotations = Config:GetSetting('EnabledRotations') or {}
     local enabledRotationEntries = Config:GetSetting('EnabledRotationEntries') or {}
@@ -1021,7 +1019,7 @@ function Module:RenderRotationWithToggle(r, rotationTable, showRotationType)
                 Ui.Tooltip(
                     "Denotes whether entries will be checked from the top every time the rotation is run (Full) or whether the checks start from the entry after the last one to succeed (Standard).\nLeaving combat resets the position of the check marker.")
             end
-            local reordered, resetRequested
+            local enabledRotationEntriesChanged, reordered, resetRequested
             enabledRotationEntries, enabledRotationEntriesChanged, reordered, resetRequested = Ui.RenderRotationTable(r.name,
                 rotationTable[r.name],
                 self.ResolvedActionMap, r.state or 0, enabledRotationEntries, nil, r.reorderable ~= false)
@@ -1073,18 +1071,14 @@ function Module:Render()
     ImGui.TableNextColumn()
     ImGui.EndTable()
 
-    ---@type boolean|nil
-    local pressed = false
-
     if self.ClassConfig and self.ModuleLoaded then
         Ui.RenderText("Current Mode:")
         ImGui.SameLine()
         ImGui.SetNextItemWidth(150)
         Ui.Tooltip(self.ClassConfig.DefaultConfig.Mode.Tooltip)
-        local newMode
-        newMode, pressed = ImGui.Combo("##_select_ai_mode", Config:GetSetting('Mode'), self.ClassConfig.Modes,
+        local newMode, modePressed = ImGui.Combo("##_select_ai_mode", Config:GetSetting('Mode'), self.ClassConfig.Modes,
             #self.ClassConfig.Modes)
-        if pressed then
+        if modePressed then
             Config:SetSetting('Mode', newMode)
             self:RescanLoadout()
         end

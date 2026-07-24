@@ -2,7 +2,6 @@ local Icons               = require('mq.ICONS')
 local Config              = require('utils.config')
 local Console             = require('utils.console')
 local Globals             = require("utils.globals")
-local Logger              = require("utils.logger")
 local Ui                  = require('utils.ui')
 
 local ConsoleUI           = { _version = '1.0', _name = "ConsoleUI", _author = 'Derple', }
@@ -23,34 +22,30 @@ function ConsoleUI:DrawConsole(showPopout)
             ImGui.PopID()
         end
 
-        local changed
         if ImGui.BeginTable("##debugoptions", 2, ImGuiTableFlags.None) then
             ImGui.TableSetupColumn("Opt Name", bit32.bor(ImGuiTableColumnFlags.WidthFixed, ImGuiTableColumnFlags.NoResize), 150)
             ImGui.TableSetupColumn("Opt Value", ImGuiTableColumnFlags.WidthStretch)
             ImGui.TableNextColumn()
             Ui.RenderText("Log to File")
             ImGui.TableNextColumn()
-            local logToFile = Config:GetSetting('LogToFile')
-            logToFile, changed = Ui.RenderOptionToggle("##log_to_file",
-                "", logToFile)
-            if changed then
+            local logToFile, logToFileChanged = Ui.RenderOptionToggle("##log_to_file",
+                "", Config:GetSetting('LogToFile'))
+            if logToFileChanged then
                 Config:SetSetting('LogToFile', logToFile)
             end
             ImGui.TableNextColumn()
             Ui.RenderText("Show Timestamps")
             ImGui.TableNextColumn()
-            local logTimestamps = Config:GetSetting('LogTimeStampsToConsole')
-            logTimestamps, changed = Ui.RenderOptionToggle("##show_timestamps",
-                "", logTimestamps)
-            if changed then
+            local logTimestamps, logTimestampsChanged = Ui.RenderOptionToggle("##show_timestamps",
+                "", Config:GetSetting('LogTimeStampsToConsole'))
+            if logTimestampsChanged then
                 Config:SetSetting('LogTimeStampsToConsole', logTimestamps)
             end
             ImGui.TableNextColumn()
             Ui.RenderText("Debug Level")
             ImGui.TableNextColumn()
-            local logLevel = Config:GetSetting('LogLevel')
-            logLevel, _, changed = Ui.RenderOption("Combo", logLevel, "LogLevelComboBox", false, Globals.Constants.LogLevels)
-            if changed then
+            local logLevel, _, logLevelChanged = Ui.RenderOption("Combo", Config:GetSetting('LogLevel'), "LogLevelComboBox", false, Globals.Constants.LogLevels)
+            if logLevelChanged then
                 Config:SetSetting('LogLevel', logLevel)
             end
             ImGui.TableNextColumn()
@@ -62,9 +57,8 @@ function ConsoleUI:DrawConsole(showPopout)
             ImGui.TableNextColumn()
             ImGui.BeginDisabled(self.logFilterLocked)
 
-            local logFilter = Config:GetSetting('LogFilter')
-            logFilter, changed = ImGui.InputText("##logfilter", logFilter)
-            if changed and not self.logFilterLocked then
+            local logFilter, logFilterChanged = ImGui.InputText("##logfilter", Config:GetSetting('LogFilter'))
+            if logFilterChanged and not self.logFilterLocked then
                 Config:SetSetting('LogFilter', logFilter)
             end
 

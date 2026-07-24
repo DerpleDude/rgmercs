@@ -101,24 +101,24 @@ function Module:GiveTime()
         if Config:GetSetting('DoSearchDrag') then
             local numCorpses = mq.TLO.SpawnCount(Config:GetSetting('SearchDrag'))()
 
-            for i = numCorpses, 1, -1 do
-                local corpse = mq.TLO.NearestSpawn(i, Config:GetSetting('SearchDrag'))
+            for corpseIndex = numCorpses, 1, -1 do
+                local corpse = mq.TLO.NearestSpawn(corpseIndex, Config:GetSetting('SearchDrag'))
                 self:Drag(corpse)
             end
         end
 
         if Config:GetSetting('DoDanNetDrag') then
             local dannetPeers = mq.TLO.DanNet.PeerCount()
-            for i = 1, dannetPeers do
-                local peer = DanNet.getPeer(i)
+            for peerIndex = 1, dannetPeers do
+                local peer = DanNet.getPeer(peerIndex)
 
                 if peer and peer:len() > 0 then
                     Logger.log_debug("Searching corpses for: %s", peer)
                     local currentSearch = string.format(corpseSearch, peer)
                     local numCorpses = mq.TLO.SpawnCount(currentSearch)()
 
-                    for i = numCorpses, 1, -1 do
-                        local corpse = mq.TLO.NearestSpawn(i, currentSearch)
+                    for corpseIndex = numCorpses, 1, -1 do
+                        local corpse = mq.TLO.NearestSpawn(corpseIndex, currentSearch)
                         self:Drag(corpse)
                     end
                 end
@@ -134,8 +134,8 @@ function Module:GiveTime()
                 local currentSearch = string.format(corpseSearch, peerName)
                 local numCorpses = mq.TLO.SpawnCount(currentSearch)()
 
-                for i = numCorpses, 1, -1 do
-                    local corpse = mq.TLO.NearestSpawn(i, currentSearch)
+                for corpseIndex = numCorpses, 1, -1 do
+                    local corpse = mq.TLO.NearestSpawn(corpseIndex, currentSearch)
                     self:Drag(corpse)
                 end
             end

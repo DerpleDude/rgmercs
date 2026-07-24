@@ -499,7 +499,7 @@ end
 function Combat.GetMainAssistTargetID()
     local assistId = 0
     local heartbeat = Comms.GetPeerHeartbeatByName(Globals.MainAssist)
-    local assistTarget = nil
+    local assistTarget
     local assistTargetIsNamed = false
 
     -- if the MA has a force target, use it, and also force combat on this target (don't check aggressiveness on the MA's force target)

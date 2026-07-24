@@ -350,10 +350,10 @@ function Targeting.GetHighestAggroPct()
 
     local highestPct = target.PctAggro() or 0
 
-    local xtCount    = mq.TLO.Me.XTarget()
+    local xtCount    = me.XTarget()
 
     for i = 1, xtCount do
-        local xtSpawn = mq.TLO.Me.XTarget(i)
+        local xtSpawn = me.XTarget(i)
 
         if xtSpawn() and (xtSpawn.ID() or 0) > 0 and (xtSpawn.Aggressive() or xtSpawn.TargetType():lower() == "auto hater" or xtSpawn.ID() == Globals.ForceTargetID) then
             if xtSpawn.PctAggro() > highestPct then highestPct = xtSpawn.PctAggro() end
@@ -373,10 +373,10 @@ function Targeting.IHaveAggro(pct)
 
     if (target() and (target.PctAggro() or 0) >= pct) then return true end
 
-    local xtCount = mq.TLO.Me.XTarget()
+    local xtCount = me.XTarget()
 
     for i = 1, xtCount do
-        local xtSpawn = mq.TLO.Me.XTarget(i)
+        local xtSpawn = me.XTarget(i)
 
         if xtSpawn() and (xtSpawn.ID() or 0) > 0 and (xtSpawn.Aggressive() or xtSpawn.TargetType():lower() == "auto hater" or xtSpawn.ID() == Globals.ForceTargetID) then
             if xtSpawn.PctAggro() >= pct then return true end

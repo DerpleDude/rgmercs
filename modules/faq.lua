@@ -4,9 +4,7 @@ local Base          = require("modules.base")
 local Binds         = require("utils.binds")
 local Config        = require('utils.config')
 local Globals       = require('utils.globals')
-local Logger        = require("utils.logger")
 local Modules       = require("utils.modules")
-local Tables        = require("utils.tables")
 local Ui            = require('utils.ui')
 
 local Module        = { _version = '0.1a', _name = "FAQ", _author = 'Grimmier', }

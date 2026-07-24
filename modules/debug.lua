@@ -4,7 +4,6 @@ local Base          = require("modules.base")
 local Config        = require('utils.config')
 local Core          = require("utils.core")
 local Globals       = require("utils.globals")
-local Logger        = require("utils.logger")
 local Signatures    = require('utils.signatures')
 local Ui            = require("utils.ui")
 local Zep           = require('Zep')
@@ -475,15 +474,15 @@ function Module:RenderToolbar()
         RenderTooltip("Clear Console")
 
         ImGui.TableNextColumn()
-        local showTimestamps, pressed = ImGui.Checkbox("Print Time Stamps", Config:GetSetting('ShowTimestamps'))
-        if pressed then
+        local showTimestamps, showTimestampsPressed = ImGui.Checkbox("Print Time Stamps", Config:GetSetting('ShowTimestamps'))
+        if showTimestampsPressed then
             Config:SetSetting('ShowTimestamps', showTimestamps)
         end
 
         ImGui.TableNextColumn()
-        local enableAutoComplete, pressed = ImGui.Checkbox("Auto Completion",
+        local enableAutoComplete, enableAutoCompletePressed = ImGui.Checkbox("Auto Completion",
             Config:GetSetting('EnableAutoCompletion'))
-        if pressed then
+        if enableAutoCompletePressed then
             Config:SetSetting('EnableAutoCompletion', enableAutoComplete)
         end
         ImGui.TableNextColumn()

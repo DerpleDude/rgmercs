@@ -30,8 +30,8 @@ function SimpleUI:RenderMainWindow(_, openGUI, flags)
         if shouldDrawGUI then
             local _, y = ImGui.GetContentRegionAvail()
             if ImGui.BeginChild("left##RGmercsSimplePanel", ImGui.GetWindowContentRegionWidth() * .3, y - 1, ImGuiChildFlags.Borders) then
-                local flags = bit32.bor(ImGuiTableFlags.RowBg, ImGuiTableFlags.BordersOuter, ImGuiTableFlags.BordersV, ImGuiTableFlags.ScrollY)
-                if ImGui.BeginTable('configmenu##RGmercsSimplePanel', 1, flags, 0, 0, 0.0) then
+                local tableFlags = bit32.bor(ImGuiTableFlags.RowBg, ImGuiTableFlags.BordersOuter, ImGuiTableFlags.BordersV, ImGuiTableFlags.ScrollY)
+                if ImGui.BeginTable('configmenu##RGmercsSimplePanel', 1, tableFlags, 0, 0, 0.0) then
                     ImGui.TableNextColumn()
                     self:RenderSimplePanelOption(Icons.FA_COGS .. " General", "General")
                     ImGui.TableNextColumn()
@@ -48,13 +48,13 @@ function SimpleUI:RenderMainWindow(_, openGUI, flags)
             ImGui.SameLine()
             local x, _ = ImGui.GetContentRegionAvail()
             if ImGui.BeginChild("right##RGmercsSimplePanel", x, y - 1, ImGuiChildFlags.Borders) then
-                local flags = bit32.bor(ImGuiTableFlags.BordersOuter, ImGuiTableFlags.BordersInner)
-                if ImGui.BeginTable('rightpanelTable##RGmercsSimplePanel', 1, flags, 0, 0, 0.0) then
+                local tableFlags = bit32.bor(ImGuiTableFlags.BordersOuter, ImGuiTableFlags.BordersInner)
+                if ImGui.BeginTable('rightpanelTable##RGmercsSimplePanel', 1, tableFlags, 0, 0, 0.0) then
                     ImGui.TableNextColumn()
 
-                    local tmp, changed = Ui.RenderOptionToggle("ToggleFullUI", "Toggle Full UI", Config:GetSetting('FullUI'))
-                    if changed then
-                        Config:SetSetting('FullUI', tmp)
+                    local fullUI, fullUIChanged = Ui.RenderOptionToggle("ToggleFullUI", "Toggle Full UI", Config:GetSetting('FullUI'))
+                    if fullUIChanged then
+                        Config:SetSetting('FullUI', fullUI)
                     end
 
                     ImGui.TableNextColumn()

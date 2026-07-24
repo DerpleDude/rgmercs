@@ -1,7 +1,6 @@
 local mq                        = require('mq')
 local Icons                     = require('mq.ICONS')
 local Set                       = require("mq.Set")
-local ImAnim                    = require('ImAnim')
 local ImGui                     = require('ImGui')
 local Comms                     = require('utils.comms')
 local Config                    = require('utils.config')
@@ -9,7 +8,6 @@ local DBManagement              = require('utils.db_management')
 local Globals                   = require("utils.globals")
 local Logger                    = require('utils.logger')
 local Modules                   = require('utils.modules')
-local Tables                    = require('utils.tables')
 local Ui                        = require('utils.ui')
 
 local OptionsUI                 = { _version = '1.0', _name = "OptionsUI", _author = 'Derple', 'Algar', }
@@ -499,8 +497,6 @@ end
 function OptionsUI:RenderCategorySettings(category)
     local any_pressed         = false
     local new_loadout         = false
-    local pressed             = false
-    local loadout_change      = false
     local renderWidth         = 325
     local windowWidth         = ImGui.GetWindowWidth()
     local numCols             = math.max(1, math.floor(windowWidth / renderWidth))
@@ -549,7 +545,7 @@ function OptionsUI:RenderCategorySettings(category)
                         local iconWidth = hasWarning and ImGui.CalcTextSize(Icons.MD_WARNING) or 0
                         local selectableWidth = columnWidth - iconWidth - (hasWarning and ImGui.GetStyle().ItemSpacing.x or 0)
                         ImGui.PushStyleColor(ImGuiCol.HeaderHovered, IM_COL32(0, 0, 0, 0))
-                        ImGui.PushStyleColor(ImGuiCol.HeaderActive, Ui.ChangeColorAlpoha(Globals.Constants.Colors.Green, 0.1))
+                        ImGui.PushStyleColor(ImGuiCol.HeaderActive, Ui.ChangeColorAlpha(Globals.Constants.Colors.Green, 0.1))
                         if ImGui.Selectable(string.format("%s", settingDefaults.DisplayName or (string.format("None %d", idx))), false, ImGuiSelectableFlags.None, ImVec2(selectableWidth, 0)) then
                             ImGui.SetClipboardText(settingName)
                             table.insert(self.ToastStates, {
@@ -623,6 +619,7 @@ function OptionsUI:RenderCategorySettings(category)
                         end
 
                         if settingDefaults ~= nil then
+                            local loadout_change, pressed
                             setting, loadout_change, pressed = Ui.RenderOption(
                                 typeOfSetting,
                                 setting,
@@ -991,8 +988,6 @@ function OptionsUI:ValidateSelectedPeer()
 end
 
 function OptionsUI:RenderMainWindow(_, openGUI, flags)
-    local shouldDrawGUI = true
-
     if self.FirstRender or self.lastSortTime < Config:GetLastModuleRegisteredTime() or self.lastHighlightTime < Config:GetLastHighlightChangeTime() then
         self.selectedCharacter = Comms.GetPeerName()
         self:ApplySearchFilter()
@@ -1010,6 +1005,7 @@ function OptionsUI:RenderMainWindow(_, openGUI, flags)
     ImGui.SetNextWindowSize(ImVec2(700, 500), ImGuiCond.FirstUseEver)
     ImGui.SetNextWindowSizeConstraints(ImVec2(400, 300), ImVec2(2000, 2000))
 
+    local shouldDrawGUI
     openGUI, shouldDrawGUI = ImGui.Begin(Ui.GetWindowTitle(("RGMercs Options%s"):format(Globals.PauseMain and " [Paused]" or ""), 'rgmercsOptionsUI'), openGUI, flags)
 
     if shouldDrawGUI then
@@ -1017,8 +1013,7 @@ function OptionsUI:RenderMainWindow(_, openGUI, flags)
         local _, y = ImGui.GetContentRegionAvail()
 
         if ImGui.BeginChild("left##RGmercsOptions", math.min(ImGui.GetWindowContentRegionWidth() * .3, 205), y - 1, ImGuiChildFlags.Borders) then
-            local flags = bit32.bor(ImGuiTableFlags.RowBg, ImGuiTableFlags.BordersOuter, ImGuiTableFlags.ScrollY)
-            local textChanged = false
+            local tableFlags = bit32.bor(ImGuiTableFlags.RowBg, ImGuiTableFlags.BordersOuter, ImGuiTableFlags.ScrollY)
             local inputBoxPosX = ImGui.GetCursorPosX()
             local style = ImGui.GetStyle()
             local searchBarUsableWidth = ImGui.GetWindowContentRegionWidth() - (ImGui.GetFontSize() + style.FramePadding.y + style.WindowPadding.x * 2)
@@ -1047,6 +1042,7 @@ function OptionsUI:RenderMainWindow(_, openGUI, flags)
             end
 
             ImGui.SetNextItemWidth(searchBarUsableWidth)
+            local textChanged
             self.configFilter, textChanged = ImGui.InputText("###OptionsUISearchText", self.configFilter)
             if textChanged then
                 self:ApplySearchFilter()
@@ -1068,15 +1064,13 @@ function OptionsUI:RenderMainWindow(_, openGUI, flags)
                 self:ApplySearchFilter()
             end
             Ui.Tooltip("Clear Search Text")
-            local ShowAdvancedOpts = Config:GetSetting('ShowAdvancedOpts')
-            local changed = false
-            ShowAdvancedOpts, changed = Ui.RenderOptionToggle("show_adv_tog###OptionsUI", "Show Advanced Options", ShowAdvancedOpts)
-            if changed then
-                Config:SetSetting('ShowAdvancedOpts', ShowAdvancedOpts)
+            local showAdvancedOpts, showAdvancedOptsChanged = Ui.RenderOptionToggle("show_adv_tog###OptionsUI", "Show Advanced Options", Config:GetSetting('ShowAdvancedOpts'))
+            if showAdvancedOptsChanged then
+                Config:SetSetting('ShowAdvancedOpts', showAdvancedOpts)
                 self:ApplySearchFilter()
             end
 
-            if ImGui.BeginTable('configmenu##RGmercsOptions', 1, flags, 0, 0, 0.0) then
+            if ImGui.BeginTable('configmenu##RGmercsOptions', 1, tableFlags, 0, 0, 0.0) then
                 ImGui.TableNextColumn()
                 local selectedGroupVisible = false
                 for _, group in ipairs(self.FilteredGroups) do

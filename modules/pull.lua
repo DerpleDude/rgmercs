@@ -3572,7 +3572,7 @@ function Module:GetPullableSpawns()
         end
 
         local navDist = 0
-        local canPath = true
+        local canPath
 
         if maxPathRange > 0 then
             navDist = mq.TLO.Navigation.PathLength("id " .. spawn.ID())()

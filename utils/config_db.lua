@@ -1,8 +1,8 @@
-local mq         = require('mq')
-local ImGui      = require('ImGui')
-local ImPlot     = require('ImPlot')
-local ok, sqlite = pcall(require, 'lsqlite3')
-if not ok then
+local mq                   = require('mq')
+local ImGui                = require('ImGui')
+local ImPlot               = require('ImPlot')
+local sqliteLoaded, sqlite = pcall(require, 'lsqlite3')
+if not sqliteLoaded then
     printf("\arDB: failed to load lsqlite3: %s", tostring(sqlite))
     error(string.format("DB: failed to load lsqlite3: %s", tostring(sqlite)))
 end
@@ -182,7 +182,7 @@ function DB:_prepare(sql)
     if self._collectStats then
         self._telemetry.lastQuery = sql:match("^%s*(.-)%s*$") -- trim whitespace
     end
-    local stmt, err = self._db:prepare(sql)
+    local stmt = self._db:prepare(sql)
     if not stmt then
         Logger.log_error("\arDB prepare error: %s\n  SQL: %s", self._db:errmsg(), sql)
         if self._collectStats then

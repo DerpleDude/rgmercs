@@ -178,9 +178,9 @@ function TargetUI:RenderContent()
             ImGui.PushFont(ImGui.GetFont(), ImGui.GetFontSize() * 1.15)
             local textWidth = ImGui.CalcTextSize(aggroText)
             local avail = ImGui.GetContentRegionAvailVec().x
-            local offset = avail / 2 - textWidth / 2
-            if offset > 0 then
-                ImGui.SetCursorPosX(ImGui.GetCursorPosX() + offset)
+            local aggroTextOffset = avail / 2 - textWidth / 2
+            if aggroTextOffset > 0 then
+                ImGui.SetCursorPosX(ImGui.GetCursorPosX() + aggroTextOffset)
             end
             local screenPos = ImGui.GetCursorScreenPosVec()
             ImGui.GetWindowDrawList():AddText(ImVec2(screenPos.x + 1, screenPos.y + 1), IM_COL32(0, 0, 0, 230), aggroText)

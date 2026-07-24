@@ -1,6 +1,5 @@
 local mq               = require('mq')
 local Set              = require('mq.set')
-local Combat           = require("utils.combat")
 local Comms            = require("utils.comms")
 local Config           = require('utils.config')
 local ConfigShare      = require("utils.rg_config_share")
@@ -49,9 +48,7 @@ Binds.Handlers    = {
         usage = "/rgl export_config <module>",
         about = "Exports your current RGMercs configuration to chat",
         handler = function(module)
-            local configTable = {}
-
-            configTable = Config:GetModuleSettings((not module or module:len() <= 0) and "Core" or module)
+            local configTable = Config:GetModuleSettings((not module or module:len() <= 0) and "Core" or module)
 
             local encodedConfig = ConfigShare.ExportConfig(configTable)
             printf("%s", encodedConfig)

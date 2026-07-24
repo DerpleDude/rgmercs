@@ -1,5 +1,4 @@
 local mq              = require('mq')
-local Icons           = require('mq.ICONS')
 local ImGui           = require('ImGui')
 local Config          = require('utils.config')
 local Modules         = require('utils.modules')

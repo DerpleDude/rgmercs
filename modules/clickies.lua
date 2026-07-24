@@ -2174,7 +2174,7 @@ function Module:GiveTime()
                             local target = nil
                             local buffCheckPassed = true
                             local targetId = nil
-                            local targetPeer = nil
+                            local targetPeer
 
                             if clicky.target == "Self" then
                                 target = mq.TLO.Me
@@ -2285,11 +2285,10 @@ function Module:GetClickiesForRotations(clickyCombatState, rotationName)
             and clicky.itemName:len() > 0
             and (clicky.enabled == nil or clicky.enabled == true)
         then
-            local itemName   = clicky.itemName
             local conditions = clicky.conditions or {}
 
             table.insert(result, {
-                name = itemName,
+                name = clicky.itemName,
                 type = "Item",
                 from_clicky = true,
                 mustWait = clicky.mustWait,
@@ -2300,18 +2299,16 @@ function Module:GetClickiesForRotations(clickyCombatState, rotationName)
                     local itemSpell = item and item.Clicky and item.Clicky.Spell
                     if not (itemSpell and itemSpell()) then return false end
 
-                    local buffCheckPassed = true
+                    local buffCheckPassed
 
                     if targetSpawn.ID() == mq.TLO.Me.ID() then
                         buffCheckPassed = Casting.LocalBuffCheck(itemSpell.ID(), nil, clicky.skipTriggerCheck)
                     elseif targetSpawn.ID() == mq.TLO.Me.Pet.ID() then
-                        ---@diagnostic disable-next-line: cast-local-type
                         buffCheckPassed = mq.TLO.Me.Pet.ID() > 0 and Casting.LocalPetBuffCheck(itemSpell.ID(), nil, clicky.skipTriggerCheck)
                     elseif targetSpawn.Type() == "PC" then
-                        ---@diagnostic disable-next-line: cast-local-type
                         buffCheckPassed = Casting.LevelCheckPass(itemSpell, targetSpawn)
                             and Casting.ResolveBuffCheck(itemSpell.ID(), targetSpawn, nil, clicky.skipTriggerCheck)
-                    else ---@diagnostic disable-next-line: cast-local-type
+                    else
                         buffCheckPassed = Casting.TargetBuffCheck(itemSpell.ID(), targetSpawn, false, itemSpell.HasSPA(0)(), clicky.skipTriggerCheck)
                     end
 

@@ -92,7 +92,7 @@ function ClassLoader.writeCustomConfig(class)
 
         local fileBackup, err = io.open(backupFile, "w")
         if not fileBackup then
-            Logger.log_error("Failed to Backup Custom Core Class Config: %s %s", backupFile, err)
+            Logger.log_error("Failed to Backup Custom Core Class Config: %s (%s)", backupFile, err or "unknown error")
             return
         end
 
@@ -119,7 +119,7 @@ function ClassLoader.writeCustomConfig(class)
     mq.pickle(customFile, {}) -- incase the path isn't made yet
     local custom_file, err = io.open(customFile, "w")
     if not custom_file then
-        Logger.log_error("Failed to Write Custom Class Config: %s", customFile)
+        Logger.log_error("Failed to Write Custom Class Config: %s (%s)", customFile, err or "unknown error")
         return
     end
 

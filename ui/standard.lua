@@ -12,7 +12,6 @@ local ImageUI       = require('ui.images')
 local Logger        = require('utils.logger')
 local Modules       = require('utils.modules')
 local Movement      = require('utils.movement')
-local OptionsUI     = require("ui.options")
 local Targeting     = require('utils.targeting')
 local Ui            = require('utils.ui')
 
@@ -331,8 +330,6 @@ function StandardUI:RenderWindowControls()
 end
 
 function StandardUI:RenderMainWindow(imgui_style, openGUI, flags)
-    local shouldDrawGUI = true
-
     if not Globals.Minimized then
         if Config:GetSetting('MainWindowLocked') then
             flags = bit32.bor(flags, ImGuiWindowFlags.NoMove, ImGuiWindowFlags.NoResize)
@@ -340,6 +337,7 @@ function StandardUI:RenderMainWindow(imgui_style, openGUI, flags)
 
         ImGui.SetNextWindowSize(ImVec2(600, 400), ImGuiCond.FirstUseEver)
 
+        local shouldDrawGUI
         openGUI, shouldDrawGUI = ImGui.Begin(Ui.GetWindowTitle(('RGMercs%s'):format(Globals.PauseMain and " [Paused]" or ""), 'rgmercsui'), openGUI, flags)
         ImGui.PushID("##RGMercsUI_" .. Globals.CurLoadedChar)
         if shouldDrawGUI then
@@ -358,20 +356,7 @@ function StandardUI:RenderMainWindow(imgui_style, openGUI, flags)
                 titlePos = ImVec2(titlePos.x, titlePos.y + ImGui.GetTextLineHeightWithSpacing())
                 ImGui.SetCursorPos(titlePos)
 
-                Ui.RenderText("Class Config: ")
-                ImGui.SameLine()
-
-                local version = Modules:ExecModule("Class", "GetVersionString")
-                Ui.RenderHyperText(version, IM_COL32(255, 255, 255, 255), IM_COL32(52, 52, 255, 255),
-                    function()
-                        OptionsUI:OpenAndSetSearchFilter("what is the current status of this class config", "Commands/FAQ")
-                    end)
-                Ui.Tooltip("Click to display notes about the status of this class config.")
-                ImGui.SameLine()
-                if ImGui.SmallButton(Icons.MD_INFO_OUTLINE) then
-                    OptionsUI:OpenAndSetSearchFilter("what is the current status of this class config", "Commands/FAQ")
-                end
-                Ui.Tooltip("Click to display notes about the status of this class config.")
+                Ui.RenderText("Class Config: %s", Modules:ExecModule("Class", "GetVersionString"))
 
                 titlePos = ImVec2(titlePos.x, titlePos.y + ImGui.GetTextLineHeightWithSpacing())
                 ImGui.SetCursorPos(titlePos)
