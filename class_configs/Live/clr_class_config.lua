@@ -405,7 +405,10 @@ local _ClassConfig = {
             "Aegolism",                      -- Level 60
             "Ancient: Gift of Aegolism",     -- Level 60
             "Blessing of Aegolism",          -- Level 60
+            "Heroism",                       -- Level 52
+            "Heroic Bond",                   -- Level 52
             "Blessing of Temperance",        -- Level 45
+            "Resolution",                    -- Level 42
             "Temperance",                    -- Level 40
             "Valor",                         -- Level 32
             "Bravery",                       -- Level 22
