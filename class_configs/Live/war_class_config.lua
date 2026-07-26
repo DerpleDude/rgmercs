@@ -354,6 +354,18 @@ local _ClassConfig = {
                 return combat_state == "Downtime" and Casting.OkayToBuff() and Casting.AmIBuffable()
             end,
         },
+        { --Actions that establish or maintain hatred
+            name = 'AEHateTools',
+            state = 1,
+            steps = 1,
+            timer = 1, -- Don't check this more often than once a second to avoid blowing every ability at once (aggro takes time to update)
+            doFullRotation = true,
+            load_cond = function() return Core.IsTanking() and Config:GetSetting('DoAETaunt') end,
+            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
+            cond = function(self, combat_state)
+                return combat_state == "Combat" and Combat.AETauntCheck(true) and not Core.AtCriticalHP()
+            end,
+        },
         { --Actions to lock down xtarg haters
             name = 'HateTools(AggroTarget)',
             state = 1,
@@ -375,18 +387,6 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and not Core.AtCriticalHP() and Targeting.HateToolsNeeded()
-            end,
-        },
-        { --Actions that establish or maintain hatred
-            name = 'AEHateTools',
-            state = 1,
-            steps = 1,
-            timer = 1, -- Don't check this more often than once a second to avoid blowing every ability at once (aggro takes time to update)
-            doFullRotation = true,
-            load_cond = function() return Core.IsTanking() and Config:GetSetting('DoAETaunt') end,
-            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
-            cond = function(self, combat_state)
-                return combat_state == "Combat" and Combat.AETauntCheck(true) and not Core.AtCriticalHP()
             end,
         },
         { --Defensive actions triggered by low HP

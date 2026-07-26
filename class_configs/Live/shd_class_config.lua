@@ -843,6 +843,24 @@ local _ClassConfig = {
                 return combat_state == "Downtime" and mq.TLO.Me.Pet.ID() > 0 and Casting.OkayToPetBuff()
             end,
         },
+        { --Actions that establish or maintain hatred
+            name = 'AEHateTools',
+            state = 1,
+            steps = 1,
+            doFullRotation = true,
+            load_cond = function()
+                if not Core.IsTanking() then return false end
+                local setting = Config:GetSetting('AETauntSpell')
+                local tauntSpell = (setting == 3 or (setting == 2 and not Casting.CanUseAA("Explosion of Hatred"))) and Core.GetResolvedActionMapItem('AETaunt')
+                local hateAA = Config:GetSetting('AETauntAA') and (Casting.CanUseAA("Explosion of Spite") or Casting.CanUseAA("Explosion of Hatred"))
+                return tauntSpell or hateAA or (Config:GetSetting('DoAELifeTap') and Config:GetSetting('DoAEDamage'))
+            end,
+            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
+            cond = function(self, combat_state)
+                if Core.AtCriticalHP() then return false end
+                return combat_state == "Combat" and Combat.AETauntCheck(true)
+            end,
+        },
         { --Actions to lock down xtarg haters
             name = 'HateTools(AggroTarget)',
             state = 1,
@@ -865,24 +883,6 @@ local _ClassConfig = {
             cond = function(self, combat_state)
                 if Core.AtCriticalHP() then return false end
                 return combat_state == "Combat" and Targeting.HateToolsNeeded()
-            end,
-        },
-        { --Actions that establish or maintain hatred
-            name = 'AEHateTools',
-            state = 1,
-            steps = 1,
-            doFullRotation = true,
-            load_cond = function()
-                if not Core.IsTanking() then return false end
-                local setting = Config:GetSetting('AETauntSpell')
-                local tauntSpell = (setting == 3 or (setting == 2 and not Casting.CanUseAA("Explosion of Hatred"))) and Core.GetResolvedActionMapItem('AETaunt')
-                local hateAA = Config:GetSetting('AETauntAA') and (Casting.CanUseAA("Explosion of Spite") or Casting.CanUseAA("Explosion of Hatred"))
-                return tauntSpell or hateAA or (Config:GetSetting('DoAELifeTap') and Config:GetSetting('DoAEDamage'))
-            end,
-            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
-            cond = function(self, combat_state)
-                if Core.AtCriticalHP() then return false end
-                return combat_state == "Combat" and Combat.AETauntCheck(true)
             end,
         },
         { --Dynamic weapon swapping if UseBandolier is toggled

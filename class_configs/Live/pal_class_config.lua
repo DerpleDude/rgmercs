@@ -954,6 +954,18 @@ local _ClassConfig = {
                 return combat_state == "Downtime" and Casting.OkayToBuff() and Core.CombatActionsCheck()
             end,
         },
+        { --Actions that establish or maintain hatred
+            name = 'AEHateTools',
+            state = 1,
+            steps = 1,
+            doFullRotation = true,
+            load_cond = function() return Core.IsTanking() and Config:GetSetting('AETauntAA') end,
+            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
+            cond = function(self, combat_state)
+                if Core.AtCriticalHP() then return false end
+                return combat_state == "Combat" and Combat.AETauntCheck(true)
+            end,
+        },
         { --Actions to lock down xtarg haters
             name = 'HateTools(AggroTarget)',
             state = 1,
@@ -976,18 +988,6 @@ local _ClassConfig = {
             cond = function(self, combat_state)
                 if Core.AtCriticalHP() then return false end
                 return combat_state == "Combat" and Targeting.HateToolsNeeded()
-            end,
-        },
-        { --Actions that establish or maintain hatred
-            name = 'AEHateTools',
-            state = 1,
-            steps = 1,
-            doFullRotation = true,
-            load_cond = function() return Core.IsTanking() and Config:GetSetting('AETauntAA') end,
-            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
-            cond = function(self, combat_state)
-                if Core.AtCriticalHP() then return false end
-                return combat_state == "Combat" and Combat.AETauntCheck(true)
             end,
         },
         { --Dynamic weapon swapping if UseBandolier is toggled

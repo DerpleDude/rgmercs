@@ -596,6 +596,24 @@ return {
                 return combat_state == "Downtime" and Casting.OkayToBuff() and Core.CombatActionsCheck()
             end,
         },
+        { --Actions that establish or maintain hatred
+            name = 'AEHateTools',
+            state = 1,
+            steps = 1,
+            doFullRotation = true,
+            load_cond = function()
+                if not Core.IsTanking() then return false end
+                local hateAA = Config:GetSetting('AETauntAA') and Casting.CanUseAA("Beacon of the Righteous")
+                local bladeDisc = Config:GetSetting('BladeDiscUse') > 1 and Core.GetResolvedActionMapItem('BladeDisc')
+                local pbaeSpell = Config:GetSetting('AEStunUse') > 1 and Core.GetResolvedActionMapItem('PBAEStun')
+                return bladeDisc or hateAA or pbaeSpell
+            end,
+            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
+            cond = function(self, combat_state)
+                if Core.AtCriticalHP() then return false end
+                return combat_state == "Combat" and Combat.AETauntCheck(true)
+            end,
+        },
         { --Actions to lock down xtarg haters
             name = 'HateTools(AggroTarget)',
             state = 1,
@@ -618,24 +636,6 @@ return {
             cond = function(self, combat_state)
                 if Core.AtCriticalHP() then return false end
                 return combat_state == "Combat" and Targeting.HateToolsNeeded()
-            end,
-        },
-        { --Actions that establish or maintain hatred
-            name = 'AEHateTools',
-            state = 1,
-            steps = 1,
-            doFullRotation = true,
-            load_cond = function()
-                if not Core.IsTanking() then return false end
-                local hateAA = Config:GetSetting('AETauntAA') and Casting.CanUseAA("Beacon of the Righteous")
-                local bladeDisc = Config:GetSetting('BladeDiscUse') > 1 and Core.GetResolvedActionMapItem('BladeDisc')
-                local pbaeSpell = Config:GetSetting('AEStunUse') > 1 and Core.GetResolvedActionMapItem('PBAEStun')
-                return bladeDisc or hateAA or pbaeSpell
-            end,
-            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
-            cond = function(self, combat_state)
-                if Core.AtCriticalHP() then return false end
-                return combat_state == "Combat" and Combat.AETauntCheck(true)
             end,
         },
         { --Dynamic weapon swapping if UseBandolier is toggled
