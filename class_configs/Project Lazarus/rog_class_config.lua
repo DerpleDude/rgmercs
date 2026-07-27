@@ -86,8 +86,8 @@ return {
             "Sneak Attack",          -- Level 20
         },
         ['FellStrike'] = {
-            -- "Ancient: Incursion", -- Level 71 Laz Custom, verify existence and source
-            "Assault", -- Level 70, on Laz
+            "Ancient: Incursion", -- Level 71 Laz Custom
+            "Assault",            -- Level 70, on Laz
         },
         ['Pinpoint'] = {
             "Pinpoint Weakness",      -- Level 71 Laz Custom

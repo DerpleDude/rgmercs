@@ -111,19 +111,19 @@ return {
         --     "Nature's Rebuke", -- Level 64
         -- },
         ['SelfBuff'] = {
-            "Ward of the Stalker",    -- Level 71 Laz Custom
-            "Ward of the Hunter",     -- Level 70
-            "Protection of the Wild", -- Level 65
-            "Warder's Protection",    -- Level 60
-            "Nature's Precision",     -- Level 37, Self ATK Buff, filler
-            "Firefist",               -- Level 17, Self ATK Buff, filler
+            "Ward of the Stalker",                -- Level 71 Laz Custom
+            "Ward of the Hunter",                 -- Level 70
+            "Protection of the Wild",             -- Level 65
+            "Warder's Protection",                -- Level 60
+            "Nature's Precision",                 -- Level 37, Self ATK Buff, filler
+            "Firefist",                           -- Level 17, Self ATK Buff, filler
         },
-        ['ArrowHail'] = {             -- DirAE multihit archery attack
-            "Hail of Arrows",         -- Level 65
+        ['ArrowHail'] = {                         -- DirAE multihit archery attack
+            "Hail of Arrows",                     -- Level 65
         },
-        ['FocusedHail'] = {           -- ST multihit archery attack
-            -- "Ancient: Focused Barrage of Arrows", -- Level 71 Laz Custom, verify existence and source
-            "Focused Hail of Arrows", -- Level 69 Laz Custom
+        ['FocusedHail'] = {                       -- ST multihit archery attack
+            "Ancient: Focused Barrage of Arrows", -- Level 71 Laz Custom
+            "Focused Hail of Arrows",             -- Level 69 Laz Custom
         },
         ['Dispel'] = {
             "Nature's Balance", -- Level 69
@@ -169,16 +169,16 @@ return {
             "Salve",                        -- Level 1
         },
         ['SwarmDot'] = {
-            "Locust Swarm",      -- Level 67
-            "Drifting Death",    -- Level 62
-            "Fire Swarm",        -- Level 55
-            "Drones of Doom",    -- Level 54
-            "Swarm of Pain",     -- Level 40
-            "Stinging Swarm",    -- Level 25
+            "Locust Swarm",         -- Level 67
+            "Drifting Death",       -- Level 62
+            "Fire Swarm",           -- Level 55
+            "Drones of Doom",       -- Level 54
+            "Swarm of Pain",        -- Level 40
+            "Stinging Swarm",       -- Level 25
         },
-        ['KickDisc'] = {         -- 2-hit kick attack
-            -- "Jolting Thunderkicks", -- Level 71 Laz Custom, verify existence and source
-            "Jolting Snapkicks", -- Level 66
+        ['KickDisc'] = {            -- 2-hit kick attack
+            "Jolting Thunderkicks", -- Level 71 Laz Custom
+            "Jolting Snapkicks",    -- Level 66
         },
         ['Bullseye'] = {
             "Bullseye Discipline", -- Level 66

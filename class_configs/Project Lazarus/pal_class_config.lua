@@ -306,8 +306,8 @@ return {
             "Sanctification Discipline", -- Level 60
         },
         ['TwinHealNuke'] = {
-            -- "Ancient: Justice of Firiona", -- Level 71 Laz Custom, verify existence and source
-            "Justice of Marr", -- Level 70
+            "Ancient: Justice of Firiona", -- Level 71 Laz Custom
+            "Justice of Marr",             -- Level 70
         },
         ['GuardDisc'] = {
             "Aegis of Righteousness", -- Level 71 Laz Custom
@@ -740,7 +740,7 @@ return {
                 type = "Spell",
                 load_cond = function() return Config:GetSetting('DoBrells') end,
                 cond = function(self, spell, target)
-                    return Casting.GroupBuffCheck(spell, target)
+                    return Casting.GroupBuffCheck(spell, target) and Casting.AddedBuffCheck(15248, target) -- Brell's Unshakable Barricade
                 end,
             },
             {

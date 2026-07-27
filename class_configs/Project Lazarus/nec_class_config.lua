@@ -106,20 +106,20 @@ local _ClassConfig = {
             "Dominate Undead", -- Level 18
         },
         ['LifeTap'] = {
-            -- "Ancient: Despair of Vishimtar", -- Level 71 Laz Custom, verify existence and source
-            "Ancient: Touch of Orshilak", -- Level 70
-            "Soulspike",                  -- Level 67
-            "Touch of Mujaki",            -- Level 61
+            "Ancient: Despair of Vishimtar", -- Level 71 Laz Custom
+            "Ancient: Touch of Orshilak",    -- Level 70
+            "Soulspike",                     -- Level 67
+            "Touch of Mujaki",               -- Level 61
             -- "Gangrenous Touch of Zum`uul", -- Level 60
-            "Touch of Night",             -- Level 59
-            "Deflux",                     -- Level 54
-            "Drain Soul",                 -- Level 48
-            "Drain Spirit",               -- Level 39
-            "Spirit Tap",                 -- Level 26
-            "Siphon Life",                -- Level 20
-            "Lifedraw",                   -- Level 12
-            "Lifespike",                  -- Level 3
-            "Lifetap",                    -- Level 1
+            "Touch of Night",                -- Level 59
+            "Deflux",                        -- Level 54
+            "Drain Soul",                    -- Level 48
+            "Drain Spirit",                  -- Level 39
+            "Spirit Tap",                    -- Level 26
+            "Siphon Life",                   -- Level 20
+            "Lifedraw",                      -- Level 12
+            "Lifespike",                     -- Level 3
+            "Lifetap",                       -- Level 1
         },
         ['DurationTap'] = {
             "Yearning of Death", -- Level 71 Laz Custom

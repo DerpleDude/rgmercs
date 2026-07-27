@@ -73,20 +73,20 @@ local _ClassConfig = {
         },
     },
     ['AbilitySets']   = {
-        ['StandDisc'] = {             -- Timer 1
-            "Final Stand Discipline", -- Level 71 Laz Custom
-            "Stonewall Discipline",   -- Level 65, no lost movement on laz, more mitigation than defensive
-            "Defensive Discipline",   -- Level 55
-            "Evasive Discipline",     -- Level 52
+        ['StandDisc'] = {                     -- Timer 1
+            "Final Stand Discipline",         -- Level 71 Laz Custom
+            "Stonewall Discipline",           -- Level 65, no lost movement on laz, more mitigation than defensive
+            "Defensive Discipline",           -- Level 55
+            "Evasive Discipline",             -- Level 52
         },
-        ['Fortitude'] = {             -- Timer 2
-            -- "Ancient: Impervious Discipline", -- Level 71 Laz Custom, verify existence and source
-            "Fortitude Discipline",   -- Level 59
-            "Furious Discipline",     -- Level 56
+        ['Fortitude'] = {                     -- Timer 2
+            "Ancient: Impervious Discipline", -- Level 71 Laz Custom
+            "Fortitude Discipline",           -- Level 59
+            "Furious Discipline",             -- Level 56
         },
-        ['GroupACBuff'] = {           -- Has Commanding Voice (Dodge Buff) baked in
-            "Field Conqueror",        -- Level 71 Laz Custom
-            "Field Armorer",          -- Level 65
+        ['GroupACBuff'] = {                   -- Has Commanding Voice (Dodge Buff) baked in
+            "Field Conqueror",                -- Level 71 Laz Custom
+            "Field Armorer",                  -- Level 65
         },
         ['AEBlades'] = {
             "Maelstrom Blade", -- Level 71 Laz Custom
@@ -122,9 +122,9 @@ local _ClassConfig = {
             "Undivided Attention",  -- Level 65
         },
         ['Onslaught'] = {
-            -- "Ancient: Malicious Onslaught", -- Level 71 Laz Custom, verify existence and source
-            "Brutal Onslaught Discipline", -- Level 68
-            "Savage Onslaught Discipline", -- Level 65
+            "Ancient: Malicious Onslaught", -- Level 71 Laz Custom
+            "Brutal Onslaught Discipline",  -- Level 68
+            "Savage Onslaught Discipline",  -- Level 65
         },
         ['StrikeDisc'] = {
             "Fellstrike Discipline",    -- Level 58

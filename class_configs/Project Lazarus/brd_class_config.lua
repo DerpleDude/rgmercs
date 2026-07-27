@@ -98,7 +98,7 @@ local _ClassConfig = {
             "Tarew's Aquatic Ayre", -- Level 16
         },
         ['AriaSong'] = {
-            -- "Ancient: Draconic Might", -- Level 71 Laz Custom, verify existence and source
+            "Ancient: Draconic Might",   -- Level 71 Laz Custom
             "Ancient: Call of Power",    -- Level 70
             "Eriki's Psalm of Power",    -- Level 69
             "Yelhun's Mystic Call",      -- Level 68
@@ -242,11 +242,11 @@ local _ClassConfig = {
             "Occlusion of Sound", -- Level 55
         },
         ['BellowSong'] = {
-            -- "Bellow of Shadows", -- Level 71 Laz Custom, verify existence and source
-            "Bellow of Chaos", -- Level 66
+            "Bellow of Shadows", -- Level 71 Laz Custom
+            "Bellow of Chaos",   -- Level 66
         },
-        ['ReprisalDisc'] = {   -- Manual use only for now, reprisal does not fire unless the rune is broken
-            "Arcane Reprisal", -- Level 71 Laz Custom
+        ['ReprisalDisc'] = {     -- Manual use only for now, reprisal does not fire unless the rune is broken
+            "Arcane Reprisal",   -- Level 71 Laz Custom
         },
         ['SpellMitSong'] = {
             "Niv's Symphonic", -- Level 71 Laz Custom

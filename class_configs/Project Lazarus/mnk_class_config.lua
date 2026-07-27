@@ -64,9 +64,9 @@ local _ClassConfig = {
             "Disciple's Aura",    -- Level 55
         },
         ['Fang'] = {
-            -- "Ancient: Arachnid Fang", -- Level 71 Laz Custom, verify existence and source
-            "Dragon Fang",          -- Level 69
-            "Clawstriker's Flurry", -- Level 65
+            "Ancient: Arachnid Fang", -- Level 71 Laz Custom
+            "Dragon Fang",            -- Level 69
+            "Clawstriker's Flurry",   -- Level 65
         },
         ['FistsOfWu'] = {
             "Fists of Thundercrest", -- Level 71 Laz Custom

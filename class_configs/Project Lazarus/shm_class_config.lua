@@ -274,7 +274,7 @@ local _ClassConfig = {
             'Reanimation',    -- Level 29 Laz Custom
         },
         ['HealSpell'] = {
-            -- "Ancient: Emoush's Mending", -- Level 71 Laz Custom, verify existence and source
+            "Ancient: Emoush's Mending",  -- Level 71 Laz Custom
             "Ancient: Wilslik's Mending", -- Level 70
             "Yoppa's Mending",            -- Level 68
             "Daluda's Mending",           -- Level 65
@@ -376,26 +376,38 @@ local _ClassConfig = {
         },
         ['UltorDot'] = {
             ---, Stacking: Breath of Ultor - Long Dot(84s) - Level 4+
-            "Breath of Shadows",       -- Level 71 Laz Custom
-            "Breath of Wunshi",        -- Level 67
-            "Breath of Ultor",         -- Level 64
-            "Pox of Bertoxxulous",     -- Level 59
-            "Plague",                  -- Level 49
-            "Scourge",                 -- Level 31
-            "Affliction",              -- Level 19
-            "Sicken",                  -- Level 4
+            "Breath of Shadows",   -- Level 71 Laz Custom
+            "Breath of Wunshi",    -- Level 67
+            "Breath of Ultor",     -- Level 64
+            "Pox of Bertoxxulous", -- Level 59
+            "Plague",              -- Level 49
+            "Scourge",             -- Level 31
+            "Affliction",          -- Level 19
+            "Sicken",              -- Level 4
         },
-        ['AEDot'] = {                  -- do homework for Laz
-            "Blood of Yoppa",          -- Level 70
+        ['AEDot'] = {              -- do homework for Laz
+            "Blood of Yoppa",      -- Level 70
         },
-        ['PetSpell'] = {               --We need to add handling for commune to get the mammoth/etc
-            -- Pet Spell - 32+
+        ['PetLion'] = {
+            "Cunning Lioness Companion", -- Level 71 Laz Custom
+        },
+        ['PetMammoth'] = {
             "Gray Elephant Companion", -- Level 71 Laz Custom
-            -- "Cunning Lioness Companion", -- Level 71 Laz Custom
-            -- "Black Scorpion Companion",  -- Level 71 Laz Custom
-            -- "Wooly Rhino Companion",     -- Level 71 Laz Custom
-            -- "Blood Raptor Companion",    -- Level 71 Laz Custom
-            -- "Sea Cow Companion",         -- Level 71 Laz Custom
+        },
+        ['PetScorpion'] = {
+            "Black Scorpion Companion", -- Level 71 Laz Custom
+        },
+        ['PetRhino'] = {
+            "Wooly Rhino Companion", -- Level 71 Laz Custom
+        },
+        ['PetRaptor'] = {
+            "Blood Raptor Companion", -- Level 71 Laz Custom
+        },
+        ['PetWalrus'] = {
+            "Sea Cow Companion", -- Level 71 Laz Custom
+        },
+        ['PetSpell'] = {
+            -- Pet Spell - 32+
             "Commune with the Wild", -- Level 70 Laz Custom
             "Farrel's Companion",    -- Level 67
             "True Spirit",           -- Level 61
@@ -466,6 +478,13 @@ local _ClassConfig = {
         },
     },
     ['Helpers']           = {
+        RerollWildPet = function(self)
+            local wildRaces = { "Lion", "Mammoth", "Scorpion", "Rhinoceros", "Raptor", "Walrus", }
+            local desiredRace = wildRaces[Config:GetSetting('PetTypeChoice')] or ""
+            if (mq.TLO.Me.Pet.Race.Name() or "") == desiredRace then return false end
+            Core.DoCmd("/pet get lost")
+            return true
+        end,
         UseGroupHealCure = function(self, keepSetting)
             local ghealSpell = Core.GetResolvedActionMapItem('GroupHeal')
             return Config:GetSetting('GroupHealAsCure') and (not keepSetting or not Config:GetSetting(keepSetting)) and (ghealSpell and ghealSpell.Level() or 0) >= 70
@@ -909,14 +928,18 @@ local _ClassConfig = {
             },
         },
         ['PetSummon'] = {
-            {
-                name = "PetSpell",
+            { -- The PetTypeChoice setting determines which level 71 companion is used, falling back to the leveled line if it isn't learned.
+                name_func = function(self)
+                    local pets = { 'Lion', 'Mammoth', 'Scorpion', 'Rhino', 'Raptor', 'Walrus', }
+                    return Casting.GetFirstMapItem({ string.format("Pet%s", pets[Config:GetSetting('PetTypeChoice')]), 'PetSpell', })
+                end,
                 type = "Spell",
                 active_cond = function(self, _) return mq.TLO.Me.Pet.ID() ~= 0 end,
                 cond = function(self, _) return Config:GetSetting('DoPet') and mq.TLO.Me.Pet.ID() == 0 end,
                 post_activate = function(self, spell, success)
                     if success and mq.TLO.Me.Pet.ID() > 0 then
                         mq.delay(50) -- slight delay to prevent chat bug with command issue
+                        if Config:GetSetting('DoPetReroll') and spell.BaseName() == "Commune with the Wild" and self.Helpers.RerollWildPet(self) then return end
                         self:SetPetHold()
                     end
                 end,
@@ -1699,6 +1722,31 @@ local _ClassConfig = {
             Category = "Group",
             Index = 108,
             Tooltip = "Use Low Level (<= 70) HP Buffs",
+            Default = false,
+            ConfigType = "Advanced",
+        },
+        -- Pet
+        ['PetTypeChoice']     = {
+            DisplayName = "Pet Type",
+            Group = "Abilities",
+            Header = "Pet",
+            Category = "Pet Summoning",
+            Index = 2,
+            Type = "Combo",
+            ComboOptions = { 'Lion', 'Mammoth', 'Scorpion', 'Rhino', 'Raptor', 'Walrus', },
+            Default = 2,
+            Min = 1,
+            Max = 6,
+            Tooltip = "Choose which Level 71 Pet Spell to use.\nIf rerolling is enabled, this setting is also applied to the level 70 'Commune with the Wild'.",
+            RequiresLoadoutChange = true,
+        },
+        ['DoPetReroll']       = {
+            DisplayName = "Reroll Pet Type",
+            Group = "Abilities",
+            Header = "Pet",
+            Category = "Pet Summoning",
+            Index = 3,
+            Tooltip = "Dismiss and resummon Commune with the Wild until it matches your chosen pet type.",
             Default = false,
             ConfigType = "Advanced",
         },

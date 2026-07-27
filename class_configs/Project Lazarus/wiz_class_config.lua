@@ -82,8 +82,8 @@ return {
             "Ether Flame", -- Level 70
         },
         ['ChaosNuke'] = {
-            -- "Ancient: Chaos Elements", -- Level 71 Laz Custom, verify existence and source
-            "Chaos Flame", -- Level 70
+            "Ancient: Chaos Elements", -- Level 71 Laz Custom
+            "Chaos Flame",             -- Level 70
         },
         ['WildNuke'] = {
             "Wildmagic Salvo", -- Level 71 Laz Custom

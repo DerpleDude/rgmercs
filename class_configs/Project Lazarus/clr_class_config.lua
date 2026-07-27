@@ -102,7 +102,7 @@ local _ClassConfig = {
         --     "Ward of Retribution", -- Level 69
         -- },
         ['HealingLight'] = {
-            -- "Ancient: Sacred Remedy", -- Level 71, verify existence and source
+            "Ancient: Sacred Remedy",  -- Level 71
             "Ancient: Hallowed Light", -- Level 70
             "Pious Light",             -- Level 68
             "Holy Light",              -- Level 65

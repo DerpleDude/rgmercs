@@ -113,7 +113,7 @@ local _ClassConfig = {
         },
         ['HealSpell'] = {
             -- Long Heal >= 1 -- skipped 10s cast heals.
-            -- "Ancient: Chlorobalm", -- Level 71 Laz Custom, verify existence and source
+            "Ancient: Chlorobalm",         -- Level 71 Laz Custom
             "Ancient: Chlorobon",          -- Level 70
             "Chlorotrope",                 -- Level 68
             "Sylvan Infusion",             -- Level 65

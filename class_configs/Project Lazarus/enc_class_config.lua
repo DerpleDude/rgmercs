@@ -231,8 +231,8 @@ local _ClassConfig = {
             "Shallow Breath",     -- Level 1
         },
         ['MindDot'] = {
-            -- "Ancient: Mind Implosion", -- Level 71 Laz Custom, verify existence and source
-            "Mind Shatter", -- Level 70
+            "Ancient: Mind Implosion", -- Level 71 Laz Custom
+            "Mind Shatter",            -- Level 70
         },
         ['MagicNuke'] = {
             "Hysteria",                 -- Level 71 Laz Custom

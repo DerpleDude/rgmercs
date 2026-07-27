@@ -76,8 +76,8 @@ local _ClassConfig = {
             "Raging Servant", -- Level 70
         },
         ['SpearNuke'] = {
-            -- "Ancient: Spear of Molten Slag", -- Level 71 Laz Custom, verify existence and source
-            "Spear of Ro", -- Level 70
+            "Ancient: Spear of Molten Slag", -- Level 71 Laz Custom
+            "Spear of Ro",                   -- Level 70
         },
         ['ChaoticNuke'] = {
             "Fickle Inferno",          -- Level 71 Laz Custom

@@ -59,8 +59,9 @@ return {
     ['AbilitySets']       = {
         ['SwarmPet'] = {
             -- Swarm Pet
-            "Reptilian Venom",  -- Level 68 Laz Custom
-            "Amphibious Toxin", -- Level 62 Laz Custom
+            "Ancient: Drake's Breath", -- Level 71 Laz Custom
+            "Reptilian Venom",         -- Level 68 Laz Custom
+            "Amphibious Toxin",        -- Level 62 Laz Custom
         },
         ['Icelance1'] = {
             -- Lance 1 Timer 7 Ice Nuke Fast Cast
@@ -237,9 +238,6 @@ return {
         ['BurstHeal'] = {
             "Feral Exigency", -- Level 71 Laz Custom
         },
-        -- ['DrakeNuke'] = {
-        --     "Ancient: Drake's Breath", -- Level 71 Laz Custom, verify existence and source
-        -- },
     },
     ['HealRotationOrder'] = {
         { -- configured as a backup healer, will not cast in the mainpoint
@@ -666,8 +664,8 @@ return {
                     -- Only use the single target versions on classes that need it
                     if (spell.TargetType() or ""):lower() ~= "group v2" and not Targeting.TargetIsAMelee(target) then return false end
                     return Casting.GroupBuffCheck(spell, target)
-                        --laz specific deconflict with brell's vibrant barricade
-                        and Casting.AddedBuffCheck(40583, target)
+                        and Casting.AddedBuffCheck(40583, target) --laz specific deconflict with brell's vibrant barricade
+                        and Casting.AddedBuffCheck(15248, target) -- Brell's Unshakable Barricade
                 end,
             },
             {
