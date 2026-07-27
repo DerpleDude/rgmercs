@@ -753,7 +753,7 @@ local _ClassConfig = {
             end
             self.TempSettings.upkeepFill = false
             if not pick then return false end
-            if pick.Name() == self.TempSettings.LastUpkeepSong and math.abs(pickRemaining - (self.TempSettings.LastUpkeepRemaining or 0)) < 1 then
+            if pick.Name() == self.TempSettings.LastUpkeepSong and pickRemaining >= (self.TempSettings.LastUpkeepRemaining or 0) - 1 then
                 return false
             end
             if Casting.UseSong(pick.RankName(), me.ID(), false) then
