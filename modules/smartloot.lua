@@ -265,7 +265,7 @@ function Module:ProcessLooting()
         end
 
         -- Check for combat and abort if needed
-        if self:GetSLState() == "Combat Detected" or Targeting.GetXTHaterCount() > 0 then
+        if self:GetSLState() == "Combat Detected" or Targeting.HasXTHaters() then
             Logger.log_debug("\ay[LOOT]: \arCombat detected - aborting looting")
             if mq.TLO.Window("LootWnd").Open() then
                 mq.TLO.Window("LootWnd").DoClose()

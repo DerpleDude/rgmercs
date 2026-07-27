@@ -12,7 +12,7 @@ return {
     _author           = "Derple, Algar, mackal",
     ['ModeChecks']    = {
         IsCuring = function() return Config:GetSetting('DoCures') end,
-        IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
+        IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or not Targeting.HasXTHaters()) end,
     },
     ['Rez']           = {
         ['Combat']   = {
@@ -158,7 +158,7 @@ return {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return Targeting.GetXTHaterCount() > 0 and Core.AtEmergencyHP()
+                return Targeting.HasXTHaters() and Core.AtEmergencyHP()
             end,
         },
         {

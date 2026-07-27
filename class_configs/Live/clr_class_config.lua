@@ -13,7 +13,7 @@ local _ClassConfig = {
         IsCuring = function() return Config:GetSetting('DoCures') end,
         IsRezing = function()
             local rezAction = Casting.CanUseAA("Blessing of Resurrection") or mq.TLO.FindItem("=Water Sprinkler of Nem Ankh")()
-            return ((Core.GetResolvedActionMapItem('RezSpell') or rezAction) and Targeting.GetXTHaterCount() == 0) or (Config:GetSetting('DoBattleRez') and rezAction)
+            return ((Core.GetResolvedActionMapItem('RezSpell') or rezAction) and not Targeting.HasXTHaters()) or (Config:GetSetting('DoBattleRez') and rezAction)
         end,
     },
     ['Rez']               = {

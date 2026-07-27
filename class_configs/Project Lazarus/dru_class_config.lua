@@ -14,7 +14,7 @@ local _ClassConfig = {
         IsHealing = function() return true end,
         IsCuring = function() return Config:GetSetting('DoCures') end,
         IsRezing = function()
-            return (Core.GetResolvedActionMapItem('RezSpell') and Targeting.GetXTHaterCount() == 0) or
+            return (Core.GetResolvedActionMapItem('RezSpell') and not Targeting.HasXTHaters()) or
                 ((Casting.CanUseAA("Call of the Wild") or mq.TLO.FindItem("=Staff of Forbidden Rites")()) and Config:GetSetting('DoBattleRez'))
         end,
     },
@@ -526,7 +526,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and Core.CombatActionsCheck() and not Globals.AutoTargetIsNamed and
-                    Targeting.GetXTHaterCount() <= Config:GetSetting('SnareCount')
+                    Targeting.HasXTHatersMax(Config:GetSetting('SnareCount'))
             end,
         },
         {

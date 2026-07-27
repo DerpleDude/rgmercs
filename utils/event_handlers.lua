@@ -48,8 +48,8 @@ mq.event("CantSee", "You cannot see your target.", function()
         Logger.log_debug("CantSee event detected, but we are pulling and currently returning to camp.")
     else
         if Config:GetSetting('HandleCantSeeTarget') then
-            local haterCount = Targeting.GetXTHaterCount()
-            if Config:GetSetting('DoAutoEngage') and not mq.TLO.Me.Moving() or haterCount > 0 then
+            local haveHaters = Targeting.HasXTHaters()
+            if Config:GetSetting('DoAutoEngage') and not mq.TLO.Me.Moving() or haveHaters then
                 local helpers = Core.GetHelpers()
                 if helpers and helpers.rangedNav then
                     Logger.log_debug("CantSee: \ayWe are in COMBAT and Cannot see our target - using ranged positioning!")
@@ -87,7 +87,7 @@ mq.event("CantSee", "You cannot see your target.", function()
                 end
             else
                 Logger.log_debug("CantSee event detected, but checks failed: AutoEngage(%s), Moving(%s), HaterCount > 0(%s)",
-                    Strings.BoolToColorString(Config:GetSetting('DoAutoEngage')), Strings.BoolToColorString(mq.TLO.Me.Moving()), Strings.BoolToColorString(haterCount > 0))
+                    Strings.BoolToColorString(Config:GetSetting('DoAutoEngage')), Strings.BoolToColorString(mq.TLO.Me.Moving()), Strings.BoolToColorString(haveHaters))
             end
         else
             Logger.log_debug("CantSee event detected, but HandleCantSeeTarget is not enabled.")
@@ -131,8 +131,8 @@ mq.event("TooClose", "Your target is too close to use a ranged weapon!", functio
         Logger.log_debug("CantSee event detected, but we are pulling and currently returning to camp.")
     else
         if Config:GetSetting('HandleTooClose') then
-            local haterCount = Targeting.GetXTHaterCount()
-            if Config:GetSetting('DoAutoEngage') and not mq.TLO.Me.Moving() and haterCount > 0 then
+            local haveHaters = Targeting.HasXTHaters()
+            if Config:GetSetting('DoAutoEngage') and not mq.TLO.Me.Moving() and haveHaters then
                 Logger.log_debug("TooCloseHandler: Pull State not detected, using Combat Nav.")
                 local helpers = Core.GetHelpers()
                 if helpers and helpers.rangedNav then
@@ -145,7 +145,7 @@ mq.event("TooClose", "Your target is too close to use a ranged weapon!", functio
                 end
             else
                 Logger.log_debug("TooClose event detected, but checks failed: AutoEngage(%s), Moving(%s), HaterCount > 0(%s)",
-                    Strings.BoolToColorString(Config:GetSetting('DoAutoEngage')), Strings.BoolToColorString(mq.TLO.Me.Moving()), Strings.BoolToColorString(haterCount > 0))
+                    Strings.BoolToColorString(Config:GetSetting('DoAutoEngage')), Strings.BoolToColorString(mq.TLO.Me.Moving()), Strings.BoolToColorString(haveHaters))
             end
         else
             Logger.log_debug("TooClose event detected, but HandleTooClose is not enabled.")
@@ -195,8 +195,8 @@ local function tooFarHandler()
     else
         if Config:GetSetting('HandleTooFar') then
             local helpers = Core.GetHelpers()
-            local haterCount = Targeting.GetXTHaterCount()
-            if Config:GetSetting('DoAutoEngage') and not mq.TLO.Me.Moving() and haterCount > 0 then
+            local haveHaters = Targeting.HasXTHaters()
+            if Config:GetSetting('DoAutoEngage') and not mq.TLO.Me.Moving() and haveHaters then
                 if helpers and helpers.rangedNav then
                     Core.SafeCallFunc("Ranger Ranged Nav", helpers.rangedNav, "toofar")
                 elseif helpers and helpers.combatNav then
@@ -227,7 +227,7 @@ local function tooFarHandler()
                 end
             else
                 Logger.log_debug("TooFar event detected, but checks failed: AutoEngage(%s), Moving(%s), HaterCount > 0(%s)",
-                    Strings.BoolToColorString(Config:GetSetting('DoAutoEngage')), Strings.BoolToColorString(mq.TLO.Me.Moving()), Strings.BoolToColorString(haterCount > 0))
+                    Strings.BoolToColorString(Config:GetSetting('DoAutoEngage')), Strings.BoolToColorString(mq.TLO.Me.Moving()), Strings.BoolToColorString(haveHaters))
             end
         else
             Logger.log_debug("TooFar event detected, but HandleTooFar is not enabled.")

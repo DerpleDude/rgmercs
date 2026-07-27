@@ -13,7 +13,7 @@ local _ClassConfig = {
         IsHealing = function() return true end,
         IsCuring  = function() return Config:GetSetting('DoCures') end,
         IsRezing  = function()
-            return (Core.GetResolvedActionMapItem('RezSpell') and Targeting.GetXTHaterCount() == 0) or
+            return (Core.GetResolvedActionMapItem('RezSpell') and not Targeting.HasXTHaters()) or
                 (Casting.CanUseAA("Call of the Wild") and Config:GetSetting('DoBattleRez'))
         end,
     },
@@ -1152,7 +1152,7 @@ local _ClassConfig = {
                 type = "AA",
                 load_cond = function(self) return Config:GetSetting('DoAEMalo') and Casting.CanUseAA("Wind of Malaise") end,
                 cond = function(self, aaName, target)
-                    return Targeting.GetXTHaterCount() >= Config:GetSetting('AEMaloCount') and Casting.DetAACheck(aaName)
+                    return Targeting.HasXTHaters(Config:GetSetting('AEMaloCount')) and Casting.DetAACheck(aaName)
                 end,
             },
             {
@@ -1160,7 +1160,7 @@ local _ClassConfig = {
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoAEMalo') and not Casting.CanUseAA("Wind of Malaise") end,
                 cond = function(self, spell, target)
-                    return Targeting.GetXTHaterCount() >= Config:GetSetting('AEMaloCount') and Casting.DetSpellCheck(spell)
+                    return Targeting.HasXTHaters(Config:GetSetting('AEMaloCount')) and Casting.DetSpellCheck(spell)
                 end,
             },
             {
@@ -1186,7 +1186,7 @@ local _ClassConfig = {
                 type = "AA",
                 load_cond = function(self) return Config:GetSetting('DoAESlow') and Casting.CanUseAA("Turgur's Virulent Swarm") end,
                 cond = function(self, aaName, target)
-                    return Targeting.GetXTHaterCount() >= Config:GetSetting('AESlowCount') and Casting.DetAACheck(aaName) and not Casting.SlowImmuneTarget(target)
+                    return Targeting.HasXTHaters(Config:GetSetting('AESlowCount')) and Casting.DetAACheck(aaName) and not Casting.SlowImmuneTarget(target)
                 end,
             },
             {
@@ -1194,7 +1194,7 @@ local _ClassConfig = {
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoAESlow') and not Casting.CanUseAA("Turgur's Virulent Swarm") end,
                 cond = function(self, spell, target)
-                    return Targeting.GetXTHaterCount() >= Config:GetSetting('AESlowCount') and Casting.DetSpellCheck(spell) and not Casting.SlowImmuneTarget(target)
+                    return Targeting.HasXTHaters(Config:GetSetting('AESlowCount')) and Casting.DetSpellCheck(spell) and not Casting.SlowImmuneTarget(target)
                 end,
             },
             {

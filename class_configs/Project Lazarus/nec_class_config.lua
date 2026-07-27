@@ -407,7 +407,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 if mq.TLO.Me.PctHPs() <= Config:GetSetting('EmergencyStart') then return false end
-                return combat_state == "Combat" and not Globals.AutoTargetIsNamed and Targeting.GetXTHaterCount() <= Config:GetSetting('SnareCount') and Core.CombatActionsCheck()
+                return combat_state == "Combat" and not Globals.AutoTargetIsNamed and Targeting.HasXTHatersMax(Config:GetSetting('SnareCount')) and Core.CombatActionsCheck()
             end,
         },
         {

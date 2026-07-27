@@ -13,7 +13,7 @@ return {
     _author               = "Algar",
     ['ModeChecks']        = {
         IsHealing = function() return Config:GetSetting('DoHealSpell') end,
-        IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
+        IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or not Targeting.HasXTHaters()) end,
     },
     ['Rez']               = {
         ['Combat']   = {
@@ -322,7 +322,7 @@ return {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and Core.CombatActionsCheck() and not Globals.AutoTargetIsNamed and
-                    Targeting.GetXTHaterCount() <= Config:GetSetting('SnareCount')
+                    Targeting.HasXTHatersMax(Config:GetSetting('SnareCount'))
             end,
         },
         {

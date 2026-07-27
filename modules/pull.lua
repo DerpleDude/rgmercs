@@ -295,8 +295,7 @@ Module.Constants.EngageDescriptors  = {
     Ranged = {
         approach = 'halfRange',
         stuckCheck = true,
-        verbose = "Waiting on ranged pull to finish... %s",
-        verboseShowsSuccess = true,
+        verbose = "Waiting on ranged pull to finish...",
         action = function(self, attempt)
             Core.DoCmd("/ranged %d", attempt.targetId)
         end,
@@ -305,8 +304,7 @@ Module.Constants.EngageDescriptors  = {
         approach = 'halfRange',
         fireBeforeApproach = true,
         stuckCheck = true,
-        verbose = "Waiting on autoattack pull to finish... %s",
-        verboseShowsSuccess = true,
+        verbose = "Waiting on autoattack pull to finish...",
         action = function(self, attempt)
             Core.DoCmd("/attack")
         end,
@@ -317,8 +315,7 @@ Module.Constants.EngageDescriptors  = {
         retarget = true,
         stuckCheck = true,
         startGraceMs = 500,
-        verbose = "Waiting on ability pull to finish...%s",
-        verboseShowsSuccess = true,
+        verbose = "Waiting on ability pull to finish...",
         action = function(self, attempt)
             local pullAbility = attempt.ability
             if pullAbility.Type:lower() == "ability" then
@@ -3045,7 +3042,7 @@ function Module:TravelTick(ctx, loc, reason, circuitWpId)
         end
     end
 
-    if Targeting.GetXTHaterCount() > 0 then
+    if Targeting.HasXTHaters() then
         if mq.TLO.Navigation.Active() then
             Movement:DoNav(false, "stop log=off")
         end
@@ -3230,14 +3227,16 @@ function Module:ShouldPull(campData)
         end
     end
 
-    if policy.successCheck == 'chainCount' and Targeting.GetXTHaterCount() >= Config:GetSetting('ChainCount') then
-        Logger.log_verbose("\ay::PULL:: \arAborted!\ax XTargetCount(%d) >= ChainCount(%d)", Targeting.GetXTHaterCount(), Config:GetSetting('ChainCount'))
-        return false, string.format("XTargetCount(%d) > ChainCount(%d)", Targeting.GetXTHaterCount(), Config:GetSetting('ChainCount'))
+    local haterCount = Targeting.GetXTHaterCount()
+
+    if policy.successCheck == 'chainCount' and haterCount >= Config:GetSetting('ChainCount') then
+        Logger.log_verbose("\ay::PULL:: \arAborted!\ax XTargetCount(%d) >= ChainCount(%d)", haterCount, Config:GetSetting('ChainCount'))
+        return false, string.format("XTargetCount(%d) > ChainCount(%d)", haterCount, Config:GetSetting('ChainCount'))
     end
 
-    if policy.successCheck ~= 'chainCount' and Targeting.GetXTHaterCount() > 0 then
-        Logger.log_verbose("\ay::PULL:: \arAborted!\ax XTargetCount(%d) > 0", Targeting.GetXTHaterCount())
-        return false, string.format("XTargetCount(%d) > 0", Targeting.GetXTHaterCount())
+    if policy.successCheck ~= 'chainCount' and haterCount > 0 then
+        Logger.log_verbose("\ay::PULL:: \arAborted!\ax XTargetCount(%d) > 0", haterCount)
+        return false, string.format("XTargetCount(%d) > 0", haterCount)
     end
 
     if Config:GetSetting('DoPull') and policy.family == 'camp' and not campData.returnToCamp
@@ -3857,7 +3856,7 @@ function Module:PreAttemptTick(ctx)
 
         if self.TempSettings.PullState == PullStates.PULL_NAV_INTERRUPT or self.TempSettings.Travel then
             -- if we still have haters let combat handle it first.
-            if Targeting.GetXTHaterCount() > 0 then
+            if Targeting.HasXTHaters() then
                 return
             end
 
@@ -4120,7 +4119,7 @@ function Module:NavToTargetTick(ctx)
     if mq.TLO.Navigation.Active() then
         Logger.log_super_verbose("Pathing to pull id...")
         if ctx.policy.successCheck == 'chainCount' then
-            if Targeting.GetXTHaterCount() >= Config:GetSetting('ChainCount') then
+            if Targeting.HasXTHaters(Config:GetSetting('ChainCount')) then
                 Logger.log_debug("\awNOTICE:\ax Gained aggro -- aborting chain pull!")
                 self:AbortNavToTarget(ctx)
                 return
@@ -4131,7 +4130,7 @@ function Module:NavToTargetTick(ctx)
                 return
             end
         else
-            if Targeting.GetXTHaterCount() > 0 then
+            if Targeting.HasXTHaters() then
                 Logger.log_debug("\awNOTICE:\ax Gained aggro -- aborting pull!")
                 self:AbortNavToTarget(ctx)
                 return
@@ -4256,12 +4255,7 @@ function Module:PullingTick(ctx)
         return
     end
 
-    if descriptor.verboseShowsSuccess then
-        Logger.log_super_verbose(descriptor.verbose,
-            Strings.BoolToColorString(Module.PullSuccessCheck(ctx.policy.successCheck, Targeting.GetXTHaterCount(), Config:GetSetting('ChainCount'))))
-    else
-        Logger.log_super_verbose(descriptor.verbose)
-    end
+    Logger.log_super_verbose(descriptor.verbose)
 
     local approachDone = false
     if attempt.engageNavDeadline then

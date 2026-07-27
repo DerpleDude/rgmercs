@@ -194,7 +194,7 @@ local function RGMercsGUI()
                 HudUI:RenderToggleHud()
             end
 
-            local flashingWarning = Globals.PauseMain and Targeting.GetXTHaterCount(false) > 0 and Config:GetSetting('WarnCombatPaused')
+            local flashingWarning = Globals.PauseMain and Targeting.HasXTHaters() and Config:GetSetting('WarnCombatPaused')
 
             if flashingWarning then
                 if Globals.GetTimeSeconds() % 3 == 0 then
@@ -427,7 +427,7 @@ local function Main()
         return
     end
 
-    if Targeting.GetXTHaterCount(false) > 0 then
+    if Targeting.HasXTHaters() then
         if Globals.CurrentState == "Downtime" and mq.TLO.Me.Sitting() then
             -- if switching into combat state stand up.
             mq.TLO.Me.Stand()

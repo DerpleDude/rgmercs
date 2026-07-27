@@ -1359,7 +1359,7 @@ local _ClassConfig    = {
                 type = "Spell",
                 cond = function(self, spell, target)
                     if (Config:GetSetting('DoAEStun') == 2 and Core.GetMainAssistPctHPs() > Config:GetSetting('EmergencyStart')) or Config:GetSetting('DoAEStun') == 1 then return false end
-                    return Casting.DetSpellCheck(spell) and Targeting.GetXTHaterCount() >= Config:GetSetting('AECount')
+                    return Casting.DetSpellCheck(spell) and Targeting.HasXTHaters(Config:GetSetting('AECount'))
                 end,
             },
             {
@@ -1517,7 +1517,7 @@ local _ClassConfig    = {
                 name = "Bite of Tashani",
                 type = "AA",
                 cond = function(self, aaName)
-                    if Targeting.GetXTHaterCount() < Config:GetSetting('AECount') then return false end
+                    if not Targeting.HasXTHaters(Config:GetSetting('AECount')) then return false end
                     return Casting.DetAACheck(aaName)
                 end,
             },
@@ -1534,7 +1534,7 @@ local _ClassConfig    = {
                 name = "Enveloping Helix",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    if Targeting.GetXTHaterCount() < Config:GetSetting('AECount') then return false end
+                    if not Targeting.HasXTHaters(Config:GetSetting('AECount')) then return false end
                     return Casting.DetAACheck(aaName)
                 end,
             },

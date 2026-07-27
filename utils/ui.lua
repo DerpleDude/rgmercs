@@ -31,7 +31,6 @@ Ui.ConfigFilter                    = ""
 Ui.TempSettings                    = {
     SortedXT              = {},
     SortedXTIDToSlot      = {},
-    SortedXTIDs           = Set.new({}),
     ProgBarTrendState     = {},
     ProgBarAnimState      = {},
     TogglePulseState      = {},
@@ -1709,21 +1708,19 @@ function Ui.RenderForceTargetList(showPopout)
             .Hideable,
             ImGuiTableFlags.Reorderable),
         function(sort_specs)
-            if Targeting.CrossDiffXTHaterIDs(Ui.TempSettings.SortedXTIDs:toList(), false) or true then
-                Ui.TempSettings.SortedXT = {}
-                Ui.TempSettings.SortedXTIDToSlot = {}
-                Ui.TempSettings.SortedXTIDs = Targeting.GetXTHaterIDsSet(true)
-                local xtCount = mq.TLO.Me.XTarget() or 0
-                for i = 1, xtCount do
-                    local xtarg = mq.TLO.Me.XTarget(i)
-                    if xtarg and xtarg.ID() > 0 and (xtarg.Aggressive() or xtarg.TargetType():lower() == "auto hater" or xtarg.ID() == Globals.ForceTargetID) and
-                        Ui.TempSettings.SortedXTIDToSlot[xtarg.ID()] == nil and not xtarg.Dead() then
-                        table.insert(Ui.TempSettings.SortedXT, xtarg)
-                        Ui.TempSettings.SortedXTIDToSlot[xtarg.ID()] = { Name = xtarg.CleanName() or "None", Slot = i, ID = xtarg.ID(), }
-                    end
+            Ui.TempSettings.SortedXT = {}
+            Ui.TempSettings.SortedXTIDToSlot = {}
+            local xtCount = mq.TLO.Me.XTarget() or 0
+            for i = 1, xtCount do
+                local xtarg = mq.TLO.Me.XTarget(i)
+                local xtargID = xtarg and xtarg.ID() or 0
+                if xtargID > 0 and (xtarg.Aggressive() or (xtarg.TargetType() or ""):lower() == "auto hater" or xtargID == Globals.ForceTargetID) and
+                    Ui.TempSettings.SortedXTIDToSlot[xtargID] == nil and not xtarg.Dead() then
+                    table.insert(Ui.TempSettings.SortedXT, xtarg)
+                    Ui.TempSettings.SortedXTIDToSlot[xtargID] = { Name = xtarg.CleanName() or "None", Slot = i, ID = xtargID, }
                 end
-                if sort_specs then sort_specs.SpecsDirty = true end
             end
+            if sort_specs then sort_specs.SpecsDirty = true end
 
             if sort_specs and sort_specs.SpecsDirty then
                 table.sort(Ui.TempSettings.SortedXT, function(a, b)

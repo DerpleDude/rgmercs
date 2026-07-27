@@ -359,7 +359,7 @@ return {
             load_cond = function() return Config:GetSetting('Timer10Disc') == 2 end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Targeting.GetXTHaterCount() <= Config:GetSetting('SnareCount')
+                return combat_state == "Combat" and Targeting.HasXTHatersMax(Config:GetSetting('SnareCount'))
             end,
         },
         {

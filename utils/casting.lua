@@ -941,7 +941,7 @@ function Casting.BurnCheck()
     local burnTarget = Targeting.GetAutoTarget()
     local burnTargetName = burnTarget and (burnTarget() and burnTarget.CleanName() or "None") or "None"
     local autoBurn = Config:GetSetting('BurnAuto') and
-        ((Targeting.GetXTHaterCount() >= Config:GetSetting('BurnMobCount')) or (Globals.AutoTargetIsNamed and Config:GetSetting('BurnNamed') and Targeting.GetAutoTargetPctHPs() <= Config:GetSetting('NamedMinHPPct')))
+        (Targeting.HasXTHaters(Config:GetSetting('BurnMobCount')) or (Globals.AutoTargetIsNamed and Config:GetSetting('BurnNamed') and Targeting.GetAutoTargetPctHPs() <= Config:GetSetting('NamedMinHPPct')))
     local alwaysBurn = (Config:GetSetting('BurnAlways') and Config:GetSetting('BurnAuto'))
     local forcedBurn = Targeting.ForceBurnTargetID > 0 and Targeting.ForceBurnTargetID == mq.TLO.Target.ID()
 
@@ -1076,7 +1076,7 @@ end
 ---@return boolean True if all buff-safety conditions are met.
 function Casting.CheckOkayToBuff()
     local visible = not mq.TLO.Me.Invis()
-    local safe = Targeting.GetXTHaterCount() == 0 and Globals.AutoTargetID == 0
+    local safe = not Targeting.HasXTHaters() and Globals.AutoTargetID == 0
     local stationary = not (Config:GetSetting('BuffWaitMoveTimer') > Movement:GetTimeSinceLastMove() or mq.TLO.MoveTo.Moving() or mq.TLO.Me.Moving() or mq.TLO.Navigation.Active())
     local able = not (Globals.Constants.RGCasters:contains(mq.TLO.Me.Class.ShortName()) and mq.TLO.Me.PctMana() < 10)
 
@@ -1980,7 +1980,7 @@ function Casting.UseSpell(spellName, targetId, bAllowMem, bAllowDead, retryCount
         return false
     end
 
-    if (Targeting.GetXTHaterCount() > 0 or not bAllowMem) and (not Casting.CastReady(spell) or not me.Gem(spellName)()) then
+    if (Targeting.HasXTHaters() or not bAllowMem) and (not Casting.CastReady(spell) or not me.Gem(spellName)()) then
         Logger.log_debug("\ayUseSpell(): \ayI tried to cast %s but it was not ready and we are in combat - moving on.",
             spellName)
         return false
@@ -2090,7 +2090,7 @@ function Casting.UseSong(songName, targetId, bAllowMem, retryCount)
         return false
     end
 
-    if (Targeting.GetXTHaterCount() > 0 or not bAllowMem) and (not Casting.CastReady(songSpell) or not me.Gem(songName)()) then
+    if (Targeting.HasXTHaters() or not bAllowMem) and (not Casting.CastReady(songSpell) or not me.Gem(songName)()) then
         Logger.log_debug("\ayUseSong(): I tried to sing %s but it was not ready and we are in combat - moving on.",
             songName)
         return false
@@ -2756,7 +2756,7 @@ function Casting.WaitCastReady(spell, maxWait)
         mq.delay(20)
         mq.doevents()
         Events.DoEvents()
-        if Targeting.GetXTHaterCount() > 0 then
+        if Targeting.HasXTHaters() then
             Logger.log_debug("I was interrupted by combat while waiting to cast %s.", spell)
             return
         end
@@ -2845,7 +2845,7 @@ function Casting.AutoMed()
 
     -- Stand up to fight or when threatened.
     local aggroStand  = Config:GetSetting('MedAggroCheck') and Targeting.IHaveAggro(Config:GetSetting('MedAggroPct'))
-    local combatStand = Targeting.GetXTHaterCount() > 0 and (Config:GetSetting('DoMed') ~= 3 or Config:GetSetting('DoMelee'))
+    local combatStand = Targeting.HasXTHaters() and (Config:GetSetting('DoMed') ~= 3 or Config:GetSetting('DoMelee'))
     if aggroStand or combatStand then
         Globals.InMedState = false
         if me.Sitting() and not Casting.Memorizing then
@@ -2857,7 +2857,7 @@ function Casting.AutoMed()
 
     -- Allow sufficient time for the player to do something before char plunks down. Spreads out med sitting too.
     local afterCombatMedDelay = Config:GetSetting('AfterCombatMedDelay')
-    if Targeting.GetXTHaterCount() == 0 and afterCombatMedDelay > 0 and Movement:GetTimeSinceLastMove() < math.random(afterCombatMedDelay) then return end
+    if not Targeting.HasXTHaters() and afterCombatMedDelay > 0 and Movement:GetTimeSinceLastMove() < math.random(afterCombatMedDelay) then return end
 
     Movement:StoreLastMove()
 

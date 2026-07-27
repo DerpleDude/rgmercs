@@ -412,7 +412,7 @@ local _ClassConfig = {
             doFullRotation = true,
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             cond = function(self, combat_state)
-                return Targeting.GetXTHaterCount() > 0 and Core.AtEmergencyHP()
+                return Targeting.HasXTHaters() and Core.AtEmergencyHP()
             end,
         },
         {
@@ -583,7 +583,7 @@ local _ClassConfig = {
                 type = "Song",
                 load_cond = function() return Config:GetSetting('DoAESlow') end,
                 cond = function(self, songSpell, target)
-                    return Casting.DetSpellCheck(songSpell) and Targeting.GetXTHaterCount() > 2 and not mq.TLO.Target.Slowed() and
+                    return Casting.DetSpellCheck(songSpell) and Targeting.HasXTHaters(3) and not mq.TLO.Target.Slowed() and
                         not Casting.SlowImmuneTarget(target)
                 end,
             },

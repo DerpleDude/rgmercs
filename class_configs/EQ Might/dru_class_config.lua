@@ -14,7 +14,7 @@ local _ClassConfig = {
         IsCuring  = function() return Config:GetSetting('DoCures') end,
         IsRezing  = function()
             local rezAction = Casting.CanUseAA("Call of the Wild") or Core.GetResolvedActionMapItem('RezStaff')
-            return ((Core.GetResolvedActionMapItem('RezSpell') or rezAction) and Targeting.GetXTHaterCount() == 0) or (Config:GetSetting('DoBattleRez') and rezAction)
+            return ((Core.GetResolvedActionMapItem('RezSpell') or rezAction) and not Targeting.HasXTHaters()) or (Config:GetSetting('DoBattleRez') and rezAction)
         end,
         CanCharm  = function() return true end,
     },
@@ -562,7 +562,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and Core.CombatActionsCheck() and not Globals.AutoTargetIsNamed and
-                    Targeting.GetXTHaterCount() <= Config:GetSetting('SnareCount')
+                    Targeting.HasXTHatersMax(Config:GetSetting('SnareCount'))
             end,
         },
         {

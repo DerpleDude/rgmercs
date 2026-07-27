@@ -845,7 +845,7 @@ local _ClassConfig = {
                 type = "AA",
                 load_cond = function() return Config:GetSetting('DoAEMalo') end,
                 cond = function(self, aaName)
-                    return Targeting.GetXTHaterCount() >= Config:GetSetting('AEMaloCount') and Casting.DetAACheck(aaName)
+                    return Targeting.HasXTHaters(Config:GetSetting('AEMaloCount')) and Casting.DetAACheck(aaName)
                 end,
             },
             {

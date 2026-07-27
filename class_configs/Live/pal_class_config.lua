@@ -18,7 +18,7 @@ local _ClassConfig = {
         IsHealing = function() return true end,
         IsCuring  = function() return Config:GetSetting('DoCures') end,
         IsRezing  = function()
-            return (Core.GetResolvedActionMapItem('RezSpell') and Targeting.GetXTHaterCount() == 0) or
+            return (Core.GetResolvedActionMapItem('RezSpell') and not Targeting.HasXTHaters()) or
                 (Casting.CanUseAA("Gift of Resurrection") and Config:GetSetting('DoBattleRez'))
         end,
     },

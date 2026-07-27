@@ -34,8 +34,8 @@ function StandardUI:renderModulesTabs()
                 ImGui.TableNextColumn()
                 Ui.RenderText("Hater Count")
                 ImGui.TableNextColumn()
-                Ui.RenderColoredText((Targeting.GetXTHaterCount() or 0) > 0 and Globals.Constants.Colors.ConditionMidColor or Globals.Constants.Colors.ConditionPassColor, "%d",
-                    Targeting.GetXTHaterCount() or 0)
+                local haterCount = Targeting.GetXTHaterCount() or 0
+                Ui.RenderColoredText(haterCount > 0 and Globals.Constants.Colors.ConditionMidColor or Globals.Constants.Colors.ConditionPassColor, "%d", haterCount)
                 ImGui.TableNextColumn()
                 Ui.RenderText("MA")
                 ImGui.TableNextColumn()

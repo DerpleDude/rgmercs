@@ -14,7 +14,7 @@ local _ClassConfig = {
         IsHealing = function() return true end,
         IsCuring = function() return Config:GetSetting('DoCures') end,
         IsRezing = function()
-            return (Core.GetResolvedActionMapItem('RezSpell') and Targeting.GetXTHaterCount() == 0) or
+            return (Core.GetResolvedActionMapItem('RezSpell') and not Targeting.HasXTHaters()) or
                 (Casting.CanUseAA("Call of the Wild") and Config:GetSetting('DoBattleRez'))
         end,
     },
@@ -974,7 +974,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and Core.CombatActionsCheck() and not Globals.AutoTargetIsNamed and
-                    Targeting.GetXTHaterCount() <= Config:GetSetting('SnareCount')
+                    Targeting.HasXTHatersMax(Config:GetSetting('SnareCount'))
             end,
         },
         {
@@ -1281,7 +1281,7 @@ local _ClassConfig = {
                 type = "AA",
                 load_cond = function(self) return Casting.CanUseAA("Vortex of Ro") end,
                 cond = function(self, aaName, target)
-                    if Targeting.GetXTHaterCount() < Config:GetSetting('AERoCount') then return false end
+                    if not Targeting.HasXTHaters(Config:GetSetting('AERoCount')) then return false end
                     local aaSpell = Casting.GetAASpell(aaName)
                     return Casting.DetAACheck(aaName) and Casting.ReagentCheck(aaSpell and aaSpell.Trigger(1) or aaName)
                 end,
@@ -1290,7 +1290,7 @@ local _ClassConfig = {
                 name = "Blessing of Ro",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    if Casting.CanUseAA("Vortex of Ro") and Targeting.GetXTHaterCount() >= Config:GetSetting('AERoCount') then return false end
+                    if Casting.CanUseAA("Vortex of Ro") and Targeting.HasXTHaters(Config:GetSetting('AERoCount')) then return false end
                     local aaSpell = Casting.GetAASpell(aaName)
                     return Casting.DetAACheck(aaName) and Casting.ReagentCheck(aaSpell and aaSpell.Trigger(1) or aaName)
                 end,

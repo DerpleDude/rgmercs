@@ -14,7 +14,7 @@ local _ClassConfig = {
     _version          = "1.4 - EQ Might",
     _author           = "Derple, Morisato, Algar",
     ['ModeChecks']    = {
-        IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
+        IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or not Targeting.HasXTHaters()) end,
     },
     ['Rez']           = {
         ['Combat']   = {

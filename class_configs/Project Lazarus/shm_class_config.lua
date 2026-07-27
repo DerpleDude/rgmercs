@@ -13,7 +13,7 @@ local _ClassConfig = {
         IsHealing = function() return true end,
         IsCuring = function() return Config:GetSetting('DoCures') end,
         IsRezing = function()
-            return (Core.GetResolvedActionMapItem('RezSpell') and Targeting.GetXTHaterCount() == 0) or
+            return (Core.GetResolvedActionMapItem('RezSpell') and not Targeting.HasXTHaters()) or
                 ((Casting.CanUseAA("Call of the Wild") or mq.TLO.FindItem("=Staff of Forbidden Rites")()) and Config:GetSetting('DoBattleRez'))
         end,
     },
@@ -766,7 +766,7 @@ local _ClassConfig = {
                 type = "Spell",
                 cond = function(self, spell, target)
                     if not Config:GetSetting('DoAEMalo') then return false end
-                    return Targeting.GetXTHaterCount() >= Config:GetSetting('AEMaloCount') and Casting.DetSpellCheck(spell)
+                    return Targeting.HasXTHaters(Config:GetSetting('AEMaloCount')) and Casting.DetSpellCheck(spell)
                 end,
             },
             {
@@ -792,7 +792,7 @@ local _ClassConfig = {
                 type = "AA",
                 load_cond = function(self) return Config:GetSetting('DoAESlow') and Casting.CanUseAA("Tigir's Insect Swarm") end,
                 cond = function(self, aaName, target)
-                    return Targeting.GetXTHaterCount() >= Config:GetSetting('AESlowCount') and Casting.DetAACheck(aaName) and not Casting.SlowImmuneTarget(target)
+                    return Targeting.HasXTHaters(Config:GetSetting('AESlowCount')) and Casting.DetAACheck(aaName) and not Casting.SlowImmuneTarget(target)
                 end,
             },
             {
@@ -801,7 +801,7 @@ local _ClassConfig = {
                 load_cond = function(self) return Config:GetSetting('DoAESlow') and not Casting.CanUseAA("Tigir's Insect Swarm") end,
                 cond = function(self, spell, target)
                     if not Config:GetSetting('DoAESlow') or Casting.CanUseAA("Tigir's Insect Swarm") then return false end
-                    return Targeting.GetXTHaterCount() >= Config:GetSetting('AESlowCount') and Casting.DetSpellCheck(spell) and not Casting.SlowImmuneTarget(target)
+                    return Targeting.HasXTHaters(Config:GetSetting('AESlowCount')) and Casting.DetSpellCheck(spell) and not Casting.SlowImmuneTarget(target)
                 end,
             },
             {

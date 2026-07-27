@@ -443,6 +443,37 @@ function Targeting.GetXTHaterCount(printDebug)
     return #Targeting.GetXTHaterIDs(printDebug)
 end
 
+--- Returns true if at least count unique XTarget haters are present, stopping the walk once met.
+---@param count number? Number of unique haters to look for, defaults to 1.
+---@return boolean True if at least count unique haters are on XTarget.
+function Targeting.HasXTHaters(count)
+    count = count or 1
+    local xtCount = mq.TLO.Me.XTarget() or 0
+    local seenHaters = {}
+    local uniqHaters = 0
+
+    for i = 1, xtCount do
+        local xtarg = mq.TLO.Me.XTarget(i)
+        local xtargID = xtarg and xtarg.ID() or 0
+        if xtargID > 0 and not xtarg.Dead() and (xtarg.Type() or "Corpse") ~= "Corpse" and (xtarg.Aggressive() or (xtarg.TargetType() or ""):lower() == "auto hater" or xtargID == Globals.ForceTargetID) then
+            if not seenHaters[xtargID] then
+                seenHaters[xtargID] = true
+                uniqHaters = uniqHaters + 1
+                if uniqHaters >= count then return true end
+            end
+        end
+    end
+
+    return false
+end
+
+--- Returns true if count or fewer unique XTarget haters are present.
+---@param count number Number of unique haters to stay within.
+---@return boolean True if no more than count unique haters are on XTarget.
+function Targeting.HasXTHatersMax(count)
+    return not Targeting.HasXTHaters(count + 1)
+end
+
 --- Returns true if any XTarget hater is within range units of us.
 ---@param range number Distance in units to check against.
 ---@return boolean True if a hater is within range.
@@ -473,30 +504,6 @@ function Targeting.DiffXTHaterIDs(t, printDebug)
         end
         if not oldHaterSet:contains(xtargID) then return true end
     end
-
-    return false
-end
-
---- Returns true if either list has an ID the other doesn't (any hater gained or lost).
----@param t number[] Previously known hater ID list to compare against.
----@param printDebug boolean? If true, logs each comparison.
----@return boolean True if the hater list changed in either direction.
-function Targeting.CrossDiffXTHaterIDs(t, printDebug)
-    local oldHaterSet  = Set.new(t)
-    local curHatersSet = Targeting.GetXTHaterIDsSet(printDebug)
-    local curHaters    = curHatersSet:toList()
-
-
-    for _, xtargID in ipairs(curHaters) do
-        if printDebug then Logger.log_verbose("CrossDiffXTHaterIDs(): XT(%d) Checking list for known hater. %s", xtargID, Strings.TableToString(oldHaterSet:toList())) end
-        if not oldHaterSet:contains(xtargID) then return true end
-    end
-
-    for _, oldID in ipairs(t) do
-        if printDebug then Logger.log_verbose("CrossDiffXTHaterIDs(): Old XT(%d) Checking list for known hater. %s", oldID, Strings.TableToString(curHaters)) end
-        if not curHatersSet:contains(oldID) then return true end
-    end
-
 
     return false
 end

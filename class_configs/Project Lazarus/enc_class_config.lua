@@ -837,7 +837,7 @@ local _ClassConfig = {
                 load_cond = function() return Config:GetSetting('DoAEStun') > 1 end,
                 cond = function(self, spell, target)
                     if (Config:GetSetting('DoAEStun') == 2 and Core.GetMainAssistPctHPs() > Config:GetSetting('EmergencyStart')) then return false end
-                    return Targeting.GetXTHaterCount() >= Config:GetSetting("AECount")
+                    return Targeting.HasXTHaters(Config:GetSetting("AECount"))
                 end,
             },
             {
@@ -1003,7 +1003,7 @@ local _ClassConfig = {
                 type = "AA",
                 load_cond = function() return Config:GetSetting("DoCrippleAA") end,
                 cond = function(self, aaName, target)
-                    return Targeting.GetXTHaterCount() >= Config:GetSetting('AECount') or
+                    return Targeting.HasXTHaters(Config:GetSetting('AECount')) or
                         (not Config:GetSetting('DoCrippleSpell') and Globals.AutoTargetIsNamed and Casting.DetSpellAACheck(aaName))
                 end,
             },
@@ -1046,7 +1046,7 @@ local _ClassConfig = {
                 name = "Bite of Tashani",
                 type = "AA",
                 cond = function(self, aaName)
-                    if Targeting.GetXTHaterCount() < Config:GetSetting('AECount') then return false end
+                    if not Targeting.HasXTHaters(Config:GetSetting('AECount')) then return false end
                     return Casting.DetAACheck(aaName)
                 end,
             },
@@ -1063,7 +1063,7 @@ local _ClassConfig = {
                 name = "Enveloping Helix",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    if Targeting.GetXTHaterCount() < Config:GetSetting('AECount') then return false end
+                    if not Targeting.HasXTHaters(Config:GetSetting('AECount')) then return false end
                     return Casting.DetAACheck(aaName) and not Casting.SlowImmuneTarget(target)
                 end,
             },

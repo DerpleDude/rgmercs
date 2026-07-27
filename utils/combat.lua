@@ -20,7 +20,7 @@ Combat.PullStuckTime = 0
 --- Returns the current live combat state based on XTarget hater count.
 ---@return string "Combat" if there are active haters, "Downtime" otherwise.
 function Combat.GetCombatState()
-    return Targeting.GetXTHaterCount(false) > 0 and "Combat" or "Downtime"
+    return Targeting.HasXTHaters() and "Combat" or "Downtime"
 end
 
 --- Returns the cached combat state from the last main loop frame.
@@ -217,7 +217,7 @@ end
 function Combat.DoCombatActions()
     if not Movement.LastMove then return false end
     if Globals.AutoTargetID == 0 then return false end
-    if Targeting.GetXTHaterCount() == 0 then return false end
+    if not Targeting.HasXTHaters() then return false end
 
     -- We can't assume our target is our autotargetid for where this sub is used.
     local autoSpawn = mq.TLO.Spawn(Globals.AutoTargetID)
@@ -970,7 +970,7 @@ end
 ---@return boolean
 function Combat.ShouldDoCamp()
     return
-        (Targeting.GetXTHaterCount() == 0 and Globals.AutoTargetID == 0) or
+        (not Targeting.HasXTHaters() and Globals.AutoTargetID == 0) or
         (not Core.IsTanking() and Targeting.GetAutoTargetPctHPs() > Config:GetSetting('AutoAssistAt'))
 end
 

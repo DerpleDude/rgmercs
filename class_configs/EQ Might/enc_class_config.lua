@@ -23,7 +23,7 @@ local _ClassConfig    = {
         CanMez    = function() return true end,
         CanCharm  = function() return true end,
         IsMezzing = function() return Config:GetSetting('MezOn') end,
-        IsRezing  = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or Targeting.GetXTHaterCount() == 0) end,
+        IsRezing  = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or not Targeting.HasXTHaters()) end,
     },
     ['Rez']           = {
         ['Combat']   = {
@@ -968,7 +968,7 @@ local _ClassConfig    = {
                 load_cond = function() return Config:GetSetting('DoAEStun') > 1 end,
                 cond = function(self, spell, target)
                     if Config:GetSetting('DoAEStun') == 2 and (mq.TLO.Group.Injured(Config:GetSetting('EmergencyStart'))() or 0) < 1 then return false end
-                    return Targeting.GetXTHaterCount() >= Config:GetSetting("AECount")
+                    return Targeting.HasXTHaters(Config:GetSetting("AECount"))
                 end,
             },
             {
@@ -1187,7 +1187,7 @@ local _ClassConfig    = {
                 name = "Bite of Tashani",
                 type = "AA",
                 cond = function(self, aaName)
-                    if Targeting.GetXTHaterCount() < Config:GetSetting('AECount') then return false end
+                    if not Targeting.HasXTHaters(Config:GetSetting('AECount')) then return false end
                     return Casting.DetAACheck(aaName)
                 end,
             },
@@ -1222,7 +1222,7 @@ local _ClassConfig    = {
                 name = "Enveloping Helix",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    if Targeting.GetXTHaterCount() < Config:GetSetting('AECount') then return false end
+                    if not Targeting.HasXTHaters(Config:GetSetting('AECount')) then return false end
                     return Casting.DetAACheck(aaName) and not Casting.SlowImmuneTarget(target)
                 end,
             },

@@ -926,7 +926,7 @@ end
 
 function Module:PromptRestoreSwapSlot()
     if not self.ClassConfig or not self.SpellLoadOut then return end
-    if Targeting.GetXTHaterCount() > 0 then return end
+    if Targeting.HasXTHaters() then return end
 
     local me = mq.TLO.Me
     if me.Feigning() then return end

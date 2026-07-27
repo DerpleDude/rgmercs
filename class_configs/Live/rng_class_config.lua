@@ -869,7 +869,7 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and Core.CombatActionsCheck() and not Globals.AutoTargetIsNamed and
-                    Targeting.GetXTHaterCount() <= Config:GetSetting('SnareCount')
+                    Targeting.HasXTHatersMax(Config:GetSetting('SnareCount'))
             end,
         },
         {
