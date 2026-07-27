@@ -183,18 +183,12 @@ local _ClassConfig = {
             "Armor of Protection",            -- Level 34
         },
         ['AegoBuff'] = {
-            ----Use HP Type one until Temperance at 40... Group Buff at 45 (Blessing of Temperance)
             "Hand of Conviction",        -- Level 70
             "Hand of Virtue",            -- Level 65
             "Ancient: Gift of Aegolism", -- Level 60
             "Blessing of Aegolism",      -- Level 60
             "Blessing of Temperance",    -- Level 45
             "Temperance",                -- Level 40
-            "Valor",                     -- Level 32
-            "Bravery",                   -- Level 22
-            "Daring",                    -- Level 17
-            "Center",                    -- Level 7
-            "Courage",                   -- Level 1
         },
         ['ACBuff'] = {
             "Ward of Valiance",  -- Level 66
@@ -205,6 +199,17 @@ local _ClassConfig = {
             "Guard",             -- Level 25
             "Spirit Armor",      -- Level 15
             "Holy Armor",        -- Level 1
+        },
+        ['HPTypeOne'] = {
+            -- "Fortitude", -- Level 55, weaker but longer duration
+            "Heroic Bond", -- Level 52 Group
+            "Heroism",     -- Level 52
+            "Resolution",  -- Level 42
+            "Valor",       -- Level 32
+            "Bravery",     -- Level 22
+            "Daring",      -- Level 17
+            "Center",      -- Level 7
+            "Courage",     -- Level 1
         },
         ['SingleVieBuff'] = {
             "Aegis of Vie",      -- Level 71
@@ -891,7 +896,7 @@ local _ClassConfig = {
                 end,
             },
             {
-                name = "AegoBuff",
+                name_func = function(self) return Casting.GetFirstMapItem({ 'AegoBuff', 'HPTypeOne', }) end,
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('AegoSymbol') <= 2 end,
                 cond = function(self, spell, target)
