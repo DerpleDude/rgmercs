@@ -652,6 +652,8 @@ return {
                 type = "Spell",
                 cond = function(self, spell, target)
                     return Casting.GroupBuffCheck(spell, target) and not (Targeting.TargetIsMyself(target) and self.Helpers.HaveSelfWard(self))
+                        --laz specific deconflict with GM Buff
+                        and Casting.AddedBuffCheck(34567, target)
                 end,
             },
             {

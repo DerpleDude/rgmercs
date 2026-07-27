@@ -84,11 +84,6 @@ local _ClassConfig = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
         IsCuring = function() return Config:GetSetting('DoCures') end,
     },
-    ['Cure']          = {
-        ['DetDispel'] = {
-            { type = "AA", name = "Purity of Death", selfOnly = true, },
-        },
-    },
     ['Modes']         = {
         'Tank',
         'DPS',

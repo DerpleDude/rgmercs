@@ -1795,7 +1795,7 @@ Config.DefaultConfig                                     = {
     ['UseSharedCureLists']         = {
         DisplayName = "Use Shared Cure Lists",
         Type = "Custom",
-        Default = false,
+        Default = true,
     },
 
     --Recovery/Rezzing
