@@ -257,8 +257,11 @@ Module.RotationTargetTypes                    = { 'Rotation Target', }
 Module.MercPeerTargetTypes                    = { 'Mercs Peer', }
 Module.CombatStates                           = {
     'Downtime', 'Combat', 'Any', 'During Rotation', 'During Heal Rotation',
-    'As a Cure Action', 'As a Rez Action', 'As a Charm Action',
+    'As a Cure Action', 'As a Rez Action', 'As a Charm Action', 'As a Dispel Action',
 }
+Module.ActionStates                           = Set.new({
+    'As a Cure Action', 'As a Rez Action', 'As a Charm Action', 'As a Dispel Action',
+})
 Module.ActionPhaseOptions                     = {
     ['As a Cure Action'] = {
         { display = "Det Dispel", key = "DetDispel", },
@@ -1456,7 +1459,7 @@ function Module:RenderConditionTargetCombo(cond, condIdx, combatState)
 end
 
 function Module:RenderClickyTargetCombo(clicky, clickyIdx)
-    if clicky.combat_state == "During Rotation" or clicky.combat_state == "During Heal Rotation" or self.ActionPhaseOptions[clicky.combat_state] then
+    if clicky.combat_state == "During Rotation" or clicky.combat_state == "During Heal Rotation" or self.ActionStates:contains(clicky.combat_state) then
         if clicky.target ~= "Rotation Target" then
             clicky.target = "Rotation Target"
             Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
@@ -1520,7 +1523,7 @@ end
 
 function Module:RenderClickyToggles(clicky, clickyIdx)
     local isRotationTarget = clicky.target == "Rotation Target"
-    local isActionState = self.ActionPhaseOptions[clicky.combat_state] ~= nil
+    local isActionState = self.ActionStates:contains(clicky.combat_state)
     if isRotationTarget and clicky.no_target_change then
         clicky.no_target_change = false
         Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
@@ -1600,7 +1603,7 @@ function Module:RenderClickyCombatStateCombo(clicky, clickyIdx)
             if clicky.combat_state == "During Rotation" or clicky.combat_state == "During Heal Rotation" then
                 clicky.rotation_name = "None"
                 clicky.target        = "Rotation Target"
-            elseif self.ActionPhaseOptions[clicky.combat_state] then
+            elseif self.ActionStates:contains(clicky.combat_state) then
                 clicky.rotation_name = nil
                 clicky.target        = "Rotation Target"
                 clicky.action_phases = {}
@@ -1925,7 +1928,7 @@ function Module:RenderClickiesWithConditions(type, clickies)
                         bit32.bor(ImGuiChildFlags.AlwaysAutoResize, ImGuiChildFlags.Borders, ImGuiChildFlags.AutoResizeY),
                         bit32.bor(ImGuiWindowFlags.NoMove, ImGuiWindowFlags.NoTitleBar))
 
-                    if not self.ActionPhaseOptions[clicky.combat_state] then
+                    if not self.ActionStates:contains(clicky.combat_state) then
                         self:RenderCondition(clickyIdx, 0, self.ImpliedCondition, nil, clicky.combat_state)
                     end
 
@@ -2340,10 +2343,11 @@ end
 function Module:GetClickiesForAction(clickyCombatState, phaseKey)
     local result   = {}
     local clickies = Config:GetSetting('Clickies') or {}
+    local phased   = self.ActionPhaseOptions[clickyCombatState] ~= nil
 
     for _, clicky in ipairs(clickies) do
         if clicky.combat_state == clickyCombatState
-            and clicky.action_phases and clicky.action_phases[phaseKey]
+            and (not phased or (clicky.action_phases and clicky.action_phases[phaseKey]))
             and clicky.itemName:len() > 0
             and (clicky.enabled == nil or clicky.enabled == true)
         then
@@ -2381,7 +2385,7 @@ function Module:GetClickiesForAction(clickyCombatState, phaseKey)
 end
 
 function Module:ValidateClickyRotationSettings(clicky)
-    if self.ActionPhaseOptions[clicky.combat_state] then
+    if self.ActionStates:contains(clicky.combat_state) then
         local changed = false
         if clicky.target ~= "Rotation Target" then
             clicky.target = "Rotation Target"

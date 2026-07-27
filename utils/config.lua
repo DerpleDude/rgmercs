@@ -256,12 +256,32 @@ Config.DefaultConfig                                     = {
         Tooltip = "Announces cure use to /gsay.",
         ConfigType = "Advanced",
     },
+    ['DispelAnnounce']             = {
+        DisplayName = "Dispel Announce",
+        Group = "General",
+        Header = "Announcements",
+        Category = "Announcements",
+        Index = 11,
+        Default = false,
+        Tooltip = "Announces dispel use.",
+        ConfigType = "Advanced",
+    },
+    ['DispelAnnounceGroup']        = {
+        DisplayName = "Dispel Announce to Group",
+        Group = "General",
+        Header = "Announcements",
+        Category = "Announcements",
+        Index = 12,
+        Default = false,
+        Tooltip = "Announces dispel use to /gsay.",
+        ConfigType = "Advanced",
+    },
     ['ReagentAnnounce']            = {
         DisplayName = "Reagent Announce",
         Group = "General",
         Header = "Announcements",
         Category = "Announcements",
-        Index = 11,
+        Index = 13,
         Default = false,
         Tooltip = "Announces an aborted cast due to missing spell reagent.",
         ConfigType = "Advanced",
@@ -271,7 +291,7 @@ Config.DefaultConfig                                     = {
         Group = "General",
         Header = "Announcements",
         Category = "Announcements",
-        Index = 12,
+        Index = 14,
         Default = false,
         Tooltip = "Announces an aborted cast due to missing spell reagent to /gsay. (Warning: Often spammy.)",
         ConfigType = "Advanced",
@@ -281,7 +301,7 @@ Config.DefaultConfig                                     = {
         Group = "General",
         Header = "Announcements",
         Category = "Announcements",
-        Index = 13,
+        Index = 15,
         Default = false,
         Tooltip = "Announce pull-related messages.",
         ConfigType = "Advanced",
@@ -291,7 +311,7 @@ Config.DefaultConfig                                     = {
         Group = "General",
         Header = "Announcements",
         Category = "Announcements",
-        Index = 14,
+        Index = 16,
         Default = false,
         Tooltip = "Announce pull-related messages in /gsay. (Warning: Often spammy.)",
         ConfigType = "Advanced",
@@ -301,7 +321,7 @@ Config.DefaultConfig                                     = {
         Group = "General",
         Header = "Announcements",
         Category = "Announcements",
-        Index = 15,
+        Index = 17,
         Default = false,
         Tooltip = "Announce burn-related messages.",
         ConfigType = "Advanced",
@@ -311,7 +331,7 @@ Config.DefaultConfig                                     = {
         Group = "General",
         Header = "Announcements",
         Category = "Announcements",
-        Index = 16,
+        Index = 18,
         Default = false,
         Tooltip = "Announce burn-related messages in /gsay. (Warning: Often spammy.)",
         ConfigType = "Advanced",
@@ -321,7 +341,7 @@ Config.DefaultConfig                                     = {
         Group = "General",
         Header = "Announcements",
         Category = "Announcements",
-        Index = 17,
+        Index = 19,
         Default = false,
         Tooltip = "Announces when a character flag is received.",
         ConfigType = "Advanced",
@@ -331,7 +351,7 @@ Config.DefaultConfig                                     = {
         Group = "General",
         Header = "Announcements",
         Category = "Announcements",
-        Index = 17,
+        Index = 20,
         Default = false,
         Tooltip = "Announces when a character flag is received.",
         ConfigType = "Advanced",
@@ -342,7 +362,7 @@ Config.DefaultConfig                                     = {
         Header = "Announcements",
         Category = "Announcements",
         Type = "Custom",
-        Index = 18,
+        Index = 21,
         Default = false,
         Tooltip = "Announces received heartbeats in /gsay. (Warning: spammy.)",
         ConfigType = "Advanced",
@@ -1434,6 +1454,33 @@ Config.DefaultConfig                                     = {
         Type = "Combo",
         ComboOptions = Globals.Constants.DebuffChoice,
         ConfigType = "Advanced",
+    },
+    ['DispelAllowList']            = {
+        DisplayName = "Dispel Allow List",
+        Type = "Custom",
+        Default = {},
+    },
+    ['DispelDenyList']             = {
+        DisplayName = "Dispel Deny List",
+        Type = "Custom",
+        Default = {},
+    },
+    ['DispelAllowListShared']      = {
+        DisplayName = "Shared Dispel Allow List",
+        Type = "Custom",
+        Default = {},
+        Scope = "server",
+    },
+    ['DispelDenyListShared']       = {
+        DisplayName = "Shared Dispel Deny List",
+        Type = "Custom",
+        Default = {},
+        Scope = "server",
+    },
+    ['UseSharedDispelLists']       = {
+        DisplayName = "Use Shared Dispel Lists",
+        Type = "Custom",
+        Default = true,
     },
 
     -- Emergency
@@ -3911,10 +3958,15 @@ end
 --- @param name string: The name of the PC to be added.
 --- @param listName string: The list of PCs to add to.
 function Config:ListAdd(name, listName)
+    if not name or name == "" then
+        Logger.log_error("\ar%s Add: this command requires a valid argument!", listName)
+        return
+    end
+
     local addList = Config:GetSetting(listName)
 
     for _, cur_name in ipairs(addList or {}) do
-        if cur_name == name then
+        if cur_name:lower() == name:lower() then
             return
         end
     end

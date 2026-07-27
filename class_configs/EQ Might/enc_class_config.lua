@@ -20,10 +20,14 @@ local _ClassConfig    = {
     _version          = "1.6 - EQ Might",
     _author           = "Derple, Grimmier, Algar, Robban",
     ['ModeChecks']    = {
-        CanMez    = function() return true end,
-        CanCharm  = function() return true end,
-        IsMezzing = function() return Config:GetSetting('MezOn') end,
-        IsRezing  = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or not Targeting.HasXTHaters()) end,
+        CanMez       = function() return true end,
+        CanCharm     = function() return true end,
+        IsMezzing    = function() return Config:GetSetting('MezOn') end,
+        IsDispelling = function() return Config:GetSetting('DoDispel') end,
+        IsRezing     = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or not Targeting.HasXTHaters()) end,
+    },
+    ['Dispel']        = {
+        { name = "Dispel", type = "Spell", },
     },
     ['Rez']           = {
         ['Combat']   = {
@@ -528,16 +532,6 @@ local _ClassConfig    = {
             state = 1,
             steps = 1,
             load_cond = function() return Config:GetSetting('DoCripple') end,
-            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
-            cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.OkayToDebuff() and Core.CombatActionsCheck()
-            end,
-        },
-        {
-            name = 'Dispel',
-            state = 1,
-            steps = 1,
-            load_cond = function() return Config:GetSetting('DoDispel') end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and Casting.OkayToDebuff() and Core.CombatActionsCheck()
@@ -1058,16 +1052,6 @@ local _ClassConfig    = {
                 load_cond = function() return Config:GetSetting("DoBeguilers") end,
                 cond = function(self, aaName)
                     return mq.TLO.SpawnCount("npc radius 20")() > 2
-                end,
-            },
-        },
-        ['Dispel']           = {
-            {
-                name = "Dispel",
-                type = "Spell",
-                cond = function(self, spell, target)
-                    if mq.TLO.Target.ID() == 0 then return false end
-                    return mq.TLO.Target.Beneficial() ~= nil
                 end,
             },
         },

@@ -3,6 +3,7 @@ local Icons      = require('mq.ICONS')
 local ImGui      = require('ImGui')
 local Config     = require('utils.config')
 local Globals    = require('utils.globals')
+local Modules    = require('utils.modules')
 local Targeting  = require('utils.targeting')
 local Ui         = require('utils.ui')
 
@@ -124,6 +125,7 @@ function TargetUI:RenderContent()
                 local showBuffName = Config:GetSetting('TargetBuffNameTooltip')
                 local showBuffDescription = Config:GetSetting('TargetBuffDescriptionTooltip')
                 local showBuffCaster = Config:GetSetting('TargetBuffCasterTooltip')
+                local canEditDispelLists = Modules:ExecModule("Class", "CanEditDispelLists")
                 for i = 1, buffCount do
                     local buff = target.Buff(i)
                     if buff and buff() and buff.ID() ~= 0 then
@@ -132,6 +134,7 @@ function TargetUI:RenderContent()
                         local doBlink = (math.floor((buff.Duration.TotalSeconds() or 0)) < blinkAtTime)
                         Ui.DrawInspectableSpellIcon(buff, iconSize, doBlink, borderCol)
                         self:RenderTooltipForBuff(buff, target.ID(), showBuffName, showBuffDescription, showBuffCaster)
+                        if canEditDispelLists then self:RenderDispelListMenuForBuff(buff) end
                         ImGui.PopID()
 
                         if i == 1 or i % buffsPerRow ~= 0 then
@@ -225,6 +228,48 @@ function TargetUI:RenderTooltipForBuff(buff, targetId, showBuffName, showBuffDes
             Ui.AnimatedTooltip("##BuffID_" .. tostring(targetId) .. "_" .. tostring(buff.ID()), toolTip)
         end
     end
+end
+
+--- Right-click menu on a target buff icon for adding or removing it from the dispel allow/deny lists.
+function TargetUI:RenderDispelListMenuForBuff(buff)
+    -- the buff icon's PushID already scopes this, so a constant id stays unique per buff
+    if not ImGui.BeginPopupContextItem("##dispel_buff_menu") then return end
+
+    local buffName = buff.Name() or ""
+    Ui.RenderText(buffName)
+    ImGui.Separator()
+
+    if not buff.Beneficial() then
+        ImGui.BeginDisabled(true)
+        ImGui.MenuItem("Not a Beneficial Effect")
+        ImGui.EndDisabled()
+        ImGui.EndPopup()
+        return
+    end
+
+    -- an undispellable effect is already skipped, so only the allow list (which overrides that flag) does anything for it
+    local lists = { { label = "Allow List", base = 'DispelAllowList', }, }
+    if buff.Dispellable() then table.insert(lists, { label = "Deny List", base = 'DispelDenyList', }) end
+
+    for _, dispelList in ipairs(lists) do
+        local listName = Modules:ExecModule("Class", "ActiveDispelList", dispelList.base)
+        local listedIdx = nil
+        for idx, name in ipairs(Config:GetSetting(listName) or {}) do
+            if name:lower() == buffName:lower() then
+                listedIdx = idx
+                break
+            end
+        end
+        if listedIdx then
+            if ImGui.MenuItem(string.format("Remove from Dispel %s", dispelList.label)) then
+                Config:ListDelete(listedIdx, listName)
+            end
+        elseif ImGui.MenuItem(string.format("Add to Dispel %s", dispelList.label)) then
+            Config:ListAdd(buffName, listName)
+        end
+    end
+
+    ImGui.EndPopup()
 end
 
 function TargetUI:RenderWindow(flags)

@@ -48,6 +48,7 @@ Module.TempSettings.HealRotationTable        = {}
 Module.TempSettings.RotationTimers           = {}
 Module.TempSettings.RezTimers                = {}
 Module.TempSettings.RezAbilities             = nil
+Module.TempSettings.DispelAbilities          = nil
 Module.TempSettings.CureCheckTimer           = Globals.GetTimeSeconds() -- set this out a bit so we have time to get actor data.
 Module.TempSettings.ResolvingActions         = true
 Module.TempSettings.CombatModeSet            = false
@@ -81,7 +82,7 @@ Module.FAQ                                   = {
             "  When a rotation runs, RGMercs checks its entries in order and uses those whose conditions pass. Disabled entries and entries whose conditions fail are skipped, along with actions blocked by things like cooldowns, mana, or movement.\n\n" ..
             "  Rotations come in two types, Full and Standard. A Full rotation re-checks every entry from the top on each run, while a Standard rotation resumes from the entry after the last one that succeeded. Leaving combat resets this position to the top.\n\n" ..
             "  Rotations can be viewed in the UI on the Class tab.\n\n" ..
-            "  Note: Mez, charm, rez, and cures run on this same rotation engine (and are all treated as Full rotations).",
+            "  Note: Mez, charm, rez, cures, and dispels run on this same rotation engine (and are all treated as Full rotations).",
         Settings_Used = "",
     },
     {
@@ -224,6 +225,82 @@ Module.CommandHandlers                       = {
                 return true
             end
             Config:ZoneListDelete(arg1, self:ActiveCureList('CureDenyList'))
+            return true
+        end,
+    },
+    enabledispelentry = {
+        usage = "/rgl enabledispelentry \"<Name>\"",
+        about = "Enables a dispel ability entry by name.",
+        handler = function(self, name)
+            if not name then
+                Logger.log_error("/rgl enabledispelentry - no entry name provided.")
+                return true
+            end
+            local enabled = Config:GetSetting('EnabledDispelEntries') or {}
+            enabled[name] = true
+            Config:SetSetting('EnabledDispelEntries', enabled)
+            return true
+        end,
+    },
+    disabledispelentry = {
+        usage = "/rgl disabledispelentry \"<Name>\"",
+        about = "Disables a dispel ability entry by name.",
+        handler = function(self, name)
+            if not name then
+                Logger.log_error("/rgl disabledispelentry - no entry name provided.")
+                return true
+            end
+            local enabled = Config:GetSetting('EnabledDispelEntries') or {}
+            enabled[name] = false
+            Config:SetSetting('EnabledDispelEntries', enabled)
+            return true
+        end,
+    },
+    dispelallow = {
+        usage = "/rgl dispelallow \"<effect name>\"",
+        about = "Adds <effect name> to the Dispel Allow List.",
+        handler = function(self, name)
+            if not name then
+                Logger.log_error("/rgl dispelallow - no effect name provided.")
+                return true
+            end
+            Config:ListAdd(Strings.TrimSpaces(name), self:ActiveDispelList('DispelAllowList'))
+            return true
+        end,
+    },
+    dispeldeny = {
+        usage = "/rgl dispeldeny \"<effect name>\"",
+        about = "Adds <effect name> to the Dispel Deny List.",
+        handler = function(self, name)
+            if not name then
+                Logger.log_error("/rgl dispeldeny - no effect name provided.")
+                return true
+            end
+            Config:ListAdd(Strings.TrimSpaces(name), self:ActiveDispelList('DispelDenyList'))
+            return true
+        end,
+    },
+    dispelallowrm = {
+        usage = "/rgl dispelallowrm \"<effect name>\" or <List#>",
+        about = "Removes <effect name> or <List#> from the Dispel Allow List.",
+        handler = function(self, arg1)
+            if not arg1 then
+                Logger.log_error("/rgl dispelallowrm - no argument provided.")
+                return true
+            end
+            Config:ListDelete(arg1, self:ActiveDispelList('DispelAllowList'))
+            return true
+        end,
+    },
+    dispeldenyrm = {
+        usage = "/rgl dispeldenyrm \"<effect name>\" or <List#>",
+        about = "Removes <effect name> or <List#> from the Dispel Deny List.",
+        handler = function(self, arg1)
+            if not arg1 then
+                Logger.log_error("/rgl dispeldenyrm - no argument provided.")
+                return true
+            end
+            Config:ListDelete(arg1, self:ActiveDispelList('DispelDenyList'))
             return true
         end,
     },
@@ -486,6 +563,12 @@ function Module:LoadSettings()
 
         self.ClassConfig.DefaultConfig['EnabledCureEntries'] = {
             DisplayName = "EnabledCureEntries",
+            Type = "Custom",
+            Default = {},
+        }
+
+        self.ClassConfig.DefaultConfig['EnabledDispelEntries'] = {
+            DisplayName = "EnabledDispelEntries",
             Type = "Custom",
             Default = {},
         }
@@ -1263,6 +1346,25 @@ function Module:Render()
                 ImGui.Unindent()
             end
         end
+
+        if not self.TempSettings.ResolvingActions and self:CanEditDispelLists() then
+            if ImGui.CollapsingHeader("Dispel Abilities") then
+                ImGui.Indent()
+                local dispelAbilities = self:GetDispelAbilities()
+                if dispelAbilities and #dispelAbilities > 0 then
+                    local resolvedMap = {}
+                    for _, entry in ipairs(dispelAbilities) do
+                        resolvedMap[entry.name] = self:GetResolvedActionMapItem(entry.name)
+                    end
+                    local newEnabled, entriesChanged, _, resetRequested = Ui.RenderRotationTable("DispelAbilities", dispelAbilities, resolvedMap, 0,
+                        Config:GetSetting('EnabledDispelEntries') or {}, true, true)
+                    if entriesChanged then Config:SetSetting('EnabledDispelEntries', newEnabled) end
+                    if resetRequested then self:RebuildDispelAbilities() end
+                end
+                self:RenderDispelLists()
+                ImGui.Unindent()
+            end
+        end
     end
 end
 
@@ -1309,6 +1411,51 @@ function Module:RenderCureLists()
     end
     self:RenderCureList("Allow List", "CureAllowList")
     self:RenderCureList("Deny List", "CureDenyList")
+end
+
+-- text-entry editor for a dispel name list (allow/deny)
+function Module:RenderDispelList(displayName, settingName)
+    self.TempSettings.DispelListInput = self.TempSettings.DispelListInput or {}
+    ImGui.Text(displayName)
+    local buffer = ImGui.InputText("##dispel_input_" .. settingName, self.TempSettings.DispelListInput[settingName] or "")
+    self.TempSettings.DispelListInput[settingName] = buffer
+    ImGui.SameLine()
+    ImGui.BeginDisabled(#buffer == 0)
+    if ImGui.SmallButton("Add##dispel_add_" .. settingName) then
+        Config:ListAdd(Strings.TrimSpaces(buffer), self:ActiveDispelList(settingName))
+        self.TempSettings.DispelListInput[settingName] = ""
+    end
+    ImGui.EndDisabled()
+
+    if ImGui.BeginTable(settingName, 3, bit32.bor(ImGuiTableFlags.Borders)) then
+        ImGui.TableSetupColumn('Id', ImGuiTableColumnFlags.WidthFixed, 40.0)
+        ImGui.TableSetupColumn('Effect', ImGuiTableColumnFlags.WidthStretch, 150.0)
+        ImGui.TableSetupColumn('Controls', ImGuiTableColumnFlags.WidthFixed, 60.0)
+        ImGui.TableHeadersRow()
+        for idx, effectName in ipairs(Config:GetSetting(self:ActiveDispelList(settingName)) or {}) do
+            ImGui.TableNextColumn(); ImGui.Text(tostring(idx))
+            ImGui.TableNextColumn(); ImGui.Text(effectName)
+            ImGui.TableNextColumn()
+            if ImGui.SmallButton(Icons.FA_TRASH .. "##dispel_del_" .. settingName .. tostring(idx)) then
+                Config:ListDelete(idx, self:ActiveDispelList(settingName))
+            end
+        end
+        ImGui.EndTable()
+    end
+end
+
+-- shared/individual toggle plus the allow/deny dispel list editors
+function Module:RenderDispelLists()
+    ImGui.NewLine()
+    ImGui.Separator()
+    local useShared = Config:GetSetting('UseSharedDispelLists')
+    local newUseShared = ImGui.Checkbox("Use Shared Dispel Lists", useShared)
+    Ui.Tooltip("On: shares dispel lists with all RGMercs peers on this machine.\nOff: this character uses its own lists.")
+    if newUseShared ~= useShared then
+        Config:SetSetting('UseSharedDispelLists', newUseShared)
+    end
+    self:RenderDispelList("Allow List", "DispelAllowList")
+    self:RenderDispelList("Deny List", "DispelDenyList")
 end
 
 function Module:ResetRotation()
@@ -1423,6 +1570,14 @@ function Module:IsCuring()
         return false
     end
     return self.ClassConfig.ModeChecks.IsCuring()
+end
+
+---@return boolean
+function Module:IsDispelling()
+    if not self.ClassConfig or not self.ClassConfig.ModeChecks or not self.ClassConfig.ModeChecks.IsDispelling then
+        return false
+    end
+    return self.ClassConfig.ModeChecks.IsDispelling()
 end
 
 ---@return boolean
@@ -1992,6 +2147,125 @@ function Module:RunCure(targetSpawn, cureEffects, mezzed, denySet, allowSet)
     end
 
     return nil
+end
+
+-- Dispel Engine (config-driven ['Dispel'] list walked via utils/entries.lua, mirroring the Cure engine)
+
+-- per-entry user toggle (defaults on)
+function Module:DispelEntryEnabled(entry)
+    return (Config:GetSetting('EnabledDispelEntries') or {})[entry.name] ~= false
+end
+
+-- cast the resolved dispel on a live target
+function Module:DispelEntryCast(entry, spell, resolvedName, targetId)
+    local entryType = (entry.type or ""):lower()
+    local name = (entryType == "aa" or entryType == "item" or entryType == "ability") and resolvedName or spell.RankName()
+    Casting.UseEntry(entryType, name, targetId, { spell = spell, })
+end
+
+-- rebuild the load_cond-filtered dispel list on rescan
+function Module:RebuildDispelAbilities()
+    local dispel = self.ClassConfig and self.ClassConfig.Dispel
+    local dispelClickies = Modules:ExecModule("Clickies", "GetClickiesForAction", "As a Dispel Action") or {}
+    self.TempSettings.DispelClickiesPresent = #dispelClickies > 0
+    if not dispel and not self.TempSettings.DispelClickiesPresent then
+        self.TempSettings.DispelAbilities = nil
+        return
+    end
+    local entries = Entries.FilterLoaded(dispel or {}, self)
+    Rotation.ApplyEntryOrder(entries, (Config:GetSetting('RotationEntryOrder') or {})['DispelAbilities'])
+    self.TempSettings.DispelAbilities = Tables.ConcatTables(entries, dispelClickies)
+end
+
+function Module:GetDispelAbilities()
+    if self.TempSettings.DispelClickiesPresent == nil then self:RebuildDispelAbilities() end -- lazy build covers first-load ordering
+    return self.TempSettings.DispelAbilities
+end
+
+function Module:HasDispelClickies()
+    if self.TempSettings.DispelClickiesPresent == nil then self:RebuildDispelAbilities() end
+    return self.TempSettings.DispelClickiesPresent
+end
+
+-- the dispel list editors only render alongside the ability list, so entry points outside the Class tab gate on the same condition
+function Module:CanEditDispelLists()
+    return (self.ClassConfig and self.ClassConfig.Dispel) ~= nil or self:HasDispelClickies()
+end
+
+-- the active dispel list setting name, swapped to the shared variant when shared dispel lists are enabled
+function Module:ActiveDispelList(base)
+    return Config:GetSetting('UseSharedDispelLists') and (base .. "Shared") or base
+end
+
+-- build a lowercased name->true set from the given dispel list; entries are stored as typed and matched case-insensitively
+function Module:ActiveDispelNameSet(base)
+    local set = {}
+    for _, name in ipairs(Config:GetSetting(self:ActiveDispelList(base)) or {}) do
+        set[Strings.TrimSpaces(name):lower()] = true
+    end
+    return set
+end
+
+-- does the target carry a beneficial effect we are willing to strip? empty lists accept any dispellable one
+function Module:TargetHasDispellableBuff(target)
+    local allowSet = self:ActiveDispelNameSet('DispelAllowList')
+    local denySet  = self:ActiveDispelNameSet('DispelDenyList')
+    local hasLists = next(allowSet) ~= nil or next(denySet) ~= nil
+
+    for i = 1, (target.BuffCount() or 0) do
+        local buff = target.Buff(i)
+        -- the cached buff list carries detrimentals too, and Dispellable is a spell flag independent of that
+        if buff and buff.Beneficial() then
+            if not hasLists then
+                if buff.Dispellable() then return true end
+            else
+                local buffName = (buff.Name() or ""):lower()
+                -- an allow entry is an override for effects the client flags undispellable
+                if allowSet[buffName] then return true end
+                if buff.Dispellable() and not denySet[buffName] then return true end
+            end
+        end
+    end
+    return false
+end
+
+-- walk the dispel priority list on the target; returns the first enabled, in-scope, resolved, cond-passing, ready entry
+function Module:GetReadyDispelEntry(target)
+    local entries = self:GetDispelAbilities()
+    if not entries then return nil end
+
+    local clickyOnly = not self:IsDispelling()
+    for _, entry in ipairs(entries) do
+        if (not clickyOnly or entry.from_clicky) and self:DispelEntryEnabled(entry) then
+            local resolvedName = self:GetResolvedActionMapItem(entry.name) or entry.name
+            local spell        = Entries.Spell(entry, resolvedName)
+            if Entries.Resolves(entry, spell)
+                and (not entry.cond or Core.SafeCallFunc("Dispel entry cond", entry.cond, self, spell, target))
+                and Entries.Ready(entry, spell, resolvedName, false) then
+                return entry, spell, resolvedName
+            end
+        end
+    end
+    return nil
+end
+
+-- decide and cast one dispel on the combat auto target
+function Module:RunDispel(combat_state)
+    if combat_state ~= "Combat" then return end
+
+    local target = mq.TLO.Target
+    local targetId = target.ID() or 0
+    -- Beneficial is one read and rules out most targets, so it gates the debuff checks and the entry walk
+    if targetId == 0 or targetId ~= Globals.AutoTargetID or not target.Beneficial() then return end
+    if not Casting.OkayToDebuff() or not Core.CombatActionsCheck() then return end
+
+    -- resolve the ability first; with nothing ready the buff walk's result is unusable either way
+    local entry, spell, resolvedName = self:GetReadyDispelEntry(target)
+    if not entry or not self:TargetHasDispellableBuff(target) then return end
+
+    Core.SafeCallFunc("DispelEntryCast", self.DispelEntryCast, self, entry, spell, resolvedName, targetId)
+    Comms.HandleAnnounce(Comms.FormatChatEvent("Dispel", target.DisplayName() or "target", string.format("dispelling with %s", entry.name)),
+        Config:GetSetting('DispelAnnounceGroup'), Config:GetSetting('DispelAnnounce'), Config:GetSetting('AnnounceToRaidIfInRaid'))
 end
 
 function Module:ProcessCuresList()
@@ -2598,6 +2872,7 @@ function Module:GiveTime()
             self:GetRotations()
             self:RebuildRezAbilities()
             self:RebuildCureAbilities()
+            self:RebuildDispelAbilities()
             if self:IsCuring() then
                 if self.ClassConfig.Cures and self.ClassConfig.Cures.GetCureSpells then
                     Core.SafeCallFunc("GetCureSpells", self.ClassConfig.Cures.GetCureSpells, self)
@@ -2679,6 +2954,10 @@ function Module:GiveTime()
     -- stop singing after pause so we can take over again (if we are active, we will stop our own songs). If paused, allow user to manage their own songs.
     if Core.MyClassIs("BRD") and not Globals.PauseMain and mq.TLO.Me.Casting() ~= nil and not mq.TLO.Window("CastingWindow").Open() then
         Core.DoCmd("/stopsong")
+    end
+
+    if self:IsDispelling() or self:HasDispelClickies() then
+        self:RunDispel(combat_state)
     end
 
     -- Downtime rotation will just run a full rotation to completion

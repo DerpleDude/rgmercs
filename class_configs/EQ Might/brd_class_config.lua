@@ -46,11 +46,15 @@ local _ClassConfig = {
         'General',
     },
     ['ModeChecks']        = {
-        CanMez    = function() return true end,
-        CanCharm  = function() return true end,
-        IsMezzing = function() return Config:GetSetting('MezOn') end,
-        IsCuring  = function() return Config:GetSetting('UseCure') end,
-        IsRezing  = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or not Targeting.HasXTHaters()) end,
+        CanMez       = function() return true end,
+        CanCharm     = function() return true end,
+        IsMezzing    = function() return Config:GetSetting('MezOn') end,
+        IsCuring     = function() return Config:GetSetting('UseCure') end,
+        IsDispelling = function() return Config:GetSetting('DoDispel') end,
+        IsRezing     = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or not Targeting.HasXTHaters()) end,
+    },
+    ['Dispel']            = {
+        { name = "DispelSong", type = "Song", },
     },
     ['Rez']               = {
         ['Combat']   = {
@@ -488,7 +492,7 @@ local _ClassConfig = {
             name = 'Debuff',
             state = 1,
             steps = 1,
-            load_cond = function() return Config:GetSetting("DoSTSlow") or Config:GetSetting("DoAESlow") or Config:GetSetting("DoResistDebuff") or Config:GetSetting("DoDispel") end,
+            load_cond = function() return Config:GetSetting("DoSTSlow") or Config:GetSetting("DoAESlow") or Config:GetSetting("DoResistDebuff") end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and Casting.OkayToDebuff() and Core.CombatActionsCheck()
@@ -646,14 +650,6 @@ local _ClassConfig = {
                 load_cond = function() return Config:GetSetting('DoResistDebuff') end,
                 cond = function(self, songSpell)
                     return Casting.DetSpellCheck(songSpell)
-                end,
-            },
-            {
-                name = "DispelSong",
-                type = "Song",
-                load_cond = function() return Config:GetSetting('DoDispel') end,
-                cond = function(self, songSpell)
-                    return mq.TLO.Target.Beneficial() ~= nil
                 end,
             },
         },
