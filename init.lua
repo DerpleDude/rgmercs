@@ -280,7 +280,7 @@ local function RGInit(...)
             end
             if v == "reset_to_default" then
                 Config.Db:deleteCharacter(Globals.CurServer, Globals.CurLoadedChar)
-                Logger.log_info("All settings for %s on %s wiped from DB — defaults will load on startup.", Globals.CurLoadedChar, Globals.CurServer)
+                Logger.log_info("All settings for %s on %s wiped from DB - defaults will load on startup.", Globals.CurLoadedChar, Globals.CurServer)
                 break
             end
         end

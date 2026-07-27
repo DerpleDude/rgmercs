@@ -370,7 +370,7 @@ Config.DefaultConfig                                     = {
         Tooltip = "Choose if/when to meditate.\nMay interfere with bard songs (refer to FAQ for 'Bard Meditation').",
         Type = "Combo",
         ComboOptions = { 'Off', 'Out of Combat', 'In and Out of Combat', },
-        Default = Globals.CurLoadedClass == "BRD" and 1 or 2,
+        Default = function() return Globals.CurLoadedClass == "BRD" and 1 or 2 end,
         Min = 1,
         Max = 3,
         ConfigType = "Normal",
@@ -382,7 +382,7 @@ Config.DefaultConfig                                     = {
         Category = "Med Rules",
         Index = 2,
         Tooltip = "Force a stand to end meditation when thresholds are reached.",
-        Default = Globals.CurLoadedClass == "BRD",
+        Default = function() return Globals.CurLoadedClass == "BRD" end,
     },
     ['AfterCombatMedDelay']        = {
         DisplayName = "After Combat Med Delay",
@@ -841,7 +841,7 @@ Config.DefaultConfig                                     = {
         Category = "Assisting",
         Index = 4,
         Tooltip = "Auto attack the combat target. (Ranger Only: Disable to use ranged combat.)",
-        Default = Globals.Constants.RGMelee:contains(Globals.CurLoadedClass),
+        Default = function() return Globals.Constants.RGMelee:contains(Globals.CurLoadedClass) end,
         ConfigType = "Normal",
     },
     ['AllowMezBreak']              = {
@@ -851,7 +851,7 @@ Config.DefaultConfig                                     = {
         Category = "Assisting",
         Index = 5,
         Tooltip = "Allow combat actions if the target is mezzed.",
-        Default = (Globals.Constants.RGTank:contains(mq.TLO.Me.Class.ShortName())),
+        Default = function() return Globals.Constants.RGTank:contains(Globals.CurLoadedClass) end,
         ConfigType = "Advanced",
     },
     ['SkipFireSpells']             = {
@@ -1272,7 +1272,7 @@ Config.DefaultConfig                                     = {
         Category = "Under the Hood",
         Index = 1,
         Tooltip = "The amount of times to try to recast a spell, song, AA, or item due to a fizzle, interrupt, or similar. Note that queued actions already have a retry built-in.",
-        Default = Globals.CurLoadedClass == "BRD" and 1 or 0,
+        Default = function() return Globals.CurLoadedClass == "BRD" and 1 or 0 end,
         Min = 0,
         Max = 5,
         ConfigType = "Advanced",
@@ -1454,7 +1454,7 @@ Config.DefaultConfig                                     = {
         Category = "Emergency",
         Index = 2,
         Tooltip = "Your HP % before we begin to use emergency mitigation abilities.",
-        Default = Globals.Constants.RGTank:contains(mq.TLO.Me.Class.ShortName()) and 40 or 50,
+        Default = function() return Globals.Constants.RGTank:contains(Globals.CurLoadedClass) and 40 or 50 end,
         Min = 1,
         Max = 100,
     },
@@ -1465,7 +1465,7 @@ Config.DefaultConfig                                     = {
         Category = "Emergency",
         Index = 3,
         Tooltip = "Your HP % before we resort to our deepest emergency abilities.",
-        Default = Globals.Constants.RGTank:contains(mq.TLO.Me.Class.ShortName()) and 20 or 30,
+        Default = function() return Globals.Constants.RGTank:contains(Globals.CurLoadedClass) and 20 or 30 end,
         Min = 1,
         Max = 100,
     },
@@ -1640,7 +1640,7 @@ Config.DefaultConfig                                     = {
         Category = "Healing Thresholds",
         Index = 2,
         Tooltip = "Minimum PctHPs to use the Light Heal Rotation or actions that check whether Light Heals are needed.",
-        Default = mq.TLO.Me.Class.ShortName() == "CLR" and 95 or 90,
+        Default = function() return Globals.CurLoadedClass == "CLR" and 95 or 90 end,
         Min = 1,
         Max = 99,
         ConfigType = "Advanced",
@@ -3583,8 +3583,12 @@ function Config.ResolveDefaults(defaults, settings, module)
     end
 
     for k, v in pairs(defaults) do
-        if v.Default and type(v.Default):lower() == "function" then
-            v.Default = v.Default()
+        if type(v.Default) == "function" then
+            v.DefaultFn = v.Default
+        end
+
+        if v.DefaultFn then
+            v.Default = v.DefaultFn()
         end
 
         if settings[k] == nil then

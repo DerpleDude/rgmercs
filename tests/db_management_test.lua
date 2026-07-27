@@ -6,8 +6,8 @@
 --
 -- It operates on sentinel characters on a fake server ("rgtestsrv") inside the live config DB,
 -- exercises the real CopySettings / ResetSettings / DeleteSettings / DBManagement.RequestRescan
--- and the running-peer delete guard, then deletes the sentinel rows/characters. A handful of
--- functions (Modules.ExecModule, Comms.SendMessage / GetPeerHeartbeat / IsCharRunning, and briefly
+-- and the running-peer reset/delete guards, then deletes the sentinel rows/characters. A handful of
+-- functions (Modules.ExecModule, Comms.SendMessage / GetPeerHeartbeat / IsCharRunning, Config.Db.deleteModule, and briefly
 -- Globals.CurLoadedChar/Server/Class) are swapped to observe behavior and restored afterward.
 -- If anything leaks and mercs misbehaves, `/lua run rgmercs` to reload. Output goes straight to
 -- the console via printf (not the RGMercs logger), so it shows regardless of log level.
@@ -91,9 +91,11 @@ function M.RunAll()
     local unseededMod
     for _, m in ipairs(allMods) do
         local inT = false
-        for _, t in ipairs(testMods) do if t == m then
+        for _, t in ipairs(testMods) do
+            if t == m then
                 inT = true; break
-            end end
+            end
+        end
         if not inT then
             unseededMod = m; break
         end
@@ -113,18 +115,8 @@ function M.RunAll()
         end
     end
 
-    local customMod, customKey
-    for _, m in ipairs(allMods) do
-        for k, d in pairs(Config.moduleDefaultSettings[m]) do
-            if d.Type == "Custom" and d.Default ~= nil then
-                customMod, customKey = m, k; break
-            end
-        end
-        if customMod then break end
-    end
-
-    printf("[DBTEST] testMods=[%s] unseededMod=%s rescanMod=%s noRescanMod=%s customMod=%s",
-        table.concat(testMods, ", "), tostring(unseededMod), tostring(rescanMod), tostring(noRescanMod), tostring(customMod))
+    printf("[DBTEST] testMods=[%s] unseededMod=%s rescanMod=%s noRescanMod=%s",
+        table.concat(testMods, ", "), tostring(unseededMod), tostring(rescanMod), tostring(noRescanMod))
 
     -- Seed / DB helpers
     local function seedVal(d)
@@ -137,9 +129,6 @@ function M.RunAll()
     end
     local function buildSeed(md)
         local s = {}; for _, e in ipairs(keysWithDefault(md)) do s[e.k] = seedVal(e.d) end; return s
-    end
-    local function buildDefaults(md)
-        local s = {}; for _, e in ipairs(keysWithDefault(md)) do s[e.k] = e.d.Default end; return s
     end
     local function setM(c, cl, m, t) Config.Db:setAll(SRV, c, cl, m, t) end
     local function getM(c, cl, m) return Config.Db:getAll(SRV, c, cl, m) or {} end
@@ -166,6 +155,7 @@ function M.RunAll()
         SendMessage      = Comms.SendMessage,
         GetPeerHeartbeat = Comms.GetPeerHeartbeat,
         IsCharRunning    = Comms.IsCharRunning,
+        deleteModule     = Config.Db.deleteModule,
         ToastStates      = OptionsUI.ToastStates,
         dbChars          = OptionsUI.dbChars,
         dbFromClasses    = OptionsUI.dbFromClasses,
@@ -175,6 +165,7 @@ function M.RunAll()
         Comms.SendMessage       = sv.SendMessage
         Comms.GetPeerHeartbeat  = sv.GetPeerHeartbeat
         Comms.IsCharRunning     = sv.IsCharRunning
+        Config.Db.deleteModule  = sv.deleteModule
         OptionsUI.ToastStates   = sv.ToastStates
         OptionsUI.dbChars       = sv.dbChars
         OptionsUI.dbFromClasses = sv.dbFromClasses
@@ -213,25 +204,41 @@ function M.RunAll()
         check("Copy cross-class: lands on target class", deepEqual(getM("e", CLS, testMods[1]), getM("f", CLS2, testMods[1])))
         check("Copy cross-class: target's other class untouched", nKeys(getM("f", CLS, testMods[1])) == 0)
 
-        -- 4) Reset "All Modules" -> defaults
+        -- 4) Reset "All Modules" clears saved rows (the target rebuilds its own defaults on next load)
         wipe("g", CLS)
         for _, m in ipairs(testMods) do setM("g", CLS, m, buildSeed(Config.moduleDefaultSettings[m])) end
         OptionsUI:ResetSettings({ lbl("x"), lbl("g"), }, 2, CLS, "All Modules")
         for _, m in ipairs(testMods) do
-            check("Reset All: " .. m .. " == defaults", deepEqual(getM("g", CLS, m), buildDefaults(Config.moduleDefaultSettings[m])))
+            check("Reset All: " .. m .. " rows cleared", nKeys(getM("g", CLS, m)) == 0,
+                string.format("left=%d", nKeys(getM("g", CLS, m))))
         end
 
-        -- 5) Reset includes Custom-typed settings
-        if customMod and customKey then
-            local cd = Config.moduleDefaultSettings[customMod][customKey].Default
-            wipe("h", CLS)
-            setM("h", CLS, customMod, buildSeed(Config.moduleDefaultSettings[customMod]))
-            check("Reset(Custom) precondition: seed differs from default", not deepEqual((getM("h", CLS, customMod))[customKey], cd))
-            OptionsUI:ResetSettings({ lbl("x"), lbl("h"), }, 2, CLS, customMod)
-            check(string.format("Reset(Custom): %s.%s -> default", customMod, customKey), deepEqual((getM("h", CLS, customMod))[customKey], cd))
-        else
-            printf("[DBTEST] no Custom-typed setting with a Default found -- skipping Custom reset check.")
-        end
+        -- 5) Reset single module clears only that module
+        wipe("h", CLS)
+        for _, m in ipairs(testMods) do setM("h", CLS, m, buildSeed(Config.moduleDefaultSettings[m])) end
+        OptionsUI:ResetSettings({ lbl("x"), lbl("h"), }, 2, CLS, testMods[1])
+        check("Reset single: target module cleared", nKeys(getM("h", CLS, testMods[1])) == 0)
+        if testMods[2] then check("Reset single: other module NOT cleared", nKeys(getM("h", CLS, testMods[2])) > 0) end
+
+        -- 5a) Reset: refuses while target is "running" (asserts the refusal itself, since surviving rows
+        -- alone would not distinguish it from the other bails)
+        wipe("h", CLS)
+        setM("h", CLS, testMods[1], buildSeed(Config.moduleDefaultSettings[testMods[1]]))
+        ---@diagnostic disable-next-line: duplicate-set-field
+        Comms.IsCharRunning = function() return true end
+        local guarded = DBManagement.ResetSettings("h", SRV, CLS, "All Modules")
+        Comms.IsCharRunning = sv.IsCharRunning
+        check("Reset guard: reports refusal", guarded.ok == false and guarded.refusedRunning == true,
+            string.format("ok=%s refusedRunning=%s", tostring(guarded.ok), tostring(guarded.refusedRunning)))
+        check("Reset guard: rows intact", nKeys(getM("h", CLS, testMods[1])) > 0)
+
+        -- 5b) Reset: a busy db is reported to the caller rather than reloading stale settings
+        ---@diagnostic disable-next-line: duplicate-set-field
+        Config.Db.deleteModule = function() return false end
+        local busy = DBManagement.ResetSettings("h", SRV, CLS, "All Modules")
+        Config.Db.deleteModule = sv.deleteModule
+        check("Reset busy: reports the busy db, not another bail", busy.ok == false and busy.refusedRunning ~= true,
+            string.format("ok=%s refusedRunning=%s", tostring(busy.ok), tostring(busy.refusedRunning)))
 
         -- 6) Delete: refuses while target is "running", then succeeds
         wipe("i", CLS)

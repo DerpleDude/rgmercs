@@ -1,7 +1,8 @@
-local Comms   = require('utils.comms')
-local Config  = require('utils.config')
-local Logger  = require('utils.logger')
-local Modules = require('utils.modules')
+local ClassLoader  = require('utils.classloader')
+local Comms        = require('utils.comms')
+local Config       = require('utils.config')
+local Logger       = require('utils.logger')
+local Modules      = require('utils.modules')
 
 local DBManagement = { _version = '1.0', _name = "DBManagement", _author = 'Derple', 'Algar', }
 
@@ -85,15 +86,24 @@ function DBManagement.CopySettings(fromName, fromServer, fromClass, toName, toSe
     }
 end
 
---- Resets module settings to defaults for the given char/server/class.
---- Triggers a rescan if appropriate.
+--- Clears saved module settings for the given char/server/class so the target rebuilds
+--- its own defaults on next load. Refuses if the target is a peer currently running
+--- RGMercs; reloads in place when the target is the local character.
 --- @param charName string
 --- @param server string
 --- @param class string
 --- @param moduleName string Module name, or "All Modules".
---- @return table result { ok, modulesAffected, toastMessage }
+--- @return table result { ok, refusedRunning, modulesAffected, toastMessage }
 function DBManagement.ResetSettings(charName, server, class, moduleName)
     if not charName then return { ok = false, } end
+
+    local label = string.format("%s (%s)", charName, server)
+    local isLocal = Comms.IsLocalCurrent(charName, server, class)
+
+    if not isLocal and Comms.IsCharRunning(charName, server, class) then
+        Logger.log_error("DB Management: refusing to reset %s [%s] -- target is currently running RGMercs", label, class)
+        return { ok = false, refusedRunning = true, }
+    end
 
     local toReset = {}
     if moduleName == "All Modules" then
@@ -104,24 +114,24 @@ function DBManagement.ResetSettings(charName, server, class, moduleName)
         table.insert(toReset, moduleName)
     end
 
+    local deletesQueued = false
     for _, modName in ipairs(toReset) do
-        local mDefaults = Config.moduleDefaultSettings[modName]
-        if mDefaults then
-            local defaults = {}
-            for key, def in pairs(mDefaults) do
-                if def.Default ~= nil then
-                    defaults[key] = def.Default
-                end
-            end
-            if next(defaults) then
-                Config.Db:setAll(server, charName, class, modName, defaults)
-            end
+        if not Config.Db:deleteModule(server, charName, class, modName) then
+            deletesQueued = true
         end
+    end
+
+    if deletesQueued then
+        Logger.log_error("DB Management: reset of %s [%s] is queued -- the config database was busy; it will apply shortly, retry to rebuild settings now", label, class)
+        return { ok = false, }
+    end
+
+    if isLocal then
+        ClassLoader.reloadConfig()
     end
 
     DBManagement.RequestRescan(charName, server, class, toReset)
 
-    local label = string.format("%s (%s)", charName, server)
     Logger.log_info("DB Management: reset %s settings for %s [%s] to defaults", moduleName, label, class)
 
     return {
@@ -149,7 +159,11 @@ function DBManagement.DeleteSettings(charName, server, class)
         return { ok = false, refusedRunning = true, }
     end
 
-    Config.Db:deleteCharacterClass(server, charName, class)
+    if not Config.Db:deleteCharacterClass(server, charName, class) then
+        Logger.log_error("DB Management: delete of %s [%s] is queued -- the config database was busy; it will apply shortly", label, class)
+        return { ok = false, }
+    end
+
     if not Config.Db:characterHasAnyConfig(server, charName) then
         Config.Db:deleteCharacter(server, charName)
     end
@@ -157,9 +171,8 @@ function DBManagement.DeleteSettings(charName, server, class)
     Logger.log_info("DB Management: deleted all settings for %s [%s]", label, class)
 
     return {
-        ok             = true,
-        refusedRunning = false,
-        toastMessage   = string.format("Deleted %s [%s] from DB", label, class),
+        ok           = true,
+        toastMessage = string.format("Deleted %s [%s] from DB", label, class),
     }
 end
 

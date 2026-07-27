@@ -721,8 +721,10 @@ function OptionsUI:RenderDBManagement()
     if not noChars then
         fromName, fromServer = self.dbChars[self.dbFromIdx]:match('^(.+) %((.+)%)$')
     end
-    local fromIsRunning = fromName and Comms.IsCharRunning(fromName, fromServer, fromClass) or false
-    local canDelete     = not noChars and not fromIsRunning
+    local fromIsRunning     = fromName and Comms.IsCharRunning(fromName, fromServer, fromClass) or false
+    local fromIsRunningPeer = fromIsRunning and not Comms.IsLocalCurrent(fromName, fromServer, fromClass)
+    local canDelete         = not noChars and not fromIsRunning
+    local canReset          = not noChars and not fromIsRunningPeer
 
     if ImGui.BeginTable("##dbmgmt", 4, ImGuiTableFlags.SizingFixedFit) then
         ImGui.TableSetupColumn("label", ImGuiTableColumnFlags.WidthFixed, 80)
@@ -767,11 +769,16 @@ function OptionsUI:RenderDBManagement()
             fromClass = self.dbFromClasses[self.dbFromClassIdx]
         end
         ImGui.TableNextColumn()
-        if noChars then ImGui.BeginDisabled() end
+        if not canReset then ImGui.BeginDisabled() end
         if ImGui.Button(Icons.MD_RESTORE .. " Reset to Defaults##dbreset") then
             self.dbOpenResetPopup = true
         end
-        if noChars then ImGui.EndDisabled() end
+        if not canReset then ImGui.EndDisabled() end
+        if fromIsRunningPeer and not noChars then
+            if ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled) then
+                ImGui.SetTooltip("Cannot reset: target character is currently running RGMercs.")
+            end
+        end
         ImGui.SameLine()
         if not canDelete then ImGui.BeginDisabled() end
         if ImGui.Button(Icons.FA_TRASH .. " Delete from Database##dbdelete") then
@@ -916,6 +923,16 @@ function OptionsUI:RenderDBManagement()
     Config.Db:renderTelemetryGraph()
 end
 
+function OptionsUI:AddDBToast(message, color)
+    table.insert(self.ToastStates, {
+        active       = true,
+        timer        = 0,
+        message      = message,
+        receivedTime = os.time(),
+        color        = Ui.ImVec4ToColor(color),
+    })
+end
+
 function OptionsUI:CopySettings(charLabels, fromIdx, fromClass, toIdx, toClass, moduleName)
     local fromName, fromServer = charLabels[fromIdx]:match('^(.+) %((.+)%)$')
     local toName, toServer     = charLabels[toIdx]:match('^(.+) %((.+)%)$')
@@ -925,13 +942,7 @@ function OptionsUI:CopySettings(charLabels, fromIdx, fromClass, toIdx, toClass, 
     -- copying to the same char on a new class means its class list is stale
     if result.sameChar then self.dbFromClasses = nil end
 
-    table.insert(self.ToastStates, {
-        active       = true,
-        timer        = 0,
-        message      = result.toastMessage,
-        receivedTime = os.time(),
-        color        = Ui.ImVec4ToColor(Globals.Constants.Colors.Green),
-    })
+    self:AddDBToast(result.toastMessage, Globals.Constants.Colors.Green)
 end
 
 function OptionsUI:ResetSettings(charLabels, fromIdx, fromClass, moduleName)
@@ -939,13 +950,10 @@ function OptionsUI:ResetSettings(charLabels, fromIdx, fromClass, moduleName)
     local result = DBManagement.ResetSettings(fromName, fromServer, fromClass, moduleName)
     if not result.ok then return end
 
-    table.insert(self.ToastStates, {
-        active       = true,
-        timer        = 0,
-        message      = result.toastMessage,
-        receivedTime = os.time(),
-        color        = Ui.ImVec4ToColor(Globals.Constants.Colors.Green),
-    })
+    self.dbChars       = nil
+    self.dbFromClasses = nil
+
+    self:AddDBToast(result.toastMessage, Globals.Constants.Colors.Green)
 end
 
 function OptionsUI:DeleteSettings(charLabels, fromIdx, fromClass)
@@ -957,13 +965,7 @@ function OptionsUI:DeleteSettings(charLabels, fromIdx, fromClass)
     self.dbChars       = nil
     self.dbFromClasses = nil
 
-    table.insert(self.ToastStates, {
-        active       = true,
-        timer        = 0,
-        message      = result.toastMessage,
-        receivedTime = os.time(),
-        color        = Ui.ImVec4ToColor(Globals.Constants.Colors.Green),
-    })
+    self:AddDBToast(result.toastMessage, Globals.Constants.Colors.Green)
 end
 
 function OptionsUI:RenderCurrentTab()
