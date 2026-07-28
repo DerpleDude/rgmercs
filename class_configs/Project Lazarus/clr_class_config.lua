@@ -454,7 +454,7 @@ local _ClassConfig = {
                 name = "Blessing of Sanctuary",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    return target.ID() == (mq.TLO.Target.AggroHolder.ID() and not Targeting.TargetIsTanking(target))
+                    return target.ID() == (mq.TLO.Target.AggroHolder.ID() or 0) and not Targeting.TargetIsTanking(target)
                 end,
             },
             { --The stuff above is down, lets make mainhealpoint faster.

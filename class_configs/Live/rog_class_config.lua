@@ -298,7 +298,7 @@ return {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and mq.TLO.Me.PctAggro() > (Config:GetSetting('HideAggro') or 90)
+                return combat_state == "Combat" and mq.TLO.Me.PctAggro() > (Config:GetSetting('HideAggro') or 90) and Casting.OkayToCombatEscape()
             end,
         },
         {

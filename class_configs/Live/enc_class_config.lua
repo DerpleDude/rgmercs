@@ -1307,7 +1307,7 @@ local _ClassConfig    = {
                 name = "Arcane Whisper",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    return Globals.AutoTargetIsNamed
+                    return Globals.AutoTargetIsNamed and Casting.OkayToCombatEscape()
                 end,
             },
             {
@@ -1319,7 +1319,7 @@ local _ClassConfig    = {
                 type = "AA",
                 load_cond = function() return Config:GetSetting("DoBeguilers") end,
                 cond = function(self, aaName)
-                    return mq.TLO.SpawnCount("npc radius 20")() > 2
+                    return Casting.OkayToCombatEscape() and mq.TLO.SpawnCount("npc radius 20")() > 2
                 end,
             },
         },

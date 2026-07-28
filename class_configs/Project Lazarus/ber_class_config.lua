@@ -393,6 +393,9 @@ return {
             {
                 name = "Distraction Attack",
                 type = "AA",
+                cond = function(self, aaName, target)
+                    return Casting.OkayToCombatEscape()
+                end,
             },
             {
                 name = "StunStrike",

@@ -697,7 +697,7 @@ return {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and mq.TLO.Me.PctAggro() > (Config:GetSetting('JoltAggro') or 90)
+                return combat_state == "Combat" and mq.TLO.Me.PctAggro() > (Config:GetSetting('JoltAggro') or 90) and Casting.OkayToCombatEscape()
             end,
         },
         {
@@ -885,14 +885,14 @@ return {
                 name = "Mind Crash",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    return Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 90
+                    return Globals.AutoTargetIsNamed and Targeting.IHaveAggro(100)
                 end,
             },
             {
                 name = "Arcane Whisper",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    return Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 90
+                    return Globals.AutoTargetIsNamed and Targeting.IHaveAggro(100)
                 end,
             },
             {
@@ -905,16 +905,10 @@ return {
             {
                 name = "Concussion",
                 type = "AA",
-                cond = function(self)
-                    return mq.TLO.Me.PctAggro() > Config:GetSetting('JoltAggro')
-                end,
             },
             {
                 name = "JoltSpell",
                 type = "Spell",
-                cond = function(self)
-                    return mq.TLO.Me.PctAggro() > Config:GetSetting('JoltAggro')
-                end,
             },
         },
         ['Snare'] = {

@@ -888,7 +888,7 @@ local _ClassConfig = {
             load_cond = function(self) return not Core.IsTanking() end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and mq.TLO.Me.PctAggro() > Config:GetSetting('JoltAggro')
+                return combat_state == "Combat" and mq.TLO.Me.PctAggro() > Config:GetSetting('JoltAggro') and Casting.OkayToCombatEscape()
             end,
         },
         {

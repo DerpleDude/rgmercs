@@ -754,7 +754,7 @@ local _ClassConfig = {
                 name = "Arcane Whisper",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    return Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 90
+                    return Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 90 and Casting.OkayToCombatEscape()
                 end,
             },
         },

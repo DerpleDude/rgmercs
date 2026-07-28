@@ -510,7 +510,7 @@ return {
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoJoltSpell') end,
                 cond = function(self, spell, target)
-                    return Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 80
+                    return Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 80 and Casting.OkayToCombatEscape()
                 end,
             },
             {
