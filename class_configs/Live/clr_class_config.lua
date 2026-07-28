@@ -401,9 +401,9 @@ local _ClassConfig = {
             "Hand of Tenacity",              -- Level 75
             "Hand of Conviction",            -- Level 70
             "Hand of Virtue",                -- Level 65
-            "Aegolism",                      -- Level 60
-            "Ancient: Gift of Aegolism",     -- Level 60
+            "Ancient: Gift of Aegolism",     -- Level 60 
             "Blessing of Aegolism",          -- Level 60
+            "Aegolism",                      -- Level 60 (Single Target)
             "Blessing of Temperance",        -- Level 45
             "Temperance",                    -- Level 40
         },
