@@ -1367,7 +1367,7 @@ Config.DefaultConfig                                     = {
         Category = "AE",
         Index = 2,
         Tooltip = "Minimum number of valid targets before using AE Disciplines or AA.",
-        Default = 2,
+        Default = function() return Globals.Constants.RGTank:contains(Globals.CurLoadedClass) and 2 or 3 end,
         Min = 1,
         Max = 10,
     },
