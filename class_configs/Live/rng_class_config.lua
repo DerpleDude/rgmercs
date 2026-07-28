@@ -10,9 +10,10 @@ local Strings      = require("utils.strings")
 local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
-    _version              = "2.0 - Live",
+    _version              = "2.1 - Live",
     _author               = "Algar",
     ['ModeChecks']        = {
+        IsTanking    = function() return Core.IsModeActive("Tank") end,
         IsHealing    = function()
             return Config:GetSetting('DoHealSpell') or Config:GetSetting('DoBurstHeal') or Casting.CanUseAA("Convergence of Spirits")
         end,
@@ -29,6 +30,7 @@ local _ClassConfig = {
     },
     ['Modes']             = {
         'DPS',
+        'Tank',
     },
     ['Cure']              = {
         ['Poison'] = {
@@ -60,6 +62,25 @@ local _ClassConfig = {
             { element = ImGuiCol.SliderGrab,       color = { r = 0.70, g = 0.48, b = 0.12, a = 0.8, }, },
             { element = ImGuiCol.SliderGrabActive, color = { r = 0.70, g = 0.48, b = 0.12, a = 0.9, }, },
             { element = ImGuiCol.FrameBgActive,    color = { r = 0.12, g = 0.32, b = 0.08, a = 1.0, }, },
+        },
+        ['Tank'] = {
+            { element = ImGuiCol.TitleBgActive,    color = { r = 0.18, g = 0.28, b = 0.12, a = 0.8, }, },
+            { element = ImGuiCol.TableHeaderBg,    color = { r = 0.18, g = 0.28, b = 0.12, a = 0.8, }, },
+            { element = ImGuiCol.Tab,              color = { r = 0.07, g = 0.11, b = 0.05, a = 0.8, }, },
+            { element = ImGuiCol.TabSelected,      color = { r = 0.18, g = 0.28, b = 0.12, a = 0.8, }, },
+            { element = ImGuiCol.TabHovered,       color = { r = 0.18, g = 0.28, b = 0.12, a = 1.0, }, },
+            { element = ImGuiCol.Header,           color = { r = 0.07, g = 0.11, b = 0.05, a = 0.8, }, },
+            { element = ImGuiCol.HeaderActive,     color = { r = 0.18, g = 0.28, b = 0.12, a = 0.8, }, },
+            { element = ImGuiCol.HeaderHovered,    color = { r = 0.18, g = 0.28, b = 0.12, a = 1.0, }, },
+            { element = ImGuiCol.FrameBgHovered,   color = { r = 0.18, g = 0.28, b = 0.12, a = 0.7, }, },
+            { element = ImGuiCol.Button,           color = { r = 0.12, g = 0.18, b = 0.08, a = 0.8, }, },
+            { element = ImGuiCol.ButtonActive,     color = { r = 0.18, g = 0.28, b = 0.12, a = 0.8, }, },
+            { element = ImGuiCol.ButtonHovered,    color = { r = 0.18, g = 0.28, b = 0.12, a = 1.0, }, },
+            { element = ImGuiCol.TextSelectedBg,   color = { r = 0.18, g = 0.28, b = 0.12, a = 0.1, }, },
+            { element = ImGuiCol.FrameBg,          color = { r = 0.07, g = 0.11, b = 0.05, a = 0.8, }, },
+            { element = ImGuiCol.SliderGrab,       color = { r = 0.55, g = 0.65, b = 0.35, a = 0.8, }, },
+            { element = ImGuiCol.SliderGrabActive, color = { r = 0.55, g = 0.65, b = 0.35, a = 0.9, }, },
+            { element = ImGuiCol.FrameBgActive,    color = { r = 0.18, g = 0.28, b = 0.12, a = 1.0, }, },
         },
     },
     ['ItemSets']          = {
@@ -285,35 +306,35 @@ local _ClassConfig = {
             "Storm of Blades",               -- Level 96
         },
         ['ReflexStrike'] = {
-            "Reflexive Needlespikes",   -- Level 121
-            "Reflexive Rimespurs",      -- Level 111
-            "Reflexive Nettlespears",   -- Level 105
-            "Reflexive Bladespurs",     -- Level 100
+            "Reflexive Needlespikes",    -- Level 121
+            "Reflexive Rimespurs",       -- Level 111
+            "Reflexive Nettlespears",    -- Level 105
+            "Reflexive Bladespurs",      -- Level 100
         },
-        ['JoltingKicks'] = {            -- Timer 9
-            "Jolting Kicks XII",        -- Level 127
-            "Jolting Drop Kicks",       -- Level 122
-            "Jolting Roundhouse Kicks", -- Level 117
-            "Jolting Axe Kicks",        -- Level 112
-            "Jolting Wheel Kicks",      -- Level 107
-            "Jolting Cut Kicks",        -- Level 102
-            "Jolting Heel Kicks",       -- Level 97
-            "Jolting Crescent Kicks",   -- Level 92
-            "Jolting Hook Kicks",       -- Level 87
-            "Jolting Frontkicks",       -- Level 82
-            "Jolting Snapkicks",        -- Level 77
-            "Jolting Kicks",            -- Level 72
+        ['JoltingKicks'] = {             -- Timer 9
+            "Jolting Kicks XII",         -- Level 127
+            "Jolting Drop Kicks",        -- Level 122
+            "Jolting Roundhouse Kicks",  -- Level 117
+            "Jolting Axe Kicks",         -- Level 112
+            "Jolting Wheel Kicks",       -- Level 107
+            "Jolting Cut Kicks",         -- Level 102
+            "Jolting Heel Kicks",        -- Level 97
+            "Jolting Crescent Kicks",    -- Level 92
+            "Jolting Hook Kicks",        -- Level 87
+            "Jolting Frontkicks",        -- Level 82
+            "Jolting Snapkicks",         -- Level 77
+            "Jolting Kicks",             -- Level 72
         },
-        -- ['EnragingKicks'] = {              -- Timer 9
-        --     "Enraging Kicks XII",          -- Level 127
-        --     "Enraging Drop Kicks",         -- Level 122
-        --     "Enraging Roundhouse Kicks",   -- Level 117
-        --     "Enraging Axe Kicks",          -- Level 112
-        --     "Enraging Wheel Kicks",        -- Level 107
-        --     "Enraging Cut Kicks",          -- Level 102
-        --     "Enraging Heel Kicks",         -- Level 97
-        --     "Enraging Crescent Kicks",     -- Level 92
-        -- },
+        ['EnragingKicks'] = {            -- Timer 9
+            "Enraging Kicks XII",        -- Level 127
+            "Enraging Drop Kicks",       -- Level 122
+            "Enraging Roundhouse Kicks", -- Level 117
+            "Enraging Axe Kicks",        -- Level 112
+            "Enraging Wheel Kicks",      -- Level 107
+            "Enraging Cut Kicks",        -- Level 102
+            "Enraging Heel Kicks",       -- Level 97
+            "Enraging Crescent Kicks",   -- Level 92
+        },
         ['WeaponShield'] = {
             "Weapon Shield Discipline", -- Level 60
         },
@@ -701,8 +722,16 @@ local _ClassConfig = {
             return (fireNuke and fireNuke.Level() or 0) >= 128
         end,
         SingleBuffCheck = function(self)
+            if self.Helpers.ProcBuffChoice(self) == 'JoltProcBuff' then return true end
             if Casting.CanUseAA("Wildstalker's Unity (Azia)") and not Config:GetSetting('OverwriteUnityBuffs') then return false end
             return true
+        end,
+        -- Resolves the proc buff preference to the set we can actually use, falling back to damage when the pick is unavailable.
+        ProcBuffChoice = function(self)
+            local choice = Config:GetSetting('ProcBuffChoice')
+            if choice == 2 and Core.GetResolvedActionMapItem('HateProcBuff') then return 'HateProcBuff' end
+            if choice == 3 and not Core.IsTanking() and Core.GetResolvedActionMapItem('JoltProcBuff') then return 'JoltProcBuff' end
+            return 'MeleeProcBuff'
         end,
         rangedNav = function(reason)
             if Config:GetSetting('DoMelee') then return false end
@@ -856,6 +885,7 @@ local _ClassConfig = {
             state = 1,
             steps = 1,
             doFullRotation = true,
+            load_cond = function(self) return not Core.IsTanking() end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and mq.TLO.Me.PctAggro() > Config:GetSetting('JoltAggro')
@@ -941,7 +971,7 @@ local _ClassConfig = {
             {
                 name = "Wildstalker's Unity (Beza)",
                 type = "AA",
-                load_cond = function(self) return Config:GetSetting('UnityProcChoice') == 1 end,
+                load_cond = function(self) return self.Helpers.ProcBuffChoice(self) == 'MeleeProcBuff' end,
                 active_cond = function(self, aaName) return Casting.IHaveBuff(mq.TLO.Me.AltAbility(aaName).Spell.Trigger(1).ID() or 0) end,
                 cond = function(self, aaName)
                     return Casting.SelfBuffAACheck(aaName)
@@ -950,7 +980,7 @@ local _ClassConfig = {
             {
                 name = "Wildstalker's Unity (Azia)",
                 type = "AA",
-                load_cond = function(self) return Config:GetSetting('UnityProcChoice') == 2 end,
+                load_cond = function(self) return self.Helpers.ProcBuffChoice(self) == 'HateProcBuff' end,
                 active_cond = function(self, aaName) return Casting.IHaveBuff(mq.TLO.Me.AltAbility(aaName).Spell.Trigger(1).ID() or 0) end,
                 cond = function(self, aaName)
                     return Casting.SelfBuffAACheck(aaName)
@@ -991,9 +1021,7 @@ local _ClassConfig = {
             {
                 name = "MeleeProcBuff",
                 type = "Spell",
-                load_cond = function(self)
-                    return Config:GetSetting('UnityProcChoice') == 1 or not Core.GetResolvedActionMapItem('HateProcBuff')
-                end,
+                load_cond = function(self) return self.Helpers.ProcBuffChoice(self) == 'MeleeProcBuff' end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
                     return self.Helpers.SingleBuffCheck(self) and Casting.SelfBuffCheck(spell)
@@ -1002,7 +1030,7 @@ local _ClassConfig = {
             {
                 name = "HateProcBuff",
                 type = "Spell",
-                load_cond = function(self) return Config:GetSetting('UnityProcChoice') == 2 end,
+                load_cond = function(self) return self.Helpers.ProcBuffChoice(self) == 'HateProcBuff' end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
                     return self.Helpers.SingleBuffCheck(self) and Casting.SelfBuffCheck(spell)
@@ -1039,11 +1067,9 @@ local _ClassConfig = {
             {
                 name = "JoltProcBuff",
                 type = "Spell",
-                load_cond = function(self) return Config:GetSetting('DoJoltProc') end,
+                load_cond = function(self) return self.Helpers.ProcBuffChoice(self) == 'JoltProcBuff' end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
-                cond = function(self, spell)
-                    return not Core.IsTanking() and Casting.SelfBuffCheck(spell)
-                end,
+                cond = function(self, spell) return Casting.SelfBuffCheck(spell) end,
             },
             {
                 name = "SnareProcBuff",
@@ -1074,8 +1100,9 @@ local _ClassConfig = {
             {
                 name = "Chameleon's Gift",
                 type = "AA",
+                load_cond = function(self, aaName) return not Core.IsTanking() end,
                 active_cond = function(self, aaName) return Casting.IHaveBuff(Casting.GetAASpell(aaName)) end,
-                cond = function(self, aaName) return not Core.IsTanking() and Casting.SelfBuffAACheck(aaName) end,
+                cond = function(self, aaName) return Casting.SelfBuffAACheck(aaName) end,
             },
         },
         ['GroupBuff']          = {
@@ -1469,6 +1496,14 @@ local _ClassConfig = {
         },
         ['Weaves']             = {
             {
+                name = "Taunt",
+                type = "Ability",
+                load_cond = function(self) return Core.IsTanking() end,
+                cond = function(self, abilityName, target)
+                    return Targeting.LostAutoTargetAggro()
+                end,
+            },
+            {
                 name = "ReflexStrike",
                 type = "Disc",
                 cond = function(self, discSpell, target)
@@ -1498,8 +1533,17 @@ local _ClassConfig = {
                 end,
             },
             {
+                name = "EnragingKicks",
+                type = "Disc",
+                load_cond = function(self) return Core.IsTanking() end,
+                cond = function(self, discSpell, target)
+                    return Targeting.InSpellRange(discSpell, target)
+                end,
+            },
+            {
                 name = "JoltingKicks",
                 type = "Disc",
+                load_cond = function(self) return not Core.IsTanking() end,
                 cond = function(self, discSpell, target)
                     return Targeting.InSpellRange(discSpell, target)
                 end,
@@ -1570,7 +1614,6 @@ local _ClassConfig = {
                 -- Filler
                 { name = "BurningCloak", },
                 { name = "Veil", },
-                { name = "JoltProcBuff",  cond = function(self) return Config:GetSetting('DoJoltProc') end, },
                 { name = "SnareProcBuff", cond = function(self) return Config:GetSetting('DoSnareProc') end, },
             },
         },
@@ -1620,9 +1663,10 @@ local _ClassConfig = {
             RequiresLoadoutChange = true,
             Default = 1,
             Min = 1,
-            Max = 1,
+            Max = 2,
             FAQ = "What is the difference between the modes?",
-            Answer = "Rangers currently only have one Mode. Melee and archery are governed by the Enable Melee Combat setting.",
+            Answer = "DPS is the standard mode. Tank mode is intended for off-tanking; it adds Taunt and swaps your kick and proc buff to their hate-generating versions.\n" ..
+                "Melee and archery are governed by the Enable Melee Combat setting.",
         },
 
         --Archery / Positioning
@@ -1734,19 +1778,20 @@ local _ClassConfig = {
         },
 
         --Buffs
-        ['UnityProcChoice']     = {
-            DisplayName = "Unity/Proc Choice:",
+        ['ProcBuffChoice']      = {
+            DisplayName = "Weapon Proc Choice:",
             Group = "Abilities",
             Header = "Buffs",
             Category = "Self",
             Index = 101,
-            Tooltip = "Wildstalker's Unity casts the same buffs either way apart from the weapon proc.\n" ..
-                "Beza grants Sparking Blades. Azia grants Devastating Blades, which also increases hate.",
+            Tooltip = "Sets your weapon proc and the Wildstalker's Unity version that grants it.\n" ..
+                "Damage uses Unity (Beza), Hate uses Unity (Azia), and Hate Reduction skips Unity to cast the individual buffs.\n" ..
+                "Falls back to the damage proc if your choice is unavailable at your level.",
             Type = "Combo",
-            ComboOptions = { 'Beza: Sparking Blades', 'Azia: Devastating Blades (adds hate)', },
+            ComboOptions = { 'Damage: Sparking Blades', 'Hate: Devastating Blades', 'Hate Reduction: Jolting Blades', },
             Default = 1,
             Min = 1,
-            Max = 2,
+            Max = 3,
             RequiresLoadoutChange = true,
         },
         ['OverwriteUnityBuffs'] = {
@@ -1772,22 +1817,12 @@ local _ClassConfig = {
             Min = 1,
             Max = 3,
         },
-        ['DoJoltProc']          = {
-            DisplayName = "Cast Hate Reduction Proc",
-            Group = "Abilities",
-            Header = "Buffs",
-            Category = "Self",
-            Index = 104,
-            Tooltip = "Use your Jolting line of hate reduction proc buffs.",
-            Default = true,
-            RequiresLoadoutChange = true,
-        },
         ['DoSnareProc']         = {
             DisplayName = "Cast Snare Proc",
             Group = "Abilities",
             Header = "Buffs",
             Category = "Self",
-            Index = 105,
+            Index = 104,
             Tooltip = "Keep Grasping Nettlecoat up to snare anything that melees you.",
             Default = false,
             RequiresLoadoutChange = true,
@@ -1797,7 +1832,7 @@ local _ClassConfig = {
             Group = "Abilities",
             Header = "Buffs",
             Category = "Self",
-            Index = 106,
+            Index = 105,
             Tooltip = "Use Veteran AA such as Intensity of the Resolute or Armor of Experience as necessary.",
             Default = true,
             ConfigType = "Advanced",
