@@ -4354,7 +4354,6 @@ function Ui.RenderToastNotifications(states, lingerTime)
     local sep_h         = 1.0
     local sep_gap       = 4.0
     local from_extra_h  = line_h + sep_h + sep_gap * 2
-    local fromLabel     = string.format("[%s] %s", os.date("%Y-%m-%d %H:%M:%S", (states[1].receivedTime or 0)), states[1].from or "")
 
     -- pre-compute heights so we can stack from the bottom
     local heights       = {}
@@ -4364,7 +4363,8 @@ function Ui.RenderToastNotifications(states, lingerTime)
         if not lines then
             local lns, maxW = toastLines(s.message, text_max_w)
             s._lines        = lns
-            local fromW     = ImGui.CalcTextSize(fromLabel)
+            s._fromLabel    = string.format("[%s] %s", os.date("%Y-%m-%d %H:%M:%S", (s.receivedTime or 0)), s.from or "")
+            local fromW     = ImGui.CalcTextSize(s._fromLabel)
             s._toast_w      = math.max(maxW, fromW) + toast_pad_x * 2
             lines           = lns
         end
@@ -4444,7 +4444,7 @@ function Ui.RenderToastNotifications(states, lingerTime)
                 local text_col = IM_COL32(255, 255, 255, iAlpha)
                 local text_y   = base_y + toast_pad_y
                 local from_col = IM_COL32(220, 180, 100, iAlpha)
-                draw_list:AddText(ImVec2(x + toast_pad_x, text_y), from_col, fromLabel)
+                draw_list:AddText(ImVec2(x + toast_pad_x, text_y), from_col, state._fromLabel)
                 text_y = text_y + line_h + sep_gap
                 local sep_col = IM_COL32(180, 180, 180, math.floor(alpha * 80))
                 draw_list:AddLine(ImVec2(x + toast_pad_x, text_y),

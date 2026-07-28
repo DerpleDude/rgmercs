@@ -409,11 +409,15 @@ function StandardUI:RenderMainWindow(imgui_style, openGUI, flags)
             end
 
             Ui.RenderToastNotifications(Logger.ToastStates, 6.0)
+        elseif #Logger.ToastStates > 0 then
+            Logger.ToastStates = {}
         end
 
         ImGui.PopID()
 
         ImGui.End()
+    elseif #Logger.ToastStates > 0 then
+        Logger.ToastStates = {}
     end
 
     return openGUI
