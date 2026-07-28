@@ -826,8 +826,7 @@ local _ClassConfig    = {
                 active_cond = function(self, spell) return mq.TLO.Me.FindBuff("id " .. tostring(spell.ID()))() ~= nil end,
                 cond = function(self, spell, target)
                     if not Targeting.TargetIsAMelee(target) then return false end
-                    -- Don't cast if we have Hastening of Salik
-                    return Casting.GroupBuffCheck(spell, target) and Casting.AddedBuffCheck(5521, target)
+                    return Casting.AddedBuffCheck(5521, target) and Casting.GroupBuffCheck(spell, target) -- Hastening of Salik
                 end,
             },
             {

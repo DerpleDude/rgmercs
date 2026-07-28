@@ -368,13 +368,72 @@ function Casting.ResolveBuffCheck(spellId, target, skipBlockCheck, skipTriggerCh
     end
 end
 
---- Calls ResolveBuffCheck with block and trigger checks both skipped.
---- Used for manual stacking overrides where only presence matters.
----@param spellId number The spell ID to check for on the target.
+--- Presence-only check used for manual stacking overrides, using the best source available for the target.
+---@param spellIds number|table The spell ID (or list of spell IDs) to check for on the target.
 ---@param target MQSpawn? The target to check; defaults to current target.
----@return boolean True if the spell is not already present on the target.
-function Casting.AddedBuffCheck(spellId, target)
-    return Casting.ResolveBuffCheck(spellId, target, true, true)
+---@return boolean True if none of the spells are present on the target.
+function Casting.AddedBuffCheck(spellIds, target)
+    if not target then target = mq.TLO.Target end
+    if not (target and target()) then return false end
+    if type(spellIds) == "number" then spellIds = { spellIds, } end
+
+    local targetId = target.ID()
+
+    if targetId == mq.TLO.Me.ID() then
+        for _, spellId in ipairs(spellIds) do
+            if mq.TLO.Me.FindBuff("id " .. spellId)() then return false end
+        end
+        return true
+    end
+
+    if targetId == mq.TLO.Me.Pet.ID() then
+        for _, spellId in ipairs(spellIds) do
+            local spellName = mq.TLO.Spell(spellId).Name()
+            if spellName and mq.TLO.Me.Pet.Buff(spellName)() then return false end
+        end
+        return true
+    end
+
+    local isPet = Targeting.TargetIsType("Pet", target)
+    local heartbeat = Comms.GetPeerHeartbeatByName((isPet and target.Master()) and target.Master.DisplayName() or target.DisplayName())
+    local buffList = heartbeat.Data and heartbeat.Data[isPet and "PetBuffs" or "Buffs"]
+
+    if buffList then
+        local songList = not isPet and heartbeat.Data.Songs
+        for _, spellId in ipairs(spellIds) do
+            if Tables.TableContains(buffList, spellId) or (songList and Tables.TableContains(songList, spellId)) then return false end
+        end
+        return true
+    end
+
+    if mq.TLO.DanNet(target.CleanName())() then
+        for _, spellId in ipairs(spellIds) do
+            if (DanNet.query(target.CleanName(), string.format("Me.FindBuff[id %d]", spellId), 1000) or "null"):lower() ~= "null" then return false end
+        end
+        return true
+    end
+
+    if targetId ~= mq.TLO.Target.ID() then
+        if (mq.TLO.Me.CombatState() or ""):lower() == "combat" then
+            Logger.log_verbose("AddedBuffCheck: %s(ID:%d) isn't our current target and we are in combat, unable to check for added buffs.", target.DisplayName(), targetId)
+            return false
+        end
+
+        local now = Globals.GetTimeSeconds()
+        if now - (Globals.LastCachedBuffUpdate[targetId] or 0) < Config:GetSetting('BuffTargetingInterval') then
+            Logger.log_verbose("AddedBuffCheck: Throttled target-change for %s(ID:%d).", target.DisplayName(), targetId)
+            return false
+        end
+        Globals.LastCachedBuffUpdate[targetId] = now
+
+        Logger.log_verbose("AddedBuffCheck: %s(ID:%d) isn't our current target, setting target to populate buffs.", target.DisplayName(), targetId)
+        Targeting.SetTarget(targetId, false)
+    end
+
+    for _, spellId in ipairs(spellIds) do
+        if mq.TLO.Target.FindBuff("id " .. spellId)() then return false end
+    end
+    return true
 end
 
 --- Resolves spell rank via GetUseableSpellId, then delegates to

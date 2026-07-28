@@ -658,9 +658,7 @@ return {
                 name = "ManaRegenBuff",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    return Casting.GroupBuffCheck(spell, target)
-                        --laz specific deconflict with spiritual rejuvenation misreporting stacking
-                        and Casting.AddedBuffCheck(40585, target)
+                    return Casting.AddedBuffCheck(40585, target) and Casting.GroupBuffCheck(spell, target) -- Spiritual Rejuvenation
                 end,
             },
             {
@@ -669,9 +667,8 @@ return {
                 cond = function(self, spell, target)
                     -- Only use the single target versions on classes that need it
                     if (spell.TargetType() or ""):lower() ~= "group v2" and not Targeting.TargetIsAMelee(target) then return false end
-                    return Casting.GroupBuffCheck(spell, target)
-                        and Casting.AddedBuffCheck(40583, target) --laz specific deconflict with brell's vibrant barricade
-                        and Casting.AddedBuffCheck(15248, target) -- Brell's Unshakable Barricade
+                    -- Brell's Vibrant Barricade, Brell's Unshakable Barricade
+                    return Casting.AddedBuffCheck({ 40583, 15248, }, target) and Casting.GroupBuffCheck(spell, target)
                 end,
             },
             {

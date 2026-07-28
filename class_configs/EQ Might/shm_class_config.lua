@@ -270,7 +270,7 @@ local _ClassConfig = {
             -- "Spirit of the Panther",   -- Level 69, group spell == less casting, longer duration, more avail to do other things
             -- "Talisman of the Leopard", -- Level 66 EQ Might Custom, but item only currently
             -- "Spirit of the Leopard",   -- Level 61, group spell == less casting, longer duration, more avail to do other things
-            "Talisman of the Jaguar", -- Level 61 EQM Custom
+            "Talisman of the Jaguar", -- Level 60 EQM Custom
             -- "Spirit of the Jaguar",    -- Level 57, group spell == less casting, longer duration, more avail to do other things
             "Talisman of the Puma",   -- Level 55 EQM Custom
             "Spirit of the Puma",     -- Level 50
@@ -1173,9 +1173,7 @@ local _ClassConfig = {
                 load_cond = function(self) return not mq.TLO.FindItem("=Artifact of the Champion")() or mq.TLO.Me.Level() < 68 end,
                 cond = function(self, spell, target)
                     if (spell.TargetType() or ""):lower() == "single" and not Targeting.TargetIsAMelee(target) then return false end
-                    return Casting.CastReady(spell) and Casting.GroupBuffCheck(spell, target)
-                        -- Don't try to overwrite Champion with Ferine Avatar
-                        and Casting.AddedBuffCheck(5417, target)
+                    return Casting.CastReady(spell) and Casting.AddedBuffCheck(5417, target) and Casting.GroupBuffCheck(spell, target) -- Champion
                 end,
             },
             {

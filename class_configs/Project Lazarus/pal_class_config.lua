@@ -740,7 +740,7 @@ return {
                 type = "Spell",
                 load_cond = function() return Config:GetSetting('DoBrells') end,
                 cond = function(self, spell, target)
-                    return Casting.GroupBuffCheck(spell, target) and Casting.AddedBuffCheck(15248, target) -- Brell's Unshakable Barricade
+                    return Casting.AddedBuffCheck(15248, target) and Casting.GroupBuffCheck(spell, target) -- Brell's Unshakable Barricade
                 end,
             },
             {

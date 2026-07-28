@@ -863,10 +863,7 @@ local _ClassConfig = {
                 type = "Spell",
                 cond = function(self, spell, target)
                     if not Targeting.TargetIsTanking(target) then return false end
-                    return Casting.GroupBuffCheck(spell, target)
-                        -- workarounds for laz
-                        and Casting.AddedBuffCheck(19847, target) -- necrotic pustules
-                        and Casting.AddedBuffCheck(5521, target)  -- decrepit skin
+                    return Casting.AddedBuffCheck({ 8484, 19847, }, target) and Casting.GroupBuffCheck(spell, target) -- Decrepit Skin, Necrotic Pustules
                 end,
                 post_activate = function(self, spell, success)
                     local petName = mq.TLO.Me.Pet.CleanName() or "None"

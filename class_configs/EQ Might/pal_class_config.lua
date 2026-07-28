@@ -787,7 +787,7 @@ return {
                 load_cond = function() return Config:GetSetting('AegoSymbol') == 2 or Config:GetSetting('AegoSymbol') == 3 end,
                 cond = function(self, spell, target)
                     if (spell.TargetType() or ""):lower() == "single" and not Targeting.TargetIsTanking(target) then return false end
-                    return Casting.GroupBuffCheck(spell, target) and Casting.AddedBuffCheck(3047, target) -- don't try to overwrite Kazad's Mark
+                    return Casting.AddedBuffCheck(3047, target) and Casting.GroupBuffCheck(spell, target) -- Kazad's Mark
                 end,
             },
             {

@@ -676,8 +676,8 @@ local _ClassConfig = {
                 type = "AA",
                 cond = function(self, aaName, target)
                     if not Config:GetSetting('DoBattleLeap') then return false end
-                    return Casting.SelfBuffAACheck(aaName) and Casting.AddedBuffCheck(16439, target) --Group Bestial Alignment
-                        and not mq.TLO.Me.HeadWet()                                                  --Stops Leap from launching us above the water's surface
+                    if mq.TLO.Me.HeadWet() then return false end --Stops Leap from launching us above the water's surface
+                    return Casting.SelfBuffAACheck(aaName) and not Casting.IHaveBuff("Group Bestial Alignment")
                 end,
             },
             {

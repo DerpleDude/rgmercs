@@ -738,7 +738,7 @@ local _ClassConfig = {
                 type = "Item",
                 load_cond = function(self) return Config:GetSetting('VieBuffMode') > 2 and not self.Helpers.PreferAegisSpell(self) end,
                 cond = function(self, itemName, target)
-                    return Casting.GroupBuffItemCheck(itemName, target) and Casting.AddedBuffCheck(43037, target) -- Bulwark of the Pegasus
+                    return Casting.AddedBuffCheck(43037, target) and Casting.GroupBuffItemCheck(itemName, target) -- Bulwark of the Pegasus
                 end,
             },
             {
@@ -746,7 +746,7 @@ local _ClassConfig = {
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('VieBuffMode') > 2 and self.Helpers.PreferAegisSpell(self) end,
                 cond = function(self, spell, target)
-                    return Casting.GroupBuffCheck(spell, target) and Casting.AddedBuffCheck(43037, target) -- Bulwark of the Pegasus
+                    return Casting.AddedBuffCheck(43037, target) and Casting.GroupBuffCheck(spell, target) -- Bulwark of the Pegasus
                 end,
             },
         },
@@ -947,7 +947,7 @@ local _ClassConfig = {
                 type = "Item",
                 load_cond = function(self) return Config:GetSetting('VieBuffMode') > 1 and not self.Helpers.PreferAegisSpell(self) end,
                 cond = function(self, itemName, target)
-                    return Casting.GroupBuffItemCheck(itemName, target) and Casting.AddedBuffCheck(43037, target) -- Bulwark of the Pegasus
+                    return Casting.AddedBuffCheck(43037, target) and Casting.GroupBuffItemCheck(itemName, target) -- Bulwark of the Pegasus
                 end,
             },
             {
@@ -955,7 +955,7 @@ local _ClassConfig = {
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('VieBuffMode') > 1 and self.Helpers.PreferAegisSpell(self) end,
                 cond = function(self, spell, target)
-                    return Casting.GroupBuffCheck(spell, target) and Casting.AddedBuffCheck(43037, target) -- Bulwark of the Pegasus
+                    return Casting.AddedBuffCheck(43037, target) and Casting.GroupBuffCheck(spell, target) -- Bulwark of the Pegasus
                 end,
             },
             {

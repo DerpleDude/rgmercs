@@ -877,9 +877,8 @@ local _ClassConfig = {
                 type = "Spell",
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell, target)
-                    return Targeting.TargetIsAMelee(target) and Casting.GroupBuffCheck(spell, target)
-                        and Casting.AddedBuffCheck(10821, target) -- Talisman of Coalescence
-                        and Casting.AddedBuffCheck(42928, target) -- Talisman of Unification
+                    -- Talisman of Coalescence, Talisman of Unification
+                    return Targeting.TargetIsAMelee(target) and Casting.AddedBuffCheck({ 10821, 42928, }, target) and Casting.GroupBuffCheck(spell, target)
                 end,
             },
             {

@@ -711,8 +711,6 @@ return {
                     -- Only use the single target versions on classes that need it
                     if (spell.TargetType() or ""):lower() ~= "group v2" and not Targeting.TargetIsAMelee(target) then return false end
                     return Casting.GroupBuffCheck(spell, target)
-                        --laz specific deconflict with brell's vibrant barricade
-                        and Casting.AddedBuffCheck(40583, target)
                 end,
             },
             {
