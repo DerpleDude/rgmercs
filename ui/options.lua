@@ -1,27 +1,28 @@
-local mq                        = require('mq')
-local Icons                     = require('mq.ICONS')
-local Set                       = require("mq.Set")
-local ImGui                     = require('ImGui')
-local Comms                     = require('utils.comms')
-local Config                    = require('utils.config')
-local DBManagement              = require('utils.db_management')
-local Globals                   = require("utils.globals")
-local Logger                    = require('utils.logger')
-local Modules                   = require('utils.modules')
-local Ui                        = require('utils.ui')
+local
+mq = require('mq')
+local Icons = require('mq.ICONS')
+local Set = require("mq.Set")
+local ImGui = require('ImGui')
+local Comms = require('utils.comms')
+local Config = require('utils.config')
+local DBManagement = require('utils.db_management')
+local Globals = require("utils.globals")
+local Logger = require('utils.logger')
+local Modules = require('utils.modules')
+local Ui = require('utils.ui')
 
-local OptionsUI                 = { _version = '1.0', _name = "OptionsUI", _author = 'Derple', 'Algar', }
-OptionsUI.__index               = OptionsUI
-OptionsUI.selectedGroup         = "General"
+local OptionsUI = { _version = '1.0', _name = "OptionsUI", _author = 'Derple', 'Algar', }
+OptionsUI.__index = OptionsUI
+OptionsUI.selectedGroup = "General"
 OptionsUI.HighlightedCategories = Set.new({})
-OptionsUI.HighlightedSettings   = Set.new({})
-OptionsUI.configFilter          = ""
-OptionsUI.lastSortTime          = 0
-OptionsUI.lastHighlightTime     = 0
-OptionsUI.selectedCharacter     = ""
-OptionsUI.lastPeerUpdate        = 0
-OptionsUI.bgImg                 = mq.CreateTexture(mq.TLO.Lua.Dir() .. "/rgmercs/extras/options_bg.png")
-OptionsUI.ToastStates           = {}
+OptionsUI.HighlightedSettings = Set.new({})
+OptionsUI.configFilter = ""
+OptionsUI.lastSortTime = 0
+OptionsUI.lastHighlightTime = 0
+OptionsUI.selectedCharacter = ""
+OptionsUI.lastPeerUpdate = 0
+OptionsUI.bgImg = mq.CreateTexture(mq.TLO.Lua.Dir() .. "/rgmercs/extras/options_bg.png")
+OptionsUI.ToastStates = {}
 
 function OptionsUI.LoadIcon(icon)
     return mq.CreateTexture(mq.TLO.Lua.Dir() .. "/rgmercs/extras/" .. icon .. ".png")
@@ -211,6 +212,19 @@ OptionsUI.dbModuleIdx    = 1
 OptionsUI.dbFromClasses  = nil -- cached class list for current from-char
 OptionsUI.dbFromClassIdx = 1
 OptionsUI.dbToClassIdx   = 1
+OptionsUI.dbListIdx      = 1
+
+OptionsUI.ManagedLists   = {
+    { label = "Charm Allow",  sharedKey = "CharmAllowListShared", },
+    { label = "Charm Deny",   sharedKey = "CharmDenyListShared", },
+    { label = "Cure Allow",   sharedKey = "CureAllowListShared", },
+    { label = "Cure Deny",    sharedKey = "CureDenyListShared", },
+    { label = "Dispel Allow", sharedKey = "DispelAllowListShared", },
+    { label = "Dispel Deny",  sharedKey = "DispelDenyListShared", },
+    { label = "Pull Allow",   sharedKey = "PullAllowListShared", },
+    { label = "Pull Deny",    sharedKey = "PullDenyListShared", },
+    { label = "Spawn List",   sharedKey = "SpawnList", },
+}
 
 local function shallow_copy(orig)
     local copy = {}
@@ -688,6 +702,11 @@ function OptionsUI:RenderDBManagement()
         return a < b
     end)
 
+    local listNames = {}
+    for _, entry in ipairs(self.ManagedLists) do
+        listNames[#listNames + 1] = entry.label
+    end
+
     local charCount = #self.dbChars
 
     -- initial load of from-classes
@@ -825,6 +844,9 @@ function OptionsUI:RenderDBManagement()
     if self.dbOpenResetPopup then
         ImGui.OpenPopup("DBResetConfirm##DBMgmt"); self.dbOpenResetPopup = false
     end
+    if self.dbOpenListClearPopup then
+        ImGui.OpenPopup("DBListClearConfirm##DBMgmt"); self.dbOpenListClearPopup = false
+    end
     if self.dbOpenDeletePopup then
         ImGui.OpenPopup("DBDeleteConfirm##DBMgmt"); self.dbOpenDeletePopup = false
     end
@@ -886,6 +908,31 @@ function OptionsUI:RenderDBManagement()
     end
 
     ImGui.SetNextWindowSize(ImVec2(460, 0), ImGuiCond.Appearing)
+    if ImGui.BeginPopup("DBListClearConfirm##DBMgmt") then
+        local entry = self.ManagedLists[self.dbListIdx]
+        ImGui.PushTextWrapPos(440)
+        ImGui.TextWrapped("Clear every entry from this shared list?")
+        ImGui.Spacing()
+        ImGui.Text("List: ")
+        ImGui.SameLine()
+        ImGui.TextColored(Globals.Constants.BasicColors.Yellow, "%s", entry.label)
+        ImGui.Text("Target: ")
+        ImGui.SameLine()
+        ImGui.TextColored(Globals.Constants.BasicColors.Yellow, "Shared (%s) - affects every character", Globals.ServerEnv)
+        ImGui.PopTextWrapPos()
+        ImGui.Spacing()
+        if ImGui.Button("Clear##dblistclearconfirm") then
+            self:ClearList(entry)
+            ImGui.CloseCurrentPopup()
+        end
+        ImGui.SameLine()
+        if ImGui.Button("Cancel##dblistclearcancel") then
+            ImGui.CloseCurrentPopup()
+        end
+        ImGui.EndPopup()
+    end
+
+    ImGui.SetNextWindowSize(ImVec2(460, 0), ImGuiCond.Appearing)
     if ImGui.BeginPopup("DBDeleteConfirm##DBMgmt") then
         ImGui.PushTextWrapPos(440)
         ImGui.TextWrapped("Delete the following from the database?")
@@ -910,6 +957,18 @@ function OptionsUI:RenderDBManagement()
     if ImGui.Button(Icons.MD_REFRESH .. " Refresh Character List##dbrefresh") then
         self.dbChars       = nil
         self.dbFromClasses = nil
+    end
+
+    ImGui.NewLine()
+    ImGui.AlignTextToFramePadding()
+    ImGui.Text("Shared List:")
+    ImGui.SameLine()
+    ImGui.SetNextItemWidth(230)
+    local newList, listChanged = Ui.SearchableCombo("dblist", self.dbListIdx, listNames)
+    if listChanged then self.dbListIdx = newList end
+    ImGui.SameLine()
+    if ImGui.Button(Icons.FA_TRASH .. " Clear List##dblistclear") then
+        self.dbOpenListClearPopup = true
     end
 
     ImGui.Spacing()
@@ -964,6 +1023,13 @@ function OptionsUI:DeleteSettings(charLabels, fromIdx, fromClass)
     -- invalidate cached pickers so the deleted char/class disappears from the list
     self.dbChars       = nil
     self.dbFromClasses = nil
+
+    self:AddDBToast(result.toastMessage, Globals.Constants.Colors.Green)
+end
+
+function OptionsUI:ClearList(entry)
+    local result = DBManagement.ClearList(entry.sharedKey, entry.label)
+    if not result.ok then return end
 
     self:AddDBToast(result.toastMessage, Globals.Constants.Colors.Green)
 end

@@ -1,6 +1,7 @@
 local ClassLoader  = require('utils.classloader')
 local Comms        = require('utils.comms')
 local Config       = require('utils.config')
+local Globals      = require('utils.globals')
 local Logger       = require('utils.logger')
 local Modules      = require('utils.modules')
 
@@ -173,6 +174,21 @@ function DBManagement.DeleteSettings(charName, server, class)
     return {
         ok           = true,
         toastMessage = string.format("Deleted %s [%s] from DB", label, class),
+    }
+end
+
+--- Empties a shared list setting for the current server environment.
+--- @param key string The setting name of the list.
+--- @param label string Display name of the list, used in the log and toast.
+--- @return table result { ok, toastMessage }
+function DBManagement.ClearList(key, label)
+    Config:SetSetting(key, {})
+
+    Logger.log_info("DB Management: cleared shared %s for %s", label, Globals.ServerEnv)
+
+    return {
+        ok           = true,
+        toastMessage = string.format("Cleared shared %s for %s", label, Globals.ServerEnv),
     }
 end
 

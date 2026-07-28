@@ -1117,8 +1117,9 @@ function DB:_fetchValue(serverName, charName, charClass, module, key)
     stmt:bind(4, module)
     stmt:bind(5, key)
     local rows = collectRows(stmt)
-    if not rows[1] then return nil end
-    local value = deserialize(key, rows[1].value, rows[1].value_type)
+    -- Cache misses too, or every read of an absent key re-runs this query.
+    local value = nil
+    if rows[1] then value = deserialize(key, rows[1].value, rows[1].value_type) end
     self:_cacheSet(serverName, charName, charClass, module, key, value)
     return value
 end
@@ -1158,8 +1159,9 @@ function DB:_fetchServerValue(serverName, module, key)
     stmt:bind(2, module)
     stmt:bind(3, key)
     local rows = collectRows(stmt)
-    if not rows[1] then return nil end
-    local value = deserialize(key, rows[1].value, rows[1].value_type)
+    -- Cache misses too, or every read of an absent key re-runs this query.
+    local value = nil
+    if rows[1] then value = deserialize(key, rows[1].value, rows[1].value_type) end
     self:_serverCacheSet(serverName, module, key, value)
     return value
 end

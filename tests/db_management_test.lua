@@ -5,7 +5,7 @@
 --     package.loaded['tests.db_management_test'] = nil; require('tests.db_management_test').RunAll()
 --
 -- It operates on sentinel characters on a fake server ("rgtestsrv") inside the live config DB,
--- exercises the real CopySettings / ResetSettings / DeleteSettings / DBManagement.RequestRescan
+-- exercises the real CopySettings / ResetSettings / DeleteSettings / ClearList / DBManagement.RequestRescan
 -- and the running-peer reset/delete guards, then deletes the sentinel rows/characters. A handful of
 -- functions (Modules.ExecModule, Comms.SendMessage / GetPeerHeartbeat / IsCharRunning, Config.Db.deleteModule, and briefly
 -- Globals.CurLoadedChar/Server/Class) are swapped to observe behavior and restored afterward.
@@ -269,6 +269,15 @@ function M.RunAll()
         OptionsUI:DeleteSettings({ lbl("x"), lbl("b"), }, 2, CLS)
         check("Orphan cleanup: char row preserved when another class remains", charRowExists("b"))
         check("Orphan cleanup: surviving class rows intact", nKeys(getM("b", CLS2, testMods[1])) > 0)
+
+        -- 7) ClearList empties a shared list. Restores whatever was there when done, since this
+        -- writes the live shared row rather than a sentinel one.
+        local savedPullDeny = Config:GetSetting('PullDenyListShared')
+        Config:SetSetting('PullDenyListShared', { zonea = { "mob1", "mob2", }, zoneb = { "mob3", }, })
+        DBManagement.ClearList("PullDenyListShared", "Pull Deny")
+        check("ClearList: shared list emptied", nKeys(Config:GetSetting('PullDenyListShared')) == 0,
+            string.format("left=%d", nKeys(Config:GetSetting('PullDenyListShared'))))
+        Config:SetSetting('PullDenyListShared', savedPullDeny or {})
 
         -- The rescan tests call DBManagement.RequestRescan directly (no DB writes, no Globals patching).
         -- For the "local current" path we pass the real current char/server/class so Comms.IsLocalCurrent
