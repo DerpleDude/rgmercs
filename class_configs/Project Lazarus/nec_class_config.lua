@@ -319,6 +319,10 @@ local _ClassConfig = {
             "Army of the Dead",
             "Wake the Dead",
         },
+        ['PetHeal'] = {
+            "Replenish Companion",
+            "Mend Companion",
+        },
     },
     ['Charm']           = {
         ['Abilities'] = {
@@ -737,10 +741,10 @@ local _ClassConfig = {
             },
             { -- Spire, the SpireChoice setting will determine which ability is displayed/used.
                 name_func = function(self)
-                    local spireAbil = string.format("Fundament: %s Spire of Necromancy", Globals.Constants.SpireChoices[Config:GetSetting('SpireChoice') or 4])
-                    return Casting.CanUseAA(spireAbil) and spireAbil or "Spire Not Purchased/Selected"
+                    return string.format("Fundament: %s Spire of Necromancy", Globals.Constants.SpireChoices[Config:GetSetting('SpireChoice')])
                 end,
                 type = "AA",
+                load_cond = function() return Config:GetSetting('SpireChoice') ~= 4 end,
                 cond = function(self, aaName, target)
                     return Globals.AutoTargetIsNamed and Targeting.GetAutoTargetPctHPs() <= Config:GetSetting('BurnHPThreshold')
                 end,
@@ -785,7 +789,7 @@ local _ClassConfig = {
                 type = "Item",
             },
             {
-                name_func = function() return Casting.CanUseAA("Replenish Companion") and "Replenish Companion" or "Mend Companion" end,
+                name = "PetHeal",
                 type = "AA",
             },
             {

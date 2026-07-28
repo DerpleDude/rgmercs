@@ -347,6 +347,14 @@ local _ClassConfig = {
             "Medium Modulation Shard",
             "Small Modulation Shard",
         },
+        ['PetHeal'] = {
+            "Replenish Companion",
+            "Mend Companion",
+        },
+        ['FireCore'] = {
+            "Fire Core",
+            "Heart of Flames",
+        },
     },
     ['Charm']         = {
         ['Assist'] = {
@@ -627,7 +635,7 @@ local _ClassConfig = {
                 end,
             },
             {
-                name_func = function() return Casting.CanUseAA("Replenish Companion") and "Replenish Companion" or "Mend Companion" end,
+                name = "PetHeal",
                 type = "AA",
             },
             {
@@ -711,7 +719,7 @@ local _ClassConfig = {
                 type = "AA",
             },
             {
-                name_func = function() return Casting.CanUseAA("Fire Core") and "Fire Core" or "Heart of Flames" end,
+                name = "FireCore",
                 type = "AA",
             },
             {

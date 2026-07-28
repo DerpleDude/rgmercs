@@ -381,6 +381,10 @@ local _ClassConfig = {
             "Army of the Dead",
             "Wake the Dead",
         },
+        ['PetHeal'] = {
+            "Replenish Companion",
+            "Mend Companion",
+        },
     },
     ['Charm']           = {
         ['Abilities'] = {
@@ -849,7 +853,7 @@ local _ClassConfig = {
                 end,
             },
             {
-                name_func = function() return Casting.CanUseAA("Replenish Companion") and "Replenish Companion" or "Mend Companion" end,
+                name = "PetHeal",
                 type = "AA",
             },
             {

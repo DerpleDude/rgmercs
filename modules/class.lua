@@ -3199,22 +3199,38 @@ function Module:SetRotationActions()
     local aaSets = self.ClassConfig.AASets or {}
     local itemSets = self.ClassConfig.ItemSets or {}
 
-    -- Single pass over the loaded (post-load_cond) rotation tables for both AA and Item tracking.
+    -- AA tracking walks the raw config tables, so an entry load-gated on owning the AA still reaches the purchase
+    -- overlay; clicky tracking stays on the loaded (post-load_cond) rotations so a gated entry can't false-warn.
     -- For set entries, all set members are added so warnings/highlights cover stepping-stone ranks too.
+    local charm = self.ClassConfig.Charm or {}
+    local aaLists = { self.ClassConfig.Dispel, self.ClassConfig.Mez, self.ClassConfig.PullAbilities, self.ClassConfig.PullMoveAbilities,
+        charm.Abilities, charm.PreCharm, charm.Assist, }
+    for _, grouped in pairs({ self.ClassConfig.Rotations, self.ClassConfig.HealRotations, self.ClassConfig.Cure, self.ClassConfig.Rez, }) do
+        for _, list in pairs(grouped) do
+            table.insert(aaLists, list)
+        end
+    end
+
+    for _, list in pairs(aaLists) do
+        for _, entry in ipairs(list) do
+            local entryName = entry.name or entry.AbilityName
+            if (entry.type or entry.Type or ""):lower() == "aa" and type(entryName) == "string" then
+                local set = aaSets[entryName]
+                if set then
+                    for _, aaName in ipairs(set) do
+                        self.TempSettings.RotationAAs:add(aaName)
+                    end
+                else
+                    self.TempSettings.RotationAAs:add(entryName)
+                end
+            end
+        end
+    end
+
     for _, rotationTable in ipairs({ self.TempSettings.RotationTable, self.TempSettings.HealRotationTable or {}, }) do
         for _, rotation in pairs(rotationTable) do
             for _, entry in ipairs(rotation) do
-                local entryType = entry.type:lower()
-                if entryType == "aa" then
-                    local set = aaSets[entry.name]
-                    if set then
-                        for _, aaName in ipairs(set) do
-                            self.TempSettings.RotationAAs:add(aaName)
-                        end
-                    else
-                        self.TempSettings.RotationAAs:add(entry.name)
-                    end
-                elseif entryType == "item" and not entry.from_clicky then
+                if entry.type:lower() == "item" and not entry.from_clicky then
                     local set = itemSets[entry.name]
                     if set then
                         for _, itemName in ipairs(set) do
@@ -3229,9 +3245,7 @@ function Module:SetRotationActions()
     end
 
     -- add static spells this is hacky and it sucks but one day I will make it better. promise.
-    self.TempSettings.RotationAAs:add("Radiant Cure")
     self.TempSettings.RotationAAs:add("Dire Charm")
-    self.TempSettings.RotationAAs:add("Group Purify Soul")
     self.TempSettings.RotationAAs:add("Aureate's Bane")
     self.TempSettings.RotationAAs:add("Companion's Discipline")
     self.TempSettings.RotationAAs:add("Pet Discipline")

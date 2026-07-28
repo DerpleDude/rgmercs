@@ -270,6 +270,10 @@ return {
         ['Spire'] = {
             "Fundament: First Spire of the Savage Lord",
         },
+        ['PetHeal'] = {
+            "Replenish Companion",
+            "Mend Companion",
+        },
     },
     ['HealRotationOrder'] = {
         { -- configured as a backup healer, will not cast in the mainpoint
@@ -537,7 +541,7 @@ return {
                 end,
             },
             {
-                name_func = function() return Casting.CanUseAA("Replenish Companion") and "Replenish Companion" or "Mend Companion" end,
+                name = "PetHeal",
                 type = "AA",
             },
             {

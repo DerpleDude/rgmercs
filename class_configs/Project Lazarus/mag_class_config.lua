@@ -304,6 +304,10 @@ local _ClassConfig = {
             "Medium Modulation Shard",
             "Small Modulation Shard",
         },
+        ['PetHeal'] = {
+            "Replenish Companion",
+            "Mend Companion",
+        },
     },
     ['Charm']         = {
         ['Assist'] = {
@@ -575,7 +579,7 @@ local _ClassConfig = {
                 type = "Item",
             },
             {
-                name_func = function() return Casting.CanUseAA("Replenish Companion") and "Replenish Companion" or "Mend Companion" end,
+                name = "PetHeal",
                 type = "AA",
             },
             {

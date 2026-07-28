@@ -517,10 +517,10 @@ local _ClassConfig = {
             },
             { -- Spire, the SpireChoice setting will determine which ability is displayed/used.
                 name_func = function(self)
-                    local spireAbil = string.format("Fundament: %s Spire of the Minstrels", Globals.Constants.SpireChoices[Config:GetSetting('SpireChoice') or 4])
-                    return Casting.CanUseAA(spireAbil) and spireAbil or "Spire Not Purchased/Selected"
+                    return string.format("Fundament: %s Spire of the Minstrels", Globals.Constants.SpireChoices[Config:GetSetting('SpireChoice')])
                 end,
                 type = "AA",
+                load_cond = function() return Config:GetSetting('SpireChoice') ~= 4 end,
                 midSong = true,
             },
             {
