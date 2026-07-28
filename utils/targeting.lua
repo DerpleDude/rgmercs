@@ -371,15 +371,20 @@ function Targeting.IHaveAggro(pct)
     local target = mq.TLO.Target
     local me     = mq.TLO.Me
 
-    if (target() and (target.PctAggro() or 0) >= pct) then return true end
+    if target() and not target.Dead() and (target.Type() or "Corpse") ~= "Corpse" and (target.Aggressive() or target.ID() == Globals.ForceTargetID) and
+        (target.PctAggro() or 0) >= pct then
+        return true
+    end
 
     local xtCount = me.XTarget()
 
     for i = 1, xtCount do
         local xtSpawn = me.XTarget(i)
+        local xtSpawnID = xtSpawn and xtSpawn.ID() or 0
 
-        if xtSpawn() and (xtSpawn.ID() or 0) > 0 and (xtSpawn.Aggressive() or xtSpawn.TargetType():lower() == "auto hater" or xtSpawn.ID() == Globals.ForceTargetID) then
-            if xtSpawn.PctAggro() >= pct then return true end
+        if xtSpawnID > 0 and not xtSpawn.Dead() and (xtSpawn.Type() or "Corpse") ~= "Corpse" and
+            (xtSpawn.Aggressive() or (xtSpawn.TargetType() or ""):lower() == "auto hater" or xtSpawnID == Globals.ForceTargetID) then
+            if (xtSpawn.PctAggro() or 0) >= pct then return true end
         end
     end
 
