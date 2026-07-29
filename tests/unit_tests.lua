@@ -15,9 +15,12 @@ local function mockSpawn(id, name, pctHp, isNamed, distance)
         _isNamed   = isNamed,
         _dist      = distance or 50,
         _isTempPet = false,
+        _type      = "NPC",
     }
     setmetatable(t, { __call = function() return true end, })
     t.ID         = function() return t._id end
+    t.Type       = function() return t._type end
+    t.Master     = { Type = function() return nil end, }
     t.CleanName  = function() return t._name end
     t.Name       = function() return t._name end
     t.PctHPs     = function() return t._pctHp end

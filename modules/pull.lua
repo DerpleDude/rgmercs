@@ -556,7 +556,7 @@ Module.DefaultConfig                = {
         Answer = "Chain to Camp mode is intended for a non-tank, non-assist puller to pull a stream of mobs back to a camp, one at a time.\n\n" ..
             "The puller will keep leaving camp to pull, even during combat, until the number of haters on xtarget matches or exceeds the Chain Count.",
         Min = 1,
-        Max = Globals.XTargetSlots,
+        Max = mq.TLO.Me.XTargetSlots() or 20,
     },
     ['PullIgnoreTime']                         = {
         DisplayName = "Ignore Timer",

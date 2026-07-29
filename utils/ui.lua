@@ -1710,12 +1710,11 @@ function Ui.RenderForceTargetList(showPopout)
         function(sort_specs)
             Ui.TempSettings.SortedXT = {}
             Ui.TempSettings.SortedXTIDToSlot = {}
-            local xtCount = mq.TLO.Me.XTarget() or 0
-            for i = 1, xtCount do
+            local slotCount = mq.TLO.Me.XTargetSlots() or 0
+            for i = 1, slotCount do
                 local xtarg = mq.TLO.Me.XTarget(i)
                 local xtargID = xtarg and xtarg.ID() or 0
-                if xtargID > 0 and (xtarg.Aggressive() or (xtarg.TargetType() or ""):lower() == "auto hater" or xtargID == Globals.ForceTargetID) and
-                    Ui.TempSettings.SortedXTIDToSlot[xtargID] == nil and not xtarg.Dead() then
+                if Targeting.IsXTHater(xtarg) and Ui.TempSettings.SortedXTIDToSlot[xtargID] == nil then
                     table.insert(Ui.TempSettings.SortedXT, xtarg)
                     Ui.TempSettings.SortedXTIDToSlot[xtargID] = { Name = xtarg.CleanName() or "None", Slot = i, ID = xtargID, }
                 end

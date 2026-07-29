@@ -287,9 +287,9 @@ function Targeting.GetAutoTargetAggroPct()
         return mq.TLO.Target.PctAggro() or 0
     end
 
-    local xtCount = mq.TLO.Me.XTarget()
+    local slotCount = mq.TLO.Me.XTargetSlots() or 0
 
-    for i = 1, xtCount do
+    for i = 1, slotCount do
         local xtSpawn = mq.TLO.Me.XTarget(i)
 
         if xtSpawn() and (xtSpawn.ID() or 0) == Globals.AutoTargetID then
@@ -341,6 +341,22 @@ function Targeting.FacingTarget()
     return math.abs((mq.TLO.Target.HeadingTo.DegreesCCW() or mq.TLO.Me.Heading.DegreesCCW()) - mq.TLO.Me.Heading.DegreesCCW()) <= 20
 end
 
+--- Returns true if the XTarget entry is a live mob that hates us.
+---@param xtarg xtarget The XTarget entry to test.
+---@return boolean True if the entry is a hater, false for empties, corpses, PCs, mercenaries and player pets.
+function Targeting.IsXTHater(xtarg)
+    local xtargID = xtarg and xtarg.ID() or 0
+    if xtargID == 0 or xtarg.Dead() then return false end
+
+    local spawnType = (xtarg.Type() or "Corpse"):lower()
+    if spawnType == "corpse" then return false end
+    if (xtarg.TargetType() or ""):lower() == "auto hater" then return true end
+    if not (xtarg.Aggressive() or xtargID == Globals.ForceTargetID) then return false end
+    if spawnType == "npc" then return true end
+
+    return not (spawnType == "pc" or spawnType == "mercenary" or xtarg.Master.Type() == "PC")
+end
+
 --- Returns the highest aggro percentage the player has across the current
 --- target and all aggressive or force-targeted XTarget entries.
 ---@return number Highest aggro percentage 0–100.
@@ -350,13 +366,14 @@ function Targeting.GetHighestAggroPct()
 
     local highestPct = target.PctAggro() or 0
 
-    local xtCount    = me.XTarget()
+    local slotCount  = me.XTargetSlots() or 0
 
-    for i = 1, xtCount do
+    for i = 1, slotCount do
         local xtSpawn = me.XTarget(i)
 
-        if xtSpawn() and (xtSpawn.ID() or 0) > 0 and (xtSpawn.Aggressive() or xtSpawn.TargetType():lower() == "auto hater" or xtSpawn.ID() == Globals.ForceTargetID) then
-            if xtSpawn.PctAggro() > highestPct then highestPct = xtSpawn.PctAggro() end
+        if Targeting.IsXTHater(xtSpawn) then
+            local aggroPct = xtSpawn.PctAggro() or 0
+            if aggroPct > highestPct then highestPct = aggroPct end
         end
     end
 
@@ -376,16 +393,12 @@ function Targeting.IHaveAggro(pct)
         return true
     end
 
-    local xtCount = me.XTarget()
+    local slotCount = me.XTargetSlots() or 0
 
-    for i = 1, xtCount do
+    for i = 1, slotCount do
         local xtSpawn = me.XTarget(i)
-        local xtSpawnID = xtSpawn and xtSpawn.ID() or 0
 
-        if xtSpawnID > 0 and not xtSpawn.Dead() and (xtSpawn.Type() or "Corpse") ~= "Corpse" and
-            (xtSpawn.Aggressive() or (xtSpawn.TargetType() or ""):lower() == "auto hater" or xtSpawnID == Globals.ForceTargetID) then
-            if (xtSpawn.PctAggro() or 0) >= pct then return true end
-        end
+        if Targeting.IsXTHater(xtSpawn) and (xtSpawn.PctAggro() or 0) >= pct then return true end
     end
 
     return false
@@ -399,12 +412,11 @@ function Targeting.TankingXTNamed()
     end
     Targeting.TankingNamedCheckTime = Globals.GetTimeSeconds()
     Targeting.TankingNamedFound = false
-    local xtCount = mq.TLO.Me.XTarget() or 0
-    for i = 1, xtCount do
+    local slotCount = mq.TLO.Me.XTargetSlots() or 0
+    for i = 1, slotCount do
         local xt = mq.TLO.Me.XTarget(i)
         -- check for exactly 100% to help ensure the mob is targeting us, over 100% can indicate another is still targeted
-        if xt and xt.ID() > 0 and not xt.Dead()
-            and (xt.Aggressive() or (xt.TargetType() or ""):lower() == "auto hater")
+        if Targeting.IsXTHater(xt)
             and (xt.PctAggro() or 0) == 100
             and Targeting.IsNamed(xt) then
             Targeting.TankingNamedFound = true
@@ -418,12 +430,12 @@ end
 ---@param printDebug boolean? If true, logs each hater found.
 ---@return table Set of hater spawn IDs.
 function Targeting.GetXTHaterIDsSet(printDebug)
-    local xtCount = mq.TLO.Me.XTarget() or 0
+    local slotCount = mq.TLO.Me.XTargetSlots() or 0
     local uniqHaters = Set.new({})
 
-    for i = 1, xtCount do
+    for i = 1, slotCount do
         local xtarg = mq.TLO.Me.XTarget(i)
-        if xtarg and xtarg.ID() > 0 and not xtarg.Dead() and (xtarg.Type() or "Corpse") ~= "Corpse" and (xtarg.Aggressive() or (xtarg.TargetType() or ""):lower() == "auto hater" or xtarg.ID() == Globals.ForceTargetID) then
+        if Targeting.IsXTHater(xtarg) then
             if printDebug then
                 Logger.log_verbose("GetXTHaters(): XT(%d) Counting %s(%d) as a hater.", i, xtarg.CleanName() or "None", xtarg.ID())
             end
@@ -453,14 +465,14 @@ end
 ---@return boolean True if at least count unique haters are on XTarget.
 function Targeting.HasXTHaters(count)
     count = count or 1
-    local xtCount = mq.TLO.Me.XTarget() or 0
+    local slotCount = mq.TLO.Me.XTargetSlots() or 0
     local seenHaters = {}
     local uniqHaters = 0
 
-    for i = 1, xtCount do
+    for i = 1, slotCount do
         local xtarg = mq.TLO.Me.XTarget(i)
-        local xtargID = xtarg and xtarg.ID() or 0
-        if xtargID > 0 and not xtarg.Dead() and (xtarg.Type() or "Corpse") ~= "Corpse" and (xtarg.Aggressive() or (xtarg.TargetType() or ""):lower() == "auto hater" or xtargID == Globals.ForceTargetID) then
+        if Targeting.IsXTHater(xtarg) then
+            local xtargID = xtarg.ID()
             if not seenHaters[xtargID] then
                 seenHaters[xtargID] = true
                 uniqHaters = uniqHaters + 1
@@ -483,13 +495,11 @@ end
 ---@param range number Distance in units to check against.
 ---@return boolean True if a hater is within range.
 function Targeting.XTHaterInRange(range)
-    local xtCount = mq.TLO.Me.XTarget() or 0
+    local slotCount = mq.TLO.Me.XTargetSlots() or 0
 
-    for i = 1, xtCount do
+    for i = 1, slotCount do
         local xtarg = mq.TLO.Me.XTarget(i)
-        if xtarg and xtarg.ID() > 0 and not xtarg.Dead() and (xtarg.Type() or "Corpse") ~= "Corpse" and (xtarg.Aggressive() or (xtarg.TargetType() or ""):lower() == "auto hater" or xtarg.ID() == Globals.ForceTargetID) then
-            if (xtarg.Distance3D() or 999) <= range then return true end
-        end
+        if Targeting.IsXTHater(xtarg) and (xtarg.Distance3D() or 999) <= range then return true end
     end
 
     return false
@@ -519,9 +529,10 @@ end
 ---@param autoHater boolean? If true, require the slot to be an auto hater.
 ---@return boolean True if the spawn is found in XTarget (and meets autoHater if set).
 function Targeting.IsSpawnXTHater(spawnId, autoHater)
-    local xtCount = mq.TLO.Me.XTarget() or 0
+    if (spawnId or 0) <= 0 then return false end
+    local slotCount = mq.TLO.Me.XTargetSlots() or 0
 
-    for i = 1, xtCount do
+    for i = 1, slotCount do
         local xtarg = mq.TLO.Me.XTarget(i)
         if xtarg and xtarg.ID() == spawnId then
             if autoHater == true then

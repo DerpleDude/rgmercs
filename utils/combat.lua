@@ -237,14 +237,8 @@ function Combat.ValidMAXTarget(target)
         return false
     end
 
-    if target.ID() > 0 and target.Dead() then
-        Logger.log_verbose("ValidateMATarget: Spawn ID %d is dead", spawnId)
-        return false
-    end
-
-    if target.ID() > 0 and not (target.Aggressive() or target.TargetType():lower() == "auto hater" or spawnId == Globals.ForceTargetID) then
-        Logger.log_verbose("ValidateMATarget: Spawn ID %d is not aggressive or auto hater or forced (Aggressive: %s, TargetType: %s)", spawnId,
-            Strings.BoolToColorString(target.Aggressive()), target.TargetType())
+    if not Targeting.IsXTHater(target) then
+        Logger.log_verbose("ValidateMATarget: Spawn ID %d is not a live hater", spawnId)
         return false
     end
 
@@ -357,7 +351,7 @@ end
 ---@param myLevel         number                               Cached value of Me.Level().
 ---@return number|nil                                          Spawn id to target immediately, or nil to continue scanning.
 function Combat.ProcessXTarget(xtSpawn, radius, namedPref, hpPref, immediate, primaryTarget, fallbackTarget, aggroScan, myLevel)
-    if not xtSpawn or not xtSpawn() then return nil end
+    if not xtSpawn or (xtSpawn.ID() or 0) == 0 then return nil end
     if not Combat.ValidMAXTarget(xtSpawn) then
         Logger.log_verbose("MATargetScan XTarget %s [%d] is not a valid target, skipping.", xtSpawn.CleanName() or "Error", xtSpawn.ID() or 0)
         return nil
@@ -426,9 +420,9 @@ function Combat.MATargetScan(radius, zradius)
     local fallbackTarget = { hp = initHp, id = 0, name = "None", }
     local aggroScan      = Config:GetSetting("MAAggroScan")
     local myLevel        = mq.TLO.Me.Level() or 0
-    local xtCount        = mq.TLO.Me.XTarget()
+    local slotCount      = mq.TLO.Me.XTargetSlots() or 0
 
-    for i = 1, xtCount do
+    for i = 1, slotCount do
         local result = Combat.ProcessXTarget(mq.TLO.Me.XTarget(i), radius, namedPref, hpPref, immediate, primaryTarget, fallbackTarget, aggroScan, myLevel)
         if result then return result end
     end
@@ -464,14 +458,14 @@ function Combat.TankAggroScan()
         return
     end
 
-    local xtCount = mq.TLO.Me.XTarget() or 0
+    local slotCount = mq.TLO.Me.XTargetSlots() or 0
     local assistRange = Config:GetSetting('AssistRange')
 
-    for i = 1, xtCount do
+    for i = 1, slotCount do
         local xtarg = mq.TLO.Me.XTarget(i)
-        if xtarg() then
-            local xtId = xtarg.ID() or 0
-            if xtId > 0 and xtId ~= Globals.AutoTargetID and not Globals.NoHateTargetIDs:contains(xtId) and ((xtarg.Aggressive() or xtarg.TargetType():lower() == "auto hater")) then
+        if Targeting.IsXTHater(xtarg) then
+            local xtId = xtarg.ID()
+            if xtId ~= Globals.AutoTargetID and not Globals.NoHateTargetIDs:contains(xtId) then
                 if xtarg.PctAggro() < 100 and (xtarg.Distance() or 999) <= assistRange and Globals.Constants.RGNotMezzedAnims:contains(xtarg.Animation()) then
                     if Combat.OkToEngagePreValidateId(xtId) then
                         Logger.log_verbose("TankAggroScan: Found Aggro Target: %s (id %d).", xtarg.DisplayName(), xtId)
@@ -1208,13 +1202,13 @@ end
 ---@param minMana number The minimum mana threshold to consider.
 ---@return number The spawn id with the worst hurt mana above the specified threshold.
 function Combat.FindWorstHurtManaXT(minMana)
-    local xtSize = mq.TLO.Me.XTargetSlots()
+    local slotCount = mq.TLO.Me.XTargetSlots() or 0
     local worstId = 0
     local worstPct = minMana
 
-    Logger.log_verbose("\ayChecking for worst HurtMana XTargs. XT Slot Count: %d", xtSize)
+    Logger.log_verbose("\ayChecking for worst HurtMana XTargs. XT Slot Count: %d", slotCount)
 
-    for i = 1, xtSize do
+    for i = 1, slotCount do
         local healTarget = mq.TLO.Me.XTarget(i)
 
         if healTarget and healTarget() and Targeting.TargetIsType("pc", healTarget) and (healTarget.Distance3D() or 0) < 300 then
@@ -1241,13 +1235,13 @@ end
 ---@param minHPs number The minimum HP threshold to consider.
 ---@return number The spawn id with the worst health condition that meets the criteria.
 function Combat.FindWorstHurtXT(minHPs)
-    local xtSize = mq.TLO.Me.XTargetSlots()
+    local slotCount = mq.TLO.Me.XTargetSlots() or 0
     local worstId = 0
     local worstPct = minHPs
 
-    Logger.log_verbose("\ayChecking for worst Hurt XTargs. XT Slot Count: %d", xtSize)
+    Logger.log_verbose("\ayChecking for worst Hurt XTargs. XT Slot Count: %d", slotCount)
 
-    for i = 1, xtSize do
+    for i = 1, slotCount do
         local healTarget = mq.TLO.Me.XTarget(i)
 
         if healTarget and healTarget() and Targeting.TargetIsType("pc", healTarget) and (healTarget.Distance3D() or 0) < 300 then
@@ -1369,25 +1363,28 @@ end
 ---@return boolean
 function Combat.AETauntCheck(printDebug)
     if Globals.NoHateTargetIDs:contains(Globals.AutoTargetID) then return false end
-    local xtCount = mq.TLO.Me.XTarget() or 0
-    if xtCount < Config:GetSetting('AETauntCnt') then return false end
+    local occupiedCount = mq.TLO.Me.XTarget() or 0
+    if occupiedCount < Config:GetSetting('AETauntCnt') then return false end
 
     local mobs = mq.TLO.SpawnCount("NPC radius 50 zradius 50")()
     if mobs < Config:GetSetting('AETauntCnt') then return false end
 
     local tauntme = Set.new({})
-    for i = 1, xtCount do
+    local slotCount = mq.TLO.Me.XTargetSlots() or 0
+    for i = 1, slotCount do
         local xtarg = mq.TLO.Me.XTarget(i)
-        if xtarg and xtarg.ID() > 0 and (xtarg.Aggressive() or xtarg.TargetType():lower() == "auto hater" or xtarg.ID() == Globals.ForceTargetID) and xtarg.PctAggro() < 100 and (xtarg.Distance() or 999) <= 50 and Globals.Constants.RGNotMezzedAnims:contains(xtarg.Animation()) then
+        if Targeting.IsXTHater(xtarg) and xtarg.PctAggro() < 100 and (xtarg.Distance() or 999) <= 50 and Globals.Constants.RGNotMezzedAnims:contains(xtarg.Animation()) then
             if printDebug then
                 Logger.log_verbose("AETauntCheck(): XT(%d) Counting %s(%d) as a hater eligible to AE Taunt.", i, xtarg.CleanName() or "None",
                     xtarg.ID())
             end
             tauntme:add(xtarg.ID())
+            if not Config:GetSetting('SafeAETaunt') then return true end --no need to find more than one if we don't care about safe taunt
         end
-        if not Config:GetSetting('SafeAETaunt') and #tauntme:toList() > 0 then return true end --no need to find more than one if we don't care about safe taunt
     end
-    return #tauntme:toList() > 0 and not (Config:GetSetting('SafeAETaunt') and #tauntme:toList() < mobs)
+
+    local tauntCount = #tauntme:toList()
+    return tauntCount > 0 and not (Config:GetSetting('SafeAETaunt') and tauntCount < mobs)
 end
 
 --- Returns true if AE damage conditions are met (enough haters in range, optionally all mobs are haters).

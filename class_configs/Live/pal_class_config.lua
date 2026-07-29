@@ -777,13 +777,13 @@ local _ClassConfig = {
         end,
         --function to determine if we have enough mobs in range to use a defensive disc
         DefensiveDiscCheck = function(printDebug)
-            local xtCount = mq.TLO.Me.XTarget() or 0
-            if xtCount < Config:GetSetting('DiscCount') then return false end
+            local occupiedCount = mq.TLO.Me.XTarget() or 0
+            if occupiedCount < Config:GetSetting('DiscCount') then return false end
             local haters = Set.new({})
-            for i = 1, xtCount do
+            local slotCount = mq.TLO.Me.XTargetSlots() or 0
+            for i = 1, slotCount do
                 local xtarg = mq.TLO.Me.XTarget(i)
-                if xtarg and xtarg.ID() > 0 and not xtarg.Dead() and (xtarg.Type() or "Corpse") ~= "Corpse" and
-                    (xtarg.Aggressive() or (xtarg.TargetType() or ""):lower() == "auto hater") and (xtarg.Distance() or 999) <= 30 then
+                if Targeting.IsXTHater(xtarg) and (xtarg.Distance() or 999) <= 30 then
                     if printDebug then
                         Logger.log_verbose("DefensiveDiscCheck(): XT(%d) Counting %s(%d) as a hater in range.", i, xtarg.CleanName() or "None", xtarg.ID())
                     end

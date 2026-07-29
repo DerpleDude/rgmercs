@@ -330,18 +330,20 @@ end
 function Movement:DetectMobBehind()
     local me = mq.TLO.Me
     local myHeading = me.Heading.DegreesCCW() or 0
-    local xtCount = me.XTarget() or 0
+    local slotCount = me.XTargetSlots() or 0
     local nearest = nil
     local nearestDistSq = math.huge
 
-    for i = 1, xtCount do
+    for i = 1, slotCount do
         local xtSpawn = me.XTarget(i)
         local xtId = (xtSpawn and xtSpawn.ID()) or 0
+        local xtType = xtId > 0 and (xtSpawn.Type() or ""):lower() or ""
         if xtId > 0 and not xtSpawn.Dead() and not xtSpawn.Fleeing()
             and (math.ceil(xtSpawn.PctHPs() or 0)) > 0
             and (xtSpawn.Aggressive() or (xtSpawn.TargetType() or ""):lower() == "auto hater" or xtId == Globals.ForceTargetID)
             and Globals.Constants.RGNotMezzedAnims:contains(xtSpawn.Animation())
-            and (xtSpawn.PctAggro() or 0) >= 100 then
+            and (xtSpawn.PctAggro() or 0) >= 100
+            and xtType ~= "pc" and xtType ~= "mercenary" then
             local theirHeadingTo = xtSpawn.HeadingTo.DegreesCCW() or 0
             local diff = math.abs(myHeading - theirHeadingTo) % 360
             if diff > 180 then diff = 360 - diff end
