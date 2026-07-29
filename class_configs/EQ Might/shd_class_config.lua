@@ -922,6 +922,7 @@ local _ClassConfig = {
             {
                 name = "Leech Touch",
                 type = "AA",
+                IgnoreImmuneCheck = true,
                 tooltip = Tooltips.ThoughtLeech,
                 cond = function(self, aaName, target)
                     return Config:GetSetting('DoLeechTouch') ~= 1
@@ -990,6 +991,7 @@ local _ClassConfig = {
             {
                 name = "Leech Touch",
                 type = "AA",
+                IgnoreImmuneCheck = true,
                 tooltip = Tooltips.LeechTouch,
                 cond = function(self, aaName, target)
                     if Config:GetSetting('DoLeechTouch') == 2 then return false end

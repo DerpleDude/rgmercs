@@ -837,6 +837,7 @@ local _ClassConfig = {
             {
                 name = "Soothing Words",
                 type = "AA",
+                IgnoreImmuneCheck = true,
                 load_cond = function() return Config:GetSetting("DoSoothing") end,
                 cond = function(self, aaName, target)
                     local tankId = mq.TLO.Group.MainTank.ID() or 0
@@ -864,6 +865,7 @@ local _ClassConfig = {
             {
                 name = "Arcane Whisper",
                 type = "AA",
+                IgnoreImmuneCheck = true,
                 cond = function(self, aaName, target)
                     return Globals.AutoTargetIsNamed and Casting.OkayToCombatEscape()
                 end,

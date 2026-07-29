@@ -403,6 +403,7 @@ local _ClassConfig = {
             {
                 name = "Projection of Fury",
                 type = "AA",
+                IgnoreImmuneCheck = true,
                 cond = function(self, aaName, target)
                     return Globals.AutoTargetIsNamed
                 end,

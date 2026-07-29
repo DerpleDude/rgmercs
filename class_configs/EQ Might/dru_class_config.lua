@@ -790,6 +790,7 @@ local _ClassConfig = {
             {
                 name = "Spirits of Nature",
                 type = "AA",
+                IgnoreImmuneCheck = true,
             },
             {
                 name = "Spire",

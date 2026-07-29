@@ -577,6 +577,7 @@ return {
             {
                 name = "SwarmPet",
                 type = "Spell",
+                IgnoreImmuneCheck = true,
             },
             {
                 name = "Icelance1",

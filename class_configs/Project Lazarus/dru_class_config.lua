@@ -776,6 +776,7 @@ local _ClassConfig = {
             {
                 name = "Spirits of Nature",
                 type = "AA",
+                IgnoreImmuneCheck = true,
             },
             { -- Spire, the SpireChoice setting will determine which ability is displayed/used.
                 name_func = function(self)

@@ -756,6 +756,7 @@ local _ClassConfig = {
             {
                 name = "Gathering Dusk",
                 type = "AA",
+                IgnoreImmuneCheck = true,
                 cond = function(self, aaName, target)
                     return Globals.AutoTargetIsNamed and Targeting.GetAutoTargetPctHPs() <= Config:GetSetting('BurnHPThreshold') and mq.TLO.Me.PctAggro() <= 25
                 end,

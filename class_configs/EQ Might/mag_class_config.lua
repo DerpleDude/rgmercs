@@ -753,6 +753,7 @@ local _ClassConfig = {
             {
                 name = "Arcane Whisper",
                 type = "AA",
+                IgnoreImmuneCheck = true,
                 cond = function(self, aaName, target)
                     return Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 90 and Casting.OkayToCombatEscape()
                 end,

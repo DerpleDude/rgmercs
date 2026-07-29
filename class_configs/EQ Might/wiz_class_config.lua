@@ -561,6 +561,7 @@ return {
             {
                 name = "Mind Crash",
                 type = "AA",
+                IgnoreImmuneCheck = true,
                 cond = function(self, aaName, target)
                     return Globals.AutoTargetIsNamed and Targeting.IHaveAggro(100)
                 end,
@@ -568,6 +569,7 @@ return {
             {
                 name = "Arcane Whisper",
                 type = "AA",
+                IgnoreImmuneCheck = true,
                 cond = function(self, aaName, target)
                     return Globals.AutoTargetIsNamed and Targeting.IHaveAggro(100)
                 end,
