@@ -11,7 +11,7 @@ local Targeting    = require("utils.targeting")
 local Ui           = require("utils.ui")
 
 local _ClassConfig = {
-    _version              = "2.0 - Live",
+    _version              = "2.1 - Live",
     _author               = "Algar",
     ['ModeChecks']        = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
@@ -782,7 +782,8 @@ local _ClassConfig = {
             local haters = Set.new({})
             for i = 1, xtCount do
                 local xtarg = mq.TLO.Me.XTarget(i)
-                if xtarg and xtarg.ID() > 0 and ((xtarg.Aggressive() or xtarg.TargetType():lower() == "auto hater")) and (xtarg.Distance() or 999) <= 30 then
+                if xtarg and xtarg.ID() > 0 and not xtarg.Dead() and (xtarg.Type() or "Corpse") ~= "Corpse" and
+                    (xtarg.Aggressive() or (xtarg.TargetType() or ""):lower() == "auto hater") and (xtarg.Distance() or 999) <= 30 then
                     if printDebug then
                         Logger.log_verbose("DefensiveDiscCheck(): XT(%d) Counting %s(%d) as a hater in range.", i, xtarg.CleanName() or "None", xtarg.ID())
                     end
@@ -1004,7 +1005,7 @@ local _ClassConfig = {
         { --Defensive actions triggered by low HP
             name = 'EmergencyDefenses',
             state = 1,
-            steps = 2, -- help ensure that we cancel visage when needed
+            steps = 1,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
@@ -1249,7 +1250,7 @@ local _ClassConfig = {
                     return Casting.GroupBuffAACheck(aaName, target)
                 end,
                 post_activate = function(self, aaName, success)
-                    -- mq.delay(200, function() return mq.TLO.Me.Buff("Marr's Salvation")() ~= nil end)
+                    mq.delay(math.max(300, 3 * (mq.TLO.EverQuest.Ping() or 0)), function() return mq.TLO.Me.Buff("Marr's Salvation")() ~= nil end)
                     if success and Core.IsTanking() and mq.TLO.Me.Buff("Marr's Salvation")() then
                         Core.DoCmd("/removebuff \"Marr's Salvation\"")
                     end
@@ -1262,7 +1263,7 @@ local _ClassConfig = {
                 name = "Deflection",
                 type = "Disc",
                 pre_activate = function(self)
-                    if Config:GetSetting('UseBandolier') then
+                    if Config:GetSetting('UseBandolier') and not Core.ShieldEquipped() then
                         Core.SafeCallFunc("Equip Shield", ItemManager.BandolierSwap, "Shield")
                     end
                 end,
@@ -1275,7 +1276,7 @@ local _ClassConfig = {
                 name = "Shield Flash",
                 type = "AA",
                 pre_activate = function(self)
-                    if Config:GetSetting('UseBandolier') then
+                    if Config:GetSetting('UseBandolier') and not Core.ShieldEquipped() then
                         Core.SafeCallFunc("Equip Shield", ItemManager.BandolierSwap, "Shield")
                     end
                 end,
@@ -1342,16 +1343,10 @@ local _ClassConfig = {
             {
                 name = "Audacity",
                 type = "Spell",
-                cond = function(self, spell, target)
-                    return Casting.DetSpellCheck(spell, target)
-                end,
             },
             {
                 name = "ForHonor",
                 type = "Spell",
-                cond = function(self, spell, target)
-                    return Casting.DetSpellCheck(spell)
-                end,
             },
             {
                 name = "Disruption",
@@ -1819,8 +1814,8 @@ local _ClassConfig = {
         {
             id = 'StunTimer4',
             Type = "Spell",
-            DisplayName = function() return Core.GetResolvedActionMapItem('StunTimer4')() or "" end,
-            AbilityName = function() return Core.GetResolvedActionMapItem('StunTimer4')() or "" end,
+            DisplayName = function() return Core.GetResolvedActionMapItem('StunTimer4').RankName.Name() or "" end,
+            AbilityName = function() return Core.GetResolvedActionMapItem('StunTimer4').RankName.Name() or "" end,
             AbilityRange = 150,
             cond = function(self)
                 local resolvedSpell = Core.GetResolvedActionMapItem('StunTimer4')
@@ -1874,7 +1869,7 @@ local _ClassConfig = {
             Group = "Abilities",
             Header = "Buffs",
             Category = "Self",
-            Index = 3,
+            Index = 101,
             Tooltip = function() return Ui.GetDynamicTooltipForSpell("TempHP") end,
             Default = true,
             RequiresLoadoutChange = true,
@@ -1886,7 +1881,7 @@ local _ClassConfig = {
             Group = "Abilities",
             Header = "Buffs",
             Category = "Self",
-            Index = 5,
+            Index = 104,
             Tooltip = "Overwrite DPU with single buffs when they are better than the DPU effect.",
             Default = false,
             ConfigType = "Advanced",
@@ -1896,7 +1891,7 @@ local _ClassConfig = {
             Group = "Abilities",
             Header = "Buffs",
             Category = "Self",
-            Index = 8,
+            Index = 105,
             Tooltip = "Use Veteran AA such as Intensity of the Resolute or Armor of Experience as necessary.",
             Default = true,
             ConfigType = "Advanced",
@@ -1907,6 +1902,7 @@ local _ClassConfig = {
             Group = "Abilities",
             Header = "Buffs",
             Category = "Self",
+            Index = 103,
             Tooltip = "Use Undead proc over Fury proc until Fury is rolled into Divine Protector's Unity (Level 80).",
             Default = false,
         },
@@ -1915,7 +1911,7 @@ local _ClassConfig = {
             Group = "Abilities",
             Header = "Buffs",
             Category = "Self",
-            Index = 3,
+            Index = 102,
             Tooltip = "Use your Steel Proc line.",
             Default = false,
             RequiresLoadoutChange = true,
@@ -1925,8 +1921,10 @@ local _ClassConfig = {
             Group = "Abilities",
             Header = "Buffs",
             Category = "Group",
+            Index = 102,
             Tooltip = "Enable Casting Brells",
             Default = true,
+            RequiresLoadoutChange = true,
         },
         ['AegoSymbol']        = {
             DisplayName = "Aego/Symbol Choice:",
@@ -1940,12 +1938,14 @@ local _ClassConfig = {
             Default = 1,
             Min = 1,
             Max = 3,
+            RequiresLoadoutChange = true,
         },
         ['DoSalvation']       = {
             DisplayName = "Marr's Salvation",
             Group = "Abilities",
             Header = "Buffs",
             Category = "Group",
+            Index = 103,
             Tooltip = "Use your group hatred reduction buff AA (The Paladin will cancel it on themself if in Tank Mode).",
             Default = true,
             RequiresLoadoutChange = true,
@@ -1967,7 +1967,7 @@ local _ClassConfig = {
             Group = "Abilities",
             Header = "Tanking",
             Category = "Hate Tools",
-            Index = 101,
+            Index = 102,
             Tooltip =
             "Choose which Timer 5 spell line to use (For the best experience for leveling, the standard stun will be used until others are available.\nIt is recommended to switch this line out for the Timer 3 'Healstun' once it is available.).",
             RequiresLoadoutChange = true,
@@ -1983,7 +1983,7 @@ local _ClassConfig = {
             Group = "Abilities",
             Header = "Tanking",
             Category = "Hate Tools",
-            Index = 102,
+            Index = 103,
             Tooltip = "Choose which Timer 6 spell line to use.",
             RequiresLoadoutChange = true,
             Type = "Combo",
@@ -2008,7 +2008,7 @@ local _ClassConfig = {
             Group = "Abilities",
             Header = "Tanking",
             Category = "Hate Tools",
-            Index = 101,
+            Index = 105,
             Tooltip = "Use AE Taunt AA.",
             RequiresLoadoutChange = true,
             Default = true,
@@ -2050,6 +2050,7 @@ local _ClassConfig = {
             Index = 101,
             Tooltip = "Click your equipped chest.",
             Default = mq.TLO.MacroQuest.BuildName() ~= "Emu",
+            RequiresLoadoutChange = true,
         },
         ['DoCharmClick']      = {
             DisplayName = "Do Charm Click",
@@ -2134,7 +2135,7 @@ local _ClassConfig = {
             Group = "Abilities",
             Header = "Recovery",
             Category = "General Healing",
-            Index = 102,
+            Index = 104,
             Tooltip = "Use your emergency self-heal line of spells.",
             RequiresLoadoutChange = true,
             Default = true,
@@ -2144,7 +2145,7 @@ local _ClassConfig = {
             Group = "Abilities",
             Header = "Recovery",
             Category = "General Healing",
-            Index = 102,
+            Index = 103,
             Tooltip = "Use your group heal ('Wave of ...') line of spells.",
             RequiresLoadoutChange = true,
             Default = mq.TLO.Me.Level() < 83 and true or false,
@@ -2154,7 +2155,7 @@ local _ClassConfig = {
             Group = "Abilities",
             Header = "Recovery",
             Category = "General Healing",
-            Index = 104,
+            Index = 105,
             Tooltip =
             "Memorize your 'Splash' line AE heal/cure, and use it as a group heal or cure. (If unchecked, we may mem/use it out of combat as a cure, depending on other settings.)",
             RequiresLoadoutChange = true,

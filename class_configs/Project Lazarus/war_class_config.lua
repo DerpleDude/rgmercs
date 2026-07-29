@@ -10,7 +10,7 @@ local Logger       = require("utils.logger")
 local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
-    _version          = "3.1 - Project Lazarus",
+    _version          = "3.2 - Project Lazarus",
     _author           = "Algar, Derple",
     ['ModeChecks']    = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
@@ -88,7 +88,7 @@ local _ClassConfig = {
             "Field Conqueror",                -- Level 71 Laz Custom
             "Field Armorer",                  -- Level 65
         },
-        ['AEBlades'] = {
+        ['BladeDisc'] = {
             "Maelstrom Blade", -- Level 71 Laz Custom
             "Vortex Blade",    -- Level 69
             "Cyclone Blade",   -- Level 65
@@ -160,7 +160,8 @@ local _ClassConfig = {
             local haters = Set.new({})
             for i = 1, xtCount do
                 local xtarg = mq.TLO.Me.XTarget(i)
-                if xtarg and xtarg.ID() > 0 and ((xtarg.Aggressive() or xtarg.TargetType():lower() == "auto hater")) and (xtarg.Distance() or 999) <= 30 then
+                if xtarg and xtarg.ID() > 0 and not xtarg.Dead() and (xtarg.Type() or "Corpse") ~= "Corpse" and
+                    (xtarg.Aggressive() or (xtarg.TargetType() or ""):lower() == "auto hater") and (xtarg.Distance() or 999) <= 30 then
                     if printDebug then
                         Logger.log_verbose("DefensiveDiscCheck(): XT(%d) Counting %s(%d) as a hater in range.", i, xtarg.CleanName() or "None", xtarg.ID())
                     end
@@ -171,8 +172,8 @@ local _ClassConfig = {
             return false
         end,
         BurnDiscCheck = function(self)
-            if mq.TLO.Me.ActiveDisc.Name() == "Fortitude Discipline" or Core.AtEmergencyHP() then return false end
-            local burnDisc = { "Onslaught", "StrikeDisc", "ChargeDisc", }
+            if Core.AtEmergencyHP() then return false end
+            local burnDisc = { "Fortitude", "Onslaught", "StrikeDisc", }
             for _, buffName in ipairs(burnDisc) do
                 local resolvedDisc = self:GetResolvedActionMapItem(buffName)
                 if resolvedDisc and resolvedDisc.RankName() == mq.TLO.Me.ActiveDisc.Name() then return false end
@@ -219,7 +220,7 @@ local _ClassConfig = {
             doFullRotation = true,
             load_cond = function()
                 return Core.IsTanking() and Config:GetSetting('DoAETaunt') and
-                    (Casting.CanUseAA("Area Taunt") or Core.GetResolvedActionMapItem("Epic") or Core.GetResolvedActionMapItem("AEBlades"))
+                    (Core.GetResolvedActionMapItem("AreaTaunt") or Core.GetResolvedActionMapItem("Epic") or Core.GetResolvedActionMapItem("BladeDisc"))
             end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
@@ -339,10 +340,6 @@ local _ClassConfig = {
                 type = "Ability",
             },
             {
-                name = "Attention",
-                type = "Disc",
-            },
-            {
                 name = "Blast of Anger",
                 type = "AA",
             },
@@ -350,17 +347,15 @@ local _ClassConfig = {
                 name = "Scowl",
                 type = "Disc",
                 load_cond = function(self) return Config:GetSetting('UseScowl') and Core.GetResolvedActionMapItem('Scowl') end,
-                cond = function(self, discSpell)
-                    return Casting.DetSpellCheck(discSpell)
-                end,
             },
             {
                 name = "AddHate",
                 type = "Disc",
                 load_cond = function(self) return not (Config:GetSetting('UseScowl') and Core.GetResolvedActionMapItem('Scowl')) end,
-                cond = function(self, discSpell)
-                    return Casting.DetSpellCheck(discSpell)
-                end,
+            },
+            {
+                name = "Attention",
+                type = "Disc",
             },
         },
         ['HateTools(AutoTarget)']  = {
@@ -423,8 +418,9 @@ local _ClassConfig = {
                 end,
             },
             {
-                name = "AEBlades",
+                name = "BladeDisc",
                 type = "Disc",
+                load_cond = function(self) return Config:GetSetting('BladeDiscUse') > 1 end,
                 cond = function(self, discSpell)
                     return Config:GetSetting('DoAEDamage')
                 end,
@@ -671,6 +667,14 @@ local _ClassConfig = {
                 end,
             },
             {
+                name = "BladeDisc",
+                type = "Disc",
+                load_cond = function(self) return Config:GetSetting('BladeDiscUse') == 3 and Core.GetResolvedActionMapItem('BladeDisc') end,
+                cond = function(self, discSpell)
+                    return Config:GetSetting('DoAEDamage') and mq.TLO.Me.PctEndurance() >= Config:GetSetting("ManaToNuke") -- save endurance for emergency discs
+                end,
+            },
+            {
                 name = "Knee Strike",
                 type = "AA",
             },
@@ -771,9 +775,23 @@ local _ClassConfig = {
             Header = "Tanking",
             Category = "Hate Tools",
             Index = 101,
-            Tooltip = "Use AE hatred Discs and AA (see FAQ for specifics).",
+            Tooltip = "Use AE hatred Discs and AA.",
             RequiresLoadoutChange = true,
             Default = true,
+        },
+        ['BladeDiscUse']    = {
+            DisplayName = "Blade Disc Use:",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "AE",
+            Index = 101,
+            Tooltip = "When to use your AE Blade Disc Line (DPS mode will not attempt to regain hate).",
+            RequiresLoadoutChange = true,
+            Type = "Combo",
+            ComboOptions = { 'Disabled', 'Only To Regain Hate', 'Whenever Possible', },
+            Default = 2,
+            Min = 1,
+            Max = 3,
         },
         ['UseScowl']        = {
             DisplayName = "Use Scowl",

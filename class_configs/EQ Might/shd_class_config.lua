@@ -77,7 +77,7 @@ local Tooltips     = {
 
 local _ClassConfig = {
     -- Added low level proc self-buffs, separated the proc lines by buff slot
-    _version          = "2.7 - EQ Might",
+    _version          = "2.8 - EQ Might",
     _author           = "Algar, Derple",
     ['ModeChecks']    = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
@@ -402,7 +402,8 @@ local _ClassConfig = {
             local haters = Set.new({})
             for i = 1, xtCount do
                 local xtarg = mq.TLO.Me.XTarget(i)
-                if xtarg and xtarg.ID() > 0 and ((xtarg.Aggressive() or xtarg.TargetType():lower() == "auto hater")) and (xtarg.Distance() or 999) <= 30 then
+                if xtarg and xtarg.ID() > 0 and not xtarg.Dead() and (xtarg.Type() or "Corpse") ~= "Corpse" and
+                    (xtarg.Aggressive() or (xtarg.TargetType() or ""):lower() == "auto hater") and (xtarg.Distance() or 999) <= 30 then
                     if printDebug then
                         Logger.log_verbose("DefensiveDiscCheck(): XT(%d) Counting %s(%d) as a hater in range.", i, xtarg.CleanName() or "None", xtarg.ID())
                     end
@@ -525,7 +526,7 @@ local _ClassConfig = {
         { --Defensive actions triggered by low HP
             name = 'EmergencyDefenses',
             state = 1,
-            steps = 2, -- help ensure that we cancel visage when needed
+            steps = 1,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
@@ -686,17 +687,6 @@ local _ClassConfig = {
                     return Casting.SelfBuffCheck(spell)
                 end,
             },
-            {
-                name = "Emergency Visage Cancel",
-                desc = "Removes VoD at Critical HP",
-                type = "CustomFunc",
-                load_cond = function(self) return Casting.CanUseAA("Visage of Death") end,
-                cond = function(self) return Core.AtCriticalHP() and mq.TLO.Me.Buff("Visage of Death")() end,
-                custom_func = function(self)
-                    Core.DoCmd("/removebuff \"Visage of Death\"")
-                    return true
-                end,
-            },
         },
         ['GroupBuff']              = { -- Added to anchor clickies to
 
@@ -756,7 +746,7 @@ local _ClassConfig = {
                 type = "Disc",
                 tooltip = Tooltips.BlockDisc,
                 pre_activate = function(self)
-                    if Config:GetSetting('UseBandolier') then
+                    if Config:GetSetting('UseBandolier') and not Core.ShieldEquipped() then
                         Core.SafeCallFunc("Equip Shield", ItemManager.BandolierSwap, "Shield")
                     end
                 end,
@@ -833,11 +823,13 @@ local _ClassConfig = {
                 name = "Explosion of Hatred",
                 type = "AA",
                 tooltip = Tooltips.ExplosionOfHatred,
+                load_cond = function(self) return Config:GetSetting('AETauntAA') end,
             },
             {
                 name = "Explosion of Spite",
                 type = "AA",
                 tooltip = Tooltips.ExplosionOfSpite,
+                load_cond = function(self) return Config:GetSetting('AETauntAA') end,
             },
             {
                 name = "BladeDisc",
@@ -890,6 +882,7 @@ local _ClassConfig = {
                 name = "ForPower",
                 type = "Spell",
                 tooltip = Tooltips.ForPower,
+                load_cond = function(self) return Config:GetSetting('DoForPower') end,
             },
         },
         ['Burn']                   = {
@@ -1036,7 +1029,7 @@ local _ClassConfig = {
                 name = "ForPower",
                 type = "Spell",
                 tooltip = Tooltips.ForPower,
-                load_cond = function(self) return Core.IsTanking() end,
+                load_cond = function(self) return Core.IsTanking() and Config:GetSetting('DoForPower') end,
                 cond = function(self, spell, target)
                     return Casting.DetSpellCheck(spell, target)
                 end,
@@ -1184,6 +1177,7 @@ local _ClassConfig = {
                 { name = "LifeTap", },
                 { name = "SnareDot",    cond = function(self) return Config:GetSetting('DoSnare') and not Casting.CanUseAA("Encroaching Darkness") end, },
                 { name = "Terror",      cond = function(self) return Config:GetSetting('DoTerror') end, },
+                { name = "ForPower",    cond = function(self) return Config:GetSetting('DoForPower') end, },
                 { name = "AETaunt",     cond = function(self) return Config:GetSetting('AETauntSpell') end, },
                 { name = "BiteTap", },
                 { name = "AncientBite", },
@@ -1198,7 +1192,6 @@ local _ClassConfig = {
                 { name = "Terror2",     cond = function(self) return Config:GetSetting('DoTerror') end, },
                 { name = "LifeTap3", },
                 { name = "Terror3",     cond = function(self) return Config:GetSetting('DoTerror') end, },
-                { name = "LifeTap3", },
                 { name = "SelfDS", },
             },
         },
@@ -1348,7 +1341,7 @@ local _ClassConfig = {
             Default = true,
             FAQ = "Why is my health draining so quickly out of combat?",
             Answer =
-            "You may have Visage of Death enabled, which has a sizable self-damage component. While we will attempt to autocancel this at low health in downtime, you can disable VoD use in the Class options.",
+            "You may have Visage of Death enabled, which has a sizable self-damage component. You can disable VoD use in the Class options.",
         },
 
         --Taps
@@ -1417,8 +1410,8 @@ local _ClassConfig = {
             Header = "Damage",
             Category = "Over Time",
             Index = 102,
-            ToolTip = function() return Ui.GetDynamicTooltipForSpell("PoisonDot") end,
-            RequiresLoadoutChange = false,
+            Tooltip = function() return Ui.GetDynamicTooltipForSpell("PoisonDot") end,
+            RequiresLoadoutChange = true,
             Default = true,
         },
         ['DoDireDot']         = {
@@ -1463,7 +1456,7 @@ local _ClassConfig = {
             Group = "Abilities",
             Header = "Buffs",
             Category = "Self",
-            Index = 103,
+            Index = 104,
             Tooltip =
             "Use your Visage buff (Voice of ... line). We will continue to use the spell if slots are available (for the damage shield). The spell can be disabled directly in rotations.",
             Default = true,
@@ -1505,6 +1498,17 @@ local _ClassConfig = {
             Default = true,
             ConfigType = "Advanced",
         },
+        ['DoForPower']        = {
+            DisplayName = "Use \"For Power\"",
+            Group = "Abilities",
+            Header = "Tanking",
+            Category = "Hate Tools",
+            Index = 104,
+            Tooltip = function() return Ui.GetDynamicTooltipForSpell("ForPower") end,
+            RequiresLoadoutChange = true,
+            Default = true,
+            ConfigType = "Advanced",
+        },
 
         --Defenses
         ['DiscCount']         = {
@@ -1532,7 +1536,7 @@ local _ClassConfig = {
             ConfigType = "Advanced",
         },
         ['HoldEpicForNoDisc'] = {
-            DisplayName = "Epic",
+            DisplayName = "Epic Only Without Disc",
             Group = "Abilities",
             Header = "Tanking",
             Category = "Defenses",

@@ -77,7 +77,7 @@ local Tooltips     = {
 }
 
 local _ClassConfig = {
-    _version          = "3.2 - Live",
+    _version          = "3.3 - Live",
     _author           = "Algar, Derple",
     ['ModeChecks']    = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
@@ -774,7 +774,8 @@ local _ClassConfig = {
             local haters = Set.new({})
             for i = 1, xtCount do
                 local xtarg = mq.TLO.Me.XTarget(i)
-                if xtarg and xtarg.ID() > 0 and ((xtarg.Aggressive() or xtarg.TargetType():lower() == "auto hater")) and (xtarg.Distance() or 999) <= 30 then
+                if xtarg and xtarg.ID() > 0 and not xtarg.Dead() and (xtarg.Type() or "Corpse") ~= "Corpse" and
+                    (xtarg.Aggressive() or (xtarg.TargetType() or ""):lower() == "auto hater") and (xtarg.Distance() or 999) <= 30 then
                     if printDebug then
                         Logger.log_verbose("DefensiveDiscCheck(): XT(%d) Counting %s(%d) as a hater in range.", i, xtarg.CleanName() or "None", xtarg.ID())
                     end
@@ -800,7 +801,7 @@ local _ClassConfig = {
         end,
         ShouldMemTerror = function()
             local setting = Config:GetSetting('DoTerror')
-            return setting == 3 or (setting == 2 and not Core.GetResolvedActionMapItem('ForPower'))
+            return setting == 3 or (setting == 2 and not (Config:GetSetting('DoForPower') and Core.GetResolvedActionMapItem('ForPower')))
         end,
     },
     ['Charm']         = {
@@ -924,8 +925,9 @@ local _ClassConfig = {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and (mq.TLO.Me.PctHPs() <= Config:GetSetting('DefenseStart') or Targeting.TankingXTNamed() or
-                    self.Helpers.DefensiveDiscCheck(true))
+                return combat_state == "Combat" and Targeting.IHaveAggro(100) and
+                    (mq.TLO.Me.PctHPs() <= Config:GetSetting('DefenseStart') or Targeting.TankingXTNamed() or
+                        self.Helpers.DefensiveDiscCheck(true))
             end,
         },
         { -- Leech Effect (Epic, OoW BP, Coating) maintenance
@@ -1209,7 +1211,7 @@ local _ClassConfig = {
                 type = "Disc",
                 tooltip = Tooltips.Deflection,
                 pre_activate = function(self)
-                    if not Core.ShieldEquipped() and Config:GetSetting('UseBandolier') then
+                    if Config:GetSetting('UseBandolier') and not Core.ShieldEquipped() then
                         Core.SafeCallFunc("Equip Shield", ItemManager.BandolierSwap, "Shield")
                     end
                 end,
@@ -1231,7 +1233,7 @@ local _ClassConfig = {
                 type = "AA",
                 tooltip = Tooltips.ShieldFlash,
                 pre_activate = function(self)
-                    if not Core.ShieldEquipped() and Config:GetSetting('UseBandolier') then
+                    if Config:GetSetting('UseBandolier') and not Core.ShieldEquipped() then
                         Core.SafeCallFunc("Equip Shield", ItemManager.BandolierSwap, "Shield")
                     end
                 end,
@@ -1296,8 +1298,7 @@ local _ClassConfig = {
                 type = "Spell",
                 tooltip = Tooltips.ForPower,
                 cond = function(self, spell, target)
-                    if not Config:GetSetting('DoForPower') then return false end
-                    return Casting.DetSpellCheck(spell)
+                    return Config:GetSetting('DoForPower')
                 end,
             },
         },
@@ -1371,11 +1372,13 @@ local _ClassConfig = {
                 name = "Explosion of Hatred",
                 type = "AA",
                 tooltip = Tooltips.ExplosionOfHatred,
+                load_cond = function(self) return Config:GetSetting('AETauntAA') end,
             },
             {
                 name = "Explosion of Spite",
                 type = "AA",
                 tooltip = Tooltips.ExplosionOfSpite,
+                load_cond = function(self) return Config:GetSetting('AETauntAA') end,
             },
             {
                 name = "AETaunt",
@@ -2142,7 +2145,7 @@ local _ClassConfig = {
             Header = "Damage",
             Category = "Over Time",
             Index = 102,
-            ToolTip = function() return Ui.GetDynamicTooltipForSpell("PoisonDot") end,
+            Tooltip = function() return Ui.GetDynamicTooltipForSpell("PoisonDot") end,
             RequiresLoadoutChange = true,
             Default = true,
         },

@@ -10,7 +10,7 @@ local Logger      = require("utils.logger")
 local Targeting   = require("utils.targeting")
 
 return {
-    _version              = "2.1 - Project Lazarus",
+    _version              = "2.2 - Project Lazarus",
     _author               = "Derple, Algar",
     ['ModeChecks']        = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
@@ -355,7 +355,8 @@ return {
             local haters = Set.new({})
             for i = 1, xtCount do
                 local xtarg = mq.TLO.Me.XTarget(i)
-                if xtarg and xtarg.ID() > 0 and ((xtarg.Aggressive() or xtarg.TargetType():lower() == "auto hater")) and (xtarg.Distance() or 999) <= 30 then
+                if xtarg and xtarg.ID() > 0 and not xtarg.Dead() and (xtarg.Type() or "Corpse") ~= "Corpse" and
+                    (xtarg.Aggressive() or (xtarg.TargetType() or ""):lower() == "auto hater") and (xtarg.Distance() or 999) <= 30 then
                     if printDebug then
                         Logger.log_verbose("DefensiveDiscCheck(): XT(%d) Counting %s(%d) as a hater in range.", i, xtarg.CleanName() or "None", xtarg.ID())
                     end
@@ -598,7 +599,7 @@ return {
         { --Defensive actions triggered by low HP
             name = 'EmergencyDefenses',
             state = 1,
-            steps = 2, -- help ensure that we cancel visage when needed
+            steps = 1,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
@@ -612,7 +613,7 @@ return {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and (mq.TLO.Me.TargetOfTarget.PctHPs() or 0) < Config:GetSetting('LightHealPoint')
+                return combat_state == "Combat" and Targeting.LightHealsNeeded(mq.TLO.Me.TargetOfTarget)
             end,
         },
         { --Defensive actions used proactively to prevent emergencies
@@ -648,7 +649,7 @@ return {
             load_cond = function()
                 local aeSpell = Config:GetSetting('AEStunUse') == 3 and Core.GetResolvedActionMapItem('AEStun')
                 local pbaeSpell = Config:GetSetting('PBAEStunUse') == 3 and Core.GetResolvedActionMapItem('PBAEStun')
-                return Core.IsTanking() or aeSpell or pbaeSpell
+                return aeSpell or pbaeSpell or mq.TLO.FindItem("=Forsaken Fayguard Bladecatcher")() ~= nil
             end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
@@ -784,7 +785,7 @@ return {
                 name = "BlockDisc",
                 type = "Disc",
                 pre_activate = function(self)
-                    if Config:GetSetting('UseBandolier') then
+                    if Config:GetSetting('UseBandolier') and not Core.ShieldEquipped() then
                         Core.SafeCallFunc("Equip Shield", ItemManager.BandolierSwap, "Shield")
                     end
                 end,
@@ -796,7 +797,8 @@ return {
                 name = "SancDisc",
                 type = "Disc",
                 cond = function(self, discSpell)
-                    return Casting.NoDiscActive() and Casting.DiscOnCoolDown('BlockDisc') and Casting.DiscOnCoolDown('GuardDisc')
+                    return Casting.NoDiscActive() and not mq.TLO.Me.Song("Rampart")() and
+                        Casting.DiscOnCoolDown('BlockDisc') and Casting.DiscOnCoolDown('GuardDisc')
                 end,
             },
             {
@@ -865,6 +867,7 @@ return {
             {
                 name = "Beacon of the Righteous",
                 type = "AA",
+                load_cond = function(self) return Config:GetSetting('AETauntAA') end,
             },
             {
                 name = "PBAEStun",
@@ -910,7 +913,7 @@ return {
                 type = "AA",
             },
             {
-                name = "Inquisitor's Judgement",
+                name = "Inquisitor's Judgment",
                 type = "AA",
             },
             {
@@ -968,7 +971,7 @@ return {
                 name = "Gift of Life",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    return (mq.TLO.Me.TargetOfTarget.PctHPs() or 0) < Config:GetSetting('HPCritical')
+                    return (mq.TLO.Me.TargetOfTarget.PctHPs() or 999) < Config:GetSetting('HPCritical')
                 end,
             },
             {
@@ -1090,8 +1093,8 @@ return {
         {
             id = 'StunTimer4',
             Type = "Spell",
-            DisplayName = function() return Core.GetResolvedActionMapItem('StunTimer4')() or "" end,
-            AbilityName = function() return Core.GetResolvedActionMapItem('StunTimer4')() or "" end,
+            DisplayName = function() return Core.GetResolvedActionMapItem('StunTimer4').RankName.Name() or "" end,
+            AbilityName = function() return Core.GetResolvedActionMapItem('StunTimer4').RankName.Name() or "" end,
             AbilityRange = 150,
             cond = function(self)
                 local resolvedSpell = Core.GetResolvedActionMapItem('StunTimer4')
@@ -1102,8 +1105,8 @@ return {
         {
             id = 'StunTimer5',
             Type = "Spell",
-            DisplayName = function() return Core.GetResolvedActionMapItem('StunTimer5')() or "" end,
-            AbilityName = function() return Core.GetResolvedActionMapItem('StunTimer5')() or "" end,
+            DisplayName = function() return Core.GetResolvedActionMapItem('StunTimer5').RankName.Name() or "" end,
+            AbilityName = function() return Core.GetResolvedActionMapItem('StunTimer5').RankName.Name() or "" end,
             AbilityRange = 150,
             cond = function(self)
                 local resolvedSpell = Core.GetResolvedActionMapItem('StunTimer5')
@@ -1228,6 +1231,7 @@ return {
             Index = 102,
             Tooltip = "Click your Blood/Spirit Drinker's Coating when defenses are triggered.",
             Default = false,
+            RequiresLoadoutChange = true,
         },
         ['UseBandolier']      = {
             DisplayName = "Dynamic Weapon Swap",

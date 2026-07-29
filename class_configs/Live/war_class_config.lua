@@ -11,7 +11,7 @@ local Targeting   = require("utils.targeting")
 
 
 local _ClassConfig = {
-    _version          = "2.2 - Live",
+    _version          = "2.3 - Live",
     _author           = "Algar, Derple",
     ['ModeChecks']    = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
@@ -164,7 +164,7 @@ local _ClassConfig = {
             "Concordant Precision",  -- Level 108
             "Harmonious Precision",  -- Level 103
         },
-        ['AEBlades'] = {
+        ['BladeDisc'] = {
             "Cyclone Blades XIV",  -- Level 127
             "Spiraling Blades",    -- Level 124
             "Hurricane Blades",    -- Level 119
@@ -306,7 +306,8 @@ local _ClassConfig = {
             local haters = Set.new({})
             for i = 1, xtCount do
                 local xtarg = mq.TLO.Me.XTarget(i)
-                if xtarg and xtarg.ID() > 0 and ((xtarg.Aggressive() or xtarg.TargetType():lower() == "auto hater")) and (xtarg.Distance() or 999) <= 30 then
+                if xtarg and xtarg.ID() > 0 and not xtarg.Dead() and (xtarg.Type() or "Corpse") ~= "Corpse" and
+                    (xtarg.Aggressive() or (xtarg.TargetType() or ""):lower() == "auto hater") and (xtarg.Distance() or 999) <= 30 then
                     if printDebug then
                         Logger.log_verbose("DefensiveDiscCheck(): XT(%d) Counting %s(%d) as a hater in range.", i, xtarg.CleanName() or "None", xtarg.ID())
                     end
@@ -322,8 +323,8 @@ local _ClassConfig = {
             return true
         end,
         BurnDiscCheck = function(self)
-            if mq.TLO.Me.ActiveDisc.Name() == "Fortitude Discipline" or Core.AtEmergencyHP() then return false end
-            local burnDisc = { "Onslaught", "MightyStrike", "ChargeDisc", "OffensiveDisc", }
+            if Core.AtEmergencyHP() then return false end
+            local burnDisc = { "Fortitude", "Onslaught", "MightyStrike", "ChargeDisc", "OffensiveDisc", }
             for _, buffName in ipairs(burnDisc) do
                 local resolvedDisc = self:GetResolvedActionMapItem(buffName)
                 if resolvedDisc and resolvedDisc.RankName() == mq.TLO.Me.ActiveDisc.Name() then return false end
@@ -360,7 +361,10 @@ local _ClassConfig = {
             steps = 1,
             timer = 1, -- Don't check this more often than once a second to avoid blowing every ability at once (aggro takes time to update)
             doFullRotation = true,
-            load_cond = function() return Core.IsTanking() and Config:GetSetting('DoAETaunt') end,
+            load_cond = function()
+                return Core.IsTanking() and Config:GetSetting('DoAETaunt') and
+                    (Casting.CanUseAA("Area Taunt") or Core.GetResolvedActionMapItem("BladeDisc"))
+            end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and Combat.AETauntCheck(true) and not Core.AtCriticalHP()
@@ -418,8 +422,9 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 --need to look at rotation and decide if it should fire during emergencies. leaning towards no
-                return combat_state == "Combat" and Core.IsTanking() and (Core.AtEmergencyHP() or
-                    Targeting.TankingXTNamed() or self.Helpers.DefensiveDiscCheck(true))
+                return combat_state == "Combat" and Core.IsTanking() and Targeting.IHaveAggro(100) and
+                    (mq.TLO.Me.PctHPs() <= Config:GetSetting('DefenseStart') or
+                        Targeting.TankingXTNamed() or self.Helpers.DefensiveDiscCheck(true))
             end,
         },
         { --Offensive actions to temporarily boost damage dealt
@@ -498,10 +503,6 @@ local _ClassConfig = {
         },
         ['HateTools(AggroTarget)'] = {
             {
-                name = "Attention",
-                type = "Disc",
-            },
-            {
                 name = "Blast of Anger",
                 type = "AA",
             },
@@ -516,19 +517,23 @@ local _ClassConfig = {
             {
                 name = "AddHate1",
                 type = "Disc",
-                cond = function(self, discSpell)
-                    return Casting.DetSpellCheck(discSpell)
-                end,
             },
             {
                 name = "AddHate2",
                 type = "Disc",
             },
-        },
-        ['HateTools(AutoTarget)']  = {
             {
                 name = "Attention",
                 type = "Disc",
+            },
+        },
+        ['HateTools(AutoTarget)']  = {
+            { --used to jumpstart hatred on named from the outset and prevent early rips from burns
+                name = "Attention",
+                type = "Disc",
+                cond = function(self, discSpell, target)
+                    return Globals.AutoTargetIsNamed
+                end,
             },
             {
                 name = "Blast of Anger",
@@ -563,6 +568,14 @@ local _ClassConfig = {
                 type = "AA",
             },
             {
+                name = "BladeDisc",
+                type = "Disc",
+                load_cond = function(self) return Config:GetSetting('BladeDiscUse') > 1 end,
+                cond = function(self, discSpell)
+                    return Config:GetSetting('DoAEDamage')
+                end,
+            },
+            {
                 name = "SelfBuffAE",
                 type = "Disc",
             },
@@ -589,7 +602,7 @@ local _ClassConfig = {
                 name = "Flash",
                 type = "Disc",
                 cond = function(self, discSpell)
-                    return not mq.TLO.Me.ActiveDisc.Name() ~= "Fortitude Discipline" and not Casting.IHaveBuff("Blade Whirl")
+                    return mq.TLO.Me.ActiveDisc.Name() ~= "Fortitude Discipline" and not Casting.IHaveBuff("Blade Whirl")
                 end,
             },
             {
@@ -700,8 +713,8 @@ local _ClassConfig = {
                 cond = function(self, aaName)
                     local absorbDisc = Core.GetResolvedActionMapItem('AbsorbDisc')
                     local standDisc = Core.GetResolvedActionMapItem('StandDisc')
-                    return (not standDisc or mq.TLO.Me.ActiveDisc.Name() ~= standDisc.RankName()) and mq.TLO.Me.Song(absorbDisc)() and not Casting.IHaveBuff("Guardian's Boon") and
-                        not Casting.IHaveBuff("Guardian's Bravery")
+                    return (not standDisc or mq.TLO.Me.ActiveDisc.Name() ~= standDisc.RankName()) and (not absorbDisc or mq.TLO.Me.Song(absorbDisc)()) and
+                        not Casting.IHaveBuff("Guardian's Boon") and not Casting.IHaveBuff("Guardian's Bravery")
                 end,
             },
             {
@@ -877,7 +890,8 @@ local _ClassConfig = {
                 type = "AA",
                 cond = function(self, aaName, target)
                     if not Config:GetSetting('DoBattleLeap') then return false end
-                    return not mq.TLO.Me.HeadWet() --Stops Leap from launching us above the water's surface
+                    return Casting.SelfBuffAACheck(aaName) and not Casting.IHaveBuff("Group Bestial Alignment")
+                        and not mq.TLO.Me.HeadWet() --Stops Leap from launching us above the water's surface
                 end,
             },
             {
@@ -885,6 +899,14 @@ local _ClassConfig = {
                 type = "AA",
                 cond = function(self, aaName, target)
                     return Core.IsTanking()
+                end,
+            },
+            {
+                name = "BladeDisc",
+                type = "Disc",
+                load_cond = function(self) return Config:GetSetting('BladeDiscUse') == 3 and Core.GetResolvedActionMapItem('BladeDisc') end,
+                cond = function(self, discSpell)
+                    return Config:GetSetting('DoAEDamage') and mq.TLO.Me.PctEndurance() >= Config:GetSetting("ManaToNuke") -- save endurance for emergency discs
                 end,
             },
             {
@@ -1012,8 +1034,20 @@ local _ClassConfig = {
             Tooltip = "Use AE hatred Discs and AA.",
             Default = true,
             RequiresLoadoutChange = true,
-            FAQ = "Why am I using AE damage when there are mezzed mobs around?",
-            Answer = "It is not currently possible to properly determine Mez status without direct Targeting. If you are mezzing, consider turning this option off.",
+        },
+        ['BladeDiscUse']    = {
+            DisplayName = "Blade Disc Use:",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "AE",
+            Index = 101,
+            Tooltip = "When to use your AE Blade Disc Line (DPS mode will not attempt to regain hate).",
+            RequiresLoadoutChange = true,
+            Type = "Combo",
+            ComboOptions = { 'Disabled', 'Only To Regain Hate', 'Whenever Possible', },
+            Default = 2,
+            Min = 1,
+            Max = 3,
         },
 
         --Defenses
@@ -1027,6 +1061,18 @@ local _ClassConfig = {
             Default = 4,
             Min = 1,
             Max = 10,
+            ConfigType = "Advanced",
+        },
+        ['DefenseStart']    = {
+            DisplayName = "Defense HP",
+            Group = "Abilities",
+            Header = "Tanking",
+            Category = "Defenses",
+            Index = 102,
+            Tooltip = "The HP % where we will use defensive actions like discs, epics, etc.\nNote that fighting a named will also trigger these actions.",
+            Default = 60,
+            Min = 1,
+            Max = 100,
             ConfigType = "Advanced",
         },
 

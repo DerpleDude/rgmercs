@@ -11,7 +11,7 @@ local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
     -- Added Mayhem line for AE taunt
-    _version          = "3.1 - EQ Might",
+    _version          = "3.2 - EQ Might",
     _author           = "Algar, Derple",
     ['ModeChecks']    = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
@@ -188,7 +188,8 @@ local _ClassConfig = {
             local haters = Set.new({})
             for i = 1, xtCount do
                 local xtarg = mq.TLO.Me.XTarget(i)
-                if xtarg and xtarg.ID() > 0 and ((xtarg.Aggressive() or xtarg.TargetType():lower() == "auto hater")) and (xtarg.Distance() or 999) <= 30 then
+                if xtarg and xtarg.ID() > 0 and not xtarg.Dead() and (xtarg.Type() or "Corpse") ~= "Corpse" and
+                    (xtarg.Aggressive() or (xtarg.TargetType() or ""):lower() == "auto hater") and (xtarg.Distance() or 999) <= 30 then
                     if printDebug then
                         Logger.log_verbose("DefensiveDiscCheck(): XT(%d) Counting %s(%d) as a hater in range.", i, xtarg.CleanName() or "None", xtarg.ID())
                     end
@@ -199,8 +200,8 @@ local _ClassConfig = {
             return false
         end,
         BurnDiscCheck = function(self)
-            if mq.TLO.Me.ActiveDisc.Name() == "Fortitude Discipline" or Core.AtEmergencyHP() then return false end
-            local burnDisc = { "Onslaught", "StrikeDisc", "Steelwrath", }
+            if Core.AtEmergencyHP() then return false end
+            local burnDisc = { "Fortitude", "Onslaught", "StrikeDisc", "Steelwrath", }
             for _, buffName in ipairs(burnDisc) do
                 local resolvedDisc = self:GetResolvedActionMapItem(buffName)
                 if resolvedDisc and resolvedDisc.RankName() == mq.TLO.Me.ActiveDisc.Name() then return false end
@@ -211,7 +212,7 @@ local _ClassConfig = {
             -- Allow healing disc to be cancelled by other defensive discs
             if Casting.NoDiscActive() then return true end
             local healingDisc = Core.GetResolvedActionMapItem('HealingDisc')
-            return not healingDisc or mq.TLO.Me.ActiveDisc.Name() == healingDisc.RankName()
+            return healingDisc ~= nil and mq.TLO.Me.ActiveDisc.Name() == healingDisc.RankName()
         end,
         MeleeMitBuffCheck = function(self) -- Make sure we spread out our MeleeMit buffs because only the highest in slot 1 takes effect
             local standDisc = Core.GetResolvedActionMapItem('StandDisc')
@@ -262,7 +263,7 @@ local _ClassConfig = {
             doFullRotation = true,
             load_cond = function()
                 return Core.IsTanking() and Config:GetSetting('DoAETaunt') and
-                    (Casting.CanUseAA("Area Taunt") or Core.GetResolvedActionMapItem("BladeDisc"))
+                    (Core.GetResolvedActionMapItem("AreaTaunt") or Core.GetResolvedActionMapItem("BladeDisc"))
             end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
@@ -401,9 +402,6 @@ local _ClassConfig = {
             {
                 name = "AddHate",
                 type = "Disc",
-                cond = function(self, discSpell)
-                    return Casting.DetSpellCheck(discSpell)
-                end,
             },
             {
                 name = "AddHate2",
@@ -715,7 +713,7 @@ local _ClassConfig = {
                 type = "AA",
                 cond = function(self, aaName, target)
                     if not Config:GetSetting('DoSnare') then return false end
-                    return Casting.DetAACheck(aaName)
+                    return Casting.DetAACheck(aaName) and not Casting.SnareImmuneTarget(target)
                 end,
             },
             {
@@ -806,7 +804,7 @@ local _ClassConfig = {
             Header = "Tanking",
             Category = "Hate Tools",
             Index = 100,
-            Tooltip = "Use AE hatred Discs and AA (see FAQ for specifics).",
+            Tooltip = "Use AE hatred Discs and AA.",
             RequiresLoadoutChange = true,
             Default = true,
         },
@@ -843,7 +841,7 @@ local _ClassConfig = {
             Header = "Clickies",
             Category = "Class Config Clickies",
             Index = 101,
-            Tooltip = "Click your Epic Weapon when AE Threat is needed. Also relies on Do AE Damage setting.",
+            Tooltip = "Click your Epic Weapon when defenses are triggered.",
             Default = false,
         },
         ['UseBandolier']    = {

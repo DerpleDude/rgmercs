@@ -10,7 +10,7 @@ local Logger      = require("utils.logger")
 local Targeting   = require("utils.targeting")
 
 return {
-    _version              = "2.1 - EQ Might",
+    _version              = "2.2 - EQ Might",
     _author               = "Derple, Algar",
     ['ModeChecks']        = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
@@ -415,7 +415,8 @@ return {
             local haters = Set.new({})
             for i = 1, xtCount do
                 local xtarg = mq.TLO.Me.XTarget(i)
-                if xtarg and xtarg.ID() > 0 and ((xtarg.Aggressive() or xtarg.TargetType():lower() == "auto hater")) and (xtarg.Distance() or 999) <= 30 then
+                if xtarg and xtarg.ID() > 0 and not xtarg.Dead() and (xtarg.Type() or "Corpse") ~= "Corpse" and
+                    (xtarg.Aggressive() or (xtarg.TargetType() or ""):lower() == "auto hater") and (xtarg.Distance() or 999) <= 30 then
                     if printDebug then
                         Logger.log_verbose("DefensiveDiscCheck(): XT(%d) Counting %s(%d) as a hater in range.", i, xtarg.CleanName() or "None", xtarg.ID())
                     end
@@ -652,7 +653,7 @@ return {
         { --Defensive actions triggered by low HP
             name = 'EmergencyDefenses',
             state = 1,
-            steps = 2, -- help ensure that we cancel visage when needed
+            steps = 1,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
@@ -839,7 +840,7 @@ return {
                 name = "BlockDisc",
                 type = "Disc",
                 pre_activate = function(self)
-                    if Config:GetSetting('UseBandolier') then
+                    if Config:GetSetting('UseBandolier') and not Core.ShieldEquipped() then
                         Core.SafeCallFunc("Equip Shield", ItemManager.BandolierSwap, "Shield")
                     end
                 end,
@@ -872,9 +873,6 @@ return {
             {
                 name = "ForHonor",
                 type = "Spell",
-                cond = function(self, spell, target)
-                    return Casting.DetSpellCheck(spell)
-                end,
             },
             {
                 name = "StunTimer5",
@@ -930,6 +928,7 @@ return {
             {
                 name = "Beacon of the Righteous",
                 type = "AA",
+                load_cond = function(self) return Config:GetSetting('AETauntAA') end,
             },
             {
                 name = "PBAEStun",
@@ -1146,8 +1145,8 @@ return {
         {
             id = 'StunTimer4',
             Type = "Spell",
-            DisplayName = function() return Core.GetResolvedActionMapItem('StunTimer4')() or "" end,
-            AbilityName = function() return Core.GetResolvedActionMapItem('StunTimer4')() or "" end,
+            DisplayName = function() return Core.GetResolvedActionMapItem('StunTimer4').RankName.Name() or "" end,
+            AbilityName = function() return Core.GetResolvedActionMapItem('StunTimer4').RankName.Name() or "" end,
             AbilityRange = 150,
             cond = function(self)
                 local resolvedSpell = Core.GetResolvedActionMapItem('StunTimer4')
@@ -1158,8 +1157,8 @@ return {
         {
             id = 'StunTimer5',
             Type = "Spell",
-            DisplayName = function() return Core.GetResolvedActionMapItem('StunTimer5')() or "" end,
-            AbilityName = function() return Core.GetResolvedActionMapItem('StunTimer5')() or "" end,
+            DisplayName = function() return Core.GetResolvedActionMapItem('StunTimer5').RankName.Name() or "" end,
+            AbilityName = function() return Core.GetResolvedActionMapItem('StunTimer5').RankName.Name() or "" end,
             AbilityRange = 150,
             cond = function(self)
                 local resolvedSpell = Core.GetResolvedActionMapItem('StunTimer5')
@@ -1413,17 +1412,6 @@ return {
         },
 
         --Combat
-        -- ['DoTwinHealNuke']    = {
-        --     DisplayName = "Twin Heal Nuke",
-        --     Group = "Abilities",
-        --     Header = "Damage",
-        --     Category = "Direct",
-        --     Index = 101,
-        --     Tooltip = "Use Twin Heal Nuke Spells",
-        --     RequiresLoadoutChange = true,
-        --     Default = true,
-        --     ConfigType = "Advanced",
-        -- },
         ['DoSereneStun']      = {
             DisplayName = "Do Serene Stun",
             Group = "Abilities",
@@ -1439,7 +1427,7 @@ return {
             Group = "Abilities",
             Header = "Damage",
             Category = "Direct",
-            Index = 102,
+            Index = 101,
             Tooltip = "Use the standard Undead nuke line.",
             RequiresLoadoutChange = true,
             Default = true,
@@ -1449,7 +1437,7 @@ return {
             Group = "Abilities",
             Header = "Damage",
             Category = "Direct",
-            Index = 103,
+            Index = 102,
             Tooltip = "Use the quick undead nuke line (which includes a potential snare and ac debuff trigger).",
             RequiresLoadoutChange = true,
             Default = true,
@@ -1459,7 +1447,7 @@ return {
             Group = "Abilities",
             Header = "Damage",
             Category = "Direct",
-            Index = 104,
+            Index = 103,
             Tooltip = "Use the fire lure nuke line.",
             RequiresLoadoutChange = true,
             Default = false,
@@ -1472,6 +1460,7 @@ return {
             Index = 101,
             Tooltip = "Use the Valorous Rage AA during burns.",
             Default = false,
+            RequiresLoadoutChange = true,
         },
 
         --Buffs
@@ -1502,6 +1491,7 @@ return {
                 "You have Symbol selected and don't have another Type One Buff.\n" ..
                 "Leaving this on in other cases is not likely to cause issue, but may cause unnecessary buff checking.",
             Default = false,
+            RequiresLoadoutChange = true,
         },
         ['DoBrells']          = {
             DisplayName = "Do Brells",
@@ -1511,6 +1501,7 @@ return {
             Index = 103,
             Tooltip = "Enable Casting Brells",
             Default = true,
+            RequiresLoadoutChange = true,
         },
         ['DoWardProc']        = {
             DisplayName = "Do Ward Proc",
@@ -1520,6 +1511,7 @@ return {
             Index = 103,
             Tooltip = "Use your Ward of Tunare defensive proc buff.",
             Default = true,
+            RequiresLoadoutChange = true,
         },
         ['DoSalvation']       = {
             DisplayName = "Marr's Salvation",
@@ -1529,6 +1521,7 @@ return {
             Index = 104,
             Tooltip = "Use your group hatred reduction buff AA.",
             Default = true,
+            RequiresLoadoutChange = true,
         },
         ['ProcChoice']        = {
             DisplayName = "Proc Buff Choice:",
