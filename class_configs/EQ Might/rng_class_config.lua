@@ -314,6 +314,16 @@ return {
                 return Targeting.IHaveAggro(100) and (Core.AtEmergencyHP() or Globals.AutoTargetIsNamed)
             end,
         },
+        {
+            name = 'Aggro Management',
+            state = 1,
+            steps = 1,
+            doFullRotation = true,
+            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
+            cond = function(self, combat_state)
+                return combat_state == "Combat" and mq.TLO.Me.PctAggro() > Config:GetSetting('JoltAggro') and Casting.OkayToCombatEscape()
+            end,
+        },
         { --Keep things from running
             name = 'Snare',
             state = 1,
@@ -517,14 +527,6 @@ return {
                 end,
             },
             {
-                name = "JoltSpell",
-                type = "Spell",
-                load_cond = function(self) return Config:GetSetting('DoJoltSpell') end,
-                cond = function(self, spell, target)
-                    return Globals.AutoTargetIsNamed and mq.TLO.Me.PctAggro() > 80 and Casting.OkayToCombatEscape()
-                end,
-            },
-            {
                 name = "Forceful Rejuvenation",
                 type = "AA",
             },
@@ -551,6 +553,7 @@ return {
             {
                 name = "Cover Tracks",
                 type = "AA",
+                load_cond = function(self) return Config:GetSetting('DoCoverTracks') and Casting.CanUseAA("Cover Tracks") end,
                 cond = function(self, aaName)
                     return Casting.OkayToCombatEscape()
                 end,
@@ -580,6 +583,13 @@ return {
                 cond = function(self, discSpell, target)
                     return Casting.NoDiscActive()
                 end,
+            },
+        },
+        ['Aggro Management']   = {
+            {
+                name = "JoltSpell",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoJoltSpell') end,
             },
         },
         ['Combat']             = {
@@ -925,7 +935,7 @@ return {
 
 
         --Combat
-        ['DoSwarmDot']   = {
+        ['DoSwarmDot']    = {
             DisplayName = "Swarm Dot",
             Group = "Abilities",
             Header = "Damage",
@@ -935,7 +945,7 @@ return {
             Default = true,
             RequiresLoadoutChange = true,
         },
-        ['DotNamedOnly'] = {
+        ['DotNamedOnly']  = {
             DisplayName = "Only Dot Named",
             Group = "Abilities",
             Header = "Damage",
@@ -944,7 +954,7 @@ return {
             Tooltip = "Any selected dot above will only be used on a named mob.",
             Default = true,
         },
-        ['UseEpic']      = {
+        ['UseEpic']       = {
             DisplayName = "Epic Use:",
             Group = "Items",
             Header = "Clickies",
@@ -959,7 +969,7 @@ return {
         },
 
         --Utility
-        ['DoHealSpell']  = {
+        ['DoHealSpell']   = {
             DisplayName = "Do Heals",
             Group = "Abilities",
             Header = "Recovery",
@@ -969,17 +979,38 @@ return {
             Default = true,
             RequiresLoadoutChange = true,
         },
-        ['DoJoltSpell']  = {
-            DisplayName = "Do Jolt Spell",
+        ['JoltAggro']     = {
+            DisplayName = "Aggro Shed %",
             Group = "Abilities",
             Header = "Utility",
             Category = "Hate Reduction",
             Index = 101,
+            Tooltip = "Begin using hate reduction abilities above this aggro percentage.",
+            Default = 70,
+            Min = 1,
+            Max = 100,
+        },
+        ['DoJoltSpell']   = {
+            DisplayName = "Use Jolt Spell",
+            Group = "Abilities",
+            Header = "Utility",
+            Category = "Hate Reduction",
+            Index = 102,
             Tooltip = "Use your Jolt spell when your aggro is high.",
             Default = true,
             RequiresLoadoutChange = true,
         },
-        ['DoSnare']      = {
+        ['DoCoverTracks'] = {
+            DisplayName = "Use Cover Tracks",
+            Group = "Abilities",
+            Header = "Utility",
+            Category = "Emergency",
+            Index = 101,
+            Tooltip = "Use Cover Tracks to escape combat in an emergency.",
+            Default = true,
+            RequiresLoadoutChange = true,
+        },
+        ['DoSnare']       = {
             DisplayName = "Use Snares",
             Group = "Abilities",
             Header = "Debuffs",
@@ -989,7 +1020,7 @@ return {
             Default = false,
             RequiresLoadoutChange = true,
         },
-        ['SnareCount']   = {
+        ['SnareCount']    = {
             DisplayName = "Snare Max Mob Count",
             Group = "Abilities",
             Header = "Debuffs",
@@ -1000,7 +1031,7 @@ return {
             Min = 1,
             Max = 99,
         },
-        ['HealPriority'] = {
+        ['HealPriority']  = {
             DisplayName = "Healing Priority",
             Group = "Abilities",
             Header = "Recovery",

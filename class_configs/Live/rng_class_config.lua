@@ -1248,9 +1248,6 @@ local _ClassConfig = {
                 name = "JoltSpell",
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoJoltSpell') end,
-                cond = function(self, spell, target)
-                    return Casting.DetSpellCheck(spell, target)
-                end,
             },
         },
         ['Debuff']             = {
@@ -1996,7 +1993,7 @@ local _ClassConfig = {
             Category = "Emergency",
             Index = 101,
             Tooltip = "Use Cover Tracks to escape combat in an emergency.",
-            Default = false,
+            Default = true,
             RequiresLoadoutChange = true,
         },
     },
