@@ -345,7 +345,7 @@ return {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and Core.CombatActionsCheck() and (Config:GetSetting('DoHealSpell') and Casting.OkayToNuke() or Targeting.AggroCheckOkay())
+                return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
         {
@@ -616,42 +616,66 @@ return {
             {
                 name = "Cold Snap",
                 type = "AA",
+                cond = function(self, aaName, target)
+                    return Targeting.AggroCheckOkay()
+                end,
             },
             {
                 name = "FireNukeT4",
                 type = "Spell",
+                cond = function(self, spell, target)
+                    return Casting.OkayToNuke()
+                end,
             },
             {
                 name = "FireNukeT1",
                 type = "Spell",
+                cond = function(self, spell, target)
+                    return Casting.OkayToNuke()
+                end,
             },
             {
                 name = "FlameSnap",
                 type = "Spell",
+                cond = function(self, spell, target)
+                    return Casting.OkayToNuke()
+                end,
             },
             {
                 name = "ColdNukeT3",
                 type = "Spell",
+                cond = function(self, spell, target)
+                    return Casting.OkayToNuke()
+                end,
             },
             {
                 name = "ColdNukeT2",
                 type = "Spell",
+                cond = function(self, spell, target)
+                    return Casting.OkayToNuke()
+                end,
             },
             {
                 name = "ArrowHail",
                 type = "Spell",
                 cond = function(self, spell, target)
                     if not Config:GetSetting('DoAEDamage') then return false end
-                    return Combat.AETargetCheck(true)
+                    return Casting.OkayToNuke() and Combat.AETargetCheck(true)
                 end,
             },
             {
                 name = "FocusedHail",
                 type = "Spell",
+                cond = function(self, spell, target)
+                    return Casting.OkayToNuke()
+                end,
             },
             {
                 name = "Heartshot",
                 type = "Spell",
+                cond = function(self, spell, target)
+                    return Casting.OkayToNuke()
+                end,
             },
         },
         ['Weaves']             = {
