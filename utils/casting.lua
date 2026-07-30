@@ -1488,6 +1488,7 @@ end
 --- Checks if we are safe to use abilities that remove us from combat/aggro.
 ---@return boolean True Return true if no conditions exist that would make a combat escape undesirable
 function Casting.OkayToCombatEscape()
+    if not Config:GetSetting('DoHateReduction') then return false end
     if (mq.TLO.Group.Members() or 0) == 0 and (mq.TLO.Raid.Members() or 0) == 0 then return false end
     if Core.IsTanking() or mq.TLO.Group.Puller.ID() == mq.TLO.Me.ID() then return false end
     return true

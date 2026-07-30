@@ -1483,6 +1483,18 @@ Config.DefaultConfig                                     = {
         Default = true,
     },
 
+    -- Hate Reduction
+    ['DoHateReduction']            = {
+        DisplayName = "Do Hate Reduction",
+        Group = "Abilities",
+        Header = "Utility",
+        Category = "Hate Reduction",
+        Index = 1,
+        Tooltip = "(Non-Tank Modes): Use hate reduction abilities such as jolts, fades, feigns and evades when your aggro percent is high.\n" ..
+            "This is a top-level setting that governs all hate reduction, and can be used as a quick-toggle to enable/disable abilities without reloading spells.",
+        Default = true,
+    },
+
     -- Emergency
     ['StandFailedFD']              = {
         DisplayName = "Stand on Failed FD",
