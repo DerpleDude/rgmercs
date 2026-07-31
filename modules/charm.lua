@@ -431,6 +431,8 @@ function Module:ResetCharmStates()
     self:ResetCharmImmune()
     self.TempSettings.CharmTracker = {}
     Config:SetSetting('LastCharmPetID', 0)
+    Globals.MyCharmedPetID = 0
+    Globals.MyLooseCharmID = 0
 end
 
 -- Charm ability resolution (config-driven via ClassConfig.Charm.Abilities, falls back to hardcoded logic)

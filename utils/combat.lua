@@ -490,12 +490,14 @@ end
 --- Resolves the MA's current target via actors heartbeat, DanNet, group/raid
 --- TLO, or target-of-target fallback; also updates ForceCombatID/AutoTargetIsNamed.
 ---@return number targetId The spawn ID of the MA's current target, or 0.
----@return boolean targetIsNamed True if the MA's target was flagged as named.
+---@return boolean|nil targetIsNamed True if the MA's target was flagged as named, nil if unknown.
 function Combat.GetMainAssistTargetID()
     local assistId = 0
     local heartbeat = Comms.GetPeerHeartbeatByName(Globals.MainAssist)
     local assistTarget
-    local assistTargetIsNamed = false
+    local assistTargetIsNamed = nil
+
+    Globals.ForceCombatID = 0
 
     -- if the MA has a force target, use it, and also force combat on this target (don't check aggressiveness on the MA's force target)
     if heartbeat and heartbeat.Data then
@@ -514,8 +516,6 @@ function Combat.GetMainAssistTargetID()
                 assistTargetIsNamed = heartbeat.Data.TargetIsNamed
             end
         else
-            -- reset force combat ID if the MA is no longer forcing that target
-            Globals.ForceCombatID = 0
             local paused = heartbeat.Data.State == "Paused"
             local rawTarget = paused and heartbeat.Data.TargetID or heartbeat.Data.AutoTargetID
             local targetID = tonumber(rawTarget) or 0
@@ -701,9 +701,6 @@ function Combat.FindBestAutoTarget(validateFn)
         -- if we aren't forcing or staying on a target, then lets get an autotarget from the MA
         if assistId == 0 then
             -- We're not the main assist so we need to choose our target based on our main assist.
-            -- Only change if the group main assist target is an NPC ID that doesn't match the current autotargetid. This prevents us from
-            -- swapping to non-NPCs if the  MA is trying to heal/buff a friendly or themselves.
-
             assistId, assistTargetIsNamed = Combat.GetMainAssistTargetID()
         end
 
