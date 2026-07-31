@@ -42,6 +42,7 @@ Module.TempSettings.TargetSpawnID         = 0
 Module.TempSettings.PullTargets           = {}
 Module.TempSettings.PullMetaData          = {}
 Module.TempSettings.PullIgnoreTargets     = {}
+Module.TempSettings.StrangerSkip          = {}
 Module.TempSettings.PullListUpdated       = false
 Module.TempSettings.PullAllowSet          = {}
 Module.TempSettings.PullDenySet           = {}
@@ -157,7 +158,7 @@ Module.Constants.PullFilterReasons              = {
     ['CON_OUT_OF_RANGE']    = 15,
     ['LEVEL_DIFF_TOO_HIGH'] = 16,
     ['NO_PATH']             = 17,
-    ['FIGHTING_STRANGER']   = 18,
+    ['STRANGER_NEAR']       = 18,
 }
 
 Module.Constants.PullFilterReasonDisplayStrings = {
@@ -178,7 +179,7 @@ Module.Constants.PullFilterReasonDisplayStrings = {
     ['CON_OUT_OF_RANGE']    = { Display = Icons.FA_EXCLAMATION, Text = "Con Out of Range", Color = 'Yellow', },
     ['LEVEL_DIFF_TOO_HIGH'] = { Display = Icons.FA_CHEVRON_UP, Text = "Level Difference Too High", Color = 'Red', },
     ['NO_PATH']             = { Display = Icons.MD_CLEAR, Text = "No Path / Unreachable", Color = 'Red', },
-    ['FIGHTING_STRANGER']   = { Display = Icons.FA_FIRE, Text = "Fighting a Stranger", Color = 'Red', },
+    ['STRANGER_NEAR']       = { Display = Icons.FA_USER_SECRET, Text = "Stranger Nearby", Color = 'Red', },
 }
 
 Module.Constants.PullFilterReasonsIDToName      = {}
@@ -312,7 +313,7 @@ Module.Constants.AbortLogMessages   = {
     listUpdated = "\ar ALERT: Aborting pull due to change in pull allow or deny list. \ax",
     disabled = "\ar ALERT: Pulling Disabled at user request. \ax",
     spawnGone = "PULL:\ar ALERT: Aborting mob died or despawned \ax",
-    stranger = "PULL:\ar ALERT: Aborting mob is fighting a stranger and safe targeting is enabled! \ax",
+    stranger = "PULL:\ar ALERT: Aborting mob has a stranger near it and Attempt Safe Pulling is enabled! \ax",
     unreachable = "PULL:\ar ALERT: Aborting Fight To target has been unreachable for too long \ax",
     tooFar = "PULL:\ar ALERT: Aborting mob moved out of spawn distance \ax",
     noPath = "PULL:\ar ALERT: Aborting mob no longer reachable on mesh \ax",
@@ -580,6 +581,21 @@ Module.DefaultConfig                = {
         Index = 5,
         Tooltip = "Allow pulling mobs that are in water.",
         Default = false,
+    },
+    ['AttemptSafePulling']                     = {
+        DisplayName = "Attempt Safe Pulling",
+        Group = "Movement",
+        Header = "Pulling",
+        Category = "Pull Rules",
+        Index = 10,
+        Tooltip = "Attempt to avoid pulling mobs that are near strangers. This is a best-effort attempt (see FAQ).",
+        Default = false,
+        ConfigType = "Advanced",
+        FAQ = "What does Attempt Safe Pulling do?",
+        Answer = "Attempt Safe Pulling attempts to scan for the presence of strangers near mobs that are assessed for pulling. " ..
+            "This is a best-effort guess; unfortunately, PC location data is not reliable at distance, and who is targeting what is not exposed directly to the client in most cases.\n\n" ..
+            "A stranger is anyone who is not a Mercs peer, not in your group or raid, not in your guild, not a DanNet peer, and not on your assist or heal list.\n\n" ..
+            "Because of unreliable data, this may cause false positives; use with caution.",
     },
     ['PullBackwards']                          = {
         DisplayName = "Pull Facing Backwards",
@@ -1421,13 +1437,13 @@ function Module.DecideAbort(attempt, abortCtx)
     if abortCtx.spawnGone then return 'spawnGone' end
 
     if attempt.source == 'objective' then
-        if abortCtx.safeTargeting and abortCtx.fightingStranger then return 'stranger' end
+        if abortCtx.attemptSafePulling and abortCtx.strangerNear then return 'stranger' end
         if abortCtx.graceExpired then return 'unreachable' end
         if not abortCtx.navigating and abortCtx.timedOut then return 'objectiveTimeout' end
     elseif attempt.source == 'scan' then
         if abortCtx.distance > abortCtx.maxPathRange then return 'tooFar' end
         if not abortCtx.pathExists then return 'noPath' end
-        if abortCtx.safeTargeting and abortCtx.fightingStranger then return 'stranger' end
+        if abortCtx.attemptSafePulling and abortCtx.strangerNear then return 'stranger' end
         if not abortCtx.navigating and abortCtx.timedOut then return 'timeout' end
     elseif attempt.source == 'manual' then
         if not abortCtx.navigating and abortCtx.timedOut then return 'manualTimeout' end
@@ -2602,6 +2618,7 @@ end
 
 function Module:ClearIgnoreList()
     self.TempSettings.PullIgnoreTargets = {}
+    self.TempSettings.StrangerSkip = {}
 end
 
 function Module:ValidateIgnoreList()
@@ -3744,11 +3761,20 @@ function Module:GetPullableSpawns()
             return false
         end
 
-        if Config:GetSetting('SafeTargeting') and Targeting.IsSpawnFightingStranger(spawn, 500) then
-            Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \ar mob is fighting a stranger and safe targeting is enabled!",
-                spawnName, spawn.ID())
-            recordReason(spawn, reasons.FIGHTING_STRANGER)
-            return false
+        if Config:GetSetting('AttemptSafePulling') then
+            local skipUntil = self.TempSettings.StrangerSkip[spawn.ID()]
+            if skipUntil and Globals.GetTimeMS() < skipUntil then
+                Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \ar recently aborted for a nearby stranger, still skipping!", spawnName, spawn.ID())
+                recordReason(spawn, reasons.STRANGER_NEAR)
+                return false
+            end
+            self.TempSettings.StrangerSkip[spawn.ID()] = nil
+
+            if Targeting.IsSpawnNearStranger(spawn) then
+                Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \ar a stranger is near it!", spawnName, spawn.ID())
+                recordReason(spawn, reasons.STRANGER_NEAR)
+                return false
+            end
         end
 
         Logger.log_debug("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \agPotential Pull Added to List", spawn.CleanName(), spawn.ID())
@@ -3819,8 +3845,8 @@ function Module:CheckAttemptAbort(attempt, bNavigating)
     }
 
     if attempt.source == 'objective' then
-        abortCtx.safeTargeting = Config:GetSetting('SafeTargeting')
-        abortCtx.fightingStranger = Targeting.IsSpawnFightingStranger(spawn, 500)
+        abortCtx.attemptSafePulling = Config:GetSetting('AttemptSafePulling')
+        abortCtx.strangerNear = abortCtx.attemptSafePulling and attempt.engageStartedAt == nil and Targeting.IsSpawnNearStranger(spawn)
         local _, graceExpired = self:CheckReachable("id " .. attempt.targetId)
         abortCtx.graceExpired = graceExpired
         abortCtx.timedOut = attempt.engageStartedAt ~= nil and (Globals.GetTimeSeconds() - attempt.engageStartedAt) >= Config:GetSetting('PullIgnoreTime')
@@ -3828,8 +3854,8 @@ function Module:CheckAttemptAbort(attempt, bNavigating)
         abortCtx.distance = spawn.Distance() or 0
         abortCtx.maxPathRange = Config:GetSetting("MaxPathRange")
         abortCtx.pathExists = mq.TLO.Navigation.PathExists("id " .. attempt.targetId)()
-        abortCtx.safeTargeting = Config:GetSetting('SafeTargeting')
-        abortCtx.fightingStranger = Targeting.IsSpawnFightingStranger(spawn, 500)
+        abortCtx.attemptSafePulling = Config:GetSetting('AttemptSafePulling')
+        abortCtx.strangerNear = abortCtx.attemptSafePulling and attempt.engageStartedAt == nil and Targeting.IsSpawnNearStranger(spawn)
         abortCtx.timedOut = attempt.engageStartedAt ~= nil and (Globals.GetTimeSeconds() - attempt.engageStartedAt) >= Config:GetSetting('PullIgnoreTime')
     elseif attempt.source == 'manual' then
         abortCtx.timedOut = attempt.engageStartedAt ~= nil and (Globals.GetTimeSeconds() - attempt.engageStartedAt) >= Config:GetSetting('PullIgnoreTime')
@@ -3843,6 +3869,8 @@ function Module:CheckAttemptAbort(attempt, bNavigating)
         self.TempSettings.PullListUpdated = false
     elseif reason == 'timeout' then
         table.insert(self.TempSettings.PullIgnoreTargets, mq.TLO.Spawn(attempt.targetId))
+    elseif reason == 'stranger' then
+        self.TempSettings.StrangerSkip[attempt.targetId] = Globals.GetTimeMS() + 60000
     elseif reason == 'objectiveTimeout' then
         self:AnnounceStop("Fight To target could not be engaged - pulls disabled.", false)
     end
@@ -3917,9 +3945,7 @@ function Module:RunEntryGates(ctx)
             self.TempSettings.HuntAnchor = nil
             Core.DoCmd("/mapfilter pullradius off")
         end
-        if #self.TempSettings.PullIgnoreTargets > 0 then
-            self:ClearIgnoreList()
-        end
+        if next(self.TempSettings.StrangerSkip) or #self.TempSettings.PullIgnoreTargets > 0 then self:ClearIgnoreList() end
     end
 
     Logger.log_verbose("PULL:GiveTime() - DoPull: %s", Strings.BoolToColorString(Config:GetSetting('DoPull')))
@@ -4148,6 +4174,14 @@ function Module:PreAttemptTick(ctx)
                 return
             end
 
+            if Config:GetSetting('AttemptSafePulling') then
+                local skipUntil = self.TempSettings.StrangerSkip[objective.id]
+                if (skipUntil and Globals.GetTimeMS() < skipUntil) or Targeting.IsSpawnNearStranger(objectiveSpawn) then
+                    self:SetPullState(PullStates.PULL_WAITING_SHOULDPULL, "A stranger is near the target - retrying")
+                    return
+                end
+            end
+
             pullID = objective.id
             source = 'objective'
         else
@@ -4346,13 +4380,6 @@ function Module:NavToTargetTick(ctx)
     if mq.TLO.Target.Master.Type() == 'PC' then
         Logger.log_debug("\atPULL::PullTarget \awPullTarget :: Spawn \am%s\aw (\at%d\aw) is Charmed Pet -- Skipping", mq.TLO.Target.CleanName(), mq.TLO.Target.ID())
         abortPull = true
-    end
-
-    if Config:GetSetting('SafeTargeting') then
-        -- Hard coding 500 units as our radius as it's probably twice our effective spell range.
-        if Targeting.IsSpawnFightingStranger(mq.TLO.Spawn(attempt.targetId), 500) then
-            abortPull = true
-        end
     end
 
     local target = mq.TLO.Target

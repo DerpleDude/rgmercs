@@ -396,6 +396,7 @@ local function Main()
             Globals.LooseCharms = {}
             Globals.LastCachedBuffUpdate = {}
             Globals.AutoTargetID = 0
+            Globals.ValidAutoTargetIDs = Set.new({})
             Globals.AutoTargetIsNamed = false
             Globals.AggroTargetID = 0
             Globals.CombatNavTargetId = 0
@@ -446,11 +447,11 @@ local function Main()
         if Globals.CurrentState ~= "Downtime" then
             Logger.log_debug("Switching to Downtime state.")
 
-            -- clear the cache during state transition.
-            Targeting.ClearSafeTargetCache()
+            Targeting.PruneValidAutoTargets()
             Targeting.ForceBurnTargetID = 0
             Globals.LastPulledID        = 0
             Combat.PullStuckTime        = 0
+            Combat.StrangerWarnedIDs    = {}
             Globals.AutoTargetID        = 0
             Globals.CombatNavTargetId   = 0
             Globals.IgnoredTargetIDs    = Set.new({})

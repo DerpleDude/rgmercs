@@ -1,21 +1,22 @@
-local mq             = require('mq')
-local Set            = require('mq.set')
-local Comms          = require("utils.comms")
-local Config         = require('utils.config')
-local Core           = require("utils.core")
-local DanNet         = require('lib.dannet.helpers')
-local Events         = require("utils.events")
-local Globals        = require('utils.globals')
-local Logger         = require("utils.logger")
-local Math           = require("utils.math")
-local Modules        = require("utils.modules")
-local Movement       = require("utils.movement")
-local Strings        = require("utils.strings")
-local Targeting      = require("utils.targeting")
+local mq                = require('mq')
+local Set               = require('mq.set')
+local Comms             = require("utils.comms")
+local Config            = require('utils.config')
+local Core              = require("utils.core")
+local DanNet            = require('lib.dannet.helpers')
+local Events            = require("utils.events")
+local Globals           = require('utils.globals')
+local Logger            = require("utils.logger")
+local Math              = require("utils.math")
+local Modules           = require("utils.modules")
+local Movement          = require("utils.movement")
+local Strings           = require("utils.strings")
+local Targeting         = require("utils.targeting")
 
-local Combat         = { _version = '1.0', _name = "Combat", _author = 'Derple', }
-Combat.__index       = Combat
-Combat.PullStuckTime = 0
+local Combat            = { _version = '1.0', _name = "Combat", _author = 'Derple', }
+Combat.__index          = Combat
+Combat.PullStuckTime    = 0
+Combat.StrangerWarnedIDs = {}
 
 --- Returns the current live combat state based on XTarget hater count.
 ---@return string "Combat" if there are active haters, "Downtime" otherwise.
@@ -303,14 +304,27 @@ function Combat.IsPreferredType(spawnIsNamed, namedPref)
         or (namedPref.prefTrash and not spawnIsNamed)
 end
 
-local function processFallbackSpawn(spawn, checkNamed, radius, namedPref, hpPref, primaryTarget, fallbackTarget)
+local function skipForStranger(spawn)
+    local spawnId = spawn and spawn.ID() or 0
+    if Globals.ValidAutoTargetIDs:contains(spawnId) or spawnId == Globals.LastPulledID then return false end
+    if not Targeting.IsSpawnNearStranger(spawn) then return false end
+
+    if not Combat.StrangerWarnedIDs[spawnId] then
+        Combat.StrangerWarnedIDs[spawnId] = true
+        Logger.log_warn("\ayLeaving \at%s\ay alone - a stranger is nearby and Attempt Safe Targeting is enabled.", spawn.CleanName() or "Unknown")
+    end
+
+    return true
+end
+
+local function processFallbackSpawn(spawn, checkNamed, namedPref, hpPref, primaryTarget, fallbackTarget)
     if not spawn or not spawn() then return end
     if Targeting.IsTempPet(spawn) then return end
     if Targeting.IsDeniedTarget(spawn) then return end
     local fallbackId = spawn.ID() or 0
     if fallbackId ~= Globals.ForceTargetID and fallbackId ~= Globals.ForceCombatID and Globals.CharmedPetIDs:contains(fallbackId) then return end
     if (spawn.CleanName() or ""):find("Guard") then return end
-    if Config:GetSetting('SafeTargeting') and Targeting.IsSpawnFightingStranger(spawn, radius) then return end
+    if Config:GetSetting('AttemptSafeTargeting') and skipForStranger(spawn) then return end
     local spawnIsNamed = checkNamed and Targeting.IsNamed(spawn) or false
 
     if Combat.IsPreferredType(spawnIsNamed, namedPref) then
@@ -327,16 +341,15 @@ end
 --- Scans nearby spawns matching search and updates the primaryTarget bucket as a fallback when XTargets yield nothing.
 ---@param search        string                               Spawn search string passed to NearestSpawn.
 ---@param checkNamed    boolean                              If true, named status is evaluated for namedPref filtering.
----@param radius        number                               Max distance to consider a spawn valid.
 ---@param namedPref     {prefNamed:boolean,prefTrash:boolean} Named targeting preference flags.
 ---@param hpPref        {prefLow:boolean,prefHigh:boolean}   HP targeting preference flags.
 ---@param primaryTarget {hp:number,id:number,found:boolean}  Primary target bucket, mutated in place.
 ---@param fallbackTarget {hp:number,id:number,name:string}  Non-preferred-type bucket, mutated in place.
-function Combat.FallbackScan(search, checkNamed, radius, namedPref, hpPref, primaryTarget, fallbackTarget)
+function Combat.FallbackScan(search, checkNamed, namedPref, hpPref, primaryTarget, fallbackTarget)
     local count = mq.TLO.SpawnCount(search)()
     Logger.log_verbose("MATargetScan FallbackScan: %s ===> %d", search, count)
     for i = 1, count do
-        processFallbackSpawn(mq.TLO.NearestSpawn(i, search), checkNamed, radius, namedPref, hpPref, primaryTarget, fallbackTarget)
+        processFallbackSpawn(mq.TLO.NearestSpawn(i, search), checkNamed, namedPref, hpPref, primaryTarget, fallbackTarget)
     end
 end
 
@@ -361,12 +374,12 @@ function Combat.ProcessXTarget(xtSpawn, radius, namedPref, hpPref, immediate, pr
     local xtName  = xtSpawn.CleanName() or "Error"
     local spawnId = xtSpawn.ID() or 0
 
-    if Config:GetSetting('SafeTargeting') and Targeting.IsSpawnFightingStranger(xtSpawn, radius) then
-        Logger.log_verbose("MATargetScan XTarget %s [%d] Distance: %d - is fighting someone else - ignoring it.", xtName, spawnId, xtSpawn.Distance())
-        return nil
-    end
     if (xtSpawn.Distance() or 999) > radius then
         Logger.log_verbose("MATargetScan \ar%s distance[%d] is out of radius: %d", xtName, xtSpawn.Distance() or 0, radius)
+        return nil
+    end
+    if Config:GetSetting('AttemptSafeTargeting') and skipForStranger(xtSpawn) then
+        Logger.log_verbose("MATargetScan XTarget %s [%d] Distance: %d - another player is next to it - ignoring it.", xtName, spawnId, xtSpawn.Distance())
         return nil
     end
 
@@ -435,9 +448,9 @@ function Combat.MATargetScan(radius, zradius)
         elseif Config:GetSetting('AreaScanFallback') then
             -- We didn't find anything to kill yet so spawn search
             Logger.log_verbose("MATargetScan Falling back on Spawn Searching")
-            Combat.FallbackScan(aggroSearch, true, radius, namedPref, hpPref, primaryTarget, fallbackTarget)
+            Combat.FallbackScan(aggroSearch, true, namedPref, hpPref, primaryTarget, fallbackTarget)
             if not primaryTarget.found and fallbackTarget.id == 0 then
-                Combat.FallbackScan(aggroSearchPet, false, radius, namedPref, hpPref, primaryTarget, fallbackTarget)
+                Combat.FallbackScan(aggroSearchPet, false, namedPref, hpPref, primaryTarget, fallbackTarget)
             end
             if not primaryTarget.found and fallbackTarget.id > 0 then
                 Logger.log_verbose("MATargetScan \agArea scan found only non-preferred type, falling back to: %d", fallbackTarget.id)
@@ -719,10 +732,16 @@ function Combat.FindBestAutoTarget(validateFn)
     end
 
     if Globals.AutoTargetID > 0 then
-        -- Only the MA consumes the pull; a non-MA puller still needs LastPulledID to avoid dropping its inbound target.
-        if Core.IAmMA() and Globals.AutoTargetID == Globals.LastPulledID then
-            Globals.LastPulledID = 0
-            Combat.PullStuckTime = 0
+        if validateFn then
+            if Globals.AutoTargetID ~= Globals.ForceTargetID and Globals.AutoTargetID ~= Globals.ForceCombatID then
+                Globals.ValidAutoTargetIDs:add(Globals.AutoTargetID)
+            end
+
+            -- Only the MA consumes the pull; a non-MA puller still needs LastPulledID to avoid dropping its inbound target.
+            if Core.IAmMA() and Globals.AutoTargetID == Globals.LastPulledID then
+                Globals.LastPulledID = 0
+                Combat.PullStuckTime = 0
+            end
         end
 
         if assistTargetIsNamed ~= nil then
@@ -803,8 +822,9 @@ function Combat.OkToEngagePreValidateId(targetId)
         return false
     end
 
-    if Config:GetSetting('SafeTargeting') and Targeting.IsSpawnFightingStranger(target, 100) then
-        Logger.log_verbose("\ayOkToEngagePrevalidate check for %s(ID: %d) - Fighting Stranger --> Not Engaging", targetName, targetId)
+    if Config:GetSetting('AttemptSafeTargeting') and targetId ~= Globals.ForceTargetID and targetId ~= Globals.ForceCombatID
+        and skipForStranger(target) then
+        Logger.log_verbose("\ayOkToEngagePrevalidate check for %s(ID: %d) - Another Player Is Next To It --> Not Engaging", targetName, targetId)
         return false
     end
 
@@ -884,8 +904,9 @@ function Combat.OkToEngage(autoTargetId)
         return false
     end
 
-    if Config:GetSetting('SafeTargeting') and Targeting.IsSpawnFightingStranger(target, 100) then
-        Logger.log_verbose("\ayOkToEngage check for %s(ID: %d) - Fighting Stranger --> Not Engaging", targetName, targetId)
+    if Config:GetSetting('AttemptSafeTargeting') and targetId ~= Globals.ForceTargetID and targetId ~= Globals.ForceCombatID
+        and skipForStranger(target) then
+        Logger.log_verbose("\ayOkToEngage check for %s(ID: %d) - Another Player Is Next To It --> Not Engaging", targetName, targetId)
         return false
     end
 

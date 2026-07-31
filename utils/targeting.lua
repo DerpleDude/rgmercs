@@ -13,10 +13,13 @@ local Targeting                 = { _version = '1.0', _name = "Targeting", _auth
 Targeting.__index               = Targeting
 Targeting.ForceNamed            = false
 Targeting.ForceBurnTargetID     = 0
-Targeting.SafeTargetCache       = {}
 Targeting.XTClearTime           = 0
 Targeting.TankingNamedCheckTime = 0
 Targeting.TankingNamedFound     = false
+Targeting.NearbyPCLocs          = {}
+Targeting.NearbyPCLocsTime      = 0
+Targeting.NearbyPCLocsRadius    = 0
+Targeting.NearbyPCSafeNames     = {}
 
 Targeting.XTargetTypeKeywords   = {
     ["Target's Target"]      = "targetstarget",
@@ -642,44 +645,65 @@ function Targeting.ClearStuckXTargets()
     end
 end
 
---- Returns true if any PC/pet/merc within radius is assisting spawn but is
---- not in our group, raid, guild, or DanNet — meaning attacking them would
---- grief another player.
----@param spawn MQSpawn The spawn to check for cross-player fighting.
----@param radius number Search radius in EQ units.
----@return boolean True if an unfamiliar player is fighting spawn.
-function Targeting.IsSpawnFightingStranger(spawn, radius)
-    local searchTypes = { "PC", "PCPET", "MERCENARY", }
+--- Rebuilds NearbyPCLocs with the position and owner name of every PC, PC pet and mercenary but our
+--- own within radius of us, reusing the last sweep while it is fresh and still wide enough. Capped
+--- at 599 because the server stops broadcasting a player's position to us at 600.
+---@param radius number Distance from the player the caller needs covered.
+function Targeting.RefreshNearbyPCLocs(radius)
+    radius = math.min(math.ceil(radius / 100) * 100, 599)
+    if Globals.GetTimeMS() - Targeting.NearbyPCLocsTime < 100 and Targeting.NearbyPCLocsRadius >= radius then return end
 
-    for _, t in ipairs(searchTypes) do
-        local count = mq.TLO.SpawnCount(string.format("%s radius %d zradius %d", t, radius, radius))()
+    local myName = mq.TLO.Me.DisplayName() or ""
 
-        for i = 1, count do
-            local cur_spawn = mq.TLO.NearestSpawn(i, string.format("%s radius %d zradius %d", t, radius, radius))
+    Targeting.NearbyPCLocs = {}
+    Targeting.NearbyPCSafeNames = {}
+    Targeting.NearbyPCLocsTime = Globals.GetTimeMS()
+    Targeting.NearbyPCLocsRadius = radius
 
-            if cur_spawn() and not Targeting.SafeTargetCache[cur_spawn.ID()] then
-                if (cur_spawn.AssistName() or ""):len() > 0 then
-                    Logger.log_verbose("My Interest: %s =? Their Interest: %s", spawn.CleanName(),
-                        cur_spawn.AssistName())
-                    if cur_spawn.AssistName() == spawn.Name() then
-                        Logger.log_verbose("[%s] Fighting same mob as: %s Theirs: %s Ours: %s", t,
-                            cur_spawn.CleanName(), cur_spawn.AssistName(), spawn.Name())
-                        local checkName = cur_spawn and cur_spawn() or cur_spawn.CleanName() or "None"
+    for _, searchType in ipairs({ "pc", "pcpet", "mercenary", }) do
+        local search = string.format("%s radius %d", searchType, radius)
+        local i = 1
 
-                        if Targeting.TargetIsType("mercenary", cur_spawn) and cur_spawn.Owner() then checkName = cur_spawn.Owner.CleanName() end
-                        if Targeting.TargetIsType("pet", cur_spawn) then checkName = cur_spawn.Master.CleanName() end
+        while true do
+            local nearby = mq.TLO.NearestSpawn(i, search)
+            if not nearby() then break end
 
-                        if not Targeting.IsSafeName("pc", checkName) then
-                            Logger.log_verbose(
-                                "\ar WARNING: \ax Almost attacked other PCs [%s] mob. Not attacking \aw%s\ax",
-                                checkName, cur_spawn.AssistName())
-                            return true
-                        end
-                    end
-                end
+            local checkName = nearby.DisplayName() or ""
+            if Targeting.TargetIsType("mercenary", nearby) and nearby.Owner() then checkName = nearby.Owner.DisplayName() or "" end
+            if Targeting.TargetIsType("pet", nearby) then checkName = nearby.Master.DisplayName() or "" end
 
-                -- this is pretty expensive to calculate so lets cache it.
-                Targeting.SafeTargetCache[cur_spawn.ID()] = true
+            if checkName ~= myName then
+                table.insert(Targeting.NearbyPCLocs, { name = checkName, x = nearby.X() or 0, y = nearby.Y() or 0, z = nearby.Z() or 0, })
+            end
+
+            i = i + 1
+        end
+    end
+end
+
+--- Returns true if an unfamiliar PC, PC pet or mercenary is standing within 50 units of
+--- spawn. Proximity only: it cannot tell whether they are actually fighting it.
+---@param spawn MQSpawn The spawn to check for nearby unfamiliar players.
+---@return boolean True if an unfamiliar player is close enough to have a claim on spawn.
+function Targeting.IsSpawnNearStranger(spawn)
+    if not (spawn and spawn()) then return false end
+
+    local spawnX, spawnY, spawnZ = spawn.X(), spawn.Y(), spawn.Z()
+    if not (spawnX and spawnY and spawnZ) then return false end
+
+    local spawnDistance = spawn.Distance3D() or 0
+    if spawnDistance > 599 then return false end
+
+    Targeting.RefreshNearbyPCLocs(spawnDistance + 50)
+
+    for _, loc in ipairs(Targeting.NearbyPCLocs) do
+        if ((loc.x - spawnX) ^ 2) + ((loc.y - spawnY) ^ 2) + ((loc.z - spawnZ) ^ 2) <= 2500 then
+            if Targeting.NearbyPCSafeNames[loc.name] == nil then
+                Targeting.NearbyPCSafeNames[loc.name] = Targeting.IsSafeName("pc", loc.name)
+            end
+            if not Targeting.NearbyPCSafeNames[loc.name] then
+                Logger.log_verbose("\arNOTICE:\ax \aw%s\ax is next to \aw%s\ax - leaving it alone.", loc.name, spawn.CleanName() or "None")
+                return true
             end
         end
     end
@@ -687,13 +711,18 @@ function Targeting.IsSpawnFightingStranger(spawn, radius)
     return false
 end
 
---- Returns true if name is a "safe" player: DanNet peer, group, raid, guild,
---- or on the AssistList config. Prevents accidentally engaging friendly players.
+--- Returns true if name is a "safe" player: Mercs peer, DanNet peer, group, raid,
+--- guild, or on the AssistList or HealList. Prevents accidentally engaging friendly players.
 ---@param spawnType string Spawn type for guild check query, e.g. "pc".
 ---@param name string Character name to verify.
 ---@return boolean True if the name belongs to a friendly player.
 function Targeting.IsSafeName(spawnType, name)
     Logger.log_verbose("IsSafeName(%s)", name)
+    if Comms.IsValidPeer(Comms.GetPeerName(name)) then
+        Logger.log_verbose("IsSafeName(%s): Peer Safe", name)
+        return true
+    end
+
     if mq.TLO.DanNet(name)() then
         Logger.log_verbose("IsSafeName(%s): Dannet Safe", name)
         return true
@@ -731,12 +760,6 @@ function Targeting.IsSafeName(spawnType, name)
 
     Logger.log_verbose("IsSafeName(%s): false", name)
     return false
-end
-
---- Resets SafeTargetCache so IsSpawnFightingStranger re-evaluates each spawn
---- from scratch on the next call.
-function Targeting.ClearSafeTargetCache()
-    Targeting.SafeTargetCache = {}
 end
 
 --- Returns true if target is a member of the player's current group.
@@ -942,6 +965,15 @@ function Targeting.HateToolsNeeded()
     if Globals.AutoTargetID == 0 or mq.TLO.Target.ID() ~= Globals.AutoTargetID then return false end
     if Globals.NoHateTargetIDs:contains(Globals.AutoTargetID) then return false end
     return mq.TLO.Me.PctAggro() < 100 or (mq.TLO.Target.SecondaryPctAggro() or 0) > 60 or Globals.AutoTargetIsNamed
+end
+
+--- Removes validated auto target IDs whose spawns are dead or gone, so the server can reuse them.
+function Targeting.PruneValidAutoTargets()
+    for _, id in ipairs(Globals.ValidAutoTargetIDs:toList()) do
+        if not Core.ValidCombatTarget(id) then
+            Globals.ValidAutoTargetIDs:remove(id)
+        end
+    end
 end
 
 --- Removes no hate target IDs whose spawns are confirmed dead.

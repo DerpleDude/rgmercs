@@ -667,15 +667,22 @@ Config.DefaultConfig                                     = {
         Default = false,
         ConfigType = "Advanced",
     },
-    ['SafeTargeting']              = {
-        DisplayName = "Use Safe Targeting",
+    ['AttemptSafeTargeting']       = {
+        DisplayName = "Attempt Safe Targeting",
         Group = "Combat",
         Header = "Targeting",
         Category = "Targeting Behavior",
         Index = 3,
-        Tooltip = "Do not target mobs that are fighting others (except if those others pass safety checks, such as if they are DanNet peers.).",
-        Default = true,
+        Tooltip = "Attempt to avoid targeting or engaging mobs that are near strangers. This is a best-effort attempt with serious possible side effects (see FAQ).",
+        Default = false,
         ConfigType = "Advanced",
+        FAQ = "What does Attempt Safe Targeting do?",
+        Answer = "Attempt Safe Targeting attempts to scan for the presence of strangers near mobs that are assessed for engagement. " ..
+            "This is a best-effort guess; unfortunately, who is targeting what is not exposed directly to the client in most cases.\n\n" ..
+            "A stranger is anyone who is not a Mercs peer, not in your group or raid, not in your guild, not a DanNet peer, and not on your assist or heal list.\n\n" ..
+            "This setting may be dangerous. While your current autotarget is protected, this could stop engagement of targets if a PC closes on YOUR position, " ..
+            "and mobs that are on XTarget, yet not engageable because of a nearby stranger, can interfere with various functions, such as downtime buffing, or even pulling modes.\n\n" ..
+            "We recommend this setting stay disabled. Players not using this feature may wish to familiarize themselves with the /rgl backoff command.",
     },
     ['TargetNonAggressives']       = {
         DisplayName = "Target Non-Aggressives",

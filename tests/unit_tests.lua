@@ -26,6 +26,9 @@ local function mockSpawn(id, name, pctHp, isNamed, distance)
     t.PctHPs     = function() return t._pctHp end
     t.Distance   = function() return t._dist end
     t.Distance3D = function() return t._dist end
+    t.X          = function() return -99999 end
+    t.Y          = function() return -99999 end
+    t.Z          = function() return -99999 end
     t.PctAggro   = function() return 100 end
     t.Moving     = function() return false end
     t.Animation  = function() return 0 end
@@ -546,8 +549,8 @@ function UnitTests.RunAll()
                 pauseMain = false,
                 spawnGone = false,
                 navigating = false,
-                safeTargeting = false,
-                fightingStranger = false,
+                attemptSafePulling = false,
+                strangerNear = false,
                 graceExpired = false,
                 distance = 100,
                 maxPathRange = 1000,
@@ -576,20 +579,20 @@ function UnitTests.RunAll()
 
         assertEq("DecideAbort scan: too far", DecideAbort(scanAttempt, baseCtx({ distance = 1001, })), 'tooFar')
         assertEq("DecideAbort scan: no path", DecideAbort(scanAttempt, baseCtx({ pathExists = false, })), 'noPath')
-        assertEq("DecideAbort scan: stranger", DecideAbort(scanAttempt, baseCtx({ safeTargeting = true, fightingStranger = true, })), 'stranger')
-        assertEq("DecideAbort scan: stranger needs safe targeting", DecideAbort(scanAttempt, baseCtx({ fightingStranger = true, })), nil)
+        assertEq("DecideAbort scan: stranger", DecideAbort(scanAttempt, baseCtx({ attemptSafePulling = true, strangerNear = true, })), 'stranger')
+        assertEq("DecideAbort scan: stranger needs the setting on", DecideAbort(scanAttempt, baseCtx({ strangerNear = true, })), nil)
         assertEq("DecideAbort scan: timeout", DecideAbort(scanAttempt, baseCtx({ timedOut = true, })), 'timeout')
         assertEq("DecideAbort scan: timeout inactive while navigating", DecideAbort(scanAttempt, baseCtx({ timedOut = true, navigating = true, })), nil)
 
-        assertEq("DecideAbort objective: stranger", DecideAbort(objectiveAttempt, baseCtx({ safeTargeting = true, fightingStranger = true, })), 'stranger')
+        assertEq("DecideAbort objective: stranger", DecideAbort(objectiveAttempt, baseCtx({ attemptSafePulling = true, strangerNear = true, })), 'stranger')
         assertEq("DecideAbort objective: unreachable grace", DecideAbort(objectiveAttempt, baseCtx({ graceExpired = true, })), 'unreachable')
         assertEq("DecideAbort objective: no distance abort", DecideAbort(objectiveAttempt, baseCtx({ distance = 1001, })), nil)
         assertEq("DecideAbort objective: timeout", DecideAbort(objectiveAttempt, baseCtx({ timedOut = true, })), 'objectiveTimeout')
 
         assertEq("DecideAbort manual: exempt from scan arm",
-            DecideAbort(manualAttempt, baseCtx({ distance = 1001, pathExists = false, safeTargeting = true, fightingStranger = true, })), nil)
+            DecideAbort(manualAttempt, baseCtx({ distance = 1001, pathExists = false, attemptSafePulling = true, strangerNear = true, })), nil)
         assertEq("DecideAbort manual: exempt from objective arm",
-            DecideAbort(manualAttempt, baseCtx({ safeTargeting = true, fightingStranger = true, graceExpired = true, })), nil)
+            DecideAbort(manualAttempt, baseCtx({ attemptSafePulling = true, strangerNear = true, graceExpired = true, })), nil)
 
         assertEq("DecideUserAbort: clean ctx", DecideUserAbort(baseCtx(), 'scan'), nil)
         assertEq("DecideUserAbort: paused", DecideUserAbort(baseCtx({ pausePulls = true, }), 'scan'), 'paused')
