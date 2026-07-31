@@ -1901,8 +1901,7 @@ function Module:HealById(id)
                         Logger.log_verbose(
                             "\awHealById(%d):: Heal Rotation: \at%s\aw \agis\aw was \agSuccessful\aw!", id,
                             rotation.name)
-                        Comms.HandleAnnounce(Comms.FormatChatEvent("Heal", healTarget.CleanName(), Casting.GetLastUsedSpell()),
-                            Config:GetSetting('HealAnnounceGroup'),
+                        Comms.HandleAnnounce(Comms.FormatChatEvent("Heal", healTarget.CleanName(), Casting.GetLastUsedSpell()), Config:GetSetting('HealAnnounceGroup'),
                             Config:GetSetting('HealAnnounce'), Config:GetSetting('AnnounceToRaidIfInRaid'))
                         break
                     else
@@ -2010,6 +2009,7 @@ function Module:CureEntryCast(entry, spell, resolvedName, targetId)
     local entryType = (entry.type or ""):lower()
     local name = (entryType == "aa" or entryType == "item" or entryType == "ability") and resolvedName or spell.RankName()
     Casting.UseEntry(entryType, name, targetId, { allowMem = true, spell = spell, })
+    return name
 end
 
 -- rebuild the load_cond-filtered cure lists per bucket on rescan; also derives CuresPeerCapable (any entry not selfOnly)
@@ -2065,7 +2065,7 @@ function Module:HasCureClickies()
 end
 
 -- walk the bucket's priority list on targetSpawn; first enabled, in-scope, resolved, reachable, cond-passing, ready entry casts and wins (one cast)
-function Module:WalkCureBucket(bucket, targetSpawn)
+function Module:WalkCureBucket(bucket, targetSpawn, effectName)
     local cureAbilities = self:GetCureAbilities()
     if not cureAbilities then return false end
     local entries = cureAbilities[bucket]
@@ -2087,10 +2087,13 @@ function Module:WalkCureBucket(bucket, targetSpawn)
                     and (not entry.cond or Core.SafeCallFunc("Cure entry cond", entry.cond, self, spell, targetSpawn))
                     and Entries.Ready(entry, spell, resolvedName, downtime) then
                     if isGroupDetDispel then Globals.CastingGroupDispel = true end
-                    Core.SafeCallFunc("CureEntryCast", self.CureEntryCast, self, entry, spell, resolvedName, targetSpawn.ID())
+                    local castName = Core.SafeCallFunc("CureEntryCast", self.CureEntryCast, self, entry, spell, resolvedName, targetSpawn.ID())
                     if isGroupDetDispel then Globals.CastingGroupDispel = false end
-                    Comms.HandleAnnounce(Comms.FormatChatEvent("Cure", targetSpawn.DisplayName() or "target", string.format("processing cure with %s", entry.name)),
-                        Config:GetSetting('CureAnnounceGroup'), Config:GetSetting('CureAnnounce'), Config:GetSetting('AnnounceToRaidIfInRaid'))
+                    if castName then
+                        Comms.HandleAnnounce(
+                            Comms.FormatChatEvent("Cure", targetSpawn.DisplayName() or "target", string.format("attempting to cure %s with %s", effectName, castName)),
+                            Config:GetSetting('CureAnnounceGroup'), Config:GetSetting('CureAnnounce'), Config:GetSetting('AnnounceToRaidIfInRaid'))
+                    end
                     return true
                 end
             end
@@ -2117,14 +2120,14 @@ end
 function Module:RunCure(targetSpawn, cureEffects, mezzed, denySet, allowSet)
     if (not cureEffects or #cureEffects == 0) and not mezzed then return nil end
 
-    local hasAllow = false
-    local types    = {}
+    local allowedEffect = nil
+    local effectByType  = {}
     for _, effect in ipairs(cureEffects or {}) do
         if not denySet[effect.name] then
             if allowSet[effect.name] then
-                hasAllow = true
+                allowedEffect = allowedEffect or effect.name
             elseif effect.cureType then
-                types[effect.cureType] = true
+                effectByType[effect.cureType] = effectByType[effect.cureType] or effect.name
             end
         end
     end
@@ -2133,16 +2136,16 @@ function Module:RunCure(targetSpawn, cureEffects, mezzed, denySet, allowSet)
     local detDispelSetting = Config:GetSetting('DowntimeDetDispel') -- 1 = Never, 2 = Cure List, 3 = Always
 
     -- allow-listed effects route to an outright det dispel (no counter fallback); in downtime this needs Cure List or Always
-    if hasAllow and (not downtime or detDispelSetting >= 2) and self:WalkCureBucket('DetDispel', targetSpawn) then return true end
+    if allowedEffect and (not downtime or detDispelSetting >= 2) and self:WalkCureBucket('DetDispel', targetSpawn, allowedEffect) then return true end
 
     -- mez is always dispelled, regardless of the downtime setting
-    if mezzed and self:WalkCureBucket('DetDispel', targetSpawn) then return true end
+    if mezzed and self:WalkCureBucket('DetDispel', targetSpawn, mezzed) then return true end
 
     -- general counter effects: prefer an outright det dispel (downtime needs Always), else the type-specific cure
-    if next(types) then
-        if (not downtime or detDispelSetting == 3) and self:WalkCureBucket('DetDispel', targetSpawn) then return true end
+    if next(effectByType) then
+        if (not downtime or detDispelSetting == 3) and self:WalkCureBucket('DetDispel', targetSpawn, "detrimentals") then return true end
         for _, counterType in ipairs({ "Poison", "Disease", "Curse", "Corruption", }) do
-            if types[counterType] and self:WalkCureBucket(counterType, targetSpawn) then return true end
+            if effectByType[counterType] and self:WalkCureBucket(counterType, targetSpawn, effectByType[counterType]) then return true end
         end
     end
 
@@ -2161,6 +2164,7 @@ function Module:DispelEntryCast(entry, spell, resolvedName, targetId)
     local entryType = (entry.type or ""):lower()
     local name = (entryType == "aa" or entryType == "item" or entryType == "ability") and resolvedName or spell.RankName()
     Casting.UseEntry(entryType, name, targetId, { spell = spell, })
+    return name
 end
 
 -- rebuild the load_cond-filtered dispel list on rescan
@@ -2206,8 +2210,8 @@ function Module:ActiveDispelNameSet(base)
     return set
 end
 
--- does the target carry a beneficial effect we are willing to strip? empty lists accept any dispellable one
-function Module:TargetHasDispellableBuff(target)
+-- name of the first beneficial effect on the target we are willing to strip; empty lists accept any dispellable one
+function Module:GetDispellableBuffName(target)
     local allowSet = self:ActiveDispelNameSet('DispelAllowList')
     local denySet  = self:ActiveDispelNameSet('DispelDenyList')
     local hasLists = next(allowSet) ~= nil or next(denySet) ~= nil
@@ -2217,16 +2221,16 @@ function Module:TargetHasDispellableBuff(target)
         -- the cached buff list carries detrimentals too, and Dispellable is a spell flag independent of that
         if buff and buff.Beneficial() then
             if not hasLists then
-                if buff.Dispellable() then return true end
+                if buff.Dispellable() then return buff.Name() end
             else
                 local buffName = (buff.Name() or ""):lower()
                 -- an allow entry is an override for effects the client flags undispellable
-                if allowSet[buffName] then return true end
-                if buff.Dispellable() and not denySet[buffName] then return true end
+                if allowSet[buffName] then return buff.Name() end
+                if buff.Dispellable() and not denySet[buffName] then return buff.Name() end
             end
         end
     end
-    return false
+    return nil
 end
 
 -- walk the dispel priority list on the target; returns the first enabled, in-scope, resolved, cond-passing, ready entry
@@ -2261,11 +2265,16 @@ function Module:RunDispel(combat_state)
 
     -- resolve the ability first; with nothing ready the buff walk's result is unusable either way
     local entry, spell, resolvedName = self:GetReadyDispelEntry(target)
-    if not entry or not self:TargetHasDispellableBuff(target) then return end
+    if not entry then return end
+    local buffName = self:GetDispellableBuffName(target)
+    if not buffName then return end
 
-    Core.SafeCallFunc("DispelEntryCast", self.DispelEntryCast, self, entry, spell, resolvedName, targetId)
-    Comms.HandleAnnounce(Comms.FormatChatEvent("Dispel", target.DisplayName() or "target", string.format("dispelling with %s", entry.name)),
-        Config:GetSetting('DispelAnnounceGroup'), Config:GetSetting('DispelAnnounce'), Config:GetSetting('AnnounceToRaidIfInRaid'))
+    local castName = Core.SafeCallFunc("DispelEntryCast", self.DispelEntryCast, self, entry, spell, resolvedName, targetId)
+    if castName then
+        Comms.HandleAnnounce(
+            Comms.FormatChatEvent("Dispel", target.DisplayName() or "target", string.format("attempting to dispel %s with %s", buffName, castName)),
+            Config:GetSetting('DispelAnnounceGroup'), Config:GetSetting('DispelAnnounce'), Config:GetSetting('AnnounceToRaidIfInRaid'))
+    end
 end
 
 function Module:ProcessCuresList()
@@ -2376,8 +2385,7 @@ function Module:CheckSelfForCures()
         Logger.log_verbose("\ay[Cures] %s :: [%s] => %s", me.CleanName():lower(), data.type, data.check > 0 and data.check or "none")
         if data.check > 0 then
             Comms.HandleAnnounce(Comms.FormatChatEvent("Cure", me.CleanName(), string.format('%s effect found on myself, processing cure.', data.type)),
-                Config:GetSetting('CureAnnounceGroup'),
-                Config:GetSetting('CureAnnounce'), Config:GetSetting('AnnounceToRaidIfInRaid'))
+                Config:GetSetting('CureAnnounceGroup'), Config:GetSetting('CureAnnounce'), Config:GetSetting('AnnounceToRaidIfInRaid'))
             if self.ClassConfig.Cures and self.ClassConfig.Cures.CureNow then
                 local successful, haveValidOptions = Core.SafeCallFunc("CureNow", self.ClassConfig.Cures.CureNow, self, data.type, mq.TLO.Me.ID())
 
