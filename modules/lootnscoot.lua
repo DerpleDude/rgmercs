@@ -222,7 +222,7 @@ function Module:LootMessageHandler()
 
         if who ~= Globals.CurLoadedChar then return end
 
-        if subject == ('done_looting' or 'done_processing') then
+        if subject == 'done_looting' or subject == 'done_processing' then
             Module.TempSettings.Looting = false
         elseif subject == 'processing' then
             Module.TempSettings.Looting = true
