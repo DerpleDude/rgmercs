@@ -306,6 +306,7 @@ end
 local function processFallbackSpawn(spawn, checkNamed, radius, namedPref, hpPref, primaryTarget, fallbackTarget)
     if not spawn or not spawn() then return end
     if Targeting.IsTempPet(spawn) then return end
+    if Targeting.IsDeniedTarget(spawn) then return end
     local fallbackId = spawn.ID() or 0
     if fallbackId ~= Globals.ForceTargetID and fallbackId ~= Globals.ForceCombatID and Globals.CharmedPetIDs:contains(fallbackId) then return end
     if (spawn.CleanName() or ""):find("Guard") then return end
