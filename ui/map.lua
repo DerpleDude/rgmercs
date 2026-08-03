@@ -203,7 +203,7 @@ function MapUI:RenderCanvas(canvasWidth, canvasHeight)
 
     if addWaypointMode and isHovered and ImGui.IsMouseClicked(ImGuiMouseButton.Left) then
         local displayX, displayY = screenToWorld(mouseX, mouseY)
-        Modules:ExecModule("Pull", "AddLocationAt", { y = displayY, x = -displayX, z = me.Z() or 0, })
+        Modules:ExecModule("Pull", "AddLocationAt", { y = displayY, x = -displayX, })
     end
 
     local viewMinX, viewMaxY = screenToWorld(canvasX, canvasY)

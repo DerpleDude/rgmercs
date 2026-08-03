@@ -3739,10 +3739,10 @@ function Ui.GetConHighlight(color)
     return 1.0, 1.0, 1.0, 0.3
 end
 
---- Checks if navigation is enabled for a given location.
----@param loc string The location to check, represented as a string with coordinates.
----@param navLocOverride string? Nav YXZ string to use for /nav if the loc text is not compatible with the nav command
-function Ui.NavEnabledLoc(loc, navLocOverride)
+--- Renders a location as text that navs to it on a double click.
+---@param loc string The location text to display.
+---@param navDest string? A complete nav destination to travel to, for display text that isn't a plain YXZ coordinate string.
+function Ui.NavEnabledLoc(loc, navDest)
     ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.Yellow)
     ImGui.PushStyleColor(ImGuiCol.HeaderHovered, Ui.ChangeColorAlpha(Globals.Constants.Colors.Grey, 0.1))
     ImGui.PushStyleColor(ImGuiCol.HeaderActive, Ui.ChangeColorAlpha(Globals.Constants.Colors.Green, 0.1))
@@ -3750,7 +3750,7 @@ function Ui.NavEnabledLoc(loc, navLocOverride)
     ImGui.PopStyleColor(3)
     if loc ~= "0,0,0" then
         if navLoc and ImGui.IsMouseDoubleClicked(0) then
-            Movement:DoNav(false, "locYXZ %s", navLocOverride or loc)
+            Movement:DoNav(false, "%s", navDest or string.format("locYXZ %s", loc))
         end
 
         Ui.Tooltip("Double click to Nav")

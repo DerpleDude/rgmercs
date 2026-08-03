@@ -54,6 +54,7 @@ Module.TempSettings.Attempt               = nil
 Module.TempSettings.Travel                = nil
 Module.TempSettings.UnreachableSince      = 0
 Module.TempSettings.TravelFailSince       = 0
+Module.TempSettings.NavUnreachable        = false
 
 -- Objectives
 Module.TempSettings.FightTo               = nil
@@ -64,6 +65,7 @@ Module.TempSettings.HuntAnchor            = nil
 Module.TempSettings.CurrentWPName         = nil
 Module.TempSettings.CurrentWPIndex        = 1
 Module.TempSettings.ReachedWP             = false
+Module.TempSettings.CircuitSkips          = 0
 
 -- Camp Travel & Escort
 Module.TempSettings.CampTravelLoc         = nil
@@ -204,12 +206,12 @@ Module.Constants.PullModeDisplays   = {
 }
 
 Module.Constants.PullModePolicies   = {
-    ['PullToCamp']  = { family = 'camp', runsDuringCombat = false, successCheck = 'any', rescanToCloser = true, scanCenter = 'self', radiusSetting = 'PullRadius', },
-    ['ChainToCamp'] = { family = 'camp', runsDuringCombat = true, successCheck = 'chainCount', rescanToCloser = true, scanCenter = 'self', radiusSetting = 'PullRadius', },
-    ['AreaHunt']    = { family = 'hunt', runsDuringCombat = false, successCheck = 'any', rescanToCloser = true, scanCenter = 'anchor', radiusSetting = 'PullRadiusHunt', },
-    ['RoamingHunt'] = { family = 'hunt', runsDuringCombat = false, successCheck = 'any', rescanToCloser = true, scanCenter = 'self', radiusSetting = 'PullRadiusHunt', },
-    ['CircuitHunt'] = { family = 'hunt', runsDuringCombat = false, successCheck = 'any', rescanToCloser = true, scanCenter = 'waypoint', radiusSetting = 'PullRadiusHunt', },
-    ['FightTo']     = { family = 'directive', runsDuringCombat = false, successCheck = 'any', rescanToCloser = false, scanCenter = 'self', radiusSetting = 'PullRadius', },
+    ['PullToCamp']  = { family = 'camp', hasObjective = true, runsDuringCombat = false, successCheck = 'any', rescanToCloser = true, scanCenter = 'self', radiusSetting = 'PullRadius', },
+    ['ChainToCamp'] = { family = 'camp', hasObjective = true, runsDuringCombat = true, successCheck = 'chainCount', rescanToCloser = true, scanCenter = 'self', radiusSetting = 'PullRadius', },
+    ['AreaHunt']    = { family = 'hunt', hasObjective = true, runsDuringCombat = false, successCheck = 'any', rescanToCloser = true, scanCenter = 'anchor', radiusSetting = 'PullRadiusHunt', },
+    ['RoamingHunt'] = { family = 'hunt', hasObjective = false, runsDuringCombat = false, successCheck = 'any', rescanToCloser = true, scanCenter = 'self', radiusSetting = 'PullRadiusHunt', },
+    ['CircuitHunt'] = { family = 'hunt', hasObjective = false, runsDuringCombat = false, successCheck = 'any', rescanToCloser = true, scanCenter = 'waypoint', radiusSetting = 'PullRadiusHunt', },
+    ['FightTo']     = { family = 'directive', hasObjective = true, runsDuringCombat = false, successCheck = 'any', rescanToCloser = false, scanCenter = 'self', radiusSetting = 'PullRadius', },
 }
 
 Module.Constants.RangedTypes        = Set.new({ "archery", "bow", "throwingv1", "throwing", "throwingv2", "ammo", })
@@ -954,7 +956,7 @@ Module.CommandHandlers              = {
                 return true
             end
             self:SetPullMode(newMode)
-            Logger.log_info("Pull mode set to %s.", self.Constants.PullModeDisplays[Module.PullModeIndex(newMode)])
+            Logger.log_info("Pull mode set to %s.", self.Constants.PullModeDisplays[self:PullModeIndex(newMode)])
             return true
         end,
     },
@@ -968,7 +970,7 @@ Module.CommandHandlers              = {
                 return true
             end
             local pullModeName = Config:GetSetting('PullMode')
-            if pullModeName == "RoamingHunt" or pullModeName == "CircuitHunt" then
+            if not Module.Constants.PullModePolicies[pullModeName].hasObjective then
                 Logger.log_error("Roaming and Circuit Hunt take no objective - set the circuit position with /rgl pullwp.")
                 return true
             end
@@ -1007,7 +1009,7 @@ Module.CommandHandlers              = {
                     loc = { y = spawn.Y(), x = spawn.X(), z = spawn.Z(), }
                 else
                     local err
-                    loc, err = Module.ParseLocArgs(...)
+                    loc, err = self:ParseLocArgs(...)
                     if not loc then
                         Logger.log_error("/rgl pullobj - %s", err)
                         return true
@@ -1185,6 +1187,8 @@ Module.CommandHandlers              = {
                 if enabledEntry == entry then
                     self.TempSettings.CurrentWPName = entry.name
                     self.TempSettings.CurrentWPIndex = index
+                    self.TempSettings.ReachedWP = false
+                    self.TempSettings.CircuitSkips = 0
                     Logger.log_info("Current pull location set to %s (%d)", entry.name, index)
                     return true
                 end
@@ -1194,14 +1198,23 @@ Module.CommandHandlers              = {
         end,
     },
     pulllocadd = {
-        usage = "/rgl pulllocadd [<name>]",
-        about = "Adds your current position to this zone's pull locations, optionally renaming it to <name>.",
+        usage = "/rgl pulllocadd [<y> <x> [z] | <xy|yx|xyz|yxz> <coords>]",
+        about = "Adds a pull location to this zone's list; with no argument, your current position is used.",
         handler = function(self, ...)
-            self:AddLocationHere()
-            local name = table.concat({ ..., }, " ")
-            if name ~= "" then
-                self:RenameLocation(#self:GetZoneLocations(), name)
+            if Config:GetSetting('DoPull') then
+                Logger.log_error("Stop pulls before adding a pull location.")
+                return true
             end
+            if select('#', ...) == 0 then
+                self:AddLocationHere()
+                return true
+            end
+            local loc, err = self:ParseLocArgs(...)
+            if not loc then
+                Logger.log_error("/rgl pulllocadd - %s", err)
+                return true
+            end
+            self:AddLocationAt(loc)
             return true
         end,
     },
@@ -1388,7 +1401,7 @@ function Module:CheckMoveAbilities(force)
 end
 
 -- Mode Policy
-function Module.PullModeIndex(name)
+function Module:PullModeIndex(name)
     for index, modeName in ipairs(Module.Constants.PullModes) do
         if modeName == name then return index end
     end
@@ -1416,23 +1429,28 @@ function Module:OnPullModeChanged()
         self.TempSettings.Travel = nil
         if mq.TLO.Navigation.Active() then Movement:DoNav(false, "stop log=off") end
     end
+    self.TempSettings.CircuitSkips = 0
+    self.TempSettings.ReachedWP = false
+    self.TempSettings.UnreachableSince = 0
+    self.TempSettings.TravelFailSince = 0
+    Movement.UpdateMapRadii()
 end
 
 -- Pure Decision Helpers (unit-tested)
-function Module.PullSuccessCheck(successCheck, xtHaterCount, chainCount)
+function Module:PullSuccessCheck(successCheck, xtHaterCount, chainCount)
     if successCheck == 'chainCount' then return xtHaterCount >= chainCount end
     return xtHaterCount > 0
 end
 
-function Module.DecideUserAbort(abortCtx, source)
+function Module:DecideUserAbort(abortCtx, source)
     if abortCtx.pausePulls then return 'paused' end
     if abortCtx.pullListUpdated then return 'listUpdated' end
     if (not abortCtx.doPull and source ~= 'manual') or abortCtx.pauseMain then return 'disabled' end
     return nil
 end
 
-function Module.DecideAbort(attempt, abortCtx)
-    local userReason = Module.DecideUserAbort(abortCtx, attempt.source)
+function Module:DecideAbort(attempt, abortCtx)
+    local userReason = self:DecideUserAbort(abortCtx, attempt.source)
     if userReason then return userReason end
     if abortCtx.spawnGone then return 'spawnGone' end
 
@@ -1452,7 +1470,7 @@ function Module.DecideAbort(attempt, abortCtx)
     return nil
 end
 
-function Module.BuildIntentSentence(params)
+function Module:BuildIntentSentence(params)
     local scope = params.scope or 1
     local canStart = true
     local gapReason = nil
@@ -1469,9 +1487,9 @@ function Module.BuildIntentSentence(params)
         local action = params.mode == "ChainToCamp" and "chain-pull to camp" or "pull to camp"
         if params.locationSet then
             if params.manageMovement then
-                text = pre .. string.format("travel to %s, set camp for everyone on arrival, then %s.", Module.FormatLoc(params.loc), action)
+                text = pre .. string.format("travel to %s, set camp for everyone on arrival, then %s.", self:FormatLoc(params.loc), action)
             else
-                text = pre .. string.format("travel to %s, set camp for myself, then %s.", Module.FormatLoc(params.loc), action)
+                text = pre .. string.format("travel to %s, set camp for myself, then %s.", self:FormatLoc(params.loc), action)
             end
         else
             if params.existingCamp then
@@ -1484,7 +1502,7 @@ function Module.BuildIntentSentence(params)
         end
     elseif params.mode == "AreaHunt" then
         if params.locationSet then
-            text = pre .. string.format("travel to %s, then hunt the area.", Module.FormatLoc(params.loc))
+            text = pre .. string.format("travel to %s, then hunt the area.", self:FormatLoc(params.loc))
         else
             text = pre .. joiner .. "hunt the area from my present position."
         end
@@ -1503,7 +1521,7 @@ function Module.BuildIntentSentence(params)
         if params.fightToKind == "spawn" then
             text = pre .. joiner .. string.format("fight my way to %s and engage it.", params.fightToName or "")
         elseif params.fightToKind == "loc" then
-            text = pre .. joiner .. string.format("fight my way to %s.", Module.FormatLoc(params.loc))
+            text = pre .. joiner .. string.format("fight my way to %s.", self:FormatLoc(params.loc))
         else
             canStart = false
             gapReason = "Set a Fight To target first."
@@ -1517,10 +1535,14 @@ function Module.BuildIntentSentence(params)
     return { text = text, canStart = canStart, gapReason = gapReason, }
 end
 
-function Module.ParseLocArgs(...)
-    local args = { ..., }
+function Module:ParseLocArgs(...)
+    local args = {}
+    for _, argument in ipairs({ ..., }) do
+        for token in tostring(argument):gmatch("[^,]+") do
+            table.insert(args, token)
+        end
+    end
     if #args == 0 then return nil, "no coordinates given" end
-    for i = 1, #args do args[i] = (tostring(args[i]):gsub(",", "")) end
 
     local order = "yx"
     local coordStart = 1
@@ -1753,6 +1775,7 @@ function Module:RenderIgnoreTargets()
 end
 
 function Module:RenderObjectiveRow(pullModeName)
+    local hasObjective = Module.Constants.PullModePolicies[pullModeName].hasObjective
     if self.TempSettings.LocEntryMode ~= pullModeName then
         local previousMode = self.TempSettings.LocEntryMode
         self.TempSettings.LocEntryMode = pullModeName
@@ -1780,6 +1803,7 @@ function Module:RenderObjectiveRow(pullModeName)
     elseif pullModeName == "FightTo" then
         objectiveWord = "Fight To destination"
     end
+    ImGui.BeginGroup()
     ImGui.BeginDisabled(locked)
     if pullModeName == "FightTo" then
         ImGui.BeginDisabled(not (mq.TLO.Target() and Targeting.TargetIsType("NPC")))
@@ -1800,7 +1824,7 @@ function Module:RenderObjectiveRow(pullModeName)
                 self:FillLocEntry(loc)
             end
         end
-        Ui.Tooltip(string.format("Use your current position as the %s.", objectiveWord))
+        Ui.Tooltip(hasObjective and string.format("Use your current position as the %s.", objectiveWord) or "Put your current position in the coordinate boxes.")
         ImGui.PopID()
     end
     ImGui.SameLine()
@@ -1816,7 +1840,7 @@ function Module:RenderObjectiveRow(pullModeName)
             self:FillLocEntry(loc)
         end
     end
-    Ui.Tooltip(string.format("Use your target's position as the %s.", objectiveWord))
+    Ui.Tooltip(hasObjective and string.format("Use your target's position as the %s.", objectiveWord) or "Put your target's position in the coordinate boxes.")
     ImGui.PopID()
     ImGui.EndDisabled()
     ImGui.SameLine()
@@ -1837,33 +1861,41 @@ function Module:RenderObjectiveRow(pullModeName)
     ImGui.SameLine()
     ImGui.SetNextItemWidth(60)
     self.TempSettings.LocEntryZ = ImGui.InputText("##PullLocEntryZ", self.TempSettings.LocEntryZ)
-    Ui.Tooltip("Z is optional but should be provided in multi-level zones.")
-    ImGui.SameLine()
-    ImGui.PushID("##_small_btn_setloc_" .. pullModeName)
-    if ImGui.Button("Use This Loc") then
-        self:CommitLocEntry()
+    Ui.Tooltip("Z is optional - leave it blank to let nav resolve the height.")
+    if hasObjective then
+        ImGui.SameLine()
+        ImGui.PushID("##_small_btn_setloc_" .. pullModeName)
+        if ImGui.Button("Use This Loc") then
+            self:CommitLocEntry()
+        end
+        Ui.Tooltip(string.format("Use the typed coordinates as the %s.", objectiveWord))
+        ImGui.PopID()
     end
-    Ui.Tooltip(string.format("Use the typed coordinates as the %s.", objectiveWord))
+    ImGui.SameLine()
+    ImGui.PushID("##_small_btn_saveloc_" .. pullModeName)
+    if ImGui.Button("Save Location") then
+        local y, x = tonumber(self.TempSettings.LocEntryY), tonumber(self.TempSettings.LocEntryX)
+        local z = tonumber(self.TempSettings.LocEntryZ)
+        if not y or not x or (self.TempSettings.LocEntryZ ~= "" and not z) then
+            Logger.log_error("Invalid location - Y and X must be numbers (Z optional).")
+        else
+            self:AddLocationAt({ y = y, x = x, z = z, })
+        end
+    end
+    Ui.Tooltip("Add the typed coordinates to this zone's Saved Pull Locations - with no Z, nav resolves the height.")
     ImGui.PopID()
     ImGui.EndDisabled()
+    ImGui.EndGroup()
+    if locked then Ui.Tooltip("Stop pulls to change objectives or save locations.") end
 end
 
 function Module:RenderLoc(loc)
-    if loc.z then
-        Ui.NavEnabledLoc(Module.FormatLoc(loc))
-    else
-        Ui.RenderText(Module.FormatLoc(loc))
-    end
+    Ui.NavEnabledLoc(self:FormatLoc(loc), self:NavDestString(loc))
 end
 
 function Module:RenderNamedLoc(loc)
     if not loc.name then return self:RenderLoc(loc) end
-    local coords = Module.FormatLoc(loc)
-    if loc.z then
-        Ui.NavEnabledLoc(string.format("%s (%s)", loc.name, coords), coords)
-    else
-        Ui.RenderText(string.format("%s (%s)", loc.name, coords))
-    end
+    Ui.NavEnabledLoc(string.format("%s (%s)", loc.name, self:FormatLoc(loc)), self:NavDestString(loc))
 end
 
 function Module:RenderWatchCombo()
@@ -1996,7 +2028,6 @@ function Module:Render()
         end
 
         local pullModeName = Config:GetSetting('PullMode')
-        local isCampMode = pullModeName == "PullToCamp" or pullModeName == "ChainToCamp"
 
         if #self.TempSettings.ValidPullAbilities > 0 then
             local pullAbility = Config:GetSetting('PullAbility')
@@ -2009,7 +2040,7 @@ function Module:Render()
             end
         end
 
-        local pullMode = Module.PullModeIndex(Config:GetSetting('PullMode'))
+        local pullMode = self:PullModeIndex(Config:GetSetting('PullMode'))
         ImGui.SetNextItemWidth(ImGui.GetWindowWidth() * 0.5)
         pullMode, pressed = ImGui.Combo("Pull Mode", pullMode, self.Constants.PullModeDisplays, #self.Constants.PullModeDisplays)
         if pressed then
@@ -2027,10 +2058,9 @@ function Module:Render()
         end
         ImGui.Separator()
 
-        if ImGui.CollapsingHeader("Objective Setup", ImGuiTreeNodeFlags.DefaultOpen) then
-            if isCampMode or pullModeName == "AreaHunt" or pullModeName == "FightTo" then
-                self:RenderObjectiveRow(pullModeName)
-            end
+        if ImGui.CollapsingHeader("Objectives & Locations", ImGuiTreeNodeFlags.DefaultOpen) then
+            ImGui.Indent()
+            self:RenderObjectiveRow(pullModeName)
 
             local manageMovement = Config:GetSetting('ManagePeerMovement')
             local newManage = ImGui.Checkbox("Manage movement for my", manageMovement)
@@ -2056,301 +2086,147 @@ function Module:Render()
             ImGui.SameLine()
             ImGui.AlignTextToFramePadding()
             Ui.RenderText("Peers.")
-        end
 
-        if ImGui.CollapsingHeader("Pull Locations") then
-            self:ProcessDeleteLocations()
-            local locked = Config:GetSetting('DoPull')
-            ImGui.PushID("##_small_btn_add_loc_here")
-            if ImGui.SmallButton("Add Current Loc") then
-                self:AddLocationHere()
-            end
-            ImGui.PopID()
-            ImGui.SameLine()
-            ImGui.BeginDisabled(not mq.TLO.Target())
-            ImGui.PushID("##_small_btn_add_loc_target")
-            if ImGui.SmallButton("Add Target's Loc") then
-                self:AddLocationFromTarget()
-            end
-            ImGui.PopID()
-            ImGui.EndDisabled()
-            ImGui.SameLine()
-            ImGui.PushID("##_small_btn_load_db")
-            if ImGui.SmallButton("Import from Mercs Peer") then
-                self:LoadDbImportSources()
-            end
-            ImGui.PopID()
-            Ui.Tooltip("Pick pull locations saved by your other characters.")
-            ImGui.SameLine()
-            ImGui.PushID("##_small_btn_load_mypaths")
-            if ImGui.SmallButton("Import from MyPaths") then
-                self:LoadMyPathsFile()
-            end
-            ImGui.PopID()
-            Ui.Tooltip("Pick pull locations from points recorded in MyPaths.")
-
-            if self.TempSettings.MyPathsData then
-                ImGui.AlignTextToFramePadding()
-                Ui.RenderText("Import points from")
-                ImGui.SameLine()
-                local zoneWidth = 0
-                for _, zoneName in ipairs(self.TempSettings.MyPathsZones) do
-                    local nameWidth = ImGui.CalcTextSize(zoneName)
-                    zoneWidth = math.max(zoneWidth, nameWidth)
-                end
-                ImGui.SetNextItemWidth(zoneWidth + ImGui.GetStyle().FramePadding.x * 2 + ImGui.GetFrameHeight())
-                local newZone, zonePressed = ImGui.Combo("##MyPathsZone", self.TempSettings.MyPathsZoneIndex, self.TempSettings.MyPathsZones, #self.TempSettings.MyPathsZones)
-                if zonePressed and newZone ~= self.TempSettings.MyPathsZoneIndex then
-                    self:SelectMyPathsZone(newZone)
-                end
-                ImGui.SameLine()
-                if #self.TempSettings.MyPathsPathNames == 0 then
-                    ImGui.AlignTextToFramePadding()
-                    Ui.RenderText("(no paths in this zone)")
-                else
-                    local pathWidth = 0
-                    for _, pathName in ipairs(self.TempSettings.MyPathsPathNames) do
-                        local nameWidth = ImGui.CalcTextSize(pathName)
-                        pathWidth = math.max(pathWidth, nameWidth)
-                    end
-                    ImGui.SetNextItemWidth(pathWidth + ImGui.GetStyle().FramePadding.x * 2 + ImGui.GetFrameHeight())
-                    local newPath, pathPressed = ImGui.Combo("##MyPathsPath", self.TempSettings.MyPathsPathIndex, self.TempSettings.MyPathsPathNames,
-                        #self.TempSettings.MyPathsPathNames)
-                    if pathPressed and newPath ~= self.TempSettings.MyPathsPathIndex then
-                        self:SelectMyPathsPath(newPath)
-                    end
-                end
-                ImGui.SameLine()
-                ImGui.PushID("##_small_btn_mypaths_close")
-                if ImGui.SmallButton(Icons.MD_CLOSE) then
-                    self:ClearMyPathsPicker()
+            if ImGui.CollapsingHeader("Saved Pull Locations") then
+                ImGui.Indent()
+                self:ProcessDeleteLocations()
+                local locked = Config:GetSetting('DoPull')
+                ImGui.BeginGroup()
+                ImGui.BeginDisabled(locked)
+                ImGui.PushID("##_small_btn_add_loc_here")
+                if ImGui.SmallButton("Add Current Loc") then
+                    self:AddLocationHere()
                 end
                 ImGui.PopID()
-                Ui.Tooltip("Close the MyPaths import picker.")
-
-                if #self.TempSettings.MyPathsPoints > 0 then
-                    ImGui.PushID("##_small_btn_mypaths_all")
-                    if ImGui.SmallButton("Select All") then
-                        for index = 1, #self.TempSettings.MyPathsPoints do
-                            self.TempSettings.MyPathsChecked[index] = true
-                        end
-                    end
-                    ImGui.PopID()
-                    ImGui.SameLine()
-                    ImGui.PushID("##_small_btn_mypaths_none")
-                    if ImGui.SmallButton("Select None") then
-                        self.TempSettings.MyPathsChecked = {}
-                    end
-                    ImGui.PopID()
-                    local pointsHeight = ImGui.GetFrameHeightWithSpacing() * math.min(#self.TempSettings.MyPathsPoints, 10) + ImGui.GetStyle().ItemSpacing.y
-                    if ImGui.BeginChild("MyPathsPoints", ImVec2(0, pointsHeight), ImGuiChildFlags.None, ImGuiWindowFlags.None) then
-                        local showDistance = (self.TempSettings.MyPathsZones[self.TempSettings.MyPathsZoneIndex] or ""):lower() == (mq.TLO.Zone.ShortName() or ""):lower()
-                        local myX, myY = mq.TLO.Me.X(), mq.TLO.Me.Y()
-                        for index, point in ipairs(self.TempSettings.MyPathsPoints) do
-                            ImGui.PushID("##_mypaths_point_" .. tostring(index))
-                            self.TempSettings.MyPathsChecked[index] = ImGui.Checkbox(Module.FormatLoc(point),
-                                self.TempSettings.MyPathsChecked[index] or false) or nil
-                            if showDistance then
-                                ImGui.SameLine()
-                                Ui.RenderText(string.format("(%.0f away)", Math.GetDistance(myX, myY, point.x, point.y)))
-                            end
-                            ImGui.PopID()
-                        end
-                    end
-                    ImGui.EndChild()
-                    ImGui.PushID("##_small_btn_mypaths_add")
-                    if ImGui.SmallButton("Add Selected") then
-                        self:ImportMyPathsSelection()
-                    end
-                    ImGui.PopID()
-                    Ui.Tooltip("Add the checked points to this path's zone as pull locations.")
-                end
-            end
-
-            if self.TempSettings.DbImportSources then
-                ImGui.AlignTextToFramePadding()
-                Ui.RenderText("Import locations from")
+                Ui.Tooltip("Add your current position to this zone's Saved Pull Locations.")
                 ImGui.SameLine()
-                local sourceWidth = 0
-                for _, label in ipairs(self.TempSettings.DbImportSourceLabels) do
-                    sourceWidth = math.max(sourceWidth, ImGui.CalcTextSize(label))
-                end
-                ImGui.SetNextItemWidth(sourceWidth + ImGui.GetStyle().FramePadding.x * 2 + ImGui.GetFrameHeight())
-                local newSource, sourcePressed = ImGui.Combo("##DbImportSource", self.TempSettings.DbImportSourceIndex, self.TempSettings.DbImportSourceLabels,
-                    #self.TempSettings.DbImportSourceLabels)
-                if sourcePressed and newSource ~= self.TempSettings.DbImportSourceIndex then
-                    self:SelectDbImportSource(newSource)
-                end
-                ImGui.SameLine()
-                local zoneWidth = 0
-                for _, zoneName in ipairs(self.TempSettings.DbImportZones) do
-                    zoneWidth = math.max(zoneWidth, ImGui.CalcTextSize(zoneName))
-                end
-                ImGui.SetNextItemWidth(zoneWidth + ImGui.GetStyle().FramePadding.x * 2 + ImGui.GetFrameHeight())
-                local newZone, zonePressed = ImGui.Combo("##DbImportZone", self.TempSettings.DbImportZoneIndex, self.TempSettings.DbImportZones,
-                    #self.TempSettings.DbImportZones)
-                if zonePressed and newZone ~= self.TempSettings.DbImportZoneIndex then
-                    self:SelectDbImportZone(newZone)
-                end
-                ImGui.SameLine()
-                ImGui.PushID("##_small_btn_db_import_close")
-                if ImGui.SmallButton(Icons.MD_CLOSE) then
-                    self:ClearDbImportPicker()
+                ImGui.BeginDisabled(not mq.TLO.Target())
+                ImGui.PushID("##_small_btn_add_loc_target")
+                if ImGui.SmallButton("Add Target's Loc") then
+                    self:AddLocationFromTarget()
                 end
                 ImGui.PopID()
-                Ui.Tooltip("Close the database import picker.")
+                Ui.Tooltip("Add your target's position to this zone's Saved Pull Locations.")
+                ImGui.EndDisabled()
+                ImGui.EndDisabled()
+                ImGui.EndGroup()
+                if locked then Ui.Tooltip("Stop pulls to add a location from your position or target.") end
 
-                if #self.TempSettings.DbImportPoints > 0 then
-                    ImGui.PushID("##_small_btn_db_import_all")
-                    if ImGui.SmallButton("Select All") then
-                        for index = 1, #self.TempSettings.DbImportPoints do
-                            self.TempSettings.DbImportChecked[index] = true
-                        end
-                    end
-                    ImGui.PopID()
-                    ImGui.SameLine()
-                    ImGui.PushID("##_small_btn_db_import_none")
-                    if ImGui.SmallButton("Select None") then
-                        self.TempSettings.DbImportChecked = {}
-                    end
-                    ImGui.PopID()
-                    local pointsHeight = ImGui.GetFrameHeightWithSpacing() * math.min(#self.TempSettings.DbImportPoints, 10) + ImGui.GetStyle().ItemSpacing.y
-                    if ImGui.BeginChild("DbImportPoints", ImVec2(0, pointsHeight), ImGuiChildFlags.None, ImGuiWindowFlags.None) then
-                        local showDistance = (self.TempSettings.DbImportZones[self.TempSettings.DbImportZoneIndex] or "") == Module.ZoneKeyLower()
-                        local myX, myY = mq.TLO.Me.X(), mq.TLO.Me.Y()
-                        for index, point in ipairs(self.TempSettings.DbImportPoints) do
-                            ImGui.PushID("##_db_import_point_" .. tostring(index))
-                            self.TempSettings.DbImportChecked[index] = ImGui.Checkbox(string.format("%s (%s)", point.name, Module.FormatLoc(point)),
-                                self.TempSettings.DbImportChecked[index] or false) or nil
-                            if showDistance then
-                                ImGui.SameLine()
-                                Ui.RenderText(string.format("(%.0f away)", Math.GetDistance(myX, myY, point.x, point.y)))
+                local zoneLocations = self:GetZoneLocations()
+                local style = ImGui.GetStyle()
+                local setAsLabels = { Icons.FA_FREE_CODE_CAMP, Icons.FA_BINOCULARS, Icons.MD_FORWARD, }
+                local setAsWidth = style.ItemSpacing.x * (#setAsLabels - 1) + style.CellPadding.x * 2
+                for _, label in ipairs(setAsLabels) do
+                    setAsWidth = setAsWidth + ImGui.CalcTextSize(label) + style.FramePadding.x * 2
+                end
+                local circuitLabels = { Icons.FA_FLAG_CHECKERED, Icons.FA_CHEVRON_UP, Icons.FA_CHEVRON_DOWN, }
+                local circuitWidth = 26.0 + style.ItemSpacing.x * #circuitLabels + style.CellPadding.x * 2
+                for _, label in ipairs(circuitLabels) do
+                    circuitWidth = circuitWidth + ImGui.CalcTextSize(label) + style.FramePadding.x * 2
+                end
+                circuitWidth = math.max(circuitWidth, ImGui.CalcTextSize('Circuit Controls') + style.CellPadding.x * 2)
+                setAsWidth = math.max(setAsWidth, ImGui.CalcTextSize('Set Objective') + style.CellPadding.x * 2)
+                local trashWidth = ImGui.CalcTextSize(Icons.FA_TRASH) + style.FramePadding.x * 2 + style.CellPadding.x * 2
+                local childHeight = ImGui.GetTextLineHeightWithSpacing() + ImGui.GetFrameHeightWithSpacing() * math.min(#zoneLocations, 10) + style.ItemSpacing.y
+                if ImGui.BeginChild("PullLocationsChild", ImVec2(0, childHeight), ImGuiChildFlags.None, ImGuiWindowFlags.None) then
+                    if ImGui.BeginTable("PullLocations", 5, bit32.bor(ImGuiTableFlags.Resizable, ImGuiTableFlags.Borders)) then
+                        ImGui.TableSetupColumn('Name', (ImGuiTableColumnFlags.WidthStretch), 150.0)
+                        ImGui.TableSetupColumn('Loc (Y, X, Z)', (ImGuiTableColumnFlags.WidthFixed), 160.0)
+                        ImGui.TableSetupColumn('Set Objective', (ImGuiTableColumnFlags.WidthFixed), setAsWidth)
+                        ImGui.TableSetupColumn('Circuit Controls', (ImGuiTableColumnFlags.WidthFixed), circuitWidth)
+                        ImGui.TableSetupColumn('', (ImGuiTableColumnFlags.WidthFixed), trashWidth)
+                        ImGui.TableHeadersRow()
+
+                        local currentWpId = self:IsPullMode("CircuitHunt") and self:GetCurrentWpId() or 0
+                        local enabledIndex = 0
+                        for idx, entry in ipairs(zoneLocations) do
+                            if entry.enabled then enabledIndex = enabledIndex + 1 end
+                            ImGui.PushID("##_pull_loc_row_" .. tostring(idx))
+                            ImGui.TableNextColumn()
+                            ImGui.SetNextItemWidth(-1)
+                            local editedName = ImGui.InputText("##_input_loc_name", self.TempSettings.LocationNameEdits[idx] or entry.name)
+                            if ImGui.IsItemDeactivatedAfterEdit() then
+                                self.TempSettings.LocationNameEdits[idx] = nil
+                                if editedName ~= entry.name and editedName ~= "" then
+                                    self:RenameLocation(idx, editedName)
+                                end
+                            elseif ImGui.IsItemActive() then
+                                self.TempSettings.LocationNameEdits[idx] = editedName
+                            else
+                                self.TempSettings.LocationNameEdits[idx] = nil
                             end
+                            ImGui.TableNextColumn()
+                            self:RenderLoc(entry)
+                            ImGui.TableNextColumn()
+                            ImGui.BeginGroup()
+                            ImGui.BeginDisabled(locked)
+                            if ImGui.SmallButton(Icons.FA_FREE_CODE_CAMP) then
+                                local campMode = Module.Constants.PullModePolicies[Config:GetSetting('PullMode')].family == 'camp' and Config:GetSetting('PullMode') or "PullToCamp"
+                                self:SetPullMode(campMode)
+                                self:FillLocEntry({ y = entry.y, x = entry.x, z = entry.z, })
+                                self.TempSettings.LocEntryMode = campMode
+                            end
+                            Ui.Tooltip("Switch to a camp mode with this location as the travel destination.")
+                            ImGui.SameLine()
+                            if ImGui.SmallButton(Icons.FA_BINOCULARS) then
+                                if self:SetHuntOrigin({ y = entry.y, x = entry.x, z = entry.z, name = entry.name, }) then self:SetPullMode("AreaHunt") end
+                            end
+                            Ui.Tooltip("Switch to Area Hunt with this location as the hunt origin.")
+                            ImGui.SameLine()
+                            if ImGui.SmallButton(Icons.MD_FORWARD) then
+                                if self:SetFightToLoc({ y = entry.y, x = entry.x, z = entry.z, name = entry.name, }) then self:SetPullMode("FightTo") end
+                            end
+                            Ui.Tooltip("Switch to Fight To with this location as the destination.")
+                            ImGui.EndDisabled()
+                            ImGui.EndGroup()
+                            if locked then Ui.Tooltip("Stop pulls to set an objective.") end
+                            ImGui.TableNextColumn()
+                            local _, toggled = Ui.RenderOptionToggle("pull_loc_tggl_" .. tostring(idx), "", entry.enabled)
+                            if toggled then
+                                self:ToggleLocation(idx)
+                            end
+                            ImGui.SameLine()
+                            ImGui.BeginDisabled(not entry.enabled)
+                            local isCurrentStop = entry.enabled and enabledIndex == currentWpId
+                            if isCurrentStop then ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.Green) end
+                            if ImGui.SmallButton(Icons.FA_FLAG_CHECKERED) then
+                                Core.DoCmd(string.format("/rgl pullwp %d", enabledIndex))
+                            end
+                            if isCurrentStop then ImGui.PopStyleColor() end
+                            Ui.Tooltip(isCurrentStop and "The circuit's current waypoint." or "Set as the current waypoint for the circuit.")
+                            ImGui.EndDisabled()
+                            ImGui.SameLine()
+                            if idx == 1 then
+                                ImGui.InvisibleButton(Icons.FA_CHEVRON_UP, ImVec2(ImGui.CalcTextSize(Icons.FA_CHEVRON_UP) + style.FramePadding.x * 2, 1))
+                            else
+                                if ImGui.SmallButton(Icons.FA_CHEVRON_UP) then
+                                    self:MoveLocationUp(idx)
+                                end
+                            end
+                            ImGui.SameLine()
+                            if idx == #zoneLocations then
+                                ImGui.InvisibleButton(Icons.FA_CHEVRON_DOWN, ImVec2(ImGui.CalcTextSize(Icons.FA_CHEVRON_DOWN) + style.FramePadding.x * 2, 1))
+                            else
+                                if ImGui.SmallButton(Icons.FA_CHEVRON_DOWN) then
+                                    self:MoveLocationDown(idx)
+                                end
+                            end
+                            ImGui.TableNextColumn()
+                            if ImGui.SmallButton(Icons.FA_TRASH) then
+                                self:DeleteLocation(idx)
+                            end
+                            Ui.Tooltip("Delete Location")
                             ImGui.PopID()
                         end
+
+                        ImGui.EndTable()
                     end
-                    ImGui.EndChild()
-                    ImGui.PushID("##_small_btn_db_import_add")
-                    if ImGui.SmallButton("Add Selected") then
-                        self:ImportDbSelection()
-                    end
-                    ImGui.PopID()
-                    Ui.Tooltip("Add the checked locations to that zone's pull location list.")
                 end
+                ImGui.EndChild()
+                self:RenderLocationImports()
+                ImGui.Unindent()
             end
-
-            local zoneLocations = self:GetZoneLocations()
-            local style = ImGui.GetStyle()
-            local setAsLabels = { Icons.FA_FREE_CODE_CAMP, Icons.FA_BINOCULARS, Icons.MD_FORWARD, }
-            local setAsWidth = style.ItemSpacing.x * (#setAsLabels - 1) + style.CellPadding.x * 2
-            for _, label in ipairs(setAsLabels) do
-                setAsWidth = setAsWidth + ImGui.CalcTextSize(label) + style.FramePadding.x * 2
-            end
-            local circuitLabels = { Icons.FA_FLAG_CHECKERED, Icons.FA_CHEVRON_UP, Icons.FA_CHEVRON_DOWN, }
-            local circuitWidth = 26.0 + style.ItemSpacing.x * #circuitLabels + style.CellPadding.x * 2
-            for _, label in ipairs(circuitLabels) do
-                circuitWidth = circuitWidth + ImGui.CalcTextSize(label) + style.FramePadding.x * 2
-            end
-            circuitWidth = math.max(circuitWidth, ImGui.CalcTextSize('Circuit Controls') + style.CellPadding.x * 2)
-            setAsWidth = math.max(setAsWidth, ImGui.CalcTextSize('Set Objective') + style.CellPadding.x * 2)
-            local trashWidth = ImGui.CalcTextSize(Icons.FA_TRASH) + style.FramePadding.x * 2 + style.CellPadding.x * 2
-            local childHeight = ImGui.GetTextLineHeightWithSpacing() + ImGui.GetFrameHeightWithSpacing() * math.min(#zoneLocations, 10) + style.ItemSpacing.y
-            if ImGui.BeginChild("PullLocationsChild", ImVec2(0, childHeight), ImGuiChildFlags.None, ImGuiWindowFlags.None) then
-                if ImGui.BeginTable("PullLocations", 5, bit32.bor(ImGuiTableFlags.Borders)) then
-                    ImGui.TableSetupColumn('Name', (ImGuiTableColumnFlags.WidthStretch), 150.0)
-                    ImGui.TableSetupColumn('Loc', (ImGuiTableColumnFlags.WidthFixed), 160.0)
-                    ImGui.TableSetupColumn('Set Objective', (ImGuiTableColumnFlags.WidthFixed), setAsWidth)
-                    ImGui.TableSetupColumn('Circuit Controls', (ImGuiTableColumnFlags.WidthFixed), circuitWidth)
-                    ImGui.TableSetupColumn('', (ImGuiTableColumnFlags.WidthFixed), trashWidth)
-                    ImGui.TableHeadersRow()
-
-                    local currentWpId = self:IsPullMode("CircuitHunt") and self:GetCurrentWpId() or 0
-                    local enabledIndex = 0
-                    for idx, entry in ipairs(zoneLocations) do
-                        if entry.enabled then enabledIndex = enabledIndex + 1 end
-                        ImGui.PushID("##_pull_loc_row_" .. tostring(idx))
-                        ImGui.TableNextColumn()
-                        ImGui.BeginDisabled(locked)
-                        ImGui.SetNextItemWidth(-1)
-                        local editedName = ImGui.InputText("##_input_loc_name", self.TempSettings.LocationNameEdits[idx] or entry.name)
-                        if ImGui.IsItemDeactivatedAfterEdit() then
-                            self.TempSettings.LocationNameEdits[idx] = nil
-                            if editedName ~= entry.name and editedName ~= "" then
-                                self:RenameLocation(idx, editedName)
-                            end
-                        elseif ImGui.IsItemActive() then
-                            self.TempSettings.LocationNameEdits[idx] = editedName
-                        else
-                            self.TempSettings.LocationNameEdits[idx] = nil
-                        end
-                        ImGui.EndDisabled()
-                        ImGui.TableNextColumn()
-                        self:RenderLoc(entry)
-                        ImGui.TableNextColumn()
-                        ImGui.BeginDisabled(locked)
-                        if ImGui.SmallButton(Icons.FA_FREE_CODE_CAMP) then
-                            local campMode = Module.Constants.PullModePolicies[Config:GetSetting('PullMode')].family == 'camp' and Config:GetSetting('PullMode') or "PullToCamp"
-                            self:SetPullMode(campMode)
-                            self:FillLocEntry({ y = entry.y, x = entry.x, z = entry.z, })
-                            self.TempSettings.LocEntryMode = campMode
-                        end
-                        Ui.Tooltip("Switch to a camp mode with this location as the travel destination.")
-                        ImGui.SameLine()
-                        if ImGui.SmallButton(Icons.FA_BINOCULARS) then
-                            self:SetPullMode("AreaHunt")
-                            self:SetHuntOrigin({ y = entry.y, x = entry.x, z = entry.z, name = entry.name, })
-                        end
-                        Ui.Tooltip("Switch to Area Hunt with this location as the hunt origin.")
-                        ImGui.SameLine()
-                        if ImGui.SmallButton(Icons.MD_FORWARD) then
-                            self:SetPullMode("FightTo")
-                            self:SetFightToLoc({ y = entry.y, x = entry.x, z = entry.z, name = entry.name, })
-                        end
-                        Ui.Tooltip("Switch to Fight To with this location as the destination.")
-                        ImGui.EndDisabled()
-                        ImGui.TableNextColumn()
-                        local _, toggled = Ui.RenderOptionToggle("pull_loc_tggl_" .. tostring(idx), "", entry.enabled)
-                        if toggled then
-                            self:ToggleLocation(idx)
-                        end
-                        ImGui.SameLine()
-                        ImGui.BeginDisabled(not entry.enabled)
-                        local isCurrentStop = entry.enabled and enabledIndex == currentWpId
-                        if isCurrentStop then ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.Green) end
-                        if ImGui.SmallButton(Icons.FA_FLAG_CHECKERED) then
-                            Core.DoCmd(string.format("/rgl pullwp %d", enabledIndex))
-                        end
-                        if isCurrentStop then ImGui.PopStyleColor() end
-                        Ui.Tooltip(isCurrentStop and "The circuit's current waypoint." or "Set as the current waypoint for the circuit.")
-                        ImGui.EndDisabled()
-                        ImGui.SameLine()
-                        if idx == 1 then
-                            ImGui.InvisibleButton(Icons.FA_CHEVRON_UP, ImVec2(ImGui.CalcTextSize(Icons.FA_CHEVRON_UP) + style.FramePadding.x * 2, 1))
-                        else
-                            if ImGui.SmallButton(Icons.FA_CHEVRON_UP) then
-                                self:MoveLocationUp(idx)
-                            end
-                        end
-                        ImGui.SameLine()
-                        if idx == #zoneLocations then
-                            ImGui.InvisibleButton(Icons.FA_CHEVRON_DOWN, ImVec2(ImGui.CalcTextSize(Icons.FA_CHEVRON_DOWN) + style.FramePadding.x * 2, 1))
-                        else
-                            if ImGui.SmallButton(Icons.FA_CHEVRON_DOWN) then
-                                self:MoveLocationDown(idx)
-                            end
-                        end
-                        ImGui.TableNextColumn()
-                        if ImGui.SmallButton(Icons.FA_TRASH) then
-                            self:DeleteLocation(idx)
-                        end
-                        Ui.Tooltip("Delete Location")
-                        ImGui.PopID()
-                    end
-
-                    ImGui.EndTable()
-                end
-            end
-            ImGui.EndChild()
+            ImGui.Unindent()
         end
 
         local nextPull = Config:GetSetting('PullDelay') - (Globals.GetTimeSeconds() - self.TempSettings.LastPullOrCombatEnded)
@@ -2439,12 +2315,7 @@ function Module:Render()
                         Ui.RenderText("<None>")
                     else
                         local wpData = self:GetWPById(wpId)
-                        local display = string.format("%s (%d of %d)", wpData.name, wpId, #self:GetEnabledLocations())
-                        if wpData.z then
-                            Ui.NavEnabledLoc(display, Module.FormatLoc(wpData))
-                        else
-                            Ui.RenderText(display)
-                        end
+                        Ui.NavEnabledLoc(string.format("%s (%d of %d)", wpData.name, wpId, #self:GetEnabledLocations()), self:NavDestString(wpData))
                     end
                 else
                     local campData = Modules:ExecModule("Movement", "GetCampData")
@@ -2500,6 +2371,172 @@ function Module:Render()
             if ImGui.CollapsingHeader("Ignored Targets") then
                 self:RenderIgnoreTargets()
             end
+        end
+    end
+end
+
+function Module:RenderLocationImports()
+    ImGui.PushID("##_small_btn_load_db")
+    if ImGui.SmallButton("Import from Mercs Peer") then
+        self:LoadDbImportSources()
+    end
+    ImGui.PopID()
+    Ui.Tooltip("Pick pull locations saved by your other characters.")
+    ImGui.SameLine()
+    ImGui.PushID("##_small_btn_load_mypaths")
+    if ImGui.SmallButton("Import from MyPaths") then
+        self:LoadMyPathsFile()
+    end
+    ImGui.PopID()
+    Ui.Tooltip("Pick pull locations from points recorded in MyPaths.")
+
+    if self.TempSettings.MyPathsData then
+        ImGui.AlignTextToFramePadding()
+        Ui.RenderText("Import points from")
+        ImGui.SameLine()
+        local zoneWidth = 0
+        for _, zoneName in ipairs(self.TempSettings.MyPathsZones) do
+            local nameWidth = ImGui.CalcTextSize(zoneName)
+            zoneWidth = math.max(zoneWidth, nameWidth)
+        end
+        ImGui.SetNextItemWidth(zoneWidth + ImGui.GetStyle().FramePadding.x * 2 + ImGui.GetFrameHeight())
+        local newZone, zonePressed = ImGui.Combo("##MyPathsZone", self.TempSettings.MyPathsZoneIndex, self.TempSettings.MyPathsZones, #self.TempSettings.MyPathsZones)
+        if zonePressed and newZone ~= self.TempSettings.MyPathsZoneIndex then
+            self:SelectMyPathsZone(newZone)
+        end
+        ImGui.SameLine()
+        if #self.TempSettings.MyPathsPathNames == 0 then
+            ImGui.AlignTextToFramePadding()
+            Ui.RenderText("(no paths in this zone)")
+        else
+            local pathWidth = 0
+            for _, pathName in ipairs(self.TempSettings.MyPathsPathNames) do
+                local nameWidth = ImGui.CalcTextSize(pathName)
+                pathWidth = math.max(pathWidth, nameWidth)
+            end
+            ImGui.SetNextItemWidth(pathWidth + ImGui.GetStyle().FramePadding.x * 2 + ImGui.GetFrameHeight())
+            local newPath, pathPressed = ImGui.Combo("##MyPathsPath", self.TempSettings.MyPathsPathIndex, self.TempSettings.MyPathsPathNames,
+                #self.TempSettings.MyPathsPathNames)
+            if pathPressed and newPath ~= self.TempSettings.MyPathsPathIndex then
+                self:SelectMyPathsPath(newPath)
+            end
+        end
+        ImGui.SameLine()
+        ImGui.PushID("##_small_btn_mypaths_close")
+        if ImGui.SmallButton(Icons.MD_CLOSE) then
+            self:ClearMyPathsPicker()
+        end
+        ImGui.PopID()
+        Ui.Tooltip("Close the MyPaths import picker.")
+
+        if #self.TempSettings.MyPathsPoints > 0 then
+            ImGui.PushID("##_small_btn_mypaths_all")
+            if ImGui.SmallButton("Select All") then
+                for index = 1, #self.TempSettings.MyPathsPoints do
+                    self.TempSettings.MyPathsChecked[index] = true
+                end
+            end
+            ImGui.PopID()
+            ImGui.SameLine()
+            ImGui.PushID("##_small_btn_mypaths_none")
+            if ImGui.SmallButton("Select None") then
+                self.TempSettings.MyPathsChecked = {}
+            end
+            ImGui.PopID()
+            local pointsHeight = ImGui.GetFrameHeightWithSpacing() * math.min(#self.TempSettings.MyPathsPoints, 10) + ImGui.GetStyle().ItemSpacing.y
+            if ImGui.BeginChild("MyPathsPoints", ImVec2(0, pointsHeight), ImGuiChildFlags.None, ImGuiWindowFlags.None) then
+                local showDistance = (self.TempSettings.MyPathsZones[self.TempSettings.MyPathsZoneIndex] or ""):lower() == (mq.TLO.Zone.ShortName() or ""):lower()
+                local myX, myY = mq.TLO.Me.X(), mq.TLO.Me.Y()
+                for index, point in ipairs(self.TempSettings.MyPathsPoints) do
+                    ImGui.PushID("##_mypaths_point_" .. tostring(index))
+                    self.TempSettings.MyPathsChecked[index] = ImGui.Checkbox(self:FormatLoc(point),
+                        self.TempSettings.MyPathsChecked[index] or false) or nil
+                    if showDistance then
+                        ImGui.SameLine()
+                        Ui.RenderText(string.format("(%.0f away)", Math.GetDistance(myX, myY, point.x, point.y)))
+                    end
+                    ImGui.PopID()
+                end
+            end
+            ImGui.EndChild()
+            ImGui.PushID("##_small_btn_mypaths_add")
+            if ImGui.SmallButton("Add Selected") then
+                self:ImportMyPathsSelection()
+            end
+            ImGui.PopID()
+            Ui.Tooltip("Add the checked points to this path's zone as pull locations.")
+        end
+    end
+
+    if self.TempSettings.DbImportSources then
+        ImGui.AlignTextToFramePadding()
+        Ui.RenderText("Import locations from")
+        ImGui.SameLine()
+        local sourceWidth = 0
+        for _, label in ipairs(self.TempSettings.DbImportSourceLabels) do
+            sourceWidth = math.max(sourceWidth, ImGui.CalcTextSize(label))
+        end
+        ImGui.SetNextItemWidth(sourceWidth + ImGui.GetStyle().FramePadding.x * 2 + ImGui.GetFrameHeight())
+        local newSource, sourcePressed = ImGui.Combo("##DbImportSource", self.TempSettings.DbImportSourceIndex, self.TempSettings.DbImportSourceLabels,
+            #self.TempSettings.DbImportSourceLabels)
+        if sourcePressed and newSource ~= self.TempSettings.DbImportSourceIndex then
+            self:SelectDbImportSource(newSource)
+        end
+        ImGui.SameLine()
+        local zoneWidth = 0
+        for _, zoneName in ipairs(self.TempSettings.DbImportZones) do
+            zoneWidth = math.max(zoneWidth, ImGui.CalcTextSize(zoneName))
+        end
+        ImGui.SetNextItemWidth(zoneWidth + ImGui.GetStyle().FramePadding.x * 2 + ImGui.GetFrameHeight())
+        local newZone, zonePressed = ImGui.Combo("##DbImportZone", self.TempSettings.DbImportZoneIndex, self.TempSettings.DbImportZones,
+            #self.TempSettings.DbImportZones)
+        if zonePressed and newZone ~= self.TempSettings.DbImportZoneIndex then
+            self:SelectDbImportZone(newZone)
+        end
+        ImGui.SameLine()
+        ImGui.PushID("##_small_btn_db_import_close")
+        if ImGui.SmallButton(Icons.MD_CLOSE) then
+            self:ClearDbImportPicker()
+        end
+        ImGui.PopID()
+        Ui.Tooltip("Close the database import picker.")
+
+        if #self.TempSettings.DbImportPoints > 0 then
+            ImGui.PushID("##_small_btn_db_import_all")
+            if ImGui.SmallButton("Select All") then
+                for index = 1, #self.TempSettings.DbImportPoints do
+                    self.TempSettings.DbImportChecked[index] = true
+                end
+            end
+            ImGui.PopID()
+            ImGui.SameLine()
+            ImGui.PushID("##_small_btn_db_import_none")
+            if ImGui.SmallButton("Select None") then
+                self.TempSettings.DbImportChecked = {}
+            end
+            ImGui.PopID()
+            local pointsHeight = ImGui.GetFrameHeightWithSpacing() * math.min(#self.TempSettings.DbImportPoints, 10) + ImGui.GetStyle().ItemSpacing.y
+            if ImGui.BeginChild("DbImportPoints", ImVec2(0, pointsHeight), ImGuiChildFlags.None, ImGuiWindowFlags.None) then
+                local showDistance = (self.TempSettings.DbImportZones[self.TempSettings.DbImportZoneIndex] or "") == self:ZoneKeyLower()
+                local myX, myY = mq.TLO.Me.X(), mq.TLO.Me.Y()
+                for index, point in ipairs(self.TempSettings.DbImportPoints) do
+                    ImGui.PushID("##_db_import_point_" .. tostring(index))
+                    self.TempSettings.DbImportChecked[index] = ImGui.Checkbox(string.format("%s (%s)", point.name, self:FormatLoc(point)),
+                        self.TempSettings.DbImportChecked[index] or false) or nil
+                    if showDistance then
+                        ImGui.SameLine()
+                        Ui.RenderText(string.format("(%.0f away)", Math.GetDistance(myX, myY, point.x, point.y)))
+                    end
+                    ImGui.PopID()
+                end
+            end
+            ImGui.EndChild()
+            ImGui.PushID("##_small_btn_db_import_add")
+            if ImGui.SmallButton("Add Selected") then
+                self:ImportDbSelection()
+            end
+            ImGui.PopID()
+            Ui.Tooltip("Add the checked locations to that zone's pull location list.")
         end
     end
 end
@@ -2586,6 +2623,10 @@ function Module:DeleteMobFromList(list, arg1)
     Config:ZoneListDelete(arg1, self:ActivePullList(list))
 end
 
+function Module:FlagNavUnreachable()
+    self.TempSettings.NavUnreachable = true
+end
+
 function Module:FlagPullListUpdated()
     if Config:GetSetting('DoPull') then
         -- only flag a rescan while actively pulling
@@ -2593,7 +2634,7 @@ function Module:FlagPullListUpdated()
     end
 end
 
-function Module.CompilePullListSet(personal, shared, useShared)
+function Module:CompilePullListSet(personal, shared, useShared)
     local set = {}
     local hasEntries = false
     for _, name in ipairs(useShared and shared or personal) do
@@ -2605,9 +2646,9 @@ end
 
 function Module:RefreshPullListSets()
     local useShared = Config:GetSetting('UseSharedPullLists')
-    self.TempSettings.PullAllowSet, self.TempSettings.HavePullAllowEntries = Module.CompilePullListSet(
+    self.TempSettings.PullAllowSet, self.TempSettings.HavePullAllowEntries = self:CompilePullListSet(
         Config:GetZoneList('PullAllowList'), Config:GetZoneList('PullAllowListShared'), useShared)
-    self.TempSettings.PullDenySet, self.TempSettings.HavePullDenyEntries = Module.CompilePullListSet(
+    self.TempSettings.PullDenySet, self.TempSettings.HavePullDenyEntries = self:CompilePullListSet(
         Config:GetZoneList('PullDenyList'), Config:GetZoneList('PullDenyListShared'), useShared)
 end
 
@@ -2632,36 +2673,36 @@ function Module:ValidateIgnoreList()
 end
 
 -- Locations Library
-function Module.ZoneKeyLower()
+function Module:ZoneKeyLower()
     return (mq.TLO.Zone.ShortName() or ""):lower()
 end
 
-function Module.LocationNameExists(zoneLocations, name)
+function Module:LocationNameExists(zoneLocations, name)
     for _, entry in ipairs(zoneLocations) do
         if entry.name == name then return true end
     end
     return false
 end
 
-function Module.SynthesizeLocationName(zoneLocations, baseName)
+function Module:SynthesizeLocationName(zoneLocations, baseName)
     baseName = baseName or string.format("Location %d", #zoneLocations + 1)
     local name = baseName
     local suffix = 2
-    while Module.LocationNameExists(zoneLocations, name) do
+    while self:LocationNameExists(zoneLocations, name) do
         name = string.format("%s (%d)", baseName, suffix)
         suffix = suffix + 1
     end
     return name
 end
 
-function Module.AppendLocation(zoneLocations, loc, baseName)
-    local entry = { name = Module.SynthesizeLocationName(zoneLocations, baseName), y = loc.y, x = loc.x, z = loc.z, enabled = true, }
+function Module:AppendLocation(zoneLocations, loc, baseName)
+    local entry = { name = self:SynthesizeLocationName(zoneLocations, baseName), y = loc.y, x = loc.x, z = loc.z, enabled = true, }
     table.insert(zoneLocations, entry)
     return entry
 end
 
 function Module:GetZoneLocations()
-    return (Config:GetSetting('PullLocations') or {})[Module.ZoneKeyLower()] or {}
+    return (Config:GetSetting('PullLocations') or {})[self:ZoneKeyLower()] or {}
 end
 
 function Module:GetEnabledLocations()
@@ -2674,11 +2715,11 @@ end
 
 function Module:AddLocationAt(loc)
     local pullLocations = Config:GetSetting('PullLocations') or {}
-    local zoneKey = Module.ZoneKeyLower()
+    local zoneKey = self:ZoneKeyLower()
     pullLocations[zoneKey] = pullLocations[zoneKey] or {}
-    local entry = Module.AppendLocation(pullLocations[zoneKey], loc)
+    local entry = self:AppendLocation(pullLocations[zoneKey], loc)
     Config:SetSetting('PullLocations', pullLocations)
-    Logger.log_info("\axNew pull location \at%s\ax created at \ag%0.2f, %0.2f, %0.2f", entry.name, entry.y, entry.x, entry.z)
+    Logger.log_info("\axNew pull location \at%s\ax created at \ag%s", entry.name, self:FormatLoc(entry))
 end
 
 function Module:AddLocationHere()
@@ -2695,10 +2736,10 @@ end
 
 function Module:RenameLocation(idx, name)
     local pullLocations = Config:GetSetting('PullLocations') or {}
-    local zoneLocations = pullLocations[Module.ZoneKeyLower()] or {}
+    local zoneLocations = pullLocations[self:ZoneKeyLower()] or {}
     local entry = zoneLocations[idx]
     if not entry or entry.name == name then return end
-    if Module.LocationNameExists(zoneLocations, name) then
+    if self:LocationNameExists(zoneLocations, name) then
         Logger.log_error("\arA pull location named \at%s\ar already exists in this zone!", name)
         return
     end
@@ -2708,15 +2749,18 @@ end
 
 function Module:ToggleLocation(idx)
     local pullLocations = Config:GetSetting('PullLocations') or {}
-    local entry = (pullLocations[Module.ZoneKeyLower()] or {})[idx]
+    local entry = (pullLocations[self:ZoneKeyLower()] or {})[idx]
     if not entry then return end
+    local currentEntry = self:GetWPById(self:GetCurrentWpId())
     entry.enabled = not entry.enabled
+    self.TempSettings.CircuitSkips = 0
+    if entry == currentEntry then self.TempSettings.ReachedWP = false end
     Config:SetSetting('PullLocations', pullLocations)
 end
 
 function Module:MoveLocationUp(idx)
     local pullLocations = Config:GetSetting('PullLocations') or {}
-    local zoneLocations = pullLocations[Module.ZoneKeyLower()] or {}
+    local zoneLocations = pullLocations[self:ZoneKeyLower()] or {}
     if idx < 2 or idx > #zoneLocations then return end
     zoneLocations[idx - 1], zoneLocations[idx] = zoneLocations[idx], zoneLocations[idx - 1]
     Config:SetSetting('PullLocations', pullLocations)
@@ -2724,7 +2768,7 @@ end
 
 function Module:MoveLocationDown(idx)
     local pullLocations = Config:GetSetting('PullLocations') or {}
-    local zoneLocations = pullLocations[Module.ZoneKeyLower()] or {}
+    local zoneLocations = pullLocations[self:ZoneKeyLower()] or {}
     if idx < 1 or idx + 1 > #zoneLocations then return end
     zoneLocations[idx + 1], zoneLocations[idx] = zoneLocations[idx], zoneLocations[idx + 1]
     Config:SetSetting('PullLocations', pullLocations)
@@ -2738,15 +2782,18 @@ end
 function Module:ProcessDeleteLocations()
     if next(self.TempSettings.LocationsToDelete) == nil then return end
     local pullLocations = Config:GetSetting('PullLocations') or {}
-    local zoneLocations = pullLocations[Module.ZoneKeyLower()] or {}
+    local zoneLocations = pullLocations[self:ZoneKeyLower()] or {}
+    local currentEntry = self:GetWPById(self:GetCurrentWpId())
     for idx = #zoneLocations, 1, -1 do
         if self.TempSettings.LocationsToDelete[zoneLocations[idx]] then
             Logger.log_info("\axPull location \at%s\ax - \arDeleted!\ax", zoneLocations[idx].name)
+            if zoneLocations[idx] == currentEntry then self.TempSettings.ReachedWP = false end
             table.remove(zoneLocations, idx)
         end
     end
     Config:SetSetting('PullLocations', pullLocations)
     self.TempSettings.LocationsToDelete = {}
+    self.TempSettings.CircuitSkips = 0
 end
 
 function Module:ResolveLocationEntry(argText)
@@ -2847,7 +2894,7 @@ function Module:LoadMyPathsFile()
     self.TempSettings.MyPathsZones = zones
     local zoneIndex = 1
     for index, zoneName in ipairs(zones) do
-        if zoneName:lower() == Module.ZoneKeyLower() then
+        if zoneName:lower() == self:ZoneKeyLower() then
             zoneIndex = index
             break
         end
@@ -2899,7 +2946,7 @@ function Module:ImportMyPathsSelection()
     for index, point in ipairs(self.TempSettings.MyPathsPoints) do
         if self.TempSettings.MyPathsChecked[index] then
             added = added + 1
-            Module.AppendLocation(pullLocations[zoneKey], point, string.format("MyPaths %s %d", pathName, added))
+            self:AppendLocation(pullLocations[zoneKey], point, string.format("MyPaths %s %d", pathName, added))
         end
     end
     Config:SetSetting('PullLocations', pullLocations)
@@ -2956,7 +3003,7 @@ function Module:SelectDbImportSource(index)
     self.TempSettings.DbImportZones = source and source.zones or {}
     local zoneIndex = 1
     for idx, zoneKey in ipairs(self.TempSettings.DbImportZones) do
-        if zoneKey == Module.ZoneKeyLower() then zoneIndex = idx end
+        if zoneKey == self:ZoneKeyLower() then zoneIndex = idx end
     end
     self:SelectDbImportZone(zoneIndex)
 end
@@ -2982,7 +3029,7 @@ function Module:ImportDbSelection()
     for index, point in ipairs(self.TempSettings.DbImportPoints) do
         if self.TempSettings.DbImportChecked[index] then
             added = added + 1
-            Module.AppendLocation(pullLocations[zoneKey], point, point.name)
+            self:AppendLocation(pullLocations[zoneKey], point, point.name)
         end
     end
     Config:SetSetting('PullLocations', pullLocations)
@@ -3023,8 +3070,8 @@ function Module:SetFightToSpawn(spawnID)
 end
 
 function Module:SetFightToLoc(loc)
-    if loc.z and not mq.TLO.Navigation.PathExists(Module.NavDestString(loc))() then
-        Logger.log_error("Fight To - no nav path exists to the given location! (%s)", Module.NavDestString(loc))
+    if loc.z and not mq.TLO.Navigation.PathExists(self:NavDestString(loc))() then
+        Logger.log_error("Fight To - no nav path exists to the given location! (%s)", self:NavDestString(loc))
         return false
     end
     self.TempSettings.FightTo = loc
@@ -3035,8 +3082,8 @@ function Module:SetFightToLoc(loc)
 end
 
 function Module:SetHuntOrigin(loc)
-    if loc.z and not mq.TLO.Navigation.PathExists(Module.NavDestString(loc))() then
-        Logger.log_error("Hunt - no nav path exists to the given location! (%s)", Module.NavDestString(loc))
+    if loc.z and not mq.TLO.Navigation.PathExists(self:NavDestString(loc))() then
+        Logger.log_error("Hunt - no nav path exists to the given location! (%s)", self:NavDestString(loc))
         return false
     end
     self.TempSettings.HuntOrigin = loc
@@ -3053,6 +3100,7 @@ function Module:HasRemoteHuntOrigin()
 end
 
 function Module:CommitLocEntry()
+    if not self:GetModePolicy().hasObjective then return true end
     if self.TempSettings.LocEntryY == "" and self.TempSettings.LocEntryX == "" then
         self.TempSettings.CampTravelLoc = nil
         return true
@@ -3071,8 +3119,8 @@ function Module:CommitLocEntry()
         loc.name = staged.name
     end
     if self:GetModePolicy().family == 'camp' then
-        if loc.z and not mq.TLO.Navigation.PathExists(Module.NavDestString(loc))() then
-            Logger.log_error("Camp - no nav path exists to the given location! (%s)", Module.NavDestString(loc))
+        if loc.z and not mq.TLO.Navigation.PathExists(self:NavDestString(loc))() then
+            Logger.log_error("Camp - no nav path exists to the given location! (%s)", self:NavDestString(loc))
             return false
         end
         local campData = Modules:ExecModule("Movement", "GetCampData")
@@ -3121,7 +3169,7 @@ function Module:CurrentIntent()
         end
     end
     local existingCamp = campData.returnToCamp and Module.Constants.PullModePolicies[pullModeName].family == 'camp' and loc == nil
-    return Module.BuildIntentSentence({
+    return self:BuildIntentSentence({
         mode = pullModeName,
         scope = Config:GetSetting('PeerMovementScope'),
         scopeWord = Config:GetSetting('PeerMovementScope') == 2 and "in-zone" or ((mq.TLO.Raid.Members() or 0) > 0 and "raid" or "group"),
@@ -3138,12 +3186,12 @@ function Module:CurrentIntent()
 end
 
 -- Travel & Escort
-function Module.NavDestString(loc)
+function Module:NavDestString(loc)
     if loc.z then return string.format("locyxz %0.2f %0.2f %0.2f", loc.y, loc.x, loc.z) end
     return string.format("locxy %0.2f %0.2f", loc.x, loc.y)
 end
 
-function Module.FormatLoc(loc)
+function Module:FormatLoc(loc)
     if loc.z then return string.format("%.0f, %.0f, %.0f", loc.y, loc.x, loc.z) end
     return string.format("%.0f, %.0f", loc.y, loc.x)
 end
@@ -3164,7 +3212,12 @@ function Module:CheckReachable(destStr)
 end
 
 function Module:TravelTick(ctx, loc, reason, circuitWpId)
-    if Math.GetDistanceSquared(mq.TLO.Me.X(), mq.TLO.Me.Y(), loc.x, loc.y) <= 2500 then
+    local travel = self.TempSettings.Travel
+    local navActive = mq.TLO.Navigation.Active()
+    local navSpent = travel and travel.navStarted and not navActive
+    local arrivalSquared = Math.GetDistanceSquared(mq.TLO.Me.X(), mq.TLO.Me.Y(), loc.x, loc.y)
+    if loc.z and not navSpent then arrivalSquared = arrivalSquared + (loc.z - mq.TLO.Me.Z()) ^ 2 end
+    if arrivalSquared <= 2500 then
         self.TempSettings.Travel = nil
         return 'arrived'
     end
@@ -3175,15 +3228,6 @@ function Module:TravelTick(ctx, loc, reason, circuitWpId)
     mq.TLO.Me.Stand()
 
     self:SetPullState(PullStates.PULL_MOVING_TO_WP, reason)
-
-    if circuitWpId then
-        if self.TempSettings.LocationsToDelete[self:GetWPById(circuitWpId)] then
-            Logger.log_debug("PULL:\arNOTICE:\ax Deleting pull location %d while naving to it.", circuitWpId)
-            Movement:DoNav(false, "stop log=off")
-            self.TempSettings.Travel = nil
-            return 'wpdeleted'
-        end
-    end
 
     if Targeting.HasXTHaters() then
         if mq.TLO.Navigation.Active() then
@@ -3200,20 +3244,31 @@ function Module:TravelTick(ctx, loc, reason, circuitWpId)
         return 'aborted'
     end
 
-    local travel = self.TempSettings.Travel
+    local navDest = self:NavDestString(loc)
+    local navLog = circuitWpId and "log=error" or "log=off"
 
-    if not mq.TLO.Navigation.Active() then
+    if circuitWpId and travel and travel.navDest ~= navDest then
+        mq.doevents()
+        self.TempSettings.NavUnreachable = false
+        Movement:DoNav(false, "%s %s", navDest, navLog)
+        self.TempSettings.Travel = { navIssuedAt = ctx.now, navDest = navDest, }
+        return 'moving'
+    end
+
+    if not navActive then
         if not travel then
-            Movement:DoNav(false, "%s log=off", Module.NavDestString(loc))
-            self.TempSettings.Travel = { navIssuedAt = ctx.now, }
+            if circuitWpId then mq.doevents() end
+            self.TempSettings.NavUnreachable = false
+            Movement:DoNav(false, "%s %s", navDest, navLog)
+            self.TempSettings.Travel = { navIssuedAt = ctx.now, navDest = navDest, }
             return 'moving'
         end
         if ctx.now - travel.navIssuedAt < 1000 then return 'moving' end
         self.TempSettings.Travel = nil
         if circuitWpId then
-            Logger.log_verbose("PULL:TravelTick Waypoint: Something went wrong. Current distance to WP: %d. (Possible manual interruption or conflicting nav command.)",
-                mq.TLO.Math.Distance(string.format("%0.2f, %0.2f, %0.2f", loc.y, loc.x, loc.z))())
-            return 'fail', false
+            Logger.log_verbose("PULL:TravelTick Waypoint: Nav ended early. Current distance to WP: %d. (Nav %s.)",
+                mq.TLO.Math.Distance(self:FormatLoc(loc))(), self.TempSettings.NavUnreachable and "reported no path" or "was interrupted")
+            return 'fail', self.TempSettings.NavUnreachable
         end
         if self.TempSettings.TravelFailSince == 0 then
             self.TempSettings.TravelFailSince = Globals.GetTimeSeconds()
@@ -3222,10 +3277,12 @@ function Module:TravelTick(ctx, loc, reason, circuitWpId)
     end
 
     if not travel then
-        self.TempSettings.Travel = { navIssuedAt = ctx.now, }
+        travel = { navIssuedAt = ctx.now, navDest = navDest, }
+        self.TempSettings.Travel = travel
     elseif not circuitWpId then
         self.TempSettings.TravelFailSince = 0
     end
+    travel.navStarted = true
 
     if circuitWpId then
         Logger.log_verbose("PULL:TravelTick Waypoint: %d Aggro Count: %d", circuitWpId, Targeting.GetXTHaterCount())
@@ -3234,9 +3291,7 @@ function Module:TravelTick(ctx, loc, reason, circuitWpId)
     Modules:ExecModule("Movement", "CheckStuck")
     self:CheckMoveAbilities()
 
-    if mq.TLO.Navigation.Paused() then
-        Movement:DoNav(false, "pause log=off")
-    end
+    Movement:SetNavPaused(false)
 
     return 'moving'
 end
@@ -3391,7 +3446,7 @@ function Module:ShouldPull(campData)
     end
 
     if Config:GetSetting('DoPull') and policy.family ~= 'camp' and campData.returnToCamp then
-        local pullModeName = self.Constants.PullModeDisplays[Module.PullModeIndex(Config:GetSetting('PullMode'))]
+        local pullModeName = self.Constants.PullModeDisplays[self:PullModeIndex(Config:GetSetting('PullMode'))]
         Logger.log_warn("\ar ALERT: A camp is set, but %s mode is incompatible with camps - Disabling Pulling. \ax", pullModeName)
         self:Announce("None", string.format("Camp set - %s mode is incompatible with camps. Disabling pulls. Use /rgl campoff and re-enable pulls.", pullModeName))
         self:StopPuller()
@@ -3618,7 +3673,7 @@ function Module:GetPullableSpawns()
 
     if policy.scanCenter == 'waypoint' then
         local wpData = self:GetWPById(self:GetCurrentWpId())
-        checkX, checkY, checkZ = wpData.x, wpData.y, wpData.z
+        checkX, checkY, checkZ = wpData.x, wpData.y, wpData.z or checkZ
     elseif policy.scanCenter == 'anchor' and self.TempSettings.HuntAnchor then
         checkX, checkY, checkZ = self.TempSettings.HuntAnchor.x, self.TempSettings.HuntAnchor.y, self.TempSettings.HuntAnchor.z
     end
@@ -3861,7 +3916,7 @@ function Module:CheckAttemptAbort(attempt, bNavigating)
         abortCtx.timedOut = attempt.engageStartedAt ~= nil and (Globals.GetTimeSeconds() - attempt.engageStartedAt) >= Config:GetSetting('PullIgnoreTime')
     end
 
-    local reason = Module.DecideAbort(attempt, abortCtx)
+    local reason = self:DecideAbort(attempt, abortCtx)
     if not reason then return false end
 
     Logger.log_debug(Module.Constants.AbortLogMessages[reason])
@@ -3881,7 +3936,7 @@ end
 ---@param attempt table
 ---@return boolean
 function Module:CheckReturnAbort(attempt)
-    local reason = Module.DecideUserAbort({
+    local reason = self:DecideUserAbort({
         pausePulls = self.TempSettings.PausePulls,
         pullListUpdated = self.TempSettings.PullListUpdated,
         doPull = Config:GetSetting('DoPull'),
@@ -4062,8 +4117,8 @@ function Module:PreAttemptTick(ctx)
             -- We're not ready to pull yet as we haven't made it to our waypoint.
             local advanceLeg = self.TempSettings.Travel and self.TempSettings.Travel.circuitAdvance
             local wpData = self:GetWPById(currentWpId)
-            local result = self:TravelTick(ctx, wpData, string.format("WP Id: %d", currentWpId), currentWpId)
-            self:HandleCircuitTravelResult(result, currentWpId)
+            local result, unreachable = self:TravelTick(ctx, wpData, string.format("WP Id: %d", currentWpId), currentWpId)
+            self:HandleCircuitTravelResult(result, unreachable, currentWpId)
             if result ~= 'arrived' then return end
             if advanceLeg then return end
         end
@@ -4071,7 +4126,7 @@ function Module:PreAttemptTick(ctx)
 
     if ctx.policy.scanCenter == 'anchor' and self.TempSettings.HuntOrigin and self.TempSettings.TargetSpawnID == 0 then
         local origin = self.TempSettings.HuntOrigin
-        local travelResult, travelGraceExpired = self:TravelTick(ctx, origin, "Loc: " .. Module.FormatLoc(origin))
+        local travelResult, travelGraceExpired = self:TravelTick(ctx, origin, "Loc: " .. self:FormatLoc(origin))
         if travelResult == 'arrived' then
             self.TempSettings.HuntOrigin = nil
             self.TempSettings.HuntAnchor = { y = mq.TLO.Me.Y(), x = mq.TLO.Me.X(), z = mq.TLO.Me.Z(), name = origin.name, }
@@ -4088,7 +4143,7 @@ function Module:PreAttemptTick(ctx)
 
     if ctx.policy.family == 'camp' and not ctx.campData.returnToCamp and self.TempSettings.CampTravelLoc then
         local dest = self.TempSettings.CampTravelLoc
-        local travelResult, travelGraceExpired = self:TravelTick(ctx, dest, "Loc: " .. Module.FormatLoc(dest))
+        local travelResult, travelGraceExpired = self:TravelTick(ctx, dest, "Loc: " .. self:FormatLoc(dest))
         if travelResult == 'arrived' then
             local scopeWord = self.TempSettings.EscortScopeWord
             if scopeWord then
@@ -4160,7 +4215,7 @@ function Module:PreAttemptTick(ctx)
                     ((target.Type() or "") == "Corpse" and objective.name and (target.CleanName() or ""):find(objective.name, 1, true) ~= nil) then
                     Core.DoCmd("/squelch /target clear")
                 end
-                self:AnnounceStop(objectiveDead and "Fight To target has died - pulls disabled." or "Fight To target despawned - pulls disabled.", true)
+                self:AnnounceStop(objectiveDead and "Fight To target has died - pulls disabled." or "Fight To target despawned - pulls disabled.", true, objectiveDead)
                 return
             end
 
@@ -4185,7 +4240,7 @@ function Module:PreAttemptTick(ctx)
             pullID = objective.id
             source = 'objective'
         else
-            local reachable, graceExpired = self:CheckReachable(Module.NavDestString(objective))
+            local reachable, graceExpired = self:CheckReachable(self:NavDestString(objective))
             if not reachable then
                 if graceExpired then
                     self:AnnounceStop("Fight To destination is unreachable - pulls disabled.", false)
@@ -4195,9 +4250,9 @@ function Module:PreAttemptTick(ctx)
                 return
             end
 
-            local travelResult, travelGraceExpired = self:TravelTick(ctx, objective, "Loc: " .. Module.FormatLoc(objective))
+            local travelResult, travelGraceExpired = self:TravelTick(ctx, objective, "Loc: " .. self:FormatLoc(objective))
             if travelResult == 'arrived' then
-                self:AnnounceStop("Arrived at the Fight To destination - pulls disabled.", true)
+                self:AnnounceStop("Arrived at the Fight To destination - pulls disabled.", true, true)
             elseif travelResult == 'fail' then
                 if travelGraceExpired then
                     self:AnnounceStop("Fight To destination is unreachable - pulls disabled.", false)
@@ -4227,13 +4282,25 @@ function Module:PreAttemptTick(ctx)
     self:OpenAttempt(ctx, pullID, source)
 end
 
-function Module:HandleCircuitTravelResult(result, wpId)
+function Module:HandleCircuitTravelResult(result, unreachable, wpId)
     if result == 'arrived' then
         Logger.log_verbose("Pull: Reached Pull Location %d.", wpId)
         self.TempSettings.ReachedWP = true
+        self.TempSettings.CircuitSkips = 0
         self:SetLastPullOrCombatEndedTimer()
         self:SetPullState(PullStates.PULL_IDLE, "")
-    elseif result == 'aggro' or result == 'fail' or result == 'wpdeleted' then
+    elseif result == 'fail' then
+        self.TempSettings.ReachedWP = false
+        self:SetPullState(PullStates.PULL_NAV_INTERRUPT, "")
+        if not unreachable then return end
+        self.TempSettings.CircuitSkips = self.TempSettings.CircuitSkips + 1
+        if self.TempSettings.CircuitSkips > #self:GetEnabledLocations() then
+            self:AnnounceStop("No pull location on the circuit could be reached - pulls disabled.", false)
+            return
+        end
+        Logger.log_error("\arPull location \at%s\ar could not be reached - skipping it this lap.", self:GetWPById(wpId).name or "Unknown")
+        self:IncrementWpId()
+    elseif result == 'aggro' then
         self:SetPullState(PullStates.PULL_NAV_INTERRUPT, "")
         self.TempSettings.ReachedWP = false
     end
@@ -4259,8 +4326,8 @@ function Module:CircuitAdvanceTick(ctx)
     local currentWP = self:GetCurrentWpId()
     local wpData = self:GetWPById(currentWP)
 
-    local result = self:TravelTick(ctx, wpData, string.format("%0.2f, %0.2f, %0.2f", wpData.y, wpData.x, wpData.z), currentWP)
-    self:HandleCircuitTravelResult(result, currentWP)
+    local result, unreachable = self:TravelTick(ctx, wpData, self:FormatLoc(wpData), currentWP)
+    self:HandleCircuitTravelResult(result, unreachable, currentWP)
     if result == 'moving' and self.TempSettings.Travel then
         self.TempSettings.Travel.circuitAdvance = true
     end
@@ -4450,7 +4517,7 @@ function Module:PullingTick(ctx)
         end
     end
 
-    if Module.PullSuccessCheck(ctx.policy.successCheck, Targeting.GetXTHaterCount(), Config:GetSetting('ChainCount')) then
+    if self:PullSuccessCheck(ctx.policy.successCheck, Targeting.GetXTHaterCount(), Config:GetSetting('ChainCount')) then
         self:EndEngage(ctx)
         return
     end
@@ -4526,7 +4593,7 @@ function Module:EndEngage(ctx)
         Core.DoCmd("/squelch /pet follow")
     end
 
-    if Module.PullSuccessCheck(ctx.policy.successCheck, Targeting.GetXTHaterCount(), Config:GetSetting('ChainCount')) then
+    if self:PullSuccessCheck(ctx.policy.successCheck, Targeting.GetXTHaterCount(), Config:GetSetting('ChainCount')) then
         Globals.LastPulledID = attempt.targetId
     end
 
@@ -4568,9 +4635,7 @@ function Module:ReturnToCampTick(ctx)
             attempt.returnNavIssuedAt = ctx.now
         end
 
-        if mq.TLO.Navigation.Paused() then
-            Movement:DoNav(false, "pause")
-        end
+        Movement:SetNavPaused(false)
 
         Modules:ExecModule("Movement", "CheckStuck")
         self:CheckMoveAbilities()
@@ -4703,6 +4768,7 @@ function Module:StartPuller()
     self.TempSettings.DeathResumeFreePass = nil
     Modules:ExecModule("Movement", "ClearDeathCampHold")
     self.TempSettings.PausePulls = false
+    self.TempSettings.CircuitSkips = 0
     -- starting: the entry boxes are authoritative, commit them first
     if not self:CommitLocEntry() then return end
     local intent = self:CurrentIntent()
@@ -4767,8 +4833,9 @@ function Module:Announce(who, message)
         Config:GetSetting('AnnounceToRaidIfInRaid'))
 end
 
-function Module:AnnounceStop(message, clearObjective)
-    Logger.log_info("\ay%s\ax", message)
+function Module:AnnounceStop(message, clearObjective, objectiveMet)
+    local logStop = objectiveMet and Logger.log_info or Logger.log_error
+    logStop("\ay%s\ax", message)
     self:Announce("None", message)
     if clearObjective then self:ClearObjective() end
     self:StopPuller()
@@ -4830,6 +4897,8 @@ function Module:ResetPullMachine()
     self.TempSettings.TargetSpawnID = 0
     self.TempSettings.UnreachableSince = 0
     self.TempSettings.TravelFailSince = 0
+    self.TempSettings.CircuitSkips = 0
+    self.TempSettings.ReachedWP = false
     self:SetPullState(PullStates.PULL_IDLE, "")
 end
 
@@ -4884,6 +4953,8 @@ function Module:OnZone()
     self:ClearObjective()
     self.TempSettings.LocationNameEdits = {}
     self.TempSettings.LocationsToDelete = {}
+    self.TempSettings.PullTargets = {}
+    self.TempSettings.PullMetaData = {}
     self:ClearIgnoreList()
 end
 

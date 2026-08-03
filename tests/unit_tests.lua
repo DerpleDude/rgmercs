@@ -458,47 +458,64 @@ function UnitTests.RunAll()
 
     -- Pull ParseLocArgs tests
     do
-        local ParseLocArgs = require("modules.pull").ParseLocArgs
+        local Pull = require("modules.pull")
 
-        local loc = ParseLocArgs("100.5", "-200", "35")
+        local loc = Pull:ParseLocArgs("100.5", "-200", "35")
         assertEq("ParseLocArgs bare yxz: y", loc.y, 100.5)
         assertEq("ParseLocArgs bare yxz: x", loc.x, -200)
         assertEq("ParseLocArgs bare yxz: z", loc.z, 35)
 
-        loc = ParseLocArgs("100", "-200")
+        loc = Pull:ParseLocArgs("100", "-200")
         assertEq("ParseLocArgs bare yx: y", loc.y, 100)
         assertEq("ParseLocArgs bare yx: x", loc.x, -200)
         assertEq("ParseLocArgs bare yx: no z", loc.z, nil)
 
-        loc = ParseLocArgs("xy", "-200", "100")
+        loc = Pull:ParseLocArgs("xy", "-200", "100")
         assertEq("ParseLocArgs xy tag: y", loc.y, 100)
         assertEq("ParseLocArgs xy tag: x", loc.x, -200)
 
-        loc = ParseLocArgs("locxyz", "-200", "100", "35")
+        loc = Pull:ParseLocArgs("locxyz", "-200", "100", "35")
         assertEq("ParseLocArgs loc prefix: y", loc.y, 100)
         assertEq("ParseLocArgs loc prefix: x", loc.x, -200)
         assertEq("ParseLocArgs loc prefix: z", loc.z, 35)
 
-        loc = ParseLocArgs("587,", "-928,", "30")
+        loc = Pull:ParseLocArgs("587,", "-928,", "30")
         assertEq("ParseLocArgs comma yxz: y", loc.y, 587)
         assertEq("ParseLocArgs comma yxz: x", loc.x, -928)
         assertEq("ParseLocArgs comma yxz: z", loc.z, 30)
 
-        loc = ParseLocArgs("xy", "587,", "-928")
+        loc = Pull:ParseLocArgs("xy", "587,", "-928")
         assertEq("ParseLocArgs comma xy tag: x", loc.x, 587)
         assertEq("ParseLocArgs comma xy tag: y", loc.y, -928)
 
-        local bad, err = ParseLocArgs("abc", "1", "2")
+        loc = Pull:ParseLocArgs("100,200", "30")
+        assertEq("ParseLocArgs split comma pair: y", loc.y, 100)
+        assertEq("ParseLocArgs split comma pair: x", loc.x, 200)
+        assertEq("ParseLocArgs split comma pair: z", loc.z, 30)
+
+        loc = Pull:ParseLocArgs("100,200,30")
+        assertEq("ParseLocArgs single token: y", loc.y, 100)
+        assertEq("ParseLocArgs single token: x", loc.x, 200)
+        assertEq("ParseLocArgs single token: z", loc.z, 30)
+
+        loc = Pull:ParseLocArgs("-100", "-200")
+        assertEq("ParseLocArgs negative pair: y", loc.y, -100)
+        assertEq("ParseLocArgs negative pair: x", loc.x, -200)
+
+        local bad, err = Pull:ParseLocArgs("abc", "1", "2")
         assertEq("ParseLocArgs invalid tag: nil", bad, nil)
         assertEq("ParseLocArgs invalid tag: has error", err ~= nil, true)
 
-        bad = ParseLocArgs("xy", "1")
+        bad = Pull:ParseLocArgs("xy", "1")
         assertEq("ParseLocArgs count mismatch: nil", bad, nil)
 
-        bad = ParseLocArgs("xy", "1", "bogus")
+        bad = Pull:ParseLocArgs("xy", "1", "bogus")
         assertEq("ParseLocArgs non-number: nil", bad, nil)
 
-        bad = ParseLocArgs()
+        bad = Pull:ParseLocArgs("1", "2", "3", "4")
+        assertEq("ParseLocArgs four bare coords: nil", bad, nil)
+
+        bad = Pull:ParseLocArgs()
         assertEq("ParseLocArgs no args: nil", bad, nil)
     end
 
@@ -517,6 +534,7 @@ function UnitTests.RunAll()
             assertEq(string.format("Policy %s: combat exemption is chain-only", name), policy.runsDuringCombat, name == 'ChainToCamp')
             assertEq(string.format("Policy %s: chain success check is chain-only", name), policy.successCheck == 'chainCount', name == 'ChainToCamp')
             assertEq(string.format("Policy %s: rescan-to-closer off only for FightTo", name), policy.rescanToCloser, name ~= 'FightTo')
+            assertEq(string.format("Policy %s: objective only outside roam and circuit", name), policy.hasObjective, name ~= 'RoamingHunt' and name ~= 'CircuitHunt')
             assertEq(string.format("Policy %s: hunt radius setting", name), policy.radiusSetting == 'PullRadiusHunt', policy.family == 'hunt')
         end
 
@@ -527,19 +545,18 @@ function UnitTests.RunAll()
 
     -- Pull success check tests
     do
-        local PullSuccessCheck = require("modules.pull").PullSuccessCheck
+        local Pull = require("modules.pull")
 
-        assertEq("PullSuccessCheck any: no haters", PullSuccessCheck('any', 0, 3), false)
-        assertEq("PullSuccessCheck any: one hater", PullSuccessCheck('any', 1, 3), true)
-        assertEq("PullSuccessCheck chainCount: below count", PullSuccessCheck('chainCount', 2, 3), false)
-        assertEq("PullSuccessCheck chainCount: at count", PullSuccessCheck('chainCount', 3, 3), true)
-        assertEq("PullSuccessCheck chainCount: above count", PullSuccessCheck('chainCount', 4, 3), true)
+        assertEq("PullSuccessCheck any: no haters", Pull:PullSuccessCheck('any', 0, 3), false)
+        assertEq("PullSuccessCheck any: one hater", Pull:PullSuccessCheck('any', 1, 3), true)
+        assertEq("PullSuccessCheck chainCount: below count", Pull:PullSuccessCheck('chainCount', 2, 3), false)
+        assertEq("PullSuccessCheck chainCount: at count", Pull:PullSuccessCheck('chainCount', 3, 3), true)
+        assertEq("PullSuccessCheck chainCount: above count", Pull:PullSuccessCheck('chainCount', 4, 3), true)
     end
 
     -- Pull abort profile tests
     do
-        local DecideAbort = require("modules.pull").DecideAbort
-        local DecideUserAbort = require("modules.pull").DecideUserAbort
+        local Pull = require("modules.pull")
 
         local function baseCtx(overrides)
             local abortCtx = {
@@ -566,45 +583,45 @@ function UnitTests.RunAll()
         local objectiveAttempt = { source = 'objective', }
 
         for _, attempt in ipairs({ manualAttempt, scanAttempt, objectiveAttempt, }) do
-            assertEq(string.format("DecideAbort %s: clean ctx", attempt.source), DecideAbort(attempt, baseCtx()), nil)
-            assertEq(string.format("DecideAbort %s: paused", attempt.source), DecideAbort(attempt, baseCtx({ pausePulls = true, })), 'paused')
-            assertEq(string.format("DecideAbort %s: list updated", attempt.source), DecideAbort(attempt, baseCtx({ pullListUpdated = true, })), 'listUpdated')
-            assertEq(string.format("DecideAbort %s: pause main", attempt.source), DecideAbort(attempt, baseCtx({ pauseMain = true, })), 'disabled')
-            assertEq(string.format("DecideAbort %s: spawn gone", attempt.source), DecideAbort(attempt, baseCtx({ spawnGone = true, })), 'spawnGone')
+            assertEq(string.format("DecideAbort %s: clean ctx", attempt.source), Pull:DecideAbort(attempt, baseCtx()), nil)
+            assertEq(string.format("DecideAbort %s: paused", attempt.source), Pull:DecideAbort(attempt, baseCtx({ pausePulls = true, })), 'paused')
+            assertEq(string.format("DecideAbort %s: list updated", attempt.source), Pull:DecideAbort(attempt, baseCtx({ pullListUpdated = true, })), 'listUpdated')
+            assertEq(string.format("DecideAbort %s: pause main", attempt.source), Pull:DecideAbort(attempt, baseCtx({ pauseMain = true, })), 'disabled')
+            assertEq(string.format("DecideAbort %s: spawn gone", attempt.source), Pull:DecideAbort(attempt, baseCtx({ spawnGone = true, })), 'spawnGone')
         end
 
-        assertEq("DecideAbort manual: DoPull off exempt", DecideAbort(manualAttempt, baseCtx({ doPull = false, })), nil)
-        assertEq("DecideAbort scan: DoPull off aborts", DecideAbort(scanAttempt, baseCtx({ doPull = false, })), 'disabled')
-        assertEq("DecideAbort objective: DoPull off aborts", DecideAbort(objectiveAttempt, baseCtx({ doPull = false, })), 'disabled')
+        assertEq("DecideAbort manual: DoPull off exempt", Pull:DecideAbort(manualAttempt, baseCtx({ doPull = false, })), nil)
+        assertEq("DecideAbort scan: DoPull off aborts", Pull:DecideAbort(scanAttempt, baseCtx({ doPull = false, })), 'disabled')
+        assertEq("DecideAbort objective: DoPull off aborts", Pull:DecideAbort(objectiveAttempt, baseCtx({ doPull = false, })), 'disabled')
 
-        assertEq("DecideAbort scan: too far", DecideAbort(scanAttempt, baseCtx({ distance = 1001, })), 'tooFar')
-        assertEq("DecideAbort scan: no path", DecideAbort(scanAttempt, baseCtx({ pathExists = false, })), 'noPath')
-        assertEq("DecideAbort scan: stranger", DecideAbort(scanAttempt, baseCtx({ attemptSafePulling = true, strangerNear = true, })), 'stranger')
-        assertEq("DecideAbort scan: stranger needs the setting on", DecideAbort(scanAttempt, baseCtx({ strangerNear = true, })), nil)
-        assertEq("DecideAbort scan: timeout", DecideAbort(scanAttempt, baseCtx({ timedOut = true, })), 'timeout')
-        assertEq("DecideAbort scan: timeout inactive while navigating", DecideAbort(scanAttempt, baseCtx({ timedOut = true, navigating = true, })), nil)
+        assertEq("DecideAbort scan: too far", Pull:DecideAbort(scanAttempt, baseCtx({ distance = 1001, })), 'tooFar')
+        assertEq("DecideAbort scan: no path", Pull:DecideAbort(scanAttempt, baseCtx({ pathExists = false, })), 'noPath')
+        assertEq("DecideAbort scan: stranger", Pull:DecideAbort(scanAttempt, baseCtx({ attemptSafePulling = true, strangerNear = true, })), 'stranger')
+        assertEq("DecideAbort scan: stranger needs the setting on", Pull:DecideAbort(scanAttempt, baseCtx({ strangerNear = true, })), nil)
+        assertEq("DecideAbort scan: timeout", Pull:DecideAbort(scanAttempt, baseCtx({ timedOut = true, })), 'timeout')
+        assertEq("DecideAbort scan: timeout inactive while navigating", Pull:DecideAbort(scanAttempt, baseCtx({ timedOut = true, navigating = true, })), nil)
 
-        assertEq("DecideAbort objective: stranger", DecideAbort(objectiveAttempt, baseCtx({ attemptSafePulling = true, strangerNear = true, })), 'stranger')
-        assertEq("DecideAbort objective: unreachable grace", DecideAbort(objectiveAttempt, baseCtx({ graceExpired = true, })), 'unreachable')
-        assertEq("DecideAbort objective: no distance abort", DecideAbort(objectiveAttempt, baseCtx({ distance = 1001, })), nil)
-        assertEq("DecideAbort objective: timeout", DecideAbort(objectiveAttempt, baseCtx({ timedOut = true, })), 'objectiveTimeout')
+        assertEq("DecideAbort objective: stranger", Pull:DecideAbort(objectiveAttempt, baseCtx({ attemptSafePulling = true, strangerNear = true, })), 'stranger')
+        assertEq("DecideAbort objective: unreachable grace", Pull:DecideAbort(objectiveAttempt, baseCtx({ graceExpired = true, })), 'unreachable')
+        assertEq("DecideAbort objective: no distance abort", Pull:DecideAbort(objectiveAttempt, baseCtx({ distance = 1001, })), nil)
+        assertEq("DecideAbort objective: timeout", Pull:DecideAbort(objectiveAttempt, baseCtx({ timedOut = true, })), 'objectiveTimeout')
 
         assertEq("DecideAbort manual: exempt from scan arm",
-            DecideAbort(manualAttempt, baseCtx({ distance = 1001, pathExists = false, attemptSafePulling = true, strangerNear = true, })), nil)
+            Pull:DecideAbort(manualAttempt, baseCtx({ distance = 1001, pathExists = false, attemptSafePulling = true, strangerNear = true, })), nil)
         assertEq("DecideAbort manual: exempt from objective arm",
-            DecideAbort(manualAttempt, baseCtx({ attemptSafePulling = true, strangerNear = true, graceExpired = true, })), nil)
+            Pull:DecideAbort(manualAttempt, baseCtx({ attemptSafePulling = true, strangerNear = true, graceExpired = true, })), nil)
 
-        assertEq("DecideUserAbort: clean ctx", DecideUserAbort(baseCtx(), 'scan'), nil)
-        assertEq("DecideUserAbort: paused", DecideUserAbort(baseCtx({ pausePulls = true, }), 'scan'), 'paused')
-        assertEq("DecideUserAbort: list updated", DecideUserAbort(baseCtx({ pullListUpdated = true, }), 'scan'), 'listUpdated')
-        assertEq("DecideUserAbort: pause main", DecideUserAbort(baseCtx({ pauseMain = true, }), 'scan'), 'disabled')
-        assertEq("DecideUserAbort: DoPull off aborts", DecideUserAbort(baseCtx({ doPull = false, }), 'scan'), 'disabled')
-        assertEq("DecideUserAbort: manual exempt from DoPull off", DecideUserAbort(baseCtx({ doPull = false, }), 'manual'), nil)
+        assertEq("DecideUserAbort: clean ctx", Pull:DecideUserAbort(baseCtx(), 'scan'), nil)
+        assertEq("DecideUserAbort: paused", Pull:DecideUserAbort(baseCtx({ pausePulls = true, }), 'scan'), 'paused')
+        assertEq("DecideUserAbort: list updated", Pull:DecideUserAbort(baseCtx({ pullListUpdated = true, }), 'scan'), 'listUpdated')
+        assertEq("DecideUserAbort: pause main", Pull:DecideUserAbort(baseCtx({ pauseMain = true, }), 'scan'), 'disabled')
+        assertEq("DecideUserAbort: DoPull off aborts", Pull:DecideUserAbort(baseCtx({ doPull = false, }), 'scan'), 'disabled')
+        assertEq("DecideUserAbort: manual exempt from DoPull off", Pull:DecideUserAbort(baseCtx({ doPull = false, }), 'manual'), nil)
     end
 
     -- Pull intent sentence tests
     do
-        local BuildIntentSentence = require("modules.pull").BuildIntentSentence
+        local Pull = require("modules.pull")
         local loc = { y = 100, x = -200, z = 35, }
 
         local function checkSentence(label, result, expectCanStart, expectGap)
@@ -616,61 +633,61 @@ function UnitTests.RunAll()
 
         -- Camp family: camp-here, solo and managed for each scope
         checkSentence("Intent PullToCamp here solo",
-            BuildIntentSentence({ mode = "PullToCamp", scope = 1, locationSet = false, manageMovement = false, }), true, nil)
+            Pull:BuildIntentSentence({ mode = "PullToCamp", scope = 1, locationSet = false, manageMovement = false, }), true, nil)
         checkSentence("Intent PullToCamp here group manage",
-            BuildIntentSentence({ mode = "PullToCamp", scope = 1, locationSet = false, manageMovement = true, }), true, nil)
+            Pull:BuildIntentSentence({ mode = "PullToCamp", scope = 1, locationSet = false, manageMovement = true, }), true, nil)
         checkSentence("Intent PullToCamp here zone manage",
-            BuildIntentSentence({ mode = "PullToCamp", scope = 2, locationSet = false, manageMovement = true, }), true, nil)
+            Pull:BuildIntentSentence({ mode = "PullToCamp", scope = 2, locationSet = false, manageMovement = true, }), true, nil)
 
         -- Camp family: ChainToCamp happy path
         checkSentence("Intent ChainToCamp here solo",
-            BuildIntentSentence({ mode = "ChainToCamp", scope = 1, locationSet = false, manageMovement = false, }), true, nil)
+            Pull:BuildIntentSentence({ mode = "ChainToCamp", scope = 1, locationSet = false, manageMovement = false, }), true, nil)
 
         -- Camp family: remote camp, solo travel or managed escort
         checkSentence("Intent PullToCamp remote solo",
-            BuildIntentSentence({ mode = "PullToCamp", scope = 1, locationSet = true, loc = loc, manageMovement = false, }), true, nil)
+            Pull:BuildIntentSentence({ mode = "PullToCamp", scope = 1, locationSet = true, loc = loc, manageMovement = false, }), true, nil)
         checkSentence("Intent PullToCamp remote group manage",
-            BuildIntentSentence({ mode = "PullToCamp", scope = 1, locationSet = true, loc = loc, manageMovement = true, }), true, nil)
+            Pull:BuildIntentSentence({ mode = "PullToCamp", scope = 1, locationSet = true, loc = loc, manageMovement = true, }), true, nil)
         checkSentence("Intent PullToCamp remote zone manage",
-            BuildIntentSentence({ mode = "PullToCamp", scope = 2, locationSet = true, loc = loc, manageMovement = true, }), true, nil)
+            Pull:BuildIntentSentence({ mode = "PullToCamp", scope = 2, locationSet = true, loc = loc, manageMovement = true, }), true, nil)
 
         -- Hunt family
         checkSentence("Intent AreaHunt with loc",
-            BuildIntentSentence({ mode = "AreaHunt", locationSet = true, loc = loc, }), true, nil)
+            Pull:BuildIntentSentence({ mode = "AreaHunt", locationSet = true, loc = loc, }), true, nil)
         checkSentence("Intent AreaHunt with loc manage",
-            BuildIntentSentence({ mode = "AreaHunt", locationSet = true, loc = loc, manageMovement = true, }), true, nil)
+            Pull:BuildIntentSentence({ mode = "AreaHunt", locationSet = true, loc = loc, manageMovement = true, }), true, nil)
         checkSentence("Intent AreaHunt no loc",
-            BuildIntentSentence({ mode = "AreaHunt", locationSet = false, }), true, nil)
+            Pull:BuildIntentSentence({ mode = "AreaHunt", locationSet = false, }), true, nil)
         checkSentence("Intent RoamingHunt",
-            BuildIntentSentence({ mode = "RoamingHunt", }), true, nil)
+            Pull:BuildIntentSentence({ mode = "RoamingHunt", }), true, nil)
         checkSentence("Intent RoamingHunt manage",
-            BuildIntentSentence({ mode = "RoamingHunt", manageMovement = true, }), true, nil)
+            Pull:BuildIntentSentence({ mode = "RoamingHunt", manageMovement = true, }), true, nil)
         checkSentence("Intent CircuitHunt with waypoints",
-            BuildIntentSentence({ mode = "CircuitHunt", hasWaypoints = true, }), true, nil)
+            Pull:BuildIntentSentence({ mode = "CircuitHunt", hasWaypoints = true, }), true, nil)
         checkSentence("Intent CircuitHunt with waypoints manage",
-            BuildIntentSentence({ mode = "CircuitHunt", hasWaypoints = true, manageMovement = true, }), true, nil)
+            Pull:BuildIntentSentence({ mode = "CircuitHunt", hasWaypoints = true, manageMovement = true, }), true, nil)
         checkSentence("Intent CircuitHunt no waypoints",
-            BuildIntentSentence({ mode = "CircuitHunt", hasWaypoints = false, }), false, "Add an enabled pull location to run a circuit.")
+            Pull:BuildIntentSentence({ mode = "CircuitHunt", hasWaypoints = false, }), false, "Add an enabled pull location to run a circuit.")
 
         -- Directive family
         checkSentence("Intent FightTo spawn",
-            BuildIntentSentence({ mode = "FightTo", fightToKind = "spawn", fightToName = "Fippy Darkpaw", }), true, nil)
+            Pull:BuildIntentSentence({ mode = "FightTo", fightToKind = "spawn", fightToName = "Fippy Darkpaw", }), true, nil)
         checkSentence("Intent FightTo spawn manage",
-            BuildIntentSentence({ mode = "FightTo", fightToKind = "spawn", fightToName = "Fippy Darkpaw", manageMovement = true, scope = 2, }), true, nil)
+            Pull:BuildIntentSentence({ mode = "FightTo", fightToKind = "spawn", fightToName = "Fippy Darkpaw", manageMovement = true, scope = 2, }), true, nil)
         checkSentence("Intent FightTo loc",
-            BuildIntentSentence({ mode = "FightTo", fightToKind = "loc", loc = loc, }), true, nil)
+            Pull:BuildIntentSentence({ mode = "FightTo", fightToKind = "loc", loc = loc, }), true, nil)
         checkSentence("Intent FightTo none",
-            BuildIntentSentence({ mode = "FightTo", fightToKind = "none", }), false, "Set a Fight To target first.")
+            Pull:BuildIntentSentence({ mode = "FightTo", fightToKind = "none", }), false, "Set a Fight To target first.")
     end
 
     -- Pull list set compile tests
     do
-        local CompilePullListSet = require("modules.pull").CompilePullListSet
+        local Pull = require("modules.pull")
 
         local personal = { "Fippy Darkpaw", " a gnoll pup ", "MISCASED Mob", }
         local shared = { "Shared Only", }
 
-        local set, hasEntries = CompilePullListSet(personal, shared, false)
+        local set, hasEntries = Pull:CompilePullListSet(personal, shared, false)
         assertEq("CompilePullListSet: personal has entries", hasEntries, true)
         assertEq("CompilePullListSet: miscased entry live after folding", set["miscased mob"], true)
         assertEq("CompilePullListSet: spaced entry trimmed", set["a gnoll pup"], true)
@@ -682,12 +699,12 @@ function UnitTests.RunAll()
             assertEq(string.format("CompilePullListSet: parity for '%s'", candidate), set[Strings.TrimSpaces(candidate):lower()] == true, found)
         end
 
-        set, hasEntries = CompilePullListSet(personal, shared, true)
+        set, hasEntries = Pull:CompilePullListSet(personal, shared, true)
         assertEq("CompilePullListSet: useShared selects shared list", set["shared only"], true)
         assertEq("CompilePullListSet: useShared excludes personal list", set["fippy darkpaw"], nil)
         assertEq("CompilePullListSet: shared has entries", hasEntries, true)
 
-        set, hasEntries = CompilePullListSet({}, shared, false)
+        set, hasEntries = Pull:CompilePullListSet({}, shared, false)
         assertEq("CompilePullListSet: empty active list no entries", hasEntries, false)
         assertEq("CompilePullListSet: empty active list empty set", next(set), nil)
     end

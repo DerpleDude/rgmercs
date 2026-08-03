@@ -605,3 +605,16 @@ end)
 mq.event('NoLevZone', "You have entered an area where levitation effects do not function.", function()
     Config.TempSettings.NoLevZone = true
 end)
+
+-- [ NAV PATH FAILURE HANDLERS ] --
+for eventName, message in pairs({
+    NavNoPath = "Could not find path to destination",
+    NavNoDest = "Could not locate destination on navmesh",
+    NavNoStart = "Could not locate starting point on navmesh",
+    NavTooFar = "Could not reach destination (too far away)",
+}) do
+    mq.event(eventName, string.format("#*#%s#*#", message), function()
+        Modules:ExecModule("Pull", "FlagNavUnreachable")
+    end)
+end
+-- [ END NAV PATH FAILURE HANDLERS] --
