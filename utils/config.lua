@@ -3724,13 +3724,13 @@ function Config.ResolveDefaults(defaults, settings, module)
         end
 
         if settings[k] == nil then
-            settings[k] = v.Default
+            settings[k] = type(v.Default) == "table" and Tables.DeepCopy(v.Default) or v.Default
             changed = true
         end
 
         if type(settings[k]) ~= type(v.Default) then
             Logger.log_warn("\ayData type of setting [\am%s\ay] has been deprecated -- resetting to default.", k)
-            settings[k] = v.Default
+            settings[k] = type(v.Default) == "table" and Tables.DeepCopy(v.Default) or v.Default
             changed = true
         elseif v.Type == "Combo" and settings[k] > #v.ComboOptions then
             Logger.log_warn("\aySetting value out of bounds [\am%s\ay] -- resetting to default.", k)
