@@ -1,27 +1,60 @@
-local mq                = require('mq')
-local Set               = require('mq.set')
-local Comms             = require("utils.comms")
-local Config            = require('utils.config')
-local Core              = require("utils.core")
-local DanNet            = require('lib.dannet.helpers')
-local Events            = require("utils.events")
-local Globals           = require('utils.globals')
-local Logger            = require("utils.logger")
-local Math              = require("utils.math")
-local Modules           = require("utils.modules")
-local Movement          = require("utils.movement")
-local Strings           = require("utils.strings")
-local Targeting         = require("utils.targeting")
+local mq                     = require('mq')
+local Set                    = require('mq.set')
+local Comms                  = require("utils.comms")
+local Config                 = require('utils.config')
+local Core                   = require("utils.core")
+local DanNet                 = require('lib.dannet.helpers')
+local Events                 = require("utils.events")
+local Globals                = require('utils.globals')
+local Logger                 = require("utils.logger")
+local Math                   = require("utils.math")
+local Modules                = require("utils.modules")
+local Movement               = require("utils.movement")
+local Strings                = require("utils.strings")
+local Targeting              = require("utils.targeting")
 
-local Combat            = { _version = '1.0', _name = "Combat", _author = 'Derple', }
-Combat.__index          = Combat
-Combat.PullStuckTime    = 0
-Combat.StrangerWarnedIDs = {}
+local Combat                 = { _version = '1.0', _name = "Combat", _author = 'Derple', }
+Combat.__index               = Combat
+Combat.PullStuckTime         = 0
+Combat.StrangerWarnedIDs     = {}
+Combat.FallbackCombatHolding = false
 
---- Returns the current live combat state based on XTarget hater count.
----@return string "Combat" if there are active haters, "Downtime" otherwise.
+--- Returns true if a group or raid peer within assist range reports the in-game combat flag.
+---@return boolean
+function Combat.PeerInCombat()
+    for _, peer in ipairs(mq.TLO.Raid.Members() > 0 and Comms.GetRaidPeers(false) or Comms.GetGroupPeers(false)) do
+        if peer.data and peer.data.InCombat then
+            if (mq.TLO.Spawn(string.format("pc =%s", peer.name)).Distance3D() or 999) <= Config:GetSetting('AssistRange') then return true end
+        end
+    end
+
+    return false
+end
+
+--- Returns true if a targetable aggressive mob is within assist range and either we or a nearby peer report the in-game combat flag.
+---@return boolean
+function Combat.FallbackCombatDetected()
+    if not Config:GetSetting('FallbackCombatDetection') then return false end
+    if (mq.TLO.SpawnCount(string.format("npc radius %d zradius %d targetable playerstate 4", Config:GetSetting('AssistRange'),
+            Config:GetSetting('MAScanZRange')))() or 0) == 0 then
+        return false
+    end
+
+    return (mq.TLO.Me.CombatState() or ""):lower() == "combat" or Combat.PeerInCombat()
+end
+
+--- Returns the current live combat state based on XTarget hater count, falling back on nearby aggressive mobs when XTargets are empty.
+---@return string "Combat" if there are active haters or fallback combat is detected, "Downtime" otherwise.
 function Combat.GetCombatState()
-    return Targeting.HasXTHaters() and "Combat" or "Downtime"
+    local hasHaters = Targeting.HasXTHaters()
+    local detected = not hasHaters and Combat.FallbackCombatDetected()
+
+    if detected ~= Combat.FallbackCombatHolding then
+        Combat.FallbackCombatHolding = detected
+        Logger.log_debug("\ayFallbackCombatDetection:\aw %s", detected and "\agNo XTargets, holding combat on a nearby mob." or "\atReleased.")
+    end
+
+    return (hasHaters or detected) and "Combat" or "Downtime"
 end
 
 --- Returns the cached combat state from the last main loop frame.
@@ -445,7 +478,7 @@ function Combat.MATargetScan(radius, zradius)
         if fallbackTarget.id > 0 then
             Logger.log_verbose("MATargetScan \agNo primary targets found, falling back to: %s -- returning %d", fallbackTarget.name, fallbackTarget.id)
             primaryTarget.id = fallbackTarget.id
-        elseif Config:GetSetting('AreaScanFallback') then
+        elseif Config:GetSetting('FallbackCombatDetection') then
             -- We didn't find anything to kill yet so spawn search
             Logger.log_verbose("MATargetScan Falling back on Spawn Searching")
             Combat.FallbackScan(aggroSearch, true, namedPref, hpPref, primaryTarget, fallbackTarget)

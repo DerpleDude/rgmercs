@@ -290,6 +290,7 @@ function Comms.SendHeartbeat(forceSend)
         Assist             = RGMercs and RGMercs.Globals("MainAssist")() or "Standalone", --Globals.MainAssist,
         State              = RGMercs and (RGMercs.Globals("PauseMain")() and "Paused" or RGMercs and RGMercs.Globals("CurrentState")() or "Running") or "Standalone",
         Chase              = RGMercs and (RGMercs.Config('ChaseOn')() and RGMercs.Config('ChaseTarget')() or "Chase Off") or "Standalone",
+        InCombat           = (mq.TLO.Me.CombatState() or ""):lower() == "combat",
         Invis              = mq.TLO.Me.Invis(),
         FreeInventory      = mq.TLO.Me.FreeInventory(3)(),
         Buffs              = Globals.CurrentBuffs,
