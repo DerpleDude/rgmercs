@@ -233,7 +233,7 @@ function Module.DoLooting()
 end
 
 function Module:LootMessageHandler()
-    self.Actor = Actors.register('loot_module', function(message)
+    Module.Actor = Actors.register('loot_module', function(message)
         local mail = message()
         local subject = mail.Subject or ''
         local who = mail.Who or ''
@@ -246,6 +246,18 @@ function Module:LootMessageHandler()
             Module.TempSettings.Looting = true
         end
     end)
+end
+
+function Module:Shutdown()
+    Logger.log_debug("\ay[LOOT]: \axLootNScoot Integration Module Unloaded.")
+    if Config:GetSetting('DoLoot') and mq.TLO.Lua.Script('lootnscoot').Status() == 'RUNNING' then
+        Core.DoCmd("/lua stop lootnscoot")
+    end
+
+    if Module.Actor then
+        Module.Actor:unregister()
+        Module.Actor = nil
+    end
 end
 
 function Module:CheckChaseTargetInRange()
@@ -349,7 +361,7 @@ function Module:GiveTime()
     local myCorpseCount = mq.TLO.SpawnCount(string.format("pccorpse %s radius 100 zradius 50", mq.TLO.Me.CleanName()))()
     if myCorpseCount > 0 then deadCount = deadCount + 1 end
     Logger.log_verbose("\ay[LOOT]: \agFound %d corpses within range.", deadCount)
-    if self.Actor == nil then self:LootMessageHandler() end
+    if Module.Actor == nil then self:LootMessageHandler() end
 
     local settled = Config:GetSetting('CombatLooting') or Combat.CombatSettled(Config:GetSetting('LootDelay') * 1000)
 
@@ -361,8 +373,8 @@ function Module:GiveTime()
     if (combat_state ~= "Combat" or Config:GetSetting('CombatLooting')) and deadCount > 0 then
         if not settled then
             Logger.log_super_verbose("\ay::LOOT:: \arHolding!\ax Waiting for combat to settle before looting.")
-        elseif not self.TempSettings.Looting then
-            self.Actor:send({ mailbox = 'lootnscoot', script = 'lootnscoot', },
+        elseif not self.TempSettings.Looting and Module.Actor then
+            Module.Actor:send({ mailbox = 'lootnscoot', script = 'lootnscoot', },
                 { who = Globals.CurLoadedChar, server = serverLNSFormat, directions = 'doloot', })
             self.TempSettings.Looting = true
         end

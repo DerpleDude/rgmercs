@@ -300,6 +300,7 @@ local function RGInit(...)
     initMsg = "Initializing Modules..."
     -- complex objects are passed by reference so we can just use these without having to pass them back in for saving.
     Modules:ExecAll("Init")
+    Modules:SyncUserModules()
     Globals.SubmodulesLoaded = true
 
     initPctComplete = 30
@@ -648,6 +649,7 @@ RGInit(...)
 
 while openGUI do
     Main()
+    Modules:ProcessUserModuleSync()
     mq.doevents()
     mq.delay(10)
 end
@@ -655,5 +657,11 @@ end
 Core.CheckPlugins(unloadedPlugins, true)
 
 Targeting.ClearWatchedXTs()
-Modules:ExecAll("Shutdown")
+for _, moduleName in ipairs(Modules:GetModuleOrderedNames()) do
+    local shutdownOk, shutdownError = pcall(function() Modules:ExecModule(moduleName, "Shutdown") end)
+    if not shutdownOk then
+        Logger.log_error("\ar%s errored during shutdown: %s", moduleName, shutdownError)
+    end
+end
+
 Config:Shutdown()

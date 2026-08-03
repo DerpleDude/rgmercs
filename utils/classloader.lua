@@ -157,6 +157,7 @@ function ClassLoader.reloadConfig()
     Config:LoadSettings()
     Core.ScanConfigDirs()
     Modules:ExecAll("LoadSettings")
+    Modules:RequestUserModuleSync()
     Config:UpdateCommandHandlers()
 end
 
