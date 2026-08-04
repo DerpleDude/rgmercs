@@ -204,6 +204,7 @@ OptionsUI.settings       = {}
 OptionsUI.SettingNames   = {}
 OptionsUI.DefaultConfigs = {}
 OptionsUI.FirstRender    = true
+OptionsUI.filterDirty    = false
 
 OptionsUI.dbChars        = nil
 OptionsUI.dbFromIdx      = 1
@@ -249,7 +250,7 @@ end
 
 function OptionsUI:SetSearchFilter(filterText)
     self.configFilter = filterText or ""
-    self:ApplySearchFilter()
+    self.filterDirty = true
 end
 
 function OptionsUI:SetSelectedGroup(group)
@@ -1061,6 +1062,10 @@ function OptionsUI:RenderMainWindow(_, openGUI, flags)
         self:ApplySearchFilter()
         Logger.log_debug("\ayOptionsUI: \awSettings re-sorted due to new module settings being registered.")
         self.FirstRender = false
+        self.filterDirty = false
+    elseif self.filterDirty then
+        self:ApplySearchFilter()
+        self.filterDirty = false
     end
 
     self:ValidateSelectedPeer()
