@@ -1,5 +1,6 @@
 local mq           = require('mq')
 local Casting      = require("utils.casting")
+local Combat       = require("utils.combat")
 local Comms        = require("utils.comms")
 local Config       = require('utils.config')
 local Core         = require("utils.core")
@@ -303,17 +304,17 @@ local _ClassConfig = {
         ['SnareHot'] = {
             "Transcendental Torpor", -- Level 71 Laz Custom
             "Transcendent Torpor",   -- Level 70 Laz Custom
-            "Torpor",                -- Level 60
-            "Stoicism",              -- Level 44
+            -- "Torpor",                -- Level 60
+            -- "Stoicism",              -- Level 44
         },
-        ['SingleHot'] = {            -- some elixirs given to shm/dru on laz
-            "Spiritual Serenity",    -- Level 70
-            "Breath of Trushar",     -- Level 65
-            "Quiescence",            -- Level 65
+        ['SingleHot'] = {         -- some elixirs given to shm/dru on laz
+            "Spiritual Serenity", -- Level 70
+            "Breath of Trushar",  -- Level 65
+            "Quiescence",         -- Level 65
             -- "Celestial Elixir", -- Level 65, Quiescence same level and better
-            "Celestial Healing",     -- Level 49
-            "Celestial Health",      -- Level 35
-            "Celestial Remedy",      -- Level 25
+            "Celestial Healing",  -- Level 49
+            "Celestial Health",   -- Level 35
+            "Celestial Remedy",   -- Level 25
         },
         ['CanniSpell'] = {
             -- Convert Health to Mana - Level  23 -
@@ -534,8 +535,9 @@ local _ClassConfig = {
             {
                 name = "SnareHot",
                 type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoSnareHot') end,
                 cond = function(self, spell, target)
-                    if not Config:GetSetting('DoSnareHot') then return false end
+                    if Combat.GetCachedCombatState() ~= "Combat" then return false end
                     return Casting.GroupBuffCheck(spell, target)
                 end,
             },
@@ -647,6 +649,16 @@ local _ClassConfig = {
             end,
         },
         {
+            name = 'SnareHotBuff',
+            state = 1,
+            steps = 1,
+            load_cond = function(self) return Config:GetSetting('DoSnareHot') and Core.GetResolvedActionMapItem('SnareHot') end,
+            targetId = function(self) return Casting.GetBuffableTankingIDs() end,
+            cond = function(self, combat_state)
+                return combat_state == "Combat" and (not Config:GetSetting('SnareHotNamedOnly') or Targeting.HasXTNamed()) and Core.CombatActionsCheck()
+            end,
+        },
+        {
             name = 'Burn',
             state = 1,
             steps = 3,
@@ -713,6 +725,15 @@ local _ClassConfig = {
                         Comms.PrintGroupMessage("It seems %s has triggered combat due to a server bug, calling the pet back.", spell)
                         Core.DoCmd('/pet back off')
                     end
+                end,
+            },
+        },
+        ['SnareHotBuff'] = {
+            {
+                name = "SnareHot",
+                type = "Spell",
+                cond = function(self, spell, target)
+                    return Casting.GroupBuffCheck(spell, target)
                 end,
             },
         },
@@ -1371,9 +1392,19 @@ local _ClassConfig = {
             Header = "Recovery",
             Category = "General Healing",
             Index = 102,
-            Tooltip = "Use snaring HoTs like torpor when HP is very low.",
+            Tooltip = "Use snaring HoTs like torpor as an emergency heal and as a combat buff on your tanks.",
             RequiresLoadoutChange = true,
-            Default = false,
+            Default = true,
+            ConfigType = "Advanced",
+        },
+        ['SnareHotNamedOnly'] = {
+            DisplayName = "Snare HoT Named Only",
+            Group = "Abilities",
+            Header = "Recovery",
+            Category = "General Healing",
+            Index = 103,
+            Tooltip = "Only use the snaring HoT as a tank buff when a named is on your XTarget.",
+            Default = true,
             ConfigType = "Advanced",
         },
         ['KeepPoisonMemmed']  = {

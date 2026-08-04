@@ -16,6 +16,8 @@ Targeting.ForceBurnTargetID     = 0
 Targeting.XTClearTime           = 0
 Targeting.TankingNamedCheckTime = 0
 Targeting.TankingNamedFound     = false
+Targeting.XTNamedCheckTime      = 0
+Targeting.XTNamedFound          = false
 Targeting.NearbyPCLocs          = {}
 Targeting.NearbyPCLocsTime      = 0
 Targeting.NearbyPCLocsRadius    = 0
@@ -427,6 +429,25 @@ function Targeting.TankingXTNamed()
         end
     end
     return Targeting.TankingNamedFound
+end
+
+--- Returns true if any XT row is a named mob hating us, regardless of who holds aggro; result cached 1s.
+---@return boolean True if a named mob is on our XTarget hater list.
+function Targeting.HasXTNamed()
+    if Globals.GetTimeSeconds() - Targeting.XTNamedCheckTime < 1 then
+        return Targeting.XTNamedFound
+    end
+    Targeting.XTNamedCheckTime = Globals.GetTimeSeconds()
+    Targeting.XTNamedFound = false
+    local slotCount = mq.TLO.Me.XTargetSlots() or 0
+    for i = 1, slotCount do
+        local xt = mq.TLO.Me.XTarget(i)
+        if Targeting.IsXTHater(xt) and Targeting.IsNamed(xt) then
+            Targeting.XTNamedFound = true
+            break
+        end
+    end
+    return Targeting.XTNamedFound
 end
 
 --- Returns a Set of spawn IDs currently hating the player on XTarget.

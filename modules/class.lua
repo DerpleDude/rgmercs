@@ -72,6 +72,7 @@ Module.TempSettings.ImmuneTargets            = {}
 Module.TempSettings.RotationClickies         = Set.new({})
 Module.TempSettings.RotationAAs              = Set.new({})
 Module.TempSettings.MidSongFireable          = {}
+Module.TempSettings.LastSnareHotRemoval      = 0
 
 Module.FAQ                                   = {
     {
@@ -2595,6 +2596,18 @@ function Module:RunCounterRotation()
     end
 end
 
+function Module:RemoveSnareHots()
+    if Core.AtEmergencyHP() then return end
+    if Globals.GetTimeMS() - self.TempSettings.LastSnareHotRemoval < 1000 then return end
+
+    local snareHot = mq.TLO.Me.FindBuff("detspa 3 and spa 100")
+    if not snareHot() then return end
+
+    Logger.log_debug("\ay[SnareHoT Removal]\ax combat is over, dropping \at%s\ax.", snareHot.Name())
+    snareHot.Remove()
+    self.TempSettings.LastSnareHotRemoval = Globals.GetTimeMS()
+end
+
 function Module:ProcessQueuedEvents()
     if #self.TempSettings.QueuedAbilities == 0 then return false end
 
@@ -2949,6 +2962,10 @@ function Module:GiveTime()
     if Config:GetSetting('UseCounterActions') then
         Logger.log_verbose("\ao[CounterActions] Checking for debuffs to counter...")
         self:RunCounterRotation()
+    end
+
+    if Config:GetSetting('DowntimeSnareHotRemoval') and combat_state == "Downtime" and Combat.CombatSettled(1000) then
+        self:RemoveSnareHots()
     end
 
     if self:IsTanking() and Config:GetSetting('KeepMobsInFront') and Movement:CanReposition() and Movement:DetectMobBehind() then

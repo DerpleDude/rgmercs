@@ -534,8 +534,9 @@ local _ClassConfig = {
             {
                 name = "SnareHot",
                 type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoSnareHot') end,
                 cond = function(self, spell, target)
-                    if not Config:GetSetting('DoSnareHot') then return false end
+                    if Combat.GetCachedCombatState() ~= "Combat" then return false end
                     return Casting.GroupBuffCheck(spell, target)
                 end,
             },
