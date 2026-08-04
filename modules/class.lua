@@ -365,21 +365,17 @@ Module.CommandHandlers                       = {
     },
     enablerotationentry = {
         usage = "/rgl enablerotationentry \"<Name>\"",
-        about = "Enables <Name> Rotation Entry",
+        about = "Enables <Name> Rotation Entry in every rotation that uses it",
         handler = function(self, name)
-            local enabledRotationEntries = Config:GetSetting('EnabledRotationEntries') or {}
-            enabledRotationEntries[name] = true
-            Config:SetSetting('EnabledRotationEntries', enabledRotationEntries)
+            self:SetRotationEntryEnabled(name, true)
             return true
         end,
     },
     disablerotationentry = {
         usage = "/rgl disablerotationentry \"<Name>\"",
-        about = "Disables <Name> Rotation Entry",
+        about = "Disables <Name> Rotation Entry in every rotation that uses it",
         handler = function(self, name)
-            local enabledRotationEntries = Config:GetSetting('EnabledRotationEntries') or {}
-            enabledRotationEntries[name] = false
-            Config:SetSetting('EnabledRotationEntries', enabledRotationEntries)
+            self:SetRotationEntryEnabled(name, false)
             return true
         end,
     },
@@ -526,8 +522,15 @@ function Module:LoadSettings()
         end
 
         -- Add this to all class configs
+        -- DEPRECATED 8/26 - sunset 2/1/27. Flat entry name -> bool, replaced by RotationEntryToggles. DELETE at sunset.
         self.ClassConfig.DefaultConfig['EnabledRotationEntries'] = {
             DisplayName = "EnabledRotationEntries",
+            Type = "Custom",
+            Default = {},
+        }
+
+        self.ClassConfig.DefaultConfig['RotationEntryToggles'] = {
+            DisplayName = "RotationEntryToggles",
             Type = "Custom",
             Default = {},
         }
@@ -1073,7 +1076,7 @@ end
 function Module:RenderRotationWithToggle(r, rotationTable, showRotationType)
     local rotationName = r.name
     local enabledRotations = Config:GetSetting('EnabledRotations') or {}
-    local enabledRotationEntries = Config:GetSetting('EnabledRotationEntries') or {}
+    local rotationEntryToggles = Config:GetSetting('RotationEntryToggles') or {}
     local rotationDisabled = enabledRotations[r.name] == false
     local rotationIcon = rotationDisabled and Icons.MD_ERROR or (r.lastCondCheck and Icons.MD_CHECK or Icons.MD_CLOSE)
     local headerText = string.format("[%s] %s###Header_%s", rotationIcon, rotationName, rotationName)
@@ -1087,7 +1090,7 @@ function Module:RenderRotationWithToggle(r, rotationTable, showRotationType)
     -- This has to come here because if it comes after the Header, the header will eat our mouse events.
     ImGui.SetCursorPos(ImGui.GetWindowWidth() - toggleOffset, cursorScreenPos.y)
     if ImGui.InvisibleButton("##Enable" .. rotationName, ImVec2(20, 20)) then
-        enabledRotations[r.name] = not enabledRotations[r.name]
+        enabledRotations[r.name] = rotationDisabled
         Config:SetSetting('EnabledRotations', enabledRotations)
     end
 
@@ -1103,17 +1106,18 @@ function Module:RenderRotationWithToggle(r, rotationTable, showRotationType)
                 Ui.Tooltip(
                     "Denotes whether entries will be checked from the top every time the rotation is run (Full) or whether the checks start from the entry after the last one to succeed (Standard).\nLeaving combat resets the position of the check marker.")
             end
-            local enabledRotationEntriesChanged, reordered, resetRequested
-            enabledRotationEntries, enabledRotationEntriesChanged, reordered, resetRequested = Ui.RenderRotationTable(r.name,
+            local entryTogglesChanged, reordered, resetRequested
+            rotationEntryToggles[r.name] = rotationEntryToggles[r.name] or {}
+            rotationEntryToggles[r.name], entryTogglesChanged, reordered, resetRequested = Ui.RenderRotationTable(r.name,
                 rotationTable[r.name],
-                self.ResolvedActionMap, r.state or 0, enabledRotationEntries, nil, r.reorderable ~= false)
+                self.ResolvedActionMap, r.state or 0, rotationEntryToggles[r.name], nil, r.reorderable ~= false)
             if reordered and r.state then r.state = 1 end
             if resetRequested then
                 if r.state then r.state = 1 end
                 self:GetRotations()
             end
 
-            if enabledRotationEntriesChanged then Config:SetSetting('EnabledRotationEntries', enabledRotationEntries) end
+            if entryTogglesChanged then Config:SetSetting('RotationEntryToggles', rotationEntryToggles) end
             ImGui.Unindent()
         end
     end
@@ -1648,13 +1652,13 @@ function Module:DoMidSongActions()
 
     local combat_state = Combat.GetCachedCombatState()
     local enabledRotations = Config:GetSetting('EnabledRotations') or {}
-    local enabledEntries = Config:GetSetting('EnabledRotationEntries') or {}
 
     for _, r in ipairs(self.TempSettings.RotationStates) do
         if r.midSong and enabledRotations[r.name] ~= false then
             if Core.SafeCallFunc("MidSong rotation cond " .. r.name, r.cond, self, combat_state) then
+                local entryToggles = self:GetRotationEntryToggles(r.name)
                 for _, entry in ipairs(self:GetRotationTable(r.name)) do
-                    if entry.midSong and enabledEntries[entry.name] ~= false and self:MidSongAllowed(entry) then
+                    if entry.midSong and entryToggles[entry.name] ~= false and self:MidSongAllowed(entry) then
                         Core.SafeCallFunc("MidSong entry " .. entry.name, function()
                             if Rotation.TestConditionForEntry(self, self.ResolvedActionMap, entry, autoTargetId) then
                                 Rotation.ExecEntry(self, entry, autoTargetId, self.ResolvedActionMap, false)
@@ -1803,6 +1807,67 @@ function Module:GetRotations()
             entry.cachedResistType = deriveResistType(entry)
         end
     end
+
+    self:MigrateRotationEntryToggles()
+end
+
+--- Returns the per-entry toggle map for rotationName, empty if nothing in it has been toggled.
+function Module:GetRotationEntryToggles(rotationName)
+    return (Config:GetSetting('RotationEntryToggles') or {})[rotationName] or {}
+end
+
+--- Visits every combat and heal rotation entry this class config can load, including clickies added at rotation build.
+function Module:ForEachRotationEntry(visitor)
+    for _, rotations in ipairs({ self.ClassConfig.Rotations or {}, self.ClassConfig.HealRotations or {},
+        self.TempSettings.RotationTable or {}, self.TempSettings.HealRotationTable or {}, }) do
+        for rotationName, entries in pairs(rotations) do
+            for _, entry in ipairs(entries) do
+                visitor(rotationName, entry.name)
+            end
+        end
+    end
+end
+
+--- Toggles every rotation entry named entryName, in each rotation that uses the name.
+function Module:SetRotationEntryEnabled(entryName, enabled)
+    local rotationEntryToggles = Config:GetSetting('RotationEntryToggles') or {}
+    local matched = false
+    self:ForEachRotationEntry(function(rotationName, foundName)
+        if foundName == entryName then
+            matched = true
+            rotationEntryToggles[rotationName] = rotationEntryToggles[rotationName] or {}
+            rotationEntryToggles[rotationName][entryName] = enabled
+        end
+    end)
+
+    if not matched then
+        Logger.log_error("\arNo rotation has an entry named \at%s\ar.", entryName)
+        return
+    end
+
+    Config:SetSetting('RotationEntryToggles', rotationEntryToggles)
+end
+
+-- DEPRECATED 8/26 - sunset 2/1/27. Copies flat EnabledRotationEntries values into RotationEntryToggles, per rotation. DELETE at sunset.
+function Module:MigrateRotationEntryToggles()
+    local legacyToggles = Config:GetSetting('EnabledRotationEntries') or {}
+    if not next(legacyToggles) then return end
+
+    local rotationEntryToggles = Config:GetSetting('RotationEntryToggles') or {}
+    local placed = {}
+    self:ForEachRotationEntry(function(rotationName, entryName)
+        if legacyToggles[entryName] ~= nil then
+            rotationEntryToggles[rotationName] = rotationEntryToggles[rotationName] or {}
+            rotationEntryToggles[rotationName][entryName] = legacyToggles[entryName]
+            placed[entryName] = true
+        end
+    end)
+    if not next(placed) then return end
+
+    for entryName in pairs(placed) do legacyToggles[entryName] = nil end
+    Config:SetSetting('RotationEntryToggles', rotationEntryToggles)
+    Config:SetSetting('EnabledRotationEntries', legacyToggles)
+    Logger.log_info("\ayEntry toggles are now saved per rotation: your \atexisting toggles\ay were carried over.")
 end
 
 ---@param reason string
@@ -1895,7 +1960,7 @@ function Module:HealById(id)
 
                     local newState, wasRun = Rotation.Run(self, self:GetHealRotationTable(selectedRotation.name), { id, },
                         self.ResolvedActionMap, selectedRotation.steps or 0, selectedRotation.state or 0,
-                        self.CombatState == "Downtime", selectedRotation.doFullRotation or false, nil, Config:GetSetting('EnabledRotationEntries') or {})
+                        self.CombatState == "Downtime", selectedRotation.doFullRotation or false, nil, self:GetRotationEntryToggles(selectedRotation.name))
                     if selectedRotation.state then selectedRotation.state = newState end
 
                     if wasRun and Casting.GetLastCastResultName() == "CAST_SUCCESS" then
@@ -3023,7 +3088,7 @@ function Module:GiveTime()
                         self.CurrentRotation = { name = r.name, state = r.state or 0, }
                         local newState = Rotation.Run(self, self:GetRotationTable(r.name), targetTable,
                             self.ResolvedActionMap, r.steps or 0, r.state or 0, self.CombatState == "Downtime" and not r.blockMem, r.doFullRotation or false, r.cond,
-                            Config:GetSetting('EnabledRotationEntries') or {})
+                            self:GetRotationEntryToggles(r.name))
 
                         if r.state then r.state = newState end
                         self.TempSettings.RotationTimers[r.name] = Globals.GetTimeSeconds()

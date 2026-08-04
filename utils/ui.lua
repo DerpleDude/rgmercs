@@ -1988,15 +1988,15 @@ end
 ---@param rotationTable table Array of rotation entry descriptors.
 ---@param resolvedActionMap table Map of entry name → resolved spell/AA/item.
 ---@param rotationState number? Current step index (>0 shows a "Cur" column).
----@param enabledRotationEntries table Map of entry name → bool (false = skip).
+---@param entryToggles table Map of entry name → bool (false = skip).
 ---@param hideRotationCols boolean? If true, hides the "Cur" and "Condition Met" columns.
 ---@param reorderable boolean? If true, allows the user to reorder entries in this table.
----@return table enabledRotationEntries Updated enablement map.
+---@return table entryToggles Updated enablement map.
 ---@return boolean changed True if any enablement setting was toggled this frame.
 ---@return boolean reordered True if an entry was reordered this frame.
 ---@return boolean resetRequested True if the user reset this list to default order this frame.
-function Ui.RenderRotationTable(name, rotationTable, resolvedActionMap, rotationState, enabledRotationEntries, hideRotationCols, reorderable)
-    local enabledRotationEntriesChanged = false
+function Ui.RenderRotationTable(name, rotationTable, resolvedActionMap, rotationState, entryToggles, hideRotationCols, reorderable)
+    local entryTogglesChanged = false
     local showDebugTiming = Config:GetSetting('ShowDebugTiming')
     local pendingSwap = nil
     local pendingDrag = nil
@@ -2109,13 +2109,13 @@ function Ui.RenderRotationTable(name, rotationTable, resolvedActionMap, rotation
             ImGui.TableNextColumn()
             if isResolved then
                 local changed
-                enabledRotationEntries[entry.name], changed = Ui.RenderOptionToggle(string.format("rot_%s_tggl_%d", name, idx), "",
-                    enabledRotationEntries[entry.name] == nil and true or enabledRotationEntries[entry.name])
-                if changed then enabledRotationEntriesChanged = true end
+                entryToggles[entry.name], changed = Ui.RenderOptionToggle(string.format("rot_%s_tggl_%d", name, idx), "",
+                    entryToggles[entry.name] == nil and true or entryToggles[entry.name])
+                if changed then entryTogglesChanged = true end
             else
-                if enabledRotationEntries[entry.name] == false then
-                    enabledRotationEntries[entry.name] = true
-                    enabledRotationEntriesChanged = true
+                if entryToggles[entry.name] == false then
+                    entryToggles[entry.name] = true
+                    entryTogglesChanged = true
                 end
                 ImGui.BeginDisabled(true)
                 local dimGreen = Globals.Constants.Colors.Green
@@ -2148,7 +2148,7 @@ function Ui.RenderRotationTable(name, rotationTable, resolvedActionMap, rotation
             end
 
             ImGui.TableNextColumn()
-            if enabledRotationEntries[entry.name] == false then Ui.StrikeThroughText(entry.name) else Ui.RenderText(entry.name) end
+            if entryToggles[entry.name] == false then Ui.StrikeThroughText(entry.name) else Ui.RenderText(entry.name) end
             ImGui.TableNextColumn()
             if typeLower == "spell" or typeLower == "song" or typeLower == "disc" then
                 if isResolved then
@@ -2271,7 +2271,7 @@ function Ui.RenderRotationTable(name, rotationTable, resolvedActionMap, rotation
         reordered = true
     end
 
-    return enabledRotationEntries, enabledRotationEntriesChanged, reordered, resetRequested
+    return entryToggles, entryTogglesChanged, reordered, resetRequested
 end
 
 --- Renders an animated fancy toggle switch with optional label and color options.

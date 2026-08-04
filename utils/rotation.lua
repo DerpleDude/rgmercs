@@ -307,10 +307,10 @@ end
 ---@param bAllowMem boolean If true, allows spell gem memorization.
 ---@param bDoFullRotation boolean? If true, always restart from step 1.
 ---@param fnRotationCond function? Re-checked each step; rotation stops on false.
----@param enabledRotationEntries table Map of entry name → bool (false = skip).
+---@param entryToggles table Map of entry name → bool (false = skip).
 ---@return number nextStep The index to resume from on the next call.
 ---@return boolean anySuccess True if at least one entry executed successfully.
-function Rotation.Run(caller, rotationTable, targetTable, resolvedActionMap, steps, start_step, bAllowMem, bDoFullRotation, fnRotationCond, enabledRotationEntries)
+function Rotation.Run(caller, rotationTable, targetTable, resolvedActionMap, steps, start_step, bAllowMem, bDoFullRotation, fnRotationCond, entryToggles)
     local stepsThisTime = 0
     local lastStepIdx   = 0
     local anySuccess    = false
@@ -320,7 +320,7 @@ function Rotation.Run(caller, rotationTable, targetTable, resolvedActionMap, ste
     -- Used for bards to dynamically weave properly
     if bDoFullRotation then start_step = 1 end
     for idx, entry in ipairs(rotationTable) do
-        if enabledRotationEntries[entry.name] ~= false then
+        if entryToggles[entry.name] ~= false then
             if idx >= start_step then
                 local tStart = string.format("%.03f", Globals.GetTimeMS())
                 caller:SetCurrentRotationState(idx)

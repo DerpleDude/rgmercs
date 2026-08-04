@@ -60,7 +60,7 @@ Module.TempSettings.LastNeedToMezTime   = 0
 Module.TempSettings.LastNeedToMezResult = false
 
 Module.DefaultConfig                    = {
-    -- per-entry on/off for the Mez ability list (flat name->bool, like EnabledRotationEntries); absent = on
+    -- per-entry on/off for the Mez ability list (flat name->bool); absent = on
     ['EnabledMezEntries']                      = {
         DisplayName = "EnabledMezEntries",
         Type = "Custom",
