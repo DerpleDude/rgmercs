@@ -18,7 +18,14 @@ concurrency:
 
 jobs:
   release:
-    if: github.repository == 'DerpleDude/rgmercs'
+    # Skip the whole release (and, by extension, the RedGuides publish that
+    # chains off this run's success) when the pushed HEAD commit message
+    # contains '#nobuild'. A skipped job makes this run conclude 'skipped', so
+    # the downstream "Publish to RedGuides" workflow_run guard (== 'success')
+    # never fires.
+    if: >-
+      github.repository == 'DerpleDude/rgmercs' &&
+      !contains(github.event.head_commit.message, '#nobuild')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
