@@ -3918,10 +3918,10 @@ function Config:UpdatePeerSetSetting(data)
     local setting = data.setting
     local value   = data.value
 
-    Logger.log_debug("Received UpdatePeerSetSetting from %s :: %s for module %s, setting %s", peer, self.currentPeer, module, setting)
     if self.currentPeer ~= peer then
         return
     end
+    Logger.log_debug("Received UpdatePeerSetSetting from %s for module %s, setting %s", peer, module, setting)
 
     if self.peerModuleSettings[module] == nil then
         Logger.log_error("Received UpdatePeerSetSetting for module %s but we don't have any settings for that module!", tostring(module))
