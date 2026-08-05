@@ -1046,7 +1046,7 @@ return {
             Category = "Hate Reduction",
             Index = 101,
             Tooltip = "Begin using hate reduction abilities above this aggro percentage.",
-            Default = 70,
+            Default = 90,
             Min = 1,
             Max = 100,
         },
