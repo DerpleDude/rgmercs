@@ -546,9 +546,9 @@ Config.DefaultConfig                                     = {
         Header = "Clickies",
         Category = "General Clickies",
         Index = 3,
-        Tooltip = "Choose how/when to use mounts. A character with melee combat enabled will only use a mount if set to use as a buff.",
+        Tooltip = "Choose how/when to use mounts. A character with melee combat enabled will only use a mount if set to use for the benefit.",
         Type = "Combo",
-        ComboOptions = { 'Never', 'For use as mount', 'For buff only', },
+        ComboOptions = { 'Never', 'For use as mount', 'For benefit only', },
         Default = 2,
         Min = 1,
         Max = 3,
@@ -560,7 +560,49 @@ Config.DefaultConfig                                     = {
         Header = "Clickies",
         Category = "General Clickies",
         Index = 4,
-        Tooltip = "Mount Clicky item to use.",
+        Tooltip = "Mount Clicky item to use, or leave empty to use your Stat Mount for the benefit.",
+        Type = "ClickyItem",
+        Default = "",
+        ConfigType = "Normal",
+    },
+    ['DoFamiliarBenefit']          = {
+        DisplayName = "Do Familiar Benefit",
+        Group = "Items",
+        Header = "Clickies",
+        Category = "General Clickies",
+        Index = 5,
+        Tooltip = "Click a familiar item for its lasting benefit, then remove the familiar itself.",
+        Default = false,
+        ConfigType = "Normal",
+    },
+    ['FamiliarItem']               = {
+        DisplayName = "Familiar Item",
+        Group = "Items",
+        Header = "Clickies",
+        Category = "General Clickies",
+        Index = 6,
+        Tooltip = "Familiar Clicky item to use. Leave empty to use your Stat Familiar.",
+        Type = "ClickyItem",
+        Default = "",
+        ConfigType = "Normal",
+    },
+    ['DoIllusionBenefit']          = {
+        DisplayName = "Do Illusion Benefit",
+        Group = "Items",
+        Header = "Clickies",
+        Category = "General Clickies",
+        Index = 7,
+        Tooltip = "Click an illusion item for its lasting benefit, then remove the illusion itself.",
+        Default = false,
+        ConfigType = "Normal",
+    },
+    ['IllusionItem']               = {
+        DisplayName = "Illusion Item",
+        Group = "Items",
+        Header = "Clickies",
+        Category = "General Clickies",
+        Index = 8,
+        Tooltip = "Illusion Clicky item to use. Leave empty to use your Stat Illusion.",
         Type = "ClickyItem",
         Default = "",
         ConfigType = "Normal",
@@ -570,7 +612,7 @@ Config.DefaultConfig                                     = {
         Group = "Items",
         Header = "Clickies",
         Category = "General Clickies",
-        Index = 5,
+        Index = 9,
         Tooltip = "Use Shrink items.",
         Default = false,
         ConfigType = "Normal",
@@ -580,7 +622,7 @@ Config.DefaultConfig                                     = {
         Group = "Items",
         Header = "Clickies",
         Category = "General Clickies",
-        Index = 6,
+        Index = 10,
         Tooltip = "Item to use to Shrink yourself.",
         Type = "ClickyItem",
         Default = "",
@@ -4405,35 +4447,6 @@ end
 ---@return number
 function Config:GetMainOpacity()
     return tonumber((self:GetSetting('BgOpacity') or 100) / 100) or 1.0
-end
-
---- Determines if the character should mount.
---- @return boolean True if the character should mount, false otherwise.
-function Config.ShouldMount()
-    if Config:GetSetting('DoMount') == 1 then return false end
-
-    local passBasicChecks = Config:GetSetting('MountItem'):len() > 0 and mq.TLO.Me.CanMount()
-
-    local passCheckMountOne = (not Config:GetSetting('DoMelee') and (Config:GetSetting('DoMount') == 2 and (mq.TLO.Me.Mount.ID() or 0) == 0))
-    local passCheckMountTwo = ((Config:GetSetting('DoMount') == 3 and (mq.TLO.Me.Buff("Mount Blessing").ID() or 0) == 0))
-    local passMountItemGivesBlessing = false
-
-    if passCheckMountTwo then
-        local mountItem = mq.TLO.FindItem(Config:GetSetting('MountItem'))
-        if mountItem and mountItem() then
-            passMountItemGivesBlessing = mountItem.Blessing() ~= nil
-        end
-    end
-
-    return passBasicChecks and (passCheckMountOne or (passCheckMountTwo and passMountItemGivesBlessing))
-end
-
---- Determines whether the character should dismount.
---- This function checks certain conditions to decide if the character should dismount.
---- @return boolean True if the character should dismount, false otherwise.
-function Config.ShouldDismount()
-    -- if mount item is empty and we are on a mount then the user probably wants mount on.
-    return (Config:GetSetting('MountItem') or ""):len() > 0 and Config:GetSetting('DoMount') ~= 2 and ((mq.TLO.Me.Mount.ID() or 0) > 0)
 end
 
 --- Determines if the priority follow condition is met.

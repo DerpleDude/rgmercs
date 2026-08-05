@@ -3018,11 +3018,15 @@ function Ui.RenderOption(type, setting, id, requiresLoadoutChange, ...)
         ImGui.PushID(id .. "__btn")
         local width = ImGui.GetContentRegionAvailVec().x - 30
         if Ui.MarqueeButton(nameLen > 0 and itemName or "[Drop Here]", 15, width) then
-            if mq.TLO.Cursor() then
+            -- keyring items ride the cursor attachment instead of the cursor itself
+            local cursorAttachment = mq.TLO.CursorAttachment
+            local droppedItemName = mq.TLO.Cursor.Name() or (cursorAttachment() and cursorAttachment.Item.Name())
+
+            if droppedItemName then
                 if type == "ClickyItemWithConditions" then
-                    setting.itemName = mq.TLO.Cursor.Name()
+                    setting.itemName = droppedItemName
                 else
-                    setting = mq.TLO.Cursor.Name()
+                    setting = droppedItemName
                 end
 
                 pressed = true
