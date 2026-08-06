@@ -2328,11 +2328,14 @@ function Module:RunDispel(combat_state)
     local targetId = target.ID() or 0
     -- Beneficial is one read and rules out most targets, so it gates the debuff checks and the entry walk
     if targetId == 0 or targetId ~= Globals.AutoTargetID or not target.Beneficial() then return end
-    if not Casting.OkayToDebuff() or not Core.CombatActionsCheck() then return end
+    if not Core.CombatActionsCheck() then return end
 
     -- resolve the ability first; with nothing ready the buff walk's result is unusable either way
     local entry, spell, resolvedName = self:GetReadyDispelEntry(target)
     if not entry then return end
+    local entryType = (entry.type or ""):lower()
+    local manaFree = entryType == "item" or entryType == "ability" or (spell.Mana() or 0) == 0
+    if not Casting.OkayToDebuff(false, manaFree) then return end
     local buffName = self:GetDispellableBuffName(target)
     if not buffName then return end
 

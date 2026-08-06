@@ -241,6 +241,7 @@ Module.DefaultConfig                          = {
             Modules:ExecModule("Class", "GetRotations")
             Modules:ExecModule("Class", "RebuildCureAbilities")
             Modules:ExecModule("Class", "RebuildRezAbilities")
+            Modules:ExecModule("Class", "RebuildDispelAbilities")
             Modules:ExecModule("Charm", "RebuildCharmLists")
         end,
     },

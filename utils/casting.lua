@@ -1145,9 +1145,10 @@ end
 --- Gates debuffing on aggro threshold, ManaToDebuff, and the debuff
 --- policy (NamedDebuff or MobDebuff) vs. target con color.
 ---@param bIgnoreAggro boolean? Skip the aggro threshold check if true.
+---@param bIgnoreMana boolean? Skip the mana threshold check if true, for debuffs that cost no mana.
 --- @return boolean True if all debuff-gate conditions are met.
-function Casting.OkayToDebuff(bIgnoreAggro)
-    local enoughMana = Casting.HaveManaToDebuff()
+function Casting.OkayToDebuff(bIgnoreAggro, bIgnoreMana)
+    local enoughMana = bIgnoreMana or Casting.HaveManaToDebuff()
     local lowAggro = bIgnoreAggro or Targeting.AggroCheckOkay()
     local named = Globals.AutoTargetIsNamed
     local debuffChoice = Globals.Constants.DebuffChoice[Config:GetSetting(named and 'NamedDebuff' or 'MobDebuff')]
