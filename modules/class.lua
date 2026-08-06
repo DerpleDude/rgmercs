@@ -2490,21 +2490,19 @@ function Module:DoEvents()
 end
 
 -- true when the stagger option is set and a peer is landing a group det dispel on our group
-function Module:GroupAACureStaggered(actorPeers)
+function Module:GroupAACureStaggered()
     if not Config:GetSetting('StaggerGroupAACures') then return false end
-    for _, heartbeat in pairs(actorPeers) do
-        local data = heartbeat.Data
-        if data and (Globals.GetTimeSeconds() - (heartbeat.LastHeartbeat or 0)) <= 3 then
-            if data.CastingGroupDispel and mq.TLO.Group.Member(data.Target)() then
-                Logger.log_debug("[Cures] %s is landing a group det dispel on my groupmate %s, bypassing cure checks.", data.Name, data.Target)
-                return true
-            end
-            -- DEPRECATED 7/26 - sunset 9/1/26. Peers predating the ['Cure'] table don't broadcast the flag; fall back to the named group-cure AAs.
-            local casting = data.Casting or ""
-            if (casting == "Radiant Cure" or casting == "Group Purify Soul") and mq.TLO.Group.Member(data.Target)() then
-                Logger.log_debug("[Cures] %s is casting %s on my groupmate %s, bypassing cure checks.", data.Name, casting, data.Target)
-                return true
-            end
+    for _, peer in ipairs(Comms.GetZonePeers(false)) do
+        local data = peer.data
+        if data.CastingGroupDispel and mq.TLO.Group.Member(data.Target)() then
+            Logger.log_debug("[Cures] %s is landing a group det dispel on my groupmate %s, bypassing cure checks.", data.Name, data.Target)
+            return true
+        end
+        -- DEPRECATED 7/26 - sunset 9/1/26. Peers predating the ['Cure'] table don't broadcast the flag; fall back to the named group-cure AAs.
+        local casting = data.Casting or ""
+        if (casting == "Radiant Cure" or casting == "Group Purify Soul") and mq.TLO.Group.Member(data.Target)() then
+            Logger.log_debug("[Cures] %s is casting %s on my groupmate %s, bypassing cure checks.", data.Name, casting, data.Target)
+            return true
         end
     end
     return false
@@ -2513,8 +2511,7 @@ end
 -- new-model cure pass: cure myself from my own classified effects, then a group or heal-list peer that needs it (one cure per pass, self > group > heal list)
 function Module:RunCureWalk()
     Core.GetBuffTable()
-    local actorPeers = Comms.GetAllPeerHeartbeats(false)
-    self.TempSettings.GroupDispelCovered = self:GroupAACureStaggered(actorPeers)
+    self.TempSettings.GroupDispelCovered = self:GroupAACureStaggered()
 
     local scope = Config:GetSetting('ActorCureScope')                     -- 1 = Self, 2 = Group, 3 = Heal List
     local scanPeers = self.TempSettings.CuresPeerCapable and scope > 1
@@ -2530,20 +2527,19 @@ function Module:RunCureWalk()
     -- partition curable peers by priority: my group first, then heal-list peers outside my group (scope 3 only)
     local healList = scope >= 3 and Set.new(Config:GetSetting('HealList') or {}) or nil
     local groupPeers, healPeers = {}, {}
-    for _, heartbeat in pairs(actorPeers) do
-        local data = heartbeat.Data
-        if data and (#(data.CureEffects or {}) > 0 or data.Mezzed) then -- skip the spawn search for peers with nothing to cure
+    for _, peer in ipairs(Comms.GetZonePeers(false)) do
+        local data = peer.data
+        if #(data.CureEffects or {}) > 0 or data.Mezzed then -- skip the spawn search for peers with nothing to cure
             if mq.TLO.Group.Member(data.Name)() then
-                table.insert(groupPeers, heartbeat)
+                table.insert(groupPeers, data)
             elseif healList and healList:contains(data.Name) then
-                table.insert(healPeers, heartbeat)
+                table.insert(healPeers, data)
             end
         end
     end
 
     for _, peerList in ipairs({ groupPeers, healPeers, }) do
-        for _, heartbeat in ipairs(peerList) do
-            local data = heartbeat.Data
+        for _, data in ipairs(peerList) do
             local cureTarget = mq.TLO.Spawn(string.format("pc =%s", data.Name))
             if (cureTarget.ID() or 0) > 0 and cureTarget.ID() ~= mq.TLO.Me.ID() and (cureTarget.Distance() or 999) < 150 then
                 if self:RunCure(cureTarget, data.CureEffects, data.Mezzed, denySet, allowSet) then return end
@@ -2566,7 +2562,7 @@ function Module:RunCureRotation(combat_state)
     -- Legacy per-type detection + CureNow path for custom configs predating the ['Cure'] table.
     local actorPeers = Comms.GetAllPeerHeartbeats(false)
 
-    if self:GroupAACureStaggered(actorPeers) then return end
+    if self:GroupAACureStaggered() then return end
 
     Logger.log_verbose("\ao[Cures] Checking for curables...")
 

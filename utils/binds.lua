@@ -585,7 +585,6 @@ Binds.Handlers    = {
         about = "All groupmembers running RGMercs will click on every possible 'Yes' Dialogue they have up.",
         handler = function()
             Comms.SendAllPeersDoCmd(false, true, "/notify LargeDialogWindow LDW_YesButton leftmouseup")
-            Comms.SendAllPeersDoCmd(false, true, "/notify LargeDialogWindow LDW_YesButton leftmouseup")
             Comms.SendAllPeersDoCmd(false, true, "/notify LargeDialogWindow LDW_OkButton leftmouseup")
             Comms.SendAllPeersDoCmd(false, true, "/notify ConfirmationDialogBox CD_Yes_Button leftmouseup")
             Comms.SendAllPeersDoCmd(false, true, "/notify ConfirmationDialogBox CD_OK_Button leftmouseup")
@@ -602,13 +601,12 @@ Binds.Handlers    = {
         handler = function(radius)
             if not radius then radius = 15 end
 
-            local peers = Comms.GetPeers(false)
+            local peers = Comms.GetZonePeers(false)
             local peerCount = #peers
             if peerCount < 1 then return end
             local angle_step = (2 * math.pi) / peerCount
 
-            for i, peerFullName in ipairs(peers) do
-                local peerName = Comms.GetNameFromPeer(peerFullName)
+            for i, peer in ipairs(peers) do
                 local radians = (i - 1) * angle_step
                 local xMove = math.cos(radians) * (radius)
                 local yMove = math.sin(radians) * (radius)
@@ -616,8 +614,8 @@ Binds.Handlers    = {
                 local xOff = mq.TLO.Me.X() + math.floor(xMove)
                 local yOff = mq.TLO.Me.Y() + math.floor(yMove)
 
-                Core.DoCmd("/dex %s /nav locyxz %2.3f %2.3f %2.3f", peerName, yOff, xOff, mq.TLO.Me.Z())
-                Core.DoCmd("/dex %s /timed 50 /face %s", peerName, mq.TLO.Me.DisplayName())
+                Core.DoCmd("/dex %s /nav locyxz %2.3f %2.3f %2.3f", peer.name, yOff, xOff, mq.TLO.Me.Z())
+                Core.DoCmd("/dex %s /timed 50 /face %s", peer.name, mq.TLO.Me.DisplayName())
             end
         end,
     },

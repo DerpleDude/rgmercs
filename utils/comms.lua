@@ -136,9 +136,8 @@ function Comms.SendPeerDoCmd(peer, cmd, ...)
         cmd = cmd, })
 end
 
---- Broadcasts a /cmd to all known peers. Optionally restricted to
---- peers in the current zone, and optionally including self.
---- @param inZoneOnly boolean Only send to peers in the current zone.
+--- Broadcasts a /cmd to same-server peers, optionally narrowed to our zone and instance and optionally run locally.
+--- @param inZoneOnly boolean Only send to peers in the current zone and instance.
 --- @param includeSelf boolean Execute the command locally as well.
 --- @param cmd string The command format string.
 --- @param ... any Format arguments for the command string.
@@ -149,9 +148,19 @@ function Comms.SendAllPeersDoCmd(inZoneOnly, includeSelf, cmd, ...)
         mq.cmd(cmd)
     end
 
-    for peer, data in pairs(Comms.PeersHeartbeats) do
-        if data.Data.Zone == mq.TLO.Zone.Name() or not inZoneOnly then
-            Comms.SendMessage(peer, "Core", "DoCmd", {
+    if inZoneOnly then
+        for _, peer in ipairs(Comms.GetZonePeers(false)) do
+            Comms.SendMessage(peer.key, "Core", "DoCmd", {
+                cmd = cmd, })
+        end
+        return
+    end
+
+    local myName = Comms.GetPeerName()
+    local myServer = mq.TLO.EverQuest.Server() or ""
+    for peerKey, heartbeat in pairs(Comms.PeersHeartbeats) do
+        if peerKey ~= myName and heartbeat.Data.Server == myServer then
+            Comms.SendMessage(peerKey, "Core", "DoCmd", {
                 cmd = cmd, })
         end
     end

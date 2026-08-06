@@ -1324,14 +1324,14 @@ function Casting.GetBuffableRaidIDs()
         local peerName = Comms.GetNameFromPeer(peer)
         local raidMember = mq.TLO.Raid.Member(peerName or "")
         if raidMember() and raidMember.Spawn() then
-            if checkCorpses and Casting.HasNearbyCorpse(peer) then
-                Logger.log_debug("Raidmember corpse detected (%s), aborting group buff rotation.", peer)
+            if checkCorpses and Casting.HasNearbyCorpse(peerName) then
+                Logger.log_debug("Raidmember corpse detected (%s), aborting group buff rotation.", peerName)
                 return {}
             end
             raidIds:add(raidMember.ID())
 
             if Config:GetSetting("DoActorPetBuffs") then
-                local groupMember = mq.TLO.Group.Member(peer)
+                local groupMember = mq.TLO.Group.Member(peerName or "")
                 if groupMember() and groupMember.Pet.ID() > 0 and not groupMember.OtherZone() then
                     if not (groupMember.Pet.CleanName() or "familiar"):lower():find("familiar") then
                         raidIds:add(groupMember.Pet.ID())
