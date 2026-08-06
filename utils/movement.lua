@@ -486,6 +486,7 @@ function Movement:TankReposition()
         local stepLength = math.min(L_ideal, maxRange - 1)
 
         local navIssued = false
+        local snared = me.Snared()
 
         -- Ideal 75° first, then ±10° on the same side; switching sides would defeat the diameter-circle pick and undo the move.
         for _, lateralAngle in ipairs({ 75, 85, 65, }) do
@@ -503,8 +504,9 @@ function Movement:TankReposition()
                 and mq.TLO.LineOfSight(string.format("%0.2f,%0.2f,%0.2f:%0.2f,%0.2f,%0.2f", destY, destX, meZ, engY, engX, engZ))() then
                 local pathLen = mq.TLO.Navigation.PathLength(string.format("locyxz %0.2f %0.2f %0.2f", destY, destX, meZ))() or -1
                 if pathLen > 0 and pathLen <= math.sqrt(stepDistSq) + 10 then
-                    Logger.log_debug("\arReposition step %d: lateral %ddeg dir=%d L=%.1f -> %.1f %.1f", stepCount + 1, lateralAngle, moveDir, stepLength, destX, destY)
-                    self:DoNav(false, "locyxz %0.2f %0.2f %0.2f facing=backward log=off", destY, destX, meZ)
+                    Logger.log_debug("\arReposition step %d: lateral %ddeg dir=%d L=%.1f facing=%s -> %.1f %.1f", stepCount + 1, lateralAngle, moveDir, stepLength,
+                        snared and "travel" or "backward", destX, destY)
+                    self:DoNav(false, "locyxz %0.2f %0.2f %0.2f %slog=off", destY, destX, meZ, snared and "" or "facing=backward ")
                     navIssued = true
                     break
                 end
