@@ -2789,6 +2789,7 @@ function Module:RezEntryCast(entry, spell, resolvedName, corpseId)
     local entryType = (entry.type or ""):lower()
     local name = (entryType == "aa" or entryType == "item" or entryType == "ability") and resolvedName or spell.RankName()
     Casting.UseEntry(entryType, name, corpseId, { allowMem = true, allowDead = true, spell = spell, })
+    return name
 end
 
 -- rebuild the load_cond-filtered rez lists per phase on rescan, so a load-gated entry drops from both the cast logic and the UI
@@ -2844,7 +2845,12 @@ function Module:RunRez(corpseId, ownerName)
                 and (not entry.cond or Core.SafeCallFunc("Rez entry cond", entry.cond, self, spell, corpseSpawn, ownerName))
                 and Entries.Ready(entry, spell, resolvedName, true)
                 and Casting.OkayToRez(corpseId) then
-                self:RezEntryCast(entry, spell, resolvedName, corpseId)
+                local castName = self:RezEntryCast(entry, spell, resolvedName, corpseId)
+                if castName then
+                    Comms.HandleAnnounce(
+                        Comms.FormatChatEvent("Rez", ownerName, string.format("attempting to rez with %s", castName)),
+                        Config:GetSetting('RezAnnounceGroup'), Config:GetSetting('RezAnnounce'), Config:GetSetting('AnnounceToRaidIfInRaid'))
+                end
                 return true
             end
         end
