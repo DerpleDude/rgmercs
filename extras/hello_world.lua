@@ -13,7 +13,12 @@ local Config   = require('utils.config')
 local Globals  = require("utils.globals")
 local Logger   = require("utils.logger")
 
-local Module   = { _version = '1.0', _name = "HelloWorld", _author = 'RGMercs', }
+local Module   = {
+    _version = '1.0',
+    _name = "HelloWorld",
+    _author = 'RGMercs',
+    _about = "A working example module. Draws its own tab, adds a setting, answers /rgl hello, and greets you when you zone.",
+}
 Module.__index = Module
 setmetatable(Module, { __index = Base, })
 

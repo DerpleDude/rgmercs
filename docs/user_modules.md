@@ -25,6 +25,8 @@ local Module = { _version = '1.0', _name = "MyModule", _author = 'YourName', }
 
 `_name` must be unique across every loaded module, RGMercs' own included. If two files claim the same name the first one alphabetically wins; the loser shows a red status in the UserModules tab and refuses to load until you rename it.
 
+`_about` is optional. Supply a sentence describing what your module does and the UserModules tab draws an info icon beside its name carrying that text, which is how anyone else on your machine finds out what it is for.
+
 ## Refresh vs. reload
 
 **Refresh** re-reads the folder and rebuilds the list: new files, deleted files, changed `_name`s, new collisions. It does not touch anything that is already running.
@@ -72,7 +74,7 @@ A standalone slash command like `/mybind` goes through `self:RegisterBind`, whic
 
 Disabling a module clears its settings from memory but leaves them in the database, so re-enabling restores everything the user had configured. The module also keeps its position in the list while disabled.
 
-Deleting the file leaves the row behind, marked "File missing" — the trash button forgets it. The module's own saved settings survive that, and RGMercs' existing database cleanup is the way to remove them.
+Deleting the file drops the module from the list on the next refresh. Its saved settings survive that, and RGMercs' existing database cleanup is the way to remove them.
 
 ## What your module can reach
 

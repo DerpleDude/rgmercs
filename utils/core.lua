@@ -49,6 +49,7 @@ end
 
 --- Rebuilds Globals.UserModuleManifest from the user modules folder, stamping
 --- parse/runtime errors and name collisions onto the affected entries.
+---@return boolean scanned False when the modules folder could not be read.
 function Core.ScanUserModules()
     Globals.UserModuleManifest = {}
 
@@ -57,12 +58,12 @@ function Core.ScanUserModules()
         local created, mkdirError = Files.make_p(userModuleDir)
         if not created then
             Logger.log_error("\arFailed to create the user modules folder \at%s\ar: %s", userModuleDir, mkdirError)
-            return
+            return false
         end
 
         Files.copy_file(string.format("%s/extras/hello_world.lua", Globals.ScriptDir),
             string.format("%s/hello_world.lua", userModuleDir))
-        return
+        return false
     end
 
     local fileNames = {}
@@ -93,6 +94,7 @@ function Core.ScanUserModules()
                     entry.name = declaredName
                     entry.version = rawget(module, '_version')
                     entry.author = rawget(module, '_author')
+                    entry.about = rawget(module, '_about')
                 end
             end
         end
@@ -134,6 +136,8 @@ function Core.ScanUserModules()
             end
         end
     end
+
+    return true
 end
 
 --- Returns the manifest entry for a saved user module, matching the declared

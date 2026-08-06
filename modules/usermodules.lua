@@ -65,6 +65,21 @@ function Module:New()
     return Base.New(self)
 end
 
+--- Puts the user module authoring guide on the clipboard.
+function Module:CopyGuideToClipboard()
+    local guidePath = string.format("%s/docs/user_modules.md", Globals.ScriptDir)
+    local guide = io.open(guidePath, "r")
+    if not guide then
+        Logger.log_error("\arCould not find the user module guide at: %s", guidePath)
+        return
+    end
+
+    local contents = guide:read("*all")
+    guide:close()
+    ImGui.SetClipboardText(contents)
+    Logger.log_info("\agThe user module guide has been copied to your clipboard.")
+end
+
 function Module:Init()
     Base.Init(self)
 end
@@ -100,7 +115,6 @@ function Module:SetModuleEnabled(moduleName, enabled)
         if entry.name and entry.name:lower() == moduleName:lower() then manifestEntry = entry end
     end
 
-    -- Fall back to the filename so a module that failed to load reports its error instead of going missing.
     for _, entry in ipairs(Globals.UserModuleManifest) do
         if not manifestEntry and entry.fileName:lower():gsub("%.lua$", "") == moduleName:lower():gsub("%.lua$", "") then manifestEntry = entry end
     end
@@ -147,27 +161,43 @@ function Module:MoveModuleDown(idx)
     Config:SetSetting('UserModuleList', moduleList)
 end
 
-function Module:DeleteModule(idx)
-    local moduleList = Config:GetSetting('UserModuleList') or {}
-    if not moduleList[idx] then return end
-
-    table.remove(moduleList, idx)
-    Config:SetSetting('UserModuleList', moduleList)
-    Modules:RequestUserModuleSync()
-end
-
 function Module:Render()
-    Base.Render(self)
+    local controlPadding = Base.Render(self)
 
     if not self.ModuleLoaded then return end
 
-    if ImGui.SmallButton("Refresh") then
+    local moduleList = Config:GetSetting('UserModuleList') or {}
+    local loadedCount = 0
+    for _, listEntry in ipairs(moduleList) do
+        if Modules.LoadedUserModules[listEntry.name] then loadedCount = loadedCount + 1 end
+    end
+
+    if ImGui.BeginTable("##UserModulesInfo", 2, bit32.bor(ImGuiTableFlags.BordersInner, ImGuiTableFlags.SizingFixedFit),
+            ImVec2(ImGui.GetWindowWidth() - (controlPadding + 20), 0)) then
+        ImGui.TableNextColumn()
+        Ui.RenderText("Modules Folder")
+        ImGui.TableNextColumn()
+        Ui.RenderText("%s/rgmercs/modules", mq.configDir)
+        ImGui.TableNextColumn()
+        Ui.RenderText("Loaded")
+        ImGui.TableNextColumn()
+        Ui.RenderColoredText(loadedCount > 0 and Globals.Constants.Colors.ConditionPassColor or Globals.Constants.Colors.ConditionDisabledColor,
+            "%d of %d", loadedCount, #moduleList)
+        ImGui.EndTable()
+    end
+
+    if ImGui.SmallButton(Icons.MD_REFRESH .. " Refresh") then
         Modules:RequestUserModuleSync()
     end
+    Ui.Tooltip("Rescan the modules folder and apply any changes.")
     ImGui.SameLine()
-    Ui.RenderText(string.format("%s/rgmercs/modules", mq.configDir))
+    if ImGui.SmallButton("Copy Guide") then
+        self:CopyGuideToClipboard()
+    end
+    Ui.Tooltip("Copy the user module authoring guide to your clipboard.")
 
-    local moduleList = Config:GetSetting('UserModuleList') or {}
+    ImGui.Separator()
+
     local shownFiles = {}
     local rows = {}
 
@@ -188,12 +218,13 @@ function Module:Render()
         return
     end
 
-    if ImGui.BeginTable("UserModulesTable", 7, bit32.bor(ImGuiTableFlags.Borders, ImGuiTableFlags.RowBg)) then
+    if ImGui.BeginTable("UserModulesTable", 8, bit32.bor(ImGuiTableFlags.Borders, ImGuiTableFlags.Resizable)) then
         ImGui.TableSetupColumn('Enabled', ImGuiTableColumnFlags.WidthFixed, 55.0)
-        ImGui.TableSetupColumn('Name', ImGuiTableColumnFlags.WidthFixed, 120.0)
+        ImGui.TableSetupColumn('Name', ImGuiTableColumnFlags.WidthFixed, 140.0)
         ImGui.TableSetupColumn('File', ImGuiTableColumnFlags.WidthFixed, 140.0)
         ImGui.TableSetupColumn('Version', ImGuiTableColumnFlags.WidthFixed, 55.0)
         ImGui.TableSetupColumn('Author', ImGuiTableColumnFlags.WidthFixed, 90.0)
+        ImGui.TableSetupColumn('ms', ImGuiTableColumnFlags.WidthFixed, 45.0)
         ImGui.TableSetupColumn('Status', ImGuiTableColumnFlags.WidthStretch, 150.0)
         ImGui.TableSetupColumn('Controls', ImGuiTableColumnFlags.WidthFixed, 80.0)
         ImGui.TableHeadersRow()
@@ -206,23 +237,32 @@ function Module:Render()
 
             ImGui.PushID("##_user_module_" .. (row.name or "") .. "_" .. rowKey)
 
+            local canToggle = loadable or row.idx ~= nil
+
             ImGui.TableNextColumn()
-            if loadable or row.idx then
-                local _, toggled = Ui.RenderOptionToggle("user_module_tggl_" .. rowKey, "", row.enabled)
-                if toggled then
-                    if row.idx then
-                        self:ToggleModule(row.idx)
-                    else
-                        self:AddModule(manifestEntry)
-                    end
-                end
-            else
-                Ui.RenderColoredText(Globals.Constants.Colors.ConditionFailColor, Icons.FA_BAN)
+            ImGui.BeginGroup()
+            ImGui.BeginDisabled(not canToggle)
+            local _, toggled = Ui.RenderOptionToggle("user_module_tggl_" .. rowKey, "", row.enabled)
+            ImGui.EndDisabled()
+            ImGui.EndGroup()
+            if not canToggle then
                 Ui.Tooltip("This module can't be loaded until the problem in the Status column is fixed.")
+            end
+            if toggled then
+                if row.idx then
+                    self:ToggleModule(row.idx)
+                else
+                    self:AddModule(manifestEntry)
+                end
             end
 
             ImGui.TableNextColumn()
             Ui.RenderText(row.name or "?")
+            if manifestEntry and manifestEntry.about then
+                ImGui.SameLine()
+                Ui.RenderColoredText(Globals.Constants.Colors.ConditionMidColor, Icons.MD_INFO_OUTLINE)
+                Ui.Tooltip(manifestEntry.about)
+            end
             ImGui.TableNextColumn()
             Ui.RenderText(manifestEntry and manifestEntry.fileName or "-")
             ImGui.TableNextColumn()
@@ -231,11 +271,22 @@ function Module:Render()
             Ui.RenderText(tostring(manifestEntry and manifestEntry.author or "-"))
 
             ImGui.TableNextColumn()
+            local frameTime = Modules.UserModuleFrameTimes[row.name]
+            if isLoaded and frameTime then
+                Ui.RenderColoredText(frameTime < 5 and Globals.Constants.Colors.ConditionPassColor or
+                    (frameTime < 15 and Globals.Constants.Colors.ConditionMidColor or Globals.Constants.Colors.ConditionFailColor),
+                    "%d", math.floor(frameTime + 0.5))
+                Ui.Tooltip("Average time this module spends in the RGMercs loop each pass, to the nearest millisecond.")
+            else
+                Ui.RenderColoredText(Globals.Constants.Colors.ConditionDisabledColor, "-")
+            end
+
+            ImGui.TableNextColumn()
             if isLoaded then
                 Ui.RenderColoredText(Globals.Constants.Colors.ConditionPassColor, "Loaded")
             elseif not manifestEntry then
                 Ui.RenderColoredText(Globals.Constants.Colors.ConditionFailColor, "File missing")
-                Ui.Tooltip("No file in the modules folder matches this entry. Delete the row to forget it.")
+                Ui.Tooltip("No file in the modules folder matches this entry. It will be forgotten on the next refresh.")
             elseif manifestEntry.collisionWith then
                 Ui.RenderColoredText(Globals.Constants.Colors.ConditionFailColor, "Name taken by %s", manifestEntry.collisionWith)
                 Ui.Tooltip("Another module already uses this name. Change _name in this file and press Refresh.")
@@ -262,11 +313,6 @@ function Module:Render()
                 elseif ImGui.SmallButton(Icons.FA_CHEVRON_DOWN) then
                     self:MoveModuleDown(row.idx)
                 end
-                ImGui.SameLine()
-                if ImGui.SmallButton(Icons.FA_TRASH) then
-                    self:DeleteModule(row.idx)
-                end
-                Ui.Tooltip("Forget this module and unload it.")
             end
 
             ImGui.PopID()

@@ -31,6 +31,9 @@ Modules.LoadedUserModules     = {}
 --- Name → message from the most recent failed load attempt.
 Modules.UserModuleLoadErrors  = {}
 
+--- Name → smoothed GiveTime cost in milliseconds.
+Modules.UserModuleFrameTimes  = {}
+
 Modules.UserModuleSyncPending = false
 
 ---@return any
@@ -165,6 +168,7 @@ function Modules:unloadUserModule(moduleName)
     self:unloadModule(moduleName)
     self.LoadedUserModules[moduleName] = nil
     self.UserModuleLoadErrors[moduleName] = nil
+    self.UserModuleFrameTimes[moduleName] = nil
 
     Config:ClearModuleSettings(moduleName)
     Config:UpdateCommandHandlers()
@@ -191,11 +195,21 @@ function Modules:SyncUserModules()
     local Config = require("utils.config")
     local Core = require("utils.core")
 
-    Core.ScanUserModules()
+    local scanned = Core.ScanUserModules()
 
     local savedList = Config:GetSetting('UserModuleList') or {}
     local wantLoaded = {}
     local listChanged = false
+
+    if scanned then
+        for idx = #savedList, 1, -1 do
+            if not Core.FindUserModule(savedList[idx].name, savedList[idx].file) then
+                Logger.log_info("\ayForgetting user module \at%s\ay; its file is no longer in the modules folder.", savedList[idx].name)
+                table.remove(savedList, idx)
+                listChanged = true
+            end
+        end
+    end
 
     for _, listEntry in ipairs(savedList) do
         local manifestEntry = Core.FindUserModule(listEntry.name, listEntry.file)
@@ -290,8 +304,14 @@ function Modules:ExecAll(fn, ...)
             ret[name] = module[fn](module, ...)
 
             if fn == "GiveTime" then
+                local frameTime = (Globals.GetTimeSeconds() * 1000) - startTime
+
                 if self.ModuleList.Perf then
-                    self.ModuleList.Perf:OnFrameExec(name, (Globals.GetTimeSeconds() * 1000) - startTime)
+                    self.ModuleList.Perf:OnFrameExec(name, frameTime)
+                end
+
+                if self.LoadedUserModules[name] then
+                    self.UserModuleFrameTimes[name] = ((self.UserModuleFrameTimes[name] or frameTime) * 0.9) + (frameTime * 0.1)
                 end
             end
         end
