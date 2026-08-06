@@ -980,20 +980,6 @@ function Casting.ReagentCheck(spell)
     return true
 end
 
---- Returns true when DoShrink is enabled, a ShrinkItem is configured, the player's height is 2.3 or greater (i.e., not already shrunk), and OkayToBuff passes (visible, safe, stationary, not low-mana).
---- @return boolean True if the PC should be shrunk, false otherwise.
-function Casting.ShouldShrink()
-    return Config:GetSetting('DoShrink') and mq.TLO.Me.Height() >= 2.3 and
-        (Config:GetSetting('ShrinkItem'):len() > 0) and Casting.OkayToBuff()
-end
-
---- Returns true when DoShrinkPet is enabled, a ShrinkPetItem is configured, a pet exists, the pet's height is 1.9 or greater (i.e., not already shrunk), and OkayToPetBuff passes (DoPet enabled plus the same safe/stationary/visible/mana gates as OkayToBuff).
---- @return boolean True if the pet should be shrunk, false otherwise.
-function Casting.ShouldShrinkPet()
-    return Config:GetSetting('DoShrinkPet') and mq.TLO.Me.Pet.ID() > 0 and mq.TLO.Me.Pet.Height() >= 1.9 and
-        (Config:GetSetting('ShrinkPetItem'):len() > 0) and Casting.OkayToPetBuff()
-end
-
 --- Evaluates three burn triggers: autoBurn (BurnAuto enabled and XT hater count exceeds BurnMobCount, or the auto-target is a named mob with BurnNamed enabled), alwaysBurn (BurnAuto and BurnAlways both set), and forcedBurn (ForceBurnTargetID matches the current target). Caches the result in Globals.LastBurnCheck and announces state changes to the group/raid.
 --- @return boolean True if the burn condition is met, false otherwise.
 function Casting.BurnCheck()
@@ -3025,29 +3011,6 @@ function Casting.GetFirstMapItem(mapList)
         end
     end
     return ret
-end
-
---- Scans inventory for a known modrod and clicks it on self. Skips
---- non-casters, players above ModRodManaPct mana, HP below 60%,
---- feigning, invisible, and EMU bards.
-function Casting.ClickModRod()
-    local me = mq.TLO.Me
-    if not Globals.Constants.RGCasters:contains(me.Class.ShortName()) or me.PctMana() > Config:GetSetting('ModRodManaPct') or me.PctHPs() < 60 or me.Feigning() or me.Invis() or (Core.MyClassIs("BRD") and Core.OnEMU()) then
-        return
-    end
-
-    for _, itemName in ipairs(Globals.Constants.ModRods) do
-        while mq.TLO.Cursor.Name() == itemName do
-            Core.DoCmd("/squelch /autoinv")
-            mq.delay(10)
-        end
-
-        local item = mq.TLO.FindItem(itemName)
-        if item() and item.Clicky() and mq.TLO.Me.Level() >= (item.Clicky.RequiredLevel() or 999) and item.TimerReady() == 0 then
-            Casting.UseItem(item.Name(), mq.TLO.Me.ID())
-            return
-        end
-    end
 end
 
 --- Tallies group members below the mana threshold. Adds the player

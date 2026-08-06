@@ -902,119 +902,12 @@ function Module:DoCombatCampCheck()
     Combat.CombatCampCheck(self.TempSettings)
 end
 
---- Returns the clicky to use for a benefit, falling back to the keyring's assigned stat item when no item is set.
----@param settingName string The item setting to read.
----@param keyring keyring The keyring to fall back to.
----@return string
-function Module:GetBenefitItemName(settingName, keyring)
-    local itemName = Config:GetSetting(settingName) or ""
-    if itemName:len() > 0 then return itemName end
-
-    -- clients without keyrings have no TLO to ask
-    return keyring and keyring.Stat() or ""
-end
-
---- Returns the mount clicky to use, falling back to the Stat Mount only when we are mounting for the benefit.
----@return string
-function Module:GetMountItemName()
-    local mountItemName = Config:GetSetting('MountItem') or ""
-    if mountItemName:len() > 0 or Config:GetSetting('DoMount') ~= 3 then return mountItemName end
-
-    return mq.TLO.Mount and mq.TLO.Mount.Stat() or ""
-end
-
---- Returns the lasting benefit buff granted by the given mount, familiar or illusion item, and the mount/familiar/illusion itself.
----@param itemName string The clicky to read.
----@return MQSpell? benefitSpell The buff we are clicking the item for, nil if the item grants none.
----@return MQSpell? primarySpell The mount, familiar or illusion to get rid of afterward, nil if it can't be resolved.
-function Module:GetBenefitSpells(itemName)
-    if (itemName or ""):len() == 0 then return nil end
-
-    local benefitItem = mq.TLO.FindItem("=" .. itemName)
-    if not benefitItem() then return nil end
-
-    local clickySpell = benefitItem.Clicky.Spell
-    if (clickySpell.ID() or 0) == 0 then return nil end
-
-    -- Live keeps the benefit in its own slot; RoF2 has only the one and pairs the two spells with a trigger
-    if (benefitItem.Blessing.Spell.ID() or 0) ~= clickySpell.ID() then
-        return benefitItem.Blessing.Spell, clickySpell
-    end
-
-    for i = 1, (clickySpell.NumEffects() or 0) do
-        if clickySpell.Attrib(i)() == 374 then
-            return clickySpell, clickySpell.Trigger(i)
-        end
-    end
-
-    return clickySpell, nil
-end
-
---- Determines if the character should mount.
+--- Determines if the character should mount for travel.
 ---@return boolean True if the character should mount, false otherwise.
 function Module:ShouldMount()
-    if Config:GetSetting('DoMount') == 1 then return false end
-
-    local mountItemName = self:GetMountItemName()
-    local passBasicChecks = mountItemName:len() > 0 and mq.TLO.Me.CanMount()
-
-    local passCheckMountOne = (not Config:GetSetting('DoMelee') and (Config:GetSetting('DoMount') == 2 and (mq.TLO.Me.Mount.ID() or 0) == 0))
-    local passCheckMountTwo = false
-
-    if Config:GetSetting('DoMount') == 3 then
-        local blessingSpell = self:GetBenefitSpells(mountItemName)
-        passCheckMountTwo = blessingSpell ~= nil and (mq.TLO.Me.Buff("=" .. blessingSpell.Name()).ID() or 0) == 0
-    end
-
-    return passBasicChecks and (passCheckMountOne or passCheckMountTwo)
-end
-
---- Determines whether the character should dismount.
----@return boolean True if the character should dismount, false otherwise.
-function Module:ShouldDismount()
-    -- if mount item is empty and we are on a mount then the user probably wants mount on.
-    return self:GetMountItemName():len() > 0 and Config:GetSetting('DoMount') ~= 2 and ((mq.TLO.Me.Mount.ID() or 0) > 0)
-end
-
---- Clicks a familiar or illusion item for its lasting buff, then gets rid of the familiar or illusion that came with it.
----@param itemName string The clicky to use.
----@param bIsFamiliar boolean? True for a familiar, which arrives as a pet on EMU and as a buff on Live.
-function Module:DoBenefitClicky(itemName, bIsFamiliar)
-    local benefitSpell, primarySpell = self:GetBenefitSpells(itemName)
-    if not benefitSpell or Casting.IHaveBuff(benefitSpell.ID()) then return end
-    if not Casting.CheckOkayToBuff() then return end
-
-    local previousPetId = mq.TLO.Me.Pet.ID() or 0
-
-    if not Casting.UseItem(itemName, mq.TLO.Me.ID()) then return end
-
-    if bIsFamiliar then
-        -- the pet arrives from the server after the cast completes
-        mq.delay(1000, function() return (mq.TLO.Me.Pet.ID() or 0) ~= previousPetId end)
-
-        if (mq.TLO.Me.Pet.ID() or 0) ~= previousPetId then
-            self:RunCmd("/pet get lost")
-            return
-        end
-    end
-
-    if not primarySpell then return end
-
-    if Casting.IHaveBuff(primarySpell.ID()) then
-        self:RunCmd("/removebuff =%s", primarySpell.Name())
-        return
-    end
-
-    -- some illusions are a wrapper that fires one of several forms depending on your class
-    for i = 1, (primarySpell.NumEffects() or 0) do
-        if primarySpell.Attrib(i)() == 374 then
-            local triggeredSpell = primarySpell.Trigger(i)
-            if triggeredSpell and Casting.IHaveBuff(triggeredSpell.ID()) then
-                self:RunCmd("/removebuff =%s", triggeredSpell.Name())
-                return
-            end
-        end
-    end
+    return Config:GetSetting('DoMount') == 2 and not Config:GetSetting('DoMelee') and
+        (Config:GetSetting('MountItem') or ""):len() > 0 and mq.TLO.Me.CanMount() and (mq.TLO.Me.Mount.ID() or 0) == 0 and
+        Casting.CheckOkayToBuff()
 end
 
 function Module:GiveTime()
@@ -1041,30 +934,9 @@ function Module:GiveTime()
     local combat_state = Combat.GetCachedCombatState()
 
     if combat_state == "Downtime" then
-        if Casting.ShouldShrink() then
-            Casting.UseItem(Config:GetSetting('ShrinkItem'), mq.TLO.Me.ID())
-        end
-
-        if Casting.ShouldShrinkPet() then
-            Casting.UseItem(Config:GetSetting('ShrinkPetItem'), mq.TLO.Me.Pet.ID())
-        end
-
-        if self:ShouldMount() and Casting.CheckOkayToBuff() then
+        if self:ShouldMount() then
             Logger.log_debug("\ayMounting...")
-            Casting.UseItem(self:GetMountItemName(), mq.TLO.Me.ID())
-        end
-
-        if self:ShouldDismount() then
-            Logger.log_debug("\ayDismounting...")
-            self:RunCmd("/dismount")
-        end
-
-        if Config:GetSetting('DoFamiliarBenefit') then
-            self:DoBenefitClicky(self:GetBenefitItemName('FamiliarItem', mq.TLO.Familiar), true)
-        end
-
-        if Config:GetSetting('DoIllusionBenefit') then
-            self:DoBenefitClicky(self:GetBenefitItemName('IllusionItem', mq.TLO.Illusion))
+            Casting.UseItem(Config:GetSetting('MountItem'), mq.TLO.Me.ID())
         end
     end
 

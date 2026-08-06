@@ -569,10 +569,6 @@ local function Main()
         end
     end
 
-    if Globals.Constants.ModRodUse[Config:GetSetting('ModRodUse')] == "Anytime" or (Globals.Constants.ModRodUse[Config:GetSetting('ModRodUse')] == "Combat" and Globals.CurrentState == "Combat") then
-        Casting.ClickModRod()
-    end
-
     if not Combat.ValidCombatTarget(Globals.AutoTargetID) then
         Globals.AutoTargetID = 0
     end

@@ -2104,6 +2104,184 @@ function Module:InsertDefaultClickies()
     end
 end
 
+--- Returns true when DoShrink is enabled, a ShrinkItem is configured, the player's height is 2.3 or greater (i.e., not already shrunk), and OkayToBuff passes (visible, safe, stationary, not low-mana).
+---@return boolean True if the PC should be shrunk, false otherwise.
+function Module:ShouldShrink()
+    return Config:GetSetting('DoShrink') and (Config:GetSetting('ShrinkItem'):len() > 0) and
+        mq.TLO.Me.Height() >= 2.3 and Casting.OkayToBuff()
+end
+
+--- Returns true when DoShrinkPet is enabled, a ShrinkPetItem is configured, a pet exists, the pet's height is 1.9 or greater (i.e., not already shrunk), and OkayToPetBuff passes (DoPet enabled plus the same safe/stationary/visible/mana gates as OkayToBuff).
+---@return boolean True if the pet should be shrunk, false otherwise.
+function Module:ShouldShrinkPet()
+    return Config:GetSetting('DoShrinkPet') and (Config:GetSetting('ShrinkPetItem'):len() > 0) and
+        mq.TLO.Me.Pet.ID() > 0 and mq.TLO.Me.Pet.Height() >= 1.9 and Casting.OkayToPetBuff()
+end
+
+--- Scans inventory for a known modrod and clicks it on self. Skips
+--- non-casters, players above ModRodManaPct mana, HP below 60%,
+--- invisible, and EMU bards.
+function Module:ClickModRod()
+    local me = mq.TLO.Me
+    if not Globals.Constants.RGCasters:contains(me.Class.ShortName()) or me.PctMana() > Config:GetSetting('ModRodManaPct') or me.PctHPs() < 60 or me.Invis() or (Core.MyClassIs("BRD") and Core.OnEMU()) then
+        return
+    end
+
+    for _, itemName in ipairs(Globals.Constants.ModRods) do
+        while mq.TLO.Cursor.Name() == itemName and (mq.TLO.Me.FreeInventory() or 0) > 0 do
+            Core.DoCmd("/squelch /autoinv")
+            mq.delay(10)
+        end
+
+        local item = mq.TLO.FindItem(itemName)
+        if item() and item.Clicky() and mq.TLO.Me.Level() >= (item.Clicky.RequiredLevel() or 999) and item.TimerReady() == 0 then
+            Casting.UseItem(item.Name(), mq.TLO.Me.ID())
+            return
+        end
+    end
+end
+
+--- Returns the clicky to use for a benefit, falling back to the keyring's assigned stat item when no item is set.
+---@param settingName string The item setting to read.
+---@param keyring keyring The keyring to fall back to.
+---@return string
+function Module:GetBenefitItemName(settingName, keyring)
+    local itemName = Config:GetSetting(settingName) or ""
+    if itemName:len() > 0 then return itemName end
+
+    -- clients without keyrings have no TLO to ask
+    return keyring and keyring.Stat() or ""
+end
+
+--- Returns the mount clicky to use for the benefit, falling back to the Stat Mount when no item is set.
+---@return string
+function Module:GetMountItemName()
+    local mountItemName = Config:GetSetting('MountItem') or ""
+    if mountItemName:len() > 0 then return mountItemName end
+
+    return mq.TLO.Mount and mq.TLO.Mount.Stat() or ""
+end
+
+--- Returns the lasting benefit buff granted by the given mount, familiar or illusion item, and the mount/familiar/illusion itself.
+---@param itemName string The clicky to read.
+---@return MQSpell? benefitSpell The buff we are clicking the item for, nil if the item grants none.
+---@return MQSpell? primarySpell The mount, familiar or illusion to get rid of afterward, nil if it can't be resolved.
+function Module:GetBenefitSpells(itemName)
+    if (itemName or ""):len() == 0 then return nil end
+
+    local benefitItem = mq.TLO.FindItem("=" .. itemName)
+    if not benefitItem() then return nil end
+
+    local clickySpell = benefitItem.Clicky.Spell
+    if (clickySpell.ID() or 0) == 0 then return nil end
+
+    -- Live keeps the benefit in its own slot; RoF2 has only the one and pairs the two spells with a trigger
+    local blessingId = benefitItem.Blessing.Spell.ID() or 0
+    if blessingId > 0 and blessingId ~= clickySpell.ID() then
+        return benefitItem.Blessing.Spell, clickySpell
+    end
+
+    for i = 1, (clickySpell.NumEffects() or 0) do
+        if clickySpell.Attrib(i)() == 374 then
+            return clickySpell, clickySpell.Trigger(i)
+        end
+    end
+
+    return nil
+end
+
+--- Determines if the character should mount for the mount's lasting benefit.
+---@return boolean True if the character should mount, false otherwise.
+function Module:ShouldMountForBenefit()
+    if Config:GetSetting('DoMount') ~= 3 then return false end
+
+    local mountItemName = self:GetMountItemName()
+    if mountItemName:len() == 0 or not mq.TLO.Me.CanMount() then return false end
+
+    local benefitSpell = self:GetBenefitSpells(mountItemName)
+    return benefitSpell ~= nil and not Casting.IHaveBuff(benefitSpell.ID()) and Casting.CheckOkayToBuff()
+end
+
+--- Clicks a familiar or illusion item for its lasting buff, then gets rid of the familiar or illusion that came with it.
+---@param itemName string The clicky to use.
+---@param bIsFamiliar boolean? True for a familiar, which arrives as a pet on EMU and as a buff on Live.
+function Module:DoBenefitClicky(itemName, bIsFamiliar)
+    local benefitSpell, primarySpell = self:GetBenefitSpells(itemName)
+    if not benefitSpell or Casting.IHaveBuff(benefitSpell.ID()) then return end
+    if not Casting.CheckOkayToBuff() then return end
+
+    local previousPetId = mq.TLO.Me.Pet.ID() or 0
+
+    if not Casting.UseItem(itemName, mq.TLO.Me.ID()) then return end
+
+    if bIsFamiliar then
+        -- the pet arrives from the server after the cast completes
+        mq.delay(1000, function() return (mq.TLO.Me.Pet.ID() or 0) ~= previousPetId end)
+
+        if (mq.TLO.Me.Pet.ID() or 0) ~= previousPetId then
+            Core.DoCmd("/pet get lost")
+            return
+        end
+    end
+
+    if not primarySpell then return end
+
+    if Casting.IHaveBuff(primarySpell.ID()) then
+        Core.DoCmd("/removebuff =%s", primarySpell.Name())
+        return
+    end
+
+    -- some illusions are a wrapper that fires one of several forms depending on your class
+    for i = 1, (primarySpell.NumEffects() or 0) do
+        if primarySpell.Attrib(i)() == 374 then
+            local triggeredSpell = primarySpell.Trigger(i)
+            if triggeredSpell and Casting.IHaveBuff(triggeredSpell.ID()) then
+                Core.DoCmd("/removebuff =%s", triggeredSpell.Name())
+                return
+            end
+        end
+    end
+end
+
+--- Runs the item clickies RGMercs owns itself.
+---@param combatState string The cached combat state.
+function Module:DoBuiltInClickies(combatState)
+    local modRodUse = Globals.Constants.ModRodUse[Config:GetSetting('ModRodUse')]
+    if modRodUse == "Anytime" or (modRodUse == "Combat" and combatState == "Combat") then
+        self:ClickModRod()
+    end
+
+    if combatState ~= "Downtime" then return end
+
+    if self:ShouldShrink() then
+        Casting.UseItem(Config:GetSetting('ShrinkItem'), mq.TLO.Me.ID())
+    end
+
+    if self:ShouldShrinkPet() then
+        Casting.UseItem(Config:GetSetting('ShrinkPetItem'), mq.TLO.Me.Pet.ID())
+    end
+
+    if self:ShouldMountForBenefit() then
+        Logger.log_debug("\ayMounting...")
+        if Casting.UseItem(self:GetMountItemName(), mq.TLO.Me.ID()) then
+            mq.delay(3000, function() return (mq.TLO.Me.Mount.ID() or 0) > 0 end)
+
+            if (mq.TLO.Me.Mount.ID() or 0) > 0 then
+                Logger.log_debug("\ayDismounting...")
+                Core.DoCmd("/dismount")
+            end
+        end
+    end
+
+    if Config:GetSetting('DoFamiliarBenefit') then
+        self:DoBenefitClicky(self:GetBenefitItemName('FamiliarItem', mq.TLO.Familiar), true)
+    end
+
+    if Config:GetSetting('DoIllusionBenefit') then
+        self:DoBenefitClicky(self:GetBenefitItemName('IllusionItem', mq.TLO.Illusion))
+    end
+end
+
 function Module:GiveTime()
     local combat_state = Combat.GetCachedCombatState()
 
@@ -2116,6 +2294,8 @@ function Module:GiveTime()
         Logger.log_super_verbose("\ayClicky: \aw\t|->\aw \arSkipping, currently feigned!")
         return
     end
+
+    self:DoBuiltInClickies(combat_state)
 
     -- Main Module logic goes here.
     local clickies = self:ValidateClickies()
