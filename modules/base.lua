@@ -1,4 +1,5 @@
 local mq           = require('mq')
+local Actors       = require('actors')
 local Config       = require('utils.config')
 local Globals      = require("utils.globals")
 local Logger       = require("utils.logger")
@@ -97,13 +98,15 @@ end
 ---@param ... string
 ---@return boolean
 function Base:HandleBind(cmd, ...)
-    if self.CommandHandlers[cmd:lower()] ~= nil then
-        self.CommandHandlers[cmd:lower()].handler(self, ...)
+    local commandHandlers = self.CommandHandlers or {}
+
+    if commandHandlers[cmd:lower()] ~= nil then
+        commandHandlers[cmd:lower()].handler(self, ...)
         return true
     end
 
     -- try to process as a substring
-    for bindCmd, bindData in pairs(self.CommandHandlers or {}) do
+    for bindCmd, bindData in pairs(commandHandlers) do
         if Strings.StartsWith(bindCmd, cmd) then
             bindData.handler(self, ...)
             return true
@@ -111,6 +114,37 @@ function Base:HandleBind(cmd, ...)
     end
 
     return false
+end
+
+function Base:RegisterEvent(name, pattern, callback, options)
+    mq.event(name, pattern, callback, options)
+    self._trackedEvents = self._trackedEvents or {}
+    table.insert(self._trackedEvents, name)
+end
+
+function Base:RegisterBind(slash, callback)
+    mq.bind(slash, callback)
+    self._trackedBinds = self._trackedBinds or {}
+    table.insert(self._trackedBinds, slash)
+end
+
+function Base:RegisterImGui(name, callback)
+    mq.imgui.init(name, callback)
+    self._trackedImGui = self._trackedImGui or {}
+    table.insert(self._trackedImGui, name)
+end
+
+function Base:RegisterActor(mailbox, handler)
+    local dropbox
+    if type(mailbox) == "function" then
+        dropbox = Actors.register(mailbox)
+    else
+        dropbox = Actors.register(mailbox, handler)
+    end
+
+    self._trackedActors = self._trackedActors or {}
+    table.insert(self._trackedActors, dropbox)
+    return dropbox
 end
 
 function Base:Shutdown()

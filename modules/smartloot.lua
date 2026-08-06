@@ -313,6 +313,11 @@ end
 
 function Module:Shutdown()
     Logger.log_debug("\ay[LOOT]: \axSmartLoot Integration Module Unloaded.")
+
+    if Config:GetSetting('UseSmartLoot') and self:SLRunning() then
+        Core.DoCmd('/lua stop smartloot')
+    end
+
     -- Clear any pending loot state
     self.TempSettings.Looting = false
     self.TempSettings.LootStartTime = nil

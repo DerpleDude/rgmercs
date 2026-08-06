@@ -3710,13 +3710,13 @@ function Config.ResolveDefaults(defaults, settings, module)
         end
 
         if settings[k] == nil then
-            settings[k] = v.Default
+            settings[k] = type(v.Default) == "table" and Tables.DeepCopy(v.Default) or v.Default
             changed = true
         end
 
         if type(settings[k]) ~= type(v.Default) then
             Logger.log_warn("\ayData type of setting [\am%s\ay] has been deprecated -- resetting to default.", k)
-            settings[k] = v.Default
+            settings[k] = type(v.Default) == "table" and Tables.DeepCopy(v.Default) or v.Default
             changed = true
         elseif v.Type == "Combo" and settings[k] > #v.ComboOptions then
             Logger.log_warn("\aySetting value out of bounds [\am%s\ay] -- resetting to default.", k)
@@ -3745,6 +3745,8 @@ function Config.ResolveDefaults(defaults, settings, module)
 end
 
 function Config:UnRegisterCategoryToSettingMapping(setting)
+    if not Config.TempSettings.SettingToModuleCache[setting] then return end
+
     local category = Config:GetSettingDefaults(setting).Category
     if self.TempSettings.SettingsCategoryToSettingMapping[category] then
         for i, v in ipairs(self.TempSettings.SettingsCategoryToSettingMapping[category]) do
@@ -3766,6 +3768,23 @@ function Config:PeerRegisterCategoryToSettingMapping(peer, setting)
     local category = Config:PeerGetSettingDefaults(peer, setting).Category
     self.TempSettings.PeerSettingsCategoryToSettingMapping[category] = self.TempSettings.PeerSettingsCategoryToSettingMapping[category] or {}
     table.insert(self.TempSettings.PeerSettingsCategoryToSettingMapping[category], setting)
+end
+
+--- Returns the module already using any setting name in defaultSettings, plus
+--- the offending setting; setting names are matched without regard to case.
+---@param module string Module about to register the settings.
+---@param defaultSettings table? Candidate DefaultConfig table.
+---@return string? owner Name of the module already using one of the setting names.
+---@return string? setting The setting name that is already taken.
+function Config:FindConflictingSettingOwner(module, defaultSettings)
+    for setting in pairs(defaultSettings or {}) do
+        local registeredName = Config.TempSettings.SettingsLowerToNameCache[setting:lower()]
+        local owner = registeredName and Config.TempSettings.SettingToModuleCache[registeredName]
+        if owner and owner ~= module then
+            return owner, setting
+        end
+    end
+    return nil
 end
 
 function Config:RegisterModuleSettings(module, settings, defaultSettings, faq, firstSaveRequired)
@@ -3832,9 +3851,15 @@ function Config:ClearModuleSettings(module)
 
     for setting, _ in pairs(self.moduleDefaultSettings[module]) do
         self:UnRegisterCategoryToSettingMapping(setting)
-        Config.TempSettings.SettingsLowerToNameCache[setting:lower()] = nil
-        Config.TempSettings.SettingToModuleCache[setting] = nil
-        Config.TempSettings.SettingToScopeCache[setting] = nil
+
+        if Config.TempSettings.SettingToModuleCache[setting] == module then
+            Config.TempSettings.SettingToModuleCache[setting] = nil
+            Config.TempSettings.SettingToScopeCache[setting] = nil
+
+            if Config.TempSettings.SettingsLowerToNameCache[setting:lower()] == setting then
+                Config.TempSettings.SettingsLowerToNameCache[setting:lower()] = nil
+            end
+        end
     end
 
     self.moduleTempSettings[module] = nil

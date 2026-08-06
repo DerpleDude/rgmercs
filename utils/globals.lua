@@ -69,6 +69,7 @@ Globals.CurrentSongs                  = {}
 Globals.CurrentBlocked                = {}
 Globals.CurrentPetBuffs               = nil
 Globals.CurrentPetBlocked             = nil
+Globals.UserModuleManifest            = {}
 
 Globals.Constants                     = {}
 

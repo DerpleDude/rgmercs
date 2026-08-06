@@ -2,6 +2,7 @@ local mq      = require('mq')
 local Comms   = require("utils.comms")
 local Config  = require('utils.config')
 local DanNet  = require('lib.dannet.helpers')
+local Files   = require("utils.files")
 local Globals = require('utils.globals')
 local Logger  = require("utils.logger")
 local LuaFS   = require('lfs')
@@ -44,6 +45,121 @@ function Core.ScanConfigDirs()
             end
         end
     end
+end
+
+--- Rebuilds Globals.UserModuleManifest from the user modules folder, stamping
+--- parse/runtime errors and name collisions onto the affected entries.
+---@return boolean scanned False when the modules folder could not be read.
+function Core.ScanUserModules()
+    Globals.UserModuleManifest = {}
+
+    local userModuleDir = string.format("%s/rgmercs/modules", mq.configDir)
+    if not LuaFS.attributes(userModuleDir) then
+        local created, mkdirError = Files.make_p(userModuleDir)
+        if not created then
+            Logger.log_error("\arFailed to create the user modules folder \at%s\ar: %s", userModuleDir, mkdirError)
+            return false
+        end
+
+        Files.copy_file(string.format("%s/extras/hello_world.lua", Globals.ScriptDir),
+            string.format("%s/hello_world.lua", userModuleDir))
+        return false
+    end
+
+    local fileNames = {}
+    for file in LuaFS.dir(userModuleDir) do
+        if file:match("%.lua$") then
+            table.insert(fileNames, file)
+        end
+    end
+    table.sort(fileNames)
+
+    for _, fileName in ipairs(fileNames) do
+        local entry = { fileName = fileName, filePath = string.format("%s/%s", userModuleDir, fileName), }
+        local chunk, loadError = loadfile(entry.filePath)
+
+        if not chunk then
+            entry.error = loadError
+        else
+            local success, module = pcall(chunk)
+            if not success then
+                entry.error = module
+            elseif type(module) ~= "table" then
+                entry.error = "File did not return a module table."
+            else
+                local declaredName = rawget(module, '_name')
+                if type(declaredName) ~= "string" or declaredName == "" then
+                    entry.error = "Module table is missing its own _name string."
+                else
+                    entry.name = declaredName
+                    entry.version = rawget(module, '_version')
+                    entry.author = rawget(module, '_author')
+                    entry.about = rawget(module, '_about')
+                end
+            end
+        end
+
+        Logger.log_debug("Found user module file: %s (%s)", fileName, entry.error or entry.name)
+        table.insert(Globals.UserModuleManifest, entry)
+    end
+
+    local claimedNames = {}
+    for moduleName in pairs(Modules:GetModuleList()) do
+        if not Modules.LoadedUserModules[moduleName] then
+            claimedNames[moduleName:lower()] = "an RGMercs module"
+        end
+    end
+
+    for settingsNamespace in pairs(Config.moduleDefaultSettings) do
+        if not Modules.LoadedUserModules[settingsNamespace] then
+            claimedNames[settingsNamespace:lower()] = "an RGMercs module"
+        end
+    end
+
+    for _, lootModule in ipairs(Globals.Constants.LootModuleTypes) do
+        claimedNames[lootModule:lower()] = "an RGMercs module"
+    end
+
+    for _, entry in ipairs(Globals.UserModuleManifest) do
+        if entry.name and Modules.LoadedUserModules[entry.name] == entry.filePath then
+            claimedNames[entry.name:lower()] = entry.fileName
+        end
+    end
+
+    for _, entry in ipairs(Globals.UserModuleManifest) do
+        if entry.name then
+            local claimedBy = claimedNames[entry.name:lower()]
+            if claimedBy and claimedBy ~= entry.fileName then
+                entry.collisionWith = claimedBy
+            else
+                claimedNames[entry.name:lower()] = entry.fileName
+            end
+        end
+    end
+
+    return true
+end
+
+--- Returns the manifest entry for a saved user module, matching the declared
+--- name first so a renamed file resolves, then the filename so a file whose
+--- name has become unreadable still resolves.
+---@param moduleName string? Declared _name last seen for the module.
+---@param fileName string? Filename last seen for the module.
+---@return table? entry The matching manifest entry.
+function Core.FindUserModule(moduleName, fileName)
+    for _, entry in ipairs(Globals.UserModuleManifest) do
+        if entry.name and entry.name == moduleName and entry.fileName == fileName then return entry end
+    end
+
+    for _, entry in ipairs(Globals.UserModuleManifest) do
+        if entry.fileName == fileName then return entry end
+    end
+
+    for _, entry in ipairs(Globals.UserModuleManifest) do
+        if entry.name and entry.name == moduleName then return entry end
+    end
+
+    return nil
 end
 
 --- Calls fn via pcall, logging an error with logInfo context on failure.
