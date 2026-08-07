@@ -9,13 +9,13 @@ local Modules                = require("utils.modules")
 local Movement               = { _version = '1.0', _name = "Movement", _author = 'Derple', }
 Movement.__index             = Movement
 Movement.LastDoStick         = 0
-Movement.LastDoStickCmd      = ""
 Movement.LastReposition      = 0
 Movement.LastDoNav           = 0
 Movement.LastDoNavCmd        = ""
-Movement.LastDoNavTracer     = ""
-Movement.LastMoveTo          = 0
-Movement.LastMoveToCmd       = ""
+Movement.LastCmd             = ""
+Movement.LastCmdKind         = ""
+Movement.LastCmdTime         = 0
+Movement.LastCmdTracer       = ""
 Movement.LastMove            = {}
 Movement.LastMove.X          = mq.TLO.Me.X()
 Movement.LastMove.Y          = mq.TLO.Me.Y()
@@ -68,24 +68,21 @@ end
 function Movement:MoveToLoc(locX, locY)
     local cmd = string.format("loc %d %d|on", locX, locY)
     Core.DoCmd("/squelch /moveto " .. cmd)
-    self.LastMoveTo = Globals.GetTimeSeconds()
-    self.LastMoveToCmd = cmd
+    self:RecordLastCmd("moveto", cmd)
     self.MoveToActive = true
 end
 
 function Movement:MoveToSpawnId(spawnId, distance)
     local cmd = string.format("id %d uw mdist %d", spawnId, distance)
     Core.DoCmd("/squelch /moveto " .. cmd)
-    self.LastMoveTo = Globals.GetTimeSeconds()
-    self.LastMoveToCmd = cmd
+    self:RecordLastCmd("moveto", cmd)
     self.MoveToActive = true
 end
 
 function Movement:StopMoveTo()
     if self.MoveToActive then
         Core.DoCmd("/squelch /moveto stop")
-        self.LastMoveTo = Globals.GetTimeSeconds()
-        self.LastMoveToCmd = "stop"
+        self:RecordLastCmd("moveto", "stop")
         self.MoveToActive = false
     end
 end
@@ -99,7 +96,17 @@ function Movement:DoStickCmd(params, ...)
     if ... ~= nil then formatted = string.format(params, ...) end
     Core.DoCmd("/stick %s", formatted)
     self:SetLastStickTimer(Globals.GetTimeSeconds())
-    self.LastDoStickCmd = formatted
+    self:RecordLastCmd("stick", formatted)
+end
+
+--- Issues an /afollow command with formatted params.
+---@param params string Format string for the follow parameters.
+---@param ... any Arguments for the format string.
+function Movement:DoFollowCmd(params, ...)
+    local formatted = params
+    if ... ~= nil then formatted = string.format(params, ...) end
+    Core.DoCmd("/squelch /afollow %s", formatted)
+    self:RecordLastCmd("afollow", formatted)
 end
 
 --- Issues a /nav command, skipping duplicates that are already active.
@@ -115,25 +122,48 @@ function Movement:DoNav(squelch, params, ...)
         return
     end
 
-    local callerTracer = Logger.getCallStack(true) or ""
-
     Core.DoCmd("%s/nav %s", squelch and "/squelch " or "", formatted)
     self.LastDoNav = Globals.GetTimeSeconds()
-    self.LastDoNavTracer = callerTracer
     self.LastDoNavCmd = formatted
+    self:RecordLastCmd("nav", formatted)
     self:StoreLastMove()
 end
 
---- Returns the last /nav command string that was issued.
----@return string, string The last nav command, or "" if none and the last nav call's caller info for debugging.
-function Movement:GetLastNavCmd()
-    return self.LastDoNavCmd, self.LastDoNavTracer
+--- Records cmd as the most recent movement command of kind, capturing the caller that issued it.
+---@param kind string Short label for the command type (nav, moveto, stick, afollow).
+---@param cmd string The command parameters that were issued.
+function Movement:RecordLastCmd(kind, cmd)
+    -- DoStick only forwards to DoStickCmd, so step past it to reach whoever wanted the stick.
+    local caller = debug.getinfo(3, "f")
+    local level = (caller and caller.func == Movement.DoStick) and 5 or 4
+
+    self.LastCmd = cmd
+    self.LastCmdKind = kind
+    self.LastCmdTime = Globals.GetTimeSeconds()
+    self.LastCmdTracer = Logger.getCallStack(true, level)
 end
 
---- Returns the last /stick command string that was issued.
----@return string The last stick command, or "" if none.
-function Movement:GetLastStickCmd()
-    return self.LastDoStickCmd
+--- Returns the most recent movement command of any kind, with its type and issuing caller.
+---@return string, string, string The command kind, the command itself, and the caller info for debugging.
+function Movement:GetLastCmd()
+    return self.LastCmdKind, self.LastCmd, self.LastCmdTracer
+end
+
+--- Returns elapsed seconds since the last movement command as a string,
+--- or "N/A" if none has been issued yet.
+---@return string Elapsed time string like "5s", or "N/A".
+function Movement:GetTimeSinceLastCmd()
+    if self.LastCmd == "" then
+        return "N/A"
+    end
+
+    return string.format("%ds", Globals.GetTimeSeconds() - self.LastCmdTime)
+end
+
+--- Returns the last /nav command string that was issued.
+---@return string The last nav command, or "" if none.
+function Movement:GetLastNavCmd()
+    return self.LastDoNavCmd
 end
 
 --- Resets the stick timer so the next DoStick call is not rate-limited.
@@ -141,27 +171,10 @@ function Movement:ClearLastStickTimer()
     self.LastDoStick = 0
 end
 
---- Returns the timestamp (seconds) when the last stick command was sent.
----@return number Seconds since MQ epoch of the last stick.
-function Movement:GetLastStickTimer()
-    return self.LastDoStick
-end
-
 --- Records t as the timestamp of the most recent stick command.
 ---@param t number Timestamp in seconds (from Globals.GetTimeSeconds).
 function Movement:SetLastStickTimer(t)
     self.LastDoStick = t
-end
-
---- Returns elapsed seconds since the last stick command as a string,
---- or "N/A" if no stick has been issued yet.
----@return string Elapsed time string like "5s", or "N/A".
-function Movement:GetTimeSinceLastStick()
-    if self.LastDoStickCmd == "" then
-        return "N/A"
-    end
-
-    return string.format("%ds", Globals.GetTimeSeconds() - self.LastDoStick)
 end
 
 --- Returns elapsed seconds since the last nav command as a string,
@@ -173,17 +186,6 @@ function Movement:GetTimeSinceLastNav()
     end
 
     return string.format("%ds", Globals.GetTimeSeconds() - self.LastDoNav)
-end
-
---- Returns elapsed seconds since the last nav command as a number,
---- or 0 if no nav has been issued.
----@return number Seconds elapsed since the last nav command.
-function Movement:GetSecondsSinceLastNav()
-    if self.LastDoNavCmd == "" then
-        return 0
-    end
-
-    return Globals.GetTimeSeconds() - self.LastDoNav
 end
 
 --- Navigates to the combat target then sticks; bNoWait issues the nav and returns immediately instead of waiting for arrival.

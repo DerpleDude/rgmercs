@@ -27,7 +27,7 @@ function ItemManager.GiveTo(toId, itemName, count)
 
     if mq.TLO.Target.Distance3D() >= 25 then
         Logger.log_debug("\arGiveTo but Target is too far away - moving closer!")
-        Movement:DoNav(false, "id %d |log=off dist=10")
+        Movement:DoNav(false, "id %d |log=off dist=10", toId)
 
         mq.delay("10s", function() return mq.TLO.Navigation.Active() end)
     end

@@ -24,7 +24,6 @@ Module.TempSettings                = {}
 Module.TempSettings.CampZoneId     = 0
 Module.TempSettings.CampInstanceId = 0
 Module.TempSettings.DeathCampHold  = false
-Module.TempSettings.LastCmd        = ""
 Module.TempSettings.NavWasActive   = false
 
 Module.Constants                   = {}
@@ -414,17 +413,6 @@ function Module:ChaseOn(nameParam)
     end
 end
 
-function Module:RunCmd(cmd, ...)
-    local formattedCmd = cmd
-
-    if ... ~= nil then
-        formattedCmd = string.format(cmd, ...)
-    end
-
-    self.TempSettings.LastCmd = formattedCmd
-    Core.DoCmd(formattedCmd)
-end
-
 function Module:ChaseOff()
     if Config:GetSetting('ChaseOn') == false then return end
     Logger.log_info("\ayNo longer chasing \at%s\ay.", Config:GetSetting('ChaseTarget') or "None")
@@ -621,10 +609,6 @@ function Module:Render()
         Ui.RenderText("Chase LOS Required")
         ImGui.TableNextColumn()
         Ui.RenderColoredText(requireLOS and Globals.Constants.BasicColors.Green or Globals.Constants.BasicColors.Red, requireLOS and "Yes" or "No")
-        ImGui.TableNextColumn()
-        Ui.RenderText("Last Movement Command")
-        ImGui.TableNextColumn()
-        Ui.RenderText(self.TempSettings.LastCmd)
         ImGui.EndTable()
 
         ImGui.Separator()
@@ -910,6 +894,81 @@ function Module:ShouldMount()
         Casting.CheckOkayToBuff()
 end
 
+function Module:DoChase()
+    local chaseTarg = Config:GetSetting('ChaseTarget')
+    local chaseSpawn = mq.TLO.Spawn("pc =" .. chaseTarg)
+    local chaseId = chaseSpawn.ID()
+
+    if not chaseSpawn or chaseSpawn.Dead() or chaseId == 0 then
+        Logger.log_verbose("\awNOTICE:\ax Chase Target \am%s\ax is dead or not found in zone.", chaseTarg)
+        return
+    end
+
+    if mq.TLO.Me.Dead() then return end
+
+    -- determine if chase is needed
+    local chaseDist = Config:GetSetting('ChaseDistance')
+    local stopDist = Config:GetSetting('ChaseStopDistance')
+    local chaseSpawnDist = chaseSpawn.Distance() or 0
+    local navPathString = string.format("id %d", chaseId)
+    local useLocNav = false
+
+    if Config:GetSetting('UseActorNav') then
+        local heartbeat = Comms.GetPeerHeartbeatByName(chaseTarg)
+        local data = heartbeat and heartbeat.Data
+        if data and data.Zone == mq.TLO.Zone.Name() and data.X and data.Y and data.Z then
+            local peerLoc = string.format("%d, %d, %d", data.Y, data.X, data.Z)
+            chaseSpawnDist = math.floor(mq.TLO.Math.Distance(peerLoc)()) -- math.distance returns 0 on invalid string
+            -- Algar note: Emu server code seems to give constant updates up to 300, and periodic updates up to 600. Over 600, stops updating. Tested on EQMight 11/2025
+            if chaseSpawnDist > 300 then
+                useLocNav = true
+                navPathString = string.format("loc %d %d %d", data.Y, data.X, data.Z)
+            end
+        else
+            Logger.log_verbose("\awNOTICE:\ax Chase Target \am%s\ax has no valid actor data, falling back to spawn checks.", chaseTarg)
+        end
+    end
+
+    -- Use MQ2Nav to navigate if able:
+    -- -- If we are using actor nav, and the chase target is far enough away, nav to the loc, as spawn checks aren't reliable
+    -- -- Otherwise, if the mesh is loaded, we will nav to the spawn to take advantage of MQ2Nav spawn tracking, and fallback to a moveto if no path exists
+    -- -- Finally, if there is no mesh loaded, we will fall back on afollow if the target is close enough
+    if chaseSpawnDist > chaseDist then
+        --recheck valid spawn because they could have zoned
+        if not chaseSpawn() or chaseSpawn.ID() == 0 then
+            Logger.log_verbose("\awNOTICE:\ax Chase Target \am%s\ax is dead or not found in zone.", chaseTarg)
+            return
+        end
+
+        local Nav = mq.TLO.Navigation
+        if Nav.MeshLoaded() then
+            if not Nav.Active() or useLocNav then -- if naving to a location, update that to the most recent location in case the target is moving
+                local requireLoS = Config:GetSetting('RequireLoS') and "on" or "off"
+
+                if Nav.PathExists(navPathString)() then
+                    Logger.log_verbose("\awNOTICE:\ax Chase Target %s is out of range - naving", chaseTarg)
+                    Movement:DoNav(true, "%s log=critical dist=%d lineofsight=%s", navPathString, stopDist, requireLoS)
+                    mq.delay("1s", function() return mq.TLO.Navigation.Active() end)
+                else
+                    -- Assuming no line of site problems.
+                    Logger.log_verbose("\awNOTICE:\ax Chase Target %s Has no nav path, trying /moveto", chaseTarg)
+                    Movement:MoveToSpawnId(chaseId, Config:GetSetting('ChaseDistance'))
+                end
+            end
+        elseif chaseSpawnDist < 400 then -- Algarnote I left this alone, legacy code, not sure if this value is signifigant or arbitrary
+            Logger.log_warning("\awWARNING:\ax Chase Target %s but no nav mesh - using afollow instead", chaseTarg)
+            Movement:DoFollowCmd("spawn %d", chaseId)
+            Movement:DoFollowCmd("%d", chaseDist)
+
+            mq.delay("2s")
+
+            if (chaseSpawn.Distance() or 0) < stopDist then
+                Movement:DoFollowCmd("off")
+            end
+        end
+    end
+end
+
 function Module:GiveTime()
     if mq.TLO.Me.Hovering() and Config:GetSetting('ChaseOn') then
         if Config:GetSetting('BreakOnDeath') then
@@ -968,78 +1027,7 @@ function Module:GiveTime()
     end
 
     if Config:GetSetting('ChaseOn') and Config:GetSetting('ChaseTarget') then
-        local chaseTarg = Config:GetSetting('ChaseTarget')
-        local chaseSpawn = mq.TLO.Spawn("pc =" .. chaseTarg)
-        local chaseId = chaseSpawn.ID()
-
-        if not chaseSpawn or chaseSpawn.Dead() or chaseId == 0 then
-            Logger.log_verbose("\awNOTICE:\ax Chase Target \am%s\ax is dead or not found in zone.", chaseTarg)
-            return
-        end
-
-        if mq.TLO.Me.Dead() then return end
-
-        -- determine if chase is needed
-        local chaseDist = Config:GetSetting('ChaseDistance')
-        local stopDist = Config:GetSetting('ChaseStopDistance')
-        local chaseSpawnDist = chaseSpawn.Distance() or 0
-        local navPathString = string.format("id %d", chaseId)
-        local useLocNav = false
-
-        if Config:GetSetting('UseActorNav') then
-            local heartbeat = Comms.GetPeerHeartbeatByName(chaseTarg)
-            local data = heartbeat and heartbeat.Data
-            if data and data.Zone == mq.TLO.Zone.Name() and data.X and data.Y and data.Z then
-                local peerLoc = string.format("%d, %d, %d", data.Y, data.X, data.Z)
-                chaseSpawnDist = math.floor(mq.TLO.Math.Distance(peerLoc)()) -- math.distance returns 0 on invalid string
-                -- Algar note: Emu server code seems to give constant updates up to 300, and periodic updates up to 600. Over 600, stops updating. Tested on EQMight 11/2025
-                if chaseSpawnDist > 300 then
-                    useLocNav = true
-                    navPathString = string.format("loc %d %d %d", data.Y, data.X, data.Z)
-                end
-            else
-                Logger.log_verbose("\awNOTICE:\ax Chase Target \am%s\ax has no valid actor data, falling back to spawn checks.", chaseTarg)
-            end
-        end
-
-        -- Use MQ2Nav to navigate if able:
-        -- -- If we are using actor nav, and the chase target is far enough away, nav to the loc, as spawn checks aren't reliable
-        -- -- Otherwise, if the mesh is loaded, we will nav to the spawn to take advantage of MQ2Nav spawn tracking, and fallback to a moveto if no path exists
-        -- -- Finally, if there is no mesh loaded, we will fall back on afollow if the target is close enough
-        if chaseSpawnDist > chaseDist then
-            --recheck valid spawn because they could have zoned
-            if not chaseSpawn() or chaseSpawn.ID() == 0 then
-                Logger.log_verbose("\awNOTICE:\ax Chase Target \am%s\ax is dead or not found in zone.", chaseTarg)
-                return
-            end
-
-            local Nav = mq.TLO.Navigation
-            if Nav.MeshLoaded() then
-                if not Nav.Active() or useLocNav then -- if naving to a location, update that to the most recent location in case the target is moving
-                    local requireLoS = Config:GetSetting('RequireLoS') and "on" or "off"
-
-                    if Nav.PathExists(navPathString)() then
-                        Logger.log_verbose("\awNOTICE:\ax Chase Target %s is out of range - naving", chaseTarg)
-                        Movement:DoNav(true, "%s log=critical dist=%d lineofsight=%s", navPathString, stopDist, requireLoS)
-                        mq.delay("1s", function() return mq.TLO.Navigation.Active() end)
-                    else
-                        -- Assuming no line of site problems.
-                        Logger.log_verbose("\awNOTICE:\ax Chase Target %s Has no nav path, trying /moveto", chaseTarg)
-                        Movement:MoveToSpawnId(chaseId, Config:GetSetting('ChaseDistance'))
-                    end
-                end
-            elseif chaseSpawnDist < 400 then -- Algarnote I left this alone, legacy code, not sure if this value is signifigant or arbitrary
-                Logger.log_warning("\awWARNING:\ax Chase Target %s but no nav mesh - using afollow instead", chaseTarg)
-                self:RunCmd("/squelch /afollow spawn %d", chaseId)
-                self:RunCmd("/squelch /afollow %d", chaseDist)
-
-                mq.delay("2s")
-
-                if (chaseSpawn.Distance() or 0) < stopDist then
-                    self:RunCmd("/squelch /afollow off")
-                end
-            end
-        end
+        self:DoChase()
     end
 end
 
@@ -1049,7 +1037,7 @@ function Module:IAmStuck()
     local stuck = Nav.Active() and not Nav.Paused() and
         Movement:GetTimeSinceLastPositionChange() >= Config:GetSetting('AttemptToFixStuckTimer')
 
-    local lastNav, _ = Movement:GetLastNavCmd()
+    local lastNav = Movement:GetLastNavCmd()
 
     if stuck then
         Logger.log_debug(

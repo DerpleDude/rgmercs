@@ -51,42 +51,25 @@ function StandardUI:renderModulesTabs()
                 ImGui.TableNextColumn()
                 Ui.RenderColoredText(mq.TLO.Stick.Active() and ImVec4(Ui.GetConColorBySpawn(mq.TLO.Spawn(mq.TLO.Stick.StickTarget()))) or ImVec4(1, 1, 1, 1),
                     "%s ", (mq.TLO.Stick.Active() and (mq.TLO.Stick.StickTargetName() or "None") or "None"))
-                ImGui.SameLine()
-                Ui.RenderText("[")
-                ImGui.SameLine()
-                Ui.RenderColoredText(mq.TLO.Stick.Active() and Globals.Constants.Colors.ConditionPassColor or Globals.Constants.Colors.ConditionDisabledColor,
-                    "%s", (mq.TLO.Stick.Active() and Movement:GetLastStickCmd() or "N/A"))
-                ImGui.SameLine()
-                Ui.RenderText("] ")
+                ImGui.TableNextColumn()
+                Ui.RenderText("Last Move Command")
+                local lastCmdKind, lastCmd, lastCmdTracer = Movement:GetLastCmd()
+                ImGui.TableNextColumn()
+                Ui.RenderColoredText(Globals.Constants.Colors.ConditionPassColor, "%s ", lastCmd ~= "" and string.format("%s: %s", lastCmdKind, lastCmd) or "N/A")
                 ImGui.SameLine()
                 Ui.RenderText("<")
                 ImGui.SameLine()
-                Ui.RenderColoredText(Globals.Constants.Colors.LightBlue, "%s", Movement:GetTimeSinceLastStick() or "0s")
+                Ui.RenderColoredText(Globals.Constants.Colors.LightBlue, "%s", Movement:GetTimeSinceLastCmd())
                 ImGui.SameLine()
                 Ui.RenderText(">")
-                ImGui.TableNextColumn()
-                Ui.RenderText("Last Nav")
-                local lastNav, lastNavTracer = Movement:GetLastNavCmd()
-                ImGui.TableNextColumn()
-                if mq.TLO.Navigation.MeshLoaded() then
-                    Ui.RenderColoredText(Globals.Constants.Colors.ConditionPassColor, "%s ", lastNav or "N/A")
-                else
-                    Ui.RenderColoredText(Globals.GetAlternatingColor(), "%s ", "Mesh Not Loaded")
+                if not mq.TLO.Navigation.MeshLoaded() then
+                    ImGui.SameLine()
+                    Ui.RenderColoredText(Globals.GetAlternatingColor(), " %s", "Mesh Not Loaded")
                 end
-                ImGui.SameLine()
-                Ui.RenderText("<")
-                ImGui.SameLine()
-                Ui.RenderColoredText(Globals.Constants.Colors.LightBlue, "%s", Movement:GetTimeSinceLastNav() or "0s")
-                ImGui.SameLine()
-                Ui.RenderText(">")
                 ImGui.TableNextColumn()
-                Ui.RenderText("Last Nav Trace")
+                Ui.RenderText("Last Move Trace")
                 ImGui.TableNextColumn()
-                if mq.TLO.Navigation.MeshLoaded() then
-                    Ui.RenderColoredText(Globals.Constants.Colors.BrightWhite, "%s ", lastNavTracer or "N/A")
-                else
-                    Ui.RenderColoredText(Globals.GetAlternatingColor(), "%s ", "N/A")
-                end
+                Ui.RenderColoredText(Globals.Constants.Colors.BrightWhite, "%s ", lastCmdTracer ~= "" and lastCmdTracer or "N/A")
 
                 ImGui.PopStyleVar(1)
                 ImGui.EndTable()
