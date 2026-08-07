@@ -1157,7 +1157,7 @@ end
 --- Returns false if the player has a nearby corpse (within 100/50 units) and BuffRezables is not set — used to abort buff rotations when the player is waiting for a rez, since buffs applied to a corpse state are wasted.
 --- @return boolean True if the entity can be buffed, false otherwise.
 function Casting.AmIBuffable()
-    local myCorpseCount = Config:GetSetting('BuffRezables') and 0 or mq.TLO.SpawnCount(string.format('pccorpse =%s radius 100 zradius 50', mq.TLO.Me.CleanName()))()
+    local myCorpseCount = Config:GetSetting('BuffRezables') and 0 or mq.TLO.SpawnCount(string.format("pccorpse %s's radius 100 zradius 50", mq.TLO.Me.CleanName()))()
     if myCorpseCount > 0 then Logger.log_debug("Corpse detected (%s), aborting rotation.", mq.TLO.Me.CleanName()) end
     return myCorpseCount == 0
 end
@@ -1167,7 +1167,7 @@ end
 ---@param name string The PC name to search for.
 ---@return boolean True if a nearby corpse for that name exists.
 function Casting.HasNearbyCorpse(name)
-    return mq.TLO.SpawnCount(string.format("pccorpse =%s radius 100 zradius 50", name))() > 0
+    return mq.TLO.SpawnCount(string.format("pccorpse %s's radius 100 zradius 50", name))() > 0
 end
 
 --- Dispatches to GetBuffableInZoneIDs, GetBuffableRaidIDs, or
