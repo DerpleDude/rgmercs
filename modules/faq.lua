@@ -101,7 +101,7 @@ Module.FAQ             = {
         Answer = "These per-zone lists let you override curing by effect name.\n\n" ..
             "  Allow List: For effects without counters that should be dispelled outright (via Radiant Cure or similar).\n\n" ..
             "  Deny List: For effects we should ignore when deciding whether to cure (they may be cured if we also attempt to cure something else).\n\n" ..
-            "  Manage them in the Cure Abilities section of the Class tab, or with /rgl cureallow, /rgl curedeny, /rgl cureallowrm, and /rgl curedenyrm.\n\n" ..
+            "  Manage them in the Cure Effect Lists section of the Class tab, or with /rgl cureallow, /rgl curedeny, /rgl cureallowrm, and /rgl curedenyrm.\n\n" ..
             "  Enable Use Shared Cure Lists to share these lists with your RGMercs peers on this machine.",
         Settings_Used = "",
     },
@@ -119,7 +119,7 @@ Module.FAQ             = {
         Answer = "These lists let you override dispelling by effect name.\n\n" ..
             "  Allow List: For effects your client reports as undispellable when they actually aren't. We will attempt to strip them anyway.\n\n" ..
             "  Deny List: For effects we should ignore when deciding whether to dispel (they may still be stripped if we dispel something else).\n\n" ..
-            "  Manage them in the Dispel Abilities section of the Class tab, by right-clicking an effect in the RGMercs target window, or with /rgl dispelallow, /rgl dispeldeny, /rgl dispelallowrm, and /rgl dispeldenyrm.\n\n" ..
+            "  Manage them in the Dispel Effect Lists section of the Class tab, by right-clicking an effect in the RGMercs target window, or with /rgl dispelallow, /rgl dispeldeny, /rgl dispelallowrm, and /rgl dispeldenyrm.\n\n" ..
             "  Enable Use Shared Dispel Lists to share these lists with your RGMercs peers on this machine.",
         Settings_Used = "",
     },

@@ -1324,50 +1324,66 @@ function Module:Render()
         end
 
         if not self.TempSettings.ResolvingActions and ((self.ClassConfig and self.ClassConfig.Cure) or self:HasCureClickies()) then
-            if ImGui.CollapsingHeader("Cure Abilities") then
+            if ImGui.CollapsingHeader("Cure Management") then
                 ImGui.Indent()
-                local cureAbilities = self:GetCureAbilities()
-                if cureAbilities then
-                    local enabled = Config:GetSetting('EnabledCureEntries') or {}
-                    local changed = false
-                    for _, bucket in ipairs({ "DetDispel", "Poison", "Disease", "Curse", "Corruption", }) do
-                        local list = cureAbilities[bucket]
-                        if list and #list > 0 then
-                            ImGui.Text(bucket == "DetDispel" and "Detrimental Dispels" or bucket)
-                            local resolvedMap = {}
-                            for _, entry in ipairs(list) do
-                                resolvedMap[entry.name] = self:GetResolvedActionMapItem(entry.name)
+                if ImGui.CollapsingHeader("Cure Abilities") then
+                    ImGui.Indent()
+                    local cureAbilities = self:GetCureAbilities()
+                    if cureAbilities then
+                        local enabled = Config:GetSetting('EnabledCureEntries') or {}
+                        local changed = false
+                        for _, bucket in ipairs({ "DetDispel", "Poison", "Disease", "Curse", "Corruption", }) do
+                            local list = cureAbilities[bucket]
+                            if list and #list > 0 then
+                                ImGui.Text(bucket == "DetDispel" and "Detrimental Dispels" or bucket)
+                                local resolvedMap = {}
+                                for _, entry in ipairs(list) do
+                                    resolvedMap[entry.name] = self:GetResolvedActionMapItem(entry.name)
+                                end
+                                enabled[bucket] = enabled[bucket] or {}
+                                local newEnabled, entriesChanged, _, resetRequested = Ui.RenderRotationTable("Cure" .. bucket, list, resolvedMap, 0, enabled[bucket],
+                                    true, true)
+                                enabled[bucket] = newEnabled
+                                if entriesChanged then changed = true end
+                                if resetRequested then self:RebuildCureAbilities() end
                             end
-                            enabled[bucket] = enabled[bucket] or {}
-                            local newEnabled, entriesChanged, _, resetRequested = Ui.RenderRotationTable("Cure" .. bucket, list, resolvedMap, 0, enabled[bucket], true,
-                                true)
-                            enabled[bucket] = newEnabled
-                            if entriesChanged then changed = true end
-                            if resetRequested then self:RebuildCureAbilities() end
                         end
+                        if changed then Config:SetSetting('EnabledCureEntries', enabled) end
                     end
-                    if changed then Config:SetSetting('EnabledCureEntries', enabled) end
+                    ImGui.Unindent()
                 end
-                self:RenderCureLists()
+                if ImGui.CollapsingHeader("Cure Effect Lists") then
+                    ImGui.Indent()
+                    self:RenderCureLists()
+                    ImGui.Unindent()
+                end
                 ImGui.Unindent()
             end
         end
 
         if not self.TempSettings.ResolvingActions and self:CanEditDispelLists() then
-            if ImGui.CollapsingHeader("Dispel Abilities") then
+            if ImGui.CollapsingHeader("Dispel Management") then
                 ImGui.Indent()
-                local dispelAbilities = self:GetDispelAbilities()
-                if dispelAbilities and #dispelAbilities > 0 then
-                    local resolvedMap = {}
-                    for _, entry in ipairs(dispelAbilities) do
-                        resolvedMap[entry.name] = self:GetResolvedActionMapItem(entry.name)
+                if ImGui.CollapsingHeader("Dispel Abilities") then
+                    ImGui.Indent()
+                    local dispelAbilities = self:GetDispelAbilities()
+                    if dispelAbilities and #dispelAbilities > 0 then
+                        local resolvedMap = {}
+                        for _, entry in ipairs(dispelAbilities) do
+                            resolvedMap[entry.name] = self:GetResolvedActionMapItem(entry.name)
+                        end
+                        local newEnabled, entriesChanged, _, resetRequested = Ui.RenderRotationTable("DispelAbilities", dispelAbilities, resolvedMap, 0,
+                            Config:GetSetting('EnabledDispelEntries') or {}, true, true)
+                        if entriesChanged then Config:SetSetting('EnabledDispelEntries', newEnabled) end
+                        if resetRequested then self:RebuildDispelAbilities() end
                     end
-                    local newEnabled, entriesChanged, _, resetRequested = Ui.RenderRotationTable("DispelAbilities", dispelAbilities, resolvedMap, 0,
-                        Config:GetSetting('EnabledDispelEntries') or {}, true, true)
-                    if entriesChanged then Config:SetSetting('EnabledDispelEntries', newEnabled) end
-                    if resetRequested then self:RebuildDispelAbilities() end
+                    ImGui.Unindent()
                 end
-                self:RenderDispelLists()
+                if ImGui.CollapsingHeader("Dispel Effect Lists") then
+                    ImGui.Indent()
+                    self:RenderDispelLists()
+                    ImGui.Unindent()
+                end
                 ImGui.Unindent()
             end
         end
@@ -1407,8 +1423,6 @@ end
 
 -- shared/individual toggle plus the allow/deny cure list editors
 function Module:RenderCureLists()
-    ImGui.NewLine()
-    ImGui.Separator()
     local useShared = Config:GetSetting('UseSharedCureLists')
     local newUseShared = ImGui.Checkbox("Use Shared Cure Lists", useShared)
     Ui.Tooltip("On: shares cure lists with all RGMercs peers on this machine.\nOff: this character uses its own lists.")
@@ -1452,8 +1466,6 @@ end
 
 -- shared/individual toggle plus the allow/deny dispel list editors
 function Module:RenderDispelLists()
-    ImGui.NewLine()
-    ImGui.Separator()
     local useShared = Config:GetSetting('UseSharedDispelLists')
     local newUseShared = ImGui.Checkbox("Use Shared Dispel Lists", useShared)
     Ui.Tooltip("On: shares dispel lists with all RGMercs peers on this machine.\nOff: this character uses its own lists.")
