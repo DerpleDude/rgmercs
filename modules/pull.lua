@@ -545,6 +545,14 @@ Module.DefaultConfig                = {
         Default = 5,
         Min = 1,
         Max = 300,
+        Warning = function()
+            if not Config:GetSetting('DoPull') then return false, "" end
+            if Config:GetSetting('DoLoot', true) and not Config:GetSetting('CombatLooting')
+                and Config:GetSetting('PullDelay') <= Config:GetSetting('LootDelay') then
+                return true, "Warning: Pull Delay is at or below Loot Delay - pulling will resume before looting begins."
+            end
+            return false, ""
+        end,
     },
     ['WaypointDelay']                          = {
         DisplayName = "Waypoint Delay",

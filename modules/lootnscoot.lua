@@ -61,12 +61,30 @@ Module.DefaultConfig   = {
         Tooltip = "Enables looting during RGMercs-defined combat.",
         Default = false,
     },
+    ['LootDelay']                              = {
+        DisplayName = "Loot Delay",
+        Group = "General",
+        Header = "Loot(Emu)",
+        Category = "LNS",
+        Index = 3,
+        Tooltip = "The length of time in seconds we will wait after combat ends before looting.",
+        Default = 2,
+        Min = 0,
+        Max = 30,
+        Warning = function()
+            if not Config:GetSetting('DoLoot') or Config:GetSetting('CombatLooting') then return false, "" end
+            if Config:GetSetting('DoPull') and Config:GetSetting('PullDelay') <= Config:GetSetting('LootDelay') then
+                return true, "Warning: Pull Delay is at or below Loot Delay - pulling will resume before looting begins."
+            end
+            return false, ""
+        end,
+    },
     ['LootRespectMedState']                    = {
         DisplayName = "Respect Med State",
         Group = "General",
         Header = "Loot(Emu)",
         Category = "LNS",
-        Index = 3,
+        Index = 4,
         Tooltip = "Hold looting if you are currently meditating.",
         Default = false,
     },
@@ -75,7 +93,7 @@ Module.DefaultConfig   = {
         Group = "General",
         Header = "Loot(Emu)",
         Category = "LNS",
-        Index = 4,
+        Index = 5,
         Tooltip = "The length of time in seconds that RGMercs will allow LNS to process loot actions in a single check.",
         Default = 5,
         Min = 1,
@@ -86,7 +104,7 @@ Module.DefaultConfig   = {
         Group = "General",
         Header = "Loot(Emu)",
         Category = "LNS",
-        Index = 5,
+        Index = 6,
         Tooltip = "If chase is on, we won't loot (and will abort looting) any corpses when the chase target is farther than this value away from us.",
         Default = 300,
         Min = 1,
@@ -97,7 +115,7 @@ Module.DefaultConfig   = {
         Group = "General",
         Header = "Loot(Emu)",
         Category = "LNS",
-        Index = 6,
+        Index = 7,
         Tooltip = "Target and open nearby treasure chests. (Added for EQ/Project Might)",
         Default = function() return Core.OnMight() end,
     },
@@ -106,7 +124,7 @@ Module.DefaultConfig   = {
         Group = "General",
         Header = "Loot(Emu)",
         Category = "LNS",
-        Index = 7,
+        Index = 8,
         Tooltip = "Navigate to treasure chests that are out of open range. (Added for EQ/Project Might)",
         Default = function() return Core.OnMight() end,
     },
@@ -115,7 +133,7 @@ Module.DefaultConfig   = {
         Group = "General",
         Header = "Loot(Emu)",
         Category = "LNS",
-        Index = 8,
+        Index = 9,
         Tooltip = "Maximum path distance RGMercs will navigate to open a treasure chest. (Added for EQ/Project Might)",
         Default = 100,
         Min = 10,
@@ -126,7 +144,7 @@ Module.DefaultConfig   = {
         Group = "General",
         Header = "Loot(Emu)",
         Category = "LNS",
-        Index = 9,
+        Index = 10,
         Tooltip = "Enables looting if hidden or invisible.",
         Default = false,
     },
@@ -333,7 +351,7 @@ function Module:GiveTime()
     Logger.log_verbose("\ay[LOOT]: \agFound %d corpses within range.", deadCount)
     if self.Actor == nil then self:LootMessageHandler() end
 
-    local settled = Config:GetSetting('CombatLooting') or Combat.CombatSettled(1000)
+    local settled = Config:GetSetting('CombatLooting') or Combat.CombatSettled(Config:GetSetting('LootDelay') * 1000)
 
     if Config:GetSetting('OpenChests') and (combat_state ~= "Combat" or Config:GetSetting('CombatLooting')) and settled then
         self:OpenChests()
