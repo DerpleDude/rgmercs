@@ -48,60 +48,51 @@ return {
     },
     ['ItemSets']          = {
         ['Epic'] = {
-            "Savage Lord's Totem",             -- Epic    -- Epic 1.5
             "Spiritcaller Totem of the Feral", -- Epic    -- Epic 2.0
+            "Savage Lord's Totem",             -- Epic    -- Epic 1.5
         },
         ['OoW_Chest'] = {
-            "Beast Tamer's Jerkin",
             "Savagesoul Jerkin of the Wilds",
+            "Beast Tamer's Jerkin",
         },
     },
     ['AbilitySets']       = {
         ['SwarmPet'] = {
-            -- Swarm Pet
             "Ancient: Drake's Breath", -- Level 71 Laz Custom
             "Reptilian Venom",         -- Level 68 Laz Custom
             "Amphibious Toxin",        -- Level 62 Laz Custom
         },
-        ['Icelance1'] = {
-            -- Lance 1 Timer 7 Ice Nuke Fast Cast
-            "Ancient: Savage Ice",   -- Level 70, - Timer 7
-            "Ancient: Frozen Chaos", -- Level 65, - Timer 7
-            "Frost Spear",           -- Level 63, - Timer 7
-            "Blizzard Blast",        -- Level 59, - Timer ???
-            "Frost Shard",           -- Level 47, - Timer 7
-            "Blast of Frost",        -- Level 12, - Timer 7
+        ['Icelance1'] = {              -- Timer 7
+            "Ravenous Ice",            -- Level 71 Laz Custom,
+            "Ancient: Savage Ice",     -- Level 70,
+            "Ancient: Frozen Chaos",   -- Level 65,
+            "Frost Spear",             -- Level 63,
+            "Blizzard Blast",          -- Level 59,
+            "Frost Shard",             -- Level 47,
+            "Blast of Frost",          -- Level 12,
         },
-        ['Icelance2'] = {
-            -- Lance 2 Timer 11 Ice Nuke Fast Cast
-            "Roaring Sleet",   -- Level 71 Laz Custom, - Timer 11
-            "Glacier Spear",   -- Level 69, - Timer 11
-            "Trushar's Frost", -- Level 65, - Timer 11
-            "Ice Shard",       -- Level 54, - Timer 11
-            "Ice Spear",       -- Level 33, - Timer 11
+        ['Icelance2'] = {              -- Timer 11
+            "Roaring Sleet",           -- Level 71 Laz Custom,
+            "Glacier Spear",           -- Level 69,
+            "Trushar's Frost",         -- Level 65,
+            "Ice Shard",               -- Level 54,
+            "Ice Spear",               -- Level 33,
         },
-        ['IceLance3'] = {
-            -- Lance 3 Timer 11 Ice Nuke - opt-in Ravenous Ice (higher damage/hate) via UseRavenousIce
-            "Ravenous Ice", -- Level 71 Laz Custom, - Timer 11
+        ['EndemicDot'] = {             -- Disease DoT Instant Cast
+            "Festering Malady",        -- Level 70
+            "Plague",                  -- Level 65
+            "Malaria",                 -- Level 40
+            "Sicken",                  -- Level 14
         },
-        ['EndemicDot'] = {
-            -- Disease DoT Instant Cast
-            "Festering Malady", -- Level 70
-            "Plague",           -- Level 65
-            "Malaria",          -- Level 40
-            "Sicken",           -- Level 14
-        },
-        ['BloodDot'] = {
-            -- Poison DoT Instant Cast
-            "Chimera Blood",      -- Level 66
-            "Turepta Blood",      -- Level 65
-            "Scorpion Venom",     -- Level 61
-            "Venom of the Snake", -- Level 52
-            "Envenomed Breath",   -- Level 35
-            "Tainted Breath",     -- Level 19
+        ['BloodDot'] = {               -- Poison DoT Instant Cast
+            "Chimera Blood",           -- Level 66
+            "Turepta Blood",           -- Level 65
+            "Scorpion Venom",          -- Level 61
+            "Venom of the Snake",      -- Level 52
+            "Envenomed Breath",        -- Level 35
+            "Tainted Breath",          -- Level 19
         },
         ['SlowSpell'] = {
-            -- Slow Spell
             "Sha's Legacy",    -- Level 70
             "Sha's Revenge",   -- Level 65
             "Sha's Advantage", -- Level 60
@@ -180,10 +171,9 @@ return {
             "Spirit of Lightning",        -- Level 13
         },
         ['RunSpeedBuff'] = {
-            "Spirit of Wolf", -- Level 24
+            "Spirit of Wolf",          -- Level 24
         },
-        ['ManaRegenBuff'] = {
-            --Mana/Hp/End Regen Buff*
+        ['ManaRegenBuff'] = {          --Mana/Hp/End Regen Buff
             "Spiritual Enlightenment", -- Level 71 Laz Custom
             "Spiritual Rejuvenation",  -- Level 70 Laz Custom
             "Spiritual Ascendance",    -- Level 69
@@ -198,12 +188,10 @@ return {
             "Guard of Calliav",      -- Level 58
             "Ward of Calliav",       -- Level 49
         },
-        ['AvatarSpell'] = {
-            -- Str Stam Dex Buff
-            "Infusion of Spirit", -- Level 61
+        ['AvatarSpell'] = {          -- Str Stam Dex Buff
+            "Infusion of Spirit",    -- Level 61
         },
         ['FocusSpell'] = {
-            -- Single target Talismans ( Like Focus)
             "Focus of Alladnu",   -- Level 67
             "Talisman of Kragg",  -- Level 62
             "Talisman of Altuna", -- Level 58
@@ -218,13 +206,11 @@ return {
             "Spiritual Brawn",    -- Level 42
         },
         ['AtkBuff'] = {
-            -- - Single Ferocity
             "Ferocity of Irionu", -- Level 70
             "Ferocity",           -- Level 65
             "Savagery",           -- Level 60
         },
         ['DmgModDisc'] = {
-            --All Skills Damage Modifier*
             "Empathic Fury",           -- Level 69
             "Bestial Fury Discipline", -- Level 60
         },
@@ -587,17 +573,8 @@ return {
                 end,
             },
             {
-                name = "IceLance3",
-                type = "Spell",
-                load_cond = function(self) return Config:GetSetting('UseRavenousIce') and Core.GetResolvedActionMapItem('IceLance3') end,
-                cond = function(self, spell, target)
-                    return Casting.OkayToNuke()
-                end,
-            },
-            {
                 name = "Icelance2",
                 type = "Spell",
-                load_cond = function(self) return not (Config:GetSetting('UseRavenousIce') and Core.GetResolvedActionMapItem('IceLance3')) end,
                 cond = function(self, spell, target)
                     return Casting.OkayToNuke()
                 end,
@@ -830,8 +807,7 @@ return {
                 { name = "PetHealSpell",  cond = function(self) return Config:GetSetting('DoPetHealSpell') end, },
                 { name = "SlowSpell",     cond = function(self) return Config:GetSetting('DoSlow') end, },
                 { name = "Icelance1", },
-                { name = "IceLance3",     cond = function(self) return Config:GetSetting('UseRavenousIce') and Core.GetResolvedActionMapItem('IceLance3') end, },
-                { name = "Icelance2",     cond = function(self) return not (Config:GetSetting('UseRavenousIce') and Core.GetResolvedActionMapItem('IceLance3')) end, },
+                { name = "Icelance2", },
                 { name = "BloodDot",      cond = function(self) return Config:GetSetting('DoDot') end, },
                 { name = "EndemicDot",    cond = function(self) return Config:GetSetting('DoDot') end, },
                 { name = "SwarmPet", },
@@ -1021,16 +997,6 @@ return {
             Index = 101,
             Tooltip = "Enable casting Damage Over Time spells.",
             Default = true,
-            RequiresLoadoutChange = true,
-        },
-        ['UseRavenousIce'] = {
-            DisplayName = "Use Ravenous Ice",
-            Group = "Abilities",
-            Header = "Damage",
-            Category = "Direct",
-            Index = 101,
-            Tooltip = "If available, use Ravenous Ice as your timer 11 nuke (higher damage, higher mana cost, added hate).",
-            Default = false,
             RequiresLoadoutChange = true,
         },
         ['DotNamedOnly']   = {
