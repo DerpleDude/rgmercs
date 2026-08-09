@@ -1043,7 +1043,7 @@ Config.DefaultConfig                                     = {
         Header = "Assisting",
         Category = "Assisting",
         Index = 8,
-        Tooltip = "Allow RGMercs to issue mercenary commands. We plan to add selectable stances in a future update.",
+        Tooltip = "Allow RGMercs to issue mercenary commands.",
         Default = (Globals.BuildType:lower() ~= "emu"),
         ConfigType = "Normal",
     },
@@ -1056,7 +1056,7 @@ Config.DefaultConfig                                     = {
         Tooltip =
         "The stance to use for your merc. Since mercs have different stances, find the one for your current mercenary type.\nNote: an invalid stance selection will default to the first listed.",
         Type = "Combo",
-        ComboOptions = { 'Aggressive or Balanced', 'Assist or Reactive or Burn', 'Efficient or BurnAE', },
+        ComboOptions = { 'Aggressive or Balanced', 'Assist or Reactive or Burn', 'Efficient or Burn AE', },
         Default = 2,
         Min = 1,
         Max = 3,

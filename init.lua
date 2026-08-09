@@ -530,25 +530,16 @@ local function Main()
 
             if (merc.State() or ""):lower() == "active" then
                 if Combat.MercEngage() then
-                    local class = merc.Class.ShortName():lower()
-                    local stanceGroups = {
-                        war = Globals.Constants.TankMercStances,
-                        clr = Globals.Constants.HealerMercStances,
-                        rog = Globals.Constants.MeleeMercStances,
-                        wiz = Globals.Constants.CasterMercStances,
-                    }
-                    local stances = stanceGroups[class]
+                    local stances = Globals.Constants.MercStanceGroups[merc.Class.ShortName():lower()]
                     if stances and merc.Stance() then
-                        local desiredStance = stances[Config:GetSetting("MercStance")]
-                        if desiredStance then
-                            if merc.Stance():lower() ~= desiredStance then
-                                Core.DoCmd("/squelch /stance %s", desiredStance)
-                            end
-                        else
-                            local fallbackStance = stances[1]
-                            if merc.Stance():lower() ~= fallbackStance then
-                                Core.DoCmd("/squelch /stance %s", fallbackStance)
-                            end
+                        local currentStance = merc.Stance():lower()
+                        local desiredStance = stances[Config:GetSetting("MercStance")] or stances[1]
+                        if currentStance ~= desiredStance:lower() and not Combat.MercOffersStance(desiredStance) then
+                            desiredStance = stances[1]
+                        end
+                        if currentStance ~= desiredStance:lower() then
+                            local stanceCommand = desiredStance:lower():gsub(" ", "")
+                            Core.DoCmd("/squelch /stance %s", stanceCommand)
                         end
                     end
                     Combat.MercAssist()
@@ -563,7 +554,7 @@ local function Main()
 
     if Combat.ShouldDoCamp() then
         local merc = mq.TLO.Me.Mercenary
-        if Config:GetSetting('DoMercenary') and (merc.State() or ""):lower() == "active"
+        if Config:GetSetting('DoMercenary') and Globals.CurrentState ~= "Combat" and (merc.State() or ""):lower() == "active"
             and (merc.Class.ShortName() or "none"):lower() ~= "clr" and merc.Stance():lower() ~= "passive" then
             Core.DoCmd("/squelch /stance passive")
         end

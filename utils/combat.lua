@@ -230,6 +230,13 @@ function Combat.MercAssist()
     mq.TLO.Window("MMGW_ManageWnd").Child("MMGW_CallForAssistButton").LeftMouseUp()
 end
 
+--- Returns the mercenary's stance list row for the given stance, or nil if it is not offered.
+---@param stance string
+---@return integer|nil
+function Combat.MercOffersStance(stance)
+    return mq.TLO.Window("MMGW_ManageWnd").Child("MMGW_StanceListBox").List("=" .. stance)()
+end
+
 --- Returns true if the mercenary should engage the current auto target.
 ---@return boolean
 function Combat.MercEngage()
