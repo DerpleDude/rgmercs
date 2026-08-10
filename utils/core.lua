@@ -259,6 +259,12 @@ function Core.SetTarget(targetId, ignoreBuffPopulation)
     if targetId == 0 then return end
     if targetId == mq.TLO.Target.ID() then return end
 
+    -- EMU clears autofire server-side on a self-target without notifying the client, leaving the flag stuck on.
+    if targetId == mq.TLO.Me.ID() and mq.TLO.Me.AutoFire() and Core.OnEMU() then
+        Logger.log_debug("SetTarget(): Turning off autofire before self-targeting.")
+        Core.DoCmd("/autofire off")
+    end
+
     local maxWaitBuffs = (mq.TLO.EverQuest.Ping() * 2) + 500
     Logger.log_debug("SetTarget(): Setting Target: %d (buffPopWait: %d)", targetId, ignoreBuffPopulation and 0 or maxWaitBuffs)
 
