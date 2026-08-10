@@ -22,6 +22,7 @@ Targeting.NearbyPCLocs          = {}
 Targeting.NearbyPCLocsTime      = 0
 Targeting.NearbyPCLocsRadius    = 0
 Targeting.NearbyPCSafeNames     = {}
+Targeting.WatchedXTs            = {}
 
 Targeting.XTargetTypeKeywords   = {
     ["Target's Target"]      = "targetstarget",
@@ -490,15 +491,15 @@ end
 function Targeting.HasXTHaters(count)
     count = count or 1
     local slotCount = mq.TLO.Me.XTargetSlots() or 0
-    local seenHaters = {}
+    local seenHaters = Set.new({})
     local uniqHaters = 0
 
     for i = 1, slotCount do
         local xtarg = mq.TLO.Me.XTarget(i)
         if Targeting.IsXTHater(xtarg) then
             local xtargID = xtarg.ID()
-            if not seenHaters[xtargID] then
-                seenHaters[xtargID] = true
+            if not seenHaters:contains(xtargID) then
+                seenHaters:add(xtargID)
                 uniqHaters = uniqHaters + 1
                 if uniqHaters >= count then return true end
             end
@@ -576,12 +577,15 @@ end
 --- Sets XTarget slot to the spawn named name if the slot doesn't already hold it.
 ---@param slot number XTarget slot index (1–20).
 ---@param name string Exact spawn name to target.
+---@return boolean True if the slot was set.
 function Targeting.AddXTByName(slot, name)
-    if not name then return end
+    if not name then return false end
     local spawnToAdd = mq.TLO.Spawn("=" .. name)
     if spawnToAdd and spawnToAdd() and mq.TLO.Me.XTarget(slot).ID() ~= spawnToAdd.ID() then
         Core.DoCmd("/xtarget set %d \"%s\"", slot, name)
+        return true
     end
+    return false
 end
 
 --- Sets XTarget slot to the spawn with the given ID if not already set.
@@ -605,6 +609,73 @@ function Targeting.ResetXTSlot(slot)
     Core.DoCmd("/xtarget set %d ET", slot)
     mq.delay(500, function() return (mq.TLO.Me.XTarget(slot).TargetType() or "") == "Empty Target" end)
     Core.DoCmd("/xtarget set %d autohater", slot)
+end
+
+--- Watches heal list members with no heartbeat from an XTarget slot so the server sends us their health.
+function Targeting.RefreshWatchedXTs()
+    local needSlot = {}
+
+    if Config:GetSetting('UseHealList') then
+        for _, name in ipairs(Config:GetSetting('HealList') or {}) do
+            local data = Comms.GetPeerHeartbeatByName(name).Data
+            if not (data and data.HPs) then
+                local watchTarget = mq.TLO.Spawn(string.format("PC =%s", name))
+                if watchTarget() and watchTarget.ID() ~= mq.TLO.Me.ID() then
+                    needSlot[name] = true
+                end
+            end
+        end
+    end
+
+    for slot, name in pairs(Targeting.WatchedXTs) do
+        local xtarg = mq.TLO.Me.XTarget(slot)
+        if (xtarg.TargetType() or "") ~= "Specific PC" or (xtarg.Name() or ""):lower() ~= name:lower() then
+            Targeting.WatchedXTs[slot] = nil
+        elseif needSlot[name] then
+            needSlot[name] = nil
+        else
+            Logger.log_debug("RefreshWatchedXTs: stopped watching %s, freed XTarget slot %d.", name, slot)
+            Targeting.ResetXTSlot(slot)
+            Targeting.WatchedXTs[slot] = nil
+        end
+    end
+
+    for name in pairs(needSlot) do
+        local claimSlot, freeSlot = nil, nil
+
+        for slot = mq.TLO.Me.XTargetSlots() or 0, 2, -1 do
+            local xtarg = mq.TLO.Me.XTarget(slot)
+            if not Targeting.WatchedXTs[slot] then
+                if (xtarg.TargetType() or "") == "Specific PC" and (xtarg.Name() or ""):lower() == name:lower() then
+                    claimSlot = slot
+                    break
+                elseif not freeSlot and slot > 1 and (xtarg.TargetType() or "") == "Auto Hater" then
+                    freeSlot = slot
+                end
+            end
+        end
+
+        if not claimSlot then claimSlot = freeSlot end
+
+        if claimSlot then
+            Logger.log_debug("RefreshWatchedXTs: watching %s in XTarget slot %d.", name, claimSlot)
+            if Targeting.AddXTByName(claimSlot, name) then
+                mq.delay(500, function() return (mq.TLO.Me.XTarget(claimSlot).Name() or ""):lower() == name:lower() end)
+            end
+            Targeting.WatchedXTs[claimSlot] = name
+        end
+    end
+end
+
+--- Hands back every XTarget slot we are watching someone from.
+function Targeting.ClearWatchedXTs()
+    for slot, name in pairs(Targeting.WatchedXTs) do
+        if (mq.TLO.Me.XTarget(slot).Name() or ""):lower() == name:lower() then
+            Logger.log_debug("ClearWatchedXTs: stopped watching %s, freed XTarget slot %d.", name, slot)
+            Targeting.ResetXTSlot(slot)
+        end
+        Targeting.WatchedXTs[slot] = nil
+    end
 end
 
 --- EMU only: when any Auto Hater XTarget slot is holding a corpse during downtime, fires #clearxtargets and restores user-configured slot types.

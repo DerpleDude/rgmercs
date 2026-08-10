@@ -486,6 +486,7 @@ local function Main()
     if mq.TLO.Me.Hovering() then Events.HandleDeath() end
 
     Combat.SetMainAssist()
+    Targeting.RefreshWatchedXTs()
     Ui.GetAssistWarningString()
 
     if not Globals.BackOffFlag then
@@ -651,5 +652,6 @@ end
 
 Core.CheckPlugins(unloadedPlugins, true)
 
+Targeting.ClearWatchedXTs()
 Modules:ExecAll("Shutdown")
 Config:Shutdown()

@@ -87,9 +87,6 @@ function Combat.SetMainAssist()
                         Logger.log_info("SetMainAssist: Setting new assist to %s [%d]", assistName, listAssistSpawn.ID())
                         Globals.MainAssist = assistName or ""
                     end
-                    if assistName ~= mq.TLO.Me.CleanName() then
-                        Targeting.AddXTByName(2, assistName)
-                    end
                     return
                 end
             end
@@ -1257,39 +1254,6 @@ function Combat.AnyHurtGroupPet(minHPs)
     return false
 end
 
---- Finds the entity with the worst hurt mana exceeding a minimum threshold.
----@param minMana number The minimum mana threshold to consider.
----@return number The spawn id with the worst hurt mana above the specified threshold.
-function Combat.FindWorstHurtManaXT(minMana)
-    local slotCount = mq.TLO.Me.XTargetSlots() or 0
-    local worstId = 0
-    local worstPct = minMana
-
-    Logger.log_verbose("\ayChecking for worst HurtMana XTargs. XT Slot Count: %d", slotCount)
-
-    for i = 1, slotCount do
-        local healTarget = mq.TLO.Me.XTarget(i)
-
-        if healTarget and healTarget() and Targeting.TargetIsType("pc", healTarget) and (healTarget.Distance3D() or 0) < 300 then
-            if Globals.Constants.RGCasters:contains(healTarget.Class.ShortName()) then -- berzerkers have special handing
-                if healTarget.PctMana() < worstPct then
-                    Logger.log_verbose("\aySo far %s is the worst off.", healTarget.DisplayName())
-                    worstPct = healTarget.PctMana() or worstPct
-                    worstId = healTarget.PctMana() and healTarget.ID() or worstId
-                end
-            end
-        end
-    end
-
-    if worstId > 0 then
-        Logger.log_verbose("\agWorst HurtMana xtarget id is %d", worstId)
-    else
-        Logger.log_verbose("\agNo one is HurtMana!")
-    end
-
-    return worstId
-end
-
 --- Finds the entity with the worst health condition that meets the minimum HP requirement.
 ---@param minHPs number The minimum HP threshold to consider.
 ---@return number The spawn id with the worst health condition that meets the criteria.
@@ -1333,7 +1297,7 @@ function Combat.FindWorstHurtHealList(minHPs)
     Logger.log_verbose("\ayChecking for worst Hurt from Heal List.")
     for _, name in ipairs(Config:GetSetting('HealList') or {}) do
         local hpPct, id = nil, nil
-        local data = Comms.GetPeerHeartbeat(Comms.GetPeerName(name, Globals.CurServer)).Data
+        local data = Comms.GetPeerHeartbeatByName(name).Data
 
         if data and data.HPs and data.ZoneId == Globals.CurZoneId and data.InstanceId == Globals.CurInstanceId then
             -- RGMercs peer in our zone/instance: evaluate from the heartbeat (no spawn lookup, squared distance, no sqrt)
@@ -1373,22 +1337,20 @@ end
 function Combat.FindWorstHurtManaHealList(minMana)
     local worstId = 0
     local worstPct = minMana
-    local manaPct = 101
 
     Logger.log_verbose("\ayChecking for worst Hurt Mana from Heal List.")
     for _, name in ipairs(Config:GetSetting('HealList') or {}) do
-        local healTarget = mq.TLO.Spawn(string.format("PC =%s", name))
-        if healTarget and healTarget() and (healTarget.Distance3D() or 0) < 300 and not healTarget.Dead() then
-            local heartbeat = Comms.GetPeerHeartbeatByName(name)
+        local heartbeat = Comms.GetPeerHeartbeatByName(name)
 
-            if heartbeat and heartbeat.Data and heartbeat.Data.Mana then
-                manaPct = tonumber(heartbeat.Data.Mana) or 101
-            end
-
-            if manaPct < worstPct then
-                Logger.log_verbose("\aySo far %s is the worst off mana.", healTarget.DisplayName() or "Error")
-                worstId = healTarget.ID()
-                worstPct = manaPct
+        if heartbeat and heartbeat.Data and heartbeat.Data.Mana then
+            local healTarget = mq.TLO.Spawn(string.format("PC =%s", name))
+            if healTarget and healTarget() and (healTarget.Distance3D() or 0) < 300 and not healTarget.Dead() then
+                local manaPct = tonumber(heartbeat.Data.Mana) or 101
+                if manaPct < worstPct then
+                    Logger.log_verbose("\aySo far %s is the worst off mana.", healTarget.DisplayName() or "Error")
+                    worstId = healTarget.ID()
+                    worstPct = manaPct
+                end
             end
         end
     end
@@ -1407,12 +1369,8 @@ end
 ---@return number Spawn id of the worst-off target, or 0 if none qualify.
 function Combat.FindWorstHurtMana(minMana)
     local worstId = Combat.FindWorstHurtManaGroupMember(minMana)
-    if worstId == 0 then
-        if Config:GetSetting('UseHealList') then
-            worstId = Combat.FindWorstHurtManaHealList(minMana)
-        else
-            worstId = Combat.FindWorstHurtManaXT(minMana)
-        end
+    if worstId == 0 and Config:GetSetting('UseHealList') then
+        worstId = Combat.FindWorstHurtManaHealList(minMana)
     end
     return worstId or 0
 end
@@ -1422,28 +1380,41 @@ end
 ---@return boolean
 function Combat.AETauntCheck(printDebug)
     if Globals.NoHateTargetIDs:contains(Globals.AutoTargetID) then return false end
-    local occupiedCount = mq.TLO.Me.XTarget() or 0
-    if occupiedCount < Config:GetSetting('AETauntCnt') then return false end
 
-    local mobs = mq.TLO.SpawnCount("NPC radius 50 zradius 50")()
-    if mobs < Config:GetSetting('AETauntCnt') then return false end
+    local minHaters = Config:GetSetting('AETauntCnt')
+    -- no sense walking the list if we dont have enough xtargs to begin with
+    if (mq.TLO.Me.XTarget() or 0) < minHaters then return false end
 
-    local tauntme = Set.new({})
-    local slotCount = mq.TLO.Me.XTargetSlots() or 0
+    local safeTaunt = Config:GetSetting('SafeAETaunt')
+    local logHaters = printDebug and Logger.get_log_level() >= 5
+    local seenHaters = Set.new({})
+    local haterCount = 0
+    local tauntCount = 0
+    local me = mq.TLO.Me
+    local slotCount = me.XTargetSlots() or 0
+
     for i = 1, slotCount do
-        local xtarg = mq.TLO.Me.XTarget(i)
-        if Targeting.IsXTHater(xtarg) and xtarg.PctAggro() < 100 and (xtarg.Distance() or 999) <= 50 and Globals.Constants.RGNotMezzedAnims:contains(xtarg.Animation()) then
-            if printDebug then
-                Logger.log_verbose("AETauntCheck(): XT(%d) Counting %s(%d) as a hater eligible to AE Taunt.", i, xtarg.CleanName() or "None",
-                    xtarg.ID())
+        local xtarg = me.XTarget(i)
+        if Targeting.IsXTHater(xtarg) then
+            local xtargID = xtarg.ID()
+            if not seenHaters:contains(xtargID) and not Globals.NoHateTargetIDs:contains(xtargID) and (xtarg.Distance3D() or 999) <= 50 then
+                seenHaters:add(xtargID)
+                haterCount = haterCount + 1
+                if xtarg.PctAggro() < 100 and Globals.Constants.RGNotMezzedAnims:contains(xtarg.Animation()) then
+                    tauntCount = tauntCount + 1
+                    if logHaters then
+                        Logger.log_verbose("AETauntCheck(): XT(%d) Counting %s(%d) as a hater eligible to AE Taunt.", i, xtarg.CleanName() or "None", xtargID)
+                    end
+                end
+                if not safeTaunt and tauntCount > 0 and haterCount >= minHaters then return true end
             end
-            tauntme:add(xtarg.ID())
-            if not Config:GetSetting('SafeAETaunt') then return true end --no need to find more than one if we don't care about safe taunt
         end
     end
 
-    local tauntCount = #tauntme:toList()
-    return tauntCount > 0 and not (Config:GetSetting('SafeAETaunt') and tauntCount < mobs)
+    if haterCount < minHaters or tauntCount == 0 then return false end
+
+    -- SafeAETaunt only: every nearby NPC must already be a hater
+    return haterCount >= mq.TLO.SpawnCount("NPC radius 50 zradius 50")()
 end
 
 --- Returns true if AE damage conditions are met (enough haters in range, optionally all mobs are haters).
