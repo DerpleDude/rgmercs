@@ -89,6 +89,9 @@ return {
             "Wildmagic Salvo", -- Level 71 Laz Custom
             "Wildmagic Burst", -- Level 68
         },
+        ['AncientIceNuke'] = {
+            "Ancient: Spear of Gelaqua", -- Level 70
+        },
         ['FireNuke'] = {
             "Spark of Fire",   -- Level 66
             "Draught of Ro",   -- Level 62
@@ -109,7 +112,6 @@ return {
             "Sunstrike",                     -- Level 60
         },
         ['IceNuke'] = {
-            -- "Ancient: Spear of Gelaqua", -- Level 70, Commented for now, because of the recast... considering, need to playtest.
             "Spark of Ice",                -- Level 69
             "Black Ice",                   -- Level 65
             "Draught of E`ci",             -- Level 64
@@ -438,7 +440,7 @@ return {
             name = 'Force of Will',
             state = 1,
             steps = 1,
-            load_cond = function() return Casting.CanUseAA("Force of Will") end,
+            load_cond = function() return Casting.CanUseAA("Force of Will") or mq.TLO.FindItem("=Scepter of Incantations")() end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and Targeting.AggroCheckOkay()
@@ -609,6 +611,10 @@ return {
         },
         ['Force of Will'] = {
             {
+                name = "Scepter of Incantations",
+                type = "Item",
+            },
+            {
                 name = "Force of Will",
                 type = "AA",
             },
@@ -619,14 +625,6 @@ return {
                 type = "Spell",
                 cond = function(self, spell, target)
                     return not Casting.IHaveBuff("Weave of Power")
-                end,
-            },
-            {
-                name = "AEStunNuke",
-                type = "Spell",
-                load_cond = function(self) return Config:GetSetting('DoAEStunNuke') end,
-                cond = function(self, spell, target)
-                    return Combat.AETargetCheck(true)
                 end,
             },
             {
@@ -643,8 +641,16 @@ return {
                 type = "Spell",
             },
             {
-                name = "Scepter of Incantations",
-                type = "Item",
+                name = "AEStunNuke",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoAEStunNuke') end,
+                cond = function(self, spell, target)
+                    return Combat.AETargetCheck(true)
+                end,
+            },
+            {
+                name = "AncientIceNuke",
+                type = "Spell",
             },
             {
                 name = "FireEtherealNuke",
@@ -864,19 +870,20 @@ return {
                         return not self.Helpers.HasWeaveRotation() and Config:GetSetting('DoRain') and Config:GetSetting('ElementChoice') == 2
                     end,
                 },
-                { name = "ChaosNuke",    cond = function(self) return self.Helpers.HasWeaveRotation() end, },
-                { name = "HarvestSpell", cond = function(self) return self.Helpers.UseHarvestSpell() end, },
-                { name = "SnareSpell",   cond = function() return Config:GetSetting('DoSnare') and not Casting.CanUseAA("Atol's Shackles") end, },
-                { name = "StunSpell",    cond = function() return Config:GetSetting('DoStun') end, },
-                { name = "JoltSpell",    cond = function() return not Casting.CanUseAA("Concussive Intuition") end, },
-                { name = "SwarmPet",     cond = function() return Config:GetSetting('DoSwarmPet') end, },
-                { name = "AEStunNuke",   cond = function() return Config:GetSetting('DoAEStunNuke') end, },
-                { name = "PBTimer4",     cond = function() return Core.IsModeActive('PBAE') end, },
-                { name = "FireJyll",     cond = function() return Core.IsModeActive('PBAE') end, },
-                { name = "IceJyll",      cond = function() return Core.IsModeActive('PBAE') end, },
-                { name = "MagicJyll",    cond = function() return Core.IsModeActive('PBAE') end, },
+                { name = "ChaosNuke",      cond = function(self) return self.Helpers.HasWeaveRotation() end, },
+                { name = "AncientIceNuke", cond = function(self) return self.Helpers.HasWeaveRotation() end, },
+                { name = "HarvestSpell",   cond = function(self) return self.Helpers.UseHarvestSpell() end, },
+                { name = "SnareSpell",     cond = function() return Config:GetSetting('DoSnare') and not Casting.CanUseAA("Atol's Shackles") end, },
+                { name = "StunSpell",      cond = function() return Config:GetSetting('DoStun') end, },
+                { name = "JoltSpell",      cond = function() return not Casting.CanUseAA("Concussive Intuition") end, },
+                { name = "SwarmPet",       cond = function() return Config:GetSetting('DoSwarmPet') end, },
+                { name = "AEStunNuke",     cond = function() return Config:GetSetting('DoAEStunNuke') end, },
+                { name = "PBTimer4",       cond = function() return Core.IsModeActive('PBAE') end, },
+                { name = "FireJyll",       cond = function() return Core.IsModeActive('PBAE') end, },
+                { name = "IceJyll",        cond = function() return Core.IsModeActive('PBAE') end, },
+                { name = "MagicJyll",      cond = function() return Core.IsModeActive('PBAE') end, },
                 { name = "SelfRune1", },
-                { name = "EvacSpell",    cond = function() return not Casting.CanUseAA("Exodus") end, },
+                { name = "EvacSpell",      cond = function() return not Casting.CanUseAA("Exodus") end, },
                 { name = "SelfHPBuff", },
             },
         },
