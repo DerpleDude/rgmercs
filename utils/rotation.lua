@@ -434,7 +434,7 @@ end
 
 --- Reorders entryList in place to match a saved order of entry names, keying by name+occurrence so duplicate names stay distinct.
 ---@param entryList table Array of rotation entry descriptors, reordered in place.
----@param savedOrder table? Array of entry names defining the desired order; entries absent from it keep their built order at the end. Nil/empty is a no-op.
+---@param savedOrder table? Array of entry names defining the desired order; entries absent from it follow the nearest entry above them that is present. Nil/empty is a no-op.
 function Rotation.ApplyEntryOrder(entryList, savedOrder)
     if not savedOrder or #savedOrder == 0 then return end
     local pos = {}
@@ -443,14 +443,25 @@ function Rotation.ApplyEntryOrder(entryList, savedOrder)
         savedSeen[entryName] = (savedSeen[entryName] or 0) + 1
         pos[entryName .. "\0" .. savedSeen[entryName]] = i
     end
-    local base = #savedOrder
     local liveSeen = {}
     local keyed = {}
+    local anchor = 0
+    local anchorOffset = 0
     for i, entry in ipairs(entryList) do
         liveSeen[entry.name] = (liveSeen[entry.name] or 0) + 1
-        keyed[i] = { entry = entry, key = pos[entry.name .. "\0" .. liveSeen[entry.name]] or (base + i), }
+        local savedPos = pos[entry.name .. "\0" .. liveSeen[entry.name]]
+        if savedPos then
+            anchor = savedPos
+            anchorOffset = 0
+        else
+            anchorOffset = anchorOffset + 1
+        end
+        keyed[i] = { entry = entry, key = savedPos or anchor, offset = savedPos and 0 or anchorOffset, }
     end
-    table.sort(keyed, function(a, b) return a.key < b.key end)
+    table.sort(keyed, function(a, b)
+        if a.key ~= b.key then return a.key < b.key end
+        return a.offset < b.offset
+    end)
     for i, k in ipairs(keyed) do entryList[i] = k.entry end
 end
 
