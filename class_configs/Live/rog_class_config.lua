@@ -515,8 +515,8 @@ return {
             {
                 name = "Alliance",
                 type = "Disc",
+                load_cond = function() return Config:GetSetting('DoAlliance') end,
                 cond = function(self, discSpell)
-                    if not Config:GetSetting('DoAlliance') then return false end
                     return not Casting.TargetHasBuff(discSpell.Trigger(1))
                 end,
             },

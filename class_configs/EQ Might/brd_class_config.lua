@@ -691,7 +691,7 @@ local _ClassConfig = {
             {
                 name = "AreaAriaSong",
                 type = "Song",
-                load_cond = function(self) return Config:GetSetting('AriaChoice') == 2 and self.Helpers.AriaClickyChoice() == "None" end,
+                load_cond = function(self) return Config:GetSetting('UseAria') > 1 and Config:GetSetting('AriaChoice') == 2 and self.Helpers.AriaClickyChoice() == "None" end,
                 cond = function(self, songSpell)
                     return self.Helpers.CheckSongStateUse(self, "UseAria") and self.Helpers.RefreshBuffSong(self, songSpell)
                 end,
@@ -699,7 +699,7 @@ local _ClassConfig = {
             {
                 name = "GroupAriaSong",
                 type = "Song",
-                load_cond = function(self) return Config:GetSetting('AriaChoice') == 3 and self.Helpers.AriaClickyChoice() == "None" end,
+                load_cond = function(self) return Config:GetSetting('UseAria') > 1 and Config:GetSetting('AriaChoice') == 3 and self.Helpers.AriaClickyChoice() == "None" end,
                 cond = function(self, songSpell)
                     return self.Helpers.CheckSongStateUse(self, "UseAria") and self.Helpers.RefreshBuffSong(self, songSpell)
                 end,
@@ -708,7 +708,7 @@ local _ClassConfig = {
                 name = "Ancient Artifact of Power",
                 type = "Item",
                 midSong = true,
-                load_cond = function(self) return self.Helpers.AriaClickyChoice() == "AncientArtifact" end,
+                load_cond = function(self) return Config:GetSetting('UseAria') > 1 and self.Helpers.AriaClickyChoice() == "AncientArtifact" end,
                 cond = function(self, itemName)
                     return self.Helpers.CheckSongStateUse(self, "UseAria") and self.Helpers.AriaClickyRefresh(self, itemName)
                 end,
@@ -717,7 +717,7 @@ local _ClassConfig = {
                 name = "Echo of Trusik Lute",
                 type = "Item",
                 midSong = true,
-                load_cond = function(self) return self.Helpers.AriaClickyChoice() == "EchoLute" end,
+                load_cond = function(self) return Config:GetSetting('UseAria') > 1 and self.Helpers.AriaClickyChoice() == "EchoLute" end,
                 cond = function(self, itemName)
                     return self.Helpers.CheckSongStateUse(self, "UseAria") and self.Helpers.AriaClickyRefresh(self, itemName)
                 end,
@@ -1145,6 +1145,7 @@ local _ClassConfig = {
             Tooltip = "Use Fading Memories when you have aggro and you aren't the Main Assist.",
             Default = true,
             ConfigType = "Advanced",
+            RequiresLoadoutChange = true,
             FAQ = "Why is my Bard regularly using Fading Memories",
             Answer = "When Use Combat Escape is enabled, Fading Memories will be used when the Bard has any unwanted aggro.\n" ..
                 "This helps the common issue of bards gaining aggro from singing before a tank has the chance to secure it.",

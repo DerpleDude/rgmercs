@@ -1013,6 +1013,7 @@ local _ClassConfig = {
                 "Third Spire: Large Group HP Buff.",
             Type = "Combo",
             ComboOptions = Globals.Constants.SpireChoices,
+            RequiresLoadoutChange = true,
             Default = 3,
             Min = 1,
             Max = #Globals.Constants.SpireChoices,
@@ -1106,6 +1107,7 @@ local _ClassConfig = {
             Tooltip = "Use Fading Memories when you have aggro and you aren't the Main Assist.",
             Default = true,
             ConfigType = "Advanced",
+            RequiresLoadoutChange = true,
             FAQ = "Why is my Bard regularly using Fading Memories",
             Answer = "When Use Combat Escape is enabled, Fading Memories will be used when the Bard has any unwanted aggro.\n" ..
                 "This helps the common issue of bards gaining aggro from singing before a tank has the chance to secure it.",

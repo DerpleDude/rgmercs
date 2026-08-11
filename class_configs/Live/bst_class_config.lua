@@ -964,8 +964,8 @@ return {
             {
                 name = "Coating",
                 type = "Item",
+                load_cond = function() return Config:GetSetting('DoCoating') end,
                 cond = function(self, itemName, target)
-                    if not Config:GetSetting('DoCoating') then return false end
                     return Casting.SelfBuffItemCheck(itemName)
                 end,
             },
@@ -974,8 +974,8 @@ return {
             {
                 name = "Falsified Death",
                 type = "AA",
+                load_cond = function() return Config:GetSetting('AggroFeign') end,
                 cond = function(self, aaName, target)
-                    if not Config:GetSetting('AggroFeign') then return false end
                     return Casting.OkayToCombatEscape()
                 end,
             },

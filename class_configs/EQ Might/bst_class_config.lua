@@ -591,8 +591,8 @@ return {
             {
                 name = "Paragon of Spirit",
                 type = "AA",
+                load_cond = function() return Config:GetSetting('DoParagon') end,
                 cond = function(self, aaName)
-                    if not Config:GetSetting('DoParagon') then return false end
                     return Casting.GroupLowManaCount(Config:GetSetting('ParaPct')) > 0
                 end,
                 pre_activate = function(self)
@@ -604,16 +604,18 @@ return {
             {
                 name = "BloodDot",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('DoDot') end,
                 cond = function(self, spell, target)
-                    if not Config:GetSetting('DoDot') or (Config:GetSetting('DotNamedOnly') and not Globals.AutoTargetIsNamed) then return false end
+                    if Config:GetSetting('DotNamedOnly') and not Globals.AutoTargetIsNamed then return false end
                     return Casting.DotSpellCheck(spell) and Casting.HaveManaToDot()
                 end,
             },
             {
                 name = "EndemicDot",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('DoDot') end,
                 cond = function(self, spell, target)
-                    if not Config:GetSetting('DoDot') or (Config:GetSetting('DotNamedOnly') and not Globals.AutoTargetIsNamed) then return false end
+                    if Config:GetSetting('DotNamedOnly') and not Globals.AutoTargetIsNamed then return false end
                     return Casting.DotSpellCheck(spell) and Casting.HaveManaToDot()
                 end,
             },
@@ -1008,6 +1010,7 @@ return {
             Index = 102,
             Tooltip = "Use your Pet Snare Proc Buff (does not stack with Pet Damage or Slow Proc Buff).",
             Default = false,
+            RequiresLoadoutChange = true,
             FAQ = "Why am I continually using proc buffs on my pet?",
             Answer = "Pet proc buffs do not stack, you should only select one.\n" ..
                 "If neither Snare nor Slow proc are selected, the Damage proc will be used.",
@@ -1099,6 +1102,7 @@ return {
             Index = 102,
             Tooltip = "Buff Group/Pet with Infusion of Spirit",
             Default = false,
+            RequiresLoadoutChange = true,
         },
         ['DoHaste']        = {
             DisplayName = "Use Haste",

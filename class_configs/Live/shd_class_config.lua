@@ -854,7 +854,7 @@ local _ClassConfig = {
                 local setting = Config:GetSetting('AETauntSpell')
                 local tauntSpell = (setting == 3 or (setting == 2 and not Casting.CanUseAA("Explosion of Hatred"))) and Core.GetResolvedActionMapItem('AETaunt')
                 local hateAA = Config:GetSetting('AETauntAA') and (Casting.CanUseAA("Explosion of Spite") or Casting.CanUseAA("Explosion of Hatred"))
-                return tauntSpell or hateAA or (Config:GetSetting('DoAELifeTap') and Config:GetSetting('DoAEDamage'))
+                return tauntSpell or hateAA or Config:GetSetting('DoAELifeTap')
             end,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
@@ -1006,10 +1006,12 @@ local _ClassConfig = {
                 name = "Dark Lord's Unity (Azia)",
                 type = "AA",
                 tooltip = Tooltips.DLUA,
+                load_cond = function()
+                    return Config:GetSetting('ProcChoice') == 1 or
+                        (Config:GetSetting('ProcChoice') == 2 and not Casting.CanUseAA("Dark Lord's Unity (Beza)"))
+                end,
                 active_cond = function(self, aaName) return Casting.IHaveBuff(mq.TLO.Me.AltAbility(aaName).Spell.Trigger(2).ID() or 0) end,
                 cond = function(self, aaName, target)
-                    if Config:GetSetting('ProcChoice') == 3 then return false end
-                    if Config:GetSetting('ProcChoice') == 2 and Casting.CanUseAA("Dark Lord's Unity (Beza)") then return false end
                     return Casting.SelfBuffAACheck(aaName)
                 end,
             },
@@ -1017,9 +1019,9 @@ local _ClassConfig = {
                 name = "Dark Lord's Unity (Beza)",
                 type = "AA",
                 tooltip = Tooltips.DLUB,
+                load_cond = function() return Config:GetSetting('ProcChoice') == 2 end,
                 active_cond = function(self, aaName) return Casting.IHaveBuff(mq.TLO.Me.AltAbility(aaName).Spell.Trigger(2).ID() or 0) end,
                 cond = function(self, aaName, target)
-                    if Config:GetSetting('ProcChoice') ~= 2 then return false end
                     return Casting.SelfBuffAACheck(aaName)
                 end,
             },
@@ -1118,9 +1120,10 @@ local _ClassConfig = {
                 name = "TempHP",
                 type = "Spell",
                 tooltip = Tooltips.TempHP,
+                load_cond = function() return Config:GetSetting('DoTempHP') end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
-                    if not Config:GetSetting('DoTempHP') or not Casting.CastReady(spell) then return false end
+                    if not Casting.CastReady(spell) then return false end
                     return spell.RankName.Stacks() and (mq.TLO.Me.Buff(spell).Duration.TotalSeconds() or 0) < 45
                 end,
             },
@@ -1138,9 +1141,9 @@ local _ClassConfig = {
                 name = "Voice of Thule",
                 type = "AA",
                 tooltip = Tooltips.HateBuff,
+                load_cond = function() return Config:GetSetting('DoHateBuff') end,
                 active_cond = function(self, aaName) return Casting.IHaveBuff(mq.TLO.Me.AltAbility(aaName).Spell.ID()) end,
                 cond = function(self, aaName)
-                    if not Config:GetSetting('DoHateBuff') then return false end
                     return Casting.SelfBuffAACheck(aaName)
                 end,
             },
@@ -1148,9 +1151,10 @@ local _ClassConfig = {
                 name = "HateBuff",
                 type = "Spell",
                 tooltip = Tooltips.HateBuff,
+                load_cond = function() return Config:GetSetting('DoHateBuff') and not Casting.CanUseAA('Voice of Thule') end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
-                    if not Config:GetSetting('DoHateBuff') or Casting.CanUseAA('Voice of Thule') or not Casting.CastReady(spell) then return false end
+                    if not Casting.CastReady(spell) then return false end
                     return Casting.SelfBuffCheck(spell)
                 end,
             },
@@ -1297,9 +1301,7 @@ local _ClassConfig = {
                 name = "ForPower",
                 type = "Spell",
                 tooltip = Tooltips.ForPower,
-                cond = function(self, spell, target)
-                    return Config:GetSetting('DoForPower')
-                end,
+                load_cond = function() return Config:GetSetting('DoForPower') end,
             },
         },
         ['HateTools(AutoTarget)']  = {
@@ -1352,7 +1354,7 @@ local _ClassConfig = {
                 tooltip = Tooltips.Terror,
                 load_cond = function(self) return self.Helpers.ShouldMemTerror() end,
                 cond = function(self, spell, target)
-                    if Config:GetSetting('DoTerror') == 1 or Core.AtEmergencyHP() then return false end
+                    if Core.AtEmergencyHP() then return false end
                     return (mq.TLO.Target.SecondaryPctAggro() or 0) > 60
                 end,
             },
@@ -1362,7 +1364,7 @@ local _ClassConfig = {
                 tooltip = Tooltips.Terror,
                 load_cond = function(self) return self.Helpers.ShouldMemTerror() end,
                 cond = function(self, spell, target)
-                    if Config:GetSetting('DoTerror') == 1 or Core.AtEmergencyHP() then return false end
+                    if Core.AtEmergencyHP() then return false end
                     return (mq.TLO.Target.SecondaryPctAggro() or 0) > 60
                 end,
             },
@@ -1396,8 +1398,9 @@ local _ClassConfig = {
             {
                 name = "AELifeTap",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('DoAELifeTap') end,
                 cond = function(self, spell)
-                    if not (Config:GetSetting('DoAELifeTap') and Config:GetSetting('DoAEDamage')) or Core.AtEmergencyHP() then return false end
+                    if not Config:GetSetting('DoAEDamage') or Core.AtEmergencyHP() then return false end
                     return Combat.AETargetCheck(true)
                 end,
             },
@@ -1581,8 +1584,8 @@ local _ClassConfig = {
                 name = "Dicho",
                 type = "Spell",
                 tooltip = Tooltips.Dicho,
+                load_cond = function() return Config:GetSetting('DoDicho') end,
                 cond = function(self, spell, target)
-                    if not Config:GetSetting('DoDicho') then return false end
                     local myHP = mq.TLO.Me.PctHPs()
                     return (myHP <= Config:GetSetting('EmergencyStart') or (Casting.HaveManaToNuke() and myHP <= Config:GetSetting('StartDicho')))
                 end,
@@ -1591,8 +1594,8 @@ local _ClassConfig = {
                 name = "DireTap",
                 type = "Spell",
                 tooltip = Tooltips.DireTap,
+                load_cond = function() return Config:GetSetting('DoDireTap') end,
                 cond = function(self, spell, target)
-                    if not Config:GetSetting('DoDireTap') then return false end
                     local myHP = mq.TLO.Me.PctHPs()
                     return (myHP <= Config:GetSetting('EmergencyStart') or (Casting.HaveManaToNuke() and myHP <= Config:GetSetting('StartDireTap')))
                 end,
@@ -1609,8 +1612,9 @@ local _ClassConfig = {
             {
                 name = "AELifeTap",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('DoAELifeTap') end,
                 cond = function(self, spell, target)
-                    if not (Config:GetSetting('DoAELifeTap') and Config:GetSetting('DoAEDamage')) then return false end
+                    if not Config:GetSetting('DoAEDamage') then return false end
                     local myHP = mq.TLO.Me.PctHPs()
                     return (myHP <= Config:GetSetting('EmergencyStart') or (Casting.HaveManaToNuke() and myHP <= Config:GetSetting('StartLifeTap'))) and Combat.AETargetCheck(true)
                 end,
@@ -1701,8 +1705,8 @@ local _ClassConfig = {
                 name = "ForPower",
                 type = "Spell",
                 tooltip = Tooltips.ForPower,
+                load_cond = function() return Config:GetSetting('DoForPower') end,
                 cond = function(self, spell, target)
-                    if not Config:GetSetting('DoForPower') then return false end
                     return Casting.DetSpellCheck(spell)
                 end,
             },

@@ -1119,6 +1119,7 @@ local _ClassConfig = {
                 "Third Spire: DoT Crit Damage Buff.",
             Type = "Combo",
             ComboOptions = Globals.Constants.SpireChoices,
+            RequiresLoadoutChange = true,
             Default = 3,
             Min = 1,
             Max = #Globals.Constants.SpireChoices,

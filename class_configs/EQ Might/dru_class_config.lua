@@ -499,7 +499,7 @@ local _ClassConfig = {
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
             load_cond = function(self) return Core.OnEMU() end,
             cond = function(self, combat_state)
-                if not Config:GetSetting('DoPet') or mq.TLO.Me.Pet.ID() ~= 0 then return false end
+                if mq.TLO.Me.Pet.ID() ~= 0 then return false end
                 return combat_state == "Downtime" and Core.CombatActionsCheck() and Casting.OkayToPetBuff() and Casting.AmIBuffable()
             end,
         },

@@ -1215,37 +1215,38 @@ local _ClassConfig    = {
             {
                 name = "GroupSpellShield",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('DoGroupSpellShield') end,
                 active_cond = function(self, spell) return mq.TLO.Me.FindBuff("id " .. tostring(spell.ID()))() ~= nil end,
                 cond = function(self, spell, target)
-                    if not Config:GetSetting('DoGroupSpellShield') then return false end
                     return Casting.GroupBuffCheck(spell, target) and Casting.ReagentCheck(spell)
                 end,
             },
             {
                 name = "GroupDotShield",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('DoGroupDotShield') end,
                 active_cond = function(self, spell) return mq.TLO.Me.FindBuff("id " .. tostring(spell.ID()))() ~= nil end,
                 cond = function(self, spell, target)
-                    if not Config:GetSetting('DoGroupDotShield') then return false end
                     return Casting.GroupBuffCheck(spell, target) and Casting.ReagentCheck(spell)
                 end,
             },
             {
                 name = "GroupAuspiceBuff",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('DoGroupAuspice') end,
                 active_cond = function(self, spell) return mq.TLO.Me.FindBuff("id " .. tostring(spell.ID()))() ~= nil end,
                 cond = function(self, spell, target)
-                    if not Config:GetSetting('DoGroupAuspice') then return false end
                     return Casting.GroupBuffCheck(spell, target) and Casting.ReagentCheck(spell)
                 end,
             },
             {
                 name = "NdtBuff",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('DoNDTBuff') end,
                 active_cond = function(self, spell) return mq.TLO.Me.FindBuff("id " .. tostring(spell.ID()))() ~= nil end,
                 cond = function(self, spell, target)
                     --Single target versions of the spell will only be used on Melee, group versions will be cast if they are missing from any groupmember
-                    if not Config:GetSetting('DoNDTBuff') or ((spell.TargetType() or ""):lower() ~= "group v2" and not Targeting.TargetIsAMelee(target)) then return false end
+                    if (spell.TargetType() or ""):lower() ~= "group v2" and not Targeting.TargetIsAMelee(target) then return false end
 
                     return Casting.CastReady(spell) and Casting.GroupBuffCheck(spell, target)
                 end,
@@ -1253,18 +1254,20 @@ local _ClassConfig    = {
             {
                 name = "SpellProcBuff",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('DoProcBuff') end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell, target)
-                    if not Config:GetSetting('DoProcBuff') or not Targeting.TargetIsACaster(target) then return false end
+                    if not Targeting.TargetIsACaster(target) then return false end
                     return Casting.CastReady(spell) and Casting.GroupBuffCheck(spell, target)
                 end,
             },
             {
                 name = "GroupRune",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('RuneChoice') == 2 end,
                 active_cond = function(self, spell) return mq.TLO.Me.FindBuff("id " .. tostring(spell.ID()))() ~= nil end,
                 cond = function(self, spell, target)
-                    if Config:GetSetting('RuneChoice') ~= 2 or ((spell.Level() or 0) > 73 and Targeting.TargetIsTanking(target)) then return false end
+                    if (spell.Level() or 0) > 73 and Targeting.TargetIsTanking(target) then return false end
                     return Casting.GroupBuffCheck(spell, target) and Casting.ReagentCheck(spell)
                 end,
             },
@@ -1280,9 +1283,9 @@ local _ClassConfig    = {
             {
                 name = "SingleRune",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('RuneChoice') == 1 end,
                 active_cond = function(self, spell) return mq.TLO.Me.FindBuff("id " .. tostring(spell.ID()))() ~= nil end,
                 cond = function(self, spell, target)
-                    if Config:GetSetting('RuneChoice') ~= 1 then return false end
                     return Casting.GroupBuffCheck(spell, target) and Casting.ReagentCheck(spell)
                 end,
             },
@@ -1341,8 +1344,9 @@ local _ClassConfig    = {
             {
                 name = "PBAEStunSpell",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('DoAEStun') > 1 end,
                 cond = function(self, spell, target)
-                    if (Config:GetSetting('DoAEStun') == 2 and Core.GetMainAssistPctHPs() > Config:GetSetting('EmergencyStart')) or Config:GetSetting('DoAEStun') == 1 then return false end
+                    if Config:GetSetting('DoAEStun') == 2 and Core.GetMainAssistPctHPs() > Config:GetSetting('EmergencyStart') then return false end
                     return Casting.DetSpellCheck(spell) and Targeting.HasXTHaters(Config:GetSetting('AECount'))
                 end,
             },
@@ -1358,40 +1362,41 @@ local _ClassConfig    = {
             {
                 name = "MindDot",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('DoMindDot') end,
                 cond = function(self, spell, target)
-                    if not Config:GetSetting('DoMindDot') then return false end
                     return Casting.DotSpellCheck(spell) and (Globals.AutoTargetIsNamed or not Casting.IHaveBuff(spell and spell.Trigger()))
                 end,
             },
             {
                 name = "StrangleDot",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('DoStrangleDot') end,
                 cond = function(self, spell, target)
-                    if not Config:GetSetting('DoStrangleDot') then return false end
                     return Casting.DotSpellCheck(spell) and Casting.HaveManaToDot()
                 end,
             },
             {
                 name = "MagicNuke",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('DoNuke') end,
                 cond = function(self, spell, target)
-                    if not Config:GetSetting('DoNuke') then return false end
                     return Casting.OkayToNuke()
                 end,
             },
             {
                 name = "ManaDrainNuke",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('DoManaDrain') end,
                 cond = function(self, spell, target)
-                    if not Config:GetSetting('DoManaDrain') then return false end
                     return (target.CurrentMana() or 0) > 10 and Casting.OkayToNuke()
                 end,
             },
             {
                 name = "TwinCastMez",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('TwincastMez') == 3 end,
                 cond = function(self, spell, target)
-                    if Config:GetSetting('TwincastMez') ~= 3 or Modules:ExecModule("Mez", "IsMezImmune", target.ID()) then return false end
+                    if Modules:ExecModule("Mez", "IsMezImmune", target.ID()) then return false end
                     return not Casting.IHaveBuff(spell) and not mq.TLO.Me.Buff("Twincast")()
                 end,
             },
@@ -1442,8 +1447,9 @@ local _ClassConfig    = {
             {
                 name = "TwinCastMez",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('TwincastMez') == 3 end,
                 cond = function(self, spell, target)
-                    if Config:GetSetting('TwincastMez') ~= 3 or Modules:ExecModule("Mez", "IsMezImmune", target.ID()) then return false end
+                    if Modules:ExecModule("Mez", "IsMezImmune", target.ID()) then return false end
                     return not Casting.IHaveBuff(spell) and not mq.TLO.Me.Buff("Improved Twincast")()
                 end,
             },
@@ -1525,8 +1531,8 @@ local _ClassConfig    = {
             {
                 name = "Slowing Helix",
                 type = "AA",
+                load_cond = function() return Config:GetSetting('DoSlow') end,
                 cond = function(self, aaName, target)
-                    if not Config:GetSetting('DoSlow') then return false end
                     local aaSpell = Casting.GetAASpell(aaName)
                     return Casting.DetAACheck(aaName) and (aaSpell.SlowPct() or 0) > (Targeting.GetTargetSlowedPct()) and not Casting.SlowImmuneTarget(target)
                 end,
@@ -1534,24 +1540,24 @@ local _ClassConfig    = {
             {
                 name = "CripSlowSpell",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('DoSlow') and Casting.CanUseAA("Slowing Helix") end,
                 cond = function(self, spell, target)
-                    if not Config:GetSetting('DoSlow') or not Casting.CanUseAA("Slowing Helix") then return false end
                     return Casting.DetSpellCheck(spell)
                 end,
             },
             {
                 name = "SlowSpell",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('DoSlow') and not Casting.CanUseAA("Slowing Helix") and not Core.GetResolvedActionMapItem('CripSlowSpell') end,
                 cond = function(self, spell, target)
-                    if not Config:GetSetting('DoSlow') or Casting.CanUseAA("Slowing Helix") or Core.GetResolvedActionMapItem('CripSlowSpell') then return false end
                     return Casting.DetSpellCheck(spell) and (spell.RankName.SlowPct() or 0) > (Targeting.GetTargetSlowedPct()) and not Casting.SlowImmuneTarget(target)
                 end,
             },
             {
                 name = "CrippleSpell",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('DoCripple') and not Casting.CanUseAA("Slowing Helix") and not Core.GetResolvedActionMapItem('CripSlowSpell') end,
                 cond = function(self, spell, target)
-                    if not Config:GetSetting('DoCripple') or Casting.CanUseAA("Slowing Helix") or Core.GetResolvedActionMapItem('CripSlowSpell') then return false end
                     return Casting.DetSpellCheck(spell)
                 end,
             },

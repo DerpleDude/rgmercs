@@ -837,8 +837,9 @@ local _ClassConfig = {
                 name = "Cannibalization",
                 type = "AA",
                 allowDead = true,
+                load_cond = function() return Config:GetSetting('DoAACanni') end,
                 cond = function(self, aaName)
-                    if not (Config:GetSetting('DoAACanni') and Config:GetSetting('DoCombatCanni')) then return false end
+                    if not Config:GetSetting('DoCombatCanni') then return false end
                     return mq.TLO.Me.PctMana() < Config:GetSetting('AACanniManaPct') and mq.TLO.Me.PctHPs() >= Config:GetSetting('AACanniMinHP')
                 end,
             },
@@ -846,8 +847,9 @@ local _ClassConfig = {
                 name = "CanniSpell",
                 type = "Spell",
                 allowDead = true,
+                load_cond = function() return Config:GetSetting('DoSpellCanni') end,
                 cond = function(self, spell)
-                    if not (Config:GetSetting('DoSpellCanni') and Config:GetSetting('DoCombatCanni')) then return false end
+                    if not Config:GetSetting('DoCombatCanni') then return false end
                     return mq.TLO.Me.PctMana() < Config:GetSetting('SpellCanniManaPct') and mq.TLO.Me.PctHPs() >= Config:GetSetting('SpellCanniMinHP')
                 end,
             },
@@ -912,8 +914,8 @@ local _ClassConfig = {
             {
                 name = "AEMaloSpell",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('DoAEMalo') end,
                 cond = function(self, spell, target)
-                    if not Config:GetSetting('DoAEMalo') then return false end
                     return Targeting.HasXTHaters(Config:GetSetting('AEMaloCount')) and Casting.DetSpellCheck(spell)
                 end,
             },
@@ -948,7 +950,6 @@ local _ClassConfig = {
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoAESlow') and not Casting.CanUseAA("Tigir's Insect Swarm") end,
                 cond = function(self, spell, target)
-                    if not Config:GetSetting('DoAESlow') or Casting.CanUseAA("Tigir's Insect Swarm") then return false end
                     return Targeting.HasXTHaters(Config:GetSetting('AESlowCount')) and Casting.DetSpellCheck(spell) and not Casting.SlowImmuneTarget(target)
                 end,
             },
@@ -1001,40 +1002,43 @@ local _ClassConfig = {
             {
                 name = "CurseDot",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('DoCurseDot') end,
                 cond = function(self, spell, target)
-                    if not Config:GetSetting('DoCurseDot') or (Config:GetSetting('DotNamedOnly') and not Globals.AutoTargetIsNamed) then return false end
+                    if Config:GetSetting('DotNamedOnly') and not Globals.AutoTargetIsNamed then return false end
                     return Casting.DotSpellCheck(spell) and Casting.HaveManaToDot()
                 end,
             },
             {
                 name = "SaryrnDot",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('DoSaryrnDot') end,
                 cond = function(self, spell, target)
-                    if not Config:GetSetting('DoSaryrnDot') or (Config:GetSetting('DotNamedOnly') and not Globals.AutoTargetIsNamed) then return false end
+                    if Config:GetSetting('DotNamedOnly') and not Globals.AutoTargetIsNamed then return false end
                     return Casting.DotSpellCheck(spell) and Casting.HaveManaToDot()
                 end,
             },
             {
                 name = "UltorDot",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('DoUltorDot') end,
                 cond = function(self, spell, target)
-                    if not Config:GetSetting('DoUltorDot') or (Config:GetSetting('DotNamedOnly') and not Globals.AutoTargetIsNamed) then return false end
+                    if Config:GetSetting('DotNamedOnly') and not Globals.AutoTargetIsNamed then return false end
                     return Casting.DotSpellCheck(spell) and Casting.HaveManaToDot()
                 end,
             },
             {
                 name = "ColdNuke",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('DoColdNuke') end,
                 cond = function(self, spell, target)
-                    if not Config:GetSetting('DoColdNuke') then return false end
                     return (Targeting.MobHasLowHP() or (Config:GetSetting('DotNamedOnly') and not Globals.AutoTargetIsNamed)) and Casting.OkayToNuke(true)
                 end,
             },
             {
                 name = "PoisonNuke",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('DoPoisonNuke') end,
                 cond = function(self, spell, target)
-                    if not Config:GetSetting('DoPoisonNuke') then return false end
                     return (Targeting.MobHasLowHP() or (Config:GetSetting('DotNamedOnly') and not Globals.AutoTargetIsNamed)) and Casting.OkayToNuke(true)
                 end,
             },
@@ -1081,15 +1085,17 @@ local _ClassConfig = {
             {
                 name = "Cannibalization",
                 type = "AA",
+                load_cond = function() return Config:GetSetting('DoAACanni') end,
                 cond = function(self, aaName)
-                    return Config:GetSetting('DoAACanni') and mq.TLO.Me.PctMana() < Config:GetSetting('AACanniManaPct') and mq.TLO.Me.PctHPs() >= Config:GetSetting('AACanniMinHP')
+                    return mq.TLO.Me.PctMana() < Config:GetSetting('AACanniManaPct') and mq.TLO.Me.PctHPs() >= Config:GetSetting('AACanniMinHP')
                 end,
             },
             {
                 name = "CanniSpell",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('DoSpellCanni') end,
                 cond = function(self, spell)
-                    return Config:GetSetting('DoSpellCanni') and Casting.CastReady(spell) and mq.TLO.Me.PctMana() < Config:GetSetting('SpellCanniManaPct') and
+                    return Casting.CastReady(spell) and mq.TLO.Me.PctMana() < Config:GetSetting('SpellCanniManaPct') and
                         mq.TLO.Me.PctHPs() >= Config:GetSetting('SpellCanniMinHP')
                 end,
             },

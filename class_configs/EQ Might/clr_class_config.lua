@@ -441,8 +441,9 @@ local _ClassConfig = {
             {
                 name = "GroupElixir",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('DoGroupElixir') end,
                 cond = function(self, spell, target)
-                    if not Config:GetSetting('DoGroupElixir') or (target.PctHPs() or 999) <= Config:GetSetting('BigHealPoint') then return false end
+                    if (target.PctHPs() or 999) <= Config:GetSetting('BigHealPoint') then return false end
                     return Casting.GroupBuffCheck(spell, target)
                 end,
             },
@@ -561,8 +562,9 @@ local _ClassConfig = {
             {
                 name = "CompleteHeal",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('DoCompleteHeal') end,
                 cond = function(self, spell, target)
-                    if not Config:GetSetting("DoCompleteHeal") or not Targeting.TargetIsTanking(target) then return false end
+                    if not Targeting.TargetIsTanking(target) then return false end
                     return (target.PctHPs() or 999) <= Config:GetSetting('CompleteHealPct')
                 end,
             },
@@ -869,8 +871,8 @@ local _ClassConfig = {
             {
                 name = "SelfHPBuff",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('AegoSymbol') ~= 3 end,
                 cond = function(self, spell)
-                    if Config:GetSetting('AegoSymbol') == 3 then return false end
                     return Casting.SelfBuffCheck(spell)
                 end,
             },
@@ -910,18 +912,23 @@ local _ClassConfig = {
                     return "Symbol Buff Clicky"
                 end,
                 type = "Item",
-                load_cond = function() return mq.TLO.Me.Level() >= 68 and (mq.TLO.FindItem("=Mythical Armband of Elushar")() or mq.TLO.FindItem("=Legendary Armband of Mithaniel")()) end,
+                load_cond = function()
+                    return Config:GetSetting('AegoSymbol') >= 2 and Config:GetSetting('AegoSymbol') <= 3 and
+                        mq.TLO.Me.Level() >= 68 and (mq.TLO.FindItem("=Mythical Armband of Elushar")() or mq.TLO.FindItem("=Legendary Armband of Mithaniel")())
+                end,
                 cond = function(self, itemName, target)
-                    if Config:GetSetting('AegoSymbol') == 1 or Config:GetSetting('AegoSymbol') == 4 then return false end
                     return Casting.GroupBuffItemCheck(itemName, target)
                 end,
             },
             {
                 name = "GroupSymbolBuff",
                 type = "Spell",
-                load_cond = function() return mq.TLO.Me.Level() < 68 or not mq.TLO.FindItem("=Legendary Armband of Mithaniel")() end,
+                load_cond = function()
+                    return Config:GetSetting('AegoSymbol') >= 2 and Config:GetSetting('AegoSymbol') <= 3 and
+                        (mq.TLO.Me.Level() < 68 or not mq.TLO.FindItem("=Legendary Armband of Mithaniel")())
+                end,
                 cond = function(self, spell, target)
-                    if Config:GetSetting('AegoSymbol') == 1 or Config:GetSetting('AegoSymbol') == 4 or ((spell.TargetType() or ""):lower() == "single" and not Targeting.TargetIsTanking(target)) then return false end
+                    if (spell.TargetType() or ""):lower() == "single" and not Targeting.TargetIsTanking(target) then return false end
                     return Casting.GroupBuffCheck(spell, target)
                 end,
             },
@@ -1047,6 +1054,7 @@ local _ClassConfig = {
                 "You have Aegolism selected and are below level 40 (We are still using a HP Type One buff).\n" ..
                 "You have Symbol selected and don't have someone else providing a Type One buff.\n" ..
                 "Leaving this on in other cases is not likely to cause issue, but may cause unnecessary buff checking.",
+            RequiresLoadoutChange = true,
             Default = false,
         },
         ['VieBuffMode']       = {
@@ -1319,6 +1327,7 @@ local _ClassConfig = {
             Category = "Self",
             Index = 101,
             Tooltip = "Use your Yaulp (AA or spell line) to help maintain your mana and buff your melee ability.",
+            RequiresLoadoutChange = true,
             Default = true,
             FAQ = "Why am I using Yaulp? Clerics are not supposed to melee!",
             Answer = "The Yaulp spells we use also contain a mana regen component. You can disable this behavior on the Utility tab in the Class Options.",

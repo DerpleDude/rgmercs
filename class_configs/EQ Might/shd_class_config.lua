@@ -447,7 +447,6 @@ local _ClassConfig = {
         {
             name = 'PetSummon',
             targetId = function(self) return { mq.TLO.Me.ID(), } end,
-            load_cond = function(self) return Config:GetSetting('DoPet') end,
             cond = function(self, combat_state)
                 return combat_state == "Downtime" and mq.TLO.Me.Pet.ID() == 0 and Casting.OkayToPetBuff() and Casting.AmIBuffable()
             end,

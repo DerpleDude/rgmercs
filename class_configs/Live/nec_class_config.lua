@@ -956,9 +956,10 @@ local _ClassConfig = {
             {
                 name = "LichSpell",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('DoLich') end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
-                    return Config:GetSetting('DoLich') and Casting.SelfBuffCheck(spell, nil, true) and
+                    return Casting.SelfBuffCheck(spell, nil, true) and
                         (not Config:GetSetting('DoUnity') or not Casting.AAReady("Mortifier's Unity")) and
                         mq.TLO.Me.PctHPs() > Config:GetSetting('StopLichHP') and mq.TLO.Me.PctMana() <= Config:GetSetting('StartLichMana')
                 end,
@@ -967,10 +968,9 @@ local _ClassConfig = {
                 name = "LichControl",
                 type = "CustomFunc",
                 cond = function(self, _)
-                    local lichSpell = Core.GetResolvedActionMapItem('LichSpell')
-
-                    return not (Config:GetSetting('DoUnity') and Casting.CanUseAA("Mortifier's Unity")) and lichSpell and lichSpell() and Casting.IHaveBuff(lichSpell) and
-                        (mq.TLO.Me.PctHPs() <= Config:GetSetting('StopLichHP') or mq.TLO.Me.PctMana() >= Config:GetSetting('StopLichMana'))
+                    if not self.Helpers.LichBuffName(self) then return false end
+                    if not Config:GetSetting('DoLich') then return true end
+                    return mq.TLO.Me.PctHPs() <= Config:GetSetting('StopLichHP') or mq.TLO.Me.PctMana() >= Config:GetSetting('StopLichMana')
                 end,
                 custom_func = function(self)
                     Core.SafeCallFunc("Stop Necro Lich", self.Helpers.CancelLich, self)
@@ -1387,8 +1387,10 @@ local _ClassConfig = {
             {
                 name = "Mortifier's Unity",
                 type = "AA",
+                load_cond = function() return Config:GetSetting('DoUnity') end,
                 cond = function(self, aaName)
-                    return Config:GetSetting('DoUnity') and mq.TLO.Me.PctHPs() > Config:GetSetting('StopLichHP') and Casting.SelfBuffAACheck(aaName)
+                    if mq.TLO.Me.PctHPs() <= Config:GetSetting('StopLichHP') then return false end
+                    return self.Helpers.UnityNeeded(self, aaName)
                 end,
             },
             {
@@ -1500,10 +1502,36 @@ local _ClassConfig = {
             return false
         end,
 
-        CancelLich = function(self)
+        UnityNeeded = function(self, aaName)
+            if not Casting.CanUseAA(aaName) then return false end
+            local wantLich = Config:GetSetting('DoLich') and mq.TLO.Me.PctMana() <= Config:GetSetting('StartLichMana')
+            local unitySpell = mq.TLO.Me.AltAbility(aaName).Spell
+            for i = 1, unitySpell.NumEffects() do
+                local trigger = unitySpell.Trigger(i)
+                if not (trigger and trigger() and trigger.ID() > 0) then break end
+                local triggerName = trigger.Name() or ""
+                if mq.TLO.Me.BlockedBuff(triggerName)() ~= triggerName and not mq.TLO.Me.FindBuff("id " .. trigger.ID())() and trigger.Stacks() then
+                    if wantLich or not (trigger.HasSPA(15)() and trigger.HasSPA(0)()) then return true end
+                end
+            end
+            return false
+        end,
+
+        LichBuffName = function(self)
             -- detspa means detremental spell affect
             -- spa is positive spell affect
-            local lichName = mq.TLO.Me.FindBuff("detspa hp and spa mana")()
+            local lichName = mq.TLO.Me.FindBuff("detspa hp and spa mana and spa ultravision")()
+            if lichName then return lichName end
+
+            local lichSpell = Core.GetResolvedActionMapItem('LichSpell')
+            if lichSpell and lichSpell() and Casting.IHaveBuff(lichSpell) then return lichSpell.RankName.Name() end
+
+            return nil
+        end,
+
+        CancelLich = function(self)
+            local lichName = self.Helpers.LichBuffName(self)
+            if not lichName then return end
             Core.DoCmd("/removebuff %s", lichName)
         end,
 

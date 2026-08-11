@@ -591,9 +591,9 @@ local _ClassConfig = {
                 name = "Voice of Thule",
                 type = "AA",
                 tooltip = Tooltips.HateBuff,
+                load_cond = function() return Config:GetSetting('DoHateBuff') end,
                 active_cond = function(self, aaName) return Casting.IHaveBuff(mq.TLO.Me.AltAbility(aaName).Spell.ID()) end,
                 cond = function(self, aaName)
-                    if not Config:GetSetting('DoHateBuff') then return false end
                     return Casting.SelfBuffAACheck(aaName)
                 end,
             },
@@ -601,9 +601,10 @@ local _ClassConfig = {
                 name = "HateBuff",
                 type = "Spell",
                 tooltip = Tooltips.HateBuff,
+                load_cond = function() return Config:GetSetting('DoHateBuff') end,
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
-                    if not Config:GetSetting('DoHateBuff') or not Casting.CastReady(spell) then return false end
+                    if not Casting.CastReady(spell) then return false end
                     return Casting.SelfBuffCheck(spell)
                 end,
             },
@@ -953,8 +954,9 @@ local _ClassConfig = {
                 name = "AELifeTap", --conditions on this may require further tuning, right now it does not respect the start tap settings
                 type = "Spell",
                 tooltip = Tooltips.AELifeTap,
+                load_cond = function() return Config:GetSetting('DoAELifeTap') end,
                 cond = function(self, spell)
-                    if not (Config:GetSetting('DoAELifeTap') and Config:GetSetting('DoAEDamage')) or not spell or not spell() then return false end
+                    if not Config:GetSetting('DoAEDamage') or not spell or not spell() then return false end
                     return Casting.SelfBuffCheck(spell) and Combat.AETargetCheck(true)
                 end,
             },

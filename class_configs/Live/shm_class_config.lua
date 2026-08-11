@@ -1301,7 +1301,6 @@ local _ClassConfig = {
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoDiseaseDot') end,
                 cond = function(self, spell, target)
-                    if Core.IsModeActive("Heal") and not Config:GetSetting('DoHealDPS') then return false end
                     return Casting.DotSpellCheck(spell) and Casting.HaveManaToDot()
                 end,
             },
@@ -1388,8 +1387,9 @@ local _ClassConfig = {
             {
                 name = "GroupRenewalHoT",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('DoHealOverTime') and Casting.CanUseAA("Luminary's Synergy") end,
                 cond = function(self, spell)
-                    if not Casting.CanUseAA("Luminary's Synergy") or not Config:GetSetting('DoHealOverTime') or not Casting.CastReady(spell) then return false end
+                    if not Casting.CastReady(spell) then return false end
                     return spell.RankName.Stacks() and (mq.TLO.Me.Song(spell).Duration.TotalSeconds() or 0) < 30
                 end,
             },
@@ -1779,7 +1779,6 @@ local _ClassConfig = {
             Category = "Common Rules",
             Index = 101,
             Tooltip = "This is a top-level setting that governs any DPS spells in heal mode, and can be used as a quick-toggle to enable/disable abilities without reloading spells.",
-            RequiresLoadoutChange = true,
             Default = true,
             FAQ = "I feel that my Shaman is too concerned with DPS, dots and nukes, what can be done?",
             Answer = "Disabling Use HealDPS will stop the use of these spells. You can control which individual spells you mem with their respective settings.",
@@ -1881,6 +1880,7 @@ local _ClassConfig = {
             Category = "Class Config Clickies",
             Index = 102,
             Tooltip = "Click your equipped chest.",
+            RequiresLoadoutChange = true,
             Default = mq.TLO.MacroQuest.BuildName() ~= "Emu",
             FAQ = "What the heck is a chest click?",
             Answer = "Most classes have useful abilities on their equipped chest after level 75 or so. The SHM's is generally a healing tool (emergency group heal).",
@@ -1893,6 +1893,7 @@ local _ClassConfig = {
             Category = "Other Recovery",
             Index = 104,
             Tooltip = "Use Canni AA",
+            RequiresLoadoutChange = true,
             Default = true,
             ConfigType = "Advanced",
         },
@@ -2045,6 +2046,7 @@ local _ClassConfig = {
             Category = "Group",
             Index = 106,
             Tooltip = "Do Haste Spells/AAs",
+            RequiresLoadoutChange = true,
             Default = true,
             ConfigType = "Advanced",
             FAQ = "Why aren't I casting Talisman of Celerity or other haste buffs?",
@@ -2153,6 +2155,7 @@ local _ClassConfig = {
             Category = "Group",
             Index = 107,
             Tooltip = "Use Low Level (<= 70) HP Buffs",
+            RequiresLoadoutChange = true,
             Default = false,
             ConfigType = "Advanced",
         },
@@ -2163,6 +2166,7 @@ local _ClassConfig = {
             Category = "Group",
             Index = 108,
             Tooltip = "Use Low Level (<= 70) HP Buffs",
+            RequiresLoadoutChange = true,
             Default = false,
             ConfigType = "Advanced",
         },
@@ -2173,6 +2177,7 @@ local _ClassConfig = {
             Category = "Group",
             Index = 109,
             Tooltip = "Use Low Level (<= 70) HP Buffs",
+            RequiresLoadoutChange = true,
             Default = false,
             ConfigType = "Advanced",
         },
@@ -2183,6 +2188,7 @@ local _ClassConfig = {
             Category = "Group",
             Index = 110,
             Tooltip = "Use Low Level (<= 70) HP Buffs",
+            RequiresLoadoutChange = true,
             Default = false,
             ConfigType = "Advanced",
         },

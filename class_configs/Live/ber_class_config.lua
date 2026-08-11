@@ -547,7 +547,7 @@ return {
                 end,
             },
         },
-        ['Burn'] = { --This really needs to be refactored with helper functions sometime. Other prioriities atm. Algar 3/2/25
+        ['Burn']     = { --This really needs to be refactored with helper functions sometime. Other prioriities atm. Algar 3/2/25
             {
                 name = "PrimaryBurnDisc",
                 type = "Disc",
@@ -780,9 +780,7 @@ return {
             {
                 name = "Phantom",
                 type = "Disc",
-                cond = function(self, discSpell)
-                    return Config:GetSetting('DoPet')
-                end,
+                load_cond = function() return Config:GetSetting('DoPet') end,
             },
             {
                 name = "SappingStrike",
@@ -807,9 +805,9 @@ return {
             {
                 name = "Alliance",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('DoAlliance') end,
                 cond = function(self, spell)
-                    return Config:GetSetting('DoAlliance') and Casting.CanAlliance() and
-                        not Casting.TargetHasBuff(spell)
+                    return Casting.CanAlliance() and not Casting.TargetHasBuff(spell)
                 end,
             },
             {

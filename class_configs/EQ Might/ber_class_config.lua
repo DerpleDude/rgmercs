@@ -444,6 +444,7 @@ return {
             Category = "Snare",
             Index = 101,
             Tooltip = "Snare opponents with low health.",
+            RequiresLoadoutChange = true,
             Default = false,
         },
         ['SnareCount']    = {

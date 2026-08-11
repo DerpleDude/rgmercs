@@ -1321,9 +1321,9 @@ local _ClassConfig = {
             {
                 name = "AllianceBuff",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('DoAlliance') end,
                 cond = function(self, spell, target)
-                    return Globals.AutoTargetIsNamed and not Casting.TargetHasBuff(spell) and
-                        Config:GetSetting('DoAlliance') and Casting.CanAlliance()
+                    return Globals.AutoTargetIsNamed and not Casting.TargetHasBuff(spell) and Casting.CanAlliance()
                 end,
             },
             {
@@ -1544,8 +1544,8 @@ local _ClassConfig = {
             {
                 name = "Wind of Malaise",
                 type = "AA",
+                load_cond = function() return Config:GetSetting('DoAEMalo') end,
                 cond = function(self, aaName, target)
-                    if not Config:GetSetting('DoAEMalo') then return false end
                     return Casting.DetAACheck(aaName)
                 end,
             },
@@ -1704,8 +1704,9 @@ local _ClassConfig = {
             {
                 name = "Summon Modulation Shard",
                 type = "AA",
+                load_cond = function() return Config:GetSetting('SummonModRods') end,
                 cond = function(self, aaName, target)
-                    if not Config:GetSetting('SummonModRods') or not Casting.CanUseAA(aaName) or not Targeting.TargetIsACaster(target) then return false end
+                    if not Casting.CanUseAA(aaName) or not Targeting.TargetIsACaster(target) then return false end
                     local modRodItem = mq.TLO.Spell(aaName).RankName.Base(1)()
                     return modRodItem and DanNet.query(target.CleanName(), string.format("FindItemCount[%d]", modRodItem), 1000) == "0" and
                         (mq.TLO.Cursor.ID() or 0) == 0
@@ -1719,9 +1720,10 @@ local _ClassConfig = {
             {
                 name = "ManaRodSummon",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('SummonModRods') and not Casting.CanUseAA("Summon Modulation Shard") end,
                 cond = function(self, spell, target)
                     if not spell() then return false end
-                    if Casting.CanUseAA("Summon Modulation Shard") or not Config:GetSetting('SummonModRods') or not Targeting.TargetIsACaster(target) then return false end
+                    if not Targeting.TargetIsACaster(target) then return false end
                     local myId = Casting.GetUseableSpellId(spell) -- Adjust for possible unsubbed accounts
                     local modRodItemId = mq.TLO.Spell(myId).Base(1)() or 0
                     return (mq.TLO.Spell(myId).Base(1)() or 0) > 0 and DanNet.query(target.CleanName(), string.format("FindItemCount[%d]", modRodItemId), 1000) == "0" and

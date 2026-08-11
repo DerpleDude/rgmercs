@@ -1654,6 +1654,7 @@ local _ClassConfig = {
             Category = "Group",
             Index = 106,
             Tooltip = "Cast Movement Spells/AA.",
+            RequiresLoadoutChange = true,
             Default = false,
             FAQ = "Why am I spamming movement buffs?",
             Answer = "Some move spells freely overwrite those of other classes, so if multiple movebuffs are being used, a buff loop may occur.\n" ..

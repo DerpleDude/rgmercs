@@ -665,6 +665,7 @@ return {
             {
                 name = "FireRain",
                 type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoRain') end,
                 cond = function(self, spell, target)
                     return self.Helpers.RainCheck(target)
                 end,
@@ -689,6 +690,7 @@ return {
             {
                 name = "IceRain",
                 type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoRain') end,
                 cond = function(self, spell, target)
                     return self.Helpers.RainCheck(target)
                 end,

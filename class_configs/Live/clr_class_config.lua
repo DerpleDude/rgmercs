@@ -401,7 +401,7 @@ local _ClassConfig = {
             "Hand of Tenacity",              -- Level 75
             "Hand of Conviction",            -- Level 70
             "Hand of Virtue",                -- Level 65
-            "Ancient: Gift of Aegolism",     -- Level 60 
+            "Ancient: Gift of Aegolism",     -- Level 60
             "Blessing of Aegolism",          -- Level 60
             "Aegolism",                      -- Level 60 (Single Target)
             "Blessing of Temperance",        -- Level 45
@@ -1606,6 +1606,7 @@ local _ClassConfig = {
             "Choose whether to use the Aegolism or Symbol Line of HP Buffs.\nPlease note using both is supported for party members who block buffs, but these buffs do not stack once we transition from using a HP Type-One buff in place of Aegolism.",
             Type = "Combo",
             ComboOptions = { 'Aegolism', 'Both (See Tooltip!)', 'Symbol', 'None', },
+            RequiresLoadoutChange = true,
             Default = 1,
             Min = 1,
             Max = 4,
@@ -1621,6 +1622,7 @@ local _ClassConfig = {
                 "You have Aegolism selected and are below level 60 (We are still using a HP Type One buff).\n" ..
                 "You have Symbol selected and you are below level 95 (We don't have Unified Symbols yet).\n" ..
                 "Leaving this on in other cases is not likely to cause issue, but may cause unnecessary buff checking.",
+            RequiresLoadoutChange = true,
             Default = false,
         },
         ['DoVieBuff']         = {
