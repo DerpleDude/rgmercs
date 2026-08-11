@@ -386,8 +386,8 @@ local _ClassConfig = {
             "Affliction",          -- Level 19
             "Sicken",              -- Level 4
         },
-        ['AEDot'] = {              -- do homework for Laz
-            "Blood of Yoppa",      -- Level 70
+        ['PoisonRainDot'] = {
+            "Blood of Yoppa", -- Level 70, Not Laz Custom, but Laz adds AE Rain trigger (Yoppa's Rain of Venom)
         },
         ['PetLion'] = {
             "Cunning Lioness Companion", -- Level 71 Laz Custom
@@ -890,6 +890,15 @@ local _ClassConfig = {
                 end,
             },
             {
+                name = "PoisonRainDot",
+                type = "Spell",
+                cond = function(self, spell, target)
+                    if not Config:GetSetting('DoAEDamage') then return false end
+                    if not Config:GetSetting('DoPoisonRainDot') or (Config:GetSetting('DotNamedOnly') and not Globals.AutoTargetIsNamed) then return false end
+                    return Casting.DotSpellCheck(spell) and Casting.HaveManaToDot()
+                end,
+            },
+            {
                 name = "SaryrnDot",
                 type = "Spell",
                 cond = function(self, spell, target)
@@ -936,7 +945,7 @@ local _ClassConfig = {
                 type = "Spell",
                 cond = function(self, spell, target)
                     if not Config:GetSetting('DoColdNuke') then return false end
-                    return (Targeting.MobHasLowHP or (Config:GetSetting('DotNamedOnly') and not Globals.AutoTargetIsNamed)) and Casting.OkayToNuke(true)
+                    return (Targeting.MobHasLowHP() or (Config:GetSetting('DotNamedOnly') and not Globals.AutoTargetIsNamed)) and Casting.OkayToNuke(true)
                 end,
             },
             {
@@ -944,7 +953,7 @@ local _ClassConfig = {
                 type = "Spell",
                 cond = function(self, spell, target)
                     if not Config:GetSetting('DoPoisonNuke') then return false end
-                    return (Targeting.MobHasLowHP or (Config:GetSetting('DotNamedOnly') and not Globals.AutoTargetIsNamed)) and Casting.OkayToNuke(true)
+                    return (Targeting.MobHasLowHP() or (Config:GetSetting('DotNamedOnly') and not Globals.AutoTargetIsNamed)) and Casting.OkayToNuke(true)
                 end,
             },
         },
@@ -1227,6 +1236,7 @@ local _ClassConfig = {
                 { name = "CureDisease",     cond = function(self) return not Core.GetResolvedActionMapItem('GroupCure') and Config:GetSetting('KeepDiseaseMemmed') end, },
                 { name = "CureCurse",       cond = function(self) return Config:GetSetting('KeepCurseMemmed') end, },
                 { name = "CurseDot",        cond = function(self) return Config:GetSetting('DoCurseDot') end, },
+                { name = "PoisonRainDot",   cond = function(self) return Config:GetSetting('DoPoisonRainDot') end, },
                 { name = "SaryrnDot",       cond = function(self) return Config:GetSetting('DoSaryrnDot') end, },
                 { name = "UltorDot",        cond = function(self) return Config:GetSetting('DoUltorDot') end, },
             },
@@ -1249,6 +1259,7 @@ local _ClassConfig = {
                 { name = "ColdNuke",      cond = function(self) return Config:GetSetting('DoColdNuke') end, },
                 { name = "PoisonNuke",    cond = function(self) return Config:GetSetting('DoPoisonNuke') end, },
                 { name = "CurseDot",      cond = function(self) return Config:GetSetting('DoCurseDot') end, },
+                { name = "PoisonRainDot", cond = function(self) return Config:GetSetting('DoPoisonRainDot') end, },
                 { name = "SaryrnDot",     cond = function(self) return Config:GetSetting('DoSaryrnDot') end, },
                 { name = "UltorDot",      cond = function(self) return Config:GetSetting('DoUltorDot') end, },
                 { name = "TwinHealNuke",  cond = function(self) return Config:GetSetting('DoTwinHealNuke') end, },
@@ -1344,12 +1355,22 @@ local _ClassConfig = {
             Default = false,
             RequiresLoadoutChange = true,
         },
+        ['DoPoisonRainDot']   = {
+            DisplayName = "Poison Rain Dot",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "Over Time",
+            Index = 102,
+            Tooltip = "Use your Blood of Yoppa dot (single target poison with AE Rain nuke trigger).",
+            Default = false,
+            RequiresLoadoutChange = true,
+        },
         ['DoUltorDot']        = {
             DisplayName = "Disease Dot",
             Group = "Abilities",
             Header = "Damage",
             Category = "Over Time",
-            Index = 102,
+            Index = 103,
             Tooltip = "Use your Ultor line of dots (disease damage, single target).",
             Default = false,
             RequiresLoadoutChange = true,
@@ -1359,7 +1380,7 @@ local _ClassConfig = {
             Group = "Abilities",
             Header = "Damage",
             Category = "Over Time",
-            Index = 103,
+            Index = 104,
             Tooltip = "Use your Curse line of dots (magic damage, single target).",
             Default = false,
             RequiresLoadoutChange = true,
@@ -1369,7 +1390,7 @@ local _ClassConfig = {
             Group = "Abilities",
             Header = "Damage",
             Category = "Over Time",
-            Index = 104,
+            Index = 105,
             Tooltip = "Any selected dot above will only be used on a named mob.",
             Default = true,
         },
