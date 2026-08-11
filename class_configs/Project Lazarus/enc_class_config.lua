@@ -1008,6 +1008,7 @@ local _ClassConfig = {
             {
                 name = "Nightmare Stasis",
                 type = "AA",
+                IgnoreImmuneCheck = true,
                 cond = function(self, aaName, target) return Globals.AutoTargetIsNamed end,
             },
             {

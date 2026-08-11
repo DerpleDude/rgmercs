@@ -843,6 +843,7 @@ return {
             {
                 name = "Projection of Piety",
                 type = "AA",
+                IgnoreImmuneCheck = true,
                 cond = function(self, aaName, target)
                     return Globals.AutoTargetIsNamed and (mq.TLO.Target.SecondaryPctAggro() or 0) > 80
                 end,
