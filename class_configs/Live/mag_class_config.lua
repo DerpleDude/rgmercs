@@ -1633,10 +1633,10 @@ local _ClassConfig = {
                 name = "PetAura",
                 type = "Spell",
                 active_cond = function(self, spell)
-                    return Casting.AuraActiveByName(spell.BaseName()) ~= nil
+                    return Casting.AuraActiveByName(spell.BaseName())
                 end,
                 cond = function(self, spell)
-                    return not Casting.AuraActiveByName(spell.BaseName())
+                    return not mq.TLO.Me.Aura(1).ID()
                 end,
             },
             {

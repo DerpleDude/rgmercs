@@ -1100,6 +1100,9 @@ local _ClassConfig = {
                 name = "HealAura",
                 type = "Spell",
                 active_cond = function(self, spell) return Casting.AuraActiveByName(spell.BaseName()) end,
+                pre_activate = function(self, spell)
+                    if not Casting.AuraActiveByName(spell.BaseName()) then mq.TLO.Me.Aura(1).Remove() end
+                end,
                 cond = function(self, spell)
                     return (spell and spell() and not Casting.AuraActiveByName(spell.BaseName()))
                 end,

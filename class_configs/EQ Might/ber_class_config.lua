@@ -222,8 +222,11 @@ return {
             {
                 name = "BerAura",
                 type = "Disc",
+                pre_activate = function(self, discSpell)
+                    if not Casting.AuraActiveByName(discSpell.RankName.Name()) then mq.TLO.Me.Aura(1).Remove() end
+                end,
                 cond = function(self, discSpell)
-                    return not mq.TLO.Me.Aura(1).ID() and mq.TLO.Me.PctEndurance() > 10
+                    return not Casting.AuraActiveByName(discSpell.RankName.Name()) and mq.TLO.Me.PctEndurance() > 10
                 end,
             },
             {

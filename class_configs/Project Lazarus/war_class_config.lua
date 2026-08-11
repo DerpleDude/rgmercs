@@ -329,8 +329,11 @@ local _ClassConfig = {
                 active_cond = function(self, discSpell)
                     return Casting.AuraActiveByName(discSpell.RankName.Name())
                 end,
+                pre_activate = function(self, discSpell)
+                    if not Casting.AuraActiveByName(discSpell.RankName.Name()) then mq.TLO.Me.Aura(1).Remove() end
+                end,
                 cond = function(self, discSpell)
-                    return not mq.TLO.Me.Aura(1).ID()
+                    return not Casting.AuraActiveByName(discSpell.RankName.Name())
                 end,
             },
         },

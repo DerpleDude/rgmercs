@@ -1446,12 +1446,15 @@ local _ClassConfig = {
                 name = "IceAura",
                 type = "Spell",
                 active_cond = function(self, spell) return Casting.AuraActiveByName(spell.BaseName()) end,
-                cond = function(self, spell) return (spell and spell() and not Casting.AuraActiveByName(spell.BaseName())) end,
+                cond = function(self, spell) return (spell and spell() and not mq.TLO.Me.Aura(1).ID()) end,
             },
             {
                 name = "HealingAura",
                 type = "Spell",
                 active_cond = function(self, spell) return Casting.AuraActiveByName(spell.BaseName()) end,
+                pre_activate = function(self, spell)
+                    if not Casting.AuraActiveByName(spell.BaseName()) then mq.TLO.Me.Aura(1).Remove() end
+                end,
                 cond = function(self, spell)
                     if self:GetResolvedActionMapItem('IceAura') then return false end
                     return (spell and spell() and not Casting.AuraActiveByName(spell.BaseName()))
