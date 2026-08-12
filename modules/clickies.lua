@@ -36,6 +36,24 @@ Module.FAQ                                    = {
 Module.ClickyRotationIndex                    = 1
 
 Module.CommandHandlers                        = {
+    clickyadd = {
+        usage = "/rgl clickyadd",
+        about = "Adds the item on your cursor to your clicky list.",
+        handler =
+            function(self)
+                local itemName = mq.TLO.Cursor.Name()
+                if not itemName then
+                    Logger.log_error("You must have an item on your cursor to add a clicky.")
+                    return true
+                end
+
+                local clickies = Config:GetSetting('Clickies')
+                table.insert(clickies, self:NewClickyFromCursor())
+                Config:SetSetting('Clickies', clickies)
+                Logger.log_info("\agAdded \at%s \agto your clickies.", itemName)
+                return true
+            end,
+    },
     enableclicky = {
         usage = "/rgl enableclicky <clicky name|idx>",
         about = "Enables the clicky item with the specified name or index.",
@@ -115,6 +133,11 @@ Module.TempSettings.RotationNamesCache        = nil
 Module.TempSettings.RotationNameSet           = nil
 Module.TempSettings.HealRotationNamesCache    = nil
 Module.TempSettings.HealRotationNameSet       = nil
+Module.TempSettings.ShowExportWindow          = false
+Module.TempSettings.ExportWindowFrame         = 0
+Module.TempSettings.PushSelectedClickies      = {}
+Module.TempSettings.PushSelectedTargets       = {}
+Module.TempSettings.PushTargets               = nil
 
 Module.DefaultServerClickies                  = {
     ['Project Lazarus'] = {
@@ -1220,7 +1243,7 @@ function Module:LoadSettings()
         -- insert default server clickies on very first run per PC
         if firstSaveRequired then
             local defaultClickyList = self.DefaultServerClickies[Globals.ServerEnv] -- uses server name for emu, "Live" otherwise
-            Config:SetSetting('Clickies', defaultClickyList or {})
+            Config:SetSetting('Clickies', Tables.DeepCopy(defaultClickyList or {}))
         end
 
         -- validate condition targets and rotation names.
@@ -1830,6 +1853,233 @@ function Module:RenderCondition(clickyIdx, condIdx, cond, conditionsTable, comba
     end
 end
 
+--- Builds a clicky entry for the item currently on the cursor.
+--- @return table The new clicky entry.
+function Module:NewClickyFromCursor()
+    local spell = mq.TLO.Cursor.Clicky.Spell
+    local targetType = spell and spell() and spell.TargetType() or "Unknown"
+
+    return {
+        itemName = mq.TLO.Cursor.Name(),
+        target = 'Self',
+        iconId = tonumber((mq.TLO.Cursor.Icon() or 500) - 500) or 0,
+        combat_state = 'Any',
+        no_target_change = targetType == "Self" or targetType == "Group v1" or targetType == "AE PC v1",
+        skipTriggerCheck = true,
+        conditions = {},
+    }
+end
+
+--- Builds the list of push destinations on the current server from the config database and any running peers.
+--- @return table List of { key, name, server, class, running } entries sorted by name and class.
+function Module:BuildPushTargets()
+    local targets = {}
+    local seen = {}
+
+    for _, character in ipairs(Config.Db:getCharacters() or {}) do
+        if character.server_name == Globals.CurServer then
+            for _, class in ipairs(Config.Db:getClassesForCharacter(character.server_name, character.name) or {}) do
+                if not Comms.IsLocalCurrent(character.name, character.server_name, class) then
+                    seen[character.name .. "|" .. class] = true
+                    table.insert(targets, {
+                        key = character.name .. "|" .. class,
+                        name = character.name,
+                        server = character.server_name,
+                        class = class,
+                        running = Comms.IsCharRunning(character.name, character.server_name, class),
+                    })
+                end
+            end
+        end
+    end
+
+    for _, peer in ipairs(Comms.GetPeers(false) or {}) do
+        local name, server = Comms.GetNameAndServerFromPeer(peer)
+        local heartbeat = Comms.GetPeerHeartbeat(peer)
+        local class = heartbeat.Data and heartbeat.Data.Class
+        if name and class and server == Globals.CurServer and not seen[name .. "|" .. class] then
+            table.insert(targets, {
+                key = name .. "|" .. class,
+                name = name,
+                server = server,
+                class = class,
+                running = true,
+            })
+        end
+    end
+
+    table.sort(targets, function(a, b)
+        if a.name == b.name then return a.class < b.class end
+        return a.name < b.name
+    end)
+
+    return targets
+end
+
+--- Appends the selected clickies to every selected destination, live over actors where the destination is running.
+function Module:SendSelectedClickies()
+    local clickies = Config:GetSetting('Clickies') or {}
+    local selected = {}
+    for _, clicky in ipairs(clickies) do
+        if self.TempSettings.PushSelectedClickies[clicky] and clicky.itemName:len() > 0 and clicky.Delete ~= true then
+            table.insert(selected, clicky)
+        end
+    end
+
+    for _, target in ipairs(self.TempSettings.PushTargets or {}) do
+        if self.TempSettings.PushSelectedTargets[target.key] then
+            if Comms.IsCharRunning(target.name, target.server, target.class) then
+                Comms.SendMessage(Comms.GetPeerName(target.name, target.server), self._name, "AppendPushedClickies", { clickies = Tables.DeepCopy(selected), })
+                Logger.log_info("\agSent %d clicky(s) to \at%s \ag[%s]", #selected, target.name, target.class)
+            else
+                local targetClickies = Tables.DeepCopy(Config.Db:getAll(target.server, target.name, target.class, self._name).Clickies or {})
+                for _, clicky in ipairs(selected) do
+                    table.insert(targetClickies, Tables.DeepCopy(clicky))
+                end
+
+                if Config.Db:setAll(target.server, target.name, target.class, self._name, { Clickies = targetClickies, }) then
+                    Logger.log_info("\agSent %d clicky(s) to \at%s \ag[%s] (offline)", #selected, target.name, target.class)
+                else
+                    Logger.log_error("\arCould not confirm %d clicky(s) for \at%s \ar[%s] reached the config database, check that character before sending again.", #selected,
+                        target.name, target.class)
+                end
+            end
+        end
+    end
+
+    self.TempSettings.PushSelectedClickies = {}
+    self.TempSettings.PushSelectedTargets = {}
+    self.TempSettings.PushTargets = nil
+end
+
+--- Appends clickies another character pushed to us onto our own list.
+--- @param data table Payload carrying the clickies to append.
+function Module:AppendPushedClickies(data)
+    local pushed = data and data.clickies or {}
+    if #pushed == 0 then return end
+
+    local clickies = Config:GetSetting('Clickies') or {}
+    for _, clicky in ipairs(pushed) do
+        -- tables that are empty come across actors as nil so we need to fix them up.
+        clicky.conditions = clicky.conditions or {}
+        for _, cond in ipairs(clicky.conditions) do
+            cond.args = cond.args or {}
+        end
+
+        self:ValidateClickyRotationSettings(clicky)
+        table.insert(clickies, clicky)
+    end
+
+    Config:SetSetting('Clickies', clickies)
+    Logger.log_info("\agAdded %d clicky(s) pushed to us by another character.", #pushed)
+end
+
+function Module:RenderExportToPeers()
+    ImGui.SetNextWindowSize(ImVec2(520, 400), ImGuiCond.Appearing)
+    local drawWindow
+    self.TempSettings.ShowExportWindow, drawWindow = ImGui.Begin("Export to Peers###ClickyExport", self.TempSettings.ShowExportWindow)
+
+    if not drawWindow then
+        ImGui.End()
+        return
+    end
+
+    if not self.TempSettings.PushTargets then
+        self.TempSettings.PushTargets = self:BuildPushTargets()
+    end
+
+    local clickies = Config:GetSetting('Clickies') or {}
+    if #clickies == 0 or #self.TempSettings.PushTargets == 0 then
+        Ui.RenderText(#clickies == 0 and "You have no clickies to export." or "No other characters on this server are known to RGMercs.")
+        ImGui.End()
+        return
+    end
+
+    local mismatchedClass = false
+    local targetCount = 0
+    for _, target in ipairs(self.TempSettings.PushTargets) do
+        if self.TempSettings.PushSelectedTargets[target.key] then
+            targetCount = targetCount + 1
+            mismatchedClass = mismatchedClass or target.class ~= Globals.CurLoadedClass
+        end
+    end
+
+    local listHeight = ImGui.GetFrameHeightWithSpacing() * 5
+
+    ImGui.SeparatorText("Clickies to Export")
+    ImGui.BeginChild("##push_clicky_list", ImVec2(0, listHeight), bit32.bor(ImGuiChildFlags.Borders), ImGuiWindowFlags.None)
+    local selectedCount = 0
+    for clickyIdx, clicky in ipairs(clickies) do
+        if clicky.itemName:len() > 0 and clicky.Delete ~= true then
+            local rotationBound = clicky.combat_state == 'During Rotation' or clicky.combat_state == 'During Heal Rotation'
+            if rotationBound and mismatchedClass then
+                self.TempSettings.PushSelectedClickies[clicky] = nil
+            end
+
+            ImGui.BeginDisabled(rotationBound and mismatchedClass)
+            local checked, changed = ImGui.Checkbox("##push_clicky_" .. clickyIdx, self.TempSettings.PushSelectedClickies[clicky] == true)
+            if changed then
+                self.TempSettings.PushSelectedClickies[clicky] = checked or nil
+            end
+            if self.TempSettings.PushSelectedClickies[clicky] then
+                selectedCount = selectedCount + 1
+            end
+
+            ImGui.SameLine()
+            animItems:SetTextureCell(tonumber(clicky.iconId) or 0)
+            ImGui.GetWindowDrawList():AddTextureAnimation(animItems, ImGui.GetCursorScreenPosVec(), ImVec2(20, 20))
+            ImGui.Dummy(20, 20)
+            ImGui.SameLine()
+            ImGui.AlignTextToFramePadding()
+            ImGui.Text(string.format("%s  (%s / %s)", clicky.itemName, clicky.target or "Self", clicky.combat_state or "Any"))
+            ImGui.EndDisabled()
+        end
+    end
+    ImGui.EndChild()
+    if mismatchedClass then
+        Ui.RenderText("Clickies that run inside a rotation can only be sent to another %s.", Globals.CurLoadedClass)
+    else
+        ImGui.NewLine()
+    end
+    ImGui.SeparatorText("Export To")
+    ImGui.BeginChild("##push_target_list", ImVec2(0, listHeight), bit32.bor(ImGuiChildFlags.Borders), ImGuiWindowFlags.None)
+    for _, target in ipairs(self.TempSettings.PushTargets) do
+        local checked, changed = ImGui.Checkbox(string.format("%s [%s]##push_target_%s", target.name, target.class, target.key),
+            self.TempSettings.PushSelectedTargets[target.key] == true)
+        if changed then
+            self.TempSettings.PushSelectedTargets[target.key] = checked or nil
+        end
+        if not target.running then
+            ImGui.SameLine()
+            ImGui.TextDisabled("(offline)")
+        end
+    end
+    ImGui.EndChild()
+
+    ImGui.BeginDisabled(selectedCount == 0 or targetCount == 0)
+    if ImGui.Button(string.format("%s Export %d to %d Peer(s)", Icons.FA_SHARE, selectedCount, targetCount)) then
+        self:SendSelectedClickies()
+        self.TempSettings.ShowExportWindow = false
+    end
+    ImGui.EndDisabled()
+    if ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled) then
+        ImGui.SetTooltip("Adds the selected clickies to the end of each selected peer's list. Duplicates are not detected.")
+    end
+
+    ImGui.SameLine()
+    if ImGui.Button("Clear##clicky_export_clear") then
+        self.TempSettings.PushSelectedClickies = {}
+        self.TempSettings.PushSelectedTargets = {}
+    end
+
+    ImGui.SameLine()
+    if ImGui.Button("Close##clicky_export_close") then
+        self.TempSettings.ShowExportWindow = false
+    end
+
+    ImGui.End()
+end
+
 function Module:RenderClickiesWithConditions(type, clickies)
     ImGui.BeginDisabled(not mq.TLO.Cursor())
 
@@ -1837,18 +2087,9 @@ function Module:RenderClickiesWithConditions(type, clickies)
 
     if ImGui.SmallButton(mq.TLO.Cursor.Name() and string.format("%s Add %s to %s", Icons.FA_PLUS, mq.TLO.Cursor.Name() or "N/A", type) or "Pickup an Item To Add") then
         if mq.TLO.Cursor() then
-            local spell = mq.TLO.Cursor.Clicky.Spell
-            local targetType = spell and spell() and spell.TargetType() or "Unknown"
-            table.insert(clickies, {
-                itemName = mq.TLO.Cursor.Name(),
-                target = 'Self',
-                iconId = tonumber((mq.TLO.Cursor.Icon() or 500) - 500) or 0,
-                combat_state = 'Any',
-                no_target_change = targetType == "Self" or targetType == "Group v1" or targetType == "AE PC v1",
-                skipTriggerCheck = true,
-                conditions = {},
-            })
-            Config:SetSetting('Clickies', clickies)
+            local allClickies = Config:GetSetting('Clickies')
+            table.insert(allClickies, self:NewClickyFromCursor())
+            Config:SetSetting('Clickies', allClickies)
         end
     end
 
@@ -1859,6 +2100,18 @@ function Module:RenderClickiesWithConditions(type, clickies)
         self:InsertDefaultClickies()
     end
     Ui.Tooltip("Add server-specific default clickies to the end of the list.")
+
+    ImGui.SameLine()
+    if ImGui.SmallButton("Export to Peers") then
+        self.TempSettings.PushTargets = self:BuildPushTargets()
+        self.TempSettings.ShowExportWindow = true
+    end
+    Ui.Tooltip("Copy clickies from this list onto your other characters.")
+
+    if self.TempSettings.ShowExportWindow and self.TempSettings.ExportWindowFrame ~= ImGui.GetFrameCount() then
+        self.TempSettings.ExportWindowFrame = ImGui.GetFrameCount()
+        self:RenderExportToPeers()
+    end
 
     Ui.RenderText("For best performance, assign clickies to rotations whenever feasible.")
 
@@ -2097,7 +2350,7 @@ function Module:InsertDefaultClickies()
     local clickes = Config:GetSetting('Clickies') or {}
 
     if defaultClickyList then
-        for _, defaultClicky in ipairs(defaultClickyList) do
+        for _, defaultClicky in ipairs(Tables.DeepCopy(defaultClickyList)) do
             table.insert(clickes, defaultClicky)
         end
         Config:SetSetting('Clickies', clickes)

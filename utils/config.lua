@@ -3867,7 +3867,7 @@ function Config:PackageConfig(module)
         peer = Comms.GetPeerName(),
         module = module,
         settings = Config:GetAllModuleSettings()[module],
-        settingCategories = Config:GetAllModuleSettingCategories()[module],
+        settingCategories = Config:GetModuleSettingCategories(module):toList() or {},
         defaultSettings = Config:GetAllModuleDefaultSettings()[module],
     }
 end
@@ -4000,7 +4000,7 @@ function Config:UpdatePeerSettings(data)
         return
     end
 
-    local settings, settingsCategories, defaultSettings = data.settings or {}, data.settingsCategories or {}, data.defaultSettings or {}
+    local settings, settingsCategories, defaultSettings = data.settings or {}, data.settingCategories or {}, data.defaultSettings or {}
 
     self.peerModuleDefaultSettings[module] = defaultSettings
 
