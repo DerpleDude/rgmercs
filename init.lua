@@ -529,7 +529,8 @@ local function Main()
         if Config:GetSetting('DoMercenary') then
             local merc = mq.TLO.Me.Mercenary
 
-            if (merc.State() or ""):lower() == "active" then
+            -- EMU reports a junk merc ID, and Live can report an active state with no merc out
+            if (merc.ID() or 0) > 0 and (merc.State() or ""):lower() == "active" then
                 if Combat.MercEngage() then
                     local stances = Globals.Constants.MercStanceGroups[merc.Class.ShortName():lower()]
                     if stances and merc.Stance() then
@@ -555,7 +556,7 @@ local function Main()
 
     if Combat.ShouldDoCamp() then
         local merc = mq.TLO.Me.Mercenary
-        if Config:GetSetting('DoMercenary') and Globals.CurrentState ~= "Combat" and (merc.State() or ""):lower() == "active"
+        if Config:GetSetting('DoMercenary') and Globals.CurrentState ~= "Combat" and (merc.ID() or 0) > 0 and (merc.State() or ""):lower() == "active"
             and (merc.Class.ShortName() or "none"):lower() ~= "clr" and merc.Stance():lower() ~= "passive" then
             Core.DoCmd("/squelch /stance passive")
         end
