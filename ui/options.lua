@@ -216,15 +216,16 @@ OptionsUI.dbToClassIdx   = 1
 OptionsUI.dbListIdx      = 1
 
 OptionsUI.ManagedLists   = {
-    { label = "Charm Allow",  sharedKey = "CharmAllowListShared", },
-    { label = "Charm Deny",   sharedKey = "CharmDenyListShared", },
-    { label = "Cure Allow",   sharedKey = "CureAllowListShared", },
-    { label = "Cure Deny",    sharedKey = "CureDenyListShared", },
-    { label = "Dispel Allow", sharedKey = "DispelAllowListShared", },
-    { label = "Dispel Deny",  sharedKey = "DispelDenyListShared", },
-    { label = "Pull Allow",   sharedKey = "PullAllowListShared", },
-    { label = "Pull Deny",    sharedKey = "PullDenyListShared", },
-    { label = "Spawn List",   sharedKey = "SpawnList", },
+    { label = "Charm Allow",    sharedKey = "CharmAllowListShared", },
+    { label = "Charm Deny",     sharedKey = "CharmDenyListShared", },
+    { label = "Cure Allow",     sharedKey = "CureAllowListShared", },
+    { label = "Cure Deny",      sharedKey = "CureDenyListShared", },
+    { label = "Dispel Allow",   sharedKey = "DispelAllowListShared", },
+    { label = "Dispel Deny",    sharedKey = "DispelDenyListShared", },
+    { label = "Pull Allow",     sharedKey = "PullAllowListShared", },
+    { label = "Pull Deny",      sharedKey = "PullDenyListShared", },
+    { label = "Pull Preferred", sharedKey = "PullPreferredListShared", },
+    { label = "Spawn List",     sharedKey = "SpawnList", },
 }
 
 local function shallow_copy(orig)

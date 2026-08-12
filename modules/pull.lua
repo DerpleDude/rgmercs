@@ -46,8 +46,10 @@ Module.TempSettings.StrangerSkip          = {}
 Module.TempSettings.PullListUpdated       = false
 Module.TempSettings.PullAllowSet          = {}
 Module.TempSettings.PullDenySet           = {}
+Module.TempSettings.PullPreferredSet      = {}
 Module.TempSettings.HavePullAllowEntries  = false
 Module.TempSettings.HavePullDenyEntries   = false
+Module.TempSettings.HavePreferredEntries  = false
 
 -- Attempts & Travel
 Module.TempSettings.Attempt               = nil
@@ -492,6 +494,20 @@ Module.DefaultConfig                = {
             "Alternatively, you can use /rgl pulldeny <mobname> or /rgl pulldenyrm <mobname> or <List#> to adjust this list from the command line.\n\n" ..
             "We will still engage mobs that aggro us, regardless of their presence on this list.",
     },
+    ['PullPreferredList']                      = {
+        DisplayName = "Preferred List",
+        Category = "",
+        Tooltip = "",
+        Type = "Custom",
+        Default = {},
+        OnChange = function() Modules:ExecModule("Pull", "FlagPullListUpdated") end,
+        FAQ = "How does the Pull Preferred List work?",
+        Answer = "The pull preferred list allows you to prioritize your pull targets.\n\n" ..
+            "Mobs eligible to be pulled that are found on the list will be pulled first, over other mobs who may be closer.\n\n" ..
+            "Preferred mobs must still be valid pull targets; pull radius, allow/deny list presence, etc, will still filter mobs before it is checked.\n\n" ..
+            "With Count Named As Preferred enabled, any mob the Spawns module considers a Named is treated as preferred without being on this list.\n\n" ..
+            "Add (or remove) mobs to this list in the Pull UI, or by using the /rgl pullprefer(rm) command.",
+    },
     ['PullAllowListShared']                    = {
         DisplayName = "Shared Allow List",
         Category = "",
@@ -510,13 +526,29 @@ Module.DefaultConfig                = {
         Scope = "server",
         OnChange = function() Modules:ExecModule("Pull", "FlagPullListUpdated") end,
     },
+    ['PullPreferredListShared']                = {
+        DisplayName = "Shared Preferred List",
+        Category = "",
+        Tooltip = "",
+        Type = "Custom",
+        Default = {},
+        Scope = "server",
+        OnChange = function() Modules:ExecModule("Pull", "FlagPullListUpdated") end,
+    },
     ['UseSharedPullLists']                     = {
         DisplayName = "Use Shared Pull Lists",
         Category = "",
         Tooltip = "",
         Type = "Custom",
-        Default = false,
+        Default = true,
         OnChange = function() Modules:ExecModule("Pull", "FlagPullListUpdated") end,
+    },
+    ['PullPreferNamed']                        = {
+        DisplayName = "Count Named As Preferred",
+        Category = "",
+        Tooltip = "",
+        Type = "Custom",
+        Default = true,
     },
     ['PullSafeZones']                          = {
         DisplayName = "SafeZones",
@@ -1099,6 +1131,25 @@ Module.CommandHandlers              = {
             return true
         end,
     },
+    pullprefer = {
+        usage = "/rgl pullprefer \"<name>\"",
+        about = "Adds <name> to the Pull Preferred List. If no name is entered, your target's name is used. Ensure quotes are used on multi-word mob names!",
+        handler = function(self, name)
+            if not name then
+                if not mq.TLO.Target() then
+                    Logger.log_error("/rgl pullprefer - no name given and no valid target exists!")
+                    return
+                end
+                if not Targeting.TargetIsType("NPC") then
+                    Logger.log_error("/rgl pullprefer - target must be an NPC!")
+                    return
+                end
+                name = mq.TLO.Target.CleanName()
+            end
+            self:AddMobToList("PullPreferredList", name)
+            return true
+        end,
+    },
     pullignoreclear = {
         usage = "/rgl pullignoreclear",
         about = "Clears the Pull Ignore List.",
@@ -1130,6 +1181,19 @@ Module.CommandHandlers              = {
                 return
             end
             self:DeleteMobFromList("PullAllowList", arg1)
+            return true
+        end,
+    },
+    pullpreferrm = {
+        usage = "/rgl pullpreferrm \"<name>\" or /rgl pullpreferrm <List#>",
+        about = "Removes <name> or <List#> from the Pull Preferred List. If no name is entered, your target's name is used. Ensure quotes are used on multi-word mob names!",
+        handler = function(self, arg1)
+            if not arg1 then arg1 = mq.TLO.Target.CleanName() end
+            if not arg1 then
+                Logger.log_error("/rgl pullpreferrm - no argument given and no valid target exists!")
+                return
+            end
+            self:DeleteMobFromList("PullPreferredList", arg1)
             return true
         end,
     },
@@ -2363,9 +2427,17 @@ function Module:Render()
         if newUseShared ~= useShared then
             Config:SetSetting('UseSharedPullLists', newUseShared)
         end
+        ImGui.SameLine()
+        local preferNamed = Config:GetSetting('PullPreferNamed')
+        local newPreferNamed = ImGui.Checkbox("Count Named As Preferred", preferNamed)
+        Ui.Tooltip("Treats any Named as preferred without adding it to the list.")
+        if newPreferNamed ~= preferNamed then
+            Config:SetSetting('PullPreferNamed', newPreferNamed)
+        end
+        Ui.RenderText("Note: Allow List supersedes Deny List")
         self:RenderMobList("Allow List", "PullAllowList")
         self:RenderMobList("Deny List", "PullDenyList")
-        Ui.RenderText("Note: Allow List will supersede Deny List")
+        self:RenderMobList("Preferred List", "PullPreferredList")
         ImGui.NewLine()
         ImGui.Separator()
 
@@ -2613,7 +2685,7 @@ function Module:RenderMoveAbilities()
 end
 
 -- Mob Lists
----@param baseName string # "PullAllowList" or "PullDenyList"
+---@param baseName string # "PullAllowList", "PullDenyList" or "PullPreferredList"
 ---@return string
 function Module:ActivePullList(baseName)
     return Config:GetSetting('UseSharedPullLists') and (baseName .. "Shared") or baseName
@@ -2658,6 +2730,8 @@ function Module:RefreshPullListSets()
         Config:GetZoneList('PullAllowList'), Config:GetZoneList('PullAllowListShared'), useShared)
     self.TempSettings.PullDenySet, self.TempSettings.HavePullDenyEntries = self:CompilePullListSet(
         Config:GetZoneList('PullDenyList'), Config:GetZoneList('PullDenyListShared'), useShared)
+    self.TempSettings.PullPreferredSet, self.TempSettings.HavePreferredEntries = self:CompilePullListSet(
+        Config:GetZoneList('PullPreferredList'), Config:GetZoneList('PullPreferredListShared'), useShared)
 end
 
 function Module:GetPullListSets()
@@ -3659,6 +3733,7 @@ function Module:GetPullableSpawns()
     local policy = self:GetModePolicy()
 
     local metaDataCache = {}
+    local preferNamed = Config:GetSetting('PullPreferNamed')
     local reasons = Module.Constants.PullFilterReasons
 
     local recordReason = function(spawn, reason, distance)
@@ -3844,6 +3919,12 @@ function Module:GetPullableSpawns()
 
         recordReason(spawn, reasons.PULLABLE, navDist)
 
+        if (self.TempSettings.HavePreferredEntries and self.TempSettings.PullPreferredSet[Strings.TrimSpaces(spawn.CleanName() or ""):lower()]) or
+            (preferNamed and Targeting.IsNamed(spawn)) then
+            Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \agIs Preferred - sorting ahead of non-preferred targets", spawnName, spawn.ID())
+            metaDataCache[spawn.ID()].preferred = true
+        end
+
         return true
     end
 
@@ -3853,6 +3934,10 @@ function Module:GetPullableSpawns()
         -- spawn could be invalid by now so double check
         if a.ID() == 0 or a.Dead() then return false end
         if b.ID() == 0 or b.Dead() then return true end
+
+        local aPreferred = metaDataCache[a.ID()].preferred
+        local bPreferred = metaDataCache[b.ID()].preferred
+        if aPreferred ~= bPreferred then return aPreferred == true end
 
         return metaDataCache[a.ID()].distance < metaDataCache[b.ID()].distance
     end)
