@@ -49,7 +49,7 @@ local _ClassConfig = {
         CanMez       = function() return true end,
         CanCharm     = function() return true end,
         IsMezzing    = function() return Config:GetSetting('MezOn') end,
-        IsCuring     = function() return Config:GetSetting('UseCure') end,
+        IsCuring     = function() return Config:GetSetting('DoCures') or Config:GetSetting('UseCure') end,
         IsDispelling = function() return Config:GetSetting('DoDispel') end,
         IsRezing     = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or not Targeting.HasXTHaters()) end,
     },
@@ -65,11 +65,14 @@ local _ClassConfig = {
         },
     },
     ['Cure']              = {
+        ['DetDispel'] = {
+            { type = "AA", name = "Radiant Cure", },
+        },
         ['Poison'] = {
-            { type = "Song", name = "CureSong", },
+            { type = "Song", name = "CureSong", cond = function() return Config:GetSetting('UseCure') end, },
         },
         ['Disease'] = {
-            { type = "Song", name = "CureSong", },
+            { type = "Song", name = "CureSong", cond = function() return Config:GetSetting('UseCure') end, },
         },
     },
     ['Themes']            = {
@@ -872,6 +875,11 @@ local _ClassConfig = {
             {
                 name = "Revitalize",
                 type = "Disc",
+                midSong = true,
+            },
+            {
+                name = "Eternal Recovery",
+                type = "AA",
                 midSong = true,
             },
             {

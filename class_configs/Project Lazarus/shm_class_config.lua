@@ -1423,7 +1423,6 @@ local _ClassConfig = {
             Tooltip = "Use snaring HoTs like torpor as an emergency heal and as a combat buff on your tanks.",
             RequiresLoadoutChange = true,
             Default = true,
-            ConfigType = "Advanced",
         },
         ['SnareHotNamedOnly'] = {
             DisplayName = "Snare HoT Named Only",
@@ -1433,7 +1432,6 @@ local _ClassConfig = {
             Index = 103,
             Tooltip = "Only use the snaring HoT as a tank buff when a named is on your XTarget.",
             Default = true,
-            ConfigType = "Advanced",
         },
         ['KeepPoisonMemmed']  = {
             DisplayName = "Mem Cure Poison",

@@ -16,6 +16,7 @@ return {
     _author           = "Derple, Algar",
     ['ModeChecks']    = {
         IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or not Targeting.HasXTHaters()) end,
+        IsCuring = function() return Config:GetSetting('DoCures') and Casting.CanUseAA("Radiant Cure") end,
     },
     ['Rez']           = {
         ['Combat']   = {
@@ -23,6 +24,11 @@ return {
         },
         ['Downtime'] = {
             { type = "Item", name = "RezStaff", },
+        },
+    },
+    ['Cure']          = {
+        ['DetDispel'] = {
+            { type = "AA", name = "Radiant Cure", },
         },
     },
     ['Modes']         = {
@@ -374,6 +380,16 @@ return {
             end,
         },
         {
+            name = 'Emergency(Health)',
+            state = 1,
+            steps = 1,
+            doFullRotation = true,
+            targetId = function(self) return { mq.TLO.Me.ID(), } end,
+            cond = function(self, combat_state)
+                return Targeting.HasXTHaters() and Core.AtEmergencyHP()
+            end,
+        },
+        {
             name = 'Aggro Management',
             state = 1,
             steps = 1,
@@ -555,6 +571,12 @@ return {
             --         return Config:GetSetting('DoAEDamage')
             --     end,
             -- },
+        },
+        ['Emergency(Health)'] = {
+            {
+                name = "Eternal Recovery",
+                type = "AA",
+            },
         },
         ['Aggro Management'] =
         {

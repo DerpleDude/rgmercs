@@ -301,8 +301,9 @@ local _ClassConfig = {
             "Ghost of Renewal",           -- Level 70
         },
         ['SnareHot'] = {
-            "Torpor",   -- Level 60
-            "Stoicism", -- Level 44
+            "Earthwave Rejuvenation", -- Level 69, PrM Custom
+            "Torpor",                 -- Level 60
+            "Stoicism",               -- Level 44
         },
         ['SingleHot'] = {
             "Halcyon Breeze",         -- Level 71
@@ -541,6 +542,13 @@ local _ClassConfig = {
                 end,
             },
             {
+                name = "Eternal Recovery",
+                type = "AA",
+                cond = function(self, aaName, target)
+                    return self.CombatState == "Combat" and Targeting.TargetIsMyself(target)
+                end,
+            },
+            {
                 name = "Ancestral Guard",
                 type = "AA",
                 cond = function(self, aaName, target)
@@ -709,6 +717,16 @@ local _ClassConfig = {
             end,
         },
         {
+            name = 'SnareHotBuff',
+            state = 1,
+            steps = 1,
+            load_cond = function(self) return Config:GetSetting('DoSnareHot') and Core.GetResolvedActionMapItem('SnareHot') end,
+            targetId = function(self) return Casting.GetBuffableTankingIDs() end,
+            cond = function(self, combat_state)
+                return combat_state == "Combat" and (not Config:GetSetting('SnareHotNamedOnly') or Targeting.HasXTNamed()) and Core.CombatActionsCheck()
+            end,
+        },
+        {
             name = 'ProcBuff',
             state = 1,
             steps = 1,
@@ -863,6 +881,15 @@ local _ClassConfig = {
                         mq.delay(50) -- slight delay to prevent chat bug with command issue
                         self:SetPetHold()
                     end
+                end,
+            },
+        },
+        ['SnareHotBuff']   = {
+            {
+                name = "SnareHot",
+                type = "Spell",
+                cond = function(self, spell, target)
+                    return Casting.GroupBuffCheck(spell, target)
                 end,
             },
         },
@@ -1466,10 +1493,18 @@ local _ClassConfig = {
             Header = "Recovery",
             Category = "General Healing",
             Index = 102,
-            Tooltip = "Use snaring HoTs like torpor when HP is very low.",
+            Tooltip = "Use snaring HoTs like torpor as an emergency heal and as a combat buff on your tanks.",
             RequiresLoadoutChange = true,
             Default = false,
-            ConfigType = "Advanced",
+        },
+        ['SnareHotNamedOnly'] = {
+            DisplayName = "Snare HoT Named Only",
+            Group = "Abilities",
+            Header = "Recovery",
+            Category = "General Healing",
+            Index = 103,
+            Tooltip = "Only use the snaring HoT as a tank buff when a named is on your XTarget.",
+            Default = true,
         },
         ['KeepPoisonMemmed']  = {
             DisplayName = "Mem Cure Poison",

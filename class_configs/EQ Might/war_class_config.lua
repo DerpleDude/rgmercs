@@ -16,6 +16,7 @@ local _ClassConfig = {
     ['ModeChecks']    = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
         IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or not Targeting.HasXTHaters()) end,
+        IsCuring = function() return Config:GetSetting('DoCures') and Casting.CanUseAA("Radiant Cure") end,
     },
     ['Rez']           = {
         ['Combat']   = {
@@ -23,6 +24,11 @@ local _ClassConfig = {
         },
         ['Downtime'] = {
             { type = "Item", name = "RezStaff", },
+        },
+    },
+    ['Cure']          = {
+        ['DetDispel'] = {
+            { type = "AA", name = "Radiant Cure", },
         },
     },
     ['Modes']         = {
@@ -496,6 +502,10 @@ local _ClassConfig = {
                 end,
             },
             {
+                name = "Eternal Recovery",
+                type = "AA",
+            },
+            {
                 name = "Fortitude",
                 type = "Disc",
                 cond = function(self, discSpell)
@@ -656,6 +666,20 @@ local _ClassConfig = {
             },
         },
         ['Buffs']                  = {
+            {
+                name = "Blade Guardian",
+                type = "AA",
+                cond = function(self, aaName)
+                    return Casting.SelfBuffAACheck(aaName)
+                end,
+            },
+            {
+                name = "Brace For Impact",
+                type = "AA",
+                cond = function(self, aaName, target)
+                    return Casting.SelfBuffAACheck(aaName)
+                end,
+            },
         },
         ['Combat']                 = {
             {

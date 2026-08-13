@@ -10,6 +10,7 @@ return {
     _author           = "Algar, Derple",
     ['ModeChecks']    = {
         IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or not Targeting.HasXTHaters()) end,
+        IsCuring = function() return Config:GetSetting('DoCures') and Casting.CanUseAA("Radiant Cure") end,
     },
     ['Rez']           = {
         ['Combat']   = {
@@ -17,6 +18,11 @@ return {
         },
         ['Downtime'] = {
             { type = "Item", name = "RezStaff", },
+        },
+    },
+    ['Cure']          = {
+        ['DetDispel'] = {
+            { type = "AA", name = "Radiant Cure", },
         },
     },
     ['Modes']         = {
@@ -241,6 +247,10 @@ return {
             {
                 name = "Revitalize",
                 type = "Disc",
+            },
+            {
+                name = "Eternal Recovery",
+                type = "AA",
             },
             {
                 name = "HealingDisc",

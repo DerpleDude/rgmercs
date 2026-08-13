@@ -25,6 +25,7 @@ local _ClassConfig    = {
         IsMezzing    = function() return Config:GetSetting('MezOn') end,
         IsDispelling = function() return Config:GetSetting('DoDispel') end,
         IsRezing     = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or not Targeting.HasXTHaters()) end,
+        IsCuring     = function() return Config:GetSetting('DoCures') and Casting.CanUseAA("Radiant Cure") end,
     },
     ['Dispel']        = {
         { name = "Dispel", type = "Spell", },
@@ -35,6 +36,11 @@ local _ClassConfig    = {
         },
         ['Downtime'] = {
             { type = "Item", name = "RezStaff", },
+        },
+    },
+    ['Cure']          = {
+        ['DetDispel'] = {
+            { type = "AA", name = "Radiant Cure", },
         },
     },
     ['Modes']         = {
@@ -538,6 +544,16 @@ local _ClassConfig    = {
             end,
         },
         {
+            name = 'Emergency(Health)',
+            state = 1,
+            steps = 1,
+            doFullRotation = true,
+            targetId = function(self) return { mq.TLO.Me.ID(), } end,
+            cond = function(self, combat_state)
+                return Targeting.HasXTHaters() and Core.AtEmergencyHP()
+            end,
+        },
+        {
             name = 'Emergency(Aggro)',
             state = 1,
             steps = 1,
@@ -650,7 +666,7 @@ local _ClassConfig    = {
         end,
     },
     ['Rotations']     = {
-        ['Downtime']         = {
+        ['Downtime']          = {
             {
                 name = "Eldritch Rune",
                 type = "AA",
@@ -733,7 +749,7 @@ local _ClassConfig    = {
                 end,
             },
         },
-        ['PetSummon']        = {
+        ['PetSummon']         = {
             {
                 name = "Asterion",
                 type = "Item",
@@ -759,7 +775,7 @@ local _ClassConfig    = {
                 end,
             },
         },
-        ['PetBuff']          = {
+        ['PetBuff']           = {
             {
                 name = "HasteBuff",
                 type = "Spell",
@@ -784,7 +800,7 @@ local _ClassConfig    = {
                 end,
             },
         },
-        ['GroupBuff']        = {
+        ['GroupBuff']         = {
             {
                 name = "Legendary Timeless Belt of the Wise",
                 type = "Item",
@@ -934,7 +950,7 @@ local _ClassConfig    = {
                 end,
             },
         },
-        ['CombatSupport']    = {
+        ['CombatSupport']     = {
             {
                 name = "Spire",
                 type = "AA",
@@ -987,7 +1003,7 @@ local _ClassConfig    = {
                 end,
             },
         },
-        ['PetHealing']       = {
+        ['PetHealing']        = {
             {
                 name = "Companion's Blessing",
                 type = "AA",
@@ -1001,7 +1017,13 @@ local _ClassConfig    = {
                 load_cond = function(self) return Config:GetSetting('DoPetHealSpell') end,
             },
         },
-        ['Emergency(Aggro)'] = {
+        ['Emergency(Health)'] = {
+            {
+                name = "Eternal Recovery",
+                type = "AA",
+            },
+        },
+        ['Emergency(Aggro)']  = {
             {
                 name = "Self Stasis",
                 type = "AA",
@@ -1056,7 +1078,7 @@ local _ClassConfig    = {
                 end,
             },
         },
-        ['DPS']              = {
+        ['DPS']               = {
             {
                 name = "Epic",
                 type = "Item",
@@ -1119,7 +1141,7 @@ local _ClassConfig    = {
                 end,
             },
         },
-        ['Burn']             = {
+        ['Burn']              = {
             {
                 name = "Illusions of Grandeur",
                 type = "AA",
@@ -1167,7 +1189,7 @@ local _ClassConfig    = {
                 type = "Item",
             },
         },
-        ['Tash']             = {
+        ['Tash']              = {
             {
                 name = "Bite of Tashani",
                 type = "AA",
@@ -1193,7 +1215,7 @@ local _ClassConfig    = {
                 end,
             },
         },
-        ['Cripple']          = {
+        ['Cripple']           = {
             {
                 name = "CrippleSpell",
                 type = "Spell",
@@ -1202,7 +1224,7 @@ local _ClassConfig    = {
                 end,
             },
         },
-        ['Slow']             = {
+        ['Slow']              = {
             {
                 name = "Enveloping Helix",
                 type = "AA",

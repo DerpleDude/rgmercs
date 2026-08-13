@@ -15,6 +15,7 @@ local _ClassConfig = {
     _author           = "Derple, Morisato, Algar",
     ['ModeChecks']    = {
         IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or not Targeting.HasXTHaters()) end,
+        IsCuring = function() return Config:GetSetting('DoCures') and Casting.CanUseAA("Radiant Cure") end,
     },
     ['Rez']           = {
         ['Combat']   = {
@@ -22,6 +23,11 @@ local _ClassConfig = {
         },
         ['Downtime'] = {
             { type = "Item", name = "RezStaff", },
+        },
+    },
+    ['Cure']          = {
+        ['DetDispel'] = {
+            { type = "AA", name = "Radiant Cure", },
         },
     },
     ['Modes']         = {
@@ -398,6 +404,16 @@ local _ClassConfig = {
             targetId = function(self) return mq.TLO.Me.Pet.ID() > 0 and { mq.TLO.Me.Pet.ID(), } or {} end,
             cond = function(self, combat_state)
                 return combat_state == "Downtime" and mq.TLO.Me.Pet.ID() > 0 and Casting.OkayToPetBuff()
+            end,
+        },
+        {
+            name = 'Emergency(Health)',
+            state = 1,
+            steps = 1,
+            doFullRotation = true,
+            targetId = function(self) return { mq.TLO.Me.ID(), } end,
+            cond = function(self, combat_state)
+                return Targeting.HasXTHaters() and Core.AtEmergencyHP()
             end,
         },
         {
@@ -845,6 +861,12 @@ local _ClassConfig = {
                 cond = function(self, spell)
                     return Casting.DetSpellCheck(spell)
                 end,
+            },
+        },
+        ['Emergency(Health)'] = {
+            {
+                name = "Eternal Recovery",
+                type = "AA",
             },
         },
         ['GroupBuff'] = {

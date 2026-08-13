@@ -479,6 +479,13 @@ local _ClassConfig = {
                 end,
             },
             {
+                name = "Eternal Recovery",
+                type = "AA",
+                cond = function(self, aaName, target)
+                    return self.CombatState == "Combat" and Targeting.TargetIsMyself(target)
+                end,
+            },
+            {
                 name = "Sanctuary",
                 type = "AA",
                 cond = function(self, aaName, target)

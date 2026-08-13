@@ -14,6 +14,7 @@ return {
     ['ModeChecks']        = {
         IsHealing = function() return Config:GetSetting('DoHealSpell') end,
         IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or not Targeting.HasXTHaters()) end,
+        IsCuring = function() return Config:GetSetting('DoCures') and Casting.CanUseAA("Radiant Cure") end,
     },
     ['Rez']               = {
         ['Combat']   = {
@@ -21,6 +22,11 @@ return {
         },
         ['Downtime'] = {
             { type = "Item", name = "RezStaff", },
+        },
+    },
+    ['Cure']              = {
+        ['DetDispel'] = {
+            { type = "AA", name = "Radiant Cure", },
         },
     },
     ['Modes']             = {
@@ -305,6 +311,16 @@ return {
             end,
         },
         {
+            name = 'Emergency(Health)',
+            state = 1,
+            steps = 1,
+            doFullRotation = true,
+            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
+            cond = function(self, combat_state)
+                return Targeting.HasXTHaters() and not mq.TLO.Me.Feigning() and Core.AtEmergencyHP()
+            end,
+        },
+        {
             name = 'Emergency(Aggro)',
             state = 1,
             steps = 1,
@@ -547,6 +563,12 @@ return {
                 cond = function(self, spell, target)
                     return Casting.DetSpellCheck(spell) and Targeting.MobHasLowHP(target) and not Casting.SnareImmuneTarget(target)
                 end,
+            },
+        },
+        ['Emergency(Health)']  = {
+            {
+                name = "Eternal Recovery",
+                type = "AA",
             },
         },
         ['Emergency(Aggro)']   = {

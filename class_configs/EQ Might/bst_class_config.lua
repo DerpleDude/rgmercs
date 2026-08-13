@@ -23,6 +23,7 @@ return {
     },
     ['Cure']              = {
         ['DetDispel'] = {
+            { type = "AA", name = "Radiant Cure", },
             { type = "AA", name = "Nature's Salve", selfOnly = true, },
         },
     },
@@ -511,6 +512,10 @@ return {
             },
         },
         ['Emergency(Health)'] = {
+            {
+                name = "Eternal Recovery",
+                type = "AA",
+            },
             {
                 name = "Warder's Gift",
                 type = "AA",

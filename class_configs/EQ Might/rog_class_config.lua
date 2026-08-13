@@ -23,6 +23,9 @@ return {
         },
     },
     ['Cure']          = {
+        ['DetDispel'] = {
+            { type = "AA", name = "Radiant Cure", },
+        },
         ['Poison'] = {
             { type = "AA", name = "Purge Poison", selfOnly = true, },
         },
@@ -329,6 +332,10 @@ return {
             {
                 name = "Revitalize",
                 type = "Disc",
+            },
+            {
+                name = "Eternal Recovery",
+                type = "AA",
             },
             {
                 name = "HealingDisc",

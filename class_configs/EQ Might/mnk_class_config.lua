@@ -23,7 +23,8 @@ local _ClassConfig = {
     },
     ['Cure']          = {
         ['DetDispel'] = {
-            { type = "AA", name = "Purify Body", selfOnly = true, },
+            { type = "AA", name = "Radiant Cure", },
+            { type = "AA", name = "Purify Body",  selfOnly = true, },
         },
     },
     ['Modes']         = {
@@ -215,6 +216,10 @@ local _ClassConfig = {
             {
                 name = "Epic",
                 type = "Item",
+            },
+            {
+                name = "Eternal Recovery",
+                type = "AA",
             },
             {
                 name = "HealingDisc",

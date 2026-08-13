@@ -18,6 +18,7 @@ local _ClassConfig = {
     ['ModeChecks']      = {
         CanCharm = function() return true end,
         IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or not Targeting.HasXTHaters()) end,
+        IsCuring = function() return Config:GetSetting('DoCures') and Casting.CanUseAA("Radiant Cure") end,
     },
     ['Rez']             = {
         ['Combat']   = {
@@ -25,6 +26,11 @@ local _ClassConfig = {
         },
         ['Downtime'] = {
             { type = "Item", name = "RezStaff", },
+        },
+    },
+    ['Cure']            = {
+        ['DetDispel'] = {
+            { type = "AA", name = "Radiant Cure", },
         },
     },
     ['Themes']          = {
@@ -426,6 +432,16 @@ local _ClassConfig = {
             end,
         },
         {
+            name = 'Emergency(Health)',
+            state = 1,
+            steps = 1,
+            doFullRotation = true,
+            targetId = function(self) return { mq.TLO.Me.ID(), } end,
+            cond = function(self, combat_state)
+                return Targeting.HasXTHaters() and Core.AtEmergencyHP()
+            end,
+        },
+        {
             name = 'Emergency(Aggro)',
             state = 1,
             steps = 1,
@@ -515,7 +531,13 @@ local _ClassConfig = {
         },
     },
     ['Rotations']       = {
-        ['Emergency(Aggro)'] = {
+        ['Emergency(Health)'] = {
+            {
+                name = "Eternal Recovery",
+                type = "AA",
+            },
+        },
+        ['Emergency(Aggro)']  = {
             {
                 name = "Death's Effigy",
                 type = "AA",
@@ -532,7 +554,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Scent(Terris)']    = {
+        ['Scent(Terris)']     = {
             {
                 name_func = function(self)
                     local scentItems = { "Legendary Fabled Nightshade Scented Staff", "Fabled Nightshade Scented Staff", "Scent of Terris", }
@@ -558,7 +580,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Scent(Midnight)']  = {
+        ['Scent(Midnight)']   = {
             {
                 name = "ScentDebuff2",
                 type = "Spell",
@@ -567,7 +589,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Snare']            = {
+        ['Snare']             = {
             {
                 name = "Encroaching Darkness",
                 type = "AA",
@@ -585,7 +607,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['CombatBuff']       = {
+        ['CombatBuff']        = {
             {
                 name = "Epic",
                 type = "Item",
@@ -643,7 +665,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['DPS(MobHighHP)']   = {
+        ['DPS(MobHighHP)']    = {
             {
                 name = "FireDot",
                 type = "Spell",
@@ -755,7 +777,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['DPS(MobLowHP)']    = {
+        ['DPS(MobLowHP)']     = {
             {
                 name = "OrbNuke",
                 type = "Spell",
@@ -791,7 +813,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['Burn']             = {
+        ['Burn']              = {
             {
                 name = "OoW_Chest",
                 type = "Item",
@@ -844,7 +866,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['PetHealing']       = {
+        ['PetHealing']        = {
             {
                 name = "Companion's Blessing",
                 type = "AA",
@@ -862,7 +884,7 @@ local _ClassConfig = {
                 load_cond = function(self) return Config:GetSetting('DoPetHealSpell') end,
             },
         },
-        ['Downtime']         = {
+        ['Downtime']          = {
             {
                 name = "SelfHPBuff",
                 type = "Spell",
@@ -907,7 +929,7 @@ local _ClassConfig = {
                 cond = function(self, aaName, target) return Casting.SelfBuffAACheck(aaName) end,
             },
         },
-        ['PetSummon']        = {
+        ['PetSummon']         = {
             {
                 name = "RedDemon",
                 type = "Item",
@@ -955,7 +977,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['PetBuff']          = { -- TODO: Examine spectral guard 71
+        ['PetBuff']           = { -- TODO: Examine spectral guard 71
             {
                 name = "PetHaste",
                 type = "Spell",
@@ -970,7 +992,7 @@ local _ClassConfig = {
                 end,
             },
         },
-        ['GroupBuff']        = { -- Added to anchor clickies to
+        ['GroupBuff']         = { -- Added to anchor clickies to
 
         },
     },

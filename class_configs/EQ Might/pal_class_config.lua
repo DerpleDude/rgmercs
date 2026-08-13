@@ -510,6 +510,13 @@ return {
                 end,
             },
             {
+                name = "Eternal Recovery",
+                type = "AA",
+                cond = function(self, aaName, target)
+                    return self.CombatState == "Combat" and Targeting.TargetIsMyself(target)
+                end,
+            },
+            {
                 name = "Marr's Gift",
                 type = "AA",
                 cond = function(self, aaName, target)
@@ -902,6 +909,14 @@ return {
             { -- better aggro than force of disruption at current available ranks (stun is worth 1200 for any mob >18khp)
                 name = "Divine Stun",
                 type = "AA",
+            },
+            {
+                name = "Projection of Piety",
+                type = "AA",
+                IgnoreImmuneCheck = true,
+                cond = function(self, aaName, target)
+                    return Globals.AutoTargetIsNamed and (mq.TLO.Target.SecondaryPctAggro() or 0) > 80
+                end,
             },
             {
                 name = "ForHonor",

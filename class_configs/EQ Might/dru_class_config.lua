@@ -384,6 +384,9 @@ local _ClassConfig = {
             "Chillgrave", -- Level 69 EQM Custom
             "Frostgrave", -- Level 63 EQ Custom
         },
+        ['SnareHot'] = {
+            "Earthwave Rejuvenation", -- Level 69, PrM Custom
+        },
     },
     ['AASets']            = {
         ['Spire'] = {
@@ -421,11 +424,27 @@ local _ClassConfig = {
     ['HealRotations']     = {
         ['BigHealPoint'] = {
             {
+                name = "SnareHot",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoSnareHot') end,
+                cond = function(self, spell, target)
+                    if Combat.GetCachedCombatState() ~= "Combat" then return false end
+                    return Casting.GroupBuffCheck(spell, target)
+                end,
+            },
+            {
                 name = "Balance of the Grove",
                 type = "AA",
                 cond = function(self, aaName, target)
                     if not Targeting.GroupedWithTarget(target) then return false end
                     return Targeting.TargetIsTanking(target)
+                end,
+            },
+            {
+                name = "Eternal Recovery",
+                type = "AA",
+                cond = function(self, aaName, target)
+                    return self.CombatState == "Combat" and Targeting.TargetIsMyself(target)
                 end,
             },
             {
@@ -563,6 +582,16 @@ local _ClassConfig = {
             cond = function(self, combat_state)
                 return combat_state == "Combat" and Core.CombatActionsCheck() and not Globals.AutoTargetIsNamed and
                     Targeting.HasXTHatersMax(Config:GetSetting('SnareCount'))
+            end,
+        },
+        {
+            name = 'SnareHotBuff',
+            state = 1,
+            steps = 1,
+            load_cond = function(self) return Config:GetSetting('DoSnareHot') and Core.GetResolvedActionMapItem('SnareHot') end,
+            targetId = function(self) return Casting.GetBuffableTankingIDs() end,
+            cond = function(self, combat_state)
+                return combat_state == "Combat" and (not Config:GetSetting('SnareHotNamedOnly') or Targeting.HasXTNamed()) and Core.CombatActionsCheck()
             end,
         },
         {
@@ -867,6 +896,15 @@ local _ClassConfig = {
                 end,
             },
         },
+        ['SnareHotBuff']     = {
+            {
+                name = "SnareHot",
+                type = "Spell",
+                cond = function(self, spell, target)
+                    return Casting.GroupBuffCheck(spell, target)
+                end,
+            },
+        },
         ['GroupBuff']        = {
             {
                 name = "Flight of Eagles",
@@ -1053,6 +1091,7 @@ local _ClassConfig = {
             spells = {
                 { name = "HealSpell", },
                 { name = "GroupHeal", },
+                { name = "SnareHot",       cond = function(self) return Config:GetSetting('DoSnareHot') end, },
                 { name = "SnareSpell",     cond = function(self) return Config:GetSetting('DoSnare') and not Casting.CanUseAA("Entrap") end, },
                 { name = "ReptileBuff", },
                 { name = "ATKDebuff",      cond = function(self) return Config:GetSetting('DoATKDebuff') end, },
@@ -1363,6 +1402,25 @@ local _ClassConfig = {
         },
 
         -- Utility
+        ['DoSnareHot']        = {
+            DisplayName = "Use Snare HoT",
+            Group = "Abilities",
+            Header = "Recovery",
+            Category = "General Healing",
+            Index = 101,
+            Tooltip = "Use snaring HoTs like Earthwave Rejuvenation as an emergency heal and as a combat buff on your tanks.",
+            RequiresLoadoutChange = true,
+            Default = false,
+        },
+        ['SnareHotNamedOnly'] = {
+            DisplayName = "Snare HoT Named Only",
+            Group = "Abilities",
+            Header = "Recovery",
+            Category = "General Healing",
+            Index = 102,
+            Tooltip = "Only use the snaring HoT as a tank buff when a named is on your XTarget.",
+            Default = true,
+        },
         ['KeepPoisonMemmed']  = {
             DisplayName = "Mem Cure Poison",
             Group = "Abilities",
