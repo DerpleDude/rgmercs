@@ -4025,10 +4025,10 @@ function Module:CheckAttemptAbort(attempt, bNavigating)
     return true
 end
 
----Honors user overrides only; target-relative aborts don't apply while the mob is following home.
+---Honors user overrides only; target-relative aborts are left to the phase that calls this.
 ---@param attempt table
 ---@return boolean
-function Module:CheckReturnAbort(attempt)
+function Module:CheckUserAbort(attempt)
     local reason = self:DecideUserAbort({
         pausePulls = self.TempSettings.PausePulls,
         pullListUpdated = self.TempSettings.PullListUpdated,
@@ -4533,6 +4533,11 @@ function Module:NavToTargetTick(ctx)
 
     mq.delay("2s", function() return not mq.TLO.Me.Moving() end)
 
+    if self:CheckUserAbort(attempt) then
+        self:CloseAttempt(ctx)
+        return
+    end
+
     Targeting.SetTarget(attempt.targetId, true)
 
     local abortPull = false
@@ -4600,6 +4605,11 @@ end
 function Module:PullingTick(ctx)
     local attempt = self.TempSettings.Attempt
     local descriptor = Module.Constants.EngageDescriptors[attempt.engageKey]
+
+    if self:CheckUserAbort(attempt) then
+        self:EndEngage(ctx)
+        return
+    end
 
     if attempt.faceDeadline then
         if mq.TLO.Me.Heading.ShortName() == mq.TLO.Target.HeadingTo.ShortName() or ctx.now >= attempt.faceDeadline then
@@ -4695,14 +4705,20 @@ end
 
 function Module:TransitionAfterEngage(ctx)
     local attempt = self.TempSettings.Attempt
+    local userStopped = self:DecideUserAbort({
+        pausePulls = self.TempSettings.PausePulls,
+        doPull = Config:GetSetting('DoPull'),
+        pauseMain = Globals.PauseMain,
+    }, attempt.source)
 
-    if ctx.policy.family == 'camp' then
+    if ctx.policy.family == 'camp' and not userStopped then
         -- Nav back to camp.
         local returnLoc = attempt.returnLoc
         self:SetPullState(PullStates.PULL_RETURN_TO_CAMP, string.format("Camp Loc: %0.2f %0.2f %0.2f", returnLoc.y, returnLoc.x, returnLoc.z))
         Movement:DoNav(false, "locyxz %0.2f %0.2f %0.2f log=off %s", returnLoc.y, returnLoc.x, returnLoc.z, Config:GetSetting('PullBackwards') and "facing=backward" or "")
         attempt.returnNavIssuedAt = ctx.now
     else
+        if userStopped and mq.TLO.Navigation.Active() then Movement:DoNav(false, "stop log=off") end
         self:CloseAttempt(ctx)
     end
 end
@@ -4711,7 +4727,7 @@ function Module:ReturnToCampTick(ctx)
     local attempt = self.TempSettings.Attempt
     local returnLoc = attempt.returnLoc
 
-    if self:CheckReturnAbort(attempt) then
+    if self:CheckUserAbort(attempt) then
         Movement:DoNav(false, "stop log=off")
         mq.delay("2s", function() return not mq.TLO.Navigation.Active() end)
         self:CloseAttempt(ctx)
@@ -4919,7 +4935,7 @@ function Module:StopPuller()
     self.TempSettings.Travel = nil
     Config:SetSetting('DoPull', false)
     self:SetRoles()
-    self:SetPullState(PullStates.PULL_IDLE, "")
+    if not self:IsAttemptActive() then self:SetPullState(PullStates.PULL_IDLE, "") end
 end
 
 function Module:Announce(who, message)
@@ -4933,7 +4949,6 @@ function Module:AnnounceStop(message, clearObjective, objectiveMet)
     self:Announce("None", message)
     if clearObjective then self:ClearObjective() end
     self:StopPuller()
-    self:SetPullState(PullStates.PULL_IDLE, "")
 end
 
 function Module:SetRoles()
