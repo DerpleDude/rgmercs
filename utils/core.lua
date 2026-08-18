@@ -251,6 +251,12 @@ function Core.ValidCombatTarget(targetId)
     return targetSpawn() ~= nil and not targetSpawn.Dead() and not targetCorpse()
 end
 
+--- Turns off auto attack and autofire if either is currently active.
+function Core.StopAttack()
+    if mq.TLO.Me.Combat() then Core.DoCmd("/attack off") end
+    if mq.TLO.Me.AutoFire() then Core.DoCmd("/autofire off") end
+end
+
 --- Targets targetId and waits up to 2×ping+500 ms for buffs to populate,
 --- then fires OnTargetChange on all modules.
 ---@param targetId number Spawn ID to target.

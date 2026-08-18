@@ -451,8 +451,11 @@ Binds.Handlers    = {
                 Globals.BackOffFlag = false
             end
 
-            if Globals.BackOffFlag and Config:GetSetting('DoPetCommands') and mq.TLO.Me.Pet.ID() > 0 then
-                Core.DoCmd("/squelch /pet back off")
+            if Globals.BackOffFlag then
+                Core.StopAttack()
+                if Config:GetSetting('DoPetCommands') and mq.TLO.Me.Pet.ID() > 0 then
+                    Core.DoCmd("/squelch /pet back off")
+                end
             end
 
             Logger.log_info("\ayBackoff \awset to: %s", Strings.BoolToColorString(Globals.BackOffFlag))

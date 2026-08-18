@@ -357,7 +357,7 @@ Module.Constants.EngageDescriptors  = {
         stuckCheck = true,
         verbose = "Waiting on autoattack pull to finish...",
         action = function(self, attempt)
-            Core.DoCmd("/attack")
+            Core.DoCmd("/attack on")
         end,
     },
     Generic = {
@@ -4788,6 +4788,7 @@ end
 function Module:CloseAttempt(ctx)
     self.TempSettings.TargetSpawnID = 0
     self.TempSettings.Attempt = nil
+    Core.StopAttack()
 
     local campRadiusSq = math.max(Config:GetSetting('AutoCampRadius') ^ 2, 200 ^ 2)
     if ctx.policy.family == 'camp' and ctx.campData.returnToCamp and
