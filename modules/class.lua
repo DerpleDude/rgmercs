@@ -2112,8 +2112,8 @@ function Module:RebuildCureAbilities()
     for _, bucket in ipairs({ "DetDispel", "Poison", "Disease", "Curse", "Corruption", }) do
         if (cure and cure[bucket]) or #cureClickies[bucket] > 0 then
             local entries = Entries.FilterLoaded(cure and cure[bucket] or {}, self)
-            Rotation.ApplyEntryOrder(entries, order["Cure" .. bucket])
             self.TempSettings.CureAbilities[bucket] = Tables.ConcatTables(entries, cureClickies[bucket])
+            Rotation.ApplyEntryOrder(self.TempSettings.CureAbilities[bucket], order["Cure" .. bucket])
             for _, entry in ipairs(entries) do
                 if not entry.selfOnly then peerCapable = true end
             end
@@ -2256,8 +2256,8 @@ function Module:RebuildDispelAbilities()
         return
     end
     local entries = Entries.FilterLoaded(dispel or {}, self)
-    Rotation.ApplyEntryOrder(entries, (Config:GetSetting('RotationEntryOrder') or {})['DispelAbilities'])
     self.TempSettings.DispelAbilities = Tables.ConcatTables(entries, dispelClickies)
+    Rotation.ApplyEntryOrder(self.TempSettings.DispelAbilities, (Config:GetSetting('RotationEntryOrder') or {})['DispelAbilities'])
 end
 
 function Module:GetDispelAbilities()
@@ -2818,8 +2818,8 @@ function Module:RebuildRezAbilities()
     for _, phase in ipairs({ "Combat", "Downtime", }) do
         if (rez and rez[phase]) or #rezClickies[phase] > 0 then
             local entries = Entries.FilterLoaded(rez and rez[phase] or {}, self)
-            Rotation.ApplyEntryOrder(entries, order["Rez" .. phase])
             self.TempSettings.RezAbilities[phase] = Tables.ConcatTables(entries, rezClickies[phase])
+            Rotation.ApplyEntryOrder(self.TempSettings.RezAbilities[phase], order["Rez" .. phase])
         end
     end
 end

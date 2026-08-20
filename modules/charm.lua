@@ -502,15 +502,15 @@ function Module:RebuildCharmLists()
         PreCharm  = self:FilterLoaded(charm and charm.PreCharm),
         Assist    = self:FilterLoaded(charm and charm.Assist),
     }
-    local order = Config:GetSetting('RotationEntryOrder') or {}
-    Rotation.ApplyEntryOrder(self.TempSettings.CharmLists.PreCharm, order["CharmPreCharm"])
-    Rotation.ApplyEntryOrder(self.TempSettings.CharmLists.Assist, order["CharmAssist"])
     if Core.CanCharm() then
         self.TempSettings.CharmLists.PreCharm = Tables.ConcatTables(self.TempSettings.CharmLists.PreCharm,
             Modules:ExecModule("Clickies", "GetClickiesForAction", "As a Charm Action", "PreCharm") or {})
     end
     self.TempSettings.CharmLists.Assist = Tables.ConcatTables(self.TempSettings.CharmLists.Assist,
         Modules:ExecModule("Clickies", "GetClickiesForAction", "As a Charm Action", "Assist") or {})
+    local order = Config:GetSetting('RotationEntryOrder') or {}
+    Rotation.ApplyEntryOrder(self.TempSettings.CharmLists.PreCharm, order["CharmPreCharm"])
+    Rotation.ApplyEntryOrder(self.TempSettings.CharmLists.Assist, order["CharmAssist"])
 end
 
 function Module:GetCharmLists()
