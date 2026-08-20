@@ -299,7 +299,7 @@ Module.ActionPhaseOptions                     = {
         { display = "Combat",   key = "Combat", },
     },
     ['As a Charm Action'] = {
-        { display = "Pre-Charm",    key = "PreCharm", },
+        { display = "Pre-Charm",    key = "PreCharm", render_cond = Core.CanCharm, },
         { display = "Charm Assist", key = "Assist", },
     },
 }
@@ -1689,15 +1689,17 @@ function Module:RenderClickyActionPhaseChecks(clicky, clickyIdx)
         ImGui.TableSetupColumn("Key3", ImGuiTableColumnFlags.WidthFixed, 140)
         ImGui.TableSetupColumn("Value3", ImGuiTableColumnFlags.WidthStretch, 0)
         for _, option in ipairs(self.ActionPhaseOptions[clicky.combat_state] or {}) do
-            ImGui.TableNextColumn()
-            ImGui.AlignTextToFramePadding()
-            Ui.RenderText(option.display)
-            ImGui.TableNextColumn()
-            local newValue, clicked = Ui.RenderOptionToggle("##clicky_action_phase_" .. clickyIdx .. "_" .. option.key, "",
-                clicky.action_phases[option.key] == true)
-            if clicked then
-                clicky.action_phases[option.key] = newValue or nil
-                Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
+            if not option.render_cond or option.render_cond() then
+                ImGui.TableNextColumn()
+                ImGui.AlignTextToFramePadding()
+                Ui.RenderText(option.display)
+                ImGui.TableNextColumn()
+                local newValue, clicked = Ui.RenderOptionToggle("##clicky_action_phase_" .. clickyIdx .. "_" .. option.key, "",
+                    clicky.action_phases[option.key] == true)
+                if clicked then
+                    clicky.action_phases[option.key] = newValue or nil
+                    Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
+                end
             end
         end
         ImGui.EndTable()
