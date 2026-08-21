@@ -1191,10 +1191,10 @@ local _ClassConfig = {
                 name = "HealWard",
                 type = "Spell",
                 load_cond = function(self) return Core.IsTanking() end,
-                active_cond = function(self, spell) return Casting.IHaveBuff(spell.Trigger(1).Name) end,
+                active_cond = function(self, spell) return Casting.IHaveBuff(spell.RankName.Trigger(3)) end,
                 cond = function(self, spell, target)
                     if not Casting.CastReady(spell) then return false end
-                    return spell.RankName.Stacks() and (mq.TLO.Me.Song(spell.Trigger(1).Name).Duration.TotalSeconds() or 0) < 15
+                    return spell.RankName.Stacks() and (mq.TLO.Me.Song(spell.RankName.Trigger(3)).Duration.TotalSeconds() or 0) < 15
                 end,
             },
             { --Charm Click, name function stops errors in rotation window when slot is empty
