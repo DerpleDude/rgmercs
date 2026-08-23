@@ -1216,7 +1216,7 @@ local _ClassConfig = {
                 name = "Group Spirit of the Great Wolf",
                 type = "AA",
                 cond = function(self, aaName)
-                    return Casting.SelfBuffAACheck(aaName)
+                    return Casting.SelfBuffAACheck(aaName, nil, true)
                 end,
             },
             {
@@ -1471,7 +1471,7 @@ local _ClassConfig = {
                 type = "AA",
                 active_cond = function(self, aaName) return Casting.IHaveBuff(aaName) end,
                 cond = function(self, aaName)
-                    return Casting.SelfBuffAACheck(aaName)
+                    return Casting.SelfBuffAACheck(aaName, nil, true)
                 end,
             },
             {
@@ -1479,7 +1479,7 @@ local _ClassConfig = {
                 type = "AA",
                 active_cond = function(self, aaName) return Casting.IHaveBuff(aaName) end,
                 cond = function(self, aaName)
-                    return Casting.SelfBuffAACheck(aaName) and mq.TLO.Me.AltAbility(aaName).Spell.RankName.Stacks()
+                    return Casting.SelfBuffAACheck(aaName, nil, true) and mq.TLO.Me.AltAbility(aaName).Spell.RankName.Stacks()
                 end,
             },
             {

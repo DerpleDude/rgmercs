@@ -689,7 +689,7 @@ return {
                 name = "Braxi's Howl",
                 type = "AA",
                 cond = function(self, aaName)
-                    return Casting.SelfBuffAACheck(aaName)
+                    return Casting.SelfBuffAACheck(aaName, nil, true)
                 end,
             },
             {

@@ -1131,7 +1131,7 @@ local _ClassConfig = {
                 type = "AA",
                 load_cond = function() return not Casting.CanUseAA("Group Pact of the Wolf") end,
                 cond = function(self, aaName)
-                    return Casting.SelfBuffAACheck(aaName)
+                    return Casting.SelfBuffAACheck(aaName, nil, true)
                 end,
             },
         },
@@ -1174,7 +1174,7 @@ local _ClassConfig = {
                 type = "AA",
                 load_cond = function() return Casting.CanUseAA("Group Pact of the Wolf") end,
                 cond = function(self, aaName, target)
-                    return Casting.GroupBuffAACheck(aaName, target)
+                    return Casting.GroupBuffAACheck(aaName, target, nil, true)
                 end,
             },
             { --Used on the entire group

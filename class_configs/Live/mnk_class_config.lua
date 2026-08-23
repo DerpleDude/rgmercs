@@ -551,7 +551,7 @@ local _ClassConfig = {
                 name = "Drunken",
                 type = "Disc",
                 cond = function(self, discSpell)
-                    return Casting.SelfBuffCheck(discSpell)
+                    return Casting.SelfBuffCheck(discSpell, nil, true)
                 end,
             },
             {

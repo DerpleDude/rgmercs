@@ -958,7 +958,7 @@ local _ClassConfig = {
                 name = "Elemental Form: Fire",
                 type = "AA",
                 cond = function(self, aaName)
-                    return Casting.SelfBuffAACheck(aaName)
+                    return Casting.SelfBuffAACheck(aaName, nil, true)
                 end,
             },
         },

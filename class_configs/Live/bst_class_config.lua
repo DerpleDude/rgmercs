@@ -1191,7 +1191,7 @@ return {
                 name = "BestialBuffDisc",
                 type = "Disc",
                 cond = function(self, discSpell, target)
-                    return Casting.SelfBuffCheck(discSpell)
+                    return Casting.SelfBuffCheck(discSpell, nil, true)
                 end,
             },
             {
@@ -1419,7 +1419,7 @@ return {
                 type = "Spell",
                 load_cond = function(self) return not self.Helpers.UsingFeralgia() end,
                 cond = function(self, spell)
-                    return Casting.SelfBuffCheck(spell)
+                    return Casting.SelfBuffCheck(spell, nil, true)
                 end,
             },
             {

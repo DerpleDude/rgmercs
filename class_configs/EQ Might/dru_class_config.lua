@@ -788,7 +788,7 @@ local _ClassConfig = {
                 name = "Group Spirit of the Black Wolf",
                 type = "AA",
                 cond = function(self, aaName)
-                    return Casting.SelfBuffAACheck(aaName)
+                    return Casting.SelfBuffAACheck(aaName, nil, true)
                 end,
             },
             {

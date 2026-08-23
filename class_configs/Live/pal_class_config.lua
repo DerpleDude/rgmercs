@@ -1746,9 +1746,7 @@ local _ClassConfig = {
                 type = "Spell",
                 load_cond = function(self) return Core.IsTanking() end,
                 cond = function(self, spell)
-                    -- temp fix, buff has two null effects and third is the trigger; need to adjust buff check code
-                    if not spell then return false end
-                    return Casting.SelfBuffCheck(spell.RankName.Trigger(3))
+                    return Casting.SelfBuffCheck(spell)
                 end,
             },
             {
