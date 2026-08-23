@@ -28,6 +28,24 @@ Modules.ModuleList            = {}
 --- Name → file path for the user modules currently loaded from mq.configDir.
 Modules.LoadedUserModules     = {}
 
+--- Name → require path for the built-in modules a user module may replace.
+Modules.BuiltInModulePaths    = {
+    Class        = "modules.class",
+    Movement     = "modules.move",
+    Clickies     = "modules.clickies",
+    Pull         = "modules.pull",
+    Drag         = "modules.drag",
+    Charm        = "modules.charm",
+    Mez          = "modules.mez",
+    Travel       = "modules.travel",
+    Spawns       = "modules.spawns",
+    Map          = "modules.map",
+    Perf         = "modules.performance",
+    Contributors = "modules.contributors",
+    FAQ          = "modules.faq",
+    Debug        = "modules.debug",
+}
+
 --- Name → message from the most recent failed load attempt.
 Modules.UserModuleLoadErrors  = {}
 
@@ -101,16 +119,19 @@ end
 --- execution order, then calls its Init function.
 ---@param moduleName string Name key to store the module under.
 ---@param filePath string Require-style path to the module file.
-function Modules:loadModule(moduleName, filePath)
+---@param orderIndex number? Position in the execution order; appends when nil.
+function Modules:loadModule(moduleName, filePath, orderIndex)
     self:unloadModule(moduleName)
     self.ModuleList[moduleName] = require(filePath):New()
-    table.insert(self.ModuleOrder, moduleName)
+    table.insert(self.ModuleOrder, math.min(orderIndex or (#self.ModuleOrder + 1), #self.ModuleOrder + 1), moduleName)
     Logger.log_info("Load %s", moduleName) -- temp debug text
     Modules:ExecModule(moduleName, "Init")
 end
 
---- Loads a user module from an absolute file path, appends it to the execution
---- order and initializes it, rolling back if the file errors.
+--- Loads a user module from an absolute file path, adds it to the execution
+--- order and initializes it, rolling back if the file errors. A module that
+--- declares _replaces under a built-in's name takes that module's place,
+--- inheriting its slot in the execution order.
 ---@param moduleName string Declared _name of the module.
 ---@param filePath string Absolute path to the user module file.
 ---@return boolean success True when the module loaded and initialized.
@@ -126,8 +147,29 @@ function Modules:loadUserModule(moduleName, filePath)
         return false
     end
 
+    local replacing = false
+    local orderIndex = nil
+
     local success, initError = pcall(function()
-        local instance = chunk():New()
+        local class = chunk()
+        if type(class) ~= "table" then
+            error("File did not return a module table.", 0)
+        end
+
+        if rawget(class, '_replaces') and self.BuiltInModulePaths[moduleName] then
+            replacing = true
+            for i, v in ipairs(self.ModuleOrder) do
+                if v == moduleName then
+                    orderIndex = i
+                    break
+                end
+            end
+            self:unloadModule(moduleName)
+            Config:ClearModuleSettings(moduleName)
+            Logger.log_info("\ayReplacing the built-in \at%s\ay module with \at%s\ay.", moduleName, filePath)
+        end
+
+        local instance = class:New()
         if type(instance) ~= "table" then
             error("New() did not return a module instance.", 0)
         end
@@ -141,13 +183,27 @@ function Modules:loadUserModule(moduleName, filePath)
         self.LoadedUserModules[moduleName] = filePath
         self:ExecModule(moduleName, "Init")
 
-        table.insert(self.ModuleOrder, moduleName)
+        table.insert(self.ModuleOrder, math.min(orderIndex or (#self.ModuleOrder + 1), #self.ModuleOrder + 1), moduleName)
         Config:UpdateCommandHandlers()
     end)
 
     if not success then
         Logger.log_error("\arUser module \at%s\ar failed to initialize: %s", moduleName, initError)
         self:unloadUserModule(moduleName)
+        if replacing then
+            if not self.ModuleList[moduleName] then
+                self:loadModule(moduleName, self.BuiltInModulePaths[moduleName], orderIndex)
+                Config:UpdateCommandHandlers()
+            elseif orderIndex then
+                for i, v in ipairs(self.ModuleOrder) do
+                    if v == moduleName then
+                        table.remove(self.ModuleOrder, i)
+                        break
+                    end
+                end
+                table.insert(self.ModuleOrder, math.min(orderIndex, #self.ModuleOrder + 1), moduleName)
+            end
+        end
         self.UserModuleLoadErrors[moduleName] = initError
         return false
     end
@@ -158,12 +214,23 @@ function Modules:loadUserModule(moduleName, filePath)
 end
 
 --- Shuts down a loaded user module and drops its in-memory settings
---- registration; persisted values are left in the database.
+--- registration; persisted values are left in the database. A module that
+--- replaced a built-in has that built-in restored in its place.
 ---@param moduleName string Declared _name of the module.
 function Modules:unloadUserModule(moduleName)
     if not self.LoadedUserModules[moduleName] then return end
 
     local Config = require("utils.config")
+
+    local orderIndex = nil
+    if self.BuiltInModulePaths[moduleName] then
+        for i, v in ipairs(self.ModuleOrder) do
+            if v == moduleName then
+                orderIndex = i
+                break
+            end
+        end
+    end
 
     self:unloadModule(moduleName)
     self.LoadedUserModules[moduleName] = nil
@@ -171,6 +238,11 @@ function Modules:unloadUserModule(moduleName)
     self.UserModuleFrameTimes[moduleName] = nil
 
     Config:ClearModuleSettings(moduleName)
+
+    if self.BuiltInModulePaths[moduleName] then
+        self:loadModule(moduleName, self.BuiltInModulePaths[moduleName], orderIndex)
+    end
+
     Config:UpdateCommandHandlers()
 end
 

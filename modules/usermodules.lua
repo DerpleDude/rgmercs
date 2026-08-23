@@ -263,6 +263,11 @@ function Module:Render()
                 Ui.RenderColoredText(Globals.Constants.Colors.ConditionMidColor, Icons.MD_INFO_OUTLINE)
                 Ui.Tooltip(manifestEntry.about)
             end
+            if manifestEntry and manifestEntry.replaces and Modules.BuiltInModulePaths[row.name] then
+                ImGui.SameLine()
+                Ui.RenderColoredText(Globals.Constants.Colors.ConditionMidColor, Icons.MD_SWAP_HORIZ)
+                Ui.Tooltip(string.format("Replaces the built-in %s module while enabled.", row.name))
+            end
             ImGui.TableNextColumn()
             Ui.RenderText(manifestEntry and manifestEntry.fileName or "-")
             ImGui.TableNextColumn()

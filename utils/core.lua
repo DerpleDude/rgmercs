@@ -95,6 +95,7 @@ function Core.ScanUserModules()
                     entry.version = rawget(module, '_version')
                     entry.author = rawget(module, '_author')
                     entry.about = rawget(module, '_about')
+                    entry.replaces = rawget(module, '_replaces') == true
                 end
             end
         end
@@ -129,7 +130,9 @@ function Core.ScanUserModules()
     for _, entry in ipairs(Globals.UserModuleManifest) do
         if entry.name then
             local claimedBy = claimedNames[entry.name:lower()]
-            if claimedBy and claimedBy ~= entry.fileName then
+            if claimedBy == "an RGMercs module" and entry.replaces and Modules.BuiltInModulePaths[entry.name] then
+                claimedNames[entry.name:lower()] = entry.fileName
+            elseif claimedBy and claimedBy ~= entry.fileName then
                 entry.collisionWith = claimedBy
             else
                 claimedNames[entry.name:lower()] = entry.fileName

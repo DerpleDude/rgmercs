@@ -27,6 +27,26 @@ local Module = { _version = '1.0', _name = "MyModule", _author = 'YourName', }
 
 `_about` is optional. Supply a sentence describing what your module does and the UserModules tab draws an info icon beside its name carrying that text, which is how anyone else on your machine finds out what it is for.
 
+`_replaces` is optional and changes what `_name` means: see Replacing a built-in module below.
+
+## Replacing a built-in module
+
+A user module can take a built-in module's place entirely. Declare the built-in's exact `_name` plus `_replaces = true`:
+
+```lua
+local Module = { _version = '1.0', _name = "Pull", _author = 'YourName', _replaces = true, }
+Module.__index = Module
+setmetatable(Module, { __index = require("modules.pull"), })
+```
+
+Enabling the module unloads the built-in and loads yours in its place — same slot in the execution order, same settings namespace, and every internal dispatch to that module name now reaches yours. Disabling it (or a load failure) restores the built-in on the spot. Because the settings namespace is shared, the user's saved settings carry across the swap in both directions.
+
+Inherit from the built-in you are replacing, as above, rather than from `modules.base` — you keep its full UI and behavior and override only the methods you want to change. The rest of RGMercs calls into these modules expecting their full method surface, so a from-scratch replacement has to supply all of it.
+
+Two caveats. Built-in modules keep state on their class table, which `require` shares between the built-in and your subclass — so a replacement and its built-in must never run at the same time, which is why this is a swap rather than a side-by-side load. And a replacement inherits no version guarantee: an RGMercs update can change the built-in's internals out from under your overrides, so re-test after updating.
+
+Without `_replaces`, declaring a built-in's name is still refused as a collision. The loot modules (LootNScoot, SmartLoot) and the UserModules module itself cannot be replaced.
+
 ## Refresh vs. reload
 
 **Refresh** re-reads the folder and rebuilds the list: new files, deleted files, changed `_name`s, new collisions. It does not touch anything that is already running.
