@@ -173,6 +173,7 @@ local _ClassConfig = {
         },
         ['Carapace'] = {
             -- Added to mantle because we won't use carapace until it becomes Timer 11
+            "Soul Carapace XV",      -- Level 128
             "Kanghammer's Carapace", -- Level 123
             "Xetheg's Carapace",     -- Level 118
             "Cadcane's Carapace",    -- Level 113
