@@ -105,15 +105,10 @@ function Casting.GetTriggerSpells(spell)
     end
 
     if #triggerSpells == 0 then
-        local recourseSpell = spell.Trigger()
-
-        -- I am not sure why but this can return a string type or a userdata type. I need to dig into the mq code to figure out why.
-        if type(recourseSpell) == "string" then
-            recourseSpell = mq.TLO.Spell(recourseSpell)
-        end
-
-        if recourseSpell and recourseSpell() and recourseSpell.ID() > 0 then
-            table.insert(triggerSpells, recourseSpell)
+        -- Use autocast to check by ID to avoid duplicate spell name collisions
+        local recourseId = spell.AutoCast() or 0
+        if recourseId > 0 then
+            table.insert(triggerSpells, mq.TLO.Spell(recourseId))
         end
     end
 
