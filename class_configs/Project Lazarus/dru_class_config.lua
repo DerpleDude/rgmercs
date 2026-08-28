@@ -1100,7 +1100,7 @@ local _ClassConfig = {
         end,
     },
     ['DefaultConfig']     = {
-        ['Mode']              = { DisplayName = "Mode", Category = "Combat", Tooltip = "Select the Combat Mode for this Toon", Type = "Custom", RequiresLoadoutChange = true, Default = 1, Min = 1, Max = 3, },
+        ['Mode']              = { DisplayName = "Mode", Category = "Combat", Tooltip = "Select the Combat Mode for this Toon", Type = "Custom", RequiresLoadoutChange = true, Default = 1, Min = 1, Max = 1, },
 
         -- Buffs
         ['DoMoveBuffs']       = {

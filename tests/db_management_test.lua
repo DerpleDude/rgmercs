@@ -1,22 +1,22 @@
--- DB Management integration test (Options > DB Management: Copy / Reset / Delete + rescan trigger).
+-- DB Management integration test (Options > DB Management: Copy / Reset / Delete + reload trigger).
 --
 -- Run from the RGMercs debug window (it must execute in RGMercs's Lua state):
 --
 --     package.loaded['tests.db_management_test'] = nil; require('tests.db_management_test').RunAll()
 --
 -- It operates on sentinel characters on a fake server ("rgtestsrv") inside the live config DB,
--- exercises the real CopySettings / ResetSettings / DeleteSettings / ClearList / DBManagement.RequestRescan
+-- exercises the real CopySettings / ResetSettings / DeleteSettings / ClearList / DBManagement.RequestReload
 -- and the running-peer reset/delete guards, then deletes the sentinel rows/characters. A handful of
--- functions (Modules.ExecModule, Comms.SendMessage / GetPeerHeartbeat / IsCharRunning, Config.Db.deleteModule, and briefly
+-- functions (ClassLoader.reloadConfig, Comms.SendMessage / GetPeerHeartbeat / IsCharRunning, Config.Db.deleteModule, and briefly
 -- Globals.CurLoadedChar/Server/Class) are swapped to observe behavior and restored afterward.
 -- If anything leaks and mercs misbehaves, `/lua run rgmercs` to reload. Output goes straight to
 -- the console via printf (not the RGMercs logger), so it shows regardless of log level.
 
+local ClassLoader  = require('utils.classloader')
 local Comms        = require('utils.comms')
 local Config       = require('utils.config')
 local DBManagement = require('utils.db_management')
 local Globals      = require('utils.globals')
-local Modules      = require('utils.modules')
 local OptionsUI    = require('ui.options')
 
 local M            = {}
@@ -71,10 +71,6 @@ function M.RunAll()
         for k, d in pairs(md or {}) do if d and d.Default ~= nil then out[#out + 1] = { k = k, d = d, } end end
         return out
     end
-    local function hasFlag(m, f)
-        for _, d in pairs(Config.moduleDefaultSettings[m] or {}) do if f(d) then return true end end
-        return false
-    end
 
     local testMods = {}
     for _, m in ipairs(allMods) do
@@ -101,22 +97,7 @@ function M.RunAll()
         end
     end
 
-    local rescanMod
-    for _, m in ipairs(allMods) do
-        if #keysWithDefault(Config.moduleDefaultSettings[m]) > 0 and hasFlag(m, function(d) return d.RequiresLoadoutChange end) then
-            rescanMod = m; break
-        end
-    end
-
-    local noRescanMod
-    for _, m in ipairs(testMods) do
-        if not hasFlag(m, function(d) return d.RequiresLoadoutChange end) then
-            noRescanMod = m; break
-        end
-    end
-
-    printf("[DBTEST] testMods=[%s] unseededMod=%s rescanMod=%s noRescanMod=%s",
-        table.concat(testMods, ", "), tostring(unseededMod), tostring(rescanMod), tostring(noRescanMod))
+    printf("[DBTEST] testMods=[%s] unseededMod=%s", table.concat(testMods, ", "), tostring(unseededMod))
 
     -- Seed / DB helpers
     local function seedVal(d)
@@ -151,7 +132,7 @@ function M.RunAll()
     -- NOTE: deliberately never patch Globals.CurLoadedChar/CurServer/CurLoadedClass -- the render
     -- loop reads settings against them with no nil guard, so a bogus value crashes mercs.
     local sv = {
-        ExecModule       = Modules.ExecModule,
+        reloadConfig     = ClassLoader.reloadConfig,
         SendMessage      = Comms.SendMessage,
         GetPeerHeartbeat = Comms.GetPeerHeartbeat,
         IsCharRunning    = Comms.IsCharRunning,
@@ -161,23 +142,24 @@ function M.RunAll()
         dbFromClasses    = OptionsUI.dbFromClasses,
     }
     local function restore()
-        Modules.ExecModule      = sv.ExecModule
-        Comms.SendMessage       = sv.SendMessage
-        Comms.GetPeerHeartbeat  = sv.GetPeerHeartbeat
-        Comms.IsCharRunning     = sv.IsCharRunning
-        Config.Db.deleteModule  = sv.deleteModule
-        OptionsUI.ToastStates   = sv.ToastStates
-        OptionsUI.dbChars       = sv.dbChars
-        OptionsUI.dbFromClasses = sv.dbFromClasses
+        ClassLoader.reloadConfig = sv.reloadConfig
+        Comms.SendMessage        = sv.SendMessage
+        Comms.GetPeerHeartbeat   = sv.GetPeerHeartbeat
+        Comms.IsCharRunning      = sv.IsCharRunning
+        Config.Db.deleteModule   = sv.deleteModule
+        OptionsUI.ToastStates    = sv.ToastStates
+        OptionsUI.dbChars        = sv.dbChars
+        OptionsUI.dbFromClasses  = sv.dbFromClasses
     end
 
-    -- the real current char/server/class -- used as the target for the "local current" rescan paths
+    -- the real current char/server/class -- used as the target for the "local current" reload paths
     local meChar, meSrv, meCls = Globals.CurLoadedChar, Globals.CurServer, Globals.CurLoadedClass
 
     OptionsUI.ToastStates = {} -- absorb the test's toasts; restored at the end
 
     local sentinelChars = { "a", "b", "c", "d", "e", "f", "g", "h", "i", }
     local rec = {}
+    local savedPullDeny = Config:GetSetting('PullDenyListShared')
 
     local ranOk, runErr = pcall(function()
         -- 1) Copy "All Modules"
@@ -196,6 +178,12 @@ function M.RunAll()
         OptionsUI:CopySettings({ lbl("c"), lbl("d"), }, 1, CLS, 2, CLS, testMods[1])
         check("Copy single: target module copied", deepEqual(getM("c", CLS, testMods[1]), getM("d", CLS, testMods[1])))
         if testMods[2] then check("Copy single: other module NOT copied", nKeys(getM("d", CLS, testMods[2])) == 0) end
+
+        -- 2a) Copying a module the source never saved reports failure rather than a success toast
+        if unseededMod then
+            local empty = DBManagement.CopySettings("c", SRV, CLS, "d", SRV, CLS, unseededMod)
+            check("Copy empty module: reports failure", empty.ok == false, string.format("ok=%s", tostring(empty.ok)))
+        end
 
         -- 3) Copy cross-class
         wipe("e", CLS); wipe("f", CLS); wipe("f", CLS2)
@@ -270,85 +258,80 @@ function M.RunAll()
         check("Orphan cleanup: char row preserved when another class remains", charRowExists("b"))
         check("Orphan cleanup: surviving class rows intact", nKeys(getM("b", CLS2, testMods[1])) > 0)
 
-        -- 7) ClearList empties a shared list. Restores whatever was there when done, since this
-        -- writes the live shared row rather than a sentinel one.
-        local savedPullDeny = Config:GetSetting('PullDenyListShared')
+        -- 7) ClearList empties a shared list. This writes the live shared row rather than a
+        -- sentinel one, so the restore lives in the teardown below, out of reach of an abort.
         Config:SetSetting('PullDenyListShared', { zonea = { "mob1", "mob2", }, zoneb = { "mob3", }, })
         DBManagement.ClearList("PullDenyListShared", "Pull Deny")
         check("ClearList: shared list emptied", nKeys(Config:GetSetting('PullDenyListShared')) == 0,
             string.format("left=%d", nKeys(Config:GetSetting('PullDenyListShared'))))
-        Config:SetSetting('PullDenyListShared', savedPullDeny or {})
 
-        -- The rescan tests call DBManagement.RequestRescan directly (no DB writes, no Globals patching).
+        -- The reload tests call DBManagement.RequestReload directly (no DB writes, no Globals patching).
         -- For the "local current" path we pass the real current char/server/class so Comms.IsLocalCurrent
-        -- is true without touching anything. The recorders only flag the actual ("Class","RescanLoadout")
-        -- dispatch and delegate everything else to the real function -- the render loop interleaves with
+        -- is true without touching anything. The send recorder only flags the actual "ReloadConfig" event
+        -- and delegates everything else to the real function -- the render loop interleaves with
         -- debug-window execution and would otherwise both trip the recorder and get nil where it expects a value.
+        -- ClassLoader.reloadConfig is stubbed outright: really reloading here would re-register every
+        -- module's settings underneath the run.
 
-        local function makeExecRecorder(onRescan)
-            return function(self, mod, fn, ...)
-                if mod == "Class" and fn == "RescanLoadout" then
-                    onRescan(); return
-                end
-                return sv.ExecModule(self, mod, fn, ...)
-            end
-        end
-        local function makeSendRecorder(onRescan)
+        local function makeSendRecorder(onReload)
             return function(peer, mod, evt, ...)
-                if evt == "RescanLoadout" then
-                    onRescan(peer, mod, evt); return
+                if evt == "ReloadConfig" then
+                    onReload(peer, mod, evt); return
                 end
                 return sv.SendMessage(peer, mod, evt, ...)
             end
         end
 
-        -- 7) Rescan: local current + a RequiresLoadoutChange setting -> ExecModule
-        if rescanMod then
-            rec.execHit = false
-            Modules.ExecModule = makeExecRecorder(function() rec.execHit = true end)
-            DBManagement.RequestRescan(meChar, meSrv, meCls, { rescanMod, })
-            Modules.ExecModule = sv.ExecModule
-            check("Rescan: local current + RequiresLoadoutChange -> ExecModule(Class, RescanLoadout)", rec.execHit)
-        end
+        -- 7) Reload: local current -> ClassLoader.reloadConfig
+        rec.reloadHit = false
+        ---@diagnostic disable-next-line: duplicate-set-field
+        ClassLoader.reloadConfig = function() rec.reloadHit = true end
+        DBManagement.RequestReload(meChar, meSrv, meCls)
+        ClassLoader.reloadConfig = sv.reloadConfig
+        check("Reload: local current -> ClassLoader.reloadConfig()", rec.reloadHit)
 
-        -- 8) Rescan: networked peer running that class -> SendMessage (also exercises GetPeerName casing)
-        if rescanMod then
-            local expectKey = "peerk (" .. SRV:sub(1, 1):upper() .. SRV:sub(2) .. ")"
-            rec.sentPeer = nil
-            ---@diagnostic disable-next-line: duplicate-set-field
-            Comms.GetPeerHeartbeat = function(key)
-                if key == expectKey then return { Data = { Class = CLS, }, } end
-                return sv.GetPeerHeartbeat(key)
-            end
-            Comms.SendMessage = makeSendRecorder(function(peer) rec.sentPeer = peer end)
-            DBManagement.RequestRescan("peerk", SRV, CLS, { rescanMod, })
-            Comms.GetPeerHeartbeat, Comms.SendMessage = sv.GetPeerHeartbeat, sv.SendMessage
-            check("Rescan: running peer -> SendMessage(<normalized key>, Class, RescanLoadout)",
-                rec.sentPeer == expectKey, string.format("got peer=%s (expectKey=%s)", tostring(rec.sentPeer), expectKey))
+        -- 8) Reload: networked peer running that class -> SendMessage (also exercises GetPeerName casing)
+        local expectKey = "peerk (" .. SRV:sub(1, 1):upper() .. SRV:sub(2) .. ")"
+        rec.sentPeer, rec.sentModule = nil, nil
+        ---@diagnostic disable-next-line: duplicate-set-field
+        Comms.GetPeerHeartbeat = function(key)
+            if key == expectKey then return { Data = { Class = CLS, }, } end
+            return sv.GetPeerHeartbeat(key)
         end
+        Comms.SendMessage = makeSendRecorder(function(peer, mod) rec.sentPeer, rec.sentModule = peer, mod end)
+        DBManagement.RequestReload("peerk", SRV, CLS)
+        Comms.GetPeerHeartbeat, Comms.SendMessage = sv.GetPeerHeartbeat, sv.SendMessage
+        check("Reload: running peer -> SendMessage(<normalized key>, Config, ReloadConfig)",
+            rec.sentPeer == expectKey and rec.sentModule == "Config",
+            string.format("got peer=%s module=%s (expectKey=%s)", tostring(rec.sentPeer), tostring(rec.sentModule), expectKey))
 
-        -- 9) Rescan: module has no RequiresLoadoutChange setting -> nothing fires (even when target is local current)
-        if noRescanMod then
-            rec.fired = false
-            Modules.ExecModule = makeExecRecorder(function() rec.fired = true end)
-            Comms.SendMessage = makeSendRecorder(function() rec.fired = true end)
-            DBManagement.RequestRescan(meChar, meSrv, meCls, { noRescanMod, })
-            Modules.ExecModule, Comms.SendMessage = sv.ExecModule, sv.SendMessage
-            check("Rescan: module without RequiresLoadoutChange -> nothing fires", not rec.fired)
+        -- 9) Reload: peer running a different class -> nothing fires
+        rec.fired = false
+        ---@diagnostic disable-next-line: duplicate-set-field
+        Comms.GetPeerHeartbeat = function(key)
+            if key == expectKey then return { Data = { Class = CLS2, }, } end
+            return sv.GetPeerHeartbeat(key)
         end
+        Comms.SendMessage = makeSendRecorder(function() rec.fired = true end)
+        DBManagement.RequestReload("peerk", SRV, CLS)
+        Comms.GetPeerHeartbeat, Comms.SendMessage = sv.GetPeerHeartbeat, sv.SendMessage
+        check("Reload: peer on another class -> nothing fires", not rec.fired)
 
-        -- 10) Rescan: needs rescan but char isn't running anywhere -> nothing fires
-        if rescanMod then
-            rec.fired = false
-            Modules.ExecModule = makeExecRecorder(function() rec.fired = true end)
-            Comms.SendMessage = makeSendRecorder(function() rec.fired = true end)
-            DBManagement.RequestRescan("notrunning", SRV, CLS, { rescanMod, })
-            Modules.ExecModule, Comms.SendMessage = sv.ExecModule, sv.SendMessage
-            check("Rescan: needs rescan but char not running -> nothing fires", not rec.fired)
-        end
+        -- 10) Reload: char isn't running anywhere -> nothing fires
+        rec.fired = false
+        ---@diagnostic disable-next-line: duplicate-set-field
+        ClassLoader.reloadConfig = function() rec.fired = true end
+        Comms.SendMessage = makeSendRecorder(function() rec.fired = true end)
+        DBManagement.RequestReload("notrunning", SRV, CLS)
+        ClassLoader.reloadConfig, Comms.SendMessage = sv.reloadConfig, sv.SendMessage
+        check("Reload: char not running -> nothing fires", not rec.fired)
     end)
 
-    -- Cleanup sentinel rows + characters (best effort)
+    restore()
+    pcall(function() Config:SetSetting('PullDenyListShared', savedPullDeny or {}) end)
+
+    -- Cleanup sentinel rows + characters (best effort). After restore(), so an abort mid-run
+    -- can't leave Config.Db.deleteModule stubbed and silently skip every wipe below.
     for _, c in ipairs(sentinelChars) do
         pcall(function()
             wipe(c, CLS); wipe(c, CLS2)
@@ -356,7 +339,6 @@ function M.RunAll()
         pcall(function() Config.Db:deleteCharacter(SRV, c) end)
     end
 
-    restore()
     if not ranOk then printf("\ar[DBTEST] ABORTED with error: %s\ax", tostring(runErr)) end
     printf("\ay==== DB Management Test complete: PASS %d  FAIL %d ====\ax", pass, fail)
     return fail == 0 and ranOk

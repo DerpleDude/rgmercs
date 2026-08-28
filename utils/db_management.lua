@@ -1,49 +1,30 @@
-local ClassLoader  = require('utils.classloader')
 local Comms        = require('utils.comms')
 local Config       = require('utils.config')
 local Globals      = require('utils.globals')
 local Logger       = require('utils.logger')
-local Modules      = require('utils.modules')
 
 local DBManagement = { _version = '1.0', _name = "DBManagement", _author = 'Derple', 'Algar', }
 
---- Triggers a loadout rescan locally or on the running peer matching the given
---- char/server/class, but only if any module in modulesAffected has a setting
---- with RequiresLoadoutChange. No-op otherwise.
+--- Has the given char/server/class re-read its settings and class config after its rows
+--- were written externally. No-op when that character is not running that class.
 --- @param charName string
 --- @param server string
 --- @param class string
---- @param modulesAffected table List of module names that were written.
-function DBManagement.RequestRescan(charName, server, class, modulesAffected)
-    local needsRescan = false
-    for _, modName in ipairs(modulesAffected) do
-        local mDefaults = Config.moduleDefaultSettings[modName]
-        if mDefaults then
-            for _, def in pairs(mDefaults) do
-                if def.RequiresLoadoutChange then
-                    needsRescan = true
-                    break
-                end
-            end
-        end
-        if needsRescan then break end
-    end
-    if not needsRescan then return end
-
+function DBManagement.RequestReload(charName, server, class)
     if Comms.IsLocalCurrent(charName, server, class) then
-        Modules:ExecModule("Class", "RescanLoadout")
+        Config:ReloadConfig()
         return
     end
 
     local peerKey = Comms.GetPeerName(charName, server)
     local hb = Comms.GetPeerHeartbeat(peerKey)
     if hb and hb.Data and hb.Data.Class == class then
-        Comms.SendMessage(peerKey, "Class", "RescanLoadout", {})
+        Comms.SendMessage(peerKey, "Config", "ReloadConfig", {})
     end
 end
 
---- Copies module settings between two char/server/class targets. Triggers a
---- rescan on the destination if appropriate.
+--- Copies module settings between two char/server/class targets, and has the destination
+--- pick them up in place when it is running that class.
 --- @param fromName string
 --- @param fromServer string
 --- @param fromClass string
@@ -51,11 +32,14 @@ end
 --- @param toServer string
 --- @param toClass string
 --- @param moduleName string Module name, or "All Modules".
---- @return table result { ok, modulesWritten, sameChar, toastMessage }
+--- @return table result { ok, sameChar, toastMessage }
 function DBManagement.CopySettings(fromName, fromServer, fromClass, toName, toServer, toClass, moduleName)
     if not fromName or not toName then return { ok = false, } end
 
-    local toCopy = {}
+    local fromLabel = string.format("%s (%s)", fromName, fromServer)
+    local toLabel   = string.format("%s (%s)", toName, toServer)
+
+    local toCopy    = {}
     if moduleName == "All Modules" then
         for modName in pairs(Config.moduleDefaultSettings) do
             table.insert(toCopy, modName)
@@ -64,26 +48,36 @@ function DBManagement.CopySettings(fromName, fromServer, fromClass, toName, toSe
         table.insert(toCopy, moduleName)
     end
 
-    local modulesWritten = {}
+    local anyWritten   = false
+    local writesQueued = false
     for _, modName in ipairs(toCopy) do
         local values = Config.Db:getAll(fromServer, fromName, fromClass, modName)
         if values and next(values) then
-            Config.Db:setAll(toServer, toName, toClass, modName, values)
-            table.insert(modulesWritten, modName)
+            if not Config.Db:setAll(toServer, toName, toClass, modName, values) then
+                writesQueued = true
+            end
+            anyWritten = true
         end
     end
 
-    DBManagement.RequestRescan(toName, toServer, toClass, modulesWritten)
+    if writesQueued then
+        Logger.log_error("DB Management: copy to %s [%s] is queued -- the config database was busy; it will apply shortly, retry to load the copied settings now", toLabel, toClass)
+        return { ok = false, }
+    end
 
-    local fromLabel = string.format("%s (%s)", fromName, fromServer)
-    local toLabel   = string.format("%s (%s)", toName, toServer)
+    if not anyWritten then
+        Logger.log_error("DB Management: nothing copied -- %s [%s] has no saved %s settings", fromLabel, fromClass, moduleName)
+        return { ok = false, }
+    end
+
+    DBManagement.RequestReload(toName, toServer, toClass)
+
     Logger.log_info("DB Management: copied %s settings from %s [%s] to %s [%s]", moduleName, fromLabel, fromClass, toLabel, toClass)
 
     return {
-        ok             = true,
-        modulesWritten = modulesWritten,
-        sameChar       = fromName == toName and fromServer == toServer,
-        toastMessage   = string.format("Copied %s from %s [%s] to %s [%s]", moduleName, fromLabel, fromClass, toLabel, toClass),
+        ok           = true,
+        sameChar     = fromName == toName and fromServer == toServer,
+        toastMessage = string.format("Copied %s from %s [%s] to %s [%s]", moduleName, fromLabel, fromClass, toLabel, toClass),
     }
 end
 
@@ -94,14 +88,13 @@ end
 --- @param server string
 --- @param class string
 --- @param moduleName string Module name, or "All Modules".
---- @return table result { ok, refusedRunning, modulesAffected, toastMessage }
+--- @return table result { ok, refusedRunning, toastMessage }
 function DBManagement.ResetSettings(charName, server, class, moduleName)
     if not charName then return { ok = false, } end
 
     local label = string.format("%s (%s)", charName, server)
-    local isLocal = Comms.IsLocalCurrent(charName, server, class)
 
-    if not isLocal and Comms.IsCharRunning(charName, server, class) then
+    if not Comms.IsLocalCurrent(charName, server, class) and Comms.IsCharRunning(charName, server, class) then
         Logger.log_error("DB Management: refusing to reset %s [%s] -- target is currently running RGMercs", label, class)
         return { ok = false, refusedRunning = true, }
     end
@@ -127,18 +120,13 @@ function DBManagement.ResetSettings(charName, server, class, moduleName)
         return { ok = false, }
     end
 
-    if isLocal then
-        ClassLoader.reloadConfig()
-    end
-
-    DBManagement.RequestRescan(charName, server, class, toReset)
+    DBManagement.RequestReload(charName, server, class)
 
     Logger.log_info("DB Management: reset %s settings for %s [%s] to defaults", moduleName, label, class)
 
     return {
-        ok              = true,
-        modulesAffected = toReset,
-        toastMessage    = string.format("Reset %s for %s [%s] to defaults", moduleName, label, class),
+        ok           = true,
+        toastMessage = string.format("Reset %s for %s [%s] to defaults", moduleName, label, class),
     }
 end
 

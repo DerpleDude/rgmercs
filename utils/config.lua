@@ -3698,6 +3698,12 @@ function Config:ClearAllTempSettings()
     end
 end
 
+--- Re-reads our settings and class config after our rows were written externally.
+function Config:ReloadConfig()
+    self.Db:checkCache()
+    require('utils.classloader').reloadConfig()
+end
+
 --- Resolves the default values for a given settings table.
 --- This function takes a table of default values and a table of settings,
 --- and ensures that any missing settings are filled in with the default values.
