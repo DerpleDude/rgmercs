@@ -847,14 +847,17 @@ return {
             {
                 name = "Force of Disruption",
                 type = "AA",
+                IgnoreImmuneCheck = true,
             },
             {
                 name = "StunTimer5",
                 type = "Spell",
+                IgnoreImmuneCheck = true,
             },
             {
                 name = "StunTimer4",
                 type = "Spell",
+                IgnoreImmuneCheck = true,
             },
             {
                 name = "Taunt",
@@ -872,6 +875,7 @@ return {
             {
                 name = "Force of Disruption",
                 type = "AA",
+                IgnoreImmuneCheck = true,
             },
             {
                 name = "Projection of Piety",
@@ -884,10 +888,12 @@ return {
             {
                 name = "StunTimer5",
                 type = "Spell",
+                IgnoreImmuneCheck = true,
             },
             {
                 name = "StunTimer4",
                 type = "Spell",
+                IgnoreImmuneCheck = true,
             },
             {
                 name = "Taunt",
@@ -901,11 +907,13 @@ return {
             {
                 name = "Beacon of the Righteous",
                 type = "AA",
+                IgnoreImmuneCheck = true,
                 load_cond = function(self) return Config:GetSetting('AETauntAA') end,
             },
             {
                 name = "PBAEStun",
                 type = "Spell",
+                IgnoreImmuneCheck = true,
                 allowDead = true,
                 load_cond = function(self) return Config:GetSetting('PBAEStunUse') > 1 end,
                 cond = function(self, spell, target)
@@ -915,6 +923,7 @@ return {
             {
                 name = "AEStun",
                 type = "Spell",
+                IgnoreImmuneCheck = true,
                 load_cond = function(self) return Config:GetSetting('AEStunUse') > 1 end,
                 cond = function(self, spell, target)
                     return Config:GetSetting('DoAEDamage') or spell.Name() ~= "Sacred Word" -- Sacred Word does damage
@@ -1028,11 +1037,13 @@ return {
             {
                 name = "StunTimer5",
                 type = "Spell",
+                IgnoreImmuneCheck = true,
                 load_cond = function(self) return Core.IsTanking() end,
             },
             {
                 name = "StunTimer4",
                 type = "Spell",
+                IgnoreImmuneCheck = true,
                 load_cond = function(self) return Core.IsTanking() end,
             },
             {

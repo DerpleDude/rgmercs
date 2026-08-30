@@ -406,6 +406,7 @@ local _ClassConfig = {
             {
                 name = "Bladed Fang Mantle",
                 type = "Item",
+                IgnoreImmuneCheck = true,
                 load_cond = function(self) return mq.TLO.FindItem("=Bladed Fang Mantle")() end,
             },
             {
@@ -452,6 +453,7 @@ local _ClassConfig = {
             {
                 name = "Bladed Fang Mantle",
                 type = "Item",
+                IgnoreImmuneCheck = true,
                 load_cond = function(self) return mq.TLO.FindItem("=Bladed Fang Mantle")() end,
             },
             {

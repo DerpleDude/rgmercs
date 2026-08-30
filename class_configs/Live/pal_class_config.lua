@@ -1404,6 +1404,7 @@ local _ClassConfig = {
             {
                 name = "Disruption",
                 type = "AA",
+                IgnoreImmuneCheck = true,
             },
             {
                 name = "Taunt",
@@ -1412,16 +1413,19 @@ local _ClassConfig = {
             {
                 name = "CrushTimer5",
                 type = "Spell",
+                IgnoreImmuneCheck = true,
                 load_cond = function(self) return Config:GetSetting('Timer5Choice') == 1 end,
             },
             {
                 name = "CrushTimer6",
                 type = "Spell",
+                IgnoreImmuneCheck = true,
                 load_cond = function(self) return Config:GetSetting('Timer6Choice') == 1 end,
             },
             {
                 name = "StunTimer5",
                 type = "Spell",
+                IgnoreImmuneCheck = true,
                 load_cond = function(self)
                     local timerChoice = Config:GetSetting('Timer5Choice')
                     return timerChoice == 2 or (timerChoice == 1 and not Core.GetResolvedActionMapItem('CrushTimer5'))
@@ -1430,11 +1434,13 @@ local _ClassConfig = {
             {
                 name = "StunTimer4",
                 type = "Spell",
+                IgnoreImmuneCheck = true,
                 load_cond = function(self) return Config:GetSetting('Timer4Choice') end,
             },
             {
                 name = "StunTimer6",
                 type = "Spell",
+                IgnoreImmuneCheck = true,
                 load_cond = function(self) return Config:GetSetting('Timer6Choice') == 2 end,
             },
         },
@@ -1442,6 +1448,7 @@ local _ClassConfig = {
             {
                 name = "Disruption",
                 type = "AA",
+                IgnoreImmuneCheck = true,
             },
             {
                 name = "HealTaunt",
@@ -1469,6 +1476,7 @@ local _ClassConfig = {
             {
                 name = "Projection of Piety",
                 type = "AA",
+                IgnoreImmuneCheck = true,
                 cond = function(self, aaName, target)
                     return Globals.AutoTargetIsNamed and (mq.TLO.Target.SecondaryPctAggro() or 0) > 80
                 end,
@@ -1497,6 +1505,7 @@ local _ClassConfig = {
             {
                 name = "CrushTimer5",
                 type = "Spell",
+                IgnoreImmuneCheck = true,
                 load_cond = function(self) return Config:GetSetting('Timer5Choice') == 1 end,
                 cond = function(self, spell, target)
                     return (mq.TLO.Target.SecondaryPctAggro() or 0) > 60
@@ -1505,6 +1514,7 @@ local _ClassConfig = {
             {
                 name = "CrushTimer6",
                 type = "Spell",
+                IgnoreImmuneCheck = true,
                 load_cond = function(self) return Config:GetSetting('Timer6Choice') == 1 end,
                 cond = function(self, spell, target)
                     return (mq.TLO.Target.SecondaryPctAggro() or 0) > 60
@@ -1522,10 +1532,12 @@ local _ClassConfig = {
             {
                 name = "Beacon of the Righteous",
                 type = "AA",
+                IgnoreImmuneCheck = true,
             },
             {
                 name = "Hallowed Lodestar",
                 type = "AA",
+                IgnoreImmuneCheck = true,
             },
         },
         ['Debuff']                 = {
@@ -1764,16 +1776,19 @@ local _ClassConfig = {
             {
                 name = "CrushTimer5",
                 type = "Spell",
+                IgnoreImmuneCheck = true,
                 load_cond = function(self) return Core.IsTanking() and Config:GetSetting('Timer5Choice') == 1 end,
             },
             {
                 name = "CrushTimer6",
                 type = "Spell",
+                IgnoreImmuneCheck = true,
                 load_cond = function(self) return Core.IsTanking() and Config:GetSetting('Timer6Choice') == 1 end,
             },
             {
                 name = "StunTimer5",
                 type = "Spell",
+                IgnoreImmuneCheck = true,
                 load_cond = function(self)
                     if not Core.IsTanking() then return false end
                     local timerChoice = Config:GetSetting('Timer5Choice')
@@ -1783,16 +1798,19 @@ local _ClassConfig = {
             {
                 name = "StunTimer4",
                 type = "Spell",
+                IgnoreImmuneCheck = true,
                 load_cond = function(self) return Core.IsTanking() and Config:GetSetting('Timer4Choice') end,
             },
             {
                 name = "StunTimer6",
                 type = "Spell",
+                IgnoreImmuneCheck = true,
                 load_cond = function(self) return Core.IsTanking() and Config:GetSetting('Timer6Choice') == 2 end,
             },
             {
                 name = "Disruption",
                 type = "AA",
+                IgnoreImmuneCheck = true,
                 load_cond = function(self) return Core.IsTanking() end,
             },
         },

@@ -915,6 +915,7 @@ return {
             { -- better aggro than force of disruption at current available ranks (stun is worth 1200 for any mob >18khp)
                 name = "Divine Stun",
                 type = "AA",
+                IgnoreImmuneCheck = true,
             },
             {
                 name = "ForHonor",
@@ -923,10 +924,12 @@ return {
             {
                 name = "StunTimer5",
                 type = "Spell",
+                IgnoreImmuneCheck = true,
             },
             {
                 name = "StunTimer4",
                 type = "Spell",
+                IgnoreImmuneCheck = true,
             },
         },
         ['HateTools(AutoTarget)']  = {
@@ -945,6 +948,7 @@ return {
             { -- better aggro than force of disruption at current available ranks (stun is worth 1200 for any mob >18khp)
                 name = "Divine Stun",
                 type = "AA",
+                IgnoreImmuneCheck = true,
             },
             {
                 name = "Projection of Piety",
@@ -964,10 +968,12 @@ return {
             {
                 name = "StunTimer5",
                 type = "Spell",
+                IgnoreImmuneCheck = true,
             },
             {
                 name = "StunTimer4",
                 type = "Spell",
+                IgnoreImmuneCheck = true,
             },
         },
         ['AEHateTools']            = {
@@ -982,11 +988,13 @@ return {
             {
                 name = "Beacon of the Righteous",
                 type = "AA",
+                IgnoreImmuneCheck = true,
                 load_cond = function(self) return Config:GetSetting('AETauntAA') end,
             },
             {
                 name = "PBAEStun",
                 type = "Spell",
+                IgnoreImmuneCheck = true,
                 allowDead = true,
                 load_cond = function(self) return Config:GetSetting('AEStunUse') > 1 end,
                 cond = function(self, spell, target)
@@ -1104,11 +1112,13 @@ return {
             {
                 name = "StunTimer4",
                 type = "Spell",
+                IgnoreImmuneCheck = true,
                 load_cond = function(self) return Core.IsTanking() end,
             },
             {
                 name = "StunTimer5",
                 type = "Spell",
+                IgnoreImmuneCheck = true,
                 load_cond = function(self) return Core.IsTanking() end,
             },
             {

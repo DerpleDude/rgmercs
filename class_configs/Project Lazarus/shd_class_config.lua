@@ -786,12 +786,14 @@ local _ClassConfig = {
             {
                 name = "Explosion of Hatred",
                 type = "AA",
+                IgnoreImmuneCheck = true,
                 tooltip = Tooltips.ExplosionOfHatred,
                 load_cond = function(self) return Config:GetSetting('AETauntAA') end,
             },
             {
                 name = "Explosion of Spite",
                 type = "AA",
+                IgnoreImmuneCheck = true,
                 tooltip = Tooltips.ExplosionOfSpite,
                 load_cond = function(self) return Config:GetSetting('AETauntAA') end,
             },
