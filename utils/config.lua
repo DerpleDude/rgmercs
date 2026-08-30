@@ -3130,16 +3130,8 @@ function Config:LoadSettings()
         "\ayLoading Main Settings for %s!",
         Globals.CurLoadedChar)
 
-    local firstSaveRequired = false
     local coreModuleName = "Core"
-    local settings = Config:GetAllModuleSettingsFromDb(coreModuleName)
-    local settingsCount = Tables.GetTableSize(settings)
-    if settingsCount == 0 then
-        Logger.log_info("\ayNo settings found in DB for %s, loading defaults.", coreModuleName)
-        firstSaveRequired = true
-    else
-        Logger.log_debug("\agSettings loaded \at%d\ag settings from DB for \ay%s\aw,\ag loading into module.", settingsCount, coreModuleName)
-    end
+    local settings, firstSaveRequired = Config:GetAllModuleSettingsFromDb(coreModuleName, Config.DefaultConfig)
 
     Config:RegisterModuleSettings(coreModuleName, settings, Config.DefaultConfig, Config.FAQ, firstSaveRequired)
 
@@ -4630,12 +4622,21 @@ function Config:DbConsistencyCheck()
     return Config.DbConsistencyCheckPass
 end
 
-function Config:GetAllModuleSettingsFromDb(module)
-    local out = self.Db:getAll(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, module) or {}
+function Config:GetAllModuleSettingsFromDb(module, defaultSettings)
+    local settings = self.Db:getAll(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, module) or {}
+    local firstSaveRequired = next(settings) == nil and next(defaultSettings) ~= nil
+
     for k, v in pairs(self.Db:getServerAll(Globals.ServerEnv, module) or {}) do
-        out[k] = v
+        settings[k] = v
     end
-    return out
+
+    if firstSaveRequired then
+        Logger.log_debug("\ayNo settings found in DB for %s, loading defaults.", module)
+    else
+        Logger.log_debug("\agLoaded \at%d\ag settings from DB for \ay%s\aw", Tables.GetTableSize(settings), module)
+    end
+
+    return settings, firstSaveRequired
 end
 
 function Config:CharacterExistsInDb()

@@ -4,7 +4,6 @@ local Config       = require('utils.config')
 local Globals      = require("utils.globals")
 local Logger       = require("utils.logger")
 local Strings      = require("utils.strings")
-local Tables       = require("utils.tables")
 local Ui           = require("utils.ui")
 
 local Base         = { _version = '1.0', _name = "RGMercsBaseBaseClass", _author = 'Derple', }
@@ -20,23 +19,16 @@ end
 
 function Base:LoadSettings(preLoadFn, postLoadFn)
     Logger.log_debug("\aw[\atLoading Settings\aw] Character: \am%s \awModule: \ay%s", Globals.CurLoadedChar, self._name)
-    local firstSaveRequired = false
 
     if preLoadFn then
         preLoadFn()
     end
 
     -- load all module settings from db.
-    local settings = Config:GetAllModuleSettingsFromDb(self._name)
-    local settingsCount = Tables.GetTableSize(settings)
-    if settingsCount == 0 and (self.ClassConfig and #self.ClassConfig.DefaultConfig or #self.DefaultConfig) > 0 then
-        Logger.log_info("\ayNo settings found in DB for %s, loading defaults.", self._name)
-        firstSaveRequired = true
-    else
-        Logger.log_debug("\agLoaded \at%d\ag settings from DB for \ay%s\aw", settingsCount, self._name)
-    end
+    local defaultConfig = self.ClassConfig and self.ClassConfig.DefaultConfig or self.DefaultConfig
+    local settings, firstSaveRequired = Config:GetAllModuleSettingsFromDb(self._name, defaultConfig)
 
-    Config:RegisterModuleSettings(self._name, settings, self.ClassConfig and self.ClassConfig.DefaultConfig or self.DefaultConfig, self.FAQ, firstSaveRequired)
+    Config:RegisterModuleSettings(self._name, settings, defaultConfig, self.FAQ, firstSaveRequired)
 
     if postLoadFn then
         postLoadFn(settings, firstSaveRequired)
