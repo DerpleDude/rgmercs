@@ -1554,13 +1554,13 @@ function Module:RenderClickyToggles(clicky, clickyIdx)
     end
     if isRotationTarget and isActionState then return end
 
-    if ImGui.BeginTable("##clicky_toggles_table_" .. clickyIdx, 6, bit32.bor(ImGuiTableFlags.None)) then
-        ImGui.TableSetupColumn("Key1", ImGuiTableColumnFlags.WidthFixed, 140)
-        ImGui.TableSetupColumn("Value1", ImGuiTableColumnFlags.WidthFixed, 40)
-        ImGui.TableSetupColumn("Key2", ImGuiTableColumnFlags.WidthFixed, 140)
-        ImGui.TableSetupColumn("Value2", ImGuiTableColumnFlags.WidthFixed, 40)
-        ImGui.TableSetupColumn("Key3", ImGuiTableColumnFlags.WidthFixed, 140)
-        ImGui.TableSetupColumn("Value3", ImGuiTableColumnFlags.WidthStretch, 0)
+    local numCols = math.max(1, math.floor(ImGui.GetWindowWidth() / 190))
+
+    if ImGui.BeginTable("##clicky_toggles_table_" .. clickyIdx, 2 * numCols, bit32.bor(ImGuiTableFlags.None)) then
+        for _ = 1, numCols do
+            ImGui.TableSetupColumn("Key", ImGuiTableColumnFlags.WidthFixed, 140)
+            ImGui.TableSetupColumn("Value", ImGuiTableColumnFlags.WidthFixed, 40)
+        end
 
         if not isRotationTarget then
             ImGui.TableNextColumn()
@@ -1606,6 +1606,20 @@ function Module:RenderClickyToggles(clicky, clickyIdx)
                 Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
             end
             Ui.Tooltip("Wait and confirm that item use has started by checking that it has gone on cooldown or that a cast success is reported. Generally not needed.")
+
+            ImGui.TableNextColumn()
+            ImGui.AlignTextToFramePadding()
+            Ui.RenderText("Ignore Immune Check")
+            ImGui.TableNextColumn()
+            ImGui.BeginGroup()
+            local newIgnoreImmuneCheck, ignoreImmuneClicked = Ui.RenderOptionToggle("##clicky_ignore_immune_check_" .. clickyIdx, "",
+                clicky.ignoreImmuneCheck or false)
+            ImGui.EndGroup()
+            if ignoreImmuneClicked then
+                clicky.ignoreImmuneCheck = newIgnoreImmuneCheck
+                Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
+            end
+            Ui.Tooltip("Use this clicky even when the target is flagged immune to its resist type.")
         end
 
         ImGui.EndTable()
@@ -2671,7 +2685,7 @@ function Module:GiveTime()
 
                             local readyCheckPassed = Casting.ItemReady(item.Name())
                             local element = itemSpell and itemSpell.ResistType and itemSpell.ResistType() or nil
-                            local elementCheckPassed = not Casting.ShouldSkipElement(element, target and target.ID() or 0)
+                            local elementCheckPassed = clicky.ignoreImmuneCheck or not Casting.ShouldSkipElement(element, target and target.ID() or 0)
 
                             if buffCheckPassed and distanceCheckPassed and readyCheckPassed and elementCheckPassed then
                                 Logger.log_verbose("\ayClicky: \awItem \am%s\aw Clicky Spell: \at%s\ag!", item.Name(), itemSpell.Name())
@@ -2729,6 +2743,7 @@ function Module:GetClickiesForRotations(clickyCombatState, rotationName)
             table.insert(result, {
                 name = clicky.itemName,
                 type = "Item",
+                IgnoreImmuneCheck = clicky.ignoreImmuneCheck,
                 from_clicky = true,
                 mustWait = clicky.mustWait,
                 cond = function(caller, itemName, targetSpawn)
