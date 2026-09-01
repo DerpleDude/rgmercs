@@ -4567,7 +4567,7 @@ function Config:DbConsistencyCheck()
         moduleCount = moduleCount + 1
         for setting, _ in pairs(defaults) do
             local value   = self:GetSetting(setting)
-            local dbValue = Config.Db:getValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, module, setting)
+            local dbValue = self:SettingDbRead(module, setting)
             if type(dbValue) == "table" and type(value) == "table" then
                 if not Tables.AreTablesEqual(dbValue, value) then
                     Logger.log_error("\arInconsistency found for %s \aw- \atDB Value\aw: \ag%s\aw, \atIn-Memory Value: \ag%s\aw",

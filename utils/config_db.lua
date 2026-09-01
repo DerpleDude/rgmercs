@@ -1139,10 +1139,15 @@ function DB:_fetchModule(serverName, charName, charClass, module)
     stmt:bind(2, charName)
     stmt:bind(3, charClass)
     stmt:bind(4, module)
+    local fetched = {}
     for row in stmt:nrows() do
-        self:_cacheSet(serverName, charName, charClass, module, row.key, deserialize(row.key, row.value, row.value_type))
+        fetched[row.key] = deserialize(row.key, row.value, row.value_type)
     end
     stmt:finalize()
+    self:_cacheDelModule(serverName, charName, charClass, module)
+    for key, value in pairs(fetched) do
+        self:_cacheSet(serverName, charName, charClass, module, key, value)
+    end
 end
 
 function DB:_fetchServerValue(serverName, module, key)
@@ -1178,10 +1183,15 @@ function DB:_fetchServerModule(serverName, module)
     if not stmt then return end
     stmt:bind(1, serverName)
     stmt:bind(2, module)
+    local fetched = {}
     for row in stmt:nrows() do
-        self:_serverCacheSet(serverName, module, row.key, deserialize(row.key, row.value, row.value_type))
+        fetched[row.key] = deserialize(row.key, row.value, row.value_type)
     end
     stmt:finalize()
+    self:_serverCacheDelModule(serverName, module)
+    for key, value in pairs(fetched) do
+        self:_serverCacheSet(serverName, module, key, value)
+    end
 end
 
 ---Poll data_version. Call from your main loop tick alongside flushQueue().
