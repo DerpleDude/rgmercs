@@ -6,9 +6,10 @@
 --
 -- It operates on sentinel characters on a fake server ("rgtestsrv") inside the live config DB,
 -- exercises the real CopySettings / ResetSettings / DeleteSettings / ClearList / DBManagement.RequestReload
--- and the running-peer reset/delete guards, then deletes the sentinel rows/characters. A handful of
--- functions (ClassLoader.reloadConfig, Comms.SendMessage / GetPeerHeartbeat / IsCharRunning, Config.Db.deleteModule, and briefly
--- Globals.CurLoadedChar/Server/Class) are swapped to observe behavior and restored afterward.
+-- and the running-peer delete guard, then deletes the sentinel rows/characters. A handful of
+-- functions (ClassLoader.reloadConfig, Comms.SendMessage / GetPeerHeartbeat / IsCharRunning,
+-- Config.Db.deleteModule) are swapped to observe behavior and restored afterward; the Globals
+-- char/server/class are deliberately never patched -- see the NOTE above the snapshot table.
 -- If anything leaks and mercs misbehaves, `/lua run rgmercs` to reload. Output goes straight to
 -- the console via printf (not the RGMercs logger), so it shows regardless of log level.
 
@@ -161,6 +162,18 @@ function M.RunAll()
     local rec = {}
     local savedPullDeny = Config:GetSetting('PullDenyListShared')
 
+    -- The send recorder only flags the actual "ReloadConfig" event and delegates everything else to the
+    -- real function -- the render loop interleaves with debug-window execution and would otherwise both
+    -- trip the recorder and get nil where it expects a value.
+    local function makeSendRecorder(onReload)
+        return function(peer, mod, evt, ...)
+            if evt == "ReloadConfig" then
+                onReload(peer, mod, evt); return
+            end
+            return sv.SendMessage(peer, mod, evt, ...)
+        end
+    end
+
     local ranOk, runErr = pcall(function()
         -- 1) Copy "All Modules"
         wipe("a", CLS); wipe("b", CLS)
@@ -208,25 +221,36 @@ function M.RunAll()
         check("Reset single: target module cleared", nKeys(getM("h", CLS, testMods[1])) == 0)
         if testMods[2] then check("Reset single: other module NOT cleared", nKeys(getM("h", CLS, testMods[2])) > 0) end
 
-        -- 5a) Reset: refuses while target is "running" (asserts the refusal itself, since surviving rows
-        -- alone would not distinguish it from the other bails)
+        -- 5a) Reset: a running peer is cleared in place and told to re-read. Stubbing the heartbeat
+        -- rather than IsCharRunning leaves the reload's own send gate to decide, which is the only
+        -- running check left on this path. The stub stays up through 5b, which needs the same peer.
         wipe("h", CLS)
         setM("h", CLS, testMods[1], buildSeed(Config.moduleDefaultSettings[testMods[1]]))
+        local runningKey = "h (" .. SRV:sub(1, 1):upper() .. SRV:sub(2) .. ")"
         ---@diagnostic disable-next-line: duplicate-set-field
-        Comms.IsCharRunning = function() return true end
-        local guarded = DBManagement.ResetSettings("h", SRV, CLS, "All Modules")
-        Comms.IsCharRunning = sv.IsCharRunning
-        check("Reset guard: reports refusal", guarded.ok == false and guarded.refusedRunning == true,
-            string.format("ok=%s refusedRunning=%s", tostring(guarded.ok), tostring(guarded.refusedRunning)))
-        check("Reset guard: rows intact", nKeys(getM("h", CLS, testMods[1])) > 0)
+        Comms.GetPeerHeartbeat = function(key)
+            if key == runningKey then return { Data = { Class = CLS, }, } end
+            return sv.GetPeerHeartbeat(key)
+        end
+        Comms.SendMessage = makeSendRecorder(function(peer) rec.sentPeer = peer end)
+        local running = DBManagement.ResetSettings("h", SRV, CLS, "All Modules")
+        Comms.SendMessage = sv.SendMessage
+        check("Reset running peer: proceeds", running.ok == true, string.format("ok=%s", tostring(running.ok)))
+        check("Reset running peer: rows cleared", nKeys(getM("h", CLS, testMods[1])) == 0,
+            string.format("left=%d", nKeys(getM("h", CLS, testMods[1]))))
+        check("Reset running peer: peer told to reload", rec.sentPeer == runningKey,
+            string.format("got peer=%s (expected %s)", tostring(rec.sentPeer), runningKey))
 
         -- 5b) Reset: a busy db is reported to the caller rather than reloading stale settings
+        rec.sentPeer = nil
         ---@diagnostic disable-next-line: duplicate-set-field
         Config.Db.deleteModule = function(_, _, _, _, _) return false end
+        Comms.SendMessage = makeSendRecorder(function(peer) rec.sentPeer = peer end)
         local busy = DBManagement.ResetSettings("h", SRV, CLS, "All Modules")
         Config.Db.deleteModule = sv.deleteModule
-        check("Reset busy: reports the busy db, not another bail", busy.ok == false and busy.refusedRunning ~= true,
-            string.format("ok=%s refusedRunning=%s", tostring(busy.ok), tostring(busy.refusedRunning)))
+        Comms.SendMessage, Comms.GetPeerHeartbeat = sv.SendMessage, sv.GetPeerHeartbeat
+        check("Reset busy: reports the busy db", busy.ok == false, string.format("ok=%s", tostring(busy.ok)))
+        check("Reset busy: no reload requested", rec.sentPeer == nil, string.format("sent to %s", tostring(rec.sentPeer)))
 
         -- 6) Delete: refuses while target is "running", then succeeds
         wipe("i", CLS)
@@ -267,20 +291,8 @@ function M.RunAll()
 
         -- The reload tests call DBManagement.RequestReload directly (no DB writes, no Globals patching).
         -- For the "local current" path we pass the real current char/server/class so Comms.IsLocalCurrent
-        -- is true without touching anything. The send recorder only flags the actual "ReloadConfig" event
-        -- and delegates everything else to the real function -- the render loop interleaves with
-        -- debug-window execution and would otherwise both trip the recorder and get nil where it expects a value.
-        -- ClassLoader.reloadConfig is stubbed outright: really reloading here would re-register every
-        -- module's settings underneath the run.
-
-        local function makeSendRecorder(onReload)
-            return function(peer, mod, evt, ...)
-                if evt == "ReloadConfig" then
-                    onReload(peer, mod, evt); return
-                end
-                return sv.SendMessage(peer, mod, evt, ...)
-            end
-        end
+        -- is true without touching anything. ClassLoader.reloadConfig is stubbed outright: really
+        -- reloading here would re-register every module's settings underneath the run.
 
         -- 7) Reload: local current -> ClassLoader.reloadConfig
         rec.reloadHit = false

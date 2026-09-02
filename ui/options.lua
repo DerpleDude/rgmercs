@@ -742,10 +742,9 @@ function OptionsUI:RenderDBManagement()
     if not noChars then
         fromName, fromServer = self.dbChars[self.dbFromIdx]:match('^(.+) %((.+)%)$')
     end
-    local fromIsRunning     = fromName and Comms.IsCharRunning(fromName, fromServer, fromClass) or false
-    local fromIsRunningPeer = fromIsRunning and not Comms.IsLocalCurrent(fromName, fromServer, fromClass)
-    local canDelete         = not noChars and not fromIsRunning
-    local canReset          = not noChars and not fromIsRunningPeer
+    local fromIsRunning = fromName and Comms.IsCharRunning(fromName, fromServer, fromClass) or false
+    local canDelete     = not noChars and not fromIsRunning
+    local canReset      = not noChars
 
     if ImGui.BeginTable("##dbmgmt", 4, ImGuiTableFlags.SizingFixedFit) then
         ImGui.TableSetupColumn("label", ImGuiTableColumnFlags.WidthFixed, 80)
@@ -795,11 +794,6 @@ function OptionsUI:RenderDBManagement()
             self.dbOpenResetPopup = true
         end
         if not canReset then ImGui.EndDisabled() end
-        if fromIsRunningPeer and not noChars then
-            if ImGui.IsItemHovered(ImGuiHoveredFlags.AllowWhenDisabled) then
-                ImGui.SetTooltip("Cannot reset: target character is currently running RGMercs.")
-            end
-        end
         ImGui.SameLine()
         if not canDelete then ImGui.BeginDisabled() end
         if ImGui.Button(Icons.FA_TRASH .. " Delete from Database##dbdelete") then
@@ -1011,8 +1005,10 @@ function OptionsUI:ResetSettings(charLabels, fromIdx, fromClass, moduleName)
     local result = DBManagement.ResetSettings(fromName, fromServer, fromClass, moduleName)
     if not result.ok then return end
 
-    self.dbChars       = nil
-    self.dbFromClasses = nil
+    if not Comms.IsCharRunning(fromName, fromServer, fromClass) then
+        self.dbChars       = nil
+        self.dbFromClasses = nil
+    end
 
     self:AddDBToast(result.toastMessage, Globals.Constants.Colors.Green)
 end

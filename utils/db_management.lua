@@ -82,22 +82,16 @@ function DBManagement.CopySettings(fromName, fromServer, fromClass, toName, toSe
 end
 
 --- Clears saved module settings for the given char/server/class so the target rebuilds
---- its own defaults on next load. Refuses if the target is a peer currently running
---- RGMercs; reloads in place when the target is the local character.
+--- its own defaults, and has it pick them up in place when it is running that class.
 --- @param charName string
 --- @param server string
 --- @param class string
 --- @param moduleName string Module name, or "All Modules".
---- @return table result { ok, refusedRunning, toastMessage }
+--- @return table result { ok, toastMessage }
 function DBManagement.ResetSettings(charName, server, class, moduleName)
     if not charName then return { ok = false, } end
 
     local label = string.format("%s (%s)", charName, server)
-
-    if not Comms.IsLocalCurrent(charName, server, class) and Comms.IsCharRunning(charName, server, class) then
-        Logger.log_error("DB Management: refusing to reset %s [%s] -- target is currently running RGMercs", label, class)
-        return { ok = false, refusedRunning = true, }
-    end
 
     local toReset = {}
     if moduleName == "All Modules" then
@@ -136,7 +130,7 @@ end
 --- @param charName string
 --- @param server string
 --- @param class string
---- @return table result { ok, refusedRunning, toastMessage }
+--- @return table result { ok, toastMessage }
 function DBManagement.DeleteSettings(charName, server, class)
     if not charName then return { ok = false, } end
 
@@ -145,7 +139,7 @@ function DBManagement.DeleteSettings(charName, server, class)
     -- Don't delete an active character's settings -- they'd save them back.
     if Comms.IsCharRunning(charName, server, class) then
         Logger.log_error("DB Management: refusing to delete %s [%s] -- target is currently running RGMercs", label, class)
-        return { ok = false, refusedRunning = true, }
+        return { ok = false, }
     end
 
     if not Config.Db:deleteCharacterClass(server, charName, class) then
