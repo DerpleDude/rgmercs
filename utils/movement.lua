@@ -35,16 +35,11 @@ function Movement:DoStick(targetId)
         return
     end
 
-    -- DEPRECATED 7/26 - sunset 9/1/26. StickHow is auto-migrated at load; honor mid-session sets verbatim until sunset.
-    if (Config:GetSetting('StickHow') or ""):len() > 0 then
-        self:DoStickCmd("%s", Config:GetSetting('StickHow'))
-    else
-        local stickDist = Config:GetSetting('StickDistance') or ""
-        if stickDist == "" then stickDist = tostring(Movement.GetDefaultStickDistance(targetId)) end
-        local stickArgs = Config:GetSetting('StickArgs') or ""
-        if stickArgs == "" then stickArgs = Movement.GetDefaultStickArgs() end
-        self:DoStickCmd("%s id %d %s", stickDist, targetId, stickArgs)
-    end
+    local stickDist = Config:GetSetting('StickDistance') or ""
+    if stickDist == "" then stickDist = tostring(Movement.GetDefaultStickDistance(targetId)) end
+    local stickArgs = Config:GetSetting('StickArgs') or ""
+    if stickArgs == "" then stickArgs = Movement.GetDefaultStickArgs() end
+    self:DoStickCmd("%s id %d %s", stickDist, targetId, stickArgs)
 end
 
 function Movement.GetDefaultStickDistance(spawnId)

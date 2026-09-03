@@ -1441,7 +1441,6 @@ function Casting.GetBuffableTankingIDs()
     return tankingIds
 end
 
--- DEPRECATED 7/26 - sunset 10/1/26. Shim for custom configs; use mq.TLO.Me.Feigning() directly. DELETE at sunset.
 --- Checks if the character is currently feigning death.
 --- @return boolean True if the character is feigning death, false otherwise.
 function Casting.IAmFeigning()

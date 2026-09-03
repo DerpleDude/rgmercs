@@ -469,25 +469,10 @@ function Module:EntryEnabled(entry, listName)
     return ((lists[listName] or {})[entry.name]) ~= false
 end
 
--- the active charm ability list: the class config's load_cond-filtered ['Charm']['Abilities'], or the deprecated fallback
+-- the active charm ability list: the class config's load_cond-filtered ['Charm']['Abilities']
 function Module:GetCharmAbilities()
-    local classConfig = Modules:ExecModule("Class", "GetClassConfig")
-    if classConfig and classConfig.Charm and classConfig.Charm.Abilities then return self:GetCharmLists().Abilities end
-    return self:FallbackCharmAbilities()
+    return self:GetCharmLists().Abilities
 end
-
--- ===== DEPRECATED FALLBACK (sunset 9/1/26 - delete once every charm config ships a ['Charm'] table) =====
-function Module:FallbackCharmAbilities()
-    if Core.MyClassIs("BRD") then
-        return { { type = "Song", name = "CharmSong", }, }
-    end
-    return {
-        { type = "AA",    name = "Dire Charm", },
-        { type = "Spell", name = "CharmSpell", },
-    }
-end
-
--- ===== END DEPRECATED FALLBACK (sunset 9/1/26) =====
 
 function Module:FilterLoaded(list)
     return Entries.FilterLoaded(list, self)

@@ -2513,12 +2513,6 @@ function Module:GroupAACureStaggered()
             Logger.log_debug("[Cures] %s is landing a group det dispel on my groupmate %s, bypassing cure checks.", data.Name, data.Target)
             return true
         end
-        -- DEPRECATED 7/26 - sunset 9/1/26. Peers predating the ['Cure'] table don't broadcast the flag; fall back to the named group-cure AAs.
-        local casting = data.Casting or ""
-        if (casting == "Radiant Cure" or casting == "Group Purify Soul") and mq.TLO.Group.Member(data.Target)() then
-            Logger.log_debug("[Cures] %s is casting %s on my groupmate %s, bypassing cure checks.", data.Name, casting, data.Target)
-            return true
-        end
     end
     return false
 end
@@ -2866,17 +2860,11 @@ function Module:RunRez(corpseId, ownerName)
     return nil
 end
 
--- stamp the attempt time (retry debounce), then run the rez; ['Rez'] table path preferred, legacy DoRez as fallback
+-- stamp the attempt time (retry debounce), then run the rez
 function Module:TryRez(corpseId, ownerName)
     self.TempSettings.RezTimers[corpseId] = Globals.GetTimeSeconds()
 
-    if (self.ClassConfig and self.ClassConfig.Rez) or not (self.Helpers and self.Helpers.DoRez) then
-        return Core.SafeCallFunc("RunRez", self.RunRez, self, corpseId, ownerName)
-    end
-
-    -- DEPRECATED 6/26 - sunset 9/1/26. Custom configs predating the ['Rez'] table fall here.
-    local doRez = self.Helpers and self.Helpers.DoRez
-    return Core.SafeCallFunc("DoRez", doRez, self, corpseId, ownerName)
+    return Core.SafeCallFunc("RunRez", self.RunRez, self, corpseId, ownerName)
 end
 
 -- one enumeration of every nearby PC corpse, partitioned into self / in-group / out-of-group (OOG gated here)

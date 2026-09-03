@@ -412,17 +412,11 @@ return {
                     end
                 elseif (mq.TLO.Stick.StickTarget() or 0) ~= Globals.AutoTargetID or (mq.TLO.Stick.Status() or "off"):lower() == "off" then
                     Core.DoCmd('/squelch /face fast')
-                    -- DEPRECATED 7/26 - sunset 9/1/26. StickHow passthrough, mirroring DoStick.
-                    local stickHow = Config:GetSetting('StickHow') or ""
-                    if #stickHow > 0 then
-                        Movement:DoStickCmd("%s", stickHow)
-                    else
-                        local stickDist = Config:GetSetting('StickDistance') or ""
-                        if stickDist == "" then stickDist = tostring(bowRange) end
-                        local stickArgs = Config:GetSetting('StickArgs') or ""
-                        if stickArgs == "" then stickArgs = "moveback uw" end
-                        Movement:DoStickCmd("%s id %d %s", stickDist, Globals.AutoTargetID, stickArgs)
-                    end
+                    local stickDist = Config:GetSetting('StickDistance') or ""
+                    if stickDist == "" then stickDist = tostring(bowRange) end
+                    local stickArgs = Config:GetSetting('StickArgs') or ""
+                    if stickArgs == "" then stickArgs = "moveback uw" end
+                    Movement:DoStickCmd("%s id %d %s", stickDist, Globals.AutoTargetID, stickArgs)
                 end
             else -- Loose: react to the game's own range messages, one-shot, no held position.
                 if reason == "toofar" then
@@ -880,7 +874,7 @@ return {
             Category = "Archery",
             Index = 102,
             Tooltip = "Disabled - autofire from present position, moving only if needed (too close/far, no LoS).\n" ..
-                "Enabled - use stick while autofiring. Uses Stick How setting if set, otherwise uses '<bowrangesetting> moveback uw'",
+                "Enabled - use stick while autofiring.",
             Default = false,
             Warning = function()
                 if not Config:GetSetting('UseRangedStick') then return false, "" end

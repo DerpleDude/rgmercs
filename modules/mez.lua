@@ -443,11 +443,10 @@ end
 -- rebuild the load_cond-filtered mez list on rescan, so a load-gated entry drops from both the cast logic and the UI
 function Module:RebuildMezAbilities()
     local classConfig = Modules:ExecModule("Class", "GetClassConfig")
-    local list = (classConfig and classConfig.Mez) or self:FallbackMezAbilities()
-    self.TempSettings.MezAbilities = self:FilterLoaded(list)
+    self.TempSettings.MezAbilities = self:FilterLoaded(classConfig and classConfig.Mez)
 end
 
--- the active mez ability list: the class config's load_cond-filtered ['Mez'] table, or the deprecated fallback
+-- the active mez ability list: the class config's load_cond-filtered ['Mez'] table
 function Module:GetMezAbilities()
     if not self.TempSettings.MezAbilities then self:RebuildMezAbilities() end -- lazy build covers first-load ordering
     return self.TempSettings.MezAbilities
@@ -457,32 +456,6 @@ end
 function Module:OnCombatModeChanged()
     self:RebuildMezAbilities()
 end
-
--- ===== DEPRECATED FALLBACK (sunset 9/1/26 - delete once every mez class config ships a ['Mez'] table) =====
--- Synthesizes the {type,name} list from today's hardcoded class logic so un-migrated configs keep working.
-function Module:FallbackMezAbilities()
-    if Core.MyClassIs("BRD") then
-        return {
-            { type = "AA",   name = "Dirge of the Sleepwalker", cond = function() return Config:GetSetting('DoAAMez') end, },
-            { type = "Song", name = "MezSong", },
-            { type = "Song", name = "MezAESong", },
-        }
-    end
-    if Core.MyClassIs("ENC") then
-        return {
-            { type = "Spell", name = "TwinCastMez",     cond = function() return (Config:GetSetting('TwincastMez', true) or 0) > 1 end, },
-            { type = "Spell", name = "MezSpell",        cond = function() return (Config:GetSetting('TwincastMez', true) or 0) == 1 end, },
-            { type = "Spell", name = "MezAESpell", },
-            { type = "AA",    name = "Beam of Slumber", cond = function() return Config:GetSetting('DoAAMez') end, },
-        }
-    end
-    return {
-        { type = "Spell", name = "MezSpell", },
-        { type = "Spell", name = "MezAESpell", },
-    }
-end
-
--- ===== END DEPRECATED FALLBACK (sunset 9/1/26) =====
 
 -- first cond-passing entry of the wanted direction (false = ST, true = AE), preferring a gemmed
 -- spell/song (whose cast time + max level we read for the refresh threshold and candidate scan)

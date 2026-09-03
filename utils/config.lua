@@ -2968,8 +2968,9 @@ Config.DefaultConfig                                     = {
     },
 
     --Deprecated/Need Adjusted to Custom/Etc
-    -- DEPRECATED 7/26 - sunset 9/1/26. Replaced by the single 'DoCures' master toggle. Kept hidden (Custom) so custom
-    -- cure configs predating the ['Cure'] table keep gating through their own IsCuring/CureNow. DELETE at sunset.
+    -- DEPRECATED 7/26. Replaced by the single 'DoCures' master toggle. Kept hidden (Custom) so custom
+    -- cure configs predating the ['Cure'] table keep gating through their own IsCuring/CureNow.
+    -- DELETE with the legacy cure path in RunCureRotation, not on a date of their own.
     ['DoCureSpells']                     = {
         DisplayName = "Do Cure Spells",
         Type = "Custom",
@@ -2979,13 +2980,6 @@ Config.DefaultConfig                                     = {
         DisplayName = "Do Cure AA",
         Type = "Custom",
         Default = true,
-    },
-    -- DEPRECATED 7/26 - sunset 9/1/26. Split into StickDistance/StickArgs (auto-migrated by Config:MigrateStickHow at load);
-    -- non-blank values set mid-session are honored verbatim by DoStick until sunset. DELETE at sunset with MigrateStickHow.
-    ['StickHow']                         = {
-        DisplayName = "Stick How",
-        Type = "Custom",
-        Default = "",
     },
     ['FullUI']                           = {
         DisplayName = "Use Full UI",
@@ -3084,33 +3078,6 @@ function Config.GetConfigFileName(moduleName, returnExisting)
     return latest
 end
 
--- DEPRECATED 7/26 - sunset 9/1/26. Splits legacy StickHow into StickDistance + StickArgs. DELETE at sunset.
-function Config:MigrateStickHow()
-    local stickHow = Config:GetSetting('StickHow') or ""
-    if stickHow == "" then return end
-
-    local distance = nil
-    local argTokens = {}
-    local lastToken = ""
-    for token in stickHow:gmatch("%S+") do
-        if not distance and lastToken:lower() ~= "id" and (token:match("^%d+$") or token:match("^%d+%%$")) then
-            distance = token
-        else
-            table.insert(argTokens, token)
-        end
-        lastToken = token
-    end
-
-    local migratedArgs = table.concat(argTokens, " ")
-    -- distance-only strings had no flags; bare uw keeps them positionally identical (blank would add role defaults)
-    if migratedArgs == "" and distance then migratedArgs = "uw" end
-
-    Config:SetSetting('StickDistance', distance or "")
-    Config:SetSetting('StickArgs', migratedArgs)
-    Config:SetSetting('StickHow', "")
-    Logger.log_info("\ayStick How has been split: Stick Distance = '\at%s\ay', Stick Arguments = '\at%s\ay'.", distance or "", migratedArgs)
-end
-
 function Config:LoadSettings()
     -- handle update to db before anything else.
     if not self:CharacterExistsInDb() then
@@ -3134,8 +3101,6 @@ function Config:LoadSettings()
     local settings, firstSaveRequired = Config:GetAllModuleSettingsFromDb(coreModuleName, Config.DefaultConfig)
 
     Config:RegisterModuleSettings(coreModuleName, settings, Config.DefaultConfig, Config.FAQ, firstSaveRequired)
-
-    Config:MigrateStickHow()
 
     -- setup our script path for later usage since getting it kind of sucks, but only on the first run (personas)
     if Globals.ScriptDir == "" then
