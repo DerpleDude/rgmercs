@@ -1884,7 +1884,7 @@ Config.DefaultConfig                                     = {
         Header = "Recovery",
         Category = "Curing",
         Index = 4,
-        Tooltip = "The delay in seconds between making cure checks during downtime (to prevent unnecessary queries).",
+        Tooltip = "The delay in seconds between making cure checks during downtime.",
         Default = 5,
         Min = 1,
         Max = 30,
@@ -2968,19 +2968,6 @@ Config.DefaultConfig                                     = {
     },
 
     --Deprecated/Need Adjusted to Custom/Etc
-    -- DEPRECATED 7/26. Replaced by the single 'DoCures' master toggle. Kept hidden (Custom) so custom
-    -- cure configs predating the ['Cure'] table keep gating through their own IsCuring/CureNow.
-    -- DELETE with the legacy cure path in RunCureRotation, not on a date of their own.
-    ['DoCureSpells']                     = {
-        DisplayName = "Do Cure Spells",
-        Type = "Custom",
-        Default = true,
-    },
-    ['DoCureAA']                         = {
-        DisplayName = "Do Cure AA",
-        Type = "Custom",
-        Default = true,
-    },
     ['FullUI']                           = {
         DisplayName = "Use Full UI",
         Group = "General",

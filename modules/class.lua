@@ -9,7 +9,6 @@ local Combat      = require('utils.combat')
 local Comms       = require("utils.comms")
 local Config      = require('utils.config')
 local Core        = require("utils.core")
-local DanNet      = require('lib.dannet.helpers')
 local Entries     = require("utils.entries")
 local Globals     = require('utils.globals')
 local Logger      = require("utils.logger")
@@ -64,10 +63,6 @@ Module.TempSettings.CombatModeChangeTime     = 0
 Module.TempSettings.MissingSpells            = {}
 Module.TempSettings.MissingSpellsHighestOnly = true
 Module.TempSettings.QueuedAbilities          = {}
-Module.TempSettings.CureCoroutines           = {}
-Module.TempSettings.NeedCuresList            = {}
-Module.TempSettings.NeedCuresListMutex       = false
-Module.TempSettings.CureChecksStale          = false
 Module.TempSettings.ImmuneTargets            = {}
 Module.TempSettings.RotationClickies         = Set.new({})
 Module.TempSettings.RotationAAs              = Set.new({})
@@ -1883,42 +1878,6 @@ function Module:MigrateRotationEntryToggles()
     Logger.log_info("\ayEntry toggles are now saved per rotation: your \atexisting toggles\ay were carried over.")
 end
 
----@param reason string
----@return boolean
-function Module:ReleaseCuresListMutex(reason)
-    if not self.TempSettings.NeedCuresListMutex then
-        Logger.log_error("\arReleaseCuresListMutex(%s): Mutex was not acquired, cannot release!", reason or "Unknown")
-        return false
-    end
-
-    Logger.log_verbose("\amReleaseCuresListMutex(%s): Mutex was released!", reason or "Unknown")
-    self.TempSettings.NeedCuresListMutex = false
-    return true
-end
-
----@param reason string
----@param maxWaitTime integer?
----@return boolean
-function Module:GetCuresListMutex(reason, maxWaitTime)
-    if not maxWaitTime then
-        maxWaitTime = 10000 -- default to 10 seconds
-    end
-
-    while self.TempSettings.NeedCuresListMutex do
-        mq.delay(10) -- wait for the mutex to be released
-        maxWaitTime = maxWaitTime - 10
-
-        if maxWaitTime <= 0 then
-            Logger.log_error("\arGetCuresListMutex(%s): Timeout waiting for mutex to be released!", reason or "Unknown")
-            return false
-        end
-    end
-
-    Logger.log_verbose("\amReleaseCuresListMutex(%s): Mutex was acquired!", reason or "Unknown")
-    self.TempSettings.NeedCuresListMutex = true
-    return true
-end
-
 function Module:LoadConditionPass(entry)
     return not entry.load_cond or Core.SafeCallFunc("CheckLoadCondition", entry.load_cond, self)
 end
@@ -2028,51 +1987,6 @@ function Module:NeedToHeal(priority)
         return Combat.FindWorstHurtHealList(point) > 0
     end
     return Combat.FindWorstHurtXT(point) > 0
-end
-
-function Module:ClearCureFromList(id)
-    if self:GetCuresListMutex(string.format("ClearCureFromList(%d)", id)) then
-        if self.TempSettings.NeedCuresList then
-            if self.TempSettings.NeedCuresList[id] then
-                self.TempSettings.NeedCuresList[id] = nil
-            end
-        end
-        self:ReleaseCuresListMutex(string.format("ClearCureFromList(%d)", id))
-    end
-end
-
-function Module:ClearCureList()
-    if self:GetCuresListMutex("ClearCureList") then
-        if self.TempSettings.NeedCuresList then
-            self.TempSettings.NeedCuresList = {}
-        end
-        Logger.log_verbose("[Cures] Cure List cleared to avoid spam-curing. We'll check again soon.")
-        self:ReleaseCuresListMutex("ClearCureList")
-    end
-    self.TempSettings.CureChecksStale = true
-end
-
-function Module:AddCureToList(id, type)
-    if not self.TempSettings.NeedCuresList then
-        self.TempSettings.NeedCuresList = {}
-    end
-
-    local contained = false
-
-    if self:GetCuresListMutex(string.format("AddCureToList(%d, %s)", id, type)) then
-        if self.TempSettings.NeedCuresList[id] then
-            contained = self.TempSettings.NeedCuresList[id]:contains(type)
-            self.TempSettings.NeedCuresList[id]:add(type)
-        else
-            self.TempSettings.NeedCuresList[id] = Set.new({ type, })
-        end
-        self:ReleaseCuresListMutex(string.format("AddCureToList(%d, %s)", id, type))
-    end
-
-    if not contained then
-        Comms.HandleAnnounce(Comms.FormatChatEvent("Cure", mq.TLO.Spawn(id).CleanName(), "Queued"), Config:GetSetting('CureAnnounceGroup'),
-            Config:GetSetting('CureAnnounce'), Config:GetSetting('AnnounceToRaidIfInRaid'))
-    end
 end
 
 -- Cure Engine (config-driven ['Cure'] buckets walked via utils/entries.lua, mirroring the Rez engine)
@@ -2359,151 +2273,6 @@ function Module:RunDispel(combat_state)
     end
 end
 
-function Module:ProcessCuresList()
-    -- make a copy just incase it changes in the other coroutine
-    local curesList = self.TempSettings.NeedCuresList
-
-    for id, types in pairs(curesList) do
-        local cureTarget = mq.TLO.Spawn(id)
-        if not cureTarget or not cureTarget() then
-            Logger.log_verbose("\ar[Cures] %s is no longer valid, removing from cure list.", id)
-
-            self:ClearCureFromList(id)
-        else
-            local typeList = types:toList()
-            for _, type in ipairs(typeList) do
-                local successful, haveValidOptions = Core.SafeCallFunc("CureNow", self.ClassConfig.Cures.CureNow, self, type, id)
-
-                if not haveValidOptions or successful then
-                    -- if succesful, clear the entire list so we don't chain group cures needlessly
-                    self:ClearCureList()
-                    return
-                end
-            end
-
-            return
-        end
-    end
-end
-
-function Module:CheckActorForCures(peer, targetId)
-    local checks = {
-        { type = "Poison", },
-        { type = "Disease", },
-        { type = "Curse", },
-        { type = "Mezzed", },
-    }
-    if not Core.OnLaz() then
-        table.insert(checks, { type = "Corruption", })
-    end
-
-    local heartbeat = Comms.GetPeerHeartbeat(peer)
-    if heartbeat and heartbeat.Data then
-        for _, data in ipairs(checks) do
-            local effectId = heartbeat.Data[data.type] or "null"
-
-            Logger.log_verbose("\ay[Cures] CheckActorForCures %s :: %s [%s] => %s", peer, data.check, data.type, effectId)
-
-            if effectId and effectId:lower() ~= "nil" and effectId:lower() ~= "null" and effectId ~= "0" then
-                if self.ClassConfig.Cures and self.ClassConfig.Cures.CureNow then
-                    self:AddCureToList(targetId, data.type)
-                end
-                Logger.log_verbose("\ay[Cures] CheckActorForCures %s :: Found effect: %s type %s", peer, tostring(effectId), data.type)
-            end
-        end
-        Logger.log_verbose("\ay[Cures] CheckActorForCures %s :: All checks complete", peer)
-        return true
-    else
-        Logger.log_verbose("\ay[Cures] CheckActorForCures %s :: Actor heartbeat not found.", peer)
-    end
-    return false
-end
-
-function Module:CheckPeerForCures(peer, targetId)
-    local checks = {
-        { type = "Poison",  check = "Me.Poisoned.ID", },
-        { type = "Disease", check = "Me.Diseased.ID", },
-        { type = "Curse",   check = "Me.Cursed.ID", },
-        { type = "Mezzed",  check = "Me.Mezzed.ID", },
-    }
-    if not Core.OnLaz() then
-        table.insert(checks, { type = "Corruption", check = "Me.Corrupted.ID", })
-    end
-
-    if not self.TempSettings.CureChecksStale then
-        for _, data in ipairs(checks) do
-            local effectId = DanNet.query(peer, data.check, 1000) or "null"
-            Logger.log_verbose("\ay[Cures] %s :: %s [%s] => %s", peer, data.check, data.type, effectId)
-
-            if effectId:lower() ~= "null" and effectId ~= "0" then
-                -- Queue it!
-                if not self.TempSettings.CureChecksStale then
-                    if self.ClassConfig.Cures and self.ClassConfig.Cures.CureNow then
-                        self:AddCureToList(targetId, data.type)
-                    end
-                else
-                    Logger.log_verbose("\ay[Cures] CheckPeerforCures %s :: Cure Check is stale post-query, skipping.", peer)
-                end
-            end
-        end
-    else
-        Logger.log_verbose("\ay[Cures] CheckPeerforCures %s :: Cure Check is stale pre-query, skipping.", peer)
-    end
-end
-
-function Module:CheckSelfForCures()
-    local me = mq.TLO.Me
-    local selfChecks = {
-        { type = "Poison",  check = me.Poisoned.ID() or 0, },
-        { type = "Disease", check = me.Diseased.ID() or 0, },
-        { type = "Curse",   check = me.Cursed.ID() or 0, },
-        -- { type = "Mezzed",  check = me.Mezzed.ID() or 0, }, -- to my knowledge we cannot cure ourselves if mezzed
-    }
-    if not Core.OnLaz() then
-        table.insert(selfChecks, { type = "Corruption", check = me.Corrupted.ID() or 0, })
-    end
-
-    for _, data in ipairs(selfChecks) do
-        Logger.log_verbose("\ay[Cures] %s :: [%s] => %s", me.CleanName():lower(), data.type, data.check > 0 and data.check or "none")
-        if data.check > 0 then
-            Comms.HandleAnnounce(Comms.FormatChatEvent("Cure", me.CleanName(), string.format('%s effect found on myself, processing cure.', data.type)),
-                Config:GetSetting('CureAnnounceGroup'), Config:GetSetting('CureAnnounce'), Config:GetSetting('AnnounceToRaidIfInRaid'))
-            if self.ClassConfig.Cures and self.ClassConfig.Cures.CureNow then
-                local successful, haveValidOptions = Core.SafeCallFunc("CureNow", self.ClassConfig.Cures.CureNow, self, data.type, mq.TLO.Me.ID())
-
-                if not haveValidOptions or successful then
-                    -- if succesful, clear the entire list so we don't chain group cures needlessly
-                    self:ClearCureList()
-                end
-                return
-            end
-        end
-    end
-end
-
-function Module:CureIsQueued()
-    return (Tables.GetTableSize(self.TempSettings.NeedCuresList) or 0) > 0
-end
-
-function Module:DoEvents()
-    -- Process Cure Coroutines
-    local deadCoroutines = {}
-    for idx, c in ipairs(self.TempSettings.CureCoroutines) do
-        if coroutine.status(c) ~= 'dead' then
-            local success, err = coroutine.resume(c)
-            if not success then
-                Logger.log_error("\arError in Cure Coroutine: %s", err)
-            end
-        else
-            table.insert(deadCoroutines, idx)
-        end
-    end
-
-    for _, idx in ipairs(deadCoroutines) do
-        table.remove(self.TempSettings.CureCoroutines, idx)
-    end
-end
-
 -- true when the stagger option is set and a peer is landing a group det dispel on our group
 function Module:GroupAACureStaggered()
     if not Config:GetSetting('StaggerGroupAACures') then return false end
@@ -2517,7 +2286,7 @@ function Module:GroupAACureStaggered()
     return false
 end
 
--- new-model cure pass: cure myself from my own classified effects, then a group or heal-list peer that needs it (one cure per pass, self > group > heal list)
+-- cure pass: cure myself from my own classified effects, then a group or heal-list peer that needs it (one cure per pass, self > group > heal list)
 function Module:RunCureWalk()
     Core.GetBuffTable()
     self.TempSettings.GroupDispelCovered = self:GroupAACureStaggered()
@@ -2563,97 +2332,7 @@ function Module:RunCureRotation(combat_state)
         self.TempSettings.CureCheckTimer = Globals.GetTimeSeconds()
     end
 
-    if (self.ClassConfig and self.ClassConfig.Cure) or not (self.ClassConfig and self.ClassConfig.Cures) then
-        return self:RunCureWalk()
-    end
-
-    -- ===== DEPRECATED FALLBACK ===== DEPRECATED 7/26 - sunset 9/1/26.
-    -- Legacy per-type detection + CureNow path for custom configs predating the ['Cure'] table.
-    local actorPeers = Comms.GetAllPeerHeartbeats(false)
-
-    if self:GroupAACureStaggered() then return end
-
-    Logger.log_verbose("\ao[Cures] Checking for curables...")
-
-    -- check ourselves locally every frame
-    self:CheckSelfForCures()
-
-    -- if we are still processing cure checks from before then just bail for now.
-    local cureCount = Tables.GetTableSize(self.TempSettings.CureCoroutines)
-    if cureCount > 0 then
-        Logger.log_debug("\ay[Cures] Still have %d cure checks to process, will check again later.", cureCount)
-        return
-    end
-
-    self.TempSettings.CureChecksStale = false
-
-    local dannetPeers = mq.TLO.DanNet.PeerCount()
-    local handledPeers = Set.new({})
-    local handledPeerCount = 0
-
-    for peer, heartbeat in pairs(actorPeers) do
-        local cureTarget = mq.TLO.Spawn(string.format("pc =%s", heartbeat.Data.Name))
-        local cureTargetID = cureTarget.ID() or 0 --0 if the peer is not in this zone
-        local handled = false
-        --current max range on live with raid gear is 137, radiant cure still limited to 100 (300 on laz now but not changing this), but CureNow includes range checks
-        if cureTargetID > 0 then
-            if cureTargetID == mq.TLO.Me.ID() then
-                Logger.log_super_verbose("[Cures - Actors] Peer is myself, skipping.")
-            elseif (cureTarget.Distance() or 999) < 150 then
-                handled = self:CheckActorForCures(peer, cureTargetID)
-            else
-                Logger.log_verbose("\ao[Cures - Actors] %s is \arNOT\ao in range", peer or "Unknown")
-            end
-        else
-            Logger.log_verbose("\ao[Cures - Actors] No valid ID for %s, \arNOT\ao in zone", peer or "Unknown")
-        end
-
-        Logger.log_verbose("\ay[Cures - Actors] %s :: Handled = %s", peer, tostring(handled))
-
-        if handled then
-            handledPeers:add(heartbeat.Data.Name:lower())
-            handledPeerCount = handledPeerCount + 1
-        end
-    end
-
-    if handledPeerCount ~= dannetPeers then
-        for i = 1, dannetPeers do
-            ---@diagnostic disable-next-line: redundant-parameter
-            local peer = DanNet.getPeer(i)
-            if peer and peer:len() > 0 then
-                local startindex = string.find(peer, "_")
-                if startindex then
-                    peer = string.sub(peer, startindex + 1)
-                end
-                peer = peer:lower()
-                if peer ~= mq.TLO.Me.Name():lower() and not handledPeers:contains(peer) then
-                    local cureTarget = mq.TLO.Spawn(string.format("pc =%s", peer))
-                    local cureTargetID = cureTarget.ID() or 0 --0 if the peer is not in this zone
-
-                    --current max range on live with raid gear is 137, radiant cure still limited to 100 (300 on laz now but not changing this), but CureNow includes range checks
-                    if cureTargetID > 0 then
-                        if (cureTarget.Distance() or 999) < 150 then
-                            Logger.log_verbose("\ag[Cures - DanNet] %s is in range - checking for curables", peer)
-
-                            local newCoroutine = coroutine.create(function()
-                                self:CheckPeerForCures(peer, cureTargetID)
-                            end)
-
-                            if newCoroutine then
-                                table.insert(self.TempSettings.CureCoroutines, newCoroutine)
-                            else
-                                Logger.log_error("\ar[Cures - DanNet] Failed to create coroutine for %s", peer)
-                            end
-                        else
-                            Logger.log_verbose("\ao[Cures - DanNet] %d::%s is \arNOT\ao in range", i, peer or "Unknown")
-                        end
-                    else
-                        Logger.log_verbose("\ao[Cures - DanNet] %d::No valid ID for %s, \arNOT\ao in zone", i, peer or "Unknown")
-                    end
-                end
-            end
-        end
-    end
+    return self:RunCureWalk()
 end
 
 function Module:RunCounterRotation()
@@ -2965,11 +2644,6 @@ function Module:GiveTime()
             self:RebuildRezAbilities()
             self:RebuildCureAbilities()
             self:RebuildDispelAbilities()
-            if self:IsCuring() then
-                if self.ClassConfig.Cures and self.ClassConfig.Cures.GetCureSpells then
-                    Core.SafeCallFunc("GetCureSpells", self.ClassConfig.Cures.GetCureSpells, self)
-                end
-            end
             self:SetRotationActions()
             self.TempSettings.NewCombatMode = false
             self.TempSettings.CombatModeSet = true
@@ -3013,20 +2687,9 @@ function Module:GiveTime()
     end
 
     if self:IsCuring() or (Config:GetSetting('DoCures') and self:HasCureClickies()) then
-        local legacyCure = not (self.ClassConfig and self.ClassConfig.Cure) and (self.ClassConfig and self.ClassConfig.Cures) ~= nil
         if not (combat_state == "Downtime" and mq.TLO.Me.Invis() and not Config:GetSetting('BreakInvisForHealing')) then
             self:RunCureRotation(combat_state)
-
-            if legacyCure then
-                if Module.TempSettings.NeedCuresListMutex then
-                    Logger.log_debug("\ay[Cures] A coroutine is currently in mutex, bypassing cure list processing.")
-                else
-                    self:ProcessCuresList()
-                end
-            end
         end
-
-        if legacyCure then self:DoEvents() end
     end
 
     --Counter TOB Debuff with AA Buff, this can be refactored/expanded if they add other similar systems

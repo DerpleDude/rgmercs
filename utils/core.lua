@@ -533,12 +533,6 @@ function Core.IsHealing()
     return Modules:ExecModule("Class", "IsHealing")
 end
 
---- Returns true if the class module reports the character is in cure mode.
----@return boolean True if actively curing.
-function Core.IsCuring()
-    return Modules:ExecModule("Class", "IsCuring")
-end
-
 --- Returns true if the class module reports the character is in mez mode.
 ---@return boolean True if actively mezzing.
 function Core.IsMezzing()
@@ -549,12 +543,6 @@ end
 ---@return boolean True if actively charming.
 function Core.IsCharming()
     return Modules:ExecModule("Class", "IsCharming")
-end
-
---- Returns true if the class module reports the character is capable of mezzing.
----@return boolean True if the character has mez capability.
-function Core.CanMez()
-    return Modules:ExecModule("Class", "CanMez")
 end
 
 --- Returns true if the class module reports the character is capable of charming.
@@ -581,11 +569,6 @@ end
 ---@return boolean True if it is safe to perform non-heal actions.
 function Core.OkayToNotHeal(priority)
     if not Core.IsHealing() then return true end
-
-    if Core.IsCuring() and Modules:ExecModule("Class", "CureIsQueued") then
-        Logger.log_verbose("OkayToNotHeal: We have a queued cure to process! Skipping.")
-        return false
-    end
 
     if (priority or 1) == 1 then return true end
     return not Modules:ExecModule("Class", "NeedToHeal", priority)
