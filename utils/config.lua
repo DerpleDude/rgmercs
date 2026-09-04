@@ -37,6 +37,7 @@ Config.TempSettings.SettingToModuleCache                 = {}
 Config.TempSettings.SettingToScopeCache                  = {}
 Config.TempSettings.SettingsLowerToNameCache             = {}
 Config.TempSettings.SettingsCategoryToSettingMapping     = {}
+Config.TempSettings.UnknownSettingLogged                 = {}
 Config.TempSettings.PeerModuleSettingsLowerToNameCache   = {}
 Config.TempSettings.PeerSettingToModuleCache             = {}
 Config.TempSettings.PeerSettingsCategoryToSettingMapping = {}
@@ -3398,7 +3399,8 @@ end
 --- @return any The value of the setting, or nil if the setting is not found and failOk is true.
 function Config:GetSetting(setting, failOk)
     if not Config.TempSettings.SettingToModuleCache[setting] then
-        if not failOk then
+        if not failOk and not Config.TempSettings.UnknownSettingLogged[setting] then
+            Config.TempSettings.UnknownSettingLogged[setting] = true
             Logger.log_error("Setting %s was not found in the module cache!", setting)
         end
         return nil
@@ -3892,6 +3894,7 @@ function Config:ClearAllModuleSettings()
     self.TempSettings.SettingToScopeCache = {}
     self.TempSettings.SettingsLowerToNameCache = {}
     self.TempSettings.SettingsCategoryToSettingMapping = {}
+    self.TempSettings.UnknownSettingLogged = {}
     self.SettingsLoadComplete = false
 end
 
