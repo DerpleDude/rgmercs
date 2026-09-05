@@ -125,9 +125,10 @@ jobs:
 
       # ---- email --------------------------------------------------------------
 
+      # A clean push yields an empty subject and send=false; that is the normal
+      # quiet outcome, not an error.
       - name: Build the email
         id: email
-        continue-on-error: true
         run: |
           SUBJECT=$(node .github/review/render-email.js \
             --report review/report.md --json review/report.json \
@@ -135,7 +136,14 @@ jobs:
             --repo "${{ github.repository }}" --sha "$HEAD_SHA" \
             --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
             --out review/email.html)
-          echo "subject=$SUBJECT" >> "$GITHUB_OUTPUT"
+          if [ -n "$SUBJECT" ]; then
+            echo "send=true" >> "$GITHUB_OUTPUT"
+            echo "subject=$SUBJECT" >> "$GITHUB_OUTPUT"
+            echo "will send: $SUBJECT"
+          else
+            echo "send=false" >> "$GITHUB_OUTPUT"
+            echo "nothing to send for this push"
+          fi
 
       # noreply.github.com addresses bounce, so only send to a real mailbox.
       # Also decides here whether SMTP is configured at all, because a step's
@@ -178,7 +186,7 @@ jobs:
           echo "to=$TO" >> "$GITHUB_OUTPUT"
 
       - name: Send it
-        if: steps.email.outcome == 'success' && steps.recipient.outputs.to != '' && steps.recipient.outputs.smtp == 'true'
+        if: steps.email.outputs.send == 'true' && steps.recipient.outputs.to != '' && steps.recipient.outputs.smtp == 'true'
         uses: dawidd6/action-send-mail@v18
         with:
           server_address: ${{ secrets.SMTP_HOST }}

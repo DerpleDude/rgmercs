@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 'use strict';
 // Turns a pattern-review report into the email sent to whoever pushed. Emits
-// the subject line on stdout and writes an HTML body. Exits 3 when the report
-// has nothing worth mailing about, so the workflow can skip sending.
+// the subject line on stdout and writes an HTML body. When the report has
+// nothing worth mailing about it prints nothing and exits 0, so the workflow
+// can skip sending without treating a quiet push as a failure.
 //   node .github/review/render-email.js --report review/report.md --json review/report.json \
 //        --findings review/findings.json --verdicts review/verdicts.json \
 //        --repo owner/name --sha <sha> --run-url <url> --out review/email.html
@@ -32,8 +33,8 @@ if (args.findings && fs.existsSync(args.findings)) {
 
 const total = warnings.length + modelStanding.length;
 if (total === 0 && !args.always) {
-    process.stderr.write('nothing worth mailing (no challenges)\n');
-    process.exit(3);
+    process.stderr.write('clean push, nothing worth mailing\n');
+    process.exit(0);
 }
 
 const shortSha = (args.sha || '').slice(0, 7);
