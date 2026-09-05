@@ -3473,7 +3473,8 @@ function Config:MakeValidSetting(module, setting, value)
         return value
     elseif type(defaultConfig[setting].Default) == 'boolean' then
         local boolValue = false
-        if value == true or value == "true" or value == "on" or (tonumber(value) or 0) >= 1 then
+        local strValue = tostring(value):lower()
+        if value == true or strValue == "true" or strValue == "on" or (tonumber(value) or 0) >= 1 then
             boolValue = true
         end
 
