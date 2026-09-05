@@ -182,11 +182,11 @@ jobs:
         uses: dawidd6/action-send-mail@v18
         with:
           server_address: ${{ secrets.SMTP_HOST }}
-          server_port: ${{ secrets.SMTP_PORT || 587 }}
+          server_port: 587
           secure: false
           username: ${{ secrets.SMTP_USERNAME }}
           password: ${{ secrets.SMTP_PASSWORD }}
-          from: rgmercs pattern review <${{ secrets.SMTP_FROM || secrets.SMTP_USERNAME }}>
+          from: rgmercs pattern review <${{ secrets.SMTP_USERNAME }}>
           to: ${{ steps.recipient.outputs.to }}
           cc: ${{ steps.recipient.outputs.cc }}
           subject: ${{ steps.email.outputs.subject }}
