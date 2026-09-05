@@ -1826,7 +1826,7 @@ function Module:RenderClickyHeaderIcon(clicky, headerPos)
     if not clicky then return end
 
     if clicky.iconId == nil then
-        local item = mq.TLO.FindItem(clicky.itemName)
+        local item = mq.TLO.FindItem("=" .. clicky.itemName)
         clicky.iconId = item() and tonumber((item.Icon() or 500) - 500) or 0
         Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
     end
@@ -2284,8 +2284,7 @@ function Module:RenderClickyData(clicky, clickyIdx)
             ImGui.PushStyleColor(ImGuiCol.HeaderHovered, Globals.Constants.Colors.NearBlack)
             local _, clicked = ImGui.Selectable(spellName)
             if clicked then
-                local item = mq.TLO.FindItem(clicky.itemName)
-                local itemSpell = item and item.Clicky and item.Clicky.Spell
+                local itemSpell = Casting.GetClickySpell(clicky.itemName)
                 if itemSpell and itemSpell() then itemSpell.Inspect() end
             end
             ImGui.PopStyleColor(2)
@@ -2420,7 +2419,7 @@ function Module:ClickModRod()
             mq.delay(10)
         end
 
-        local item = mq.TLO.FindItem(itemName)
+        local item = mq.TLO.FindItem("=" .. itemName)
         if item() and item.Clicky() and mq.TLO.Me.Level() >= (item.Clicky.RequiredLevel() or 999) and item.TimerReady() == 0 then
             Casting.UseItem(item.Name(), mq.TLO.Me.ID())
             return
@@ -2437,6 +2436,7 @@ function Module:GetBenefitItemName(settingName, keyring)
     if itemName:len() > 0 then return itemName end
 
     -- clients without keyrings have no TLO to ask
+    ---@diagnostic disable-next-line: return-type-mismatch
     return keyring and keyring.Stat() or ""
 end
 
@@ -2446,6 +2446,7 @@ function Module:GetMountItemName()
     local mountItemName = Config:GetSetting('MountItem') or ""
     if mountItemName:len() > 0 then return mountItemName end
 
+    ---@diagnostic disable-next-line: return-type-mismatch
     return mq.TLO.Mount and mq.TLO.Mount.Stat() or ""
 end
 
@@ -2463,8 +2464,10 @@ function Module:GetBenefitSpells(itemName)
     if (clickySpell.ID() or 0) == 0 then return nil end
 
     -- Live keeps the benefit in its own slot; RoF2 has only the one and pairs the two spells with a trigger
+    ---@diagnostic disable-next-line: undefined-field
     local blessingId = benefitItem.Blessing.Spell.ID() or 0
     if blessingId > 0 and blessingId ~= clickySpell.ID() then
+        ---@diagnostic disable-next-line: undefined-field
         return benefitItem.Blessing.Spell, clickySpell
     end
 
@@ -2603,7 +2606,7 @@ function Module:GiveTime()
             self.ClickyRotationIndex = (clickyIdx % numClickies) + 1
             Logger.log_super_verbose("\ayClicky: \awChecking clicky entry: \ay%s\aw[\at%d\aw]", clicky.itemName, clickyIdx)
 
-            local item = mq.TLO.FindItem(clicky.itemName)
+            local item = mq.TLO.FindItem("=" .. clicky.itemName)
             local itemSpell = item and item.Clicky and item.Clicky.Spell
             self.TempSettings.ClickyState[clicky.itemName] = self.TempSettings.ClickyState[clicky.itemName] or {}
             self.TempSettings.ClickyState[clicky.itemName].spellName = itemSpell and itemSpell.Name() or (item and "No Clicky Spell or Missing Item" or "Item Not Found")
@@ -2767,8 +2770,7 @@ function Module:GetClickiesForRotations(clickyCombatState, rotationName)
                 cond = function(caller, itemName, targetSpawn)
                     if not Casting.ItemReady(itemName) then return false end
 
-                    local item = mq.TLO.FindItem(itemName)
-                    local itemSpell = item and item.Clicky and item.Clicky.Spell
+                    local itemSpell = Casting.GetClickySpell(itemName)
                     if not (itemSpell and itemSpell()) then return false end
 
                     local buffCheckPassed
