@@ -13,8 +13,12 @@ name: Pattern Review (push)
 on:
   push:
     branches: [main]
+    # Negation inside `paths` rather than a `paths-ignore` block: GitHub rejects
+    # both filters on one event, and later patterns win. A push that touches
+    # version.lua alongside real code still matches on the other file.
     paths:
       - '**.lua'
+      - '!extras/version.lua'
 
 permissions:
   contents: write

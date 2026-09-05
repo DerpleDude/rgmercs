@@ -21,8 +21,11 @@ name: Pattern Review
 on:
   pull_request_target:
     types: [opened, synchronize, reopened, ready_for_review]
+    # Negation inside `paths` rather than a `paths-ignore` block: GitHub rejects
+    # both filters on one event, and later patterns win.
     paths:
       - "**.lua"
+      - "!extras/version.lua"
   workflow_dispatch:
     inputs:
       pr:

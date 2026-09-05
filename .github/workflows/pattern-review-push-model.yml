@@ -140,20 +140,35 @@ jobs:
       # noreply.github.com addresses bounce, so only send to a real mailbox.
       # Also decides here whether SMTP is configured at all, because a step's
       # own env: block is not visible to that step's if: condition.
+      # PATTERN_REVIEW_EMAIL (repo variable, comma-separated) is the distribution
+      # list: when set, every review goes to it and the pusher is CC'd if their
+      # address is real and not already listed. When unset, only the pusher gets it.
       - name: Decide recipient
         id: recipient
         env:
-          FALLBACK: ${{ vars.PATTERN_REVIEW_EMAIL }}
+          LIST: ${{ vars.PATTERN_REVIEW_EMAIL }}
           SMTP_HOST: ${{ secrets.SMTP_HOST }}
         run: |
-          TO=""
+          PUSHER=""
           case "$PUSHER_EMAIL" in
-            ""|*noreply.github.com) TO="$FALLBACK" ;;
-            *) TO="$PUSHER_EMAIL" ;;
+            ""|*noreply.github.com) ;;
+            *) PUSHER="$PUSHER_EMAIL" ;;
           esac
+          TO=""
+          CC=""
+          if [ -n "$LIST" ]; then
+            TO="$LIST"
+            case ",$(echo "$LIST" | tr -d ' ')," in
+              *",$PUSHER,"*) ;;
+              *) CC="$PUSHER" ;;
+            esac
+          else
+            TO="$PUSHER"
+          fi
           if [ -z "$TO" ]; then
             echo "::notice::no deliverable address for '$PUSHER_EMAIL' and no PATTERN_REVIEW_EMAIL variable set; skipping email"
           fi
+          echo "cc=$CC" >> "$GITHUB_OUTPUT"
           if [ -z "$SMTP_HOST" ]; then
             echo "::notice::no SMTP_HOST secret; skipping email (findings are on the commit)"
             echo "smtp=false" >> "$GITHUB_OUTPUT"
@@ -173,6 +188,7 @@ jobs:
           password: ${{ secrets.SMTP_PASSWORD }}
           from: rgmercs pattern review <${{ secrets.SMTP_FROM || secrets.SMTP_USERNAME }}>
           to: ${{ steps.recipient.outputs.to }}
+          cc: ${{ steps.recipient.outputs.cc }}
           subject: ${{ steps.email.outputs.subject }}
           html_body: file://review/email.html
 

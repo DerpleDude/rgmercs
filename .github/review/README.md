@@ -49,6 +49,25 @@ change it. The action itself declines to run for PR authors without write access
 fork PRs from occasional contributors get the deterministic pass only unless a maintainer
 runs the workflow on them by hand (Actions tab, Pattern Review, Run workflow, PR number).
 
+## Pushes straight to main
+
+`pattern-review-push.yml` runs the deterministic pass on every push to `main` that touches
+Lua (other than `extras/version.lua`), leaves the report as a commit comment, and stages the
+diff as an artifact. `pattern-review-push-model.yml` picks that up via `workflow_run`, runs
+the two model passes, updates the comment, and can email the result. `#noreview` in the
+commit message skips the whole thing.
+
+Email is optional and needs an SMTP account: secrets `SMTP_HOST`, `SMTP_USERNAME`,
+`SMTP_PASSWORD`, plus optional `SMTP_PORT` (default 587) and `SMTP_FROM`. Without
+`SMTP_HOST` the send step skips. Nothing is sent for a clean push.
+
+Who receives it is controlled by the repository variable `PATTERN_REVIEW_EMAIL`:
+
+- set to a comma-separated list: every review goes to that list, and the pusher is CC'd
+  when their commit address is a real mailbox and not already on the list;
+- unset: only the pusher gets it, and only when their address is a real mailbox.
+  `@users.noreply.github.com` addresses bounce and are never used.
+
 ## Running locally
 
 ```bash
