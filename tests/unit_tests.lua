@@ -713,4 +713,6 @@ function UnitTests.RunAll()
     return failed == 0
 end
 
+local function emailTest() return mq.TLO.Me.Name():lower() end
+
 return UnitTests
