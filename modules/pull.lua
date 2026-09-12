@@ -3535,19 +3535,6 @@ function Module:ShouldPull(campData)
         return false, "Camp set"
     end
 
-    if campData.returnToCamp and Math.GetDistanceSquared(me.X(), me.Y(), campData.campSettings.AutoCampX, campData.campSettings.AutoCampY) > math.max(Config:GetSetting('AutoCampRadius') ^ 2, 200 ^ 2) then
-        Logger.log_verbose("\ay::PULL:: \arAborted!\ax I am too far away from camp!")
-        local now = Globals.GetTimeSeconds()
-        if (now - self.TempSettings.LastTooFarAnnounce) > 30 then
-            self.TempSettings.LastTooFarAnnounce = now
-            self:Announce("None", "I am too far away from camp - Holding pulls!")
-        end
-        return false,
-            string.format("I am Too Far (%d) (%d,%d) (%d,%d)", Math.GetDistanceSquared(me.X(), me.Y(), campData.campSettings.AutoCampX, campData.campSettings.AutoCampY),
-                me.X(), me.Y(), campData.campSettings.AutoCampX, campData.campSettings.AutoCampY)
-    end
-
-
     return true, ""
 end
 
