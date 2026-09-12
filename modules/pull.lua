@@ -35,7 +35,6 @@ Module.TempSettings.LastPullAbilityCheck  = 0
 Module.TempSettings.LastMoveAbilityCheck  = 0
 Module.TempSettings.LastPullerMercCheck   = 0
 Module.TempSettings.LastFoundGroupCorpse  = 0
-Module.TempSettings.LastTooFarAnnounce    = 0
 
 -- Targets & Scanning
 Module.TempSettings.TargetSpawnID         = 0
