@@ -1527,14 +1527,6 @@ function Module:RenderClickyTargetCombo(clicky, clickyIdx)
             defaultTarget = "Self"
         end
 
-        -- DEPRECATION FALLBACK BEGIN (added 6/26, remove this entire block after 9/26)
-        -- 'Rotation Target' used to be selectable for any combat state; reset stale stored values so the dropdown doesn't desync.
-        if not targetTypeIDs[clicky.target or ""] then
-            clicky.target = defaultTarget
-            Config:SetSetting('Clickies', Config:GetSetting('Clickies'))
-        end
-        -- DEPRECATION FALLBACK END
-
         local selectedNum, changed = ImGui.Combo("##clicky_cond_target_" .. "_" .. clickyIdx, tonumber(targetTypeIDs[clicky.target or defaultTarget]) or 1,
             targetTypes, #targetTypes)
         if changed then
@@ -2870,7 +2862,17 @@ function Module:ValidateClickyRotationSettings(clicky)
     end
 
     local isHeal = clicky.combat_state == "During Heal Rotation"
-    if clicky.combat_state ~= "During Rotation" and not isHeal then return false end
+    if clicky.combat_state ~= "During Rotation" and not isHeal then
+        local validTargetIDs = clicky.combat_state == "Downtime" and self.NonCombatTargetTypeIDs or self.CombatTargetTypeIDs
+        if not validTargetIDs[clicky.target or ""] then
+            Logger.log_warn(
+                "\ayClicky Module: \awClicky '%s' had target '%s', invalid for '%s' usage - reset to Self.",
+                clicky.itemName or "?", clicky.target or "", clicky.combat_state or "")
+            clicky.target = "Self"
+            return true
+        end
+        return false
+    end
     local changed = false
     if not self:ValidateRotationName(clicky.rotation_name, isHeal) then
         Logger.log_warn("\ayClicky Module: rotation '%s' is no longer valid, resetting to None.", tostring(clicky.rotation_name))
