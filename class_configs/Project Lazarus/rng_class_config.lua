@@ -9,7 +9,7 @@ local Movement  = require("utils.movement")
 local Targeting = require("utils.targeting")
 
 return {
-    _version              = "2.1 - Project Lazarus",
+    _version              = "2.2 - Project Lazarus",
     _author               = "Algar",
     ['ModeChecks']        = {
         IsHealing = function() return Config:GetSetting('DoHealSpell') end,
@@ -467,15 +467,8 @@ return {
                     return not mq.TLO.Me.Buff("Guardian of the Forest")()
                 end,
             },
-            { -- tuned on laz to be ranged exclusive
-                name = "Outrider's Accuracy",
-                type = "AA",
-                cond = function(self, aaName, target)
-                    return not Config:GetSetting('DoMelee')
-                end,
-            },
             {
-                name = "Outrider's Attack",
+                name = "Outrider's Accuracy",
                 type = "AA",
             },
             { -- increases melee proc chance, but hate reduction applies to all spells
@@ -503,7 +496,7 @@ return {
                 type = "Disc",
             },
             {
-                name_func = function(self) return Config:GetSetting('ArrowBuffChoice') == 1 and "Scout's Mastery of Fire" or "Scout's Mastery of Ice" end,
+                name = "Scout's Mastery of the Elements",
                 type = "AA",
             },
             {
@@ -899,7 +892,7 @@ return {
             Header = "Buffs",
             Category = "Self",
             Index = 101,
-            Tooltip = "Choose which element you would like to focus on with Arrow buffs and Scout's Mastery\n" ..
+            Tooltip = "Choose which element you would like to focus on with Arrow buffs\n" ..
                 "We will use Poison Arrows during burns and switch back to this element (as able) afterwards.",
             Type = "Combo",
             ComboOptions = { 'Fire', 'Cold', },
