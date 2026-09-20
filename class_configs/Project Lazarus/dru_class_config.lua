@@ -7,7 +7,7 @@ local Globals      = require("utils.globals")
 local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
-    _version              = "2.1 - Lazarus",
+    _version              = "2.2 - Lazarus",
     _author               = "Algar",
     ['ModeChecks']        = {
         CanCharm = function() return true end,
@@ -747,7 +747,7 @@ local _ClassConfig = {
                 end,
             },
             {
-                name = "Group Spirit of the Black Wolf",
+                name = "Group Spirit of the Wolf Pack",
                 type = "AA",
                 cond = function(self, aaName)
                     return Casting.SelfBuffAACheck(aaName)
@@ -941,7 +941,7 @@ local _ClassConfig = {
                 type = "AA",
                 active_cond = function(self, aaName) return Casting.IHaveBuff(aaName) end,
                 cond = function(self, aaName)
-                    return Casting.SelfBuffAACheck(aaName) and not Casting.IHaveBuff("Group " .. aaName)
+                    return Casting.SelfBuffAACheck(aaName) and not mq.TLO.Me.Buff("Group Spirit of the Wolf Pack")()
                 end,
             },
             {
