@@ -1224,7 +1224,7 @@ local _ClassConfig = {
                     return mq.TLO.Me.PetBuff(spell.RankName.Name())() ~= nil or mq.TLO.Me.PetBuff(spell.Name())() ~= nil
                 end,
                 cond = function(self, spell)
-                    return Casting.PetBuffCheck(spell)
+                    return Casting.PetBuffCheck(spell, nil, true)
                 end,
             },
             {
