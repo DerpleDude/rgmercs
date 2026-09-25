@@ -68,8 +68,9 @@ local _ClassConfig = {
             "Disciple's Aura", -- Level 55
         },
         ['Fang'] = {
-            "Clawstriker's Flurry", -- Level 74
-            "Dragon Fang",          -- Level 69
+            "Dragon Fang",  -- Level 69
+            "Panther Claw", -- Level 66 EQM Custom
+            "Leopard Claw", -- Level 61
         },
         ['FistsOfWu'] = {
             "Fists of Wu", -- Level 68
@@ -103,10 +104,6 @@ local _ClassConfig = {
             "Rejuvenating Will Discipline",     -- Level 68 EQM Custom
             "Healing Determination Discipline", -- Level 66 EQM Custom
             "Healing Will Discipline",          -- Level 59
-        },
-        ['Claw'] = {
-            "Panther Claw", -- Level 66 EQM Custom
-            "Leopard Claw", -- Level 61
         },
     },
     ['AASets']        = {
@@ -315,10 +312,6 @@ local _ClassConfig = {
                 cond = function(self, aaName, target)
                     return Casting.DetAACheck(aaName, target)
                 end,
-            },
-            {
-                name = "Claw",
-                type = "Disc",
             },
             {
                 name = "Fang",
