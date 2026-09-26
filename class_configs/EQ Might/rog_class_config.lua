@@ -120,6 +120,9 @@ return {
             "Hardened Revitalize", -- Level 62 EQM Custom
             "Revitalize",          -- Level 51 EQM Custom
         },
+        ['WeaponDisc'] = {
+            "Weapon Affinity Discipline", -- Level 61
+        },
     },
     ['AASets']        = {
         ['Spire'] = {
@@ -261,6 +264,10 @@ return {
             },
             {
                 name = "Precision",
+                type = "Disc",
+            },
+            {
+                name = "WeaponDisc",
                 type = "Disc",
             },
         },
