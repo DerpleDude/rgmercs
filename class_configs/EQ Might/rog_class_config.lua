@@ -284,7 +284,7 @@ return {
                 type = "Ability",
                 pre_activate = function(self, abilityName)
                     Core.DoCmd("/attack off")
-                    mq.delay(100, function() return not mq.TLO.Me.Combat() end)
+                    mq.delay(100) -- used to have a callback of attack being off, seems this was too quick and was failing. investigate later if we want to dial it in further.
                 end,
                 cond = function(self)
                     return mq.TLO.Me.PctAggro() > Config:GetSetting('HideAggro')
