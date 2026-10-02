@@ -2702,7 +2702,7 @@ function Module:GiveTime()
 
                             if buffCheckPassed and distanceCheckPassed and readyCheckPassed and elementCheckPassed then
                                 Logger.log_verbose("\ayClicky: \awItem \am%s\aw Clicky Spell: \at%s\ag!", item.Name(), itemSpell.Name())
-                                Casting.UseItem(item.Name(), targetId, nil, nil, not clicky.mustWait)
+                                Casting.UseItem(item.Name(), targetId, nil, nil, not clicky.mustWait, clicky.target ~= "Self")
                                 self.TempSettings.ClickyState[clicky.itemName].lastUsed = Globals.GetTimeSeconds()
                                 clickiesUsedThisCycle = clickiesUsedThisCycle + 1
                                 if maxClickiesPerCycle > 0 and clickiesUsedThisCycle >= maxClickiesPerCycle then

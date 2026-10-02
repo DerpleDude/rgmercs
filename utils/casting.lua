@@ -2273,6 +2273,7 @@ end
 --- Activates a discipline on a target.
 --- @param discSpell MQSpell The name of the discipline spell to use.
 --- @param targetId? number The ID of the target on which to use the discipline spell.
+--- @param fireAndForget boolean? Whether to send an instant disc's command without waiting to confirm the use.
 --- @return boolean success True if we were able to fire the Disc, false otherwise.
 --- @return boolean|nil isGroup True if the disc is a group-affecting target type.
 function Casting.UseDisc(discSpell, targetId, fireAndForget)
@@ -2391,6 +2392,7 @@ end
 ---   - spellRange (number?)  Effective spell range.
 ---   - castTime   (number?)  Reported cast time in ms (0 for instants).
 ---   - retryCount (number?)  Additional attempts allowed on retriable failures.
+---   - fireAndForget (boolean?) Send instant actions without waiting to confirm the use.
 function Casting.RunCastLoop(opts)
     local cmd = opts.cmd
     local readyCheck = opts.readyCheck
@@ -2456,6 +2458,7 @@ end
 --- @param targetId? number The ID of the target on which to use the AA ability.
 --- @param bAllowDead boolean? Whether to allow casting on a dead target.
 --- @param retryCount number? The number of times to retry if the cast fails.
+--- @param fireAndForget boolean? Whether to send an instant AA's command without waiting to confirm the use.
 --- @return boolean success True if the AA ability was successfully used, false otherwise.
 --- @return boolean|nil isGroup True if the AA is a group-affecting target type.
 function Casting.UseAA(aaName, targetId, bAllowDead, retryCount, fireAndForget)
@@ -2583,9 +2586,11 @@ end
 --- @param targetId number|nil The ID of the target on which the item will be used. May be nil for untargeted items.
 --- @param bAllowDead boolean? Whether to allow using the item on a dead target.
 --- @param retryCount number? The number of times to retry if the use fails.
+--- @param fireAndForget boolean? Whether to send an instant item's command without waiting to confirm the use.
+--- @param honorTarget boolean? Whether to swap to the given target even when the item's spell is self-targeted.
 --- @return boolean success True if the item was successfully used, false otherwise.
 --- @return boolean|nil isGroup True if the item's spell is a group-affecting target type.
-function Casting.UseItem(itemName, targetId, bAllowDead, retryCount, fireAndForget)
+function Casting.UseItem(itemName, targetId, bAllowDead, retryCount, fireAndForget, honorTarget)
     local me = mq.TLO.Me
 
     if not itemName then
@@ -2647,7 +2652,7 @@ function Casting.UseItem(itemName, targetId, bAllowDead, retryCount, fireAndForg
     Casting.ActionPrep()
 
     local oldTargetId = mq.TLO.Target.ID()
-    if not selfTargeted and targetId and targetId > 0 and targetId ~= oldTargetId then
+    if (honorTarget or not selfTargeted) and targetId and targetId > 0 and targetId ~= oldTargetId then
         local targetSpawn = mq.TLO.Spawn(targetId)
         if Config:GetSetting('StopAttackForPCs') and me.Combat() and (targetSpawn.Type() or ""):lower() == "pc" then -- don't use helper here, don't want fallback to current target
             Logger.log_debug("\awUseItem():NOTICE:\ax Turning off autoattack to cast on a PC.")
