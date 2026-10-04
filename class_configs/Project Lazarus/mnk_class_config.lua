@@ -100,8 +100,8 @@ local _ClassConfig = {
             "Dragondance Discipline", -- Level 71 Laz Custom
             "Voiddance Discipline",   -- Level 54
         },
-        ['ReprisalDisc'] = {          -- Manual use only for now, reprisal does not fire unless the rune is broken
-            "Arcane Reprisal",        -- Level 71 Laz Custom
+        ['ReprisalDisc'] = {
+            "Arcane Reprisal", -- Level 71 Laz Custom
         },
         ['Fists'] = {
             "Wheel of Fists", -- Level 71 Laz Custom
@@ -261,6 +261,10 @@ local _ClassConfig = {
             {
                 name = "Fundament: Third Spire of the Sensei",
                 type = "AA",
+            },
+            {
+                name = "ReprisalDisc",
+                type = "Disc",
             },
             {
                 name = "Zan Fi's Thunderous Whistle", --overwrites infusion of thunder

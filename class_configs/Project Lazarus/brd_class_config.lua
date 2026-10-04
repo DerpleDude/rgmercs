@@ -249,8 +249,8 @@ local _ClassConfig = {
             "Bellow of Shadows", -- Level 71 Laz Custom
             "Bellow of Chaos",   -- Level 66
         },
-        ['ReprisalDisc'] = {     -- Manual use only for now, reprisal does not fire unless the rune is broken
-            "Arcane Reprisal",   -- Level 71 Laz Custom
+        ['ReprisalDisc'] = {
+            "Arcane Reprisal", -- Level 71 Laz Custom
         },
         ['SpellMitSong'] = {
             "Niv's Symphonic", -- Level 71 Laz Custom
@@ -535,6 +535,11 @@ local _ClassConfig = {
             },
             {
                 name = "ThousandBlades",
+                type = "Disc",
+                midSong = true,
+            },
+            {
+                name = "ReprisalDisc",
                 type = "Disc",
                 midSong = true,
             },

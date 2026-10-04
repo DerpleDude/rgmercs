@@ -110,8 +110,8 @@ return {
             "Combat Focus Discipline", -- Level 71 Laz Custom
             "Battle Focus Discipline", -- Level 59
         },
-        ['ReprisalDisc'] = {           -- Manual use only for now, reprisal does not fire unless the rune is broken
-            "Arcane Reprisal",         -- Level 71 Laz Custom
+        ['ReprisalDisc'] = {
+            "Arcane Reprisal", -- Level 71 Laz Custom
         },
         ['AxeThrow'] = {
             "Vigorous Axe Throw", -- Level 71 Laz Custom
@@ -309,6 +309,10 @@ return {
             },
             {
                 name = "CryDisc",
+                type = "Disc",
+            },
+            {
+                name = "ReprisalDisc",
                 type = "Disc",
             },
             {

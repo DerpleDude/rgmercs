@@ -111,8 +111,8 @@ return {
             "Lithe Discipline",  -- Level 71 Laz Custom
             "Nimble Discipline", -- Level 55
         },
-        ['ReprisalDisc'] = {     -- Manual use only for now, reprisal does not fire unless the rune is broken
-            "Arcane Reprisal",   -- Level 71 Laz Custom
+        ['ReprisalDisc'] = {
+            "Arcane Reprisal", -- Level 71 Laz Custom
         },
         ['DaggerThrow'] = {
             "Vigorous Dagger Throw", -- Level 71 Laz Custom
@@ -215,6 +215,10 @@ return {
                 cond = function(self, discSpell, target)
                     return Casting.DetSpellCheck(discSpell, target)
                 end,
+            },
+            {
+                name = "ReprisalDisc",
+                type = "Disc",
             },
             {
                 name = "Dirty Fighting",
