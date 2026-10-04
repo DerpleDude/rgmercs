@@ -8,7 +8,7 @@ local Globals      = require("utils.globals")
 local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
-    _version              = "3.1 - Project Lazarus",
+    _version              = "3.2 - Project Lazarus",
     _author               = "Algar, Derple",
     ['ModeChecks']        = {
         IsHealing = function() return true end,
@@ -668,10 +668,10 @@ local _ClassConfig = {
             end,
         },
         {
-            name = 'ProcBuff',
+            name = 'CombatBuff',
             state = 1,
             steps = 1,
-            load_cond = function(self) return self:GetResolvedActionMapItem('MeleeProcBuff') end,
+            load_cond = function(self) return self:GetResolvedActionMapItem('MeleeProcBuff') or Casting.CanUseAA("Group Pact of the Wolf") end,
             targetId = function(self) return Casting.GetBuffableIDs() end,
             cond = function(self, combat_state)
                 local downtime = combat_state == "Downtime" and Casting.OkayToBuff()
@@ -702,7 +702,14 @@ local _ClassConfig = {
 
     },
     ['Rotations']         = {
-        ['ProcBuff'] = {
+        ['CombatBuff'] = {
+            {
+                name = "Group Pact of the Wolf",
+                type = "AA",
+                cond = function(self, aaName, target)
+                    return Casting.GroupBuffAACheck(aaName, target)
+                end,
+            },
             {
                 name = "MeleeProcBuff",
                 type = "Spell",
@@ -770,6 +777,10 @@ local _ClassConfig = {
             },
             {
                 name = "Extended Pestilence",
+                type = "AA",
+            },
+            {
+                name = "Languid Bite",
                 type = "AA",
             },
             {

@@ -10,7 +10,7 @@ local Logger      = require("utils.logger")
 local Targeting   = require("utils.targeting")
 
 return {
-    _version              = "2.2 - Project Lazarus",
+    _version              = "2.3 - Project Lazarus",
     _author               = "Derple, Algar",
     ['ModeChecks']        = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
@@ -322,6 +322,13 @@ return {
             "Armor of Faith",   -- Level 48
         },
     },
+    ['AASets']            = {
+        ['AAStun'] = {
+            "Force of Disruption",
+            "Hand of Disruption",
+            "Divine Stun",
+        },
+    },
     ['SpellList']         = {
         {
             name = "Default",
@@ -551,10 +558,10 @@ return {
     },
     ['Charm']             = {
         ['Assist'] = {
-            { name = "Taunt",               type = "Ability", },
-            { name = "StunTimer5",          type = "Spell",   load_cond = function(self) return Core.IsTanking() end, },
-            { name = "StunTimer4",          type = "Spell",   load_cond = function(self) return Core.IsTanking() end, },
-            { name = "Force of Disruption", type = "AA", },
+            { name = "Taunt",      type = "Ability", },
+            { name = "StunTimer5", type = "Spell",   load_cond = function(self) return Core.IsTanking() end, },
+            { name = "StunTimer4", type = "Spell",   load_cond = function(self) return Core.IsTanking() end, },
+            { name = "AAStun",     type = "AA", },
         },
     },
     ['RotationOrder']     = {
@@ -845,7 +852,7 @@ return {
         },
         ['HateTools(AggroTarget)'] = {
             {
-                name = "Force of Disruption",
+                name = "AAStun",
                 type = "AA",
                 IgnoreImmuneCheck = true,
             },
@@ -873,7 +880,7 @@ return {
                 end,
             },
             {
-                name = "Force of Disruption",
+                name = "AAStun",
                 type = "AA",
                 IgnoreImmuneCheck = true,
             },
@@ -958,6 +965,7 @@ return {
             {
                 name = "Inquisitor's Judgment",
                 type = "AA",
+                load_cond = function(self) return not Core.IsTanking() end,
             },
             {
                 name = "Valorous Rage",
@@ -1090,6 +1098,7 @@ return {
             {
                 name = "Disruptive Persecution",
                 type = "AA",
+                load_cond = function(self) return Config:GetSetting('DoPersecution') end,
                 cond = function(self, aaName, target)
                     return ((mq.TLO.Target.SecondaryPctAggro() or 999) < 60) or not Core.IsTanking()
                 end,
@@ -1160,13 +1169,13 @@ return {
             end,
         },
         {
-            id = 'Force of Disruption',
+            id = 'AAStun',
             Type = "AA",
-            DisplayName = function() return Casting.CanUseAA("Force of Disruption") and "Force of Disruption" or "" end,
-            AbilityName = function() return Casting.CanUseAA("Force of Disruption") and "Force of Disruption" or "" end,
+            DisplayName = function() return Core.GetResolvedActionMapItem('AAStun') or "" end,
+            AbilityName = function() return Core.GetResolvedActionMapItem('AAStun') or "" end,
             AbilityRange = 150,
             cond = function(self)
-                return Casting.CanUseAA("Force of Disruption")
+                return Core.GetResolvedActionMapItem('AAStun')
             end,
         },
     },
@@ -1450,6 +1459,16 @@ return {
             Category = "Stun",
             Index = 103,
             Tooltip = "Use the Quellious/Serene stun line (long duration stun with DD component).",
+            RequiresLoadoutChange = true,
+            Default = false,
+        },
+        ['DoPersecution']     = {
+            DisplayName = "Do Persecution",
+            Group = "Abilities",
+            Header = "Debuffs",
+            Category = "Stun",
+            Index = 104,
+            Tooltip = "Use the Disruptive Persecution AA nuke, which briefly reduces the healing of your Wave and Light heals after each cast.",
             RequiresLoadoutChange = true,
             Default = false,
         },
