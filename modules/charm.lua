@@ -813,6 +813,9 @@ function Module:IsValidCharmTarget(mobId)
 
     if not spawn() or spawn.Dead() or Targeting.TargetIsType("corpse", spawn) then return false end   -- dead/corpse
     if (spawn.Master.Type() or "") ~= "" then return false end                                        -- already a pet (player- or NPC-owned) or charmed
+    if Targeting.IsTempPet(spawn) then return false end                                               -- our own swarm pet
+    local owner = name:match("^(.-)`s pet$")                                                          -- another player's swarm/proc pet (no Master)
+    if owner and mq.TLO.Spawn(string.format("pc =%s", owner))() then return false end
     if Globals.CharmedPetIDs:contains(mobId) and not self:IsOwnKeptCharm(mobId) then return false end -- a peer's charm
     if self:IsCharmImmune(mobId) then return false end
     if self:IsMobInList("CharmDenyList", name, false) then return false end
