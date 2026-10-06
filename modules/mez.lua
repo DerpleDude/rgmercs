@@ -781,9 +781,7 @@ end
 
 -- a player's pet we never count or mez: our swarm pets (IsTempPet) or anything a PC owns/charms
 function Module:IsPlayerPet(spawn)
-    if Targeting.IsTempPet(spawn) or spawn.Master.Type() == "PC" then return true end
-    local owner = (spawn.CleanName() or ""):match("^(.-)`s pet$")
-    return owner ~= nil and mq.TLO.Spawn(string.format("pc =%s", owner))() ~= nil
+    return Targeting.IsTempPet(spawn) or spawn.Master.Type() == "PC"
 end
 
 function Module:IsValidMezTarget(spawn, mezSpells)

@@ -1089,8 +1089,8 @@ function Targeting.PruneNoHateTargets()
     end
 end
 
---- Returns true if spawn's surname contains "'s Pet", "`s Pet", or "Doppelganger",
---- indicating it is a temporary summoned pet rather than a proper mob.
+--- Returns true if spawn's surname contains "'s Pet", "`s Pet", or "Doppelganger", or its name
+--- is "<owner>'s pet" for a PC in the zone, indicating it is a temporary summoned pet rather than a proper mob.
 ---@param spawn MQSpawn The spawn to inspect.
 ---@return boolean True if the spawn appears to be a temporary pet.
 function Targeting.IsTempPet(spawn)
@@ -1099,6 +1099,11 @@ function Targeting.IsTempPet(spawn)
     local isTempPet = false
     if surname then
         isTempPet = surname:find("'s Pet", 1, true) ~= nil or surname:find("`s Pet", 1, true) ~= nil or surname:find("Doppelganger", 1, true) ~= nil
+    end
+    if not isTempPet then
+        -- swarm/proc pets carry no Master, so the owner only shows in the name
+        local owner = (spawn.CleanName() or ""):match("^(.-).s pet$")
+        isTempPet = owner ~= nil and owner ~= "" and mq.TLO.Spawn(string.format("pc =%s", owner))() ~= nil
     end
     return isTempPet
 end
