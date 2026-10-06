@@ -22,5 +22,6 @@ return {
         "Zat",
         "aspire",
         "Hazado",
+        "ixron",
     },
 }
