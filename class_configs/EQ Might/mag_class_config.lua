@@ -11,7 +11,7 @@ local Logger       = require("utils.logger")
 local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
-    _version          = "1.4 - EQ Might",
+    _version          = "1.5 - EQ Might",
     _author           = "Derple, Morisato, Algar",
     ['ModeChecks']    = {
         IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or not Targeting.HasXTHaters()) end,
@@ -742,6 +742,13 @@ local _ClassConfig = {
                 name = "Focus of Arcanum",
                 type = "AA",
                 cond = function(self, aaName, target) return Globals.AutoTargetIsNamed end,
+            },
+            {
+                name = "Improved Twincast",
+                type = "AA",
+                cond = function(self)
+                    return not mq.TLO.Me.Buff("Twincast")()
+                end,
             },
             {
                 name = "Servant of Ro",

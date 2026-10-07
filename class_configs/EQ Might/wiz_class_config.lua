@@ -12,7 +12,7 @@ local Globals   = require("utils.globals")
 local Targeting = require("utils.targeting")
 
 return {
-    _version          = "2.2 - EQ Might",
+    _version          = "2.3 - EQ Might",
     _author           = "Derple, Algar",
     ['ModeChecks']    = {
         IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or not Targeting.HasXTHaters()) end,
@@ -540,6 +540,13 @@ return {
                 name = "Fury of Druzzil",
                 type = "AA",
                 cond = function(self) return self.Helpers.PickElement() == "Magic" end,
+            },
+            {
+                name = "Improved Twincast",
+                type = "AA",
+                cond = function(self)
+                    return not mq.TLO.Me.Buff("Twincast")()
+                end,
             },
             { --Crit Chance AA, will use the first(best) one found
                 name = "Devastation",
