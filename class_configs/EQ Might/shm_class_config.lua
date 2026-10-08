@@ -1058,6 +1058,7 @@ local _ClassConfig = {
                 type = "Spell",
                 load_cond = function() return Config:GetSetting('DoColdNuke') end,
                 cond = function(self, spell, target)
+                    if Config:GetSetting('NamedNukeHold') and Targeting.HasXTNamed() then return false end
                     return (Targeting.MobHasLowHP() or (Config:GetSetting('DotNamedOnly') and not Globals.AutoTargetIsNamed)) and Casting.OkayToNuke(true)
                 end,
             },
@@ -1066,6 +1067,7 @@ local _ClassConfig = {
                 type = "Spell",
                 load_cond = function() return Config:GetSetting('DoPoisonNuke') end,
                 cond = function(self, spell, target)
+                    if Config:GetSetting('NamedNukeHold') and Targeting.HasXTNamed() and spell.BaseName() ~= "Sting of the Queen" then return false end
                     return (Targeting.MobHasLowHP() or (Config:GetSetting('DotNamedOnly') and not Globals.AutoTargetIsNamed)) and Casting.OkayToNuke(true)
                 end,
             },
@@ -1434,6 +1436,15 @@ local _ClassConfig = {
             Tooltip = "Use your single-target poison nukes.",
             RequiresLoadoutChange = true,
             Default = true,
+        },
+        ['NamedNukeHold']     = {
+            DisplayName = "Named Nuke Hold",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "Direct",
+            Index = 103,
+            Tooltip = "Do not use your Cold or Poison nukes (other than Sting of the Queen) when a named is on your XTarget.",
+            Default = false,
         },
         ['DoSaryrnDot']       = {
             DisplayName = "Poison Dot",

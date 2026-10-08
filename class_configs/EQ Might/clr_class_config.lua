@@ -835,6 +835,7 @@ local _ClassConfig = {
                 load_cond = function(self) return Config:GetSetting('DoUndeadNuke') end,
                 cond = function(self, aaName, target)
                     if not Targeting.TargetBodyIs(target, "Undead") then return false end
+                    if Config:GetSetting('NamedNukeHold') and Targeting.HasXTNamed() then return false end
                     return Casting.OkayToNuke(true)
                 end,
             },
@@ -843,6 +844,7 @@ local _ClassConfig = {
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoMagicNuke') end,
                 cond = function(self)
+                    if Config:GetSetting('NamedNukeHold') and Targeting.HasXTNamed() then return false end
                     return Casting.OkayToNuke(true)
                 end,
             },
@@ -1154,6 +1156,15 @@ local _ClassConfig = {
             Tooltip = "Use the Verdict Quicknuke line.",
             RequiresLoadoutChange = true,
             Default = true,
+        },
+        ['NamedNukeHold']     = {
+            DisplayName = "Named Nuke Hold",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "Direct",
+            Index = 105,
+            Tooltip = "Do not use your Magic or Undead nukes when a named is on your XTarget.",
+            Default = false,
         },
         -- Heals and Cures
         ['DoCompleteHeal']    = {

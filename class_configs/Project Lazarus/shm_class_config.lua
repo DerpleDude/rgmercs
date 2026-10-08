@@ -969,6 +969,7 @@ local _ClassConfig = {
                 type = "Spell",
                 load_cond = function() return Config:GetSetting('DoPoisonNuke') end,
                 cond = function(self, spell, target)
+                    if Config:GetSetting('NamedNukeHold') and Targeting.HasXTNamed() then return false end
                     return (Targeting.MobHasLowHP() or (Config:GetSetting('DotNamedOnly') and not Globals.AutoTargetIsNamed)) and Casting.OkayToNuke(true)
                 end,
             },
@@ -1362,6 +1363,15 @@ local _ClassConfig = {
             Tooltip = "Use your twinheal nuke (cold damage with a twinheal buff effect).",
             RequiresLoadoutChange = true,
             Default = true,
+        },
+        ['NamedNukeHold']     = {
+            DisplayName = "Named Nuke Hold",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "Direct",
+            Index = 104,
+            Tooltip = "Do not use your Poison nukes when a named is on your XTarget.",
+            Default = false,
         },
         ['DoSaryrnDot']       = {
             DisplayName = "Poison Dot",

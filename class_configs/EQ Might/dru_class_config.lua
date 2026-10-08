@@ -732,6 +732,7 @@ local _ClassConfig = {
                 type = "Spell",
                 load_cond = function() return Config:GetSetting('DoFireNuke') end,
                 cond = function(self, spell, target)
+                    if Config:GetSetting('NamedNukeHold') and Targeting.HasXTNamed() then return false end
                     return Casting.OkayToNuke(true)
                 end,
             },
@@ -740,6 +741,7 @@ local _ClassConfig = {
                 type = "Spell",
                 load_cond = function() return Config:GetSetting('DoIceNuke') end,
                 cond = function(self, spell, target)
+                    if Config:GetSetting('NamedNukeHold') and Targeting.HasXTNamed() then return false end
                     return Casting.OkayToNuke(true)
                 end,
             },
@@ -1313,6 +1315,15 @@ local _ClassConfig = {
             Tooltip = "Use your stun nukes (magic damage with stun component).",
             RequiresLoadoutChange = true,
             Default = true,
+        },
+        ['NamedNukeHold']     = {
+            DisplayName = "Named Nuke Hold",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "Direct",
+            Index = 104,
+            Tooltip = "Do not use your Fire or Cold nukes when a named is on your XTarget.",
+            Default = false,
         },
         ['DoFlameLickDot']    = {
             DisplayName = "Fire Debuff Dot",

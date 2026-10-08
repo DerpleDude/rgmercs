@@ -705,6 +705,7 @@ local _ClassConfig = {
                 load_cond = function() return Config:GetSetting('FireNukeUse') > 1 end,
                 cond = function(self, spell, target)
                     if Config:GetSetting('FireNukeUse') == 2 and not mq.TLO.Me.Song("Wrath of the Wilderness")() then return false end
+                    if Config:GetSetting('NamedNukeHold') and Targeting.HasXTNamed() then return false end
                     return Casting.OkayToNuke(true) and not mq.TLO.Me.Song("Shadow of Dawn")()
                 end,
             },
@@ -714,6 +715,7 @@ local _ClassConfig = {
                 load_cond = function() return Config:GetSetting('IceNukeUse') > 1 end,
                 cond = function(self, spell, target)
                     if Config:GetSetting('IceNukeUse') == 2 and not mq.TLO.Me.Song("Wrath of the Wilderness")() then return false end
+                    if Config:GetSetting('NamedNukeHold') and Targeting.HasXTNamed() then return false end
                     return Casting.OkayToNuke(true) and not mq.TLO.Me.Song("Shadow of Dawn")()
                 end,
             },
@@ -1336,6 +1338,15 @@ local _ClassConfig = {
             Default = 3,
             Min = 1,
             Max = 3,
+        },
+        ['NamedNukeHold']     = {
+            DisplayName = "Named Nuke Hold",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "Direct",
+            Index = 107,
+            Tooltip = "Do not use your Fire or Cold nukes when a named is on your XTarget.",
+            Default = false,
         },
         ['DoFlameLickDot']    = {
             DisplayName = "Fire Debuff Dot",
