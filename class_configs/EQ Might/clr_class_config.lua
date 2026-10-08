@@ -156,14 +156,14 @@ local _ClassConfig = {
             "Light Healing",           -- Level 4
             "Minor Healing",           -- Level 1
         },
-        ['RemedyHeal'] = {             -- Not great until 96/RoF (Graceful)
-            "Pious Remedy",            -- Level 66
-            "Supernal Remedy",         -- Level 61
-            "Ethereal Remedy",         -- Level 59
-            "Remedy",                  -- Level 51
-        },
-        ['Renewal'] = {                -- Level 70 +, large heal, slower cast
-            "Desperate Renewal",       -- Level 70
+        -- ['RemedyHeal'] = {             -- Not great until 96/RoF (Graceful)
+        --     "Pious Remedy",            -- Level 66
+        --     "Supernal Remedy",         -- Level 61
+        --     "Ethereal Remedy",         -- Level 59
+        --     "Remedy",                  -- Level 51
+        -- },
+        ['Renewal'] = {          -- Level 70 +, large heal, slower cast
+            "Desperate Renewal", -- Level 70
         },
         ['GroupHeal'] = {
             "Word of Vivacity",      -- Level 80
@@ -513,10 +513,8 @@ local _ClassConfig = {
                 type = "Item",
                 load_cond = function(self) return mq.TLO.FindItem("=Braided Kirin Mane")() end,
             },
-            { --This entry is for RemedyHeal until we learn a Renewal
-                name_func = function(self)
-                    return Casting.GetFirstMapItem({ "Renewal", "RemedyHeal", })
-                end,
+            {
+                name = "Renewal",
                 type = "Spell",
             },
             {
@@ -999,7 +997,6 @@ local _ClassConfig = {
                 { name = "HealingLight",  cond = function(self) return not Config:GetSetting('DoCompleteHeal') or not Core.GetResolvedActionMapItem("CompleteHeal") end, },
                 { name = "CompleteHeal",  cond = function(self) return Config:GetSetting('DoCompleteHeal') end, },
                 { name = "Renewal", },
-                { name = "RemedyHeal",    cond = function(self) return not Core.GetResolvedActionMapItem("Renewal") end, },
                 { name = "GroupHeal", },
                 { name = "SingleElixir",  cond = function(self) return Config:GetSetting('DoSingleElixir') end, },
                 { name = "GroupElixir",   cond = function(self) return Config:GetSetting('DoGroupElixir') end, },
