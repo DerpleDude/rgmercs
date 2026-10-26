@@ -102,6 +102,11 @@ local _ClassConfig = {
         ['Thulik'] = {
             "Artifact of Thulik",
         },
+        ['ScentItem'] = {
+            "Legendary Fabled Nightshade Scented Staff",
+            "Fabled Nightshade Scented Staff",
+            "Scent of Terris",
+        },
     },
     ['AbilitySets']     = {
         ['SelfHPBuff'] = {
@@ -557,9 +562,9 @@ local _ClassConfig = {
                 end,
             },
             {
-                name_func = function(self) return self.Helpers.GetScentItem(self) or "No Scent Item Found" end,
+                name = "ScentItem",
                 type = "Item",
-                load_cond = function(self) return self.Helpers.GetScentItem(self) ~= nil end,
+                load_cond = function(self) return Core.GetResolvedActionMapItem('ScentItem') ~= nil end,
                 cond = function(self, itemName, target)
                     return Casting.DetItemCheck(itemName)
                 end,
@@ -567,7 +572,7 @@ local _ClassConfig = {
             {
                 name = "ScentDebuff",
                 type = "Spell",
-                load_cond = function(self) return not self.Helpers.GetScentItem(self) and not Casting.CanUseAA("Scent of Terris") end,
+                load_cond = function(self) return not Core.GetResolvedActionMapItem('ScentItem') and not Casting.CanUseAA("Scent of Terris") end,
                 cond = function(self, spell, target)
                     return Casting.DetSpellCheck(spell)
                 end,
@@ -1004,15 +1009,6 @@ local _ClassConfig = {
                 self:QueueAbility("spell", lichSpell, targetId)
             end
         end,
-        GetScentItem = function(self)
-            local scentItems = { "Legendary Fabled Nightshade Scented Staff", "Fabled Nightshade Scented Staff", "Scent of Terris", }
-            for _, v in ipairs(scentItems) do
-                if mq.TLO.FindItem("=" .. v)() then
-                    return v
-                end
-            end
-            return nil
-        end,
     },
     ['SpellList']       = { -- New style spell list, gemless, priority-based. Will use the first set whose conditions are met.
         {
@@ -1025,7 +1021,7 @@ local _ClassConfig = {
                 {
                     name = "ScentDebuff",
                     cond = function(self)
-                        return Config:GetSetting('ScentDebuffUse') == 2 and not self.Helpers.GetScentItem(self) and
+                        return Config:GetSetting('ScentDebuffUse') == 2 and not Core.GetResolvedActionMapItem('ScentItem') and
                             not Casting.CanUseAA("Scent of Terris")
                     end,
                 },
