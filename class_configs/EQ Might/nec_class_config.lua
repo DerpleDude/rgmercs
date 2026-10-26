@@ -557,15 +557,7 @@ local _ClassConfig = {
                 end,
             },
             {
-                name_func = function(self)
-                    local scentItems = { "Legendary Fabled Nightshade Scented Staff", "Fabled Nightshade Scented Staff", "Scent of Terris", }
-                    for _, v in ipairs(scentItems) do
-                        if mq.TLO.FindItem("=" .. v)() then
-                            return v
-                        end
-                    end
-                    return "No Scent Item Found"
-                end,
+                name_func = function(self) return self.Helpers.GetScentItem(self) or "No Scent Item Found" end,
                 type = "Item",
                 load_cond = function(self) return self.Helpers.GetScentItem(self) ~= nil end,
                 cond = function(self, itemName, target)
