@@ -362,6 +362,7 @@ local function processFallbackSpawn(spawn, checkNamed, namedPref, hpPref, primar
     if fallbackId ~= Globals.ForceTargetID and fallbackId ~= Globals.ForceCombatID and Globals.CharmedPetIDs:contains(fallbackId) then return end
     if (spawn.CleanName() or ""):find("Guard") then return end
     if Config:GetSetting('AttemptSafeTargeting') and skipForStranger(spawn) then return end
+    if Targeting.IsEncounterLocked(spawn) then return end
     local spawnIsNamed = checkNamed and Targeting.IsNamed(spawn) or false
 
     if Combat.IsPreferredType(spawnIsNamed, namedPref) then
@@ -417,6 +418,10 @@ function Combat.ProcessXTarget(xtSpawn, radius, namedPref, hpPref, immediate, pr
     end
     if Config:GetSetting('AttemptSafeTargeting') and skipForStranger(xtSpawn) then
         Logger.log_verbose("MATargetScan XTarget %s [%d] Distance: %d - another player is next to it - ignoring it.", xtName, spawnId, xtSpawn.Distance())
+        return nil
+    end
+    if Targeting.IsEncounterLocked(xtSpawn) then
+        Logger.log_verbose("MATargetScan XTarget %s [%d] - encounter locked to another player - ignoring it.", xtName, spawnId)
         return nil
     end
 
@@ -865,6 +870,11 @@ function Combat.OkToEngagePreValidateId(targetId)
         return false
     end
 
+    if Targeting.IsEncounterLocked(target) then
+        Logger.log_verbose("\ayOkToEngagePrevalidate check for %s(ID: %d) - Encounter Locked To Another Player --> Not Engaging", targetName, targetId)
+        return false
+    end
+
     if not Globals.BackOffFlag then
         if Core.IAmMA() then
             if Targeting.GetTargetDistance(target) <= Config:GetSetting('AssistRange') then
@@ -944,6 +954,11 @@ function Combat.OkToEngage(autoTargetId)
     if Config:GetSetting('AttemptSafeTargeting') and targetId ~= Globals.ForceTargetID and targetId ~= Globals.ForceCombatID
         and skipForStranger(target) then
         Logger.log_verbose("\ayOkToEngage check for %s(ID: %d) - Another Player Is Next To It --> Not Engaging", targetName, targetId)
+        return false
+    end
+
+    if Targeting.IsEncounterLocked(target) then
+        Logger.log_verbose("\ayOkToEngage check for %s(ID: %d) - Encounter Locked To Another Player --> Not Engaging", targetName, targetId)
         return false
     end
 

@@ -815,6 +815,7 @@ function Module:IsValidCharmTarget(mobId)
     if (spawn.Master.Type() or "") ~= "" then return false end                                        -- already a pet (player- or NPC-owned) or charmed
     if Targeting.IsTempPet(spawn) then return false end
     if Globals.CharmedPetIDs:contains(mobId) and not self:IsOwnKeptCharm(mobId) then return false end -- a peer's charm
+    if Targeting.IsEncounterLocked(spawn) then return false end
     if self:IsCharmImmune(mobId) then return false end
     if self:IsMobInList("CharmDenyList", name, false) then return false end
     if self:HaveList("CharmAllowList") and not self:IsMobInList("CharmAllowList", name, false) then return false end

@@ -813,6 +813,14 @@ function Targeting.IsSpawnNearStranger(spawn)
     return false
 end
 
+--- Returns true if spawn is encounter locked to someone outside our group or raid.
+---@param spawn MQSpawn The spawn to check.
+---@return boolean True if the encounter lock keeps us from engaging spawn.
+function Targeting.IsEncounterLocked(spawn)
+    -- explicit false check for compat with older MQ builds that don't have this
+    return spawn.CanEngage ~= nil and spawn.CanEngage() == false
+end
+
 --- Returns true if name is a "safe" player: Mercs peer, DanNet peer, group, raid,
 --- guild, or on the AssistList or HealList. Prevents accidentally engaging friendly players.
 ---@param spawnType string Spawn type for guild check query, e.g. "pc".

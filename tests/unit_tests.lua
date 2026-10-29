@@ -16,6 +16,7 @@ local function mockSpawn(id, name, pctHp, isNamed, distance)
         _dist      = distance or 50,
         _isTempPet = false,
         _type      = "NPC",
+        _canEngage = true,
     }
     setmetatable(t, { __call = function() return true end, })
     t.ID         = function() return t._id end
@@ -36,6 +37,7 @@ local function mockSpawn(id, name, pctHp, isNamed, distance)
     t.Aggressive = function() return true end
     t.TargetType = function() return "Auto Hater" end
     t.Surname    = function() return "" end
+    t.CanEngage  = function() return t._canEngage end
     return t
 end
 
@@ -113,6 +115,23 @@ function UnitTests.RunAll()
         -- radius large enough spawn is within; PctAggro=100 bypasses aggro scan
         local result         = Combat.ProcessXTarget(spawnA, 100, noNamePref, noHpPref, true, primaryTarget, fallbackTarget, false, 0)
         assertEq("ProcessXTarget noNamePref noHpPref: immediate return", result, 1)
+    end
+
+    -- ProcessXTarget: encounter locked to another player => skipped
+    do
+        local primaryTarget    = { hp = 0, id = 0, }
+        local fallbackTarget   = { hp = 101, id = 0, name = "None", }
+        local lockedSpawn      = mockSpawn(3, "Locked", 50, false)
+        lockedSpawn._canEngage = false
+        local result           = Combat.ProcessXTarget(lockedSpawn, 100, noNamePref, noHpPref, true, primaryTarget, fallbackTarget, false, 0)
+        assertEq("ProcessXTarget encounter locked: skipped", result, nil)
+    end
+
+    -- IsEncounterLocked: MQ builds without CanEngage => not locked
+    do
+        local oldBuildSpawn = mockSpawn(4, "OldBuild", 50, false)
+        oldBuildSpawn.CanEngage = nil
+        assertEq("IsEncounterLocked without CanEngage: not locked", Targeting.IsEncounterLocked(oldBuildSpawn), false)
     end
 
     -- ProcessXTarget: prefLow, no name pref => primaryTarget bucket updated, no immediate return
@@ -565,6 +584,7 @@ function UnitTests.RunAll()
                 doPull = true,
                 pauseMain = false,
                 spawnGone = false,
+                encounterLocked = false,
                 navigating = false,
                 attemptSafePulling = false,
                 strangerNear = false,
@@ -588,6 +608,7 @@ function UnitTests.RunAll()
             assertEq(string.format("DecideAbort %s: list updated", attempt.source), Pull:DecideAbort(attempt, baseCtx({ pullListUpdated = true, })), 'listUpdated')
             assertEq(string.format("DecideAbort %s: pause main", attempt.source), Pull:DecideAbort(attempt, baseCtx({ pauseMain = true, })), 'disabled')
             assertEq(string.format("DecideAbort %s: spawn gone", attempt.source), Pull:DecideAbort(attempt, baseCtx({ spawnGone = true, })), 'spawnGone')
+            assertEq(string.format("DecideAbort %s: encounter locked", attempt.source), Pull:DecideAbort(attempt, baseCtx({ encounterLocked = true, })), 'encounterLocked')
         end
 
         assertEq("DecideAbort manual: DoPull off exempt", Pull:DecideAbort(manualAttempt, baseCtx({ doPull = false, })), nil)

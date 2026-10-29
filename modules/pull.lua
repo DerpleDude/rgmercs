@@ -162,6 +162,7 @@ Module.Constants.PullFilterReasons              = {
     ['LEVEL_DIFF_TOO_HIGH'] = 16,
     ['NO_PATH']             = 17,
     ['STRANGER_NEAR']       = 18,
+    ['ENCOUNTER_LOCKED']    = 19,
 }
 
 Module.Constants.PullFilterReasonDisplayStrings = {
@@ -183,6 +184,7 @@ Module.Constants.PullFilterReasonDisplayStrings = {
     ['LEVEL_DIFF_TOO_HIGH'] = { Display = Icons.FA_CHEVRON_UP, Text = "Level Difference Too High", Color = 'Red', },
     ['NO_PATH']             = { Display = Icons.MD_CLEAR, Text = "No Path / Unreachable", Color = 'Red', },
     ['STRANGER_NEAR']       = { Display = Icons.FA_USER_SECRET, Text = "Stranger Nearby", Color = 'Red', },
+    ['ENCOUNTER_LOCKED']    = { Display = Icons.FA_LOCK, Text = "Encounter Locked", Color = 'Red', },
 }
 
 Module.Constants.PullFilterReasonsIDToName      = {}
@@ -317,6 +319,7 @@ Module.Constants.AbortLogMessages   = {
     disabled = "\ar ALERT: Pulling Disabled at user request. \ax",
     spawnGone = "PULL:\ar ALERT: Aborting mob died or despawned \ax",
     stranger = "PULL:\ar ALERT: Aborting mob has a stranger near it and Attempt Safe Pulling is enabled! \ax",
+    encounterLocked = "PULL:\ar ALERT: Aborting mob is encounter locked to another player \ax",
     unreachable = "PULL:\ar ALERT: Aborting Fight To target has been unreachable for too long \ax",
     tooFar = "PULL:\ar ALERT: Aborting mob moved out of spawn distance \ax",
     noPath = "PULL:\ar ALERT: Aborting mob no longer reachable on mesh \ax",
@@ -1524,6 +1527,7 @@ function Module:DecideAbort(attempt, abortCtx)
     local userReason = self:DecideUserAbort(abortCtx, attempt.source)
     if userReason then return userReason end
     if abortCtx.spawnGone then return 'spawnGone' end
+    if abortCtx.encounterLocked then return 'encounterLocked' end
 
     if attempt.source == 'objective' then
         if abortCtx.attemptSafePulling and abortCtx.strangerNear then return 'stranger' end
@@ -3901,6 +3905,12 @@ function Module:GetPullableSpawns()
             end
         end
 
+        if Targeting.IsEncounterLocked(spawn) then
+            Logger.log_verbose("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \ar is encounter locked to another player!", spawnName, spawn.ID())
+            recordReason(spawn, reasons.ENCOUNTER_LOCKED)
+            return false
+        end
+
         Logger.log_debug("\atPULL::FindPullTarget \awSpawn \am%s\aw (\at%d\aw) \agPotential Pull Added to List", spawn.CleanName(), spawn.ID())
 
         recordReason(spawn, reasons.PULLABLE, navDist)
@@ -3975,6 +3985,7 @@ function Module:CheckAttemptAbort(attempt, bNavigating)
         doPull = Config:GetSetting('DoPull'),
         pauseMain = Globals.PauseMain,
         spawnGone = not spawn or spawn.Dead() or not spawn.ID() or spawn.ID() == 0,
+        encounterLocked = Targeting.IsEncounterLocked(spawn),
         navigating = bNavigating or false,
     }
 
@@ -3997,6 +4008,8 @@ function Module:CheckAttemptAbort(attempt, bNavigating)
 
     local reason = self:DecideAbort(attempt, abortCtx)
     if not reason then return false end
+
+    attempt.abortReason = reason
 
     Logger.log_debug(Module.Constants.AbortLogMessages[reason])
     if reason == 'listUpdated' then
@@ -4273,6 +4286,11 @@ function Module:PreAttemptTick(ctx)
             Logger.log_debug("PULL: \arDropping Manual target id %d - it is dead.", self.TempSettings.TargetSpawnID)
             self.TempSettings.TargetSpawnID = 0
         end
+
+        if self.TempSettings.TargetSpawnID > 0 and Targeting.IsEncounterLocked(targetSpawn) then
+            Logger.log_debug("PULL: \arDropping Manual target id %d - it is encounter locked to another player.", self.TempSettings.TargetSpawnID)
+            self.TempSettings.TargetSpawnID = 0
+        end
     end
 
     if self.TempSettings.TargetSpawnID > 0 then
@@ -4314,6 +4332,11 @@ function Module:PreAttemptTick(ctx)
                     self:SetPullState(PullStates.PULL_WAITING_SHOULDPULL, "A stranger is near the target - retrying")
                     return
                 end
+            end
+
+            if Targeting.IsEncounterLocked(objectiveSpawn) then
+                self:SetPullState(PullStates.PULL_WAITING_SHOULDPULL, "Target is encounter locked to another player - retrying")
+                return
             end
 
             pullID = objective.id
@@ -4663,6 +4686,7 @@ function Module:PullingTick(ctx)
     end
 
     if self:CheckAttemptAbort(attempt) then
+        if mq.TLO.Navigation.Active() then Movement:DoNav(false, "stop log=off") end
         self:EndEngage(ctx)
         return
     end
@@ -4748,6 +4772,11 @@ function Module:ReturnToCampTick(ctx)
         Logger.log_warn("PULL: Failed to reach camp (dist %.0f) - puller is stuck in the field",
             math.sqrt(Math.GetDistanceSquared(mq.TLO.Me.X(), mq.TLO.Me.Y(), returnLoc.x, returnLoc.y)))
         self:Announce("None", "Failed to return to camp - manual intervention may be needed!")
+    end
+
+    if attempt.abortReason then
+        self:CloseAttempt(ctx)
+        return
     end
 
     Core.DoCmd("/face id %d", attempt.targetId)
