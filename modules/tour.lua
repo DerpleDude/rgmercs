@@ -65,8 +65,16 @@ Module.Steps           = {
         Title = "Options Window",
         Anchors = { "OptionsButton", },
         Text = "Opens the Options window, where nearly every setting lives.\n\n" ..
-            "The search box in its top left corner filters settings by name, tooltip or category. /rgl search <text> opens it with the filter already set.\n\n" ..
-            "Many settings are marked advanced and are hidden unless Show Advanced Options, directly under the search box, is turned on.",
+            "The search box in its top left corner filters settings by name, tooltip or category. /rgl search <text> opens it with the filter already set.",
+    },
+    {
+        Title = "Show Advanced Options",
+        Filter = "",
+        Group = "General",
+        Anchors = { "AdvancedToggle", },
+        Text = "Many settings are marked advanced and are hidden from the Options window unless Show Advanced Options is turned on.\n\n" ..
+            "If a search does not find a setting you expect, turn this on and search again.\n\n" ..
+            "It is turned on while the tour runs so every setting mentioned is visible.",
     },
     {
         Title = "Mini Mode",
@@ -460,6 +468,8 @@ function Module:RenderOverlay()
         self.TempSettings.FocusPending = false
     end
 
+    ImGui.PushStyleVar(ImGuiStyleVar.Alpha, 1.0)
+    ImGui.SetNextWindowBgAlpha(1.0)
     local open, show = ImGui.Begin(string.format("RGMercs Tour (%d/%d)###RGMercsTour", self.TempSettings.StepIdx, #self.TempSettings.Steps), true,
         bit32.bor(ImGuiWindowFlags.NoCollapse, ImGuiWindowFlags.AlwaysAutoResize, ImGuiWindowFlags.NoSavedSettings, ImGuiWindowFlags.NoDocking))
     if show then
@@ -497,6 +507,7 @@ function Module:RenderOverlay()
     self.TempSettings.WindowPos = ImGui.GetWindowPosVec()
     self.TempSettings.WindowSize = ImGui.GetWindowSizeVec()
     ImGui.End()
+    ImGui.PopStyleVar()
 
     if not open then
         self:Stop()

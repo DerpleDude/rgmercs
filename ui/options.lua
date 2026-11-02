@@ -1369,7 +1369,9 @@ function OptionsUI:RenderMainWindow(_, openGUI, flags)
                 self:ApplySearchFilter()
             end
             Ui.Tooltip("Clear Search Text")
+            ImGui.BeginGroup()
             local showAdvancedOpts, showAdvancedOptsChanged = Ui.RenderOptionToggle("show_adv_tog###OptionsUI", "Show Adv Opts", Config:GetSetting('ShowAdvancedOpts'))
+            ImGui.EndGroup()
             Modules:ExecModule("Tour", "Anchor", "AdvancedToggle")
             if showAdvancedOptsChanged then
                 Config:SetSetting('ShowAdvancedOpts', showAdvancedOpts)
