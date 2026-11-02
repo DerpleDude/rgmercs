@@ -3898,6 +3898,10 @@ function Config:BroadcastConfigs()
     end
 end
 
+function Config:BroadcastInvalidatePeerConfigs()
+    Comms.BroadcastMessage(self._name, "InvalidatePeerConfigs", { peer = Comms.GetPeerName(), })
+end
+
 function Config:GetobservedPeer()
     return self.observedPeer
 end
@@ -3966,6 +3970,16 @@ function Config:SetRemotePeer(peer)
     end
 end
 
+function Config:InvalidatePeerConfigs(data)
+    if self.observedPeer ~= data.peer then
+        return
+    end
+
+    Logger.log_debug("Received InvalidatePeerConfigs from %s - re-requesting configs.", data.peer)
+    self.observedPeer = nil
+    self:SetRemotePeer(data.peer)
+end
+
 function Config:UpdatePeerSetSetting(data)
     local peer    = data.peer
     local module  = data.module
@@ -4000,8 +4014,6 @@ function Config:UpdatePeerSettings(data)
 
     local settings, settingsCategories, defaultSettings = data.settings or {}, data.settingCategories or {}, data.defaultSettings or {}
 
-    self.peerModuleDefaultSettings[module] = defaultSettings
-
     -- remove old settings from caches
     for setting, _ in pairs(self.peerModuleSettings[module] or {}) do
         if self.TempSettings.PeerSettingsCategoryToSettingMapping and Config:PeerGetSettingDefaults(peer, setting) then
@@ -4017,6 +4029,7 @@ function Config:UpdatePeerSettings(data)
         self.TempSettings.PeerModuleSettingsLowerToNameCache[setting:lower()] = nil
     end
 
+    self.peerModuleDefaultSettings[module] = defaultSettings
     self.peerModuleSettings[module] = Tables.DeepCopy(settings or {})
     self.peerModuleSettingCategories[module] = Set.new(settingsCategories or {})
 

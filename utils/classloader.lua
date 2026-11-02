@@ -153,6 +153,7 @@ function ClassLoader.changeLoadedClass()
 end
 
 function ClassLoader.reloadConfig()
+    Config:BroadcastInvalidatePeerConfigs()
     Config:ClearAllModuleSettings()
     Config:LoadSettings()
     Core.ScanConfigDirs()
