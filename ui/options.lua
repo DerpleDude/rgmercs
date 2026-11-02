@@ -1372,6 +1372,7 @@ function OptionsUI:RenderMainWindow(_, openGUI, flags)
             ImGui.BeginGroup()
             local showAdvancedOpts, showAdvancedOptsChanged = Ui.RenderOptionToggle("show_adv_tog###OptionsUI", "Show Adv Opts", Config:GetSetting('ShowAdvancedOpts'))
             ImGui.EndGroup()
+            Ui.Tooltip("Show Advanced Options")
             Modules:ExecModule("Tour", "Anchor", "AdvancedToggle")
             if showAdvancedOptsChanged then
                 Config:SetSetting('ShowAdvancedOpts', showAdvancedOpts)
