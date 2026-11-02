@@ -26,6 +26,7 @@ OptionsUI.lastSortTime = 0
 OptionsUI.lastHighlightTime = 0
 OptionsUI.selectedCharacter = ""
 OptionsUI.lastPeerUpdate = 0
+OptionsUI.applyToAllPeers = false
 OptionsUI.bgImg = mq.CreateTexture(mq.TLO.Lua.Dir() .. "/rgmercs/extras/options_bg.png")
 OptionsUI.ToastStates = {}
 OptionsUI.bmSetIdx = 1
@@ -680,7 +681,15 @@ function OptionsUI:RenderCategorySettings(category)
 
                             --  need to update setting here and notify module
                             if pressed then
-                                Config:PeerSetSetting(self.selectedCharacter, settingName, setting)
+                                if self.applyToAllPeers then
+                                    local allPeers = Comms.GetPeers(false)
+                                    table.insert(allPeers, 1, Comms.GetPeerName())
+                                    for _, peer in ipairs(allPeers) do
+                                        Config:PeerSetSetting(peer, settingName, setting)
+                                    end
+                                else
+                                    Config:PeerSetSetting(self.selectedCharacter, settingName, setting)
+                                end
 
                                 if new_loadout and self.selectedCharacter == Comms.GetPeerName() then
                                     Modules:ExecModule("Class", "RescanLoadout")
@@ -1360,12 +1369,13 @@ function OptionsUI:RenderMainWindow(_, openGUI, flags)
                 self:ApplySearchFilter()
             end
             Ui.Tooltip("Clear Search Text")
-            local showAdvancedOpts, showAdvancedOptsChanged = Ui.RenderOptionToggle("show_adv_tog###OptionsUI", "Show Advanced Options", Config:GetSetting('ShowAdvancedOpts'))
+            local showAdvancedOpts, showAdvancedOptsChanged = Ui.RenderOptionToggle("show_adv_tog###OptionsUI", "Show Adv Opts", Config:GetSetting('ShowAdvancedOpts'))
             Modules:ExecModule("Tour", "Anchor", "AdvancedToggle")
             if showAdvancedOptsChanged then
                 Config:SetSetting('ShowAdvancedOpts', showAdvancedOpts)
                 self:ApplySearchFilter()
             end
+            self.applyToAllPeers = Ui.RenderOptionToggle("###OptionsUIApplyAllTog", "Apply to All", self.applyToAllPeers)
 
             if ImGui.BeginTable('configmenu##RGmercsOptions', 1, tableFlags, 0, 0, 0.0) then
                 ImGui.TableNextColumn()
