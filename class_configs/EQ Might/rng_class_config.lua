@@ -9,12 +9,15 @@ local Movement  = require("utils.movement")
 local Targeting = require("utils.targeting")
 
 return {
-    _version              = "2.1 - EQ Might",
+    _version              = "2.3 - EQ Might",
     _author               = "Algar",
     ['ModeChecks']        = {
         IsHealing = function() return Config:GetSetting('DoHealSpell') end,
         IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or not Targeting.HasXTHaters()) end,
-        IsCuring = function() return Config:GetSetting('DoCures') and Casting.CanUseAA("Radiant Cure") end,
+        IsCuring = function()
+            return Config:GetSetting('DoCures') and
+                (Casting.CanUseAA("Radiant Cure") or Core.GetResolvedActionMapItem('CurePoison') ~= nil or Core.GetResolvedActionMapItem('CureDisease') ~= nil)
+        end,
     },
     ['Rez']               = {
         ['Combat']   = {
@@ -27,6 +30,12 @@ return {
     ['Cure']              = {
         ['DetDispel'] = {
             { type = "AA", name = "Radiant Cure", },
+        },
+        ['Poison'] = {
+            { type = "Spell", name = "CurePoison", },
+        },
+        ['Disease'] = {
+            { type = "Spell", name = "CureDisease", },
         },
     },
     ['Modes']             = {
@@ -83,6 +92,7 @@ return {
             "Strength of Nature",             -- Level 51 - Single Target
         },
         ['SkinBuff'] = {                      -- ST HP Type 1, small regen
+            "Obsidian Skin",                  -- Level 72
             "Onyx Skin",                      -- Level 70
             "Natureskin",                     -- Level 65
             "Skin like Nature",               -- Level 59
@@ -92,6 +102,7 @@ return {
             "Skin like Wood",                 -- Level 7
         },
         ['EyeBuff'] = {                       -- Self Archery Buff
+            "Eyes of the Owl",                -- Level 72
             "Eagle Eye",                      -- Level 58
             "Falcon Eye",                     -- Level 52
             "Hawk Eye",                       -- Level 11
@@ -118,7 +129,26 @@ return {
             "Brushfire",                      -- Level 64
             "Burning Arrow",                  -- Level 39
         },
+        ['Heartshot'] = {
+            "Heartshot", -- Level 72
+        },
+        ['SummerNuke'] = {
+            "Summer's Dew", -- Level 72
+        },
+        ['Hunt'] = {
+            "Consumed by the Hunt", -- Level 72
+        },
+        ['CurePoison'] = {
+            "Eradicate Poison", -- Level 72
+        },
+        ['CureDisease'] = {
+            "Eradicate Disease", -- Level 72
+        },
+        ['EndRegen'] = {         -- Timer 12
+            "Fresh Wind",        -- Level 67 EQM Custom
+        },
         ['DDProc'] = {
+            "Thundering Blades", -- Level 72
             "Call of Lightning", -- Level 70
             "Cry of Thunder",    -- Level 65
             "Call of Ice",       -- Level 58
@@ -130,6 +160,7 @@ return {
         --     "Nature's Rebuke", -- Level 64
         -- },
         ['SelfBuff'] = {
+            -- "Protection of the Minohten", -- Level 72 - double attack drops to 4 (Ward of the Hunter has 15)
             "Ward of the Hunter",     -- Level 70
             "Protection of the Wild", -- Level 65
             "Warder's Protection",    -- Level 60
@@ -257,6 +288,7 @@ return {
     },
     ['AASets']            = {
         ['Spire'] = {
+            "Fundament: Third Spire of the Pathfinders",
             "Fundament: Second Spire of the Pathfinders",
             "Fundament: First Spire of the Pathfinders",
         },
@@ -381,6 +413,13 @@ return {
         },
     },
     ['Helpers']           = {
+        --- Returns true when our active self buff carries stacking blocks that keep the group HP, AC and attack buffs off us.
+        ---@return boolean
+        SelfBuffBlocks = function()
+            local selfBuff = Core.GetResolvedActionMapItem('SelfBuff')
+            if not (selfBuff and selfBuff()) then return false end
+            return selfBuff.HasSPA(148)() and Casting.IHaveBuff(selfBuff)
+        end,
         rangedNav = function(reason)
             if Config:GetSetting('DoMelee') then return false end
             if (Globals.AutoTargetID or 0) == 0 then return false end
@@ -467,9 +506,13 @@ return {
                     end
                 end,
             },
-            {
-                name = "Spire",
+            { -- Use the selected spire, fall back to the AA set if we don't have it.
+                name_func = function(self)
+                    local chosen = "Fundament: " .. Globals.Constants.SpireChoices[Config:GetSetting('SpireChoice')] .. " Spire of the Pathfinders"
+                    return Casting.CanUseAA(chosen) and chosen or "Spire"
+                end,
                 type = "AA",
+                load_cond = function() return Config:GetSetting('SpireChoice') ~= 4 end,
             },
             {
                 name = "Group Guardian of the Forest",
@@ -610,6 +653,13 @@ return {
         },
         ['Combat']             = {
             {
+                name = "EndRegen",
+                type = "Disc",
+                cond = function(self, discSpell)
+                    return mq.TLO.Me.PctEndurance() < 15
+                end,
+            },
+            {
                 name = "Epic",
                 type = "Item",
                 cond = function(self, itemName)
@@ -624,6 +674,13 @@ return {
                 cond = function(self, spell, target)
                     if Config:GetSetting('DotNamedOnly') and not Globals.AutoTargetIsNamed then return false end
                     return Casting.DotSpellCheck(spell) and Casting.HaveManaToDot()
+                end,
+            },
+            {
+                name = "Heartshot",
+                type = "Spell",
+                cond = function(self, spell, target)
+                    return Casting.OkayToNuke()
                 end,
             },
             {
@@ -649,6 +706,13 @@ return {
             },
             {
                 name = "ColdNukeT2",
+                type = "Spell",
+                cond = function(self, spell, target)
+                    return Casting.OkayToNuke()
+                end,
+            },
+            {
+                name = "SummerNuke",
                 type = "Spell",
                 cond = function(self, spell, target)
                     return Casting.OkayToNuke()
@@ -688,7 +752,7 @@ return {
                 name = "PredatorBuff",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    return Casting.GroupBuffCheck(spell, target) and not (Targeting.TargetIsMyself(target) and mq.TLO.Me.Buff("Ward of the Hunter")())
+                    return Casting.GroupBuffCheck(spell, target) and not (Targeting.TargetIsMyself(target) and self.Helpers.SelfBuffBlocks())
                 end,
             },
             {
@@ -696,14 +760,14 @@ return {
                 type = "Spell",
                 cond = function(self, spell, target)
                     if not Config:GetSetting('DoStrengthBuff') then return false end
-                    return Casting.GroupBuffCheck(spell, target) and not (Targeting.TargetIsMyself(target) and mq.TLO.Me.Buff("Ward of the Hunter")())
+                    return Casting.GroupBuffCheck(spell, target) and not (Targeting.TargetIsMyself(target) and self.Helpers.SelfBuffBlocks())
                 end,
             },
             {
                 name = "GuardBuff",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    return Casting.GroupBuffCheck(spell, target) and not (Targeting.TargetIsMyself(target) and mq.TLO.Me.Buff("Ward of the Hunter")())
+                    return Casting.GroupBuffCheck(spell, target) and not (Targeting.TargetIsMyself(target) and self.Helpers.SelfBuffBlocks())
                 end,
             },
             {
@@ -805,6 +869,14 @@ return {
                 end,
             },
             {
+                name = "Hunt",
+                type = "Spell",
+                active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
+                cond = function(self, spell)
+                    return Casting.SelfBuffCheck(spell)
+                end,
+            },
+            {
                 name_func = function(self) return Config:GetSetting('ArrowBuffChoice') == 1 and "Flaming Arrows" or "Frost Arrows" end,
                 type = "AA",
                 cond = function(self, aaName, target)
@@ -826,9 +898,11 @@ return {
                 { name = "ColdNukeT2", },
                 { name = "ColdNukeT3", },
                 { name = "Heartshot", },
+                { name = "SummerNuke", },
                 { name = "ArrowHail", },
-                { name = "FocusedHail", },
                 { name = "JoltSpell",   cond = function(self) return Config:GetSetting('DoJoltSpell') end, },
+                { name = "CurePoison",  cond = function(self) return Config:GetSetting('KeepPoisonMemmed') end, },
+                { name = "CureDisease", cond = function(self) return Config:GetSetting('KeepDiseaseMemmed') end, },
                 { name = "MoveBuff",    cond = function(self) return Config:GetSetting('DoMoveBuffs') end, },
             },
         },
@@ -901,6 +975,23 @@ return {
             Min = 1,
             Max = 2,
         },
+        ['SpireChoice']     = {
+            DisplayName = "Spire Choice:",
+            Group = "Abilities",
+            Header = "Buffs",
+            Category = "Self",
+            Index = 102,
+            Tooltip = "Choose which Fundament you would like to use during burns:\n" ..
+                "First Spire: Instant Spell Damage and Proc Buff to Self.\n" ..
+                "Second Spire: Melee and Archery Skill Damage Buff to Self.\n" ..
+                "Third Spire: Group Melee Mitigation and Crit Damage Buff.",
+            Type = "Combo",
+            ComboOptions = Globals.Constants.SpireChoices,
+            RequiresLoadoutChange = true,
+            Default = 2,
+            Min = 1,
+            Max = #Globals.Constants.SpireChoices,
+        },
         ['DoMoveBuffs']     = {
             DisplayName = "Do Spirit of Eagle",
             Group = "Abilities",
@@ -964,7 +1055,7 @@ return {
 
 
         --Combat
-        ['DoSwarmDot']    = {
+        ['DoSwarmDot']        = {
             DisplayName = "Swarm Dot",
             Group = "Abilities",
             Header = "Damage",
@@ -974,7 +1065,7 @@ return {
             Default = true,
             RequiresLoadoutChange = true,
         },
-        ['DotNamedOnly']  = {
+        ['DotNamedOnly']      = {
             DisplayName = "Only Dot Named",
             Group = "Abilities",
             Header = "Damage",
@@ -983,7 +1074,7 @@ return {
             Tooltip = "Any selected dot above will only be used on a named mob.",
             Default = true,
         },
-        ['UseEpic']       = {
+        ['UseEpic']           = {
             DisplayName = "Epic Use:",
             Group = "Items",
             Header = "Clickies",
@@ -998,7 +1089,7 @@ return {
         },
 
         --Utility
-        ['DoHealSpell']   = {
+        ['DoHealSpell']       = {
             DisplayName = "Do Heals",
             Group = "Abilities",
             Header = "Recovery",
@@ -1008,7 +1099,31 @@ return {
             Default = true,
             RequiresLoadoutChange = true,
         },
-        ['JoltAggro']     = {
+        ['KeepPoisonMemmed']  = {
+            DisplayName = "Mem Cure Poison",
+            Group = "Abilities",
+            Header = "Recovery",
+            Category = "Curing",
+            Index = 101,
+            Tooltip = "Memorize cure poison spell when possible (depending on other selected options). \n" ..
+                "Please note that we will still memorize a cure out-of-combat if needed, and AA will always be used if available.",
+            RequiresLoadoutChange = true,
+            Default = false,
+            ConfigType = "Advanced",
+        },
+        ['KeepDiseaseMemmed'] = {
+            DisplayName = "Mem Cure Disease",
+            Group = "Abilities",
+            Header = "Recovery",
+            Category = "Curing",
+            Index = 102,
+            Tooltip = "Memorize cure disease spell when possible (depending on other selected options). \n" ..
+                "Please note that we will still memorize a cure out-of-combat if needed, and AA will always be used if available.",
+            RequiresLoadoutChange = true,
+            Default = false,
+            ConfigType = "Advanced",
+        },
+        ['JoltAggro']         = {
             DisplayName = "Aggro Shed %",
             Group = "Abilities",
             Header = "Utility",
@@ -1019,7 +1134,7 @@ return {
             Min = 1,
             Max = 100,
         },
-        ['DoJoltSpell']   = {
+        ['DoJoltSpell']       = {
             DisplayName = "Use Jolt Spell",
             Group = "Abilities",
             Header = "Utility",
@@ -1029,7 +1144,7 @@ return {
             Default = true,
             RequiresLoadoutChange = true,
         },
-        ['DoCoverTracks'] = {
+        ['DoCoverTracks']     = {
             DisplayName = "Use Cover Tracks",
             Group = "Abilities",
             Header = "Utility",
@@ -1039,7 +1154,7 @@ return {
             Default = true,
             RequiresLoadoutChange = true,
         },
-        ['DoSnare']       = {
+        ['DoSnare']           = {
             DisplayName = "Use Snares",
             Group = "Abilities",
             Header = "Debuffs",
@@ -1049,7 +1164,7 @@ return {
             Default = false,
             RequiresLoadoutChange = true,
         },
-        ['SnareCount']    = {
+        ['SnareCount']        = {
             DisplayName = "Snare Max Mob Count",
             Group = "Abilities",
             Header = "Debuffs",
@@ -1060,7 +1175,7 @@ return {
             Min = 1,
             Max = 99,
         },
-        ['HealPriority']  = {
+        ['HealPriority']      = {
             DisplayName = "Healing Priority",
             Group = "Abilities",
             Header = "Recovery",

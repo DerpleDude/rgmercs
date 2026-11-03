@@ -16,7 +16,7 @@ local Globals      = require("utils.globals")
 local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
-    _version            = "1.2 - Live",
+    _version            = "1.3 - Live",
     _author             = "Derple, Grimmier, Algar",
     ['Modes']           = {
         'DPS',
@@ -329,7 +329,7 @@ local _ClassConfig = {
             "Mind Flay",          -- Level 70
             "Mind Wrack",         -- Level 58
         },
-        ['PoisonNuke1'] = {
+        ['PoisonNuke'] = {
             ---PoisonNuke >=LVL21
             "Schisming Venin",      -- Level 126
             "Necrotizing Venin",    -- Level 121
@@ -349,8 +349,8 @@ local _ClassConfig = {
             "Torbas' Acid Blast",   -- Level 32
             "Shock of Poison",      -- Level 21
         },
-        ['PoisonNuke2'] = {
-            ---PoisonNuke2  >=LVL 75 (DD Increase chance)
+        ['BloodNuke'] = {
+            ---BloodNuke  >=LVL 75 (DD Increase chance)
             "Call for Blood XIII",    -- Level 130
             "Decree for Blood",       -- Level 125
             "Proclamation for Blood", -- Level 120
@@ -1101,7 +1101,7 @@ local _ClassConfig = {
                 type = "Spell",
                 cond = function(self, spell, target)
                     if not spell or not spell() then return false end
-                    return Casting.IHaveBuff(spell.Name() .. " Recourse") and (mq.TLO.Target.PctMana() or -1) > 0 and mq.TLO.Group.LowMana(40)() > 2
+                    return (mq.TLO.Target.PctMana() or -1) > 0 and (mq.TLO.Group.LowMana(40)() or 0) > 2
                 end,
             },
             {
@@ -1225,22 +1225,30 @@ local _ClassConfig = {
                 end,
             },
             {
-                name = "PoisonNuke2",
+                name = "BloodNuke",
                 type = "Spell",
                 cond = function(self, spell, target)
                     return Casting.OkayToNuke()
                 end,
             },
             {
-                name = "PoisonNuke1",
+                name = "PoisonNuke",
                 type = "Spell",
-                load_cond = function(self) return not Core.GetResolvedActionMapItem('PoisonNuke2') end,
+                load_cond = function(self) return not Core.GetResolvedActionMapItem('BloodNuke') end,
                 cond = function(self, spell, target)
                     return Casting.OkayToNuke()
                 end,
             },
         },
         ['DPS(MobLowHP)']     = {
+            {
+                name = "ManaDrain",
+                type = "Spell",
+                cond = function(self, spell, target)
+                    if not spell or not spell() then return false end
+                    return (mq.TLO.Target.PctMana() or -1) > 0 and (mq.TLO.Group.LowMana(40)() or 0) > 2
+                end,
+            },
             {
                 name = "Lifetap",
                 type = "Spell",
@@ -1257,16 +1265,16 @@ local _ClassConfig = {
                 end,
             },
             {
-                name = "PoisonNuke2",
+                name = "BloodNuke",
                 type = "Spell",
                 cond = function(self, spell, target)
                     return Casting.OkayToNuke()
                 end,
             },
             {
-                name = "PoisonNuke1",
+                name = "PoisonNuke",
                 type = "Spell",
-                load_cond = function(self) return not Core.GetResolvedActionMapItem('PoisonNuke2') end,
+                load_cond = function(self) return not Core.GetResolvedActionMapItem('BloodNuke') end,
                 cond = function(self, spell, target)
                     return Casting.OkayToNuke()
                 end,
@@ -1593,8 +1601,8 @@ local _ClassConfig = {
             -- cond = function(self) return true end, --Kept here for illustration, this line could be removed in this instance since we aren't using conditions.
             spells = {
                 { name = "PetHealSpell",   cond = function(self) return Config:GetSetting('DoPetHealSpell') end, },
-                { name = "PoisonNuke1",    cond = function(self) return not Core.GetResolvedActionMapItem('PoisonNuke2') end, },
-                { name = "PoisonNuke2", },
+                { name = "PoisonNuke",     cond = function(self) return not Core.GetResolvedActionMapItem('BloodNuke') end, },
+                { name = "BloodNuke", },
                 { name = "FireNuke", },
                 { name = "Lifetap",        cond = function(self) return Config:GetSetting('DoLifetap') end, },
                 { name = "MezSpell",       cond = function(self) return Config:GetSetting('DoSTMez') end, },

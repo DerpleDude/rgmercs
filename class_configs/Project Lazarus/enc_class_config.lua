@@ -10,7 +10,7 @@ local Logger       = require("utils.logger")
 local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
-    _version          = "1.6 - Project Lazarus",
+    _version          = "1.7 - Project Lazarus",
     _author           = "Derple, Grimmier, Algar, Robban",
     ['ModeChecks']    = {
         CanMez       = function() return true end,
@@ -989,7 +989,7 @@ local _ClassConfig = {
                 load_cond = function() return Config:GetSetting("DoCrippleAA") end,
                 cond = function(self, aaName, target)
                     return Targeting.HasXTHaters(Config:GetSetting('AECount')) or
-                        (not Config:GetSetting('DoCrippleSpell') and Globals.AutoTargetIsNamed and Casting.DetSpellAACheck(aaName))
+                        (not Config:GetSetting('DoCrippleSpell') and Globals.AutoTargetIsNamed and Casting.DetAACheck(aaName))
                 end,
             },
             {

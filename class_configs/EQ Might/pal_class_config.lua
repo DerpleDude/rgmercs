@@ -10,7 +10,7 @@ local Logger      = require("utils.logger")
 local Targeting   = require("utils.targeting")
 
 return {
-    _version              = "2.3 - EQ Might",
+    _version              = "2.5 - EQ Might",
     _author               = "Derple, Algar",
     ['ModeChecks']        = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
@@ -152,6 +152,7 @@ return {
             "Instrument of Nife", -- Level 26, 243pt
         },
         ['StunTimer5'] = {
+            "Force of Prexus",         -- Level 72
             "Ancient: Force of Jeron", -- Level 70
             "Ancient: Force of Chaos", -- Level 65
             "Force of Akera",          -- Level 53
@@ -167,6 +168,7 @@ return {
         },
         ['AegoBuff'] = {
             --- Pally Aegolism
+            "Sworn Protector",       -- Level 72
             "Affirmation",           -- Level 70
             "Guidance",              -- Level 65
             "Blessing of Austerity", -- Level 58 - Group
@@ -184,6 +186,7 @@ return {
         --     "Resolution",        -- Level 60
         -- },
         ['Brells'] = {
+            "Brell's Stony Guard",             -- Level 72
             "Ancient: Brell's Brawny Bulwark", -- Level 70 EQM Custom
             "Brell's Brawny Bulwark",          -- Level 70
             "Brell's Stalwart Shield",         -- Level 65
@@ -191,19 +194,21 @@ return {
             "Brell's Steadfast Aegis",         -- Level 49
         },
         ['WaveHeal'] = {
+            "Wave of Forgiveness",    -- Level 72 - Timer 2 - 30s recast
             "Wave of Piety",          -- Level 70
-            "Wave of Trushar",        -- Level 65
+            "Wave of Trushar",        -- Level 65 - Timer 2
             "Wave of Marr",           -- Level 63
             "Healing Wave of Prexus", -- Level 58
-            "Wave of Healing",        -- Level 55
+            "Wave of Healing",        -- Level 55 - Timer 2
             "Wave of Life",           -- Level 39
         },
         ['WaveHeal2'] = {
+            "Wave of Forgiveness",    -- Level 72 - Timer 2 - 30s recast
             "Wave of Piety",          -- Level 70
-            "Wave of Trushar",        -- Level 65
+            "Wave of Trushar",        -- Level 65 - Timer 2
             "Wave of Marr",           -- Level 63
             "Healing Wave of Prexus", -- Level 58
-            "Wave of Healing",        -- Level 55
+            "Wave of Healing",        -- Level 55 - Timer 2
             "Wave of Life",           -- Level 39
         },
         ['Cleansing'] = {
@@ -220,6 +225,7 @@ return {
             "Aura of the Crusader",       -- Level 64
         },
         ['SymbolBuff'] = {
+            "Fenegar's Mark",    -- Level 72
             "Jeron's Mark",      -- Level 68
             "Symbol of Jeron",   -- Level 67
             "Symbol of Marzin",  -- Level 63
@@ -287,12 +293,13 @@ return {
         },
         ['UndeadNuke'] = {
             -- Undead Nuke
-            "Spurn Undead",   -- Level 67 - Timer 7
-            "Deny Undead",    -- Level 62 - Timer 7
-            "Expel Undead",   -- Level 54
-            "Dismiss Undead", -- Level 46
-            "Expulse Undead", -- Level 30
-            "Ward Undead",    -- Level 14
+            "Wraithguard's Vengeance", -- Level 72
+            "Spurn Undead",            -- Level 67 - Timer 7
+            "Deny Undead",             -- Level 62 - Timer 7
+            "Expel Undead",            -- Level 54
+            "Dismiss Undead",          -- Level 46
+            "Expulse Undead",          -- Level 30
+            "Ward Undead",             -- Level 14
         },
         ['CureCurse'] = {
             -- Curse Cure Line
@@ -354,19 +361,27 @@ return {
             "Blessed Mantle Heal",   -- Level 66 EQM Custom
         },
         ['SpellResistBuff'] = {
-            "Silent Piety",        -- Level 69
+            "Silent Piety", -- Level 69
         },
-        ['ForHonor'] = {           -- Hate Over Time with small absorb recourse
-            "Challenge for Honor", -- Level 71
+        ['Remorse'] = {
+            "Remorse for the Fallen", -- Level 72
         },
-        ['FlameLure'] = {          -- eqm port of wizard fire lures, not quite sure what i'm going to do with these yet
-            "Lure of Ro",          -- Level 67
-            "Lure of Flame",       -- Level 62
-            "Lure of Fire",        -- Level 55 EQM Custom
+        ['ForHonor'] = {              -- Hate Over Time with small absorb recourse
+            "Challenge for Honor",    -- Level 71
+        },
+        ['FlameLure'] = {             -- eqm port of wizard fire lures
+            "Lure of Ro",             -- Level 67
+            "Lure of Flame",          -- Level 62
+            "Lure of Fire",           -- Level 55 EQM Custom
+        },
+        ['EndRegen'] = {              -- Timer 12
+            "Fresh Wind",             -- Level 67 EQM Custom
         },
     },
     ['AASets']            = {
         ['Spire'] = {
+            "Fundament: Third Spire of Holiness",
+            -- "Fundament: Second Spire of Holiness",
             "Fundament: First Spire of Holiness",
         },
         ['Disruption'] = { -- For pulling or mez-safe applications, use Divine Stun if that's all we have.
@@ -790,6 +805,14 @@ return {
                     return Casting.SelfBuffCheck(spell)
                 end,
             },
+            {
+                name = "Remorse",
+                type = "Spell",
+                active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
+                cond = function(self, spell)
+                    return Casting.SelfBuffCheck(spell)
+                end,
+            },
             --You'll notice my use of TotalSeconds, this is to keep as close to 100% uptime as possible on these buffs, rebuffing early to decrease the chance of them falling off in combat
             --I considered creating a function (helper or utils) to govern this as I use it on multiple classes but the difference between buff window/song window/aa/spell etc makes it unwieldy
             -- if using duration checks, dont use SelfBuffCheck() (as it could return false when the effect is still on)
@@ -1019,9 +1042,13 @@ return {
             },
         },
         ['Burn']                   = {
-            {
-                name = "Spire",
+            { -- Use the selected spire, fall back to the AA set if we don't have it.
+                name_func = function(self)
+                    local chosen = "Fundament: " .. Globals.Constants.SpireChoices[Config:GetSetting('SpireChoice')] .. " Spire of Holiness"
+                    return Casting.CanUseAA(chosen) and chosen or "Spire"
+                end,
                 type = "AA",
+                load_cond = function() return Config:GetSetting('SpireChoice') ~= 4 end,
             },
             {
                 name = "Valorous Rage",
@@ -1101,6 +1128,13 @@ return {
             },
         },
         ['Combat']                 = {
+            {
+                name = "EndRegen",
+                type = "Disc",
+                cond = function(self, discSpell)
+                    return mq.TLO.Me.PctEndurance() < 15
+                end,
+            },
             {
                 name = "ForHonor",
                 type = "Spell",
@@ -1614,6 +1648,23 @@ return {
             FAQ = "Why am I using and Undead proc, I'm not fighting any undead?",
             Answer = "If you have elected to use the Standard DD proc (default) and it is not yet available, we will use the Undead proc still.\n" ..
                 "Your desired proc can be adjusted with the Proc Buff Choice setting in Self Buff category.",
+        },
+        ['SpireChoice']       = {
+            DisplayName = "Spire Choice:",
+            Group = "Abilities",
+            Header = "Buffs",
+            Category = "Self",
+            Index = 105,
+            Tooltip = "Choose which Fundament you would like to use during burns:\n" ..
+                "First Spire: Group Healing Received Buff.\n" ..
+                "Second Spire: Melee Skill Damage Buff to Self.\n" ..
+                "Third Spire: Evasion, Parry and AC Buff to Self.",
+            Type = "Combo",
+            ComboOptions = Globals.Constants.SpireChoices,
+            RequiresLoadoutChange = true,
+            Default = 3,
+            Min = 1,
+            Max = #Globals.Constants.SpireChoices,
         },
         ['HealPriority']      = {
             DisplayName = "Healing Priority",

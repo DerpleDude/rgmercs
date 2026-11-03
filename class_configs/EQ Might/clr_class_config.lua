@@ -7,7 +7,7 @@ local Globals      = require('utils.globals')
 local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
-    _version              = "2.4 - EQ Might",
+    _version              = "2.8 - EQ Might",
     _author               = "Algar, Derple, Robban",
     ['ModeChecks']        = {
         IsHealing = function() return true end,
@@ -76,6 +76,7 @@ local _ClassConfig = {
             { type = "AA", name = "Group Purify Soul", },
             { type = "AA", name = "Radiant Cure", },
             { type = "AA", name = "Purify Soul",       selfOnly = true, },
+            { type = "AA", name = "Purified Spirits",  selfOnly = true, },
         },
         ['Poison'] = {
             { type = "Spell", name = "GroupHeal",  load_cond = function(self) return self.Helpers.UseGroupHealCure(self, 'KeepPoisonMemmed') end, },
@@ -185,6 +186,7 @@ local _ClassConfig = {
         },
         ['SelfHPBuff'] = {
             --Self Buff for Mana Regen and armor
+            "Armor of the Sacred",            -- Level 72
             "Armor of the Pious",             -- Level 70
             "Armor of the Zealot",            -- Level 65
             "Ancient: High Priest's Bulwark", -- Level 60
@@ -192,6 +194,7 @@ local _ClassConfig = {
             "Armor of Protection",            -- Level 34
         },
         ['AegoBuff'] = {
+            "Hand of Tenacity",          -- Level 72
             "Hand of Conviction",        -- Level 70
             "Hand of Virtue",            -- Level 65
             "Ancient: Gift of Aegolism", -- Level 60
@@ -228,9 +231,14 @@ local _ClassConfig = {
             "Guard of Vie",      -- Level 40
             "Ward of Vie",       -- Level 20
         },
+        ['GroupVieBuff'] = {
+            "Rallied Aegis of Vie", -- Level 72
+        },
         ['GroupSymbolBuff'] = {
             ----Group Symbols
+            "Elushar's Mark",    -- Level 72
             "Balikor's Mark",    -- Level 70
+            "Symbol of Elushar", -- Level 70
             "Kazad's Mark",      -- Level 63
             "Marzin's Mark",     -- Level 60
             "Naltron's Mark",    -- Level 58
@@ -242,10 +250,10 @@ local _ClassConfig = {
         },
         ['AbsorbAura'] = {
             ----Aura Buffs - Aura Name is seperate than the buff name
-            "Aura of the Pious",  -- Level 66
-            "Aura of the Zealot", -- Level 55
+            "Aura of the Pious",   -- Level 66
+            "Aura of the Zealot",  -- Level 55
         },
-        ['DivineBuff'] = {
+        ['DivineBuff'] = {         -- Timer 7
             --Divine Buffs REQUIRES extra spell slot because of the 90s recast
             "Divine Incursion",    -- Level 69 EQM Custom
             "Divine Interaction",  -- Level 65 EQM Custom
@@ -274,8 +282,9 @@ local _ClassConfig = {
             "Celestial Remedy",  -- Level 19
         },
         ['GroupElixir'] = {
-            "Elixir of Divinity", -- Level 70
-            "Ethereal Elixir",    -- Level 60
+            "Elixir of Redemption", -- Level 72
+            "Elixir of Divinity",   -- Level 70
+            "Ethereal Elixir",      -- Level 60
         },
         ['SpellBlessing'] = {
             "Aura of Purpose",       -- Level 71
@@ -309,8 +318,12 @@ local _ClassConfig = {
             "Remove Lesser Curse",  -- Level 23
             "Remove Minor Curse",   -- Level 8
         },
+        ['CorruptResistBuff'] = {
+            "Shared Purity", -- Level 72
+        },
         ['CureCorrupt'] = {
-            "Cure Corruption", -- Level 70
+            "Expunge Corruption", -- Level 72
+            "Cure Corruption",    -- Level 70
         },
         ['YaulpSpell'] = {
             "Yaulp VII",         -- Level 69
@@ -326,21 +339,21 @@ local _ClassConfig = {
             "Force",             -- Level 31, No Timer #, up to Level 58
             "Holy Might",        -- Level 16, No Timer #, up to Level 55
         },
-        ['StunTimer4'] = {
-            "Shock of Wonder", -- Level 66
+        ['StunTimer4'] = {       -- Timer 4
+            "Shock of Wonder",   -- Level 66
         },
-        ['LowLevelStun'] = {   --Adding a second stun at low levels
-            "Stun",            -- Level 2
+        ['LowLevelStun'] = {     -- Timer 5, Adding a second stun at low levels
+            "Stun",              -- Level 2
         },
-        ['UndeadNuke'] = {     -- Level 4+
-            "Desolate Undead", -- Level 68
-            "Destroy Undead",  -- Level 64
-            "Exile Undead",    -- Level 55
-            "Banish Undead",   -- Level 43
-            "Expel Undead",    -- Level 33
-            "Dismiss Undead",  -- Level 23
-            "Expulse Undead",  -- Level 13
-            "Ward Undead",     -- Level 4
+        ['UndeadNuke'] = {       -- Level 4+
+            "Desolate Undead",   -- Level 68
+            "Destroy Undead",    -- Level 64
+            "Exile Undead",      -- Level 55
+            "Banish Undead",     -- Level 43
+            "Expel Undead",      -- Level 33
+            "Dismiss Undead",    -- Level 23
+            "Expulse Undead",    -- Level 13
+            "Ward Undead",       -- Level 4
         },
         ['MagicNuke'] = {
             "Reproval",               -- Level 71
@@ -361,27 +374,37 @@ local _ClassConfig = {
             "Verdict of Radiance",    -- Level 65 EQM Custom
             "Verdict of Light",       -- Level 60 EQM Custom
         },
-        -- ['HammerPet'] = {
+        -- ['HammerPet'] = { -- TO DO: add pet support
+        --     "Unflinching Hammer of Zeal",       -- Level 72
         --     "Unswerving Hammer of Retribution", -- Level 68
         --     "Unswerving Hammer of Faith",       -- Level 54
         -- },
         ['CompleteHeal'] = {
             "Complete Heal",      -- Level 39
         },
-        ['PBAENuke'] = {          --This isn't worthwhile before these spells come around.
+        ['PBAENuke'] = {          -- Timer 3, This isn't worthwhile before these spells come around.
+            "Tectonic Quake",     -- Level 72
             "Calamity",           -- Level 69
             "Catastrophe",        -- Level 64
         },
-        ['PBAEStun'] = {          --This isn't worthwhile before these spells come around. The stun won't land in many cases (level) but the damage is okay.
+        ['PBAEStun'] = {          -- Timer 5, This isn't worthwhile before these spells come around. The stun won't land in many cases (level) but the damage is okay.
+            "Silent Decree",      -- Level 72
             "Silent Dictation",   -- Level 70
             "The Silent Command", -- Level 65
         },
-        ['PromisedHeal'] = {
-            "Promised Renewal", -- Level 71
+        ['PromisedHeal'] = {      -- Timer 12
+            "Promised Renewal",   -- Level 71
         },
-    },                          -- end AbilitySets
+        -- ['MartyrMark'] = { -- TO DO: homework needed on whether these get used
+        --     "Mark of the Martyr", -- Level 72
+        -- },
+        -- ['MartyrBlood'] = {
+        --     "Blood of the Martyr", -- Level 72
+        -- },
+    }, -- end AbilitySets
     ['AASets']            = {
         ['Spire'] = {
+            "Fundament: Third Spire of Divinity",
             "Fundament: Second Spire of Divinity",
             "Fundament: First Spire of Divinity",
         },
@@ -392,6 +415,19 @@ local _ClassConfig = {
             if mq.TLO.Me.Level() < 69 or not mq.TLO.FindItem("=Artifact of Aegis")() then return true end
             local vieBuff = self.ResolvedActionMap['SingleVieBuff']
             return vieBuff and vieBuff() and vieBuff.Name() == "Aegis of Vie" and (vieBuff.RankName.Rank() or 0) >= 2
+        end,
+        PreferSymbolSpell = function(self)
+            local elusharBand = mq.TLO.FindItem("=Mythical Armband of Elushar")()
+            local mithanielBand = mq.TLO.FindItem("=Legendary Armband of Mithaniel")()
+            if mq.TLO.Me.Level() < 68 or not (elusharBand or mithanielBand) then return true end
+            local symbolSpell = self.ResolvedActionMap['GroupSymbolBuff']
+            if not (symbolSpell and symbolSpell()) or symbolSpell.Name() ~= "Elushar's Mark" then return false end
+            return not elusharBand or (symbolSpell.RankName.Rank() or 0) >= 2
+        end,
+        UseSingleVie = function(self, target)
+            if not Core.GetResolvedActionMapItem('GroupVieBuff') then return true end
+            if not Config:GetSetting('OutOfGroupVie') then return false end
+            return not target or not Targeting.GroupedWithTarget(target)
         end,
         UseGroupHealCure = function(self, keepSetting)
             local ghealSpell = Core.GetResolvedActionMapItem('GroupHeal')
@@ -704,9 +740,13 @@ local _ClassConfig = {
                 name = "Healing Frenzy",
                 type = "AA",
             },
-            {
-                name = "Spire",
+            { -- Use the selected spire, fall back to the AA set if we don't have it.
+                name_func = function(self)
+                    local chosen = "Fundament: " .. Globals.Constants.SpireChoices[Config:GetSetting('SpireChoice')] .. " Spire of Divinity"
+                    return Casting.CanUseAA(chosen) and chosen or "Spire"
+                end,
                 type = "AA",
+                load_cond = function() return Config:GetSetting('SpireChoice') ~= 4 end,
             },
             {
                 name = "OoW_Chest",
@@ -752,17 +792,30 @@ local _ClassConfig = {
             {
                 name = "Artifact of Aegis",
                 type = "Item",
-                load_cond = function(self) return Config:GetSetting('VieBuffMode') > 2 and not self.Helpers.PreferAegisSpell(self) end,
+                load_cond = function(self)
+                    return Config:GetSetting('VieBuffMode') > 2 and self.Helpers.UseSingleVie(self) and not self.Helpers.PreferAegisSpell(self)
+                end,
                 cond = function(self, itemName, target)
+                    if not self.Helpers.UseSingleVie(self, target) then return false end
                     return Casting.AddedBuffCheck(43037, target) and Casting.GroupBuffItemCheck(itemName, target) -- Bulwark of the Pegasus
                 end,
             },
             {
                 name = "SingleVieBuff",
                 type = "Spell",
-                load_cond = function(self) return Config:GetSetting('VieBuffMode') > 2 and self.Helpers.PreferAegisSpell(self) end,
+                load_cond = function(self) return Config:GetSetting('VieBuffMode') > 2 and self.Helpers.UseSingleVie(self) and self.Helpers.PreferAegisSpell(self) end,
                 cond = function(self, spell, target)
+                    if not self.Helpers.UseSingleVie(self, target) then return false end
                     return Casting.AddedBuffCheck(43037, target) and Casting.GroupBuffCheck(spell, target) -- Bulwark of the Pegasus
+                end,
+            },
+            {
+                name = "GroupVieBuff",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('VieBuffMode') > 2 and Core.GetResolvedActionMapItem('GroupVieBuff') end,
+                cond = function(self, spell, target)
+                    if not Targeting.GroupedWithTarget(target) then return false end
+                    return Casting.AddedBuffCheck(43037, target) and Casting.GroupBuffCheck(spell, target)
                 end,
             },
         },
@@ -928,9 +981,8 @@ local _ClassConfig = {
                     return "Symbol Buff Clicky"
                 end,
                 type = "Item",
-                load_cond = function()
-                    return Config:GetSetting('AegoSymbol') >= 2 and Config:GetSetting('AegoSymbol') <= 3 and
-                        mq.TLO.Me.Level() >= 68 and (mq.TLO.FindItem("=Mythical Armband of Elushar")() or mq.TLO.FindItem("=Legendary Armband of Mithaniel")())
+                load_cond = function(self)
+                    return Config:GetSetting('AegoSymbol') >= 2 and Config:GetSetting('AegoSymbol') <= 3 and not self.Helpers.PreferSymbolSpell(self)
                 end,
                 cond = function(self, itemName, target)
                     return Casting.GroupBuffItemCheck(itemName, target)
@@ -939,9 +991,8 @@ local _ClassConfig = {
             {
                 name = "GroupSymbolBuff",
                 type = "Spell",
-                load_cond = function()
-                    return Config:GetSetting('AegoSymbol') >= 2 and Config:GetSetting('AegoSymbol') <= 3 and
-                        (mq.TLO.Me.Level() < 68 or not mq.TLO.FindItem("=Legendary Armband of Mithaniel")())
+                load_cond = function(self)
+                    return Config:GetSetting('AegoSymbol') >= 2 and Config:GetSetting('AegoSymbol') <= 3 and self.Helpers.PreferSymbolSpell(self)
                 end,
                 cond = function(self, spell, target)
                     if (spell.TargetType() or ""):lower() == "single" and not Targeting.TargetIsTanking(target) then return false end
@@ -957,6 +1008,15 @@ local _ClassConfig = {
                 end,
             },
             {
+                name = "CorruptResistBuff",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoCorruptResist') end,
+                cond = function(self, spell, target)
+                    if not Targeting.GroupedWithTarget(target) then return false end
+                    return Casting.GroupBuffCheck(spell, target)
+                end,
+            },
+            {
                 name = "ACBuff",
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoACBuff') end,
@@ -968,17 +1028,30 @@ local _ClassConfig = {
             {
                 name = "Artifact of Aegis",
                 type = "Item",
-                load_cond = function(self) return Config:GetSetting('VieBuffMode') > 1 and not self.Helpers.PreferAegisSpell(self) end,
+                load_cond = function(self)
+                    return Config:GetSetting('VieBuffMode') > 1 and self.Helpers.UseSingleVie(self) and not self.Helpers.PreferAegisSpell(self)
+                end,
                 cond = function(self, itemName, target)
+                    if not self.Helpers.UseSingleVie(self, target) then return false end
                     return Casting.AddedBuffCheck(43037, target) and Casting.GroupBuffItemCheck(itemName, target) -- Bulwark of the Pegasus
                 end,
             },
             {
                 name = "SingleVieBuff",
                 type = "Spell",
-                load_cond = function(self) return Config:GetSetting('VieBuffMode') > 1 and self.Helpers.PreferAegisSpell(self) end,
+                load_cond = function(self) return Config:GetSetting('VieBuffMode') > 1 and self.Helpers.UseSingleVie(self) and self.Helpers.PreferAegisSpell(self) end,
                 cond = function(self, spell, target)
+                    if not self.Helpers.UseSingleVie(self, target) then return false end
                     return Casting.AddedBuffCheck(43037, target) and Casting.GroupBuffCheck(spell, target) -- Bulwark of the Pegasus
+                end,
+            },
+            {
+                name = "GroupVieBuff",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('VieBuffMode') > 1 and Core.GetResolvedActionMapItem('GroupVieBuff') end,
+                cond = function(self, spell, target)
+                    if not Targeting.GroupedWithTarget(target) then return false end
+                    return Casting.AddedBuffCheck(43037, target) and Casting.GroupBuffCheck(spell, target)
                 end,
             },
             {
@@ -1003,29 +1076,35 @@ local _ClassConfig = {
             name = "Default",
             -- cond = function(self) return true end, --Kept here for illustration, this line could be removed in this instance since we aren't using conditions.
             spells = {
-                { name = "HealingLight",  cond = function(self) return not Config:GetSetting('DoCompleteHeal') or not Core.GetResolvedActionMapItem("CompleteHeal") end, },
-                { name = "CompleteHeal",  cond = function(self) return Config:GetSetting('DoCompleteHeal') end, },
+                { name = "HealingLight", cond = function(self) return not Config:GetSetting('DoCompleteHeal') or not Core.GetResolvedActionMapItem("CompleteHeal") end, },
+                { name = "CompleteHeal", cond = function(self) return Config:GetSetting('DoCompleteHeal') end, },
                 { name = "Renewal", },
                 { name = "GroupHeal", },
-                { name = "SingleElixir",  cond = function(self) return Config:GetSetting('DoSingleElixir') end, },
-                { name = "GroupElixir",   cond = function(self) return Config:GetSetting('DoGroupElixir') end, },
-                { name = "CurePoison",    cond = function(self) return Config:GetSetting('KeepPoisonMemmed') end, },
-                { name = "CureDisease",   cond = function(self) return Config:GetSetting('KeepDiseaseMemmed') end, },
-                { name = "CureCurse",     cond = function(self) return Config:GetSetting('KeepCurseMemmed') end, },
-                { name = "CureCorrupt",   cond = function(self) return Config:GetSetting('KeepCorruptMemmed') end, },
-                { name = "DivineBuff",    cond = function(self) return Config:GetSetting('DoDivineBuff') end, },
-                { name = "YaulpSpell",    cond = function(self) return Config:GetSetting('DoYaulp') and not Casting.CanUseAA("Yaulp") end, },
-                { name = "SingleVieBuff", cond = function(self) return Config:GetSetting('VieBuffMode') > 1 and self.Helpers.PreferAegisSpell(self) end, },
-                { name = "StunTimer6",    cond = function(self) return Config:GetSetting('DoTimer6Stun') end, },
-                { name = "StunTimer4",    cond = function(self) return Config:GetSetting('DoTimer4Stun') end, },
-                { name = "LowLevelStun",  cond = function(self) return Config:GetSetting('DoLLStun') and mq.TLO.Me.Level() < 59 end, },
-                { name = "QuickNuke",     cond = function(self) return Config:GetSetting('DoQuickNuke') end, },
-                { name = "MagicNuke",     cond = function(self) return Config:GetSetting('DoMagicNuke') end, },
-                { name = "PBAEStun",      cond = function(self) return Config:GetSetting('DoPBAEStun') end, },
-                { name = "PBAENuke",      cond = function(self) return Config:GetSetting('DoPBAENuke') end, },
-                { name = "UndeadNuke",    cond = function(self) return Config:GetSetting('DoUndeadNuke') end, },
+                { name = "SingleElixir", cond = function(self) return Config:GetSetting('DoSingleElixir') end, },
+                { name = "GroupElixir",  cond = function(self) return Config:GetSetting('DoGroupElixir') end, },
+                { name = "CurePoison",   cond = function(self) return Config:GetSetting('KeepPoisonMemmed') end, },
+                { name = "CureDisease",  cond = function(self) return Config:GetSetting('KeepDiseaseMemmed') end, },
+                { name = "CureCurse",    cond = function(self) return Config:GetSetting('KeepCurseMemmed') end, },
+                { name = "CureCorrupt",  cond = function(self) return Config:GetSetting('KeepCorruptMemmed') end, },
+                { name = "DivineBuff",   cond = function(self) return Config:GetSetting('DoDivineBuff') end, },
+                { name = "YaulpSpell",   cond = function(self) return Config:GetSetting('DoYaulp') and not Casting.CanUseAA("Yaulp") end, },
+                { name = "GroupVieBuff", cond = function(self) return Config:GetSetting('VieBuffMode') > 1 end, },
+                {
+                    name = "SingleVieBuff",
+                    cond = function(self)
+                        return Config:GetSetting('VieBuffMode') > 1 and self.Helpers.UseSingleVie(self) and self.Helpers.PreferAegisSpell(self)
+                    end,
+                },
+                { name = "StunTimer6",   cond = function(self) return Config:GetSetting('DoTimer6Stun') end, },
+                { name = "StunTimer4",   cond = function(self) return Config:GetSetting('DoTimer4Stun') end, },
+                { name = "LowLevelStun", cond = function(self) return Config:GetSetting('DoLLStun') and mq.TLO.Me.Level() < 59 end, },
+                { name = "QuickNuke",    cond = function(self) return Config:GetSetting('DoQuickNuke') end, },
+                { name = "MagicNuke",    cond = function(self) return Config:GetSetting('DoMagicNuke') end, },
+                { name = "PBAEStun",     cond = function(self) return Config:GetSetting('DoPBAEStun') end, },
+                { name = "PBAENuke",     cond = function(self) return Config:GetSetting('DoPBAENuke') end, },
+                { name = "UndeadNuke",   cond = function(self) return Config:GetSetting('DoUndeadNuke') end, },
                 { name = "PromisedHeal", }, -- filler, for manual use only, the config does not use it automatically
-                { name = "RezSpell",      cond = function(self) return not Casting.CanUseAA('Blessing of Resurrection') end, },
+                { name = "RezSpell",     cond = function(self) return not Casting.CanUseAA('Blessing of Resurrection') end, },
             },
         },
     },
@@ -1096,6 +1175,43 @@ local _ClassConfig = {
             RequiresLoadoutChange = true,
             Default = true,
             ConfigType = "Advanced",
+        },
+        ['OutOfGroupVie']     = {
+            DisplayName = "Out-of-Group Vie",
+            Group = "Abilities",
+            Header = "Buffs",
+            Category = "Group",
+            Index = 106,
+            Tooltip = "Use single-target Vie on tanks outside your group.",
+            RequiresLoadoutChange = true,
+            Default = false,
+        },
+        ['DoCorruptResist']   = {
+            DisplayName = "Corruption Resist Buff",
+            Group = "Abilities",
+            Header = "Buffs",
+            Category = "Group",
+            Index = 107,
+            Tooltip = "Use your group corruption resist buff (Shared Purity line).",
+            RequiresLoadoutChange = true,
+            Default = false,
+        },
+        ['SpireChoice']       = {
+            DisplayName = "Spire Choice:",
+            Group = "Abilities",
+            Header = "Buffs",
+            Category = "Group",
+            Index = 104,
+            Tooltip = "Choose which Fundament you would like to use during burns:\n" ..
+                "First Spire: Self Damage and Mitigation Buff.\n" ..
+                "Second Spire: Healing Power Buff to Self.\n" ..
+                "Third Spire: Group Mitigation Buff.",
+            Type = "Combo",
+            ComboOptions = Globals.Constants.SpireChoices,
+            RequiresLoadoutChange = true,
+            Default = 3,
+            Min = 1,
+            Max = #Globals.Constants.SpireChoices,
         },
 
         --Combat

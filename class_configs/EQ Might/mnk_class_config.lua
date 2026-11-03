@@ -7,7 +7,7 @@ local Globals      = require("utils.globals")
 local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
-    _version          = "2.3 - EQ Might",
+    _version          = "2.7 - EQ Might",
     _author           = "Algar, Derple",
     ['ModeChecks']    = {
         IsCuring = function() return Config:GetSetting('DoCures') end,
@@ -64,50 +64,60 @@ local _ClassConfig = {
     },
     ['AbilitySets']   = {
         ['MonkAura'] = {
-            "Master's Aura",   -- Level 66
-            "Disciple's Aura", -- Level 55
+            "Master's Aura",        -- Level 66
+            "Disciple's Aura",      -- Level 55
         },
-        ['Fang'] = {
-            "Dragon Fang",  -- Level 69
-            "Panther Claw", -- Level 66 EQM Custom
-            "Leopard Claw", -- Level 61
+        ['Fang'] = {                -- Timer 8
+            "Clawstriker's Flurry", -- Level 72
+            "Dragon Fang",          -- Level 69
+            "Panther Claw",         -- Level 66 EQM Custom
+            "Leopard Claw",         -- Level 61
         },
         ['FistsOfWu'] = {
-            "Fists of Wu", -- Level 68
+            "Fists of Wu",                -- Level 68
         },
-        ['MeleeMit'] = {
-            "Impenetrable Discipline", -- Level 70
-            "Earthwalk Discipline",    -- Level 65
-            "Stonestance Discipline",  -- Level 51
+        ['MeleeMit'] = {                  -- Timer 1
+            "Impenetrable Discipline",    -- Level 70
+            "Earthwalk Discipline",       -- Level 65
+            "Stonestance Discipline",     -- Level 51
         },
-        ['FistDisc'] = {
-            "Ashenhand Discipline",   -- Level 60
-            "Thunderkick Discipline", -- Level 52
+        ['FistDisc'] = {                  -- Timer 3
+            "Scaledfist Discipline",      -- Level 72
+            "Ashenhand Discipline",       -- Level 60
+            "Thunderkick Discipline",     -- Level 52
         },
-        ['Heel'] = {
-            "Heel of Kanji", -- Level 70
+        ['Heel'] = {                      -- Timer 5
+            "Heel of Kanji",              -- Level 70
         },
-        ['Focus'] = {
+        ['Focus'] = {                     -- Timer 10
             "Last Mile Focus Discipline", -- Level 69 EQM Custom
             "Speed Focus Discipline",     -- Level 63
         },
-        ['Palm'] = {
-            "Hundred Fists Discipline", -- Level 57
-            "Innerflame Discipline",    -- Level 56
+        ['Palm'] = {                      -- Timer 2
+            "Hundred Fists Discipline",   -- Level 57
+            "Innerflame Discipline",      -- Level 56
         },
-        -- ['ResistantDisc'] = {
+        ['DmgModPalm'] = {                -- Timer 2
+            "Crystalpalm Discipline",     -- Level 72
+        },
+        -- ['ResistantDisc'] = { -- Timer 4
         --     "Dreamwalk Discipline", -- Level 66
         --     "Resistant Discipline", -- Level 30
         -- },
-        ['HealingDisc'] = {                     --EQM Custom, 2m duration, 5m reuse, hp regen
+        ['HealingDisc'] = {                     -- Timer 4, EQM Custom, 2m duration, 5m reuse, hp regen
             "Lifebloom Will Discipline",        -- Level 70 EQM Custom
             "Rejuvenating Will Discipline",     -- Level 68 EQM Custom
             "Healing Determination Discipline", -- Level 66 EQM Custom
             "Healing Will Discipline",          -- Level 59
         },
+        ['EndRegen'] = {                        -- Timer 12
+            "Second Wind",                      -- Level 70
+            "Fresh Wind",                       -- Level 65 EQM Custom
+        },
     },
     ['AASets']        = {
         ['Spire'] = {
+            "Fundament: Third Spire of the Sensei",
             "Fundament: Second Spire of the Sensei",
             "Fundament: First Spire of the Sensei",
         },
@@ -250,8 +260,16 @@ local _ClassConfig = {
             },
         },
         ['Burn']              = {
+            { -- Use the selected spire, fall back to the AA set if we don't have it.
+                name_func = function(self)
+                    local chosen = "Fundament: " .. Globals.Constants.SpireChoices[Config:GetSetting('SpireChoice')] .. " Spire of the Sensei"
+                    return Casting.CanUseAA(chosen) and chosen or "Spire"
+                end,
+                type = "AA",
+                load_cond = function() return Config:GetSetting('SpireChoice') ~= 4 end,
+            },
             {
-                name = "Spire",
+                name = "Infusion of Thunder",
                 type = "AA",
             },
             {
@@ -286,6 +304,12 @@ local _ClassConfig = {
             {
                 name = "Palm",
                 type = "Disc",
+                load_cond = function(self) return Config:GetSetting('PalmChoice') == 1 end,
+            },
+            {
+                name = "DmgModPalm",
+                type = "Disc",
+                load_cond = function(self) return Config:GetSetting('PalmChoice') == 2 end,
             },
             {
                 name = "FistDisc",
@@ -297,6 +321,13 @@ local _ClassConfig = {
             },
         },
         ['CombatBuff']        = {
+            {
+                name = "EndRegen",
+                type = "Disc",
+                cond = function(self, discSpell)
+                    return mq.TLO.Me.PctEndurance() < 15
+                end,
+            },
             {
                 name = "FistsOfWu",
                 type = "Disc",
@@ -373,6 +404,39 @@ local _ClassConfig = {
             Index = 101,
             Tooltip = "Use your Five Point Palm proc AA (slowly drains your life but adds a heavy proc effect).",
             Default = true,
+            RequiresLoadoutChange = true,
+        },
+        ['SpireChoice']     = {
+            DisplayName = "Spire Choice:",
+            Group = "Abilities",
+            Header = "Buffs",
+            Category = "Self",
+            Index = 102,
+            Tooltip = "Choose which Fundament you would like to use during burns:\n" ..
+                "First Spire: Weapon Proc Rate Buff and Guard to Self.\n" ..
+                "Second Spire: Skill Damage Buff to Self.\n" ..
+                "Third Spire: Evasion and Attack Buff to Self when attacked.",
+            Type = "Combo",
+            ComboOptions = Globals.Constants.SpireChoices,
+            RequiresLoadoutChange = true,
+            Default = 2,
+            Min = 1,
+            Max = #Globals.Constants.SpireChoices,
+        },
+        ['PalmChoice']      = {
+            DisplayName = "Timer 2 Palm Choice:",
+            Group = "Abilities",
+            Header = "Burning",
+            Category = "Burning",
+            Index = 101,
+            Tooltip = "Choose which Timer 2 discipline to use during burns:\n" ..
+                "Attack Speed: Hundred Fists Discipline, Innerflame Discipline.\n" ..
+                "Dmg Mod + Min Dmg: Crystalpalm Discipline.",
+            Type = "Combo",
+            ComboOptions = { 'Attack Speed', 'Dmg Mod + Min Dmg', },
+            Default = 1,
+            Min = 1,
+            Max = 2,
             RequiresLoadoutChange = true,
         },
         ['AggroFeign']      = {

@@ -11,7 +11,7 @@ local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
     -- Added Mayhem line for AE taunt
-    _version          = "3.3 - EQ Might",
+    _version          = "3.6 - EQ Might",
     _author           = "Algar, Derple",
     ['ModeChecks']    = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
@@ -110,7 +110,7 @@ local _ClassConfig = {
             "Commanding Voice", -- Level 68
         },
         ['BladeDisc'] = {
-            "Vortex Blade",    -- Level 74
+            "Vortex Blade",    -- Level 72
             "Cyclone Blade",   -- Level 67
             "Whirlwind Blade", -- Level 61
             "Mayhem Blade",    -- Level 45 EQM Custom
@@ -127,18 +127,19 @@ local _ClassConfig = {
             "Bazu Bellow",           -- Level 69
         },
         ['AbsorbTaunt'] = {
-            "Mock", -- Level 70
+            -- "Scowl", -- Level 72 - absorb drops to 600 total (Mock has 5000)
+            "Mock",        -- Level 70
         },
-        ['EndRegen'] = {
-            "Third Wind",  -- Level 77 also does HP
+        ['EndRegen'] = {   -- Timer 12
             "Second Wind", -- Level 70
+            "Fresh Wind",  -- Level 65 EQM Custom
         },
         ['AuraBuff'] = {
             "Champion's Aura", -- Level 66
             "Myrmidon's Aura", -- Level 55
         },
         ['Onslaught'] = {
-            "Brutal Onslaught Discipline", -- Level 74
+            "Brutal Onslaught Discipline", -- Level 72
             "Savage Onslaught Discipline", -- Level 68
         },
         ['StrikeDisc'] = {
@@ -178,7 +179,8 @@ local _ClassConfig = {
     },
     ['AASets']        = {
         ['Spire'] = {
-            "Fundament: Second Spire of the Warlord",
+            "Fundament: Third Spire of the Warlord",
+            -- "Fundament: Second Spire of the Warlord",
             "Fundament: First Spire of the Warlord",
         },
         ['AreaTaunt'] = {
@@ -613,9 +615,20 @@ local _ClassConfig = {
             },
         },
         ['Burn']                   = {
-            {
-                name = "Spire",
+            { -- Use the selected spire, fall back to the AA set if we don't have it.
+                name_func = function(self)
+                    local chosen = "Fundament: " .. Globals.Constants.SpireChoices[Config:GetSetting('SpireChoice')] .. " Spire of the Warlord"
+                    return Casting.CanUseAA(chosen) and chosen or "Spire"
+                end,
                 type = "AA",
+                load_cond = function() return Config:GetSetting('SpireChoice') ~= 4 end,
+            },
+            {
+                name = "Warlord's Fury",
+                type = "AA",
+                cond = function(self, aaName, target)
+                    return Core.IsTanking() and Casting.SelfBuffAACheck(aaName)
+                end,
             },
             {
                 name = "Onslaught",
@@ -709,9 +722,16 @@ local _ClassConfig = {
                 name = "Battle Leap",
                 type = "AA",
                 cond = function(self, aaName, target)
-                    if not Config:GetSetting('DoBattleLeap') then return false end
+                    if not Config:GetSetting('DoBattleLeap') or Core.IsWarden() then return false end
                     if mq.TLO.Me.HeadWet() then return false end --Stops Leap from launching us above the water's surface
                     return Casting.SelfBuffAACheck(aaName) and not Casting.IHaveBuff("Group Bestial Alignment")
+                end,
+            },
+            {
+                name = "Battle Stomp",
+                type = "AA",
+                cond = function(self, aaName)
+                    return not Core.IsWarden() and Casting.SelfBuffAACheck(aaName)
                 end,
             },
             {
@@ -793,6 +813,23 @@ local _ClassConfig = {
         },
 
         --Abilities
+        ['SpireChoice']     = {
+            DisplayName = "Spire Choice:",
+            Group = "Abilities",
+            Header = "Buffs",
+            Category = "Self",
+            Index = 101,
+            Tooltip = "Choose which Fundament you would like to use during burns:\n" ..
+                "First Spire: Defensive Proc that Weakens the Attacker.\n" ..
+                "Second Spire: Melee Skill Damage Buff to Self.\n" ..
+                "Third Spire: Evasion, Parry and AC Buff to Self.",
+            Type = "Combo",
+            ComboOptions = Globals.Constants.SpireChoices,
+            RequiresLoadoutChange = true,
+            Default = 3,
+            Min = 1,
+            Max = #Globals.Constants.SpireChoices,
+        },
         ['DoBattleLeap']    = {
             DisplayName = "Do Battle Leap",
             Group = "Abilities",

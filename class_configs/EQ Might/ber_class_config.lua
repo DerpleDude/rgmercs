@@ -6,7 +6,7 @@ local Globals   = require('utils.globals')
 local Targeting = require("utils.targeting")
 
 return {
-    _version          = "2.1 - EQ Might",
+    _version          = "2.5 - EQ Might",
     _author           = "Algar, Derple",
     ['ModeChecks']    = {
         IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or not Targeting.HasXTHaters()) end,
@@ -66,75 +66,87 @@ return {
     },
     ['AbilitySets']   = {
         ['BerAura'] = {
-            "Bloodlust Aura", -- Level 66
-            "Aura of Rage",   -- Level 55
+            "Bloodlust Aura",       -- Level 66
+            "Aura of Rage",         -- Level 55
         },
-        ['VolleyDisc'] = {
-            "Destroyer's Volley", -- Level 69
-            "Rage Volley",        -- Level 61
+        ['VolleyDisc'] = {          -- Timer 1
+            "Annihilator's Volley", -- Level 72
+            "Destroyer's Volley",   -- Level 69
+            "Rage Volley",          -- Level 61
         },
-        ['FlurryDisc'] = {
+        -- ['JarringStrike'] = { -- Timer 1, conflict with Volley
+        --     "Jarring Strike", -- Level 72
+        -- },
+        ['FlurryDisc'] = {                -- Timer 5
             "Vengeful Flurry Discipline", -- Level 70
         },
-        ['RageDisc'] = {                  -- cleaving preferred, crit... lots of damage mod already (incuding ward of might)
+        ['CritRageDisc'] = {              -- Timer 3, cleaving preferred, crit... lots of damage mod already (incuding ward of might)
+            "Cleaving Rage Discipline",   -- Level 54
+        },
+        ['DmgModRageDisc'] = {            -- Timer 3
+            "Berserking Discipline",      -- Level 72
             -- "Burning Rage Discipline", -- Level 60
-            -- "Blind Rage Discipline",   -- Level 58
-            "Cleaving Rage Discipline", -- Level 54
+            "Blind Rage Discipline",      -- Level 58
         },
-        ['AngerDisc'] = {
-            "Cleaving Anger Discipline", -- Level 65
+        ['AngerDisc'] = {                 -- Timer 2
+            "Cleaving Anger Discipline",  -- Level 65
         },
-        ['CryDisc'] = {
-            "Ancient: Cry of Sullon",    -- Level 68 EQM Custom
-            "Ancient: Cry of Chaos",     -- Level 66
-            "Battle Cry of the Mastruq", -- Level 65
-            "War Cry of Dravel",         -- Level 64
-            "Battle Cry of Dravel",      -- Level 57
-            "War Cry",                   -- Level 50
-            "Battle Cry",                -- Level 30
+        ['CryDisc'] = {                   -- Timer 8
+            "Ancient: Cry of Sullon",     -- Level 68 EQM Custom
+            "Ancient: Cry of Chaos",      -- Level 66
+            "Battle Cry of the Mastruq",  -- Level 65
+            "War Cry of Dravel",          -- Level 64
+            "Battle Cry of Dravel",       -- Level 57
+            "War Cry",                    -- Level 50
+            "Battle Cry",                 -- Level 30
         },
         ['GroupCrit'] = {
-            "Cry Havoc", -- Level 68
+            "Cry Havoc",                        -- Level 68
         },
-        ['StunStrike'] = {
-            "Temple Blow", -- Level 71
-            "Mind Strike", -- Level 68
-            "Head Crush",  -- Level 60
-            "Head Pummel", -- Level 40
-            "Head Strike", -- Level 16
+        ['StunStrike'] = {                      -- Timer 9
+            "Temple Blow",                      -- Level 71
+            "Mind Strike",                      -- Level 68
+            "Head Crush",                       -- Level 60
+            "Head Pummel",                      -- Level 40
+            "Head Strike",                      -- Level 16
         },
-        ['SnareStrike'] = {
-            "Tendon Cleave",    -- Level 70
-            "Crippling Strike", -- Level 67
-            "Leg Slice",        -- Level 54
-            "Leg Cut",          -- Level 32
-            "Leg Strike",       -- Level 8
+        ['SnareStrike'] = {                     -- Timer 9
+            "Tendon Cleave",                    -- Level 70
+            "Crippling Strike",                 -- Level 67
+            "Leg Slice",                        -- Level 54
+            "Leg Cut",                          -- Level 32
+            "Leg Strike",                       -- Level 8
         },
-        ['DmgModProc'] = {
+        ['DmgModProc'] = {                      -- Timer 6
             "Unpredictable Rage Discipline",    -- Level 66
         },
-        ['HealingDisc'] = {                     --EQM Custom, 2m duration, 5m reuse, hp regen
+        ['HealingDisc'] = {                     -- Timer 4, EQM Custom, 2m duration, 5m reuse, hp regen
             "Lifebloom Will Discipline",        -- Level 70 EQM Custom
             "Rejuvenating Will Discipline",     -- Level 68 EQM Custom
             "Healing Determination Discipline", -- Level 66 EQM Custom
             "Healing Will Discipline",          -- Level 59
         },
-        ['Scream'] = {                          -- Throwing/Archery Dmg taken debuff
+        ['Scream'] = {                          -- Timer 9, Throwing/Archery Dmg taken debuff
             "Unsettling Scream",                -- Level 71
         },
-        ['Revitalize'] = {
-            "Steely Revitalize",      -- Level 69 EQM Custom
-            "Iron Revitalize",        -- Level 65 EQM Custom
-            "Hardened Revitalize",    -- Level 55 EQM Custom
-            "Revitalize",             -- Level 44 EQM Custom
+        ['Revitalize'] = {                      -- Timer 6
+            "Steely Revitalize",                -- Level 69 EQM Custom
+            "Iron Revitalize",                  -- Level 65 EQM Custom
+            "Hardened Revitalize",              -- Level 55 EQM Custom
+            "Revitalize",                       -- Level 44 EQM Custom
         },
-        ['BattlecryHeal'] = {         -- EQM Custom, restores HP/End for group, 8m reuse
-            "Rousing Battlecry",      -- Level 68 EQM Custom
-            "Invigorating Battlecry", -- Level 63 EQM Custom
+        ['EndRegen'] = {                        -- Timer 12
+            "Second Wind",                      -- Level 70
+            "Fresh Wind",                       -- Level 65 EQM Custom
+        },
+        ['BattlecryHeal'] = {                   -- Timer 11, EQM Custom, restores HP/End for group, 8m reuse
+            "Rousing Battlecry",                -- Level 68 EQM Custom
+            "Invigorating Battlecry",           -- Level 63 EQM Custom
         },
     },
     ['AASets']        = {
         ['Spire'] = {
+            "Fundament: Third Spire of Savagery",
             "Fundament: Second Spire of Savagery",
             "Fundament: First Spire of Savagery",
         },
@@ -286,8 +298,14 @@ return {
                 type = "Disc",
             },
             {
-                name = "RageDisc",
+                name = "CritRageDisc",
                 type = "Disc",
+                load_cond = function(self) return Config:GetSetting('RageDiscChoice') == 1 end,
+            },
+            {
+                name = "DmgModRageDisc",
+                type = "Disc",
+                load_cond = function(self) return Config:GetSetting('RageDiscChoice') == 2 end,
             },
             { -- goes to disc window
                 name = "RageAA",
@@ -307,6 +325,13 @@ return {
             },
         },
         ['Burn']               = {
+            -- { -- Berserk state is not supported yet: our emergency rotation and healers will undo it.
+            --     name = "Bloodfury",
+            --     type = "AA",
+            --     cond = function(self, aaName)
+            --         return not mq.TLO.Me.IsBerserk()
+            --     end,
+            -- },
             {
                 name = "OoW_Chest",
                 type = "Item",
@@ -364,6 +389,13 @@ return {
         },
         ['DPS']                = {
             {
+                name = "EndRegen",
+                type = "Disc",
+                cond = function(self, discSpell)
+                    return mq.TLO.Me.PctEndurance() < 15
+                end,
+            },
+            {
                 name = "Epic",
                 type = "Item",
                 cond = function(self, itemName)
@@ -375,9 +407,16 @@ return {
                 name = "Battle Leap",
                 type = "AA",
                 cond = function(self, aaName)
-                    if not Config:GetSetting('DoBattleLeap') then return false end
-                    return not Casting.IHaveBuff("Battle Leap Warcry") and not Casting.IHaveBuff("Group Bestial Alignment")
+                    if not Config:GetSetting('DoBattleLeap') or Core.IsWarden() then return false end
+                    return Casting.SelfBuffAACheck(aaName) and not Casting.IHaveBuff("Group Bestial Alignment")
                         and not mq.TLO.Me.HeadWet() --Stops Leap from launching us above the water's surface
+                end,
+            },
+            {
+                name = "Battle Stomp",
+                type = "AA",
+                cond = function(self, aaName)
+                    return not Core.IsWarden() and Casting.SelfBuffAACheck(aaName)
                 end,
             },
             {
@@ -411,7 +450,7 @@ return {
     ['Helpers']       = {
     },
     ['DefaultConfig'] = {
-        ['Mode']          = {
+        ['Mode']           = {
             DisplayName = "Mode",
             Category = "Combat",
             Tooltip = "Select the Combat Mode for this Toon",
@@ -425,7 +464,7 @@ return {
         },
 
         --Equipment
-        ['UseEpic']       = {
+        ['UseEpic']        = {
             DisplayName = "Epic Use:",
             Group = "Items",
             Header = "Clickies",
@@ -441,7 +480,7 @@ return {
         },
 
         -- Combat
-        ['DoBattleLeap']  = {
+        ['DoBattleLeap']   = {
             DisplayName = "Do Battle Leap",
             Group = "Abilities",
             Header = "Damage",
@@ -450,7 +489,23 @@ return {
             Tooltip = "Use the Battle Leap AA on cooldown.",
             Default = true,
         },
-        ['DoSnare']       = {
+        ['RageDiscChoice'] = {
+            DisplayName = "Timer 3 Rage Choice:",
+            Group = "Abilities",
+            Header = "Burning",
+            Category = "Burning",
+            Index = 101,
+            Tooltip = "Choose which Timer 3 rage discipline to use during burns:\n" ..
+                "Crit Chance: Cleaving Rage Discipline.\n" ..
+                "Dmg Mod + Min Dmg: Berserking Discipline, Blind Rage Discipline.",
+            Type = "Combo",
+            ComboOptions = { 'Crit Chance', 'Dmg Mod + Min Dmg', },
+            Default = 1,
+            Min = 1,
+            Max = 2,
+            RequiresLoadoutChange = true,
+        },
+        ['DoSnare']        = {
             DisplayName = "Do Snare",
             Group = "Abilities",
             Header = "Debuffs",
@@ -460,7 +515,7 @@ return {
             RequiresLoadoutChange = true,
             Default = false,
         },
-        ['SnareCount']    = {
+        ['SnareCount']     = {
             DisplayName = "Snare Max Mob Count",
             Group = "Abilities",
             Header = "Debuffs",
@@ -471,7 +526,7 @@ return {
             Min = 1,
             Max = 99,
         },
-        ['DoStun']        = {
+        ['DoStun']         = {
             DisplayName = "Do Stun",
             Group = "Abilities",
             Header = "Debuffs",
@@ -482,7 +537,7 @@ return {
             FAQ = "Why am I using Stun discs on an immune mob?",
             Answer = "If enabled, these abilities fires blindly. You can turn it off in your Class options.",
         },
-        ['DoHealingDisc'] = {
+        ['DoHealingDisc']  = {
             DisplayName = "Do Healing Disc",
             Group = "Abilities",
             Header = "Utility",

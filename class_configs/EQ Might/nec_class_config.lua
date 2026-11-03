@@ -6,7 +6,7 @@ local Globals      = require("utils.globals")
 local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
-    _version            = "2.2 - EQ Might",
+    _version            = "2.7 - EQ Might",
     _author             = "Algar, Derple",
     ['Modes']           = {
         'DPS',
@@ -18,7 +18,11 @@ local _ClassConfig = {
     ['ModeChecks']      = {
         CanCharm = function() return true end,
         IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or not Targeting.HasXTHaters()) end,
-        IsCuring = function() return Config:GetSetting('DoCures') and Casting.CanUseAA("Radiant Cure") end,
+        IsCuring = function() return Config:GetSetting('DoCures') and (Casting.CanUseAA("Radiant Cure") or Casting.CanUseAA("Embrace The Decay")) end,
+        IsDispelling = function() return Config:GetSetting('DoDispel') and Casting.CanUseAA("Eradicate Magic") end,
+    },
+    ['Dispel']          = {
+        { name = "Eradicate Magic", type = "AA", },
     },
     ['Rez']             = {
         ['Combat']   = {
@@ -31,6 +35,7 @@ local _ClassConfig = {
     ['Cure']            = {
         ['DetDispel'] = {
             { type = "AA", name = "Radiant Cure", },
+            { type = "AA", name = "Embrace The Decay", selfOnly = true, },
         },
     },
     ['Themes']          = {
@@ -133,13 +138,14 @@ local _ClassConfig = {
             "Shieldskin",   -- Level 14
         },
         ['CharmSpell'] = {
-            "Word of Chaos",   -- Level 70
-            "Word of Terris",  -- Level 65
-            "Enslave Death",   -- Level 60
-            "Thrall of Bones", -- Level 54
-            "Cajole Undead",   -- Level 47
-            "Beguile Undead",  -- Level 31
-            "Dominate Undead", -- Level 18
+            "Vakk`dra's Command", -- Level 72
+            "Word of Chaos",      -- Level 70
+            "Word of Terris",     -- Level 65
+            "Enslave Death",      -- Level 60
+            "Thrall of Bones",    -- Level 54
+            "Cajole Undead",      -- Level 47
+            "Beguile Undead",     -- Level 31
+            "Dominate Undead",    -- Level 18
         },
         ['LifeTap'] = {
             "Drain Life",                 -- Level 70
@@ -157,6 +163,11 @@ local _ClassConfig = {
             "Lifespike",                  -- Level 3
             "Lifetap",                    -- Level 1
         },
+        ['ManaDrain'] = {
+            "Mind Dissection", -- Level 72
+            "Mind Flay",       -- Level 70
+            "Mind Wrack",      -- Level 58
+        },
         ['DurationTap'] = {
             "Dyn`leth's Grasp",       -- Level 71
             "Ancient: Chiasa's Kiss", -- Level 68 EQM Custom
@@ -172,7 +183,6 @@ local _ClassConfig = {
         },
         ['PoisonNuke'] = {
             "Venin",                -- Level 70
-            "Call for Blood",       -- Level 68
             "Acikin",               -- Level 66
             "Neurotoxin",           -- Level 61
             "Ancient: Lifebane",    -- Level 60
@@ -181,7 +191,12 @@ local _ClassConfig = {
             "Torbas' Acid Blast",   -- Level 32
             "Shock of Poison",      -- Level 21
         },
+        ['BloodNuke'] = {
+            "Demand for Blood", -- Level 72
+            "Call for Blood",   -- Level 68
+        },
         ['FireDot'] = {
+            "Ashengate Pyre",          -- Level 72
             "Pyre of the Fallen",      -- Level 71
             "Dread Pyre",              -- Level 70
             "Pyre of Mori",            -- Level 67
@@ -193,6 +208,7 @@ local _ClassConfig = {
             "Heat Blood",              -- Level 10
         },
         ['FireDot2'] = {
+            "Ashengate Pyre",          -- Level 72
             "Pyre of the Fallen",      -- Level 71
             "Dread Pyre",              -- Level 70
             "Pyre of Mori",            -- Level 67
@@ -202,6 +218,7 @@ local _ClassConfig = {
             "Ignite Blood",            -- Level 47
         },
         ['FireDot3'] = {
+            "Ashengate Pyre",          -- Level 72
             "Pyre of the Fallen",      -- Level 71
             "Dread Pyre",              -- Level 70
             "Pyre of Mori",            -- Level 67
@@ -242,25 +259,30 @@ local _ClassConfig = {
         --     "Grip of Mori",     -- Level 67 (note: original list position kept)
         -- },
         ['PoisonDot'] = {
+            "Kedgefish Venom",         -- Level 72
+            "Vakk`dra's Sickly Mists", -- Level 72
             -- "Chaos Venom",     -- Level 70 (worse than corath venom)
-            "Corath Venom",       -- Level 69
-            "Blood of Thule",     -- Level 65
-            "Virulent Bolt",      -- Level 59 EQM Custom
-            "Envenomed Bolt",     -- Level 50
-            "Chilling Embrace",   -- Level 36
-            "Venom of the Snake", -- Level 34
-            "Poison Bolt",        -- Level 4
+            "Corath Venom",            -- Level 69
+            "Blood of Thule",          -- Level 65
+            "Virulent Bolt",           -- Level 59 EQM Custom
+            "Envenomed Bolt",          -- Level 50
+            "Chilling Embrace",        -- Level 36
+            "Venom of the Snake",      -- Level 34
+            "Poison Bolt",             -- Level 4
         },
         ['PoisonDot2'] = {
+            "Kedgefish Venom",         -- Level 72
+            "Vakk`dra's Sickly Mists", -- Level 72
             -- "Chaos Venom",     -- Level 70 (worse than corath venom)
-            "Corath Venom",       -- Level 69
-            "Blood of Thule",     -- Level 65
-            "Virulent Bolt",      -- Level 59 EQM Custom
-            "Envenomed Bolt",     -- Level 50
-            "Chilling Embrace",   -- Level 36
-            "Venom of the Snake", -- Level 34
+            "Corath Venom",            -- Level 69
+            "Blood of Thule",          -- Level 65
+            "Virulent Bolt",           -- Level 59 EQM Custom
+            "Envenomed Bolt",          -- Level 50
+            "Chilling Embrace",        -- Level 36
+            "Venom of the Snake",      -- Level 34
         },
         ['SnareDot'] = {
+            "Coruscating Darkness", -- Level 72
             "Desecrating Darkness", -- Level 68
             "Embracing Darkness",   -- Level 63
             "Devouring Darkness",   -- Level 59
@@ -281,6 +303,7 @@ local _ClassConfig = {
             "Scent of Midnight", -- Level 68
         },
         ['LichSpell'] = {
+            "Otherside",                   -- Level 72
             "Dark Possession",             -- Level 70
             "Grave Pact",                  -- Level 70
             "Ancient: Seduction of Chaos", -- Level 65
@@ -328,14 +351,15 @@ local _ClassConfig = {
             "Focus Death",            -- Level 11
         },
         ['UndeadNuke'] = {
-            "Desolate Undead", -- Level 70
-            "Destroy Undead",  -- Level 65
-            "Exile Undead",    -- Level 57
-            "Banish Undead",   -- Level 46
-            "Expel Undead",    -- Level 38
-            "Dismiss Undead",  -- Level 28
-            "Expulse Undead",  -- Level 19
-            "Ward Undead",     -- Level 6
+            "Annihilate Undead", -- Level 72
+            "Desolate Undead",   -- Level 70
+            "Destroy Undead",    -- Level 65
+            "Exile Undead",      -- Level 57
+            "Banish Undead",     -- Level 46
+            "Expel Undead",      -- Level 38
+            "Dismiss Undead",    -- Level 28
+            "Expulse Undead",    -- Level 19
+            "Ward Undead",       -- Level 6
         },
         ['OrbNuke'] = {
             "Umbra Orb",  -- Level 70
@@ -343,6 +367,7 @@ local _ClassConfig = {
             "Soul Orb",   -- Level 61
         },
         -- ['Calliav'] = { --35s refresh on mem, and this does not seem worth a gem slot currently
+        --     "Aegis of Calliav",      -- Level 72
         --     "Bulwark of Calliav",    -- Level 69
         --     "Protection of Calliav", -- Level 64
         --     "Guard of Calliav",      -- Level 58
@@ -386,6 +411,8 @@ local _ClassConfig = {
     },
     ['AASets']          = {
         ['Spire'] = {
+            "Fundament: Third Spire of Necromancy",
+            "Fundament: Second Spire of Necromancy",
             "Fundament: First Spire of Necromancy",
         },
         ['DeadSwarm'] = {
@@ -607,6 +634,13 @@ local _ClassConfig = {
         },
         ['CombatBuff']        = {
             {
+                name = "Death Bloom",
+                type = "AA",
+                cond = function(self, aaName)
+                    return mq.TLO.Me.PctMana() < Config:GetSetting('DeathBloomPercent') and mq.TLO.Me.PctHPs() > 50
+                end,
+            },
+            {
                 name = "Epic",
                 type = "Item",
                 cond = function(self, itemName)
@@ -664,6 +698,14 @@ local _ClassConfig = {
             },
         },
         ['DPS(MobHighHP)']    = {
+            {
+                name = "ManaDrain",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoManaDrain') end,
+                cond = function(self, spell, target)
+                    return (mq.TLO.Target.PctMana() or -1) > 0 and (mq.TLO.Group.LowMana(40)() or 0) > 2
+                end,
+            },
             {
                 name = "FireDot",
                 type = "Spell",
@@ -768,14 +810,30 @@ local _ClassConfig = {
                 end,
             },
             {
+                name = "BloodNuke",
+                type = "Spell",
+                cond = function(self, spell, target)
+                    return Casting.OkayToNuke()
+                end,
+            },
+            {
                 name = "PoisonNuke",
                 type = "Spell",
+                load_cond = function(self) return not Core.GetResolvedActionMapItem('BloodNuke') end,
                 cond = function(self, spell, target)
                     return Casting.OkayToNuke()
                 end,
             },
         },
         ['DPS(MobLowHP)']     = {
+            {
+                name = "ManaDrain",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoManaDrain') end,
+                cond = function(self, spell, target)
+                    return (mq.TLO.Target.PctMana() or -1) > 0 and (mq.TLO.Group.LowMana(40)() or 0) > 2
+                end,
+            },
             {
                 name = "OrbNuke",
                 type = "Spell",
@@ -804,8 +862,16 @@ local _ClassConfig = {
                 end,
             },
             {
+                name = "BloodNuke",
+                type = "Spell",
+                cond = function(self, spell, target)
+                    return Casting.OkayToNuke()
+                end,
+            },
+            {
                 name = "PoisonNuke",
                 type = "Spell",
+                load_cond = function(self) return not Core.GetResolvedActionMapItem('BloodNuke') end,
                 cond = function(self, spell, target)
                     return Casting.OkayToNuke()
                 end,
@@ -837,12 +903,20 @@ local _ClassConfig = {
                 name = "Swarm of Decay",
                 type = "AA",
             },
-            {
-                name = "Spire",
+            { -- Use the selected spire, fall back to the AA set if we don't have it.
+                name_func = function(self)
+                    local chosen = "Fundament: " .. Globals.Constants.SpireChoices[Config:GetSetting('SpireChoice')] .. " Spire of Necromancy"
+                    return Casting.CanUseAA(chosen) and chosen or "Spire"
+                end,
                 type = "AA",
+                load_cond = function() return Config:GetSetting('SpireChoice') ~= 4 end,
                 cond = function(self, aaName, target)
                     return Globals.AutoTargetIsNamed and Targeting.GetAutoTargetPctHPs() <= Config:GetSetting('BurnHPThreshold')
                 end,
+            },
+            {
+                name = "Mercurial Torment",
+                type = "AA",
             },
             {
                 name = "Silent Casting",
@@ -1026,7 +1100,8 @@ local _ClassConfig = {
                     end,
                 },
                 { name = "ScentDebuff2", cond = function(self) return Config:GetSetting('ScentDebuffUse') == 3 end, },
-                { name = "PoisonNuke", },
+                { name = "PoisonNuke",   cond = function(self) return not Core.GetResolvedActionMapItem('BloodNuke') end, },
+                { name = "BloodNuke", },
                 { name = "FireDot",      cond = function(self) return Config:GetSetting('DoFireDot') > 1 end, },
                 { name = "ColdDot",      cond = function(self) return Config:GetSetting('DoColdDot') end, },
                 { name = "CurseDot",     cond = function(self) return Config:GetSetting('DoCurseDot') > 1 end, },
@@ -1039,6 +1114,7 @@ local _ClassConfig = {
                 { name = "PlagueDot",    cond = function(self) return Config:GetSetting('DoPlagueDot') end, },
                 { name = "LichSpell",    cond = function(self) return Config:GetSetting('DoLich') end, },
                 { name = "OrbNuke",      cond = function(self) return Config:GetSetting('DoOrbNuke') end, },
+                { name = "ManaDrain",    cond = function(self) return Config:GetSetting('DoManaDrain') end, },
                 { name = "LifeTap",      cond = function(self) return Config:GetSetting('DoLifetap') end, },
                 { name = "UndeadNuke",   cond = function(self) return Config:GetSetting('DoUndeadNuke') end, },
             },
@@ -1056,6 +1132,16 @@ local _ClassConfig = {
             Max = 1,
             FAQ = "What do the different Modes Do?",
             Answer = "Currently Necros only have one mode, which is DPS. This mode will focus on DPS and some utility.",
+        },
+        ['DoDispel']          = {
+            DisplayName = "Do Dispel",
+            Group = "Abilities",
+            Header = "Debuffs",
+            Category = "Dispel",
+            Index = 101,
+            Tooltip = "Enable removing beneficial enemy effects.",
+            RequiresLoadoutChange = true,
+            Default = true,
         },
 
         --Pet
@@ -1107,6 +1193,18 @@ local _ClassConfig = {
             Default = 60,
             Min = 1,
             Max = 99,
+        },
+        ['DeathBloomPercent'] = {
+            DisplayName = "Death Bloom %",
+            Group = "Abilities",
+            Header = "Recovery",
+            Category = "Other Recovery",
+            Index = 101,
+            Tooltip = "Use Death Bloom when your mana has dropped to this percentage.",
+            Default = 40,
+            Min = 1,
+            Max = 100,
+            ConfigType = "Advanced",
         },
 
         --Debuffs
@@ -1235,6 +1333,16 @@ local _ClassConfig = {
             RequiresLoadoutChange = true,
             Default = true,
         },
+        ['DoManaDrain']       = {
+            DisplayName = "Do Mana Drain",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "Taps",
+            Index = 102,
+            Tooltip = "Use your Mind Wrack line (target mana drain, group mana recourse).",
+            RequiresLoadoutChange = true,
+            Default = false,
+        },
         ['DoUndeadNuke']      = {
             DisplayName = "Do Undead Nuke",
             Group = "Abilities",
@@ -1338,6 +1446,23 @@ local _ClassConfig = {
             Default = 100,
             Min = 1,
             Max = 101,
+        },
+        ['SpireChoice']       = {
+            DisplayName = "Spire Choice:",
+            Group = "Abilities",
+            Header = "Buffs",
+            Category = "Group",
+            Index = 101,
+            Tooltip = "Choose which Fundament you would like to use during burns:\n" ..
+                "First Spire: DoT Crit Chance Buff.\n" ..
+                "Second Spire: Pet Damage Proc Buff.\n" ..
+                "Third Spire: DoT Crit Damage Buff.",
+            Type = "Combo",
+            ComboOptions = Globals.Constants.SpireChoices,
+            RequiresLoadoutChange = true,
+            Default = 3,
+            Min = 1,
+            Max = #Globals.Constants.SpireChoices,
         },
         ['DoOrbNuke']         = {
             DisplayName = "Summon Orbs",

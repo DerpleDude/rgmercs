@@ -8,7 +8,7 @@ local Strings   = require("utils.strings")
 local Targeting = require("utils.targeting")
 
 return {
-    _version          = "2.2 - EQ Might",
+    _version          = "2.4 - EQ Might",
     _author           = "Derple, Algar, mackal",
     ['ModeChecks']    = {
         IsCuring = function() return Config:GetSetting('DoCures') end,
@@ -71,61 +71,73 @@ return {
     },
     ['AbilitySets']   = {
         ['ThiefBuff'] = {
-            "Thief's Eyes", -- Level 68
+            "Thief's Eyes",                     -- Level 68
         },
-        ['Kinesthetics'] = {
-            "Twinblade Discipline",    -- Level 67 EQM Custom
-            "Kinesthetics Discipline", -- Level 57
+        ['Kinesthetics'] = {                    -- Timer 2
+            "Twinblade Discipline",             -- Level 67 EQM Custom
+            "Kinesthetics Discipline",          -- Level 57
         },
-        ['Duelist'] = {
-            "Assassin Discipline", -- Level 70
-            "Duelist Discipline",  -- Level 59
+        ['Duelist'] = {                         -- Timer 2
+            "Assassin Discipline",              -- Level 70
+            "Duelist Discipline",               -- Level 59
         },
-        ['ChanceDisc'] = {
-            "Twisted Chance Discipline", -- Level 65
-            "Deadeye Discipline",        -- Level 54
+        ['ChanceDisc'] = {                      -- Timer 3
+            "Twisted Chance Discipline",        -- Level 65
+            "Deadeye Discipline",               -- Level 54
         },
-        ['Frenzied'] = {
-            "Frenzied Stabbing Discipline", -- Level 69
+        ['Frenzied'] = {                        -- Timer 5
+            "Frenzied Stabbing Discipline",     -- Level 69
         },
-        ['SneakAttack'] = {
-            "Razorarc",              -- Level 70
-            "Daggerfall",            -- Level 69
-            "Ancient: Chaos Strike", -- Level 65
-            "Kyv Strike",            -- Level 65
-            "Assassin's Strike",     -- Level 63
-            "Thief's Vengeance",     -- Level 52
-            "Sneak Attack",          -- Level 20
+        ['SneakAttack'] = {                     -- Timer 8
+            "Razorarc",                         -- Level 70
+            "Daggerfall",                       -- Level 69
+            "Ancient: Chaos Strike",            -- Level 65
+            "Kyv Strike",                       -- Level 65
+            "Assassin's Strike",                -- Level 63
+            "Thief's Vengeance",                -- Level 52
+            "Sneak Attack",                     -- Level 20
         },
-        ['CADisc'] = {
-            "Counterattack Discipline", -- Level 53
+        ['CADisc'] = {                          -- Timer 1
+            "Counterattack Discipline",         -- Level 53
         },
-        ['AimDisc'] = {
-            "Deadly Aim Discipline", -- Level 68
+        ['Pinpoint'] = {                        -- Timer 9
+            "Pinpoint Vulnerability",           -- Level 72
         },
-        ['Precision'] = {
+        ['Nimble'] = {                          -- Timer 1
+            "Lithe Discipline",                 -- Level 72
+            "Nimble Discipline",                -- Level 55
+        },
+        ['AimDisc'] = {                         -- Timer 15
+            "Deadly Aim Discipline",            -- Level 68
+        },
+        ['Precision'] = {                       -- Timer 3
             "Deadly Precision Discipline",      -- Level 63
         },
-        ['HealingDisc'] = {                     --EQM Custom, 2m duration, 5m reuse, hp regen
+        ['HealingDisc'] = {                     -- Timer 4 - EQM Custom, 2m duration, 5m reuse, hp regen
             "Lifebloom Will Discipline",        -- Level 70 EQM Custom
             "Rejuvenating Will Discipline",     -- Level 68 EQM Custom
             "Healing Determination Discipline", -- Level 66 EQM Custom
             "Healing Will Discipline",          -- Level 59
         },
-        ['PoisonGuide'] = {
-            "Guide of Toxicity", -- Level 71
+        ['PoisonGuide'] = {                     -- Timer 7
+            "Guide of Toxicity",                -- Level 71
         },
-        ['Revitalize'] = {
-            "Iron Revitalize",     -- Level 68 EQM Custom
-            "Hardened Revitalize", -- Level 62 EQM Custom
-            "Revitalize",          -- Level 51 EQM Custom
+        ['Revitalize'] = {                      -- Timer 6
+            "Iron Revitalize",                  -- Level 68 EQM Custom
+            "Hardened Revitalize",              -- Level 62 EQM Custom
+            "Revitalize",                       -- Level 51 EQM Custom
         },
-        ['WeaponDisc'] = {
-            "Weapon Affinity Discipline", -- Level 61
+        ['WeaponDisc'] = {                      -- Timer 4
+            "Weapon Affinity Discipline",       -- Level 61
+        },
+        ['EndRegen'] = {                        -- Timer 12
+            "Second Wind",                      -- Level 70
+            "Fresh Wind",                       -- Level 65 EQM Custom
         },
     },
     ['AASets']        = {
         ['Spire'] = {
+            "Fundament: Third Spire of the Rake",
             "Fundament: Second Spire of the Rake",
             "Fundament: First Spire of the Rake",
         },
@@ -209,6 +221,13 @@ return {
     ['Rotations']     = {
         ['Burn']              = {
             {
+                name = "Pinpoint",
+                type = "Disc",
+                cond = function(self, discSpell, target)
+                    return Casting.DetSpellCheck(discSpell, target)
+                end,
+            },
+            {
                 name = "PoisonGuide",
                 type = "Disc",
                 cond = function(self, discSpell, target)
@@ -233,9 +252,13 @@ return {
                 name = "Rogue's Fury",
                 type = "AA",
             },
-            {
-                name = "Spire",
+            { -- Use the selected spire, fall back to the AA set if we don't have it.
+                name_func = function(self)
+                    local chosen = "Fundament: " .. Globals.Constants.SpireChoices[Config:GetSetting('SpireChoice')] .. " Spire of the Rake"
+                    return Casting.CanUseAA(chosen) and chosen or "Spire"
+                end,
                 type = "AA",
+                load_cond = function() return Config:GetSetting('SpireChoice') ~= 4 end,
             },
             {
                 name = "Dirty Fighting",
@@ -302,6 +325,13 @@ return {
         },
         ['DPS']               = {
             {
+                name = "EndRegen",
+                type = "Disc",
+                cond = function(self, discSpell)
+                    return mq.TLO.Me.PctEndurance() < 15
+                end,
+            },
+            {
                 name = "Epic",
                 type = "Item",
                 cond = function(self, itemName)
@@ -358,6 +388,13 @@ return {
             {
                 name = "CADisc",
                 type = "Disc",
+            },
+            {
+                name = "Nimble",
+                type = "Disc",
+                cond = function(self, discSpell)
+                    return Core.AtCriticalHP()
+                end,
             },
         },
         ['Downtime']          = {
@@ -486,6 +523,23 @@ return {
             Index = 101,
             Tooltip = "Use Hide/Sneak during Downtime.",
             Default = false,
+        },
+        ['SpireChoice']     = {
+            DisplayName = "Spire Choice:",
+            Group = "Abilities",
+            Header = "Buffs",
+            Category = "Self",
+            Index = 102,
+            Tooltip = "Choose which Fundament you would like to use during burns:\n" ..
+                "First Spire: Melee Proc that Weakens the Target.\n" ..
+                "Second Spire: Melee Skill Damage Buff to Self.\n" ..
+                "Third Spire: Melee Crit Chance and Crit Damage Buff to Self.",
+            Type = "Combo",
+            ComboOptions = Globals.Constants.SpireChoices,
+            RequiresLoadoutChange = true,
+            Default = 3,
+            Min = 1,
+            Max = #Globals.Constants.SpireChoices,
         },
         ['DoOpener']        = {
             DisplayName = "Use Openers",

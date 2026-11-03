@@ -7,7 +7,7 @@ local Globals      = require("utils.globals")
 local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
-    _version              = "2.2 - Lazarus",
+    _version              = "2.3 - Lazarus",
     _author               = "Algar",
     ['ModeChecks']        = {
         CanCharm = function() return true end,
@@ -558,7 +558,6 @@ local _ClassConfig = {
             name = 'DPS',
             state = 1,
             steps = 1,
-            load_cond = function() return mq.TLO.Me.Level() < 71 end,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)

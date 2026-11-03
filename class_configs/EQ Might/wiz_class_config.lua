@@ -12,11 +12,15 @@ local Globals   = require("utils.globals")
 local Targeting = require("utils.targeting")
 
 return {
-    _version          = "2.4 - EQ Might",
+    _version          = "2.9 - EQ Might",
     _author           = "Derple, Algar",
     ['ModeChecks']    = {
         IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or not Targeting.HasXTHaters()) end,
         IsCuring = function() return Config:GetSetting('DoCures') and Casting.CanUseAA("Radiant Cure") end,
+        IsDispelling = function() return Config:GetSetting('DoDispel') and Casting.CanUseAA("Eradicate Magic") end,
+    },
+    ['Dispel']        = {
+        { name = "Eradicate Magic", type = "AA", },
     },
     ['Rez']           = {
         ['Combat']   = {
@@ -37,6 +41,7 @@ return {
     },
     ['OnModeChange']  = function(self, mode)
         -- if this is enabled weaves will break.
+        self.TempSettings.AutoElementOrder = self.Helpers.AutoElementOrder(self)
     end,
     ['Themes']        = {
         ['DPS'] = {
@@ -95,13 +100,17 @@ return {
     },
     ['AbilitySets']   = {
         -- ['IceClaw'] = {
+        --     "Claw of Selay", -- Level 72
         --     "Claw of Vox",   -- Level 69
         --     "Claw of Frost", -- Level 61
         -- },
-        ['WildNuke'] = {
-            "Wildmagic Strike", -- Level 70
+        ['FlashNuke'] = {
+            "Flashfires",       -- Level 72
+            "Beam of Solteris", -- Level 71
         },
         ['FireNuke'] = {
+            "Sothgar's Flame",               -- Level 72
+            -- "Chaos Immolation",           -- Level 72
             "Chaos Flame",                   -- Level 70
             "Spark of Fire",                 -- Level 66
             "Draught of Ro",                 -- Level 62
@@ -113,6 +122,7 @@ return {
             "Shock of Fire",                 -- Level 4
         },
         ['BigFireNuke'] = {                  -- Level 51-70, Long Cast, Heavy Damage
+            "Ethereal Conflagration",        -- Level 72
             "Ether Flame",                   -- Level 70
             "Ancient: Core Fire",            -- Level 68
             "Corona Flare",                  -- Level 67
@@ -122,9 +132,14 @@ return {
             "Garrison's Superior Sundering", -- Level 60
             "Sunstrike",                     -- Level 60
         },
+        ['SnapNuke'] = {
+            "Cold Snap", -- Level 71
+        },
+        ['SpearNuke'] = {
+            "Ancient: Spear of Gelaqua", -- Level 68
+        },
         ['ColdNuke'] = {
             "Spark of Ice",                -- Level 69
-            "Ancient: Spear of Gelaqua",   -- Level 68
             "Black Ice",                   -- Level 65
             "Draught of E`ci",             -- Level 64
             "Draught of Ice",              -- Level 57
@@ -136,10 +151,22 @@ return {
             "Blast of Cold",               -- Level 1
         },
         ['BigColdNuke'] = {                -- Level 60-70, Timed with great Ratio or High Cast Time/Damage
+            "Icefall Avalanche",           -- Level 72
             "Gelidin Comet",               -- Level 69
             "Ice Meteor",                  -- Level 64
             "Ancient: Destruction of Ice", -- Level 60, 13s T1
             "Ice Spear of Solist",         -- Level 60, 13s T2
+        },
+        ['BurstNuke'] = {
+            "Cloudburst Strike", -- Level 71
+        },
+        ['MidMagicNuke'] = {
+            "Intertwining Energy", -- Level 72
+            "Ball Lightning",      -- Level 71
+        },
+        ['QuickMagicNuke'] = {
+            "Pure Wildmagic", -- Level 72
+            "Leap of Sparks", -- Level 71
         },
         ['MagicNuke'] = {
             "Spark of Lightning",            -- Level 68
@@ -158,6 +185,7 @@ return {
             "Elnerick's Electrical Rending", -- Level 60
         },
         ['StunSpell'] = {
+            "Telakisz",         -- Level 72
             "Telekara",         -- Level 70
             "Telaka",           -- Level 65
             "Telekin",          -- Level 64
@@ -184,10 +212,14 @@ return {
             "Lesser Familiar",  -- Level 45
             "Minor Familiar",   -- Level 25
         },
+        ['ManaBuff'] = {
+            "Inner Arcane Calm", -- Level 72 EQM Custom
+        },
         ['SelfRune1'] = {
-            "Ether Ward",   -- Level 69
-            "Ether Skin",   -- Level 68
-            "Force Shield", -- Level 63
+            "Crystalwing Ward", -- Level 72
+            "Ether Ward",       -- Level 69
+            "Ether Skin",       -- Level 68
+            "Force Shield",     -- Level 63
         },
         ['Dispel'] = {
             "Annul Magic",   -- Level 53
@@ -221,12 +253,13 @@ return {
         },
         -- Lure Spells (I may implement these in the future. It would need some testing... and yet more options. Custom config users, double check these lists before use!)
         -- ['IceLureNuke'] = {
-        --     "RimeLure",      -- Level 70
+        --     "Rimelure",      -- Level 70
         --     "Icebane",       -- Level 66
         --     "Lure of Ice",   -- Level 60
         --     "Lure of Frost", -- Level 52
         -- },
         -- ['FireLureNuke'] = {
+        --     "Lavalure",            -- Level 71
         --     "Firebane",            -- Level 68
         --     "Lure of Ro",          -- Level 62
         --     "Lure of Flame",       -- Level 55
@@ -253,6 +286,7 @@ return {
         --     "Energy Storm",        -- Level 26
         -- },
         ['ColdRain'] = {
+            "Icicle Deluge",   -- Level 72
             "Gelid Rains",     -- Level 70
             "Tears of Marr",   -- Level 65
             "Tears of Prexus", -- Level 58
@@ -299,8 +333,13 @@ return {
     },
     ['AASets']        = {
         ['Spire'] = {
+            "Fundament: Third Spire of Arcanum",
             "Fundament: Second Spire of Arcanum",
             "Fundament: First Spire of Arcanum",
+        },
+        ['SnareAA'] = {
+            "Atol's Unresistable Shackles",
+            "Atol's Shackles",
         },
         ['Devastation'] = {
             "Prolonged Destruction",
@@ -319,33 +358,61 @@ return {
             return Targeting.GetTargetDistance() >= Config:GetSetting('RainDistance') and Targeting.MobNotLowHP(target)
         end,
 
+        --- Don't start a slow-casting nuke when the target is low hp (lvl 72 nukes are faster).
+        ---@param spell MQSpell The resolved big nuke.
+        ---@param target MQSpawn The nuke target.
+        ---@return boolean
+        BigNukeCheck = function(spell, target)
+            return (spell.Level() or 0) >= 72 or Targeting.MobNotLowHP(target)
+        end,
+
+        --- Returns true once all three level 71+ magic nuke sets resolve.
+        ---@return boolean
+        HasMagicNukes = function()
+            return Core.GetResolvedActionMapItem('BurstNuke') ~= nil and Core.GetResolvedActionMapItem('MidMagicNuke') ~= nil and
+                Core.GetResolvedActionMapItem('QuickMagicNuke') ~= nil
+        end,
+
+        --- Returns the Auto mode element order, strongest first for the nukes in your book.
+        ---@return string[]
+        AutoElementOrder = function(self)
+            local bigFire = Core.GetResolvedActionMapItem('BigFireNuke')
+            local bigCold = Core.GetResolvedActionMapItem('BigColdNuke')
+            if self.Helpers.HasMagicNukes() then
+                if (bigFire and bigFire.Level() or 0) < 72 then return { "Magic", "Fire", "Cold", } end
+            elseif (bigCold and bigCold.Level() or 0) >= 69 then
+                return { "Fire", "Cold", "Magic", }
+            end
+            return { "Fire", "Magic", "Cold", }
+        end,
+
         -- Resolves the currently-active element based on ElementMode.
-        -- Auto: prefers Fire, then Cold, then Magic, skipping any element the auto-target is
+        -- Auto: tries elements in AutoElementOrder, skipping any element the auto-target is
         -- immune to (per the Spawn List) or one toggled off via Skip<X>Spells.
-        PickElement = function()
+        PickElement = function(self)
             local mode = Config:GetSetting('ElementMode') or 1
             if mode == 2 then return "Fire" end
             if mode == 3 then return "Cold" end
             if mode == 4 then return "Magic" end
             local autoId = Globals.AutoTargetID or 0
-            if not Casting.ShouldSkipElement("Fire", autoId) then return "Fire" end
-            if not Casting.ShouldSkipElement("Cold", autoId) then return "Cold" end
-            if not Casting.ShouldSkipElement("Magic", autoId) then return "Magic" end
+            for _, element in ipairs(self.TempSettings.AutoElementOrder or { "Fire", "Magic", "Cold", }) do
+                if not Casting.ShouldSkipElement(element, autoId) then return element end
+            end
             return "Fire" -- all skipped; default so Fury/Familiar still resolve
         end,
 
-        -- Familiar element pick: explicit element if set, Fire fallback in Auto. See FAQ.
-        PickFamiliarElement = function()
+        -- Familiar element pick: explicit element if set, first in AutoElementOrder in Auto. See FAQ.
+        PickFamiliarElement = function(self)
             local mode = Config:GetSetting('ElementMode') or 1
             if mode == 2 then return "Fire" end
             if mode == 3 then return "Cold" end
             if mode == 4 then return "Magic" end
-            return "Fire"
+            return (self.TempSettings.AutoElementOrder or { "Fire", })[1]
         end,
 
         CurrentFamiliarName = function(self)
             local familiars = { Fire = "Ro's Flaming Familiar", Cold = "E'ci's Icy Familiar", Magic = "Druzzil's Mystical Familiar", }
-            return familiars[self.Helpers.PickFamiliarElement()] or "Unknown Error"
+            return familiars[self.Helpers.PickFamiliarElement(self)] or "Unknown Error"
         end,
     },
     ['Charm']         = {
@@ -429,24 +496,13 @@ return {
             end,
         },
         {
-            name = 'WildNuke',
-            state = 1,
-            steps = 1,
-            load_cond = function() return Config:GetSetting('DoWildNuke') and Core.GetResolvedActionMapItem('WildNuke') end,
-            doFullRotation = true,
-            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
-            cond = function(self, combat_state)
-                return combat_state == "Combat" and Targeting.AggroCheckOkay() and not (Core.IsModeActive('PBAE') and Combat.AETargetCheck(true))
-            end,
-        },
-        {
             name = 'DPS(Fire)',
             state = 1,
             steps = 1,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                if self.Helpers.PickElement() ~= "Fire" then return false end
+                if self.Helpers.PickElement(self) ~= "Fire" then return false end
                 return combat_state == "Combat" and Targeting.AggroCheckOkay() and not (Core.IsModeActive('PBAE') and Combat.AETargetCheck(true))
             end,
         },
@@ -457,7 +513,7 @@ return {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                if self.Helpers.PickElement() ~= "Cold" then return false end
+                if self.Helpers.PickElement(self) ~= "Cold" then return false end
                 return combat_state == "Combat" and Targeting.AggroCheckOkay() and not (Core.IsModeActive('PBAE') and Combat.AETargetCheck(true))
             end,
         },
@@ -468,7 +524,7 @@ return {
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
-                if self.Helpers.PickElement() ~= "Magic" then return false end
+                if self.Helpers.PickElement(self) ~= "Magic" then return false end
                 return combat_state == "Combat" and Targeting.AggroCheckOkay() and not (Core.IsModeActive('PBAE') and Combat.AETargetCheck(true))
             end,
         },
@@ -522,24 +578,28 @@ return {
                 name = "Focus of Arcanum",
                 type = "AA",
             },
-            {
-                name = "Spire",
+            { -- Use the selected spire, fall back to the AA set if we don't have it.
+                name_func = function(self)
+                    local chosen = "Fundament: " .. Globals.Constants.SpireChoices[Config:GetSetting('SpireChoice')] .. " Spire of Arcanum"
+                    return Casting.CanUseAA(chosen) and chosen or "Spire"
+                end,
                 type = "AA",
+                load_cond = function() return Config:GetSetting('SpireChoice') ~= 4 end,
             },
             { -- Fury AA: split per element so Auto mode picks the right one on the fly each burn pass
                 name = "Fury of Ro",
                 type = "AA",
-                cond = function(self) return self.Helpers.PickElement() == "Fire" end,
+                cond = function(self) return self.Helpers.PickElement(self) == "Fire" end,
             },
             {
                 name = "Fury of Eci",
                 type = "AA",
-                cond = function(self) return self.Helpers.PickElement() == "Cold" end,
+                cond = function(self) return self.Helpers.PickElement(self) == "Cold" end,
             },
             {
                 name = "Fury of Druzzil",
                 type = "AA",
-                cond = function(self) return self.Helpers.PickElement() == "Magic" end,
+                cond = function(self) return self.Helpers.PickElement(self) == "Magic" end,
             },
             {
                 name = "Improved Twincast",
@@ -611,7 +671,7 @@ return {
         },
         ['Snare'] = {
             {
-                name = "Atol's Shackles",
+                name = "SnareAA",
                 type = "AA",
                 cond = function(self, aaName, target)
                     return Casting.DetAACheck(aaName) and Targeting.MobHasLowHP(target) and not Casting.SnareImmuneTarget(target)
@@ -667,12 +727,6 @@ return {
                 type = "AA",
             },
         },
-        ['WildNuke'] = {
-            {
-                name = "WildNuke",
-                type = "Spell",
-            },
-        },
         ['DPS(Fire)'] = {
             {
                 name = "Pyromancy",
@@ -691,10 +745,14 @@ return {
                 end,
             },
             {
+                name = "FlashNuke",
+                type = "Spell",
+            },
+            {
                 name = "BigFireNuke",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    return Targeting.MobNotLowHP(target)
+                    return self.Helpers.BigNukeCheck(spell, target)
                 end,
             },
             {
@@ -720,10 +778,18 @@ return {
                 end,
             },
             {
+                name = "SnapNuke",
+                type = "Spell",
+            },
+            {
+                name = "SpearNuke",
+                type = "Spell",
+            },
+            {
                 name = "BigColdNuke",
                 type = "Spell",
                 cond = function(self, spell, target)
-                    return Targeting.MobNotLowHP(target)
+                    return self.Helpers.BigNukeCheck(spell, target)
                 end,
             },
             {
@@ -739,6 +805,18 @@ return {
                 cond = function(self, aaName)
                     return Casting.SelfBuffAACheck(aaName)
                 end,
+            },
+            {
+                name = "BurstNuke",
+                type = "Spell",
+            },
+            {
+                name = "MidMagicNuke",
+                type = "Spell",
+            },
+            {
+                name = "QuickMagicNuke",
+                type = "Spell",
             },
             {
                 name = "BigMagicNuke",
@@ -793,6 +871,14 @@ return {
                 active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
                 cond = function(self, spell)
                     return (spell.Level() or 0) > (mq.TLO.Me.AltAbility("Etherealist's Unity").Spell.Trigger(1).Level() or 0) and Casting.SelfBuffCheck(spell)
+                end,
+            },
+            {
+                name = "ManaBuff",
+                type = "Spell",
+                active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
+                cond = function(self, spell)
+                    return Casting.SelfBuffCheck(spell)
                 end,
             },
             {
@@ -865,24 +951,29 @@ return {
             name = "Default Mode",
             -- cond = function(self) return true end, --Code kept here for illustration, if there is no condition to check, this line is not required
             spells = {
-                { name = "FireNuke", },
+                { name = "FlashNuke", },
                 { name = "BigFireNuke", },
-                { name = "ColdNuke", },
+                { name = "FireNuke", },
+                { name = "SnapNuke", },
+                { name = "SpearNuke", },
                 { name = "BigColdNuke", },
-                { name = "MagicNuke", },
-                { name = "BigMagicNuke", },
-                { name = "WildNuke",     cond = function() return Config:GetSetting('DoWildNuke') end, },
-                { name = "FireRain",     cond = function() return Config:GetSetting('DoRain') end, },
-                { name = "ColdRain",     cond = function() return Config:GetSetting('DoRain') end, },
-                { name = "HarvestSpell", cond = function() return not Casting.CanUseAA("Harvest of Druzzil") end, },
-                { name = "SnareSpell",   cond = function() return Config:GetSetting('DoSnare') and not Casting.CanUseAA("Atol's Shackles") end, },
-                { name = "EvacSpell",    cond = function() return Config:GetSetting('KeepEvacMemmed') end, },
-                { name = "StunSpell",    cond = function() return Config:GetSetting('DoStun') end, },
-                { name = "JoltSpell",    cond = function() return Config:GetSetting('DoJoltSpell') end, },
-                { name = "PBTimer4",     cond = function() return Core.IsModeActive('PBAE') end, },
-                { name = "FireJyll",     cond = function() return Core.IsModeActive('PBAE') end, },
-                { name = "ColdJyll",     cond = function() return Core.IsModeActive('PBAE') end, },
-                { name = "MagicJyll",    cond = function() return Core.IsModeActive('PBAE') end, },
+                { name = "ColdNuke",       cond = function() return not Core.GetResolvedActionMapItem('SnapNuke') end, },
+                { name = "BurstNuke", },
+                { name = "MidMagicNuke", },
+                { name = "QuickMagicNuke", },
+                { name = "BigMagicNuke",   cond = function(self) return not self.Helpers.HasMagicNukes() end, },
+                { name = "MagicNuke",      cond = function(self) return not self.Helpers.HasMagicNukes() end, },
+                { name = "FireRain",       cond = function() return Config:GetSetting('DoRain') end, },
+                { name = "ColdRain",       cond = function() return Config:GetSetting('DoRain') end, },
+                { name = "HarvestSpell",   cond = function() return not Casting.CanUseAA("Harvest of Druzzil") end, },
+                { name = "SnareSpell",     cond = function() return Config:GetSetting('DoSnare') and not Core.GetResolvedActionMapItem('SnareAA') end, },
+                { name = "EvacSpell",      cond = function() return Config:GetSetting('KeepEvacMemmed') end, },
+                { name = "StunSpell",      cond = function() return Config:GetSetting('DoStun') end, },
+                { name = "JoltSpell",      cond = function() return Config:GetSetting('DoJoltSpell') end, },
+                { name = "PBTimer4",       cond = function() return Core.IsModeActive('PBAE') end, },
+                { name = "FireJyll",       cond = function() return Core.IsModeActive('PBAE') end, },
+                { name = "ColdJyll",       cond = function() return Core.IsModeActive('PBAE') end, },
+                { name = "MagicJyll",      cond = function() return Core.IsModeActive('PBAE') end, },
                 { name = "SelfRune1", },
                 { name = "SelfHPBuff", },
             },
@@ -892,14 +983,24 @@ return {
         ['Mode']                 = {
             DisplayName = "Mode",
             Category = "Combat",
-            Tooltip = "Select the Combat Mode for this Toon",
+            Tooltip = "Select the Combat Mode for this Toon. PBAE mode beats single target at 3-4 targets in the mid 60s, 5 at 70, 7 at 71 and 8 at 72.",
             Type = "Custom",
             RequiresLoadoutChange = true,
             Default = 1,
             Min = 1,
             Max = 2,
             FAQ = "What do the different Modes Do?",
-            Answer = "Wizard only has a single mode, but the spells used will adjust based on your level range.",
+            Answer = "DPS mode nukes your target with your current element. PBAE mode memorizes point-blank AE spells and uses them instead when enough targets are in range.",
+        },
+        ['DoDispel']             = {
+            DisplayName = "Do Dispel",
+            Group = "Abilities",
+            Header = "Debuffs",
+            Category = "Dispel",
+            Index = 101,
+            Tooltip = "Enable removing beneficial enemy effects.",
+            RequiresLoadoutChange = true,
+            Default = true,
         },
 
         -- Damage (ST)
@@ -909,21 +1010,18 @@ return {
             Header = "Damage",
             Category = "Direct",
             Index = 101,
-            Tooltip = "Pick the element strategy for nukes and buffs. Auto rotates Fire/Cold/Magic based on target immunity. " ..
-                "See FAQ for details on Skip<Element>Spells conflicts and Familiar AA handling in Auto mode.",
+            Tooltip = "Choose the element you nuke with. Auto uses your strongest element, skipping any your target is immune to.",
             Type = "Combo",
             ComboOptions = { 'Auto', 'Fire', 'Cold', 'Magic', },
             Default = 1,
             Min = 1,
             Max = 4,
+            RequiresLoadoutChange = true,
             FAQ = "How does Element Mode work?",
             Answer =
-                "   The 'Element Mode' setting determines which element you will use in combat. All three element lines (Fire/Cold/Magic) are memorized regardless of mode, so you can change mode in combat freely.\n\n" ..
-                "   Auto mode prefers Fire, then Cold, then Magic, automatically skipping any element your target is immune to (per the Spawn List) or any element you've globally toggled off via the Skip <Element> Spells settings. The explicit modes (Fire/Cold/Magic) lock to that element regardless of immunity data.\n\n" ..
-                "   Heads up: explicit modes still respect the global Skip <Element> Spells toggles. If you pick Fire mode here but have SkipFireSpells enabled in your combat settings, the global skip wins and Fire casts will be blocked - you'll need to clear the conflicting toggle, or pick a different element here.\n\n" ..
-                "   Fury AA buffs follow whatever element is active each burn pass - in Auto mode, this means Fury can swap mid-burn as the target changes.\n\n" ..
-                "   In Auto mode, the script buffs the Fire familiar (Ro's Flaming) and leaves it alone. Explicit modes buff the matching familiar. To change familiars in Auto, briefly switch ElementMode to Cold or Magic to let the script buff that one, then switch back - the buff persists.\n\n" ..
-                "   PBAE spells, if enabled, will use any available element due to the nature of their recast timers.",
+                "Element Mode chooses the element you nuke with.\n" ..
+                "Auto uses the strongest element you have nukes for, skipping any element your target is immune to or that you turned off with Skip <Element> Spells.\n" ..
+                "Fire, Cold and Magic modes lock to that element, but Skip <Element> Spells still applies.",
         },
         ['DoManaBurn']           = {
             DisplayName = "Use Mana Burn AA",
@@ -935,22 +1033,12 @@ return {
             RequiresLoadoutChange = true,
             Default = true,
         },
-        ['DoWildNuke']           = {
-            DisplayName = "Do Wild Nuke",
-            Group = "Abilities",
-            Header = "Damage",
-            Category = "Direct",
-            Index = 105,
-            Tooltip = "Cast Wildmagic Strike.",
-            RequiresLoadoutChange = true,
-            Default = true,
-        },
         ['DoRain']               = {
             DisplayName = "Do Rain",
             Group = "Abilities",
             Header = "Damage",
             Category = "Direct",
-            Index = 106,
+            Index = 105,
             RequiresLoadoutChange = true,
             ConfigType = "Advanced",
             Tooltip = "**WILL BREAK MEZ** Use your selected element's Rain Spell as a single-target nuke. **WILL BREAK MEZ***",
@@ -964,7 +1052,7 @@ return {
             Group = "Abilities",
             Header = "Damage",
             Category = "Direct",
-            Index = 107,
+            Index = 106,
             ConfigType = "Advanced",
             Tooltip = "The minimum distance a target must be to use a Rain (Rain AE Range: 25'). Used to avoid harming the caster.",
             Default = 30,
@@ -1075,6 +1163,23 @@ return {
             Min = 1,
             Max = 2,
             RequiresLoadoutChange = true,
+        },
+        ['SpireChoice']          = {
+            DisplayName = "Spire Choice:",
+            Group = "Abilities",
+            Header = "Buffs",
+            Category = "Self",
+            Index = 102,
+            Tooltip = "Choose which Fundament you would like to use during burns:\n" ..
+                "First Spire: Spell Crit Chance Buff to Self.\n" ..
+                "Second Spire: Spell Crit Damage Buff to Self.\n" ..
+                "Third Spire: Detrimental Spell Mana Cost Reduction.",
+            Type = "Combo",
+            ComboOptions = Globals.Constants.SpireChoices,
+            RequiresLoadoutChange = true,
+            Default = 2,
+            Min = 1,
+            Max = #Globals.Constants.SpireChoices,
         },
     },
 }

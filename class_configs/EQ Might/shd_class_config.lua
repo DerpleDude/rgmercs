@@ -13,6 +13,7 @@ local Ui           = require("utils.ui")
 --todo: add a LOT of tooltips or scrap them entirely. Hopefully the former.
 local Tooltips     = {
     Mantle              = "Spell Line: Melee Absorb Proc",
+    MaxHPTap            = "Spell Line: Dmg + Max HP Buff + Hate Increase",
     Carapace            = "Spell Line: Melee Absorb Proc",
     CombatEndRegen      = "Discipline Line: Endurance Regen (In-Combat Useable)",
     EndRegen            = "Discipline Line: Endurance Regen (Out of Combat)",
@@ -77,7 +78,7 @@ local Tooltips     = {
 
 local _ClassConfig = {
     -- Added low level proc self-buffs, separated the proc lines by buff slot
-    _version          = "2.9 - EQ Might",
+    _version          = "2.11 - EQ Might",
     _author           = "Algar, Derple",
     ['ModeChecks']    = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
@@ -180,16 +181,17 @@ local _ClassConfig = {
         ['UnholyAura'] = { 'Unholy Aura Discipline', }, -- Level 55
 
         ['PetSpell'] = {
-            "Son of Decay",   -- Level 68
-            "Invoke Death",   -- Level 64
-            "Cackling Bones", -- Level 58
-            "Malignant Dead", -- Level 52
-            "Summon Dead",    -- Level 46
-            "Animate Dead",   -- Level 38
-            "Restless Bones", -- Level 30
-            "Convoke Shadow", -- Level 22
-            "Bone Walk",      -- Level 14
-            "Leering Corpse", -- Level 7
+            "Shambling Minion", -- Level 72
+            "Son of Decay",     -- Level 68
+            "Invoke Death",     -- Level 64
+            "Cackling Bones",   -- Level 58
+            "Malignant Dead",   -- Level 52
+            "Summon Dead",      -- Level 46
+            "Animate Dead",     -- Level 38
+            "Restless Bones",   -- Level 30
+            "Convoke Shadow",   -- Level 22
+            "Bone Walk",        -- Level 14
+            "Leering Corpse",   -- Level 7
         },
         ['PetHaste'] = {
             "Amplify Death",           -- Level 71
@@ -221,6 +223,7 @@ local _ClassConfig = {
             "Banshee Aura", -- Level 54
         },
         ['CloakHP'] = {
+            "Cloak of Corruption", -- Level 72
             "Cloak of Discord",    -- Level 70
             "Cloak of Luclin",     -- Level 65
             "Cloak of the Akheva", -- Level 60
@@ -229,6 +232,7 @@ local _ClassConfig = {
             "Call of Darkness", -- Level 54
         },
         ['AETaunt'] = {
+            "Vilify",     -- Level 72
             "Dread Gaze", -- Level 69
         },
         ['PoisonDot'] = {
@@ -239,6 +243,7 @@ local _ClassConfig = {
             "Blood of Pain",           -- Level 41
         },
         ['SpearNuke'] = {
+            "Rotroot Spear",    -- Level 72
             "Spear of Muram",   -- Level 69
             "Miasmic Spear",    -- Level 65
             "Spear of Decay",   -- Level 64
@@ -254,6 +259,7 @@ local _ClassConfig = {
             "Vampiric Curse",         -- Level 57
         },
         ['LifeTap'] = {
+            "Touch of Severan",      -- Level 72
             "Touch of the Devourer", -- Level 70
             "Leech Soul",            -- Level 68 EQM Custom
             "Touch of Inruku",       -- Level 67
@@ -269,6 +275,7 @@ local _ClassConfig = {
             "Lifetap",               -- Level 8
         },
         ['LifeTap2'] = {
+            "Touch of Severan",      -- Level 72
             "Touch of the Devourer", -- Level 70
             "Leech Soul",            -- Level 68 EQM Custom
             "Touch of Inruku",       -- Level 67
@@ -284,6 +291,7 @@ local _ClassConfig = {
             "Lifetap",               -- Level 8
         },
         ['LifeTap3'] = {
+            "Touch of Severan",      -- Level 72
             "Touch of the Devourer", -- Level 70
             "Leech Soul",            -- Level 68 EQM Custom
             "Touch of Inruku",       -- Level 67
@@ -301,14 +309,17 @@ local _ClassConfig = {
         -- ['TouchTap'] = {
         --     "Touch of Draygun",
         -- },
-        ['BiteTap'] = {               -- Timer 2
-            "Blacktalon Bite",        -- Level 70
-            "Inruku's Bite",          -- Level 67
-            "Ancient: Bite of Chaos", -- Level 65
-            "Zevfeer's Bite",         -- Level 62
+        ['MaxHPTap'] = {
+            "Touch of the Wailing Three", -- Level 72
         },
-        ['AncientBite'] = {           -- Timer 4
-            "Ancient: Bite of Muram", -- Level 70
+        ['BiteTap'] = {                   -- Timer 2
+            "Blacktalon Bite",            -- Level 70
+            "Inruku's Bite",              -- Level 67
+            "Ancient: Bite of Chaos",     -- Level 65
+            "Zevfeer's Bite",             -- Level 62
+        },
+        ['AncientBite'] = {               -- Timer 4
+            "Ancient: Bite of Muram",     -- Level 70
         },
         ['Terror'] = {
             "Terror of Vergalid", -- Level 70
@@ -392,11 +403,18 @@ local _ClassConfig = {
         ['ForPower'] = {
             "Challenge for Power", -- Level 71
         },
+        ['Demeanor'] = {
+            "Remorseless Demeanor", -- Level 72
+        },
+        ['EndRegen'] = {            -- Timer 12
+            "Fresh Wind",           -- Level 67 EQM Custom
+        },
         -- pact of decay ... is this a lich? level 69
     },
     ['AASets']        = {
         ['Spire'] = {
-            "Fundament: Second Spire of the Reavers",
+            "Fundament: Third Spire of the Reavers",
+            -- "Fundament: Second Spire of the Reavers",
             "Fundament: First Spire of the Reavers",
         },
     },
@@ -598,6 +616,15 @@ local _ClassConfig = {
     },
     ['Rotations']     = {
         ['Downtime']               = {
+            {
+                name = "Demeanor",
+                type = "Spell",
+                tooltip = Tooltips.Demeanor,
+                active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
+                cond = function(self, spell)
+                    return Casting.SelfBuffCheck(spell)
+                end,
+            },
             {
                 name = "Shroud",
                 type = "Spell",
@@ -904,9 +931,13 @@ local _ClassConfig = {
                     return Config:GetSetting('DoVisage')
                 end,
             },
-            {
-                name = "Spire",
+            { -- Use the selected spire, fall back to the AA set if we don't have it.
+                name_func = function(self)
+                    local chosen = "Fundament: " .. Globals.Constants.SpireChoices[Config:GetSetting('SpireChoice')] .. " Spire of the Reavers"
+                    return Casting.CanUseAA(chosen) and chosen or "Spire"
+                end,
                 type = "AA",
+                load_cond = function() return Config:GetSetting('SpireChoice') ~= 4 end,
             },
             { -- for DPS mode
                 name = "UnholyAura",
@@ -954,6 +985,16 @@ local _ClassConfig = {
                 cond = function(self, spell, target)
                     if not Core.IsTanking() or not Targeting.TankingXTNamed() then return false end
                     return Casting.SelfBuffCheck(spell)
+                end,
+            },
+            {
+                name = "Terror",
+                type = "Spell",
+                tooltip = Tooltips.Terror,
+                load_cond = function(self) return Core.IsTanking() and Config:GetSetting('DoTerror') end,
+                cond = function(self, spell, target)
+                    if Globals.NoHateTargetIDs:contains(Globals.AutoTargetID) then return false end
+                    return Targeting.TankingXTNamed() and (Casting.CanUseAA("Cascading Theft of Defense") and not Casting.IHaveBuff("Cascading Theft of Defense"))
                 end,
             },
         },
@@ -1046,6 +1087,22 @@ local _ClassConfig = {
             },
         },
         ['Combat']                 = {
+            {
+                name = "EndRegen",
+                type = "Disc",
+                cond = function(self, discSpell)
+                    return mq.TLO.Me.PctEndurance() < 15
+                end,
+            },
+            {
+                name = "MaxHPTap",
+                type = "Spell",
+                tooltip = Tooltips.MaxHPTap,
+                load_cond = function(self) return Config:GetSetting('DoMaxHPTap') end,
+                cond = function(self, spell, target)
+                    return Casting.SelfBuffCheck(spell)
+                end,
+            },
             {
                 name = "ForPower",
                 type = "Spell",
@@ -1207,6 +1264,7 @@ local _ClassConfig = {
                 { name = "DireDot",     cond = function(self) return Config:GetSetting('DoDireDot') end, },
                 { name = "PowerTapAC",  cond = function(self) return Config:GetSetting('DoACTap') end, },
                 { name = "PowerTapAtk", cond = function(self) return Config:GetSetting('DoAtkTap') end, },
+                { name = "MaxHPTap",    cond = function(self) return Config:GetSetting('DoMaxHPTap') end, },
                 { name = "Skin", },
                 { name = "HateBuff",    cond = function(self) return Config:GetSetting('DoHateBuff') and not Casting.CanUseAA("Voice of Thule") end, },
                 { name = "LifeTap2", },
@@ -1413,6 +1471,16 @@ local _ClassConfig = {
             Max = 3,
             ConfigType = "Advanced",
         },
+        ['DoMaxHPTap']        = {
+            DisplayName = "Use Max HP Tap",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "Taps",
+            Index = 105,
+            Tooltip = function() return Ui.GetDynamicTooltipForSpell("MaxHPTap") end,
+            RequiresLoadoutChange = true,
+            Default = false,
+        },
 
         --DoT Spells
         ['DoBondTap']         = {
@@ -1483,6 +1551,23 @@ local _ClassConfig = {
             Default = true,
             ConfigType = "Advanced",
             RequiresLoadoutChange = true,
+        },
+        ['SpireChoice']       = {
+            DisplayName = "Spire Choice:",
+            Group = "Abilities",
+            Header = "Buffs",
+            Category = "Self",
+            Index = 105,
+            Tooltip = "Choose which Fundament you would like to use during burns:\n" ..
+                "First Spire: DoT and Spell Crit Buff to Self.\n" ..
+                "Second Spire: Melee Skill Damage Buff to Self.\n" ..
+                "Third Spire: Evasion, Parry and AC Buff to Self.",
+            Type = "Combo",
+            ComboOptions = Globals.Constants.SpireChoices,
+            RequiresLoadoutChange = true,
+            Default = 3,
+            Min = 1,
+            Max = #Globals.Constants.SpireChoices,
         },
         ['DoTerror']          = {
             DisplayName = "Use Terror Taunts",
