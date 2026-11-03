@@ -4,7 +4,7 @@ local ImGui    = require('ImGui')
 local Config   = require('utils.config')
 local Globals  = require('utils.globals')
 local ImagesUI = require('ui.images')
-local Tour     = require('modules.tour')
+local Modules  = require('utils.modules')
 local Ui       = require("utils.ui")
 
 -- seed the rng
@@ -255,12 +255,7 @@ end
 function LoaderUI:RenderLoader(initPctComplete, initMsg)
     if not self.Initialized then
         ImagesUI:InitLoader()
-        local facts = {}
-        for _, step in ipairs(Tour.Steps) do
-            if step.DidYouKnow then
-                table.insert(facts, step.DidYouKnow)
-            end
-        end
+        local facts = Modules:ExecModule("Tour", "GetDidYouKnowFacts")
         self.didYouKnow = string.format("Did You Know: %s", facts[math.random(#facts)])
         self.Initialized = true
     end

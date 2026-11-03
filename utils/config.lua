@@ -3417,9 +3417,10 @@ function Config:SettingDbDelete(module, key)
     elseif scope then
         return self.Db:deleteValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, module, key)
     end
-    -- unknown scope (deprecated key) - try both, idempotent
+    -- unknown scope (deprecated key) - try all 3, idempotent
     self.Db:deleteValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, module, key)
     self.Db:deleteServerValue(Globals.ServerEnv, module, key)
+    self.Db:deleteServerValue(self:GetScopeServerName("global"), module, key)
 end
 
 --- Retrieves a specified setting.

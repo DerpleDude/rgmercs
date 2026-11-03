@@ -349,6 +349,16 @@ function Module:Start()
     self:GoToStep(1)
 end
 
+function Module:GetDidYouKnowFacts()
+    local facts = {}
+    for _, step in ipairs(self.Steps) do
+        if step.DidYouKnow then
+            table.insert(facts, step.DidYouKnow)
+        end
+    end
+    return facts
+end
+
 function Module:ClearSample()
     Globals.IgnoredTargetIDs:remove(sampleXTarget.ID())
     Globals.NoHateTargetIDs:remove(sampleXTarget.ID())
