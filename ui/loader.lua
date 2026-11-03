@@ -4,6 +4,7 @@ local ImGui    = require('ImGui')
 local Config   = require('utils.config')
 local Globals  = require('utils.globals')
 local ImagesUI = require('ui.images')
+local Tour     = require('modules.tour')
 local Ui       = require("utils.ui")
 
 -- seed the rng
@@ -12,6 +13,8 @@ math.randomseed(mq.gettime())
 local LoaderUI           = { _version = '1.0', _name = "LoaderUI", _author = 'Derple', }
 LoaderUI.__index         = LoaderUI
 LoaderUI.Initialized     = false
+LoaderUI.didYouKnow      = nil
+LoaderUI.windowHeight    = 80
 
 -- Shared constants
 LoaderUI.imgEndSize      = 60
@@ -252,6 +255,13 @@ end
 function LoaderUI:RenderLoader(initPctComplete, initMsg)
     if not self.Initialized then
         ImagesUI:InitLoader()
+        local facts = {}
+        for _, step in ipairs(Tour.Steps) do
+            if step.DidYouKnow then
+                table.insert(facts, step.DidYouKnow)
+            end
+        end
+        self.didYouKnow = string.format("Did You Know: %s", facts[math.random(#facts)])
         self.Initialized = true
     end
 
@@ -267,7 +277,7 @@ function LoaderUI:RenderLoader(initPctComplete, initMsg)
     ImGui.PushStyleVar(ImGuiStyleVar.FrameRounding, 15)
     ImGui.PushStyleVar(ImGuiStyleVar.WindowBorderSize, 1.25)
     ImGui.PushStyleVar(ImGuiStyleVar.Alpha, 100)
-    ImGui.SetNextWindowSize(ImVec2(400, 80), ImGuiCond.Always)
+    ImGui.SetNextWindowSize(ImVec2(400, self.windowHeight), ImGuiCond.Always)
     ImGui.SetNextWindowPos(ImVec2(winX, winY), ImGuiCond.Always)
 
     ImGui.Begin("RGMercs Loader", nil,
@@ -285,6 +295,21 @@ function LoaderUI:RenderLoader(initPctComplete, initMsg)
     ImGui.SetCursorPosY(ImGui.GetCursorPosY() - 35)
     ImGui.SetCursorPosX(ImGui.GetCursorPosX() + 70)
     Ui.RenderAnimatedPercentage("RGMercsLoadProgressBar", initPctComplete, 16, 0, Globals.Constants.Colors.LightBlue, Globals.Constants.Colors.Green, initMsg)
+
+    local style = ImGui.GetStyle()
+    ImGui.SetCursorPosY(ImGui.GetCursorPosY() + style.ItemSpacing.y + 15)
+    local boxWidth = ImGui.GetContentRegionAvail()
+    local didYouKnowHeight = ImGui.CalcTextSizeVec(self.didYouKnow, false, boxWidth - style.WindowPadding.x * 2).y
+    ImGui.PushStyleVar(ImGuiStyleVar.ChildRounding, style.FrameRounding)
+    if ImGui.BeginChild("didyouknow##RGMercsLoader", boxWidth, didYouKnowHeight + style.WindowPadding.y * 2, ImGuiChildFlags.Borders, ImGuiWindowFlags.NoScrollbar) then
+        ImGui.PushTextWrapPos(0)
+        Ui.RenderColoredText(Globals.Constants.Colors.LightBlue, self.didYouKnow)
+        ImGui.PopTextWrapPos()
+    end
+    ImGui.EndChild()
+    ImGui.PopStyleVar()
+    self.windowHeight = math.max(80, ImGui.GetCursorPosY() - style.ItemSpacing.y + style.WindowPadding.y)
+
     ImGui.PopStyleVar(4)
     ImGui.End()
 end

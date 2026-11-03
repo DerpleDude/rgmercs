@@ -63,18 +63,21 @@ Module.Steps           = {
     },
     {
         Title = "Pause and Resume",
+        DidYouKnow = "/rgl pauseall and /rgl unpauseall pause or resume automation on every client running RGMercs.",
         Anchors = { "PauseButton", },
         Text = "This button pauses or resumes automation for this character.\n\n" ..
             "/rgl pause and /rgl unpause do the same from the command line. /rgl pauseall and /rgl unpauseall apply to every client running RGMercs.",
     },
     {
         Title = "Options Window",
+        DidYouKnow = "/rgl search <text> opens the Options window with the search filter already set.",
         Anchors = { "OptionsButton", },
         Text = "Opens the Options window, where nearly every setting lives.\n\n" ..
             "The search box in its top left corner filters settings by name, tooltip or category. /rgl search <text> opens it with the filter already set.",
     },
     {
         Title = "Show Advanced Options",
+        DidYouKnow = "Many settings are hidden until Show Advanced Options is turned on. If a search does not find a setting you expect, turn it on and search again.",
         Filter = "",
         Group = "General",
         Anchors = { "AdvancedToggle", },
@@ -84,11 +87,13 @@ Module.Steps           = {
     },
     {
         Title = "Mini Mode",
+        DidYouKnow = "The main window can shrink down to a small icon. Click the icon or use /rgl mini to bring the window back.",
         Anchors = { "MiniButton", },
         Text = "Shrinks the main window down to a small icon. Click the icon or use /rgl mini to bring the window back.",
     },
     {
         Title = "Main Assist and the Assist List",
+        DidYouKnow = "With Use Assist List enabled, the first valid character on the Assist List is used as the Main Assist. /rgl assistadd <Name> adds to it.",
         Tab = "Main",
         Expand = "AssistList",
         Anchors = { "AssistList", },
@@ -100,6 +105,7 @@ Module.Steps           = {
     },
     {
         Title = "Heal List",
+        DidYouKnow = "Healers can heal characters outside their group when those characters are on the Heal List. /rgl heallistadd <Name> adds to it.",
         Tab = "Main",
         Expand = "HealList",
         Anchors = { "HealList", },
@@ -109,6 +115,7 @@ Module.Steps           = {
     },
     {
         Title = "Force Target",
+        DidYouKnow = "/rgl forcetarget <id?> forces a mob to be the autotarget until it is no longer valid, and /rgl forcetargetclear clears it.",
         Tab = "Main",
         Expand = "ForceTarget",
         Anchors = { "ForceTargetList", },
@@ -120,6 +127,7 @@ Module.Steps           = {
     },
     {
         Title = "Targeting",
+        DidYouKnow = "Stay On Target keeps an assigned autotarget from changing, but it greatly interferes with MA Target Scan.",
         Filter = "Targeting",
         Group = "Combat",
         Expand = "Header:Targeting",
@@ -132,6 +140,7 @@ Module.Steps           = {
     },
     {
         Title = "Assisting and Engaging",
+        DidYouKnow = "Turn off Auto Engage to control engagement yourself.",
         Filter = "Assisting",
         Group = "Combat",
         Expand = "Header:Assisting",
@@ -143,6 +152,7 @@ Module.Steps           = {
     },
     {
         Title = "Camp",
+        DidYouKnow = "/rgl campon and /rgl campoff set or clear the camp.",
         Filter = "Following",
         Group = "Movement",
         Expand = "Header:Following",
@@ -153,6 +163,7 @@ Module.Steps           = {
     },
     {
         Title = "Chase (Follow)",
+        DidYouKnow = "/rgl chaseon <name?> and /rgl chaseoff toggle Chase, which uses MQ2Nav and requires a navmesh for the zone.",
         Filter = "Following",
         Group = "Movement",
         Expand = "Header:Following",
@@ -164,6 +175,7 @@ Module.Steps           = {
     },
     {
         Title = "Positioning and Stick",
+        DidYouKnow = "Manual Mode disables all automated movement for a character without disabling abilities.",
         Filter = "Positioning",
         Group = "Combat",
         Expand = "Header:Positioning",
@@ -175,6 +187,7 @@ Module.Steps           = {
     },
     {
         Title = "Meditation",
+        DidYouKnow = "Stand When Done Medding stands as soon as the meditation stop thresholds are reached.",
         Filter = "Meditation",
         Group = "Movement",
         Expand = "Header:Meditation",
@@ -186,6 +199,7 @@ Module.Steps           = {
     },
     {
         Title = "Healing Thresholds",
+        DidYouKnow = "If healers are overhealing, lower the heal points under Healing Thresholds.",
         Filter = "Healing Thresholds",
         Group = "Abilities",
         Expand = "Header:Recovery",
@@ -197,6 +211,7 @@ Module.Steps           = {
     },
     {
         Title = "Pulling",
+        DidYouKnow = "/rgl pulldeny \"<name>\" adds your target to the Pull Deny list.",
         Filter = "Pulling",
         Group = "Movement",
         Expand = "Header:Pulling",
@@ -210,6 +225,7 @@ Module.Steps           = {
     },
     {
         Title = "Burns",
+        DidYouKnow = "/rgl burnnow <id?> forces burns on your target until combat ends.",
         Filter = "Burning",
         Group = "Combat",
         Expand = "Header:Burning",
@@ -220,6 +236,7 @@ Module.Steps           = {
     },
     {
         Title = "Clickies",
+        DidYouKnow = "Clicky items can be managed on the Clickies tab or under Options > Items > Clickies.",
         Tab = "Clickies",
         Anchors = { "Tab:Clickies", },
         Faq = "click",
@@ -228,6 +245,7 @@ Module.Steps           = {
     },
     {
         Title = "Rezzing and Curing",
+        DidYouKnow = "Do Cures clears curable detrimental effects from yourself and your peers.",
         Filter = "Recovery",
         Group = "Abilities",
         Expand = "Header:Recovery",
@@ -238,6 +256,7 @@ Module.Steps           = {
     },
     {
         Title = "Logging",
+        DidYouKnow = "Log To File also writes the RGMercs log to a file named RGMercs_<YourName>.log.",
         Filter = "Internals",
         Group = "General",
         Expand = "Header:Mercs Internals",
@@ -247,6 +266,7 @@ Module.Steps           = {
     },
     {
         Title = "Class Mode and Config",
+        DidYouKnow = "Custom class configs live under config/rgmercs/class_configs/, outside the script folder.",
         Tab = "Class",
         Anchors = { "ClassMode", },
         Faq = "config",
