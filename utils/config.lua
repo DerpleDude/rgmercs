@@ -3384,26 +3384,36 @@ function Config:PeerGetSetting(peer, setting, failOk)
     return self.peerModuleSettings[Config.TempSettings.PeerSettingToModuleCache[setting]][setting]
 end
 
+function Config:GetScopeServerName(scope)
+    if scope == "global" then
+        return "[Global]"
+    elseif scope == "server" then
+        return Globals.ServerEnv
+    end
+    return nil
+end
+
 function Config:SettingDbRead(module, key)
-    local scope = Config.TempSettings.SettingToScopeCache[key]
-    if scope == "server" then
-        return self.Db:getServerValue(Globals.ServerEnv, module, key)
+    local scopeServer = self:GetScopeServerName(Config.TempSettings.SettingToScopeCache[key])
+    if scopeServer then
+        return self.Db:getServerValue(scopeServer, module, key)
     end
     return self.Db:getValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, module, key)
 end
 
 function Config:SettingDbWrite(module, key, value)
-    local scope = Config.TempSettings.SettingToScopeCache[key]
-    if scope == "server" then
-        return self.Db:setServerValue(Globals.ServerEnv, module, key, value)
+    local scopeServer = self:GetScopeServerName(Config.TempSettings.SettingToScopeCache[key])
+    if scopeServer then
+        return self.Db:setServerValue(scopeServer, module, key, value)
     end
     return self.Db:setValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, module, key, value)
 end
 
 function Config:SettingDbDelete(module, key)
     local scope = Config.TempSettings.SettingToScopeCache[key]
-    if scope == "server" then
-        return self.Db:deleteServerValue(Globals.ServerEnv, module, key)
+    local scopeServer = self:GetScopeServerName(scope)
+    if scopeServer then
+        return self.Db:deleteServerValue(scopeServer, module, key)
     elseif scope then
         return self.Db:deleteValue(Globals.CurServer, Globals.CurLoadedChar, Globals.CurLoadedClass, module, key)
     end
@@ -3595,7 +3605,7 @@ function Config:SetSetting(setting, value, tempOnly, noCallback)
             self.moduleTempSettings[settingModuleName][cleanSetting] = cleanValue
         else
             self:SettingDbWrite(settingModuleName, cleanSetting, cleanValue)
-            if Config.TempSettings.SettingToScopeCache[cleanSetting] == "server" then
+            if self:GetScopeServerName(Config.TempSettings.SettingToScopeCache[cleanSetting]) then
                 self.moduleTempSettings[settingModuleName][cleanSetting] = nil
             else
                 self.moduleTempSettings[settingModuleName][cleanSetting] = cleanValue
@@ -3657,7 +3667,7 @@ function Config:ClearAllTempSettings()
     for module, _ in pairs(self.moduleTempSettings) do
         self.moduleTempSettings[module] = {}
         for setting, _ in pairs(self.moduleDefaultSettings[module] or {}) do
-            if Config.TempSettings.SettingToScopeCache[setting] ~= "server" then
+            if not self:GetScopeServerName(Config.TempSettings.SettingToScopeCache[setting]) then
                 self.moduleTempSettings[module][setting] = self:SettingDbRead(module, setting)
             end
         end
@@ -3815,7 +3825,7 @@ function Config:RegisterModuleSettings(module, settings, defaultSettings, faq, f
 
         Config.TempSettings.SettingToScopeCache[setting] = v.Scope
 
-        if v.Scope ~= "server" then
+        if not self:GetScopeServerName(v.Scope) then
             self.moduleTempSettings[module][setting] = resolvedSettings[setting]
         end
     end
@@ -3927,9 +3937,10 @@ function Config:SaveModuleSettings(module, settings)
     local settingsCategories = self:GetModuleSettingCategories(module):toList() or {}
 
     for setting, value in pairs(settings) do
-        if Config.TempSettings.SettingToScopeCache[setting] == "server" then
+        local scopeServer = self:GetScopeServerName(Config.TempSettings.SettingToScopeCache[setting])
+        if scopeServer then
             -- seed only, never overwrite existing rows
-            self.Db:seedServerValue(Globals.ServerEnv, module, setting, value)
+            self.Db:seedServerValue(scopeServer, module, setting, value)
         else
             self:SettingDbWrite(module, setting, value)
         end
@@ -4615,6 +4626,10 @@ function Config:GetAllModuleSettingsFromDb(module, defaultSettings)
     local firstSaveRequired = next(settings) == nil and next(defaultSettings) ~= nil
 
     for k, v in pairs(self.Db:getServerAll(Globals.ServerEnv, module) or {}) do
+        settings[k] = v
+    end
+
+    for k, v in pairs(self.Db:getServerAll(self:GetScopeServerName("global"), module) or {}) do
         settings[k] = v
     end
 

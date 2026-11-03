@@ -10,7 +10,7 @@ local Ui            = require('utils.ui')
 
 local Module        = { _version = '1.0', _name = "Tour", _author = 'Derple', }
 Module.__index      = Module
-Module.TempSettings = { StepIdx = 0, Steps = {}, }
+Module.TempSettings = { StepIdx = 0, Steps = {}, FirstRunChecked = false, }
 setmetatable(Module, { __index = Base, })
 
 Module.FAQ             = {}
@@ -33,6 +33,12 @@ Module.DefaultConfig   = {
         DisplayName = Module._name .. " Popped",
         Type = "Custom",
         Default = false,
+    },
+    ['TourSeen'] = {
+        DisplayName = "Tour Seen",
+        Type = "Custom",
+        Default = false,
+        Scope = "global",
     },
 }
 
@@ -431,6 +437,14 @@ local function renderDim(viewport, holes)
 end
 
 function Module:RenderOverlay()
+    if not self.TempSettings.FirstRunChecked and mq.TLO.EverQuest.Foreground() then
+        self.TempSettings.FirstRunChecked = true
+        if not Config:GetSetting('TourSeen') then
+            Config:SetSetting('TourSeen', true)
+            self:Start()
+        end
+    end
+
     local step = self:CurrentStep()
     if not step then return end
 
