@@ -994,7 +994,7 @@ return {
             {
                 name = "VortexNuke",
                 type = "Spell",
-                cond = function(self, spell) --using DotSpellCheck to leverage MobLowHP settings to ensure we aren't casting just before trash dies (default: stop at 25% on named, 50% on trash)
+                cond = function(self, spell) --using DotSpellCheck to leverage LowMobHP settings to ensure we aren't casting just before trash dies (default: stop at 1% on named, 40% on trash)
                     return Casting.GambitCheck() or Casting.DotSpellCheck(spell)
                 end,
             },

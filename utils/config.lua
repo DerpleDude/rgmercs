@@ -1306,26 +1306,26 @@ Config.DefaultConfig                                     = {
     },
 
     --Common/Rules
-    ['MobLowHP']                   = {
-        DisplayName = "Mob Low HP%",
+    ['LowMobHP']                   = {
+        DisplayName = "Low Mob HP%",
         Group = "Abilities",
         Header = "Common",
         Category = "Common Rules",
         Index = 1,
         Tooltip = "A mob is considered to be low HP (for the sake of snares, dots and other abilities) under x HP%.",
-        Default = 50,
-        Min = 1,
+        Default = 40,
+        Min = 0,
         Max = 100,
     },
-    ['NamedLowHP']                 = {
-        DisplayName = "Named Low HP%",
+    ['LowNamedHP']                 = {
+        DisplayName = "Low Named HP%",
         Group = "Abilities",
         Header = "Common",
         Category = "Common Rules",
         Index = 2,
         Tooltip = "A named mob is considered to be low HP (for the sake of snares, dots and other abilities) under x HP%.",
-        Default = 25,
-        Min = 1,
+        Default = 1,
+        Min = 0,
         Max = 100,
     },
     ['AggroThrottling']            = {
