@@ -6,6 +6,7 @@ local Core          = require('utils.core')
 local Globals       = require('utils.globals')
 local Modules       = require("utils.modules")
 local OptionsUI     = require('ui.options')
+local Tables        = require('utils.tables')
 local Ui            = require('utils.ui')
 
 local Module        = { _version = '1.0', _name = "Tour", _author = 'Derple', }
@@ -369,10 +370,7 @@ function Module:Start()
 end
 
 function Module:GetDidYouKnowFacts()
-    local facts = {}
-    for _, fact in ipairs(self.ExtraDidYouKnow) do
-        table.insert(facts, fact)
-    end
+    local facts = Tables.ConcatTables(self.ExtraDidYouKnow)
     for _, step in ipairs(self.Steps) do
         if step.DidYouKnow then
             table.insert(facts, step.DidYouKnow)
