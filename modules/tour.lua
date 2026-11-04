@@ -330,6 +330,18 @@ Module.ExtraDidYouKnow = {
     "Run /lua run rgmercs/heartbeat on any character you play manually or with other automation so your RGMercs characters can buff, heal and assist it better.",
     "With the heartbeat running on a character, RGMercs can read its buffs without targeting it.",
     "If your Main Assist is not running RGMercs, running the heartbeat on it gets its target to your other characters quickly.",
+    "/rgl tempset <setting> <value> changes a setting until you restart or run /rgl cleartempset <setting> or /rgl cleartempall.",
+    "/rgl set_all <setting> <value> sets a setting on this character and every RGMercs peer.",
+    "/rgl set show lists every setting with its current value.",
+    "/rgl rebuff forces buff checks to run again on the next rotation instead of waiting.",
+    "/rgl spellreload, or Rescan Loadout on the Class tab, rescans your spells after scribing new ones or when something looks off.",
+    "Any rotation entry can be turned off on the Class tab or with /rgl disablerotationentry \"<Name>\", without changing settings.",
+    "/rgl stopcast stops the current cast and clears retries. It is useful in hotkeys before priority abilities like gate.",
+    "/rgl cast, /rgl castaa and /rgl usemap queue a spell, AA or mapped ability so it fits between RGMercs' own casts.",
+    "/rgl backoff stops a character from assisting or engaging until you toggle it back.",
+    "/rgl assistup <Name> moves a character up the Assist List, which is a quick way to change who everyone assists.",
+    "/rgl ignoretarget <id?> ignores a mob for auto-targeting for this session.",
+    "/rgl namedadd <Name> marks a mob as named in the current zone.",
 }
 
 function Module:New()
