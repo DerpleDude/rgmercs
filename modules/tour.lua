@@ -325,6 +325,13 @@ Module.Steps           = {
     },
 }
 
+Module.ExtraDidYouKnow = {
+    "Characters not running RGMercs can still show up in the Mercs Status panel: /lua run rgmercs/heartbeat directed sends their heartbeat, and /lua run rgmercs/heartbeat also opens a standalone Mercs Status window.",
+    "Run /lua run rgmercs/heartbeat on any character you play manually or with other automation so your RGMercs characters can buff, heal and assist it better.",
+    "With the heartbeat running on a character, RGMercs can read its buffs without targeting it.",
+    "If your Main Assist is not running RGMercs, running the heartbeat on it gets its target to your other characters quickly.",
+}
+
 function Module:New()
     return Base.New(self)
 end
@@ -351,6 +358,9 @@ end
 
 function Module:GetDidYouKnowFacts()
     local facts = {}
+    for _, fact in ipairs(self.ExtraDidYouKnow) do
+        table.insert(facts, fact)
+    end
     for _, step in ipairs(self.Steps) do
         if step.DidYouKnow then
             table.insert(facts, step.DidYouKnow)
