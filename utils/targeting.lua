@@ -954,26 +954,26 @@ function Targeting.TargetIsMyself(target)
 end
 
 --- Returns true if target's HP% is at or above the low-HP threshold
---- (uses NamedLowHP for named mobs, MobLowHP otherwise).
+--- (uses LowNamedHP for named mobs, LowMobHP otherwise).
 ---@param target MQSpawn|MQTarget? Target to check; defaults to auto target.
 ---@return boolean True if HP is at or above the threshold.
 function Targeting.MobNotLowHP(target)
     if not target then target = Targeting.GetAutoTarget() or mq.TLO.Target end
     if not (target and target()) then return false end
 
-    local threshold = Globals.AutoTargetIsNamed and Config:GetSetting('NamedLowHP') or Config:GetSetting('MobLowHP')
+    local threshold = Globals.AutoTargetIsNamed and Config:GetSetting('LowNamedHP') or Config:GetSetting('LowMobHP')
     return Targeting.GetTargetPctHPs(target) >= threshold
 end
 
 --- Returns true if target's HP% is below the low-HP threshold
---- (uses NamedLowHP for named mobs, MobLowHP otherwise).
+--- (uses LowNamedHP for named mobs, LowMobHP otherwise).
 ---@param target MQSpawn|MQTarget? Target to check; defaults to auto target.
 ---@return boolean True if HP is below the threshold.
 function Targeting.MobHasLowHP(target)
     if not target then target = Targeting.GetAutoTarget() or mq.TLO.Target end
     if not (target and target()) then return false end
 
-    local threshold = Globals.AutoTargetIsNamed and Config:GetSetting('NamedLowHP') or Config:GetSetting('MobLowHP')
+    local threshold = Globals.AutoTargetIsNamed and Config:GetSetting('LowNamedHP') or Config:GetSetting('LowMobHP')
     return threshold > Targeting.GetTargetPctHPs(target)
 end
 
