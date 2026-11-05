@@ -16,6 +16,7 @@ local Tooltips     = {
     DPSAura        = "Aura Line: OverHaste / Melee and Caster DPS",
     AreaRegenSong  = "Song Line: AE HP/Mana Regen",
     GroupRegenSong = "Song Line: Group HP/Mana Regen",
+    CrescendoSong  = "Song Line: Group v2 Increase Hit Points and Mana",
     SlowSong       = "Song Line: ST Melee Attack Slow",
     AESlowSong     = "Song Line: PBAE Melee Attack Slow",
     FireDotSong    = "Song Line: Fire DoT and minor resist debuff",
@@ -24,6 +25,7 @@ local Tooltips     = {
     IceDotSong     = "Song Line: Ice DoT and minor resist debuff",
     EndBreathSong  = "Song Line: Enduring Breath",
     CureSong       = "Song Line: Single Target Cure: Poison/Disease",
+    CorruptionCure = "Song Line: Single Target Cure: Corruption",
     CharmSong      = "Song Line: Charm Mob",
     LowAriaSong    = "Song Line: Warsong and BattleCry prior to combination of effects into Aria",
     AmpSong        = "Song Line: Increase Singing Skill",
@@ -40,7 +42,7 @@ local Tooltips     = {
 }
 
 local _ClassConfig = {
-    _version              = "3.5 - EQ Might",
+    _version              = "3.10 - EQ Might",
     _author               = "Algar, Derple, Grimmier, Tiddliestix, SonicZentropy",
     ['Modes']             = { --other modes to reorder spell priorities may be added back in at a later date.
         'General',
@@ -49,7 +51,7 @@ local _ClassConfig = {
         CanMez       = function() return true end,
         CanCharm     = function() return true end,
         IsMezzing    = function() return Config:GetSetting('MezOn') end,
-        IsCuring     = function() return Config:GetSetting('DoCures') or Config:GetSetting('UseCure') end,
+        IsCuring     = function() return Config:GetSetting('DoCures') or Config:GetSetting('UseCure') or Config:GetSetting('UseCorruptionCure') end,
         IsDispelling = function() return Config:GetSetting('DoDispel') end,
         IsRezing     = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or not Targeting.HasXTHaters()) end,
     },
@@ -73,6 +75,9 @@ local _ClassConfig = {
         },
         ['Disease'] = {
             { type = "Song", name = "CureSong", cond = function() return Config:GetSetting('UseCure') end, },
+        },
+        ['Corruption'] = {
+            { type = "Song", name = "CorruptionCureSong", cond = function() return Config:GetSetting('UseCorruptionCure') end, },
         },
     },
     ['Themes']            = {
@@ -153,6 +158,9 @@ local _ClassConfig = {
             "Cassindra's Chant of Clarity",  -- Level 20 mana only
             "Hymn of Restoration",           -- Level 6 hp only
         },
+        ['CrescendoSong'] = {
+            "Veshma's Lively Crescendo", -- Level 72
+        },
         ['AreaRegenSong'] = {
             "Erollisi's Chorus",       -- Level 71
             "Chorus of Life",          -- Level 69
@@ -202,11 +210,18 @@ local _ClassConfig = {
             "Tuyen's Chant of the Plague", -- Level 61
             "Tuyen's Chant of Disease",    -- Level 42
         },
+        -- ['AENukeSong'] = { -- TO DO: homework needed on whether this gets used
+        --     "Denon's Dirge of Destruction", -- Level 72
+        -- },
         ['CureSong'] = {
             -- "Aria of Innocence", -- Level 52 curse only, and only 2 x 2 counters
             "Aria of Asceticism", -- Level 45 poison/disease Only
         },
+        ['CorruptionCureSong'] = {
+            "Minohten's Purifying Panpipes", -- Level 72
+        },
         ['CharmSong'] = {
+            "Beckon of the Tuffein",      -- Level 72
             "Voice of the Vampire",       -- Level 70
             "Call of the Banshee",        -- Level 64
             "Solon's Bewitching Bravura", -- Level 39
@@ -228,7 +243,14 @@ local _ClassConfig = {
             "Psalm of Veeshan", -- Level 63
             "Elemental Chorus", -- Level 54
         },
+        -- ['GroupCorruptionSong'] = { -- TO DO: homework needed on whether these get used
+        --     "Staccato Rhythms", -- Level 72
+        -- },
+        -- ['AreaCorruptionSong'] = {
+        --     "Staccato Cadence", -- Level 72
+        -- },
         ['MezSong'] = {
+            "Queen Eletyl's Screech",     -- Level 72
             "Aelfric's Last Lullaby",     -- Level 70
             "Vulka's Lullaby",            -- Level 70
             "Creeping Dreams",            -- Level 68
@@ -260,14 +282,14 @@ local _ClassConfig = {
             "Silent Song of Quellious",  -- Level 61
             "Kelin's Lugubrious Lament", -- Level 8 (Max Mob Level of 60)
         },
-        ['ThousandBlades'] = {
-            "Thousand Blades", -- Level 69
+        ['ThousandBlades'] = {           -- Timer 2
+            "Thousand Blades",           -- Level 69
         },
-        ['Steelwrath'] = {
-            "Steelwrath Discipline", -- Level 67 EQM Custom
+        ['Steelwrath'] = {               -- Timer 7
+            "Steelwrath Discipline",     -- Level 67 EQM Custom
         },
-        ['Deftdance'] = {
-            "Deftdance Discipline", -- Level 55
+        ['Deftdance'] = {                -- Timer 1
+            "Deftdance Discipline",      -- Level 55
         },
         ['ProcSong'] = {
             "Storm Blade",       -- Level 69
@@ -278,24 +300,28 @@ local _ClassConfig = {
             "Occlusion of Sound", -- Level 55
         },
         ['MitigationSong'] = {
-            "Song of the Dryads", -- Level 71
-            "Verse of Vesagran",  -- Level 69
-            "Verse of Huell",     -- Level 65 EQM Custom
+            "Song of the Dryads",          -- Level 71
+            "Verse of Vesagran",           -- Level 69
+            "Verse of Huell",              -- Level 65 EQM Custom
         },
-        ['Protective'] = {
+        ['Protective'] = {                 -- Timer 7
             "Protective Surge Discipline", -- Level 55 EQM Custom
         },
-        ['Skals'] = {
-            "Skal's Stance Discipline", -- Level 61 EQM Custom
+        ['Skals'] = {                      -- Timer 1
+            "Skal's Stance Discipline",    -- Level 61 EQM Custom
         },
-        ['Revitalize'] = {
-            "Iron Revitalize",     -- Level 68 EQM Custom
-            "Hardened Revitalize", -- Level 62 EQM Custom
-            "Revitalize",          -- Level 51 EQM Custom
+        ['Revitalize'] = {                 -- Timer 6
+            "Iron Revitalize",             -- Level 68 EQM Custom
+            "Hardened Revitalize",         -- Level 62 EQM Custom
+            "Revitalize",                  -- Level 51 EQM Custom
+        },
+        ['EndRegen'] = {                   -- Timer 12
+            "Fresh Wind",                  -- Level 67 EQM Custom
         },
     },
     ['AASets']            = {
         ['Spire'] = {
+            "Fundament: Third Spire of the Minstrels",
             "Fundament: Second Spire of the Minstrels",
             "Fundament: First Spire of the Minstrels",
         },
@@ -434,8 +460,9 @@ local _ClassConfig = {
         end,
     },
     ['Mez']               = {
-        { type = "Song", name = "MezSong",   cond = function() return Config:GetSetting('DoSTMez') end, },
-        { type = "Song", name = "MezAESong", cond = function() return Config:GetSetting('DoAEMez') end, },
+        { type = "AA",   name = "Dirge of the Sleepwalker", cond = function() return Config:GetSetting('DoSTMez') and Config:GetSetting('DoAAMez') end, },
+        { type = "Song", name = "MezSong",                  cond = function() return Config:GetSetting('DoSTMez') end, },
+        { type = "Song", name = "MezAESong",                cond = function() return Config:GetSetting('DoAEMez') end, },
     },
     ['Charm']             = {
         ['Abilities'] = {
@@ -580,9 +607,13 @@ local _ClassConfig = {
                 type = "AA",
                 midSong = true,
             },
-            {
-                name = "Spire",
+            { -- Use the selected spire, fall back to the AA set if we don't have it.
+                name_func = function(self)
+                    local chosen = "Fundament: " .. Globals.Constants.SpireChoices[Config:GetSetting('SpireChoice')] .. " Spire of the Minstrels"
+                    return Casting.CanUseAA(chosen) and chosen or "Spire"
+                end,
                 type = "AA",
+                load_cond = function() return Config:GetSetting('SpireChoice') ~= 4 end,
                 midSong = true,
             },
             {
@@ -669,6 +700,14 @@ local _ClassConfig = {
             },
         },
         ['Combat']            = {
+            {
+                name = "EndRegen",
+                type = "Disc",
+                midSong = true,
+                cond = function(self, discSpell)
+                    return mq.TLO.Me.PctEndurance() < 15
+                end,
+            },
             {
                 name = "Epic",
                 type = "Item",
@@ -795,6 +834,16 @@ local _ClassConfig = {
                 load_cond = function(self) return Config:GetSetting('UseArcane') > 1 end,
                 cond = function(self, songSpell)
                     return self.Helpers.CheckSongStateUse(self, "UseArcane") and self.Helpers.RefreshBuffSong(self, songSpell)
+                end,
+            },
+            {
+                name = "CrescendoSong",
+                type = "Song",
+                load_cond = function(self) return Core.GetResolvedActionMapItem('CrescendoSong') and Config:GetSetting('UseCrescendo') end,
+                cond = function(self, songSpell)
+                    if (mq.TLO.Me.GemTimer(songSpell.RankName())() or -1) > 0 then return false end
+                    local pct = Config:GetSetting('GroupManaPct')
+                    return Casting.GroupLowManaCount(pct) >= Config:GetSetting('GroupManaCt')
                 end,
             },
             {
@@ -954,35 +1003,37 @@ local _ClassConfig = {
             -- cond = function(self) return true end, --Code kept here for illustration, if there is no condition to check, this line is not required
             spells = {
                 --role and critical functions
-                { name = "MezAESong",      cond = function(self) return Config:GetSetting('DoAEMez') end, },
-                { name = "MezSong",        cond = function(self) return Config:GetSetting('DoSTMez') end, },
-                { name = "CharmSong",      cond = function(self) return Config:GetSetting('CharmOn') end, },
-                { name = "SlowSong",       cond = function(self) return Config:GetSetting('DoSTSlow') end, },
-                { name = "AESlowSong",     cond = function(self) return Config:GetSetting('DoAESlow') end, },
-                { name = "DispelSong",     cond = function(self) return Config:GetSetting('DoDispel') end, },
-                { name = "ResistDebuff",   cond = function(self) return Config:GetSetting('DoResistDebuff') end, },
-                { name = "CureSong",       cond = function(self) return Config:GetSetting('UseCure') end, },
-                { name = "RunBuff",        cond = function(self) return Config:GetSetting('UseRunBuff') > 1 and not Casting.CanUseAA("Selo's Sonata") end, },
-                { name = "EndBreathSong",  cond = function(self) return Config:GetSetting('UseEndBreath') end, },
+                { name = "MezAESong",          cond = function(self) return Config:GetSetting('DoAEMez') end, },
+                { name = "MezSong",            cond = function(self) return Config:GetSetting('DoSTMez') end, },
+                { name = "CharmSong",          cond = function(self) return Config:GetSetting('CharmOn') end, },
+                { name = "SlowSong",           cond = function(self) return Config:GetSetting('DoSTSlow') end, },
+                { name = "AESlowSong",         cond = function(self) return Config:GetSetting('DoAESlow') end, },
+                { name = "DispelSong",         cond = function(self) return Config:GetSetting('DoDispel') end, },
+                { name = "ResistDebuff",       cond = function(self) return Config:GetSetting('DoResistDebuff') end, },
+                { name = "CureSong",           cond = function(self) return Config:GetSetting('UseCure') end, },
+                { name = "CorruptionCureSong", cond = function(self) return Config:GetSetting('UseCorruptionCure') end, },
+                { name = "RunBuff",            cond = function(self) return Config:GetSetting('UseRunBuff') > 1 and not Casting.CanUseAA("Selo's Sonata") end, },
+                { name = "EndBreathSong",      cond = function(self) return Config:GetSetting('UseEndBreath') end, },
                 -- major group buffs
-                { name = "AreaAriaSong",   cond = function(self) return Config:GetSetting('AriaChoice') == 2 and self.Helpers.AriaClickyChoice() == "None" end, },
-                { name = "GroupAriaSong",  cond = function(self) return Config:GetSetting('AriaChoice') == 3 and self.Helpers.AriaClickyChoice() == "None" end, },
-                { name = "WarMarchSong",   cond = function(self) return Config:GetSetting('UseMarch') > 1 end, },
-                { name = "ProcSong",       cond = function(self) return Config:GetSetting('UseProcSong') > 1 end, },
-                { name = "ArcaneSong",     cond = function(self) return Config:GetSetting('UseArcane') > 1 end, },
-                { name = "ResistSong",     cond = function(self) return Config:GetSetting('UseResist') > 1 end, },
-                { name = "MitigationSong", cond = function(self) return Config:GetSetting('UseMitigation') > 1 end, },
-                { name = "GroupRegenSong", cond = function(self) return Config:GetSetting('RegenSong') == 2 end, },
-                { name = "AreaRegenSong",  cond = function(self) return Config:GetSetting('RegenSong') == 3 end, },
+                { name = "AreaAriaSong",       cond = function(self) return Config:GetSetting('AriaChoice') == 2 and self.Helpers.AriaClickyChoice() == "None" end, },
+                { name = "GroupAriaSong",      cond = function(self) return Config:GetSetting('AriaChoice') == 3 and self.Helpers.AriaClickyChoice() == "None" end, },
+                { name = "WarMarchSong",       cond = function(self) return Config:GetSetting('UseMarch') > 1 end, },
+                { name = "ProcSong",           cond = function(self) return Config:GetSetting('UseProcSong') > 1 end, },
+                { name = "ArcaneSong",         cond = function(self) return Config:GetSetting('UseArcane') > 1 end, },
+                { name = "ResistSong",         cond = function(self) return Config:GetSetting('UseResist') > 1 end, },
+                { name = "MitigationSong",     cond = function(self) return Config:GetSetting('UseMitigation') > 1 end, },
+                { name = "GroupRegenSong",     cond = function(self) return Config:GetSetting('RegenSong') == 2 end, },
+                { name = "AreaRegenSong",      cond = function(self) return Config:GetSetting('RegenSong') == 3 end, },
+                { name = "CrescendoSong",      cond = function(self) return Config:GetSetting('UseCrescendo') end, },
                 -- personal dps
-                { name = "AmpSong",        cond = function(self) return Config:GetSetting('UseAmp') > 1 end, },
-                { name = "Jonthan",        cond = function(self) return Config:GetSetting('UseJonthan') > 1 end, },
-                { name = "FireDotSong",    cond = function(self) return Config:GetSetting('UseFireDots') end, },
-                { name = "IceDotSong",     cond = function(self) return Config:GetSetting('UseIceDots') end, },
-                { name = "PoisonDotSong",  cond = function(self) return Config:GetSetting('UsePoisonDots') end, },
-                { name = "DiseaseDotSong", cond = function(self) return Config:GetSetting('UseDiseaseDots') end, },
+                { name = "AmpSong",            cond = function(self) return Config:GetSetting('UseAmp') > 1 end, },
+                { name = "Jonthan",            cond = function(self) return Config:GetSetting('UseJonthan') > 1 end, },
+                { name = "FireDotSong",        cond = function(self) return Config:GetSetting('UseFireDots') end, },
+                { name = "IceDotSong",         cond = function(self) return Config:GetSetting('UseIceDots') end, },
+                { name = "PoisonDotSong",      cond = function(self) return Config:GetSetting('UsePoisonDots') end, },
+                { name = "DiseaseDotSong",     cond = function(self) return Config:GetSetting('UseDiseaseDots') end, },
                 -- filler
-                { name = "CalmSong",       cond = function(self) return true end, }, -- condition not needed, for uniformity
+                { name = "CalmSong",           cond = function(self) return true end, }, -- condition not needed, for uniformity
             },
         },
     },
@@ -1021,7 +1072,7 @@ local _ClassConfig = {
         },
     },
     ['DefaultConfig']     = {
-        ['Mode']            = {
+        ['Mode']              = {
             DisplayName = "Mode",
             Category = "Combat",
             Tooltip = "Select the Combat Mode for this Toon",
@@ -1034,7 +1085,7 @@ local _ClassConfig = {
             Answer = "Currently Bards only have one general mode. More modes may be added in the future.",
         },
         -- Mez
-        ['DoSTMez']         = {
+        ['DoSTMez']           = {
             DisplayName = "ST Mez Song",
             Group = "Abilities",
             Header = "Mez",
@@ -1044,7 +1095,7 @@ local _ClassConfig = {
             Tooltip = "Enable the memorization and use of your single-target mez song.",
             RequiresLoadoutChange = true,
         },
-        ['DoAEMez']         = {
+        ['DoAEMez']           = {
             DisplayName = "AE Mez Song",
             Group = "Abilities",
             Header = "Mez",
@@ -1054,8 +1105,17 @@ local _ClassConfig = {
             Tooltip = "Enable the memorization and use of your AE mez song.",
             RequiresLoadoutChange = true,
         },
+        ['DoAAMez']           = {
+            DisplayName = "Use Mez AA",
+            Group = "Abilities",
+            Header = "Mez",
+            Category = "Mez General",
+            Index = 103,
+            Default = true,
+            Tooltip = "Use Dirge of the Sleepwalker to mez.",
+        },
         -- Buffs
-        ['UseRunBuff']      = {
+        ['UseRunBuff']        = {
             DisplayName = "Use RunSpeed Buff",
             Group = "Abilities",
             Header = "Buffs",
@@ -1069,7 +1129,7 @@ local _ClassConfig = {
             Max = 4,
             RequiresLoadoutChange = true,
         },
-        ['UseEndBreath']    = {
+        ['UseEndBreath']      = {
             DisplayName = "Use Enduring Breath",
             Group = "Abilities",
             Header = "Buffs",
@@ -1080,7 +1140,7 @@ local _ClassConfig = {
             RequiresLoadoutChange = true,
             ConfigType = "Advanced",
         },
-        ['UseAura']         = {
+        ['UseAura']           = {
             DisplayName = "Use Aura",
             Group = "Abilities",
             Header = "Buffs",
@@ -1092,7 +1152,7 @@ local _ClassConfig = {
             FAQ = "My bard is spam casting aura, what do I do?",
             Answer = "We have code to prevent this, but if it has slipped the cracks, check what aura you have active in your window (Shift+A by default). You may need to clear it.",
         },
-        ['UseAmp']          = {
+        ['UseAmp']            = {
             DisplayName = "Use Amp",
             Group = "Abilities",
             Header = "Buffs",
@@ -1107,7 +1167,7 @@ local _ClassConfig = {
             RequiresLoadoutChange = true,
         },
         -- Debuffs
-        ['DoSTSlow']        = {
+        ['DoSTSlow']          = {
             DisplayName = "Use Slow (ST)",
             Group = "Abilities",
             Header = "Debuffs",
@@ -1117,7 +1177,7 @@ local _ClassConfig = {
             RequiresLoadoutChange = true,
             Default = false,
         },
-        ['DoAESlow']        = {
+        ['DoAESlow']          = {
             DisplayName = "Use Slow (AE)",
             Group = "Abilities",
             Header = "Debuffs",
@@ -1127,7 +1187,7 @@ local _ClassConfig = {
             RequiresLoadoutChange = true,
             Default = false,
         },
-        ['DoResistDebuff']  = {
+        ['DoResistDebuff']    = {
             DisplayName = "Use Resist Debuff",
             Group = "Abilities",
             Header = "Debuffs",
@@ -1137,7 +1197,7 @@ local _ClassConfig = {
             RequiresLoadoutChange = true,
             Default = false,
         },
-        ['DoDispel']        = {
+        ['DoDispel']          = {
             DisplayName = "Use Dispel",
             Group = "Abilities",
             Header = "Debuffs",
@@ -1149,7 +1209,7 @@ local _ClassConfig = {
         },
 
         -- Defensive
-        ['UseResist']       = {
+        ['UseResist']         = {
             DisplayName = "Use Resist Buff",
             Group = "Abilities",
             Header = "Buffs",
@@ -1163,7 +1223,7 @@ local _ClassConfig = {
             Max = 4,
             RequiresLoadoutChange = true,
         },
-        ['UseMitigation']   = {
+        ['UseMitigation']     = {
             DisplayName = "Use Mitigation Song",
             Group = "Abilities",
             Header = "Buffs",
@@ -1177,7 +1237,24 @@ local _ClassConfig = {
             Max = 4,
             RequiresLoadoutChange = true,
         },
-        ['UseFading']       = {
+        ['SpireChoice']       = {
+            DisplayName = "Spire Choice:",
+            Group = "Abilities",
+            Header = "Buffs",
+            Category = "Group",
+            Index = 112,
+            Tooltip = "Choose which Fundament you would like to use during burns:\n" ..
+                "First Spire: Group Melee Damage Taken Reduction.\n" ..
+                "Second Spire: Group Spell Damage Buff.\n" ..
+                "Third Spire: Group Melee Damage Buff.",
+            Type = "Combo",
+            ComboOptions = Globals.Constants.SpireChoices,
+            RequiresLoadoutChange = true,
+            Default = 3,
+            Min = 1,
+            Max = #Globals.Constants.SpireChoices,
+        },
+        ['UseFading']         = {
             DisplayName = "Use Combat Escape",
             Group = "Abilities",
             Header = "Utility",
@@ -1193,12 +1270,12 @@ local _ClassConfig = {
         },
 
         -- Healing
-        ['RegenSong']       = {
+        ['RegenSong']         = {
             DisplayName = "Regen Song Choice:",
             Group = "Abilities",
             Header = "Recovery",
             Category = "Other Recovery",
-            Index = 110,
+            Index = 101,
             Tooltip = "Select the Regen Song to be used, if any. Always used out of combat if selected. Use in-combat is determined by sustain settings.",
             RequiresLoadoutChange = true,
             Type = "Combo",
@@ -1210,7 +1287,7 @@ local _ClassConfig = {
             Answer = "At low level, the regen songs are spaced broadly, and wallow back and forth before settling on providing both resources.\n" ..
                 "Endurance is eventually added as well.",
         },
-        ['UseRegen']        = {
+        ['UseRegen']          = {
             DisplayName = "Regen Song Use:",
             Group = "Abilities",
             Header = "Recovery",
@@ -1223,31 +1300,41 @@ local _ClassConfig = {
             Min = 1,
             Max = 4,
         },
-        ['GroupManaPct']    = {
-            DisplayName = "Group Mana %",
+        ['UseCrescendo']      = {
+            DisplayName = "Crescendo Delayed Heal",
             Group = "Abilities",
             Header = "Recovery",
             Category = "Other Recovery",
             Index = 103,
-            Tooltip = "Mana% to begin using our regen song, if configured under the Regen Song Use.",
+            Tooltip = Tooltips.CrescendoSong,
+            RequiresLoadoutChange = true,
+            Default = true,
+        },
+        ['GroupManaPct']      = {
+            DisplayName = "Group Mana %",
+            Group = "Abilities",
+            Header = "Recovery",
+            Category = "Other Recovery",
+            Index = 104,
+            Tooltip = "Mana% to begin using Crescendo and our regen song, if configured under the Regen Song Use.",
             Default = 80,
             Min = 1,
             Max = 100,
             ConfigType = "Advanced",
         },
-        ['GroupManaCt']     = {
+        ['GroupManaCt']       = {
             DisplayName = "Group Mana Count",
             Group = "Abilities",
             Header = "Recovery",
             Category = "Other Recovery",
-            Index = 104,
+            Index = 105,
             Tooltip = "The number of party members (including yourself) that need to be under the above mana percentage.",
             Default = 2,
             Min = 1,
             Max = 6,
             ConfigType = "Advanced",
         },
-        ['UseCure']         = {
+        ['UseCure']           = {
             DisplayName = "Cure Ailments",
             Group = "Abilities",
             Header = "Recovery",
@@ -1257,9 +1344,19 @@ local _ClassConfig = {
             RequiresLoadoutChange = true,
             Default = false,
         },
+        ['UseCorruptionCure'] = {
+            DisplayName = "Cure Corruption",
+            Group = "Abilities",
+            Header = "Recovery",
+            Category = "Curing",
+            Index = 102,
+            Tooltip = Tooltips.CorruptionCure,
+            RequiresLoadoutChange = true,
+            Default = false,
+        },
 
         -- Instruments
-        ['SwapInstruments'] = {
+        ['SwapInstruments']   = {
             DisplayName = "Auto Swap Instruments",
             Index = 101,
             Group = "Items",
@@ -1269,7 +1366,7 @@ local _ClassConfig = {
             Default = false,
 
         },
-        ['UseBandolier']    = {
+        ['UseBandolier']      = {
             DisplayName = "Use Bandolier",
             Index = 102,
             Group = "Items",
@@ -1278,7 +1375,7 @@ local _ClassConfig = {
             Tooltip = "Auto swap instruments using bandolier if avail, valid names (wind, drum, brass, string or main), if a bandolier is missing we will direct swap instead.",
             Default = true,
         },
-        ['Offhand']         = {
+        ['Offhand']           = {
             DisplayName = "Offhand",
             Index = 103,
             Group = "Items",
@@ -1289,7 +1386,7 @@ local _ClassConfig = {
 
             Default = "",
         },
-        ['BrassInst']       = {
+        ['BrassInst']         = {
             DisplayName = "Brass Instrument",
             Index = 104,
             Group = "Items",
@@ -1299,7 +1396,7 @@ local _ClassConfig = {
             Type = "ClickyItem",
             Default = "",
         },
-        ['WindInst']        = {
+        ['WindInst']          = {
             DisplayName = "Wind Instrument",
             Index = 105,
             Group = "Items",
@@ -1309,7 +1406,7 @@ local _ClassConfig = {
             Type = "ClickyItem",
             Default = "",
         },
-        ['PercInst']        = {
+        ['PercInst']          = {
             DisplayName = "Percussion Instrument",
             Index = 106,
             Group = "Items",
@@ -1319,7 +1416,7 @@ local _ClassConfig = {
             Type = "ClickyItem",
             Default = "",
         },
-        ['StringedInst']    = {
+        ['StringedInst']      = {
             DisplayName = "Stringed Instrument",
             Index = 107,
             Group = "Items",
@@ -1331,7 +1428,7 @@ local _ClassConfig = {
         },
 
         -- Offensive
-        ['AriaChoice']      = {
+        ['AriaChoice']        = {
             DisplayName = "Aria Choice:",
             Group = "Abilities",
             Header = "Buffs",
@@ -1345,7 +1442,7 @@ local _ClassConfig = {
             Max = 3,
             RequiresLoadoutChange = true,
         },
-        ['UseAria']         = {
+        ['UseAria']           = {
             DisplayName = "Use Aria",
             Group = "Abilities",
             Header = "Buffs",
@@ -1359,7 +1456,7 @@ local _ClassConfig = {
             Max = 4,
             RequiresLoadoutChange = true,
         },
-        ['UseAriaClickies'] = {
+        ['UseAriaClickies']   = {
             DisplayName = "Use Aria Clickies",
             Group = "Abilities",
             Header = "Buffs",
@@ -1369,7 +1466,7 @@ local _ClassConfig = {
             Default = true,
             RequiresLoadoutChange = true,
         },
-        ['UseMarch']        = {
+        ['UseMarch']          = {
             DisplayName = "Use War March",
             Group = "Abilities",
             Header = "Buffs",
@@ -1383,7 +1480,7 @@ local _ClassConfig = {
             Max = 4,
             RequiresLoadoutChange = true,
         },
-        ['UseProcSong']     = {
+        ['UseProcSong']       = {
             DisplayName = "Use Group Proc",
             Group = "Abilities",
             Header = "Buffs",
@@ -1397,7 +1494,7 @@ local _ClassConfig = {
             Max = 4,
             RequiresLoadoutChange = true,
         },
-        ['UseArcane']       = {
+        ['UseArcane']         = {
             DisplayName = "Use Arcane Line",
             Group = "Abilities",
             Header = "Buffs",
@@ -1411,7 +1508,7 @@ local _ClassConfig = {
             Max = 4,
             RequiresLoadoutChange = true,
         },
-        ['UseEpic']         = {
+        ['UseEpic']           = {
             DisplayName = "Epic Use:",
             Group = "Items",
             Header = "Clickies",
@@ -1424,7 +1521,7 @@ local _ClassConfig = {
             Min = 1,
             Max = 3,
         },
-        ['UseFireDots']     = {
+        ['UseFireDots']       = {
             DisplayName = "Use Fire Dots",
             Group = "Abilities",
             Header = "Damage",
@@ -1434,7 +1531,7 @@ local _ClassConfig = {
             RequiresLoadoutChange = true,
             Default = false,
         },
-        ['UseIceDots']      = {
+        ['UseIceDots']        = {
             DisplayName = "Use Ice Dots",
             Group = "Abilities",
             Header = "Damage",
@@ -1444,7 +1541,7 @@ local _ClassConfig = {
             RequiresLoadoutChange = true,
             Default = false,
         },
-        ['UsePoisonDots']   = {
+        ['UsePoisonDots']     = {
             DisplayName = "Use Poison Dots",
             Group = "Abilities",
             Header = "Damage",
@@ -1454,7 +1551,7 @@ local _ClassConfig = {
             RequiresLoadoutChange = true,
             Default = false,
         },
-        ['UseDiseaseDots']  = {
+        ['UseDiseaseDots']    = {
             DisplayName = "Use Disease Dots",
             Group = "Abilities",
             Header = "Damage",
@@ -1465,7 +1562,7 @@ local _ClassConfig = {
             Default = false,
 
         },
-        ['UseJonthan']      = {
+        ['UseJonthan']        = {
             DisplayName = "Use Jonthan",
             Group = "Abilities",
             Header = "Buffs",
@@ -1480,7 +1577,7 @@ local _ClassConfig = {
             RequiresLoadoutChange = true,
             ConfigType = "Advanced",
         },
-        ['UseDeftdance']    = {
+        ['UseDeftdance']      = {
             DisplayName = "Use Deftdance",
             Group = "Abilities",
             Header = "Buffs",
@@ -1492,7 +1589,7 @@ local _ClassConfig = {
         },
 
         -- Song Duration Adjustment
-        ['SongRefresh']     = {
+        ['SongRefresh']       = {
             DisplayName = "Song Refresh Timer",
             Group = "Abilities",
             Header = "Common",
@@ -1507,7 +1604,7 @@ local _ClassConfig = {
             Answer = "Rather than stand idle, the bard keeps singing, topping off whichever song in the Melody rotation is closest to expiring, " ..
                 "so songs refresh before reaching the Song Refresh Timer and uptime stays high.",
         },
-        ['SongDuration']    = {
+        ['SongDuration']      = {
             DisplayName = "Song Duration",
             Group = "Abilities",
             Header = "Common",

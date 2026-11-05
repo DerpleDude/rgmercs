@@ -77,7 +77,7 @@ local Tooltips     = {
 }
 
 local _ClassConfig = {
-    _version          = "3.3 - Live",
+    _version          = "3.4 - Live",
     _author           = "Algar, Derple",
     ['ModeChecks']    = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
@@ -252,6 +252,7 @@ local _ClassConfig = {
             "Minion of Fear",     -- Level 88
             "Minion of Sebilis",  -- Level 83
             "Maladroit Minion",   -- Level 78
+            "Shambling Minion",   -- Level 73
             "Son of Decay",       -- Level 68
             "Invoke Death",       -- Level 64
             "Cackling Bones",     -- Level 58

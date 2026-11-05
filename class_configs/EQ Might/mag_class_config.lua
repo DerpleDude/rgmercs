@@ -11,11 +11,15 @@ local Logger       = require("utils.logger")
 local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
-    _version          = "1.6 - EQ Might",
+    _version          = "1.14 - EQ Might",
     _author           = "Derple, Morisato, Algar",
     ['ModeChecks']    = {
         IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or not Targeting.HasXTHaters()) end,
         IsCuring = function() return Config:GetSetting('DoCures') and Casting.CanUseAA("Radiant Cure") end,
+        IsDispelling = function() return Config:GetSetting('DoDispel') and Casting.CanUseAA("Eradicate Magic") end,
+    },
+    ['Dispel']        = {
+        { name = "Eradicate Magic", type = "AA", },
     },
     ['Rez']           = {
         ['Combat']   = {
@@ -100,14 +104,16 @@ local _ClassConfig = {
     },
     ['AbilitySets']   = {
         --- Nukes
-        ['SwarmPet'] = {
+        ['SwarmPet'] = {                 -- Timer 5
+            "Rampaging Servant",         -- Level 72
             "Raging Servant",            -- Level 70
             "Restrained Raging Servant", -- Level 65 EQM Custom
         },
-        -- ['ChaoticNuke'] = {
-        --     -- Chaotic Nuke with Beneficial Effect >= LVL69
-        --     "Fickle Fire", -- Level 69
-        -- },
+        ['ChaoticNuke'] = {
+            -- Chaotic Nuke with Beneficial Effect >= LVL69
+            "Fickle Inferno",          -- Level 72
+            "Fickle Fire",             -- Level 69
+        },
         ['FireDD'] = {                 -- Mix of Fire Nukes and Bolts appropriate for use at lower levels.
             "Scalding Sands",          -- Level 71
             "Burning Earth",           -- Level 69
@@ -143,19 +149,19 @@ local _ClassConfig = {
         },
         --- Buffs
         ['SelfShield'] = {
-            "Prime Shielding",      -- Level 70
-            "Elemental Aura",       -- Level 66
-            "Shield of Maelin",     -- Level 64
-            "Shield of the Arcane", -- Level 61
-            "Shield of the Magi",   -- Level 54
-            "Arch Shielding",       -- Level 43
-            "Greater Shielding",    -- Level 32
-            "Major Shielding",      -- Level 24
-            "Shielding",            -- Level 16
-            "Lesser Shielding",     -- Level 5
-            "Minor Shielding",      -- Level 1
+            "Prime Shielding",            -- Level 70
+            "Elemental Aura",             -- Level 66
+            "Shield of Maelin",           -- Level 64
+            "Shield of the Arcane",       -- Level 61
+            "Shield of the Magi",         -- Level 54
+            "Arch Shielding",             -- Level 43
+            "Greater Shielding",          -- Level 32
+            "Major Shielding",            -- Level 24
+            "Shielding",                  -- Level 16
+            "Lesser Shielding",           -- Level 5
+            "Minor Shielding",            -- Level 1
         },
-        ['ShortDurDmgShield'] = {
+        ['ShortDurDmgShield'] = {         -- Timer 9
             -- Use at the start of the DPS loop
             "Ancient: Veil of Pyrilonus", -- Level 70
             "Pyrilen Skin",               -- Level 68
@@ -163,6 +169,7 @@ local _ClassConfig = {
         ['LongDurDmgShield'] = {
             -- Preferring group buffs for ease. Included all Single target Now as well
             -- "Magmaskin", Single target vs group (convenience), minimal difference
+            "Circle of Magmaskin",         -- Level 72
             "Ancient: Circle of Fireskin", -- Level 70
             "Circle of Fireskin",          -- Level 70
             "Fireskin",                    -- Level 66
@@ -205,6 +212,7 @@ local _ClassConfig = {
             "Renew Elements",               -- Level 7
         },
         ['PetManaConv'] = {
+            "Elemental Symbiosis",  -- Level 72
             "Elemental Simulacrum", -- Level 70
             "Elemental Siphon",     -- Level 65
             "Elemental Draw",       -- Level 54
@@ -221,6 +229,7 @@ local _ClassConfig = {
             "Burnout",                -- Level 11
         },
         ['PetIceFlame'] = {
+            "Iceflame Body",  -- Level 72
             "Iceflame Guard", -- Level 70
         },
         ['EarthPetSpell'] = {
@@ -294,17 +303,21 @@ local _ClassConfig = {
             "Elementaling: Fire",        -- Level 7
             "Elementalkin: Fire",        -- Level 3
         },
-        ['AegisBuff'] = {
+        ['AegisBuff'] = {                -- Timer 10
             ---Pet Aegis Shield Buff (Short Duration)*
-            "Bulwark of Calliav",    -- Level 69
-            "Protection of Calliav", -- Level 64
-            "Guard of Calliav",      -- Level 58
-            "Ward of Calliav",       -- Level 46
+            "Aegis of Calliav",          -- Level 72
+            "Bulwark of Calliav",        -- Level 69
+            "Protection of Calliav",     -- Level 64
+            "Guard of Calliav",          -- Level 58
+            "Ward of Calliav",           -- Level 46
         },
         -- - Summoned item Spells
         ['FireOrbSummon'] = {
             "Summon: Molten Orb", -- Level 69
             "Summon: Lava Orb",   -- Level 61
+        },
+        ['IceOrbSummon'] = {
+            "Summon Wintry Paradox", -- Level 72
         },
         ['ManaRodSummon'] = {
             --- ManaRodSummon - Focuses on group mana rod summon for ease. _
@@ -327,10 +340,10 @@ local _ClassConfig = {
         -- ['GroupCotH'] = {
         --     "Call of the Harbinger", -- Level 68 -- does not appear to be added
         -- },
-        ['PBAE2'] = {
-            "Scintillation", -- Level 51
+        ['PBAE2'] = {             -- Timer 4
+            "Scintillation",      -- Level 51
         },
-        ['PBAE1'] = {
+        ['PBAE1'] = {             -- Timer 5
             "Wind of the Desert", -- Level 60
         },
         ['Minionskin'] = {        --EQM Custom: HP/Regen/mitigation (May need to block druid HP buff line on pet)
@@ -345,6 +358,7 @@ local _ClassConfig = {
     },
     ['AASets']        = {
         ['Spire'] = {
+            "Fundament: Third Spire of the Elements",
             "Fundament: Second Spire of the Elements",
             "Fundament: First Spire of the Elements",
         },
@@ -706,6 +720,13 @@ local _ClassConfig = {
                 end,
             },
             {
+                name = "Host in the Shell",
+                type = "AA",
+                cond = function(self, aaName)
+                    return Casting.PetBuffAACheck(aaName)
+                end,
+            },
+            {
                 name = "Minionskin",
                 type = "Spell",
                 cond = function(self, spell)
@@ -731,15 +752,23 @@ local _ClassConfig = {
                 type = "AA",
             },
             {
+                name = "Elemental Union",
+                type = "AA",
+            },
+            {
                 name = "Virulent Talon",
                 type = "AA",
                 cond = function(self, aaName)
                     return (mq.TLO.Me.Pet.ID() or 0) > 0
                 end,
             },
-            {
-                name = "Spire",
+            { -- Use the selected spire, fall back to the AA set if we don't have it.
+                name_func = function(self)
+                    local chosen = "Fundament: " .. Globals.Constants.SpireChoices[Config:GetSetting('SpireChoice')] .. " Spire of the Elements"
+                    return Casting.CanUseAA(chosen) and chosen or "Spire"
+                end,
                 type = "AA",
+                load_cond = function() return Config:GetSetting('SpireChoice') ~= 4 end,
             },
             {
                 name = "FireCore",
@@ -768,11 +797,31 @@ local _ClassConfig = {
         },
         ['Weaves'] = {
             {
+                name = "Force of Elements",
+                type = "AA",
+                cond = function(self, aaName, target)
+                    return Targeting.AggroCheckOkay()
+                end,
+            },
+            {
                 name = "FireOrbItem",
                 type = "CustomFunc",
                 custom_func = function(self)
                     if not self.ResolvedActionMap['FireOrbSummon'] then return false end
                     local baseItem = self.ResolvedActionMap['FireOrbSummon'].RankName.Base(1)() or "None"
+                    if mq.TLO.FindItemCount(baseItem)() == 1 then
+                        local invItem = mq.TLO.FindItem(baseItem)
+                        return Casting.UseItem(invItem.Name(), Globals.AutoTargetID)
+                    end
+                    return false
+                end,
+            },
+            {
+                name = "IceOrbItem",
+                type = "CustomFunc",
+                custom_func = function(self)
+                    if not self.ResolvedActionMap['IceOrbSummon'] then return false end
+                    local baseItem = self.ResolvedActionMap['IceOrbSummon'].RankName.Base(1)() or "None"
                     if mq.TLO.FindItemCount(baseItem)() == 1 then
                         local invItem = mq.TLO.FindItem(baseItem)
                         return Casting.UseItem(invItem.Name(), Globals.AutoTargetID)
@@ -826,6 +875,15 @@ local _ClassConfig = {
                 load_cond = function() return Config:GetSetting('DoSwarmPet') > 1 end,
                 cond = function(self, spell, target)
                     return Casting.HaveManaToNuke() and not (Config:GetSetting('DoSwarmPet') == 2 and not Globals.AutoTargetIsNamed)
+                end,
+            },
+            {
+                name = "ChaoticNuke",
+                type = "Spell",
+                load_cond = function() return Config:GetSetting('UseFickleNukes') end,
+                cond = function(self, spell, target)
+                    if self.Helpers.PickElement() ~= "Fire" then return false end
+                    return Targeting.MobNotLowHP(target) and not Casting.IHaveBuff("Flames of Power")
                 end,
             },
             {
@@ -958,7 +1016,19 @@ local _ClassConfig = {
                 end,
                 post_activate = function(self, spell, success)
                     if success then
-                        Core.SafeCallFunc("Autoinventory", self.Helpers.HandleItemSummon, self, spell, "group")
+                        Core.SafeCallFunc("Autoinventory", self.Helpers.HandleItemSummon, self, spell, "personal")
+                    end
+                end,
+            },
+            {
+                name = "IceOrbSummon",
+                type = "Spell",
+                cond = function(self, spell)
+                    return mq.TLO.FindItemCount(spell.RankName.Base(1)() or "")() == 0
+                end,
+                post_activate = function(self, spell, success)
+                    if success then
+                        Core.SafeCallFunc("Autoinventory", self.Helpers.HandleItemSummon, self, spell, "personal")
                     end
                 end,
             },
@@ -967,6 +1037,13 @@ local _ClassConfig = {
                 type = "AA",
                 cond = function(self, aaName)
                     return Casting.SelfBuffAACheck(aaName, nil, true)
+                end,
+            },
+            {
+                name = "Mana Reserve",
+                type = "AA",
+                cond = function(self, aaName)
+                    return Casting.SelfBuffAACheck(aaName)
                 end,
             },
         },
@@ -1010,6 +1087,7 @@ local _ClassConfig = {
             name = "Default", --This name is abitrary, it is simply what shows up in the UI when this spell list is loaded.
             spells = {        -- Spells will be loaded in order (if the conditions are met), until all gem slots are full.
                 { name = "FireDD", },
+                { name = "ChaoticNuke",      cond = function(self) return Config:GetSetting('UseFickleNukes') end, },
                 { name = "BigFireDD", },
                 { name = "MagicDD", },
                 { name = "SwarmPet", },
@@ -1019,6 +1097,7 @@ local _ClassConfig = {
                 { name = "MaloDebuff",       cond = function(self) return Config:GetSetting('DoMalo') and (not Config:GetSetting('DoMaloAA') or not Casting.CanUseAA("Malosinete")) end, },
                 { name = "PetHealSpell",     cond = function(self) return Config:GetSetting('DoPetHealSpell') end, },
                 { name = "FireOrbSummon", },
+                { name = "IceOrbSummon", },
                 { name = "SingleCotH", },
                 { name = "ManaRodSummon",    cond = function(self) return Config:GetSetting('SummonModRods') and not Core.GetResolvedActionMapItem('ModRod') end, },
                 { name = "FireShroud", },
@@ -1039,6 +1118,16 @@ local _ClassConfig = {
             FAQ = "What is the difference between the modes?",
             Answer = "DPS Mode performs exactly as described.\n" ..
                 "PBAE Mode will use PBAE spells when configured, alongside the DPS rotation.",
+        },
+        ['DoDispel']       = {
+            DisplayName = "Do Dispel",
+            Group = "Abilities",
+            Header = "Debuffs",
+            Category = "Dispel",
+            Index = 101,
+            Tooltip = "Enable removing beneficial enemy effects.",
+            RequiresLoadoutChange = true,
+            Default = true,
         },
         ['UseDonorPet']    = {
             DisplayName = "Summon Asterion",
@@ -1073,6 +1162,23 @@ local _ClassConfig = {
             Min = 1,
             Max = 4,
             RequiresLoadoutChange = true,
+        },
+        ['SpireChoice']    = {
+            DisplayName = "Spire Choice:",
+            Group = "Abilities",
+            Header = "Buffs",
+            Category = "Group",
+            Index = 101,
+            Tooltip = "Choose which Fundament you would like to use during burns:\n" ..
+                "First Spire: Spell Crit Buff to Self.\n" ..
+                "Second Spire: Pet Damage Proc Buff.\n" ..
+                "Third Spire: Group Damage Shield, Fire Resist and Melee Proc Buff.",
+            Type = "Combo",
+            ComboOptions = Globals.Constants.SpireChoices,
+            RequiresLoadoutChange = true,
+            Default = 2,
+            Min = 1,
+            Max = #Globals.Constants.SpireChoices,
         },
         ['DoPetHealSpell'] = {
             DisplayName = "Pet Heal Spell",
@@ -1111,8 +1217,7 @@ local _ClassConfig = {
             Header = "Damage",
             Category = "Direct",
             Index = 101,
-            Tooltip = "Pick the element strategy for nukes. Auto rotates Fire and Magic based on target immunity. " ..
-                "See FAQ for details on Skip<Element>Spells conflicts.",
+            Tooltip = "Choose the element you nuke with. Auto uses Fire, then Magic if your target is immune to Fire.",
             Type = "Combo",
             ComboOptions = { 'Auto', 'Fire', 'Magic', },
             Default = 1,
@@ -1120,9 +1225,19 @@ local _ClassConfig = {
             Max = 3,
             FAQ = "How does Element Mode work?",
             Answer =
-                "   The 'Element Mode' setting determines which element your nukes will use. Fire and Magic spell lines are always memorized so you can change mode in combat freely.\n\n" ..
-                "   Auto mode prefers Fire, then Magic, automatically skipping either if your target is immune (per the Spawn List) or if you've globally toggled that element off via the Skip <Element> Spells settings. The explicit modes (Fire/Magic) lock to that element regardless of immunity data.\n\n" ..
-                "   Heads up: explicit modes still respect the global Skip <Element> Spells toggles. If you pick Fire mode here but have SkipFireSpells enabled in your combat settings, the global skip wins and Fire casts will be blocked - you'll need to clear the conflicting toggle, or pick a different element here.",
+                "Element Mode chooses the element you nuke with.\n" ..
+                "Auto uses Fire, then Magic, skipping any element your target is immune to or that you turned off with Skip <Element> Spells.\n" ..
+                "Fire and Magic modes lock to that element, but Skip <Element> Spells still applies.",
+        },
+        ['UseFickleNukes'] = {
+            DisplayName = "Use Fickle Nukes",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "Direct",
+            Index = 102,
+            Tooltip = "Use your Fickle nuke line (chance for a fire damage buff).",
+            RequiresLoadoutChange = true,
+            Default = false,
         },
         ['DoSwarmPet']     = {
             DisplayName = "Swarm Pet Spell:",

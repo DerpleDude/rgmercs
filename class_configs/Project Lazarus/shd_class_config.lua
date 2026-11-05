@@ -78,7 +78,7 @@ local Tooltips     = {
 }
 
 local _ClassConfig = {
-    _version          = "2.8 - Project Lazarus",
+    _version          = "2.9 - Project Lazarus",
     _author           = "Algar, Derple",
     ['ModeChecks']    = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
@@ -869,6 +869,7 @@ local _ClassConfig = {
                 tooltip = Tooltips.Terror,
                 load_cond = function(self) return Core.IsTanking() and Config:GetSetting('DoTerror') end,
                 cond = function(self, spell, target)
+                    if Globals.NoHateTargetIDs:contains(Globals.AutoTargetID) then return false end
                     return Targeting.TankingXTNamed() and (Casting.CanUseAA("Cascading Theft of Defense") and not Casting.IHaveBuff("Cascading Theft of Defense"))
                 end,
             },

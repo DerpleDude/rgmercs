@@ -17,7 +17,7 @@ local auraSpellToName = {
 }
 
 local _ClassConfig    = {
-    _version          = "1.7 - EQ Might",
+    _version          = "1.10 - EQ Might",
     _author           = "Derple, Grimmier, Algar, Robban",
     ['ModeChecks']    = {
         CanMez       = function() return true end,
@@ -28,7 +28,14 @@ local _ClassConfig    = {
         IsCuring     = function() return Config:GetSetting('DoCures') and Casting.CanUseAA("Radiant Cure") end,
     },
     ['Dispel']        = {
-        { name = "Dispel", type = "Spell", },
+        { name = "Eradicate Magic", type = "AA", },
+        {
+            name = "Dispel",
+            type = "Spell",
+            cond = function(self)
+                return not Casting.CanUseAA("Eradicate Magic")
+            end,
+        },
     },
     ['Rez']           = {
         ['Combat']   = {
@@ -105,21 +112,23 @@ local _ClassConfig    = {
             "Beguiler's Aura",    -- Level 55
         },
         ['HasteBuff'] = {
-            "Speed of Ellowind",   -- Level 71
-            "Hastening of Salik",  -- Level 70
-            "Speed of Salik",      -- Level 67
-            "Vallon's Quickening", -- Level 65
+            "Hastening of Ellowind", -- Level 72
+            "Speed of Ellowind",     -- Level 71
+            "Hastening of Salik",    -- Level 70
+            "Speed of Salik",        -- Level 67
+            "Vallon's Quickening",   -- Level 65
             -- "Speed of Vallon",
-            "Speed of the Brood",  -- Level 60
-            "Visions of Grandeur", -- Level 60
-            "Wondrous Rapidity",   -- Level 58
-            "Aanya's Quickening",  -- Level 53
-            "Swift Like the Wind", -- Level 47
-            "Celerity",            -- Level 39
-            "Alacrity",            -- Level 21
-            "Quickness",           -- Level 15
+            "Speed of the Brood",    -- Level 60
+            "Visions of Grandeur",   -- Level 60
+            "Wondrous Rapidity",     -- Level 58
+            "Aanya's Quickening",    -- Level 53
+            "Swift Like the Wind",   -- Level 47
+            "Celerity",              -- Level 39
+            "Alacrity",              -- Level 21
+            "Quickness",             -- Level 15
         },
         ['ManaRegen'] = {
+            "Voice of Intuition",                -- Level 72
             -- "Seer's Intuition",               -- Level 71, not worth the hassle over the group item click
             "Ancient: Blessing of Clairvoyance", -- Level 70 EQM Custom
             "Voice of Clairvoyance",             -- Level 70
@@ -134,6 +143,7 @@ local _ClassConfig    = {
             "Breeze",                            -- Level 14
         },
         ['MezBuff'] = {
+            "Ward of Bewilderment", -- Level 72
             "Ward of Bedazzlement", -- Level 70
         },
         ['TankIllusionBuff'] = {
@@ -163,6 +173,9 @@ local _ClassConfig    = {
             "Ethereal Rune", -- Level 66
             "Arcane Rune",   -- Level 61
         },
+        ['SelfRune2'] = {
+            "Polychromatic Rune", -- Level 72
+        },
         ['SingleRune'] = {
             "Rune of Ellowind",  -- Level 70
             "Rune of Salik",     -- Level 67
@@ -174,6 +187,7 @@ local _ClassConfig    = {
             "Rune I",            -- Level 13
         },
         ['GroupRune'] = {
+            "Rune of the Kedge", -- Level 72
             "Rune of Rikkukin",  -- Level 69
             "Rune of the Scale", -- Level 61
         },
@@ -190,34 +204,38 @@ local _ClassConfig    = {
         --     "Ward of Alendar",       -- Level 29
         -- },
         ['GroupSpellShield'] = {
-            "Circle of Alendar", -- Level 70
+            "Legion of Alendar",      -- Level 72
+            "Circle of Alendar",      -- Level 70
         },
-        ['SpellProcBuff'] = {
-            "Mana Recursion", -- Level 71
-            "Mana Flare",     -- Level 69
+        ['SpellProcBuff'] = {         -- Timer 7
+            "Mana Recursion",         -- Level 71
+            "Mana Flare",             -- Level 69
         },
-        ['PBAEStunSpell'] = {
-            "Color Snap",  -- Level 69
-            "Color Cloud", -- Level 63
-            "Color Slant", -- Level 52
-            "Color Skew",  -- Level 43
-            "Color Shift", -- Level 20
-            "Color Flux",  -- Level 3
+        ['PBAEStunSpell'] = {         -- Timer 3
+            "Color Collapse",         -- Level 72
+            "Color Snap",             -- Level 69
+            "Color Cloud",            -- Level 63
+            "Color Slant",            -- Level 52
+            "Color Skew",             -- Level 43
+            "Color Shift",            -- Level 20
+            "Color Flux",             -- Level 3
         },
-        ['SpinStunSpell'] = {
-            "Whirl Till You Hurl", -- Level 9
+        ['SpinStunSpell'] = {         -- Timer 6
+            "Spinning into the Void", -- Level 72
+            "Whirl Till You Hurl",    -- Level 9
         },
         ['CharmSpell'] = {
-            "Coax",               -- Level 71
-            "True Name",          -- Level 70
-            "Compel",             -- Level 68
-            "Command of Druzzil", -- Level 64
-            "Beckon",             -- Level 62
-            "Boltran's Agacerie", -- Level 53
-            "Allure",             -- Level 46
-            "Cajoling Whispers",  -- Level 37
-            "Beguile",            -- Level 23
-            "Charm",              -- Level 11
+            "Dyn`leth's Whispers", -- Level 72
+            "Coax",                -- Level 71
+            "True Name",           -- Level 70
+            "Compel",              -- Level 68
+            "Command of Druzzil",  -- Level 64
+            "Beckon",              -- Level 62
+            "Boltran's Agacerie",  -- Level 53
+            "Allure",              -- Level 46
+            "Cajoling Whispers",   -- Level 37
+            "Beguile",             -- Level 23
+            "Charm",               -- Level 11
         },
         ['CrippleSpell'] = {
             "Fractured Consciousness", -- Level 70
@@ -271,12 +289,13 @@ local _ClassConfig    = {
             "Shallow Breath",     -- Level 1
         },
         ['MindDot'] = {
-            "Mind Shatter", -- Level 70
+            "Mind Phobiate", -- Level 72
+            "Mind Shatter",  -- Level 70
         },
         ['MindstingDot'] = {
-            "Mindsting Swarm", -- Level 66 EQM Custom
+            "Mindsting Swarm",  -- Level 66 EQM Custom
         },
-        ['Avatar'] = {
+        ['Avatar'] = {          -- Timer 3
             "Phantasmal Might", -- Level 70 EQM Custom
             "Phantasmal Power", -- Level 66 EQM Custom
             "Phantasmal Surge", -- Level 62 EQM Custom
@@ -321,6 +340,7 @@ local _ClassConfig    = {
             "Pendril's Animation", -- Level 1
         },
         ['MezAESpell'] = {
+            "Wake of Subdual",    -- Level 72
             "Wake of Felicity",   -- Level 69
             "Bliss of the Nihil", -- Level 65
             "Fascination",        -- Level 52
@@ -452,7 +472,11 @@ local _ClassConfig    = {
                 name = "SpinStunSpell",
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoSpinStun') > 1 end,
-                cond = function(self, spell, target) return Targeting.TargetNotStunned() end,
+                cond = function(self, spell, target)
+                    local maxLevel = spell.MaxLevel() or 0
+                    if (target.Level() or 0) > (maxLevel > 0 and maxLevel or 55) then return false end
+                    return Targeting.TargetNotStunned() and not Casting.StunImmuneTarget(target)
+                end,
             },
             {
                 name = "PBAEStunSpell",
@@ -607,7 +631,9 @@ local _ClassConfig    = {
             local tashSpell = self.ResolvedActionMap['TashSpell']
             return not (tashSpell and tashSpell() and tashSpell.Name() == "Echo of Tashan")
         end,
-        ManaBuffChoice = function()
+        ManaBuffChoice = function(self)
+            local manaSpell = self.ResolvedActionMap['ManaRegen']
+            if manaSpell and manaSpell() and manaSpell.Name() == "Voice of Intuition" and (manaSpell.RankName.Rank() or 0) >= 2 then return "ManaSpell" end
             if mq.TLO.Me.Level() >= 69 and mq.TLO.FindItem("=Legendary Timeless Belt of the Wise")() then
                 return "BeltItem"
             elseif mq.TLO.Me.Level() >= 68 and mq.TLO.FindItem("=Ancient Artifact of Clairvoyance")() then
@@ -682,6 +708,12 @@ local _ClassConfig    = {
                 cond = function(self, spell)
                     return Casting.SelfBuffCheck(spell)
                 end,
+            },
+            {
+                name = "SelfRune2",
+                type = "Spell",
+                active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
+                cond = function(self, spell) return Casting.SelfBuffCheck(spell) end,
             },
             {
                 name = "SelfHPBuff",
@@ -803,7 +835,7 @@ local _ClassConfig    = {
             {
                 name = "Legendary Timeless Belt of the Wise",
                 type = "Item",
-                load_cond = function(self) return self.Helpers.ManaBuffChoice() == "BeltItem" end,
+                load_cond = function(self) return self.Helpers.ManaBuffChoice(self) == "BeltItem" end,
                 cond = function(self, itemName, target)
                     return Casting.GroupBuffItemCheck(itemName, target)
                 end,
@@ -811,7 +843,7 @@ local _ClassConfig    = {
             {
                 name = "Ancient Artifact of Clairvoyance",
                 type = "Item",
-                load_cond = function(self) return self.Helpers.ManaBuffChoice() == "ArtifactItem" end,
+                load_cond = function(self) return self.Helpers.ManaBuffChoice(self) == "ArtifactItem" end,
                 cond = function(self, itemName, target)
                     return Casting.GroupBuffItemCheck(itemName, target)
                 end,
@@ -819,7 +851,7 @@ local _ClassConfig    = {
             {
                 name = "ManaRegen",
                 type = "Spell",
-                load_cond = function(self) return self.Helpers.ManaBuffChoice() == "ManaSpell" end,
+                load_cond = function(self) return self.Helpers.ManaBuffChoice(self) == "ManaSpell" end,
                 active_cond = function(self, spell) return mq.TLO.Me.FindBuff("id " .. tostring(spell.ID()))() ~= nil end,
                 cond = function(self, spell, target)
                     if not Targeting.TargetIsACaster(target) then return false end
@@ -967,7 +999,9 @@ local _ClassConfig    = {
                 load_cond = function() return Config:GetSetting('DoSpinStun') > 1 end,
                 cond = function(self, spell, target)
                     if Config:GetSetting('DoSpinStun') == 2 and (mq.TLO.Group.Injured(Config:GetSetting('EmergencyStart'))() or 0) < 1 then return false end
-                    return Targeting.TargetNotStunned() and not Globals.AutoTargetIsNamed
+                    local maxLevel = spell.MaxLevel() or 0
+                    if (target.Level() or 0) > (maxLevel > 0 and maxLevel or 55) then return false end
+                    return Targeting.TargetNotStunned() and not Globals.AutoTargetIsNamed and not Casting.StunImmuneTarget(target)
                 end,
             },
             {
@@ -1167,6 +1201,20 @@ local _ClassConfig    = {
                 name = "Chromatic Haze",
                 type = "AA",
             },
+            {
+                name = "Fundament: Third Spire of Enchantment",
+                type = "AA",
+                cond = function(self) return not Casting.IHaveBuff("Illusions of Grandeur") end,
+            },
+            {
+                name = "Crippling Aurora",
+                type = "AA",
+                load_cond = function() return Config:GetSetting("DoCrippleAA") end,
+                cond = function(self, aaName, target)
+                    return Targeting.HasXTHaters(Config:GetSetting('AECount')) or
+                        (not Config:GetSetting('DoCripple') and Globals.AutoTargetIsNamed and Casting.DetAACheck(aaName))
+                end,
+            },
             -- { --Temporarily commented out due to high prevalance of xtarget bugs with this pet. will revisit.
             --     name = "Phantasmal Opponent",
             --     type = "AA",
@@ -1259,7 +1307,7 @@ local _ClassConfig    = {
                 { name = "IllusionBuff",     cond = function(self) return Config:GetSetting('DoIllusionBuff') end, },
                 { name = "TankIllusionBuff", cond = function(self) return Config:GetSetting('DoTankIllusionBuff') end, },
                 { name = "SpellProcBuff",    cond = function(self) return Config:GetSetting('DoProcBuff') end, },
-                { name = "Dispel",           cond = function(self) return Config:GetSetting('DoDispel') end, },
+                { name = "Dispel",           cond = function(self) return Config:GetSetting('DoDispel') and not Casting.CanUseAA("Eradicate Magic") end, },
                 { name = "Avatar",           cond = function(self) return Config:GetSetting('DoAvatar') end, },
                 { name = "MagicNuke",        cond = function(self) return Config:GetSetting('DoNuke') end, },
                 { name = "ColdDot",          cond = function(self) return Config:GetSetting('DoColdDot') end, },
@@ -1453,6 +1501,16 @@ local _ClassConfig    = {
             Tooltip = "Enable casting Cripple spells.",
             RequiresLoadoutChange = true,
             Default = false,
+        },
+        ['DoCrippleAA']        = {
+            DisplayName = "Use AE Cripple AA",
+            Group = "Abilities",
+            Header = "Debuffs",
+            Category = "Misc Debuffs",
+            Index = 103,
+            Tooltip = "Enable casting Crippling Aurora when we meet the AE threshold, or on a named if we don't have the spell above selected.",
+            RequiresLoadoutChange = true,
+            Default = true,
         },
         ['DoDispel']           = {
             DisplayName = "Do Dispel",

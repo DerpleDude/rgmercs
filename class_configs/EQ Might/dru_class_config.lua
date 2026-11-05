@@ -7,7 +7,7 @@ local Globals      = require("utils.globals")
 local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
-    _version              = "2.2 - EQ Might",
+    _version              = "2.5 - EQ Might",
     _author               = "Algar",
     ['ModeChecks']        = {
         IsHealing = function() return true end,
@@ -50,6 +50,7 @@ local _ClassConfig = {
     ['Cure']              = {
         ['DetDispel'] = {
             { type = "AA", name = "Radiant Cure", },
+            { type = "AA", name = "Purified Spirits", selfOnly = true, },
         },
         ['Poison'] = {
             { type = "Spell", name = "GroupHeal",  load_cond = function(self) return self.Helpers.UseGroupHealCure(self, 'KeepPoisonMemmed') end, },
@@ -63,6 +64,7 @@ local _ClassConfig = {
             { type = "Spell", name = "CureCurse", },
         },
         ['Corruption'] = {
+            { type = "Spell", name = "GroupCureCorrupt", },
             { type = "Spell", name = "CureCorrupt", },
         },
     },
@@ -127,27 +129,37 @@ local _ClassConfig = {
         },
         ['HealSpell'] = {
             -- Long Heal >= 1 -- skipped 10s cast heals.
-            "Ancient: Chlorobon", -- Level 69
-            "Chlorotrope",        -- Level 67
-            "Sylvan Infusion",    -- Level 65
-            "Nature's Infusion",  -- Level 63
-            "Nature's Touch",     -- Level 60
-            "Chloroblast",        -- Level 55
-            "Superior Healing",   -- Level 51
-            "Forest's Renewal",   -- Level 49
-            "Healing Water",      -- Level 44
-            "Nature's Renewal",   -- Level 39
-            "Greater Healing",    -- Level 29
-            "Healing",            -- Level 19
-            "Light Healing",      -- Level 9
-            "Minor Healing",      -- Level 1
+            "Pure Life",                   -- Level 72
+            "Ancient: Chlorobon",          -- Level 69
+            "Chlorotrope",                 -- Level 67
+            "Sylvan Infusion",             -- Level 65
+            "Nature's Infusion",           -- Level 63
+            "Nature's Touch",              -- Level 60
+            "Chloroblast",                 -- Level 55
+            "Superior Healing",            -- Level 51
+            "Forest's Renewal",            -- Level 49
+            "Healing Water",               -- Level 44
+            "Nature's Renewal",            -- Level 39
+            "Greater Healing",             -- Level 29
+            "Healing",                     -- Level 19
+            "Light Healing",               -- Level 9
+            "Minor Healing",               -- Level 1
         },
-        ['GroupHeal'] = {
+        ['SelfGuard'] = {                  -- Timer 5
+            "Direwood Guard",              -- Level 72
+            "Oaken Guard",                 -- Level 69
+        },
+        ['QuickHealSurge'] = {             -- Timer 2
+            "Adrenaline Surge",            -- Level 72
+        },
+        ['GroupHeal'] = {                  -- Timer 8
+            "Lunarlight",                  -- Level 72
             "Moonshadow",                  -- Level 70
             "Lunarglow",                   -- Level 66 EQM Custom
             "Lunargleam",                  -- Level 61 EQM Custom
         },
         ['ATKDebuff'] = {                  -- ATK Debuff
+            "Hoar Frost",                  -- Level 72
             "Sun's Corona",                -- Level 67
             "Ro's Illumination",           -- Level 62
         },
@@ -180,11 +192,15 @@ local _ClassConfig = {
             "Creeping Crud",                -- Level 24
             "Stinging Swarm",               -- Level 10
         },
-        ['VengeanceDot'] = {                -- Fire Dot, 30s
+        ['VengeanceDot'] = {                -- Timer 6, Fire Dot, 30s
+            "Sunscorch",                    -- Level 72
             "Vengeance of the Sun",         -- Level 69
             "Vengeance of Tunare",          -- Level 64
             "Vengeance of Nature",          -- Level 55
             "Vengeance of the Wild",        -- Level 49
+        },
+        ['WrathDot'] = {                    -- Timer 9
+            "Nature's Blazing Wrath",       -- Level 72
         },
         ['FlameLickDot'] = {                -- Fire Dot with Fire Resist Reduction, 60s
             "Blistering Sunray",            -- Level 70
@@ -195,10 +211,10 @@ local _ClassConfig = {
             "Immolate",                     -- Level 25
             "Flame Lick",                   -- Level 1
         },
-        ['StunNuke'] = {
-            "Gale of the Stormborn", -- Level 70
-            "Stormwatch",            -- Level 66
-            "Storm's Fury",          -- Level 61
+        ['StunNuke'] = {                    -- Timer 4
+            "Gale of the Stormborn",        -- Level 70
+            "Stormwatch",                   -- Level 66
+            "Storm's Fury",                 -- Level 61
             -- "Breath of Karana",    -- Level 56 Only cast outdoors
             -- "Dustdevil",           -- Level 43 Does not Stun
             "Fury of Air", -- Level 30
@@ -207,15 +223,16 @@ local _ClassConfig = {
         },
         ['SnareSpell'] = {
             -- "Hungry Vines",   -- Level 70 The out-of-era Serpent Vines is much less mana and lasts longer without the Dot And melee guard
-            "Serpent Vines",   -- Level 69
-            "Entangle",        -- Level 61
-            "Mire Thorns",     -- Level 61
-            "Bonds of Tunare", -- Level 57
-            "Ensnare",         -- Level 26
-            "Snare",           -- Level 1
-            "Tangling Weeds",  -- Level 1
+            "Serpent Vines",           -- Level 69
+            "Entangle",                -- Level 61
+            "Mire Thorns",             -- Level 61
+            "Bonds of Tunare",         -- Level 57
+            "Ensnare",                 -- Level 26
+            "Snare",                   -- Level 1
+            "Tangling Weeds",          -- Level 1
         },
-        ['FireNuke'] = {
+        ['FireNuke'] = {               -- TO DO: examine adjusting these
+            -- "Equinox Burn",         -- Level 72
             "Winter's Flame",          -- Level 71 start to add cold damage in as well
             "Solstice Strike",         -- Level 69
             "Sylvan Fire",             -- Level 65
@@ -231,6 +248,7 @@ local _ClassConfig = {
             "Burst of Flame",          -- Level 1
         },
         ['IceNuke'] = {
+            "Rime Crystals",          -- Level 72
             "Ancient: Glacier Frost", -- Level 70
             "Glitterfrost",           -- Level 70
             "Ancient: Chaos Frost",   -- Level 65
@@ -238,14 +256,14 @@ local _ClassConfig = {
             "Moonfire",               -- Level 60
             "Frost",                  -- Level 55
         },
-        ['IceRain'] = {
-            "Cloudburst Hail", -- Level 70
-            "Tempest Wind",    -- Level 66
-            "Winter's Storm",  -- Level 61
-            "Blizzard",        -- Level 54
-            "Avalanche",       -- Level 37
-            "Pogonip",         -- Level 22
-            "Cascade of Hail", -- Level 12
+        ['IceRain'] = {               -- Timer 7
+            "Cloudburst Hail",        -- Level 70
+            "Tempest Wind",           -- Level 66
+            "Winter's Storm",         -- Level 61
+            "Blizzard",               -- Level 54
+            "Avalanche",              -- Level 37
+            "Pogonip",                -- Level 22
+            "Cascade of Hail",        -- Level 12
         },
         ['SelfShield'] = {
             "Viridicoat",  -- Level 71
@@ -264,6 +282,7 @@ local _ClassConfig = {
             "Mask of the Stalker", -- Level 60
         },
         ['HPTypeOne'] = {
+            "Blessing of the Direwild",      -- Level 72 Group
             "Direwild Skin",                 -- Level 71 Single
             "Ancient: Blessing of Steeloak", -- Level 70 Group
             "Blessing of Steeloak",          -- Level 70 Group
@@ -297,6 +316,7 @@ local _ClassConfig = {
             "Nature's Might",            -- Level 62 - STR Buff
         },
         ['GroupDmgShield'] = {
+            "Legacy of Viridiflora",     -- Level 72
             "Legacy of Nettles",         -- Level 70
             "Legacy of Bracken",         -- Level 65
             "Ancient: Legacy of Blades", -- Level 60
@@ -346,18 +366,22 @@ local _ClassConfig = {
             "Remove Lesser Curse",  -- Level 23
             "Remove Minor Curse",   -- Level 8
         },
+        ['GroupCureCorrupt'] = {
+            "Chant of the Napaea", -- Level 72
+        },
         ['CureCorrupt'] = {
             "Cure Corruption", -- Level 65
         },
         -- ['PureBlood'] = {
         --     "Pure Blood", -- Level 52
         -- },
-        ['PBAEMagic'] = {
-            "Earth Shiver", -- Level 66
-            "Catastrophe",  -- Level 61
-            "Upheaval",     -- Level 48
-            "Earthquake",   -- Level 31
-            "Tremor",       -- Level 21
+        ['PBAEMagic'] = {     -- Timer 3
+            "Tectonic Quake", -- Level 72
+            "Earth Shiver",   -- Level 66
+            "Catastrophe",    -- Level 61
+            "Upheaval",       -- Level 48
+            "Earthquake",     -- Level 31
+            "Tremor",         -- Level 21
         },
         ['PetHaste'] = {
             "Savage Spirit",         -- Level 41
@@ -390,6 +414,7 @@ local _ClassConfig = {
     },
     ['AASets']            = {
         ['Spire'] = {
+            "Fundament: Third Spire of Nature",
             "Fundament: Second Spire of Nature",
             "Fundament: First Spire of Nature",
         },
@@ -423,6 +448,20 @@ local _ClassConfig = {
     },
     ['HealRotations']     = {
         ['BigHealPoint'] = {
+            {
+                name = "SelfGuard",
+                type = "Spell",
+                cond = function(self, spell, target)
+                    return Targeting.TargetIsMyself(target) and Targeting.IHaveAggro(100)
+                end,
+            },
+            {
+                name = "Protection of Direwood",
+                type = "AA",
+                cond = function(self, aaName, target)
+                    return Targeting.TargetIsMyself(target) and Targeting.IHaveAggro(100)
+                end,
+            },
             {
                 name = "SnareHot",
                 type = "Spell",
@@ -460,6 +499,11 @@ local _ClassConfig = {
                 type = "Item",
                 load_cond = function(self) return mq.TLO.FindItem("=Mask of the Ancients")() end,
             },
+            {
+                name = "QuickHealSurge",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('QuickHealSurgeUse') == 1 end,
+            },
         },
         ['GroupHealPoint'] = {
             {
@@ -492,6 +536,11 @@ local _ClassConfig = {
                 cond = function(self, itemName, target)
                     return mq.TLO.Me.PctMana() < 10
                 end,
+            },
+            {
+                name = "QuickHealSurge",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('QuickHealSurgeUse') == 2 end,
             },
             {
                 name = "HealSpell",
@@ -623,7 +672,6 @@ local _ClassConfig = {
             name = 'DPS',
             state = 1,
             steps = 1,
-            load_cond = function() return mq.TLO.Me.Level() < 71 end,
             doFullRotation = true,
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
@@ -660,6 +708,15 @@ local _ClassConfig = {
     },
     ['Rotations']         = {
         ['DPS']              = {
+            {
+                name = "WrathDot",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoWrathDot') end,
+                cond = function(self, spell, target)
+                    if Config:GetSetting('NamedNukeHold') and Targeting.HasXTNamed() then return false end
+                    return Casting.OkayToNuke(true)
+                end,
+            },
             {
                 name = "Epic",
                 type = "Item",
@@ -823,9 +880,13 @@ local _ClassConfig = {
                 type = "AA",
                 IgnoreImmuneCheck = true,
             },
-            {
-                name = "Spire",
+            { -- Use the selected spire, fall back to the AA set if we don't have it.
+                name_func = function(self)
+                    local chosen = "Fundament: " .. Globals.Constants.SpireChoices[Config:GetSetting('SpireChoice')] .. " Spire of Nature"
+                    return Casting.CanUseAA(chosen) and chosen or "Spire"
+                end,
                 type = "AA",
+                load_cond = function() return Config:GetSetting('SpireChoice') ~= 4 end,
             },
         },
         ['Emergency(Aggro)'] = {
@@ -928,6 +989,13 @@ local _ClassConfig = {
                 cond = function(self, spell, target)
                     if Config.TempSettings.NoLevZone then return false end
                     return Casting.GroupBuffCheck(spell, target)
+                end,
+            },
+            {
+                name = "Swarm of Fireflies",
+                type = "AA",
+                cond = function(self, aaName, target)
+                    return Targeting.TargetIsTanking(target) and Casting.GroupBuffAACheck(aaName, target)
                 end,
             },
             {
@@ -1100,32 +1168,36 @@ local _ClassConfig = {
             cond = function(self) return Core.IsModeActive("Heal") end,
             spells = {
                 { name = "HealSpell", },
+                { name = "QuickHealSurge", },
                 { name = "GroupHeal", },
-                { name = "SnareHot",       cond = function(self) return Config:GetSetting('DoSnareHot') end, },
-                { name = "SnareSpell",     cond = function(self) return Config:GetSetting('DoSnare') and not Casting.CanUseAA("Entrap") end, },
+                { name = "SelfGuard", },
+                { name = "SnareHot",         cond = function(self) return Config:GetSetting('DoSnareHot') end, },
+                { name = "SnareSpell",       cond = function(self) return Config:GetSetting('DoSnare') and not Casting.CanUseAA("Entrap") end, },
                 { name = "ReptileBuff", },
-                { name = "ATKDebuff",      cond = function(self) return Config:GetSetting('DoATKDebuff') end, },
-                { name = "FireDebuff",     cond = function(self) return Config:GetSetting('DoFireDebuff') and not Casting.CanUseAA("Hand of Ro") end, },
-                { name = "ColdDebuff",     cond = function(self) return Config:GetSetting('DoColdDebuff') end, },
-                { name = "CurePoison",     cond = function(self) return Config:GetSetting('KeepPoisonMemmed') end, },
-                { name = "CureDisease",    cond = function(self) return Config:GetSetting('KeepDiseaseMemmed') end, },
-                { name = "CureCurse",      cond = function(self) return Config:GetSetting('KeepCurseMemmed') end, },
-                { name = "CureCorrupt",    cond = function(self) return Config:GetSetting('KeepCorruptMemmed') end, },
-                { name = "EvacSpell",      cond = function(self) return Config:GetSetting('KeepEvacMemmed') and not Casting.CanUseAA("Exodus") end, },
-                { name = "StunNuke",       cond = function(self) return Config:GetSetting('DoStunNuke') end, },
-                { name = "FireNuke",       cond = function(self) return Config:GetSetting('DoFireNuke') end, },
-                { name = "IceNuke",        cond = function(self) return Config:GetSetting('DoIceNuke') end, },
-                { name = "PBAEMagic",      cond = function(self) return Config:GetSetting('DoPBAE') end, },
-                { name = "IceRain",        cond = function(self) return Config:GetSetting('DoRain') end, },
-                { name = "FlameLickDot",   cond = function(self) return Config:GetSetting('DoFlameLickDot') end, },
-                { name = "ColdDot",        cond = function(self) return Config:GetSetting('DoColdDot') end, },
-                { name = "SwarmDot",       cond = function(self) return Config:GetSetting('DoSwarmDot') end, },
-                { name = "VengeanceDot",   cond = function(self) return Config:GetSetting('DoVengeanceDot') end, },
+                { name = "ATKDebuff",        cond = function(self) return Config:GetSetting('DoATKDebuff') end, },
+                { name = "FireDebuff",       cond = function(self) return Config:GetSetting('DoFireDebuff') and not Casting.CanUseAA("Hand of Ro") end, },
+                { name = "ColdDebuff",       cond = function(self) return Config:GetSetting('DoColdDebuff') end, },
+                { name = "CurePoison",       cond = function(self) return Config:GetSetting('KeepPoisonMemmed') end, },
+                { name = "CureDisease",      cond = function(self) return Config:GetSetting('KeepDiseaseMemmed') end, },
+                { name = "CureCurse",        cond = function(self) return Config:GetSetting('KeepCurseMemmed') end, },
+                { name = "GroupCureCorrupt", cond = function(self) return Config:GetSetting('KeepCorruptMemmed') end, },
+                { name = "CureCorrupt",      cond = function(self) return Config:GetSetting('KeepCorruptMemmed') end, },
+                { name = "EvacSpell",        cond = function(self) return Config:GetSetting('KeepEvacMemmed') and not Casting.CanUseAA("Exodus") end, },
+                { name = "StunNuke",         cond = function(self) return Config:GetSetting('DoStunNuke') end, },
+                { name = "FireNuke",         cond = function(self) return Config:GetSetting('DoFireNuke') end, },
+                { name = "WrathDot",         cond = function(self) return Config:GetSetting('DoWrathDot') end, },
+                { name = "IceNuke",          cond = function(self) return Config:GetSetting('DoIceNuke') end, },
+                { name = "PBAEMagic",        cond = function(self) return Config:GetSetting('DoPBAE') end, },
+                { name = "IceRain",          cond = function(self) return Config:GetSetting('DoRain') end, },
+                { name = "FlameLickDot",     cond = function(self) return Config:GetSetting('DoFlameLickDot') end, },
+                { name = "ColdDot",          cond = function(self) return Config:GetSetting('DoColdDot') end, },
+                { name = "SwarmDot",         cond = function(self) return Config:GetSetting('DoSwarmDot') end, },
+                { name = "VengeanceDot",     cond = function(self) return Config:GetSetting('DoVengeanceDot') end, },
                 -- { name = "BurstDS",      cond = function(self) return Config:GetSetting('DoBurstDS') end, },
                 --fallback QoL to take up extra slots
-                { name = "GroupRegenBuff", cond = function(self) return Config:GetSetting('DoGroupRegen') end, },
-                { name = "GroupDmgShield", cond = function(self) return Config:GetSetting('DoGroupDmgShield') end, },
-                { name = "HPTypeOne",      cond = function(self) return Config:GetSetting('DoHPBuff') end, },
+                { name = "GroupRegenBuff",   cond = function(self) return Config:GetSetting('DoGroupRegen') end, },
+                { name = "GroupDmgShield",   cond = function(self) return Config:GetSetting('DoGroupDmgShield') end, },
+                { name = "HPTypeOne",        cond = function(self) return Config:GetSetting('DoHPBuff') end, },
             },
         },
     },
@@ -1199,6 +1271,23 @@ local _ClassConfig = {
             Tooltip = "Use your 'All (melee) Skills Damage Modifier' line of buffs. May conflict with shaman buffs.",
             RequiresLoadoutChange = true,
             Default = false,
+        },
+        ['SpireChoice']       = {
+            DisplayName = "Spire Choice:",
+            Group = "Abilities",
+            Header = "Buffs",
+            Category = "Group",
+            Index = 106,
+            Tooltip = "Choose which Fundament you would like to use during burns:\n" ..
+                "First Spire: Spell Crit Buff to Self.\n" ..
+                "Second Spire: Healing Power Buff to Self.\n" ..
+                "Third Spire: Large Group HP Buff.",
+            Type = "Combo",
+            ComboOptions = Globals.Constants.SpireChoices,
+            RequiresLoadoutChange = true,
+            Default = 3,
+            Min = 1,
+            Max = #Globals.Constants.SpireChoices,
         },
         ['UseEpic']           = {
             DisplayName = "Epic Use:",
@@ -1383,6 +1472,16 @@ local _ClassConfig = {
             Default = true,
             FAQ = "Why am I not using my dots?",
         },
+        ['DoWrathDot']        = {
+            DisplayName = "Wrath Dot",
+            Group = "Abilities",
+            Header = "Damage",
+            Category = "Over Time",
+            Index = 106,
+            Tooltip = "Use your Nature's Wrath line Dot.",
+            RequiresLoadoutChange = true,
+            Default = true,
+        },
 
         --Damage(AE)
         ['DoPBAE']            = {
@@ -1439,6 +1538,20 @@ local _ClassConfig = {
             Index = 102,
             Tooltip = "Only use the snaring HoT as a tank buff when a named is on your XTarget.",
             Default = true,
+        },
+        ['QuickHealSurgeUse'] = {
+            DisplayName = "Quick Surge Heal Use:",
+            Group = "Abilities",
+            Header = "Recovery",
+            Category = "General Healing",
+            Index = 103,
+            Tooltip = "Use the burst single-target heal (Adrenaline line) as an emergency (Big) or standard (Main) heal.",
+            RequiresLoadoutChange = true,
+            Type = "Combo",
+            ComboOptions = { 'Emergency Use(BigHeal)', 'Standard Use(MainHeal)', },
+            Default = 2,
+            Min = 1,
+            Max = 2,
         },
         ['KeepPoisonMemmed']  = {
             DisplayName = "Mem Cure Poison",

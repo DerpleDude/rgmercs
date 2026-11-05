@@ -7,7 +7,7 @@ local Globals   = require('utils.globals')
 local Targeting = require("utils.targeting")
 
 return {
-    _version              = "1.9 - EQ Might",
+    _version              = "1.13 - EQ Might",
     _author               = "Derple, Algar",
     ['Modes']             = {
         'DPS',
@@ -25,6 +25,9 @@ return {
         ['DetDispel'] = {
             { type = "AA", name = "Radiant Cure", },
             { type = "AA", name = "Nature's Salve", selfOnly = true, },
+        },
+        ['Poison'] = {
+            { type = "Spell", name = "CurePoison", },
         },
     },
     ['Rez']               = {
@@ -75,12 +78,13 @@ return {
             "Artifact of Razorclaw",
         },
     },
-    ['AbilitySets']       = { --TODO/Under Consideration: Add AoE Roar line, add rotation entry (tie it to Do AoE setting), swap in instead of lance 2, especially since the last lance2 is level 112
-        ['SwarmPet'] = {
+    ['AbilitySets']       = {        --TODO/Under Consideration: Add AoE Roar line, add rotation entry (tie it to Do AoE setting), swap in instead of lance 2, especially since the last lance2 is level 112
+        ['SwarmPet'] = {             -- Timer 5
             -- Swarm Pet
-            "Bestial Empathy", -- Level 68
+            "Bark at the Moon",      -- Level 72
+            "Bestial Empathy",       -- Level 68
         },
-        ['Icelance1'] = {
+        ['Icelance1'] = {            -- Timer 7
             -- Lance 1 Timer 7 Ice Nuke Fast Cast
             "Ancient: Savage Ice",   -- Level 68 - Timer 7
             "Ancient: Frozen Chaos", -- Level 65 - Timer 7
@@ -89,20 +93,21 @@ return {
             "Frost Shard",           -- Level 47 - Timer 7
             "Blast of Frost",        -- Level 12 - Timer 7
         },
-        ['Icelance2'] = {
+        ['Icelance2'] = {            -- Timer 11
             -- Lance 2 Timer 11 Ice Nuke Fast Cast
-            "Glacier Spear",   -- Level 69 - Timer 11
-            "Trushar's Frost", -- Level 65 - Timer 11
-            "Ice Shard",       -- Level 54 - Timer 11
-            "Ice Spear",       -- Level 33 - Timer 11
+            "Spiked Sleet",          -- Level 72 - Timer 11
+            "Glacier Spear",         -- Level 69 - Timer 11
+            "Trushar's Frost",       -- Level 65 - Timer 11
+            "Ice Shard",             -- Level 54 - Timer 11
+            "Ice Spear",             -- Level 33 - Timer 11
         },
-        ['EndemicDot'] = {
+        ['EndemicDot'] = {           -- Timer 4
             -- Disease DoT
-            "Fever Spike",      -- Level 71
-            "Festering Malady", -- Level 70
-            "Plague",           -- Level 65
-            "Malaria",          -- Level 40
-            "Sicken",           -- Level 14
+            "Fever Spike",           -- Level 71
+            "Festering Malady",      -- Level 70
+            "Plague",                -- Level 65
+            "Malaria",               -- Level 40
+            "Sicken",                -- Level 14
         },
         ['BloodDot'] = {
             -- Poison DoT Instant Cast
@@ -114,13 +119,13 @@ return {
             "Envenomed Breath",   -- Level 35
             "Tainted Breath",     -- Level 19
         },
-        ['SlowSpell'] = {
+        ['SlowSpell'] = {         -- Timer 1
             -- Slow Spell
-            "Sha's Legacy",    -- Level 70
-            "Sha's Revenge",   -- Level 65
-            "Sha's Advantage", -- Level 60
-            "Sha's Lethargy",  -- Level 50
-            "Drowsy",          -- Level 20
+            "Sha's Legacy",       -- Level 70
+            "Sha's Revenge",      -- Level 65
+            "Sha's Advantage",    -- Level 60
+            "Sha's Lethargy",     -- Level 50
+            "Drowsy",             -- Level 20
         },
         ['HealSpell'] = {
             "Minohten Mending",  -- Level 71
@@ -147,6 +152,7 @@ return {
             "Sharik's Replenishing",   -- Level 9
         },
         ['PetSpell'] = {
+            "Spirit of Uluanes",   -- Level 72
             "Spirit of Rashara",   -- Level 68
             "Spirit of Alladnu",   -- Level 66
             "Spirit of Sorsha",    -- Level 64
@@ -176,7 +182,11 @@ return {
             "Growl of the Panther", -- Level 69
             "Growl of the Leopard", -- Level 61
         },
+        ['PetSlowProc'] = {
+            "Steeltrap Jaws", -- Level 72
+        },
         ['PetDamageProc'] = {
+            "Spirit of Lairn",        -- Level 72
             "Spirit of Oroshar",      -- Level 70
             "Spirit of Irionu",       -- Level 68
             "Spirit of Rellic",       -- Level 63
@@ -191,22 +201,26 @@ return {
             "Spirit of Lightning",    -- Level 13
         },
         ['RunSpeedBuff'] = {
-            "Spirit of Wolf", -- Level 24
+            "Spirit of Wolf",          -- Level 24
         },
-        ['ManaRegenBuff'] = {
+        ['ManaRegenBuff'] = {          -- Timer 1
             --Mana/Hp/End Regen Buff*
-            "Spiritual Ascendance", -- Level 69
-            "Spiritual Dominion",   -- Level 64
-            "Spiritual Purity",     -- Level 59
-            "Spiritual Radiance",   -- Level 52
-            "Spiritual Light",      -- Level 41
+            "Spiritual Enlightenment", -- Level 72
+            "Spiritual Ascendance",    -- Level 69
+            "Spiritual Dominion",      -- Level 64
+            "Spiritual Purity",        -- Level 59
+            "Spiritual Radiance",      -- Level 52
+            "Spiritual Light",         -- Level 41
         },
-        ['PetBlockSpell'] = {
-            "Mammoth-Hide Guard",    -- Level 70
-            "Feral Guard",           -- Level 69
-            "Protection of Calliav", -- Level 64
-            "Guard of Calliav",      -- Level 58
-            "Ward of Calliav",       -- Level 49
+        ['PetBlockSpell'] = {          -- Timer 10
+            "Mammoth-Hide Guard",      -- Level 70
+            "Feral Guard",             -- Level 69
+            "Protection of Calliav",   -- Level 64
+            "Guard of Calliav",        -- Level 58
+            "Ward of Calliav",         -- Level 49
+        },
+        ['PetSpellGuard'] = {          -- Timer 10
+            "Spellbreaker's Guard",    -- Level 72
         },
         ['AvatarSpell'] = {
             -- Str Stam Dex Buff
@@ -214,51 +228,52 @@ return {
         },
         ['FocusSpell'] = {
             -- Single target Talismans ( Like Focus)
-            "Focus of Amilan",    -- Level 70 Group
-            "Focus of Alladnu",   -- Level 67
-            "Talisman of Kragg",  -- Level 62
-            "Talisman of Altuna", -- Level 58
-            "Talisman of Tnarg",  -- Level 53
-            "Inner Fire",         -- Level 7
+            "Focus of Amilan",              -- Level 70 Group
+            "Focus of Alladnu",             -- Level 67
+            "Talisman of Kragg",            -- Level 62
+            "Talisman of Altuna",           -- Level 58
+            "Talisman of Tnarg",            -- Level 53
+            "Inner Fire",                   -- Level 7
         },
-        ['AtkHPBuff'] = {
-            "Spiritual Vim",      -- Level 71
-            "Spiritual Vitality", -- Level 67
-            "Spiritual Vigor",    -- Level 62
-            "Spiritual Strength", -- Level 60
-            "Spiritual Brawn",    -- Level 42
+        ['AtkHPBuff'] = {                   -- Timer 3
+            "Spiritual Vim",                -- Level 71
+            "Spiritual Vitality",           -- Level 67
+            "Spiritual Vigor",              -- Level 62
+            "Spiritual Strength",           -- Level 60
+            "Spiritual Brawn",              -- Level 42
         },
-        ['AtkBuff'] = {
+        ['AtkBuff'] = {                     -- Timer 9
             -- - Single Ferocity
-            "Ferocity of Irionu", -- Level 69
-            "Ferocity",           -- Level 65
-            "Savagery",           -- Level 60
+            "Ruthless Ferocity",            -- Level 72
+            "Ferocity of Irionu",           -- Level 69
+            "Ferocity",                     -- Level 65
+            "Savagery",                     -- Level 60
         },
-        ['DmgModDisc'] = {
+        ['DmgModDisc'] = {                  -- Timer 2
             --All Skills Damage Modifier*
-            "Empathic Fury",           -- Level 69
-            "Bestial Fury Discipline", -- Level 60
+            "Empathic Fury",                -- Level 69
+            "Bestial Fury Discipline",      -- Level 60
         },
-        ['BestialRageDisc'] = {        -- Warden alt: crit instead of damage mod (Ward of Might has dmg mod)
-            "Bestial Rage Discipline", -- Level 60 EQM Custom
+        ['BestialRageDisc'] = {             -- Timer 2, Warden alt: crit instead of damage mod (Ward of Might has dmg mod)
+            "Bestial Rage Discipline",      -- Level 60 EQM Custom
         },
-        ['ProtDisc'] = {
+        ['ProtDisc'] = {                    -- Timer 1
             "Skal's Stance Discipline",     -- Level 61 EQM Custom
             "Protective Spirit Discipline", -- Level 55
         },
         -- ['VigorBuff'] = {
         --     "Feral Vigor",
         -- },
-        ['Minionskin'] = {        --EQM Custom: HP/Regen/mitigation (May need to block druid HP buff line on pet)
-            "Major Minionskin",   -- Level 66 EQM Custom
-            "Greater Minionskin", -- Level 56 EQM Custom
-            "Minionskin",         -- Level 43 EQM Custom
-            "Lesser Minionskin",  -- Level 30 EQM Custom
+        ['Minionskin'] = {         --EQM Custom: HP/Regen/mitigation (May need to block druid HP buff line on pet)
+            "Major Minionskin",    -- Level 66 EQM Custom
+            "Greater Minionskin",  -- Level 56 EQM Custom
+            "Minionskin",          -- Level 43 EQM Custom
+            "Lesser Minionskin",   -- Level 30 EQM Custom
         },
-        ['Rake'] = {
-            "Rake", -- Level 67
+        ['Rake'] = {               -- Timer 8
+            "Rake",                -- Level 67
         },
-        ['BiteNuke'] = {
+        ['BiteNuke'] = {           -- Timer 6
             "Bite of the Empress", -- Level 71
         },
         ['HasteBuff'] = {
@@ -266,9 +281,17 @@ return {
             "Celerity", -- Level 63
             "Alacrity", -- Level 60
         },
+        ['CurePoison'] = {
+            "Eradicate Poison", -- Level 72
+        },
+        ['EndRegen'] = {        -- Timer 12
+            "Fresh Wind",       -- Level 67 EQM Custom
+        },
     },
     ['AASets']            = {
         ['Spire'] = {
+            "Fundament: Third Spire of the Savage Lord",
+            "Fundament: Second Spire of the Savage Lord",
             "Fundament: First Spire of the Savage Lord",
         },
         ['PetHeal'] = {
@@ -386,11 +409,11 @@ return {
             end,
         },
         {
-            name = 'Growl',
+            name = 'CombatPetBuff',
             targetId = function(self) return mq.TLO.Me.Pet.ID() > 0 and { mq.TLO.Me.Pet.ID(), } or {} end,
-            load_cond = function() return Core.GetResolvedActionMapItem("PetGrowl") end,
+            load_cond = function() return Core.GetResolvedActionMapItem("PetGrowl") or Config:GetSetting('PetGuardChoice') > 1 end,
             cond = function(self, combat_state)
-                return combat_state == "Combat" and not mq.TLO.Me.Song("Growl")() and Core.CombatActionsCheck()
+                return combat_state == "Combat" and Core.CombatActionsCheck()
             end,
         },
         {
@@ -423,7 +446,7 @@ return {
         PreferAtkBuffSpell = function(self)
             if mq.TLO.Me.Level() < 67 or not mq.TLO.FindItem("=Artifact of Irionu")() then return true end
             local atkBuff = self.ResolvedActionMap['AtkBuff']
-            return atkBuff and atkBuff() and atkBuff.Name() == "Ferocity of Irionu" and (atkBuff.RankName.Rank() or 0) >= 2
+            return atkBuff and atkBuff() and ((atkBuff.Level() or 0) > 69 or (atkBuff.Name() == "Ferocity of Irionu" and (atkBuff.RankName.Rank() or 0) >= 2))
         end,
     },
     ['Rotations']         = {
@@ -454,9 +477,13 @@ return {
                 name = "Frenzy of Spirit",
                 type = "AA",
             },
-            {
-                name = "Spire",
+            { -- Use the selected spire, fall back to the AA set if we don't have it.
+                name_func = function(self)
+                    local chosen = "Fundament: " .. Globals.Constants.SpireChoices[Config:GetSetting('SpireChoice')] .. " Spire of the Savage Lord"
+                    return Casting.CanUseAA(chosen) and chosen or "Spire"
+                end,
                 type = "AA",
+                load_cond = function() return Config:GetSetting('SpireChoice') ~= 4 end,
             },
             {
                 name = "DmgModDisc",
@@ -490,10 +517,20 @@ return {
         },
         ['Slow']              = {
             {
+                name = "Sha's Reprisal",
+                type = "AA",
+                load_cond = function(self) return Casting.CanUseAA("Sha's Reprisal") end,
+                cond = function(self, aaName, target)
+                    local aaSpell = Casting.GetAASpell(aaName)
+                    return Casting.DetAACheck(aaName) and (aaSpell.SlowPct() or 0) > (Targeting.GetTargetSlowedPct()) and not Casting.SlowImmuneTarget(target)
+                end,
+            },
+            {
                 name = "Legendary Armband of Muada",
                 type = "Item",
                 load_cond = function(self)
-                    return mq.TLO.Me.Level() >= 68 and (Core.GetResolvedActionMapItem('SlowSpell').Level() or 99) < 70 and mq.TLO.FindItem("=Legendary Armband of Muada")()
+                    return not Casting.CanUseAA("Sha's Reprisal") and mq.TLO.Me.Level() >= 68 and (Core.GetResolvedActionMapItem('SlowSpell').Level() or 99) < 70 and
+                        mq.TLO.FindItem("=Legendary Armband of Muada")()
                 end,
                 cond = function(self, itemName, target)
                     return Casting.DetItemCheck(itemName) and not Casting.SlowImmuneTarget(target)
@@ -504,6 +541,7 @@ return {
                 name = "SlowSpell",
                 type = "Spell",
                 load_cond = function(self)
+                    if Casting.CanUseAA("Sha's Reprisal") then return false end
                     return mq.TLO.Me.Level() < 68 or (Core.GetResolvedActionMapItem('SlowSpell').Level() or 99) >= 70 or not mq.TLO.FindItem("=Legendary Armband of Muada")()
                 end,
                 cond = function(self, spell, target)
@@ -561,16 +599,39 @@ return {
                 type = "AA",
             },
         },
-        ['Growl']             = {
+        ['CombatPetBuff']     = {
             {
                 name = "PetGrowl",
                 type = "Spell",
                 cond = function(self, spell)
-                    return Casting.SelfBuffCheck(spell)
+                    return not mq.TLO.Me.Song("Growl")() and Casting.SelfBuffCheck(spell)
+                end,
+            },
+            {
+                name = "PetBlockSpell",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('PetGuardChoice') == 2 end,
+                cond = function(self, spell)
+                    return Casting.CastReady(spell) and Casting.PetBuffCheck(spell)
+                end,
+            },
+            {
+                name = "PetSpellGuard",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('PetGuardChoice') == 3 end,
+                cond = function(self, spell)
+                    return Casting.CastReady(spell) and Casting.PetBuffCheck(spell)
                 end,
             },
         },
         ['DPS']               = {
+            {
+                name = "EndRegen",
+                type = "Disc",
+                cond = function(self, discSpell)
+                    return mq.TLO.Me.PctEndurance() < 15
+                end,
+            },
             {
                 name = "PetSpell",
                 type = "Spell",
@@ -828,6 +889,14 @@ return {
                 end,
             },
             {
+                name = "PetSlowProc",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('DoPetSlow') end,
+                cond = function(self, spell)
+                    return Casting.PetBuffCheck(spell)
+                end,
+            },
+            {
                 name = "PetDamageProc",
                 type = "Spell",
                 cond = function(self, spell)
@@ -839,6 +908,22 @@ return {
                 type = "Spell",
                 cond = function(self, spell)
                     return Casting.SelfBuffCheck(spell)
+                end,
+            },
+            {
+                name = "PetBlockSpell",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('PetGuardChoice') == 2 end,
+                cond = function(self, spell)
+                    return Casting.CastReady(spell) and Casting.PetBuffCheck(spell)
+                end,
+            },
+            {
+                name = "PetSpellGuard",
+                type = "Spell",
+                load_cond = function(self) return Config:GetSetting('PetGuardChoice') == 3 end,
+                cond = function(self, spell)
+                    return Casting.CastReady(spell) and Casting.PetBuffCheck(spell)
                 end,
             },
             {
@@ -875,7 +960,7 @@ return {
                 {
                     name = "SlowSpell",
                     cond = function(self)
-                        return Config:GetSetting('DoSlow') and
+                        return Config:GetSetting('DoSlow') and not Casting.CanUseAA("Sha's Reprisal") and
                             -- use this unless we don't have the armband, can't use the armband, or have a spell that casts faster than the armband
                             (mq.TLO.Me.Level() < 68 or (Core.GetResolvedActionMapItem('SlowSpell').Level() or 99) >= 70 or not mq.TLO.FindItem("=Legendary Armband of Muada")())
                     end,
@@ -888,7 +973,8 @@ return {
                 { name = "AtkBuff", cond = function(self) return self.Helpers.PreferAtkBuffSpell(self) end,
                 },
                 { name = "PetGrowl", },
-                { name = "PetBlockSpell", },
+                { name = "PetBlockSpell", cond = function(self) return Config:GetSetting('PetGuardChoice') == 2 end, },
+                { name = "PetSpellGuard", cond = function(self) return Config:GetSetting('PetGuardChoice') == 3 end, },
                 {
                     name = "PetSpell",
                     cond = function(self)
@@ -896,14 +982,26 @@ return {
                             (not Config:GetSetting('UseDonorPet') or not Core.GetResolvedActionMapItem('Razorclaw'))
                     end,
                 },
+                { name = "CurePoison",    cond = function(self) return Config:GetSetting('KeepPoisonMemmed') end, },
                 --filler
                 { name = "PetHaste", },
+                { name = "PetSlowProc",   cond = function(self) return Config:GetSetting('DoPetSlow') end, },
                 { name = "PetDamageProc", },
                 { name = "RunSpeedBuff",  cond = function(self) return Config:GetSetting('DoRunSpeed') end, },
             },
         },
     },
     ['PullAbilities']     = {
+        {
+            id = 'SlowAA',
+            Type = "AA",
+            DisplayName = "Sha's Reprisal",
+            AbilityName = "Sha's Reprisal",
+            AbilityRange = 150,
+            cond = function(self)
+                return Casting.CanUseAA("Sha's Reprisal")
+            end,
+        },
         {
             id = 'SlowSpell',
             Type = "Spell",
@@ -918,7 +1016,7 @@ return {
         },
     },
     ['DefaultConfig']     = {
-        ['Mode']           = {
+        ['Mode']             = {
             DisplayName = "Mode",
             Category = "Combat",
             Tooltip = "Select the Combat Mode for this Toon",
@@ -931,7 +1029,7 @@ return {
             Answer = "Beastlords currently only have one Mode. This may change in the future.",
         },
         --Mana Management
-        ['DoParagon']      = {
+        ['DoParagon']        = {
             DisplayName = "Use Paragon",
             Group = "Abilities",
             Header = "Recovery",
@@ -942,7 +1040,7 @@ return {
             Default = true,
             ConfigType = "Advanced",
         },
-        ['ParaPct']        = {
+        ['ParaPct']          = {
             DisplayName = "Paragon %",
             Group = "Abilities",
             Header = "Recovery",
@@ -954,7 +1052,7 @@ return {
             Max = 99,
             ConfigType = "Advanced",
         },
-        ['FParaPct']       = {
+        ['FParaPct']         = {
             DisplayName = "F.Paragon %",
             Group = "Abilities",
             Header = "Recovery",
@@ -966,7 +1064,7 @@ return {
             Max = 99,
             ConfigType = "Advanced",
         },
-        ['DowntimeFP']     = {
+        ['DowntimeFP']       = {
             DisplayName = "Downtime F.Paragon",
             Group = "Abilities",
             Header = "Recovery",
@@ -976,8 +1074,20 @@ return {
             Default = false,
             ConfigType = "Advanced",
         },
+        ['KeepPoisonMemmed'] = {
+            DisplayName = "Mem Cure Poison",
+            Group = "Abilities",
+            Header = "Recovery",
+            Category = "Curing",
+            Index = 101,
+            Tooltip = "Memorize cure poison spell when possible (depending on other selected options). \n" ..
+                "Please note that we will still memorize a cure out-of-combat if needed, and AA will always be used if available.",
+            RequiresLoadoutChange = true,
+            Default = false,
+            ConfigType = "Advanced",
+        },
         --Pets
-        ['DoPetHealSpell'] = {
+        ['DoPetHealSpell']   = {
             DisplayName = "Pet Heal Spell",
             Group = "Abilities",
             Header = "Recovery",
@@ -987,7 +1097,7 @@ return {
             Default = true,
             RequiresLoadoutChange = true,
         },
-        ['PetHealPct']     = {
+        ['PetHealPct']       = {
             DisplayName = "Pet Heal Spell HP%",
             Group = "Abilities",
             Header = "Recovery",
@@ -998,7 +1108,7 @@ return {
             Min = 1,
             Max = 99,
         },
-        ['DoPetSlow']      = {
+        ['DoPetSlow']        = {
             DisplayName = "Pet Slow Proc",
             Group = "Abilities",
             Header = "Pet",
@@ -1006,8 +1116,9 @@ return {
             Index = 101,
             Tooltip = "Use your Pet Slow Proc Buff (does not stack with Pet Damage or Snare Proc Buff).",
             Default = false,
+            RequiresLoadoutChange = true,
         },
-        ['DoPetSnare']     = {
+        ['DoPetSnare']       = {
             DisplayName = "Pet Snare Proc",
             Group = "Abilities",
             Header = "Pet",
@@ -1020,7 +1131,23 @@ return {
             Answer = "Pet proc buffs do not stack, you should only select one.\n" ..
                 "If neither Snare nor Slow proc are selected, the Damage proc will be used.",
         },
-        ['DoEpic']         = {
+        ['PetGuardChoice']   = {
+            DisplayName = "Pet Guard:",
+            Group = "Abilities",
+            Header = "Pet",
+            Category = "Pet Buffs",
+            Index = 103,
+            Tooltip = "Choose which guard to keep on your pet:\n" ..
+                "Mammoth-Hide: Absorbs melee and direct spell hits.\n" ..
+                "Spellbreaker: Absorbs spell damage and raises spell resist.",
+            Type = "Combo",
+            ComboOptions = { 'None', 'Mammoth-Hide (Melee)', 'Spellbreaker (Spell)', },
+            Default = 2,
+            Min = 1,
+            Max = 3,
+            RequiresLoadoutChange = true,
+        },
+        ['DoEpic']           = {
             DisplayName = "Do Epic",
             Group = "Items",
             Header = "Clickies",
@@ -1029,7 +1156,7 @@ return {
             Tooltip = "Click your Epic Weapon.",
             Default = false,
         },
-        ['KeepPetMemmed']  = {
+        ['KeepPetMemmed']    = {
             DisplayName = "Always Mem Pet",
             Group = "Abilities",
             Header = "Pet",
@@ -1039,7 +1166,7 @@ return {
             RequiresLoadoutChange = true,
             Default = false,
         },
-        ['UseDonorPet']    = {
+        ['UseDonorPet']      = {
             DisplayName = "Summon Razorclaw",
             Group = "Abilities",
             Header = "Pet",
@@ -1050,7 +1177,7 @@ return {
             Default = true,
         },
         --Spells/Abilities
-        ['DoHealSpell']    = {
+        ['DoHealSpell']      = {
             DisplayName = "Do PC Heals",
             Group = "Abilities",
             Header = "Recovery",
@@ -1060,7 +1187,7 @@ return {
             Default = true,
             RequiresLoadoutChange = true,
         },
-        ['DoSlow']         = {
+        ['DoSlow']           = {
             DisplayName = "Do Slow",
             Group = "Abilities",
             Header = "Debuffs",
@@ -1070,7 +1197,7 @@ return {
             Default = true,
             RequiresLoadoutChange = true,
         },
-        ['DoDot']          = {
+        ['DoDot']            = {
             DisplayName = "Cast DOTs",
             Group = "Abilities",
             Header = "Damage",
@@ -1080,7 +1207,7 @@ return {
             Default = true,
             RequiresLoadoutChange = true,
         },
-        ['DotNamedOnly']   = {
+        ['DotNamedOnly']     = {
             DisplayName = "Only Dot Named",
             Group = "Abilities",
             Header = "Damage",
@@ -1089,7 +1216,7 @@ return {
             Tooltip = "Only use DoTs on a named mob.",
             Default = true,
         },
-        ['DoRunSpeed']     = {
+        ['DoRunSpeed']       = {
             DisplayName = "Do Run Speed",
             Group = "Abilities",
             Header = "Buffs",
@@ -1099,7 +1226,7 @@ return {
             Default = false,
             RequiresLoadoutChange = true,
         },
-        ['DoAvatar']       = {
+        ['DoAvatar']         = {
             DisplayName = "Do Avatar",
             Group = "Abilities",
             Header = "Buffs",
@@ -1109,7 +1236,7 @@ return {
             Default = false,
             RequiresLoadoutChange = true,
         },
-        ['DoHaste']        = {
+        ['DoHaste']          = {
             DisplayName = "Use Haste",
             Group = "Abilities",
             Header = "Buffs",
@@ -1119,9 +1246,26 @@ return {
             RequiresLoadoutChange = true,
             Default = false,
         },
+        ['SpireChoice']      = {
+            DisplayName = "Spire Choice:",
+            Group = "Abilities",
+            Header = "Buffs",
+            Category = "Group",
+            Index = 104,
+            Tooltip = "Choose which Fundament you would like to use during burns:\n" ..
+                "First Spire: Melee Skill Damage Buff to Self.\n" ..
+                "Second Spire: Pet Damage Proc Buff.\n" ..
+                "Third Spire: Group Melee Minimum Damage, Accuracy and Attack Buff.",
+            Type = "Combo",
+            ComboOptions = Globals.Constants.SpireChoices,
+            RequiresLoadoutChange = true,
+            Default = 3,
+            Min = 1,
+            Max = #Globals.Constants.SpireChoices,
+        },
         --Combat
 
-        ['HealPriority']   = {
+        ['HealPriority']     = {
             DisplayName = "Healing Priority",
             Group = "Abilities",
             Header = "Recovery",
