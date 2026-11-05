@@ -12,7 +12,7 @@ local Globals   = require("utils.globals")
 local Targeting = require("utils.targeting")
 
 return {
-    _version          = "2.9 - EQ Might",
+    _version          = "2.11 - EQ Might",
     _author           = "Derple, Algar",
     ['ModeChecks']    = {
         IsRezing = function() return Core.GetResolvedActionMapItem('RezStaff') ~= nil and (Config:GetSetting('DoBattleRez') or not Targeting.HasXTHaters()) end,
@@ -105,8 +105,7 @@ return {
         --     "Claw of Frost", -- Level 61
         -- },
         ['FlashNuke'] = {
-            "Flashfires",       -- Level 72
-            "Beam of Solteris", -- Level 71
+            "Flashfires", -- Level 72
         },
         ['FireNuke'] = {
             "Sothgar's Flame",               -- Level 72
@@ -401,17 +400,22 @@ return {
             return "Fire" -- all skipped; default so Fury/Familiar still resolve
         end,
 
-        -- Familiar element pick: explicit element if set, first in AutoElementOrder in Auto. See FAQ.
+        -- Familiar element pick: explicit element if set, Fire fallback in Auto. See FAQ.
         PickFamiliarElement = function(self)
             local mode = Config:GetSetting('ElementMode') or 1
             if mode == 2 then return "Fire" end
             if mode == 3 then return "Cold" end
             if mode == 4 then return "Magic" end
-            return (self.TempSettings.AutoElementOrder or { "Fire", })[1]
+            return "Fire"
         end,
 
         CurrentFamiliarName = function(self)
             local familiars = { Fire = "Ro's Flaming Familiar", Cold = "E'ci's Icy Familiar", Magic = "Druzzil's Mystical Familiar", }
+            if (Config:GetSetting('ElementMode') or 1) == 1 then
+                for _, element in ipairs(self.TempSettings.AutoElementOrder or { "Fire", }) do
+                    if Casting.CanUseAA(familiars[element]) then return familiars[element] end
+                end
+            end
             return familiars[self.Helpers.PickFamiliarElement(self)] or "Unknown Error"
         end,
     },
