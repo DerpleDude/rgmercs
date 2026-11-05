@@ -42,7 +42,7 @@ local Tooltips     = {
 }
 
 local _ClassConfig = {
-    _version              = "3.9 - EQ Might",
+    _version              = "3.10 - EQ Might",
     _author               = "Algar, Derple, Grimmier, Tiddliestix, SonicZentropy",
     ['Modes']             = { --other modes to reorder spell priorities may be added back in at a later date.
         'General',
@@ -843,7 +843,7 @@ local _ClassConfig = {
                 cond = function(self, songSpell)
                     if (mq.TLO.Me.GemTimer(songSpell.RankName())() or -1) > 0 then return false end
                     local pct = Config:GetSetting('GroupManaPct')
-                    return (mq.TLO.Group.LowMana(pct)() or -1) >= Config:GetSetting('GroupManaCt')
+                    return Casting.GroupLowManaCount(pct) >= Config:GetSetting('GroupManaCt')
                 end,
             },
             {

@@ -6,7 +6,7 @@ local Globals      = require("utils.globals")
 local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
-    _version            = "2.7 - EQ Might",
+    _version            = "2.8 - EQ Might",
     _author             = "Algar, Derple",
     ['Modes']           = {
         'DPS',
@@ -703,7 +703,7 @@ local _ClassConfig = {
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoManaDrain') end,
                 cond = function(self, spell, target)
-                    return (mq.TLO.Target.PctMana() or -1) > 0 and (mq.TLO.Group.LowMana(40)() or 0) > 2
+                    return (mq.TLO.Target.PctMana() or -1) > 0 and Casting.GroupLowManaCount(40) > 2
                 end,
             },
             {
@@ -831,7 +831,7 @@ local _ClassConfig = {
                 type = "Spell",
                 load_cond = function(self) return Config:GetSetting('DoManaDrain') end,
                 cond = function(self, spell, target)
-                    return (mq.TLO.Target.PctMana() or -1) > 0 and (mq.TLO.Group.LowMana(40)() or 0) > 2
+                    return (mq.TLO.Target.PctMana() or -1) > 0 and Casting.GroupLowManaCount(40) > 2
                 end,
             },
             {
