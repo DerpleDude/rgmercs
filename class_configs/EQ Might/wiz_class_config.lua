@@ -1159,8 +1159,8 @@ return {
             Category = "Self",
             Index = 101,
             Tooltip = "Choose which familiar buff you would like to maintain on yourself:\n" ..
-                "Improved: Increased spell crit damage, etc.\n" ..
-                "Elemental: Improved spell damage.",
+                "Improved: Increased spell crit damage, etc. Usually the higher DPS choice.\n" ..
+                "Elemental: Improved spell damage. Overridden by stronger spell damage buffs (bard, enchanter, Aura of Might).",
             Type = "Combo",
             ComboOptions = { 'Improved', 'Elemental', },
             Default = 1,
