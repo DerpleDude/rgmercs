@@ -426,9 +426,9 @@ local _ClassConfig = {
         ['PalmChoice']      = {
             DisplayName = "Timer 2 Palm Choice:",
             Group = "Abilities",
-            Header = "Burning",
-            Category = "Burning",
-            Index = 101,
+            Header = "Buffs",
+            Category = "Self",
+            Index = 103,
             Tooltip = "Choose which Timer 2 discipline to use during burns:\n" ..
                 "Attack Speed: Hundred Fists Discipline, Innerflame Discipline.\n" ..
                 "Dmg Mod + Min Dmg: Crystalpalm Discipline.",

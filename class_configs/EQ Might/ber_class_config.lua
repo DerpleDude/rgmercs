@@ -492,8 +492,8 @@ return {
         ['RageDiscChoice'] = {
             DisplayName = "Timer 3 Rage Choice:",
             Group = "Abilities",
-            Header = "Burning",
-            Category = "Burning",
+            Header = "Buffs",
+            Category = "Self",
             Index = 101,
             Tooltip = "Choose which Timer 3 rage discipline to use during burns:\n" ..
                 "Crit Chance: Cleaving Rage Discipline.\n" ..

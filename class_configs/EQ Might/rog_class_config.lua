@@ -199,6 +199,15 @@ return {
             end,
         },
         {
+            name = 'CombatBuff',
+            state = 1,
+            steps = 1,
+            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
+            cond = function(self, combat_state)
+                return combat_state == "Combat"
+            end,
+        },
+        {
             name = 'BurnDisc',
             state = 1,
             steps = 1,
@@ -269,6 +278,7 @@ return {
             {
                 name = "Frenzied",
                 type = "Disc",
+                load_cond = function(self) return not Config:GetSetting('DoFrenziedAlways') end,
             },
             {
                 name = "Duelist",
@@ -292,6 +302,37 @@ return {
             {
                 name = "WeaponDisc",
                 type = "Disc",
+            },
+        },
+        ['CombatBuff']        = {
+            {
+                name = "EndRegen",
+                type = "Disc",
+                cond = function(self, discSpell)
+                    return mq.TLO.Me.PctEndurance() < 15
+                end,
+            },
+            {
+                name = "ThiefBuff",
+                type = "Disc",
+                cond = function(self, discSpell)
+                    return Casting.SelfBuffCheck(discSpell)
+                end,
+            },
+            {
+                name = "Frenzied",
+                type = "Disc",
+                load_cond = function(self) return Config:GetSetting('DoFrenziedAlways') end,
+                cond = function(self, discSpell)
+                    if Casting.NoDiscActive() then return true end
+                    -- Allow this to overwrite the following discs
+                    local burnDisc = { "Duelist", "ChanceDisc", "Kinesthetics", "Precision", "WeaponDisc", }
+                    for _, discName in ipairs(burnDisc) do
+                        local resolvedDisc = Core.GetResolvedActionMapItem(discName)
+                        if resolvedDisc and resolvedDisc.RankName() == mq.TLO.Me.ActiveDisc.Name() then return true end
+                    end
+                    return false
+                end,
             },
         },
         ['Aggro Management']  = {
@@ -324,13 +365,6 @@ return {
             },
         },
         ['DPS']               = {
-            {
-                name = "EndRegen",
-                type = "Disc",
-                cond = function(self, discSpell)
-                    return mq.TLO.Me.PctEndurance() < 15
-                end,
-            },
             {
                 name = "Epic",
                 type = "Item",
@@ -399,13 +433,6 @@ return {
         },
         ['Downtime']          = {
             {
-                name = "ThiefBuff",
-                type = "Disc",
-                cond = function(self, discSpell)
-                    return Casting.SelfBuffCheck(discSpell)
-                end,
-            },
-            {
                 name = "PoisonClicky",
                 type = "ClickyItem",
                 active_cond = function(self, _)
@@ -473,7 +500,7 @@ return {
         end,
     },
     ['DefaultConfig'] = {
-        ['Mode']            = {
+        ['Mode']             = {
             DisplayName = "Mode",
             Category = "Combat",
             Tooltip = "Select the Combat Mode for this Toon",
@@ -486,7 +513,7 @@ return {
             Answer = "Currently Rogues only have DPS mode, this may change in the future",
         },
         -- Poison
-        ['PoisonName']      = {
+        ['PoisonName']       = {
             DisplayName = "Poison to Apply",
             Group = "Items",
             Header = "Clickies",
@@ -495,7 +522,7 @@ return {
             Type = "ClickyItem",
             Default = "",
         },
-        ['PoisonClicky']    = {
+        ['PoisonClicky']     = {
             DisplayName = "Poison Summon Clicky",
             Group = "Items",
             Header = "Clickies",
@@ -504,7 +531,7 @@ return {
             Type = "ClickyItem",
             Default = "",
         },
-        ['PoisonItemCount'] = {
+        ['PoisonItemCount']  = {
             DisplayName = "Poison Item Count",
             Group = "Items",
             Header = "Clickies",
@@ -515,7 +542,7 @@ return {
             Max = 50,
         },
         -- Abilities
-        ['DoHideSneak']     = {
+        ['DoHideSneak']      = {
             DisplayName = "Do Hide/Sneak Click",
             Group = "Abilities",
             Header = "Buffs",
@@ -524,7 +551,7 @@ return {
             Tooltip = "Use Hide/Sneak during Downtime.",
             Default = false,
         },
-        ['SpireChoice']     = {
+        ['SpireChoice']      = {
             DisplayName = "Spire Choice:",
             Group = "Abilities",
             Header = "Buffs",
@@ -541,7 +568,17 @@ return {
             Min = 1,
             Max = #Globals.Constants.SpireChoices,
         },
-        ['DoOpener']        = {
+        ['DoFrenziedAlways'] = {
+            DisplayName = "Frenzied Outside Burns",
+            Group = "Abilities",
+            Header = "Buffs",
+            Category = "Self",
+            Index = 103,
+            Tooltip = "Use Frenzied Stabbing Discipline whenever it is ready in combat, instead of saving it for burns.",
+            Default = false,
+            RequiresLoadoutChange = true,
+        },
+        ['DoOpener']         = {
             DisplayName = "Use Openers",
             Group = "Abilities",
             Header = "Damage",
@@ -550,7 +587,7 @@ return {
             Tooltip = "Use Sneak Attack line to start combat (e.g, Daggerslash).",
             Default = true,
         },
-        ['DoHealingDisc']   = {
+        ['DoHealingDisc']    = {
             DisplayName = "Do Healing Disc",
             Group = "Abilities",
             Header = "Utility",
@@ -561,7 +598,7 @@ return {
             RequiresLoadoutChange = true,
             ConfigType = "Advanced",
         },
-        ['HideAggro']       = {
+        ['HideAggro']        = {
             DisplayName = "Hide Aggro%",
             Group = "Abilities",
             Header = "Damage",
@@ -573,7 +610,7 @@ return {
             Max = 100,
         },
         --Equipment
-        ['UseEpic']         = {
+        ['UseEpic']          = {
             DisplayName = "Epic Use:",
             Group = "Items",
             Header = "Clickies",
