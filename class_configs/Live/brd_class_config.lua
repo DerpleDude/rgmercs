@@ -643,6 +643,7 @@ local _ClassConfig = {
             "Lullaby of Morell",        -- Level 65, PoP (up to 68)
             "Dreams of Terris",         -- Level 64, PoP (up to 65)
             "Dreams of Thule",          -- Level 62, PoP (up to 62)
+            "Ancient: Lullaby of Shadow",  -- Level 60, SoL (up to 59)
             "Dreams of Ayonae",         -- Level 58, SoL (up to 57)
             "Song of Twilight",         -- Level 53, RoK (up to 55)
             "Sionachie's Dreams",       -- Level 40, SoL (up to 53)
