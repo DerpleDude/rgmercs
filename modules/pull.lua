@@ -326,6 +326,7 @@ Module.Constants.AbortLogMessages   = {
     timeout = "\ar ALERT: Aborting due to timeout, adding mob to Pull Ignore List! \ax",
     manualTimeout = "PULL:\ar ALERT: Aborting manual pull - target could not be pulled in time \ax",
     objectiveTimeout = "PULL:\ar ALERT: Aborting Fight To - target could not be engaged in time \ax",
+    abilityLost = "PULL:\ar ALERT: Aborting pull - the pull ability is no longer available after a loadout rescan \ax",
 }
 
 Module.Constants.EngageDescriptors  = {
@@ -1376,9 +1377,9 @@ function Module:GetPullAbilityDisplayName(id)
     if not entry then return "Error" end
     local displayName = entry.DisplayName
 
-    if type(displayName) == 'function' then displayName = displayName() end
+    if type(displayName) == 'function' then displayName = Core.SafeCallFunc("Pull Ability Display Name", displayName) end
 
-    return displayName or "Error"
+    return displayName or entry.id or "Error"
 end
 
 function Module:SetValidPullAbilities()
@@ -1420,8 +1421,15 @@ function Module:GetPullAbilityRange()
 end
 
 function Module:OnCombatModeChanged()
+    self.TempSettings.LastPullAbilityCheck = 0
     self:SetValidPullAbilities()
     self:RebuildMoveAbilities()
+
+    local attempt = self.TempSettings.Attempt
+    if attempt and attempt.ability and not self.TempSettings.PullAbilityIDToName[attempt.ability.id]
+        and (self:IsPullState("PULL_NAV_TO_TARGET") or self:IsPullState("PULL_PULLING")) then
+        attempt.abilityLost = true
+    end
 end
 
 -- Pull Move Abilities
@@ -1526,6 +1534,7 @@ end
 function Module:DecideAbort(attempt, abortCtx)
     local userReason = self:DecideUserAbort(abortCtx, attempt.source)
     if userReason then return userReason end
+    if attempt.abilityLost then return 'abilityLost' end
     if abortCtx.spawnGone then return 'spawnGone' end
     if abortCtx.encounterLocked then return 'encounterLocked' end
 
@@ -4620,6 +4629,13 @@ function Module:PullingTick(ctx)
         return
     end
 
+    if attempt.abilityLost then
+        attempt.abortReason = 'abilityLost'
+        Logger.log_debug(Module.Constants.AbortLogMessages.abilityLost)
+        self:EndEngage(ctx)
+        return
+    end
+
     if attempt.faceDeadline then
         if mq.TLO.Me.Heading.ShortName() == mq.TLO.Target.HeadingTo.ShortName() or ctx.now >= attempt.faceDeadline then
             attempt.faceDeadline = nil
@@ -4715,6 +4731,7 @@ end
 
 function Module:TransitionAfterEngage(ctx)
     local attempt = self.TempSettings.Attempt
+    attempt.abilityLost = nil
     local userStopped = self:DecideUserAbort({
         pausePulls = self.TempSettings.PausePulls,
         doPull = Config:GetSetting('DoPull'),

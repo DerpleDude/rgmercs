@@ -62,6 +62,7 @@ Module.TempSettings.LastFastPathTime         = 0
 Module.TempSettings.CombatModeChangeTime     = 0
 Module.TempSettings.MissingSpells            = {}
 Module.TempSettings.MissingSpellsHighestOnly = true
+Module.TempSettings.OwnedAbilitySetSpells    = {}
 Module.TempSettings.QueuedAbilities          = {}
 Module.TempSettings.ImmuneTargets            = {}
 Module.TempSettings.RotationClickies         = Set.new({})
@@ -93,11 +94,19 @@ Module.FAQ                                   = {
     {
         Question = "There isn't a setting to change the use of spell, AA, item or discipline, how do I stop it from being used in a rotation?",
         Answer =
-            "  A rotation or rotation entry may be disabled using the GUI or CLI:\n\n" ..
-            "    GUI: Use the toggle found in the rotation list on the class tab. \n\n" ..
-            "    CLI: Use the rotation or rotation entry disable commands (search for 'rotation' and check the command list). \n\n" ..
+            "  A rotation, rotation entry, or ability set may be disabled using the GUI or CLI:\n\n" ..
+            "    GUI: Use the toggle found in the rotation list or the Ability Sets list on the class tab. \n\n" ..
+            "    CLI: Use the rotation, rotation entry, or ability set disable commands (search for 'rotation' or 'abilityset' and check the command list). \n\n" ..
             "  Please note that there is no performance benefit to disabling unused or unmapped entries, it is suggested that you simply ignore them... your experience or (class) performance may be (negatively) impacted when you do receive the ability.",
 
+        Settings_Used = "",
+    },
+    {
+        Question = "How do I use an older spell or discipline instead of the newest one I have?",
+        Answer =
+            "  Each ability set uses the highest level spell or discipline you have from its list. An ability set entry may be disabled using the GUI or CLI, and the set will use the next best entry:\n\n" ..
+            "    GUI: Use the toggle found in the Ability Sets list on the class tab. \n\n" ..
+            "    CLI: Use the ability set entry disable command (search for 'abilityset' and check the command list).",
         Settings_Used = "",
     },
     {
@@ -128,12 +137,7 @@ Module.CommandHandlers                       = {
         usage = "/rgl enablerezentry \"<Name>\"",
         about = "Enables a rez ability entry by name.",
         handler = function(self, name)
-            local enabled = Config:GetSetting('EnabledRezEntries') or {}
-            for _, phase in ipairs({ "Combat", "Downtime", }) do
-                enabled[phase] = enabled[phase] or {}
-                enabled[phase][name] = true
-            end
-            Config:SetSetting('EnabledRezEntries', enabled)
+            self:SetRezEntryEnabled(name, true)
             return true
         end,
     },
@@ -141,12 +145,7 @@ Module.CommandHandlers                       = {
         usage = "/rgl disablerezentry \"<Name>\"",
         about = "Disables a rez ability entry by name.",
         handler = function(self, name)
-            local enabled = Config:GetSetting('EnabledRezEntries') or {}
-            for _, phase in ipairs({ "Combat", "Downtime", }) do
-                enabled[phase] = enabled[phase] or {}
-                enabled[phase][name] = false
-            end
-            Config:SetSetting('EnabledRezEntries', enabled)
+            self:SetRezEntryEnabled(name, false)
             return true
         end,
     },
@@ -154,12 +153,7 @@ Module.CommandHandlers                       = {
         usage = "/rgl enablecureentry \"<Name>\"",
         about = "Enables a cure ability entry by name.",
         handler = function(self, name)
-            local enabled = Config:GetSetting('EnabledCureEntries') or {}
-            for _, bucket in ipairs({ "DetDispel", "Poison", "Disease", "Curse", "Corruption", }) do
-                enabled[bucket] = enabled[bucket] or {}
-                enabled[bucket][name] = true
-            end
-            Config:SetSetting('EnabledCureEntries', enabled)
+            self:SetCureEntryEnabled(name, true)
             return true
         end,
     },
@@ -167,12 +161,7 @@ Module.CommandHandlers                       = {
         usage = "/rgl disablecureentry \"<Name>\"",
         about = "Disables a cure ability entry by name.",
         handler = function(self, name)
-            local enabled = Config:GetSetting('EnabledCureEntries') or {}
-            for _, bucket in ipairs({ "DetDispel", "Poison", "Disease", "Curse", "Corruption", }) do
-                enabled[bucket] = enabled[bucket] or {}
-                enabled[bucket][name] = false
-            end
-            Config:SetSetting('EnabledCureEntries', enabled)
+            self:SetCureEntryEnabled(name, false)
             return true
         end,
     },
@@ -232,9 +221,7 @@ Module.CommandHandlers                       = {
                 Logger.log_error("/rgl enabledispelentry - no entry name provided.")
                 return true
             end
-            local enabled = Config:GetSetting('EnabledDispelEntries') or {}
-            enabled[name] = true
-            Config:SetSetting('EnabledDispelEntries', enabled)
+            self:SetDispelEntryEnabled(name, true)
             return true
         end,
     },
@@ -246,9 +233,7 @@ Module.CommandHandlers                       = {
                 Logger.log_error("/rgl disabledispelentry - no entry name provided.")
                 return true
             end
-            local enabled = Config:GetSetting('EnabledDispelEntries') or {}
-            enabled[name] = false
-            Config:SetSetting('EnabledDispelEntries', enabled)
+            self:SetDispelEntryEnabled(name, false)
             return true
         end,
     },
@@ -359,18 +344,18 @@ Module.CommandHandlers                       = {
         end,
     },
     enablerotationentry = {
-        usage = "/rgl enablerotationentry \"<Name>\"",
-        about = "Enables <Name> Rotation Entry in every rotation that uses it",
-        handler = function(self, name)
-            self:SetRotationEntryEnabled(name, true)
+        usage = "/rgl enablerotationentry \"<Name>\" \"<Rotation?>\"",
+        about = "Enables <Name> Rotation Entry in <Rotation>, or in every rotation that uses it if no rotation is given",
+        handler = function(self, name, rotationName)
+            self:SetRotationEntryEnabled(name, true, rotationName)
             return true
         end,
     },
     disablerotationentry = {
-        usage = "/rgl disablerotationentry \"<Name>\"",
-        about = "Disables <Name> Rotation Entry in every rotation that uses it",
-        handler = function(self, name)
-            self:SetRotationEntryEnabled(name, false)
+        usage = "/rgl disablerotationentry \"<Name>\" \"<Rotation?>\"",
+        about = "Disables <Name> Rotation Entry in <Rotation>, or in every rotation that uses it if no rotation is given",
+        handler = function(self, name, rotationName)
+            self:SetRotationEntryEnabled(name, false, rotationName)
             return true
         end,
     },
@@ -378,9 +363,7 @@ Module.CommandHandlers                       = {
         usage = "/rgl enablerotation \"<Name>\"",
         about = "Enables <Name> Rotation",
         handler = function(self, name)
-            local enabledRotations = Config:GetSetting('EnabledRotations') or {}
-            enabledRotations[name] = true
-            Config:SetSetting('EnabledRotations', enabledRotations)
+            self:SetRotationEnabled(name, true)
             return true
         end,
     },
@@ -388,9 +371,39 @@ Module.CommandHandlers                       = {
         usage = "/rgl disablerotation \"<Name>\"",
         about = "Disables <Name> Rotation",
         handler = function(self, name)
-            local enabledRotations = Config:GetSetting('EnabledRotations') or {}
-            enabledRotations[name] = false
-            Config:SetSetting('EnabledRotations', enabledRotations)
+            self:SetRotationEnabled(name, false)
+            return true
+        end,
+    },
+    enableabilityset = {
+        usage = "/rgl enableabilityset \"<Name>\"",
+        about = "Enables <Name> Ability Set",
+        handler = function(self, name)
+            self:SetAbilitySetEnabled(name, true)
+            return true
+        end,
+    },
+    disableabilityset = {
+        usage = "/rgl disableabilityset \"<Name>\"",
+        about = "Disables <Name> Ability Set, so none of its entries are used or memorized",
+        handler = function(self, name)
+            self:SetAbilitySetEnabled(name, false)
+            return true
+        end,
+    },
+    enableabilitysetentry = {
+        usage = "/rgl enableabilitysetentry \"<Name>\" \"<Set?>\"",
+        about = "Enables <Name> Ability Set Entry in <Set>, or in every set that lists it if no set is given",
+        handler = function(self, name, setName)
+            self:SetAbilitySetEntryEnabled(name, true, setName)
+            return true
+        end,
+    },
+    disableabilitysetentry = {
+        usage = "/rgl disableabilitysetentry \"<Name>\" \"<Set?>\"",
+        about = "Disables <Name> Ability Set Entry in <Set>, or in every set that lists it if no set is given, so the set picks its next best entry",
+        handler = function(self, name, setName)
+            self:SetAbilitySetEntryEnabled(name, false, setName)
             return true
         end,
     },
@@ -452,9 +465,12 @@ Module.CommandHandlers                       = {
         about =
         "RGMercs will queue the mapped spell, song, AA, disc, or item (using smart targeting, or, if provided, on the specified <targetID>). The 'mapname' is the entry name from your rotation window.",
         handler = function(self, mapType, mapName, targetId)
-            local action = Modules:ExecModule("Class", "GetResolvedActionMapItem", mapName)
+            local action = nil
+            for mapKey, mappedAction in pairs(self.ResolvedActionMap) do
+                if mapName and mapKey:lower() == mapName:lower() then action = mappedAction end
+            end
             if not action or (type(action) ~= "string" and not action()) then
-                Logger.log_debug("\arUseMap: \"\ay%s\ar\" does not appear to be a valid mapped action! \awPlease note this value is case-sensitive.", mapName)
+                Logger.log_debug("\arUseMap: \"\ay%s\ar\" does not appear to be a valid mapped action!", tostring(mapName))
                 return false
             end
             targetId = targetId and tonumber(targetId)
@@ -536,6 +552,18 @@ function Module:LoadSettings()
             Default = {},
         }
 
+        self.ClassConfig.DefaultConfig['EnabledAbilitySets'] = {
+            DisplayName = "EnabledAbilitySets",
+            Type = "Custom",
+            Default = {},
+        }
+
+        self.ClassConfig.DefaultConfig['AbilitySetEntryToggles'] = {
+            DisplayName = "AbilitySetEntryToggles",
+            Type = "Custom",
+            Default = {},
+        }
+
         self.ClassConfig.DefaultConfig['RotationEntryOrder'] = {
             DisplayName = "RotationEntryOrder",
             Type = "Custom",
@@ -581,6 +609,7 @@ function Module:LoadSettings()
 
     -- for config file change
     Module.TempSettings.CombatModeSet = false
+    Module.TempSettings.NewCombatMode = true
 end
 
 function Module:WriteCustomConfig()
@@ -660,7 +689,6 @@ function Module:SetDynamicNames()
 end
 
 function Module:GetResolvedActionMapItem(item)
-    if self.TempSettings.ResolvingActions then return nil end
     return self.ResolvedActionMap[item]
 end
 
@@ -934,10 +962,12 @@ function Module:SetCombatMode(mode)
         self.ResolvedActionMap = Rotation.ResolveActions(self.ClassConfig.ItemSets, self.ClassConfig.AbilitySets, self.ClassConfig.AASets)
         self.TempSettings.ResolvingActions = false
 
+        if Core.CanCharm() then Modules:ExecModule("Charm", "RefreshValidCharmAbilities") end
+
         if self.ClassConfig.SpellList then
             local forceRepack = self.TempSettings.ForceRepackGems or not self.TempSettings.CombatModeSet
-            self.SpellLoadOut, self.LoadOutName = Rotation.SetSpellLoadOutByPriority(self, self.ClassConfig.SpellList, forceRepack)
             self.TempSettings.ForceRepackGems = false
+            self.SpellLoadOut, self.LoadOutName = Rotation.SetSpellLoadOutByPriority(self, self.ClassConfig.SpellList, forceRepack)
         else
             self.SpellLoadOut = Rotation.SetSpellLoadOutByGem(self, self.ClassConfig.Spells)
             self.LoadOutName = "Default"
@@ -949,6 +979,7 @@ function Module:SetCombatMode(mode)
     end
 
     self.TempSettings.MissingSpells = Rotation.FindAllMissingSpells(self.ClassConfig.AbilitySets, self.TempSettings.MissingSpellsHighestOnly)
+    self.TempSettings.OwnedAbilitySetSpells = Rotation.FindAllOwnedSpells(self.ClassConfig.AbilitySets)
 
     Modules:ExecAll("OnCombatModeChanged")
 end
@@ -1135,6 +1166,87 @@ function Module:RenderRotationWithToggle(r, rotationTable, showRotationType)
     ImGui.SetCursorPos(cursorScreenPosAfterRender)
 end
 
+--- Renders one ability set as a collapsing header with a set-wide toggle, holding a per-entry toggle table.
+---@param abilitySet table Owned-spell entry from Rotation.FindAllOwnedSpells.
+function Module:RenderAbilitySetWithToggle(abilitySet)
+    local setName = abilitySet.name
+    local enabledAbilitySets = Config:GetSetting('EnabledAbilitySets') or {}
+    local abilitySetEntryToggles = Config:GetSetting('AbilitySetEntryToggles') or {}
+    local entryToggles = abilitySetEntryToggles[setName] or {}
+    local setDisabled = enabledAbilitySets[setName] == false
+    local resolvedSpell = self.ResolvedActionMap[setName]
+    local disabledCount = 0
+    for _, entry in ipairs(abilitySet.entries) do
+        if entryToggles[entry.name] == false then disabledCount = disabledCount + 1 end
+    end
+    local headerText = string.format("%s%s###AbilitySetHeader_%s", setName, disabledCount > 0 and string.format(" (%d disabled)", disabledCount) or "", setName)
+    local toggleOffset = 60
+
+    local cursorScreenPos = ImGui.GetCursorPosVec()
+
+    ImGui.SetCursorPos(ImGui.GetWindowWidth() - toggleOffset, cursorScreenPos.y)
+    if ImGui.InvisibleButton("##EnableAbilitySet" .. setName, ImVec2(20, 20)) then
+        self:SetAbilitySetEnabled(setName, setDisabled)
+    end
+
+    ImGui.SetCursorPos(cursorScreenPos)
+    if setDisabled then ImGui.PushStyleVar(ImGuiStyleVar.Alpha, 0.5) end
+    local headerOpen = ImGui.CollapsingHeader(headerText)
+    if setDisabled then ImGui.PopStyleVar() end
+    if headerOpen and not setDisabled then
+        ImGui.Indent()
+        if ImGui.BeginTable("AbilitySet_" .. setName, 2, bit32.bor(ImGuiTableFlags.Resizable, ImGuiTableFlags.Borders)) then
+            ImGui.TableSetupColumn('Enable', ImGuiTableColumnFlags.WidthFixed, 30.0)
+            ImGui.TableSetupColumn('Spell', ImGuiTableColumnFlags.WidthStretch, 250.0)
+            ImGui.TableHeadersRow()
+
+            local entryTogglesChanged = false
+            for idx, entry in ipairs(abilitySet.entries) do
+                local spell = abilitySet.resolvedMap[entry.name]
+                local rankName = spell.RankName() or entry.name
+                local isPicked = resolvedSpell ~= nil and resolvedSpell.ID() == spell.ID()
+                if not isPicked then ImGui.PushStyleVar(ImGuiStyleVar.Alpha, 0.5) end
+                ImGui.TableNextRow()
+
+                ImGui.TableNextColumn()
+                local changed
+                entryToggles[entry.name], changed = Ui.RenderOptionToggle(string.format("abilityset_%s_tggl_%d", setName, idx), "", entryToggles[entry.name] ~= false)
+                if changed then entryTogglesChanged = true end
+
+                ImGui.TableNextColumn()
+                if entryToggles[entry.name] == false then
+                    Ui.StrikeThroughText(rankName)
+                else
+                    ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.Purple)
+                    ImGui.PushStyleColor(ImGuiCol.HeaderHovered, Globals.Constants.Colors.NearBlack)
+                    local _, clicked = ImGui.Selectable(rankName)
+                    if clicked then
+                        spell.RankName.Inspect()
+                    end
+                    ImGui.PopStyleColor(2)
+                    Ui.Tooltip(string.format("%s: %s (click to inspect)", entry.type, rankName))
+                end
+                if not isPicked then ImGui.PopStyleVar() end
+            end
+            ImGui.EndTable()
+
+            if entryTogglesChanged then
+                abilitySetEntryToggles[setName] = entryToggles
+                Config:SetSetting('AbilitySetEntryToggles', abilitySetEntryToggles)
+                self:RescanLoadout()
+            end
+        end
+        ImGui.Unindent()
+    end
+
+    local cursorScreenPosAfterRender = ImGui.GetCursorPosVec()
+
+    ImGui.SetCursorPos(ImGui.GetWindowWidth() - toggleOffset, cursorScreenPos.y)
+    Ui.RenderOptionToggle("##EnableAbilitySetDrawn" .. setName, "", not setDisabled, true)
+
+    ImGui.SetCursorPos(cursorScreenPosAfterRender)
+end
+
 function Module:Render()
     Base.Render(self)
 
@@ -1194,92 +1306,106 @@ function Module:Render()
 
         ImGui.Separator()
 
-        if ImGui.CollapsingHeader(string.format("Spell Loadout (%s)", self.LoadOutName)) then
+        if ImGui.CollapsingHeader("Spell Management") then
             ImGui.Indent()
-            if self.ClassConfig.SpellList then
-                self:RenderGemLoadoutTable(self.SpellLoadOut)
-            elseif Tables.GetTableSize(self.SpellLoadOut) > 0 then
-                Ui.RenderLoadoutTable(self.SpellLoadOut)
-            end
+            if ImGui.CollapsingHeader(string.format("Spell Loadout (%s)", self.LoadOutName)) then
+                ImGui.Indent()
+                if self.ClassConfig.SpellList then
+                    self:RenderGemLoadoutTable(self.SpellLoadOut)
+                elseif Tables.GetTableSize(self.SpellLoadOut) > 0 then
+                    Ui.RenderLoadoutTable(self.SpellLoadOut)
+                end
 
-            if self.ClassConfig.SpellList then
-                local style = ImGui.GetStyle()
-                if self.TempSettings.GemEditing then
-                    local resetLabel = self.TempSettings.GemDraftReset and "Reset Pending" or "Reset"
-                    local width = ImGui.CalcTextSizeVec("Apply" .. "Cancel" .. resetLabel).x + style.FramePadding.x * 6 + style.ItemSpacing.x * 2
-                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvailVec().x - width)
-                    ImGui.PushStyleColor(ImGuiCol.Button, Globals.Constants.Colors.ConditionPassColor)
-                    if ImGui.SmallButton("Apply") then self:ApplyGemAdjust() end
-                    ImGui.PopStyleColor()
-                    Ui.Tooltip("Save your gem changes and re-memorize to match.")
-                    ImGui.SameLine()
-                    ImGui.PushStyleColor(ImGuiCol.Button, Globals.Constants.Colors.ConditionFailColor)
-                    if ImGui.SmallButton("Cancel") then self:CancelGemAdjust() end
-                    ImGui.PopStyleColor()
-                    Ui.Tooltip("Discard your changes and leave adjust mode.")
-                    ImGui.SameLine()
-                    if ImGui.SmallButton(resetLabel) then self:ResetGemAdjust() end
-                    Ui.Tooltip("Reset all gems to the default priority order and re-enable every gem.")
-                else
-                    local width = ImGui.CalcTextSizeVec("Adjust Gems").x + style.FramePadding.x * 2
-                    if self.TempSettings.NewCombatMode then
-                        width = width + style.ItemSpacing.x + ImGui.CalcTextSizeVec("Rescan Pending").x
-                    end
-                    ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvailVec().x - width)
-                    if ImGui.SmallButton("Adjust Gems") then self:BeginGemAdjust() end
-                    Ui.Tooltip("Unlock the gem controls to reorder gems and enable or disable them.")
-                    if self.TempSettings.NewCombatMode then
-                        ImGui.SameLine()
-                        ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.Yellow)
-                        Ui.RenderText("Rescan Pending")
+                if self.ClassConfig.SpellList then
+                    local style = ImGui.GetStyle()
+                    if self.TempSettings.GemEditing then
+                        local resetLabel = self.TempSettings.GemDraftReset and "Reset Pending" or "Reset"
+                        local width = ImGui.CalcTextSizeVec("Apply" .. "Cancel" .. resetLabel).x + style.FramePadding.x * 6 + style.ItemSpacing.x * 2
+                        ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvailVec().x - width)
+                        ImGui.PushStyleColor(ImGuiCol.Button, Globals.Constants.Colors.ConditionPassColor)
+                        if ImGui.SmallButton("Apply") then self:ApplyGemAdjust() end
                         ImGui.PopStyleColor()
+                        Ui.Tooltip("Save your gem changes and re-memorize to match.")
+                        ImGui.SameLine()
+                        ImGui.PushStyleColor(ImGuiCol.Button, Globals.Constants.Colors.ConditionFailColor)
+                        if ImGui.SmallButton("Cancel") then self:CancelGemAdjust() end
+                        ImGui.PopStyleColor()
+                        Ui.Tooltip("Discard your changes and leave adjust mode.")
+                        ImGui.SameLine()
+                        if ImGui.SmallButton(resetLabel) then self:ResetGemAdjust() end
+                        Ui.Tooltip("Reset all gems to the default priority order and re-enable every gem.")
+                    else
+                        local width = ImGui.CalcTextSizeVec("Adjust Gems").x + style.FramePadding.x * 2
+                        if self.TempSettings.NewCombatMode then
+                            width = width + style.ItemSpacing.x + ImGui.CalcTextSizeVec("Rescan Pending").x
+                        end
+                        ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetContentRegionAvailVec().x - width)
+                        if ImGui.SmallButton("Adjust Gems") then self:BeginGemAdjust() end
+                        Ui.Tooltip("Unlock the gem controls to reorder gems and enable or disable them.")
+                        if self.TempSettings.NewCombatMode then
+                            ImGui.SameLine()
+                            ImGui.PushStyleColor(ImGuiCol.Text, Globals.Constants.Colors.Yellow)
+                            Ui.RenderText("Rescan Pending")
+                            ImGui.PopStyleColor()
+                        end
+                    end
+                else
+                    if ImGui.SmallButton("Reload Spells") then
+                        self:RescanLoadout()
+                        Logger.log_info("\awManual loadout scan initiated.")
                     end
                 end
-            else
-                if ImGui.SmallButton("Reload Spells") then
-                    self:RescanLoadout()
-                    Logger.log_info("\awManual loadout scan initiated.")
-                end
-            end
-            ImGui.Unindent()
-            ImGui.Separator()
-        end
-        if ImGui.CollapsingHeader("Missing Spells") then
-            ImGui.Indent()
-            local pressed, anyPressed
-            pressed = ImGui.SmallButton("Reload Missing Spells")
-            anyPressed = pressed
-            ImGui.SameLine()
-            self.TempSettings.MissingSpellsHighestOnly, pressed = Ui.RenderOptionToggle("HighestOnly", "Highest Only", self.TempSettings.MissingSpellsHighestOnly)
-            anyPressed = anyPressed or pressed
-            if anyPressed then
-                self.TempSettings.MissingSpells = Rotation.FindAllMissingSpells(self.ClassConfig.AbilitySets, self.TempSettings.MissingSpellsHighestOnly)
+                ImGui.Unindent()
+                ImGui.Separator()
             end
 
-            if #self.TempSettings.MissingSpells > 0 then
-                Ui.RenderLoadoutTable(self.TempSettings.MissingSpells)
+            if self.TempSettings.CombatModeSet and #self.TempSettings.OwnedAbilitySetSpells > 0 then
+                if ImGui.CollapsingHeader("Ability Sets") then
+                    ImGui.Indent()
+                    for _, abilitySet in ipairs(self.TempSettings.OwnedAbilitySetSpells) do
+                        self:RenderAbilitySetWithToggle(abilitySet)
+                    end
+                    ImGui.Unindent()
+                    ImGui.Separator()
+                end
+            end
+
+            if ImGui.CollapsingHeader("Missing Spells") then
+                ImGui.Indent()
+                local pressed, anyPressed
+                pressed = ImGui.SmallButton("Reload Missing Spells")
+                anyPressed = pressed
+                ImGui.SameLine()
+                self.TempSettings.MissingSpellsHighestOnly, pressed = Ui.RenderOptionToggle("HighestOnly", "Highest Only", self.TempSettings.MissingSpellsHighestOnly)
+                anyPressed = anyPressed or pressed
+                if anyPressed then
+                    self.TempSettings.MissingSpells = Rotation.FindAllMissingSpells(self.ClassConfig.AbilitySets, self.TempSettings.MissingSpellsHighestOnly)
+                end
+
+                if #self.TempSettings.MissingSpells > 0 then
+                    Ui.RenderLoadoutTable(self.TempSettings.MissingSpells)
+                end
+                ImGui.Unindent()
+                ImGui.Separator()
             end
             ImGui.Unindent()
-            ImGui.Separator()
         end
 
         self:RenderQueuedAbilities()
 
-        if not self.TempSettings.ResolvingActions then
-            if ImGui.CollapsingHeader("Rotations") then
-                ImGui.Indent()
-                Ui.RenderText("Combat State: %s", self.CombatState)
-                Ui.RenderText("Current Rotation: %s [%d]", self.CurrentRotation.name, self.CurrentRotation.state)
+        if self.TempSettings.CombatModeSet and ImGui.CollapsingHeader("Rotations") then
+            ImGui.Indent()
+            Ui.RenderText("Combat State: %s", self.CombatState)
+            Ui.RenderText("Current Rotation: %s [%d]", self.CurrentRotation.name, self.CurrentRotation.state)
 
-                for _, r in ipairs(self.TempSettings.RotationStates) do
-                    self:RenderRotationWithToggle(r, self.TempSettings.RotationTable, true)
-                end
-                Ui.RenderRotationTableKey()
-                ImGui.Unindent()
+            for _, r in ipairs(self.TempSettings.RotationStates) do
+                self:RenderRotationWithToggle(r, self.TempSettings.RotationTable, true)
             end
+            Ui.RenderRotationTableKey()
+            ImGui.Unindent()
         end
 
-        if not self.TempSettings.ResolvingActions and #self.TempSettings.HealRotationStates > 0 then
+        if self.TempSettings.CombatModeSet and #self.TempSettings.HealRotationStates > 0 then
             if ImGui.CollapsingHeader("Healing Rotations") then
                 ImGui.Indent()
 
@@ -1291,7 +1417,7 @@ function Module:Render()
             end
         end
 
-        if not self.TempSettings.ResolvingActions and ((self.ClassConfig and self.ClassConfig.Rez) or self:HasRezClickies()) then
+        if self.TempSettings.CombatModeSet and ((self.ClassConfig and self.ClassConfig.Rez) or self:HasRezClickies()) then
             if ImGui.CollapsingHeader("Rez Abilities") then
                 ImGui.Indent()
                 local rezAbilities = self:GetRezAbilities()
@@ -1319,7 +1445,7 @@ function Module:Render()
             end
         end
 
-        if not self.TempSettings.ResolvingActions and ((self.ClassConfig and self.ClassConfig.Cure) or self:HasCureClickies()) then
+        if self.TempSettings.CombatModeSet and ((self.ClassConfig and self.ClassConfig.Cure) or self:HasCureClickies()) then
             if ImGui.CollapsingHeader("Cure Management") then
                 ImGui.Indent()
                 if ImGui.CollapsingHeader("Cure Abilities") then
@@ -1357,7 +1483,7 @@ function Module:Render()
             end
         end
 
-        if not self.TempSettings.ResolvingActions and self:CanEditDispelLists() then
+        if self.TempSettings.CombatModeSet and self:CanEditDispelLists() then
             if ImGui.CollapsingHeader("Dispel Management") then
                 ImGui.Indent()
                 if ImGui.CollapsingHeader("Dispel Abilities") then
@@ -1712,25 +1838,25 @@ end
 
 function Module:GetRotations()
     -- filter rotations for load conditions, populate rotation states
-    self.TempSettings.RotationStates = {} -- clear the array for loadout rescans
-    self.TempSettings.RotationTable = {}
+    local rotationStates = {}
+    local rotationTable = {}
     for _, rotation in ipairs(self.ClassConfig.RotationOrder or {}) do
         if self:LoadConditionPass(rotation) then
-            table.insert(self.TempSettings.RotationStates, rotation)
-            self.TempSettings.RotationTable[rotation.name] = {}
+            table.insert(rotationStates, rotation)
+            rotationTable[rotation.name] = {}
             self.ClassConfig.Rotations[rotation.name] = self.ClassConfig.Rotations[rotation.name] or {}
         end
     end
 
     -- filter rotation entries for load conditions
     for rname, entries in pairs(self.ClassConfig.Rotations or {}) do
-        if self.TempSettings.RotationTable[rname] then
+        if rotationTable[rname] then
             for _, entry in ipairs(entries) do
                 if self:LoadConditionPass(entry) then
-                    table.insert(self.TempSettings.RotationTable[rname], entry)
+                    table.insert(rotationTable[rname], entry)
                 end
             end
-            self.TempSettings.RotationTable[rname] = Tables.ConcatTables(self.TempSettings.RotationTable[rname],
+            rotationTable[rname] = Tables.ConcatTables(rotationTable[rname],
                 Modules:ExecModule("Clickies", "GetClickiesForRotations", "During Rotation", rname) or {})
         end
     end
@@ -1744,31 +1870,31 @@ function Module:GetRotations()
             end
         end
     end
-    applyEntryOrder(self.TempSettings.RotationStates, self.TempSettings.RotationTable)
+    applyEntryOrder(rotationStates, rotationTable)
 
     -- Do it all again for heal rotations
-    self.TempSettings.HealRotationStates = {} -- clear the array for loadout rescans
-    self.TempSettings.HealRotationTable = {}
+    local healRotationStates = {}
+    local healRotationTable = {}
     for _, rotation in ipairs(self.ClassConfig.HealRotationOrder or {}) do
         if self:LoadConditionPass(rotation) then
-            table.insert(self.TempSettings.HealRotationStates, rotation)
-            self.TempSettings.HealRotationTable[rotation.name] = {}
+            table.insert(healRotationStates, rotation)
+            healRotationTable[rotation.name] = {}
         end
     end
 
     -- filter rotation entries for load conditions
     for rname, entries in pairs(self.ClassConfig.HealRotations or {}) do
-        if self.TempSettings.HealRotationTable[rname] then
+        if healRotationTable[rname] then
             for _, entry in ipairs(entries) do
                 if self:LoadConditionPass(entry) then
-                    table.insert(self.TempSettings.HealRotationTable[rname], entry)
+                    table.insert(healRotationTable[rname], entry)
                 end
             end
-            self.TempSettings.HealRotationTable[rname] = Tables.ConcatTables(self.TempSettings.HealRotationTable[rname],
+            healRotationTable[rname] = Tables.ConcatTables(healRotationTable[rname],
                 Modules:ExecModule("Clickies", "GetClickiesForRotations", "During Heal Rotation", rname) or {})
         end
     end
-    applyEntryOrder(self.TempSettings.HealRotationStates, self.TempSettings.HealRotationTable)
+    applyEntryOrder(healRotationStates, healRotationTable)
 
     -- Cache the resist type on every entry so Rotation.TestConditionForEntry can gate without per-tick lookups.
     local function deriveResistType(entry)
@@ -1797,16 +1923,21 @@ function Module:GetRotations()
         return Globals.Constants.ResistTypesSet:contains(rt) and rt or nil
     end
 
-    for _, entries in pairs(self.TempSettings.RotationTable) do
+    for _, entries in pairs(rotationTable) do
         for _, entry in ipairs(entries) do
             entry.cachedResistType = deriveResistType(entry)
         end
     end
-    for _, entries in pairs(self.TempSettings.HealRotationTable) do
+    for _, entries in pairs(healRotationTable) do
         for _, entry in ipairs(entries) do
             entry.cachedResistType = deriveResistType(entry)
         end
     end
+
+    self.TempSettings.RotationTable = rotationTable
+    self.TempSettings.RotationStates = rotationStates
+    self.TempSettings.HealRotationTable = healRotationTable
+    self.TempSettings.HealRotationStates = healRotationStates
 
     self:MigrateRotationEntryToggles()
 end
@@ -1828,24 +1959,187 @@ function Module:ForEachRotationEntry(visitor)
     end
 end
 
---- Toggles every rotation entry named entryName, in each rotation that uses the name.
-function Module:SetRotationEntryEnabled(entryName, enabled)
+--- Toggles every rotation entry named entryName (any case), in onlyRotation if given, otherwise in each rotation that uses the name.
+---@param entryName string? Entry name, matched without regard to case.
+---@param enabled boolean
+---@param onlyRotation string? Rotation name, matched without regard to case.
+function Module:SetRotationEntryEnabled(entryName, enabled, onlyRotation)
     local rotationEntryToggles = Config:GetSetting('RotationEntryToggles') or {}
     local matched = false
     self:ForEachRotationEntry(function(rotationName, foundName)
-        if foundName == entryName then
+        if entryName and foundName and foundName:lower() == entryName:lower() and (not onlyRotation or rotationName:lower() == onlyRotation:lower()) then
             matched = true
             rotationEntryToggles[rotationName] = rotationEntryToggles[rotationName] or {}
-            rotationEntryToggles[rotationName][entryName] = enabled
+            rotationEntryToggles[rotationName][foundName] = enabled
         end
     end)
 
     if not matched then
-        Logger.log_error("\arNo rotation has an entry named \at%s\ar.", entryName)
+        if onlyRotation then
+            Logger.log_error("\arNo rotation named \at%s\ar has an entry named \at%s\ar.", onlyRotation, tostring(entryName))
+        else
+            Logger.log_error("\arNo rotation has an entry named \at%s\ar.", tostring(entryName))
+        end
         return
     end
 
     Config:SetSetting('RotationEntryToggles', rotationEntryToggles)
+end
+
+--- Turns the combat or heal rotation named rotationName (any case) on or off.
+---@param rotationName string? Rotation name, matched without regard to case.
+---@param enabled boolean
+function Module:SetRotationEnabled(rotationName, enabled)
+    local matchedName = nil
+    for _, rotationOrder in ipairs({ self.ClassConfig.RotationOrder or {}, self.ClassConfig.HealRotationOrder or {}, }) do
+        for _, rotation in ipairs(rotationOrder) do
+            if rotationName and rotation.name and rotation.name:lower() == rotationName:lower() then
+                matchedName = rotation.name
+            end
+        end
+    end
+
+    if not matchedName then
+        Logger.log_error("\arNo rotation is named \at%s\ar.", tostring(rotationName))
+        return
+    end
+
+    local enabledRotations = Config:GetSetting('EnabledRotations') or {}
+    enabledRotations[matchedName] = enabled
+    Config:SetSetting('EnabledRotations', enabledRotations)
+end
+
+--- Turns the ability set named setName (any case) on or off and queues a loadout rescan.
+---@param setName string? Ability set name, matched without regard to case.
+---@param enabled boolean
+function Module:SetAbilitySetEnabled(setName, enabled)
+    local matchedName = nil
+    for abilitySetName in pairs(self.ClassConfig.AbilitySets or {}) do
+        if setName and abilitySetName:lower() == setName:lower() then
+            matchedName = abilitySetName
+        end
+    end
+
+    if not matchedName then
+        Logger.log_error("\arNo ability set is named \at%s\ar.", tostring(setName))
+        return
+    end
+
+    local enabledAbilitySets = Config:GetSetting('EnabledAbilitySets') or {}
+    enabledAbilitySets[matchedName] = enabled
+    Config:SetSetting('EnabledAbilitySets', enabledAbilitySets)
+    self:RescanLoadout()
+end
+
+--- Turns an entry (any case) on or off in onlySet if given, otherwise in every ability set that lists it, and queues a loadout rescan.
+---@param entryName string? Spell or disc name, matched without regard to case.
+---@param enabled boolean
+---@param onlySet string? Ability set name, matched without regard to case.
+function Module:SetAbilitySetEntryEnabled(entryName, enabled, onlySet)
+    local abilitySetEntryToggles = Config:GetSetting('AbilitySetEntryToggles') or {}
+    local matched = false
+    for setName, entryTable in pairs(self.ClassConfig.AbilitySets or {}) do
+        if not onlySet or setName:lower() == onlySet:lower() then
+            for _, listedName in ipairs(entryTable) do
+                if entryName and listedName:lower() == entryName:lower() then
+                    matched = true
+                    abilitySetEntryToggles[setName] = abilitySetEntryToggles[setName] or {}
+                    abilitySetEntryToggles[setName][listedName] = enabled
+                end
+            end
+        end
+    end
+
+    if not matched then
+        if onlySet then
+            Logger.log_error("\arNo ability set named \at%s\ar lists an entry named \at%s\ar.", onlySet, tostring(entryName))
+        else
+            Logger.log_error("\arNo ability set lists an entry named \at%s\ar.", tostring(entryName))
+        end
+        return
+    end
+
+    Config:SetSetting('AbilitySetEntryToggles', abilitySetEntryToggles)
+    self:RescanLoadout()
+end
+
+--- True once the first full loadout rescan since load or the last config reload has finished.
+---@return boolean
+function Module:IsLoadoutResolved()
+    return self.TempSettings.CombatModeSet
+end
+
+--- True when the character owns at least one usable spell or disc in this ability set.
+---@param setName string Ability set name as written in the class config.
+---@return boolean
+function Module:OwnsAbilitySetEntry(setName)
+    for _, abilitySet in ipairs(self.TempSettings.OwnedAbilitySetSpells) do
+        if abilitySet.name == setName then return true end
+    end
+    return false
+end
+
+--- Turns the rez entry named entryName (any case) on or off in each phase that holds it.
+---@param entryName string? Entry name, matched without regard to case.
+---@param enabled boolean
+function Module:SetRezEntryEnabled(entryName, enabled)
+    local rezAbilities = self:GetRezAbilities() or {}
+    local enabledRezEntries = Config:GetSetting('EnabledRezEntries') or {}
+    local matched = false
+    for _, phase in ipairs({ "Combat", "Downtime", }) do
+        local foundName = Entries.FindEntryName(entryName, (self.ClassConfig.Rez or {})[phase], rezAbilities[phase])
+        if foundName then
+            matched = true
+            enabledRezEntries[phase] = enabledRezEntries[phase] or {}
+            enabledRezEntries[phase][foundName] = enabled
+        end
+    end
+
+    if not matched then
+        Logger.log_error("\arNo rez entry is named \at%s\ar.", tostring(entryName))
+        return
+    end
+
+    Config:SetSetting('EnabledRezEntries', enabledRezEntries)
+end
+
+--- Turns the cure entry named entryName (any case) on or off in each cure bucket that holds it.
+---@param entryName string? Entry name, matched without regard to case.
+---@param enabled boolean
+function Module:SetCureEntryEnabled(entryName, enabled)
+    local cureAbilities = self:GetCureAbilities() or {}
+    local enabledCureEntries = Config:GetSetting('EnabledCureEntries') or {}
+    local matched = false
+    for _, bucket in ipairs({ "DetDispel", "Poison", "Disease", "Curse", "Corruption", }) do
+        local foundName = Entries.FindEntryName(entryName, (self.ClassConfig.Cure or {})[bucket], cureAbilities[bucket])
+        if foundName then
+            matched = true
+            enabledCureEntries[bucket] = enabledCureEntries[bucket] or {}
+            enabledCureEntries[bucket][foundName] = enabled
+        end
+    end
+
+    if not matched then
+        Logger.log_error("\arNo cure entry is named \at%s\ar.", tostring(entryName))
+        return
+    end
+
+    Config:SetSetting('EnabledCureEntries', enabledCureEntries)
+end
+
+--- Turns the dispel entry named entryName (any case) on or off.
+---@param entryName string Entry name, matched without regard to case.
+---@param enabled boolean
+function Module:SetDispelEntryEnabled(entryName, enabled)
+    local foundName = Entries.FindEntryName(entryName, self.ClassConfig.Dispel, self:GetDispelAbilities())
+    if not foundName then
+        Logger.log_error("\arNo dispel entry is named \at%s\ar.", entryName)
+        return
+    end
+
+    local enabledDispelEntries = Config:GetSetting('EnabledDispelEntries') or {}
+    enabledDispelEntries[foundName] = enabled
+    Config:SetSetting('EnabledDispelEntries', enabledDispelEntries)
 end
 
 -- DEPRECATED 8/26 - sunset 2/1/27. Copies flat EnabledRotationEntries values into RotationEntryToggles, per rotation. DELETE at sunset.
@@ -2000,43 +2294,48 @@ end
 -- rebuild the load_cond-filtered cure lists per bucket on rescan; also derives CuresPeerCapable (any entry not selfOnly)
 function Module:RebuildCureAbilities()
     local cure = self.ClassConfig and self.ClassConfig.Cure
-    self.TempSettings.CureClickiesPresent = false
+    local clickiesPresent = false
     local cureClickies = {}
     for _, bucket in ipairs({ "DetDispel", "Poison", "Disease", "Curse", "Corruption", }) do
         cureClickies[bucket] = Modules:ExecModule("Clickies", "GetClickiesForAction", "As a Cure Action", bucket) or {}
-        if #cureClickies[bucket] > 0 then self.TempSettings.CureClickiesPresent = true end
+        if #cureClickies[bucket] > 0 then clickiesPresent = true end
     end
-    if not cure and not self.TempSettings.CureClickiesPresent then
+    if not cure and not clickiesPresent then
+        self.TempSettings.CureClickiesPresent = false
         self.TempSettings.CureAbilities = nil
         self.TempSettings.CuresPeerCapable = false
         return
     end
-    self.TempSettings.CureAbilities = {}
-    self.TempSettings.GroupDetDispelSpellIDs = {}
-    local peerCapable = self.TempSettings.CureClickiesPresent
+    local cureAbilities = {}
+    local groupDetDispelSpellIDs = {}
+    local peerCapable = clickiesPresent
     local order = Config:GetSetting('RotationEntryOrder') or {}
     for _, bucket in ipairs({ "DetDispel", "Poison", "Disease", "Curse", "Corruption", }) do
         if (cure and cure[bucket]) or #cureClickies[bucket] > 0 then
             local entries = Entries.FilterLoaded(cure and cure[bucket] or {}, self)
-            self.TempSettings.CureAbilities[bucket] = Tables.ConcatTables(entries, cureClickies[bucket])
-            Rotation.ApplyEntryOrder(self.TempSettings.CureAbilities[bucket], order["Cure" .. bucket])
+            cureAbilities[bucket] = Tables.ConcatTables(entries, cureClickies[bucket])
+            Rotation.ApplyEntryOrder(cureAbilities[bucket], order["Cure" .. bucket])
             for _, entry in ipairs(entries) do
                 if not entry.selfOnly then peerCapable = true end
             end
         end
     end
-    self.TempSettings.CuresPeerCapable = peerCapable
 
     -- record our group-scoped det dispels by spell ID so peers can tell (live, off Me.Casting) when we're covering the whole group
-    for _, entry in ipairs(self.TempSettings.CureAbilities['DetDispel'] or {}) do
+    for _, entry in ipairs(cureAbilities['DetDispel'] or {}) do
         if not entry.selfOnly then
             local resolvedName = self:GetResolvedActionMapItem(entry.name) or entry.name
             local spell        = Entries.Spell(entry, resolvedName)
             if type(spell) ~= "string" and spell and spell() and Casting.IsGroupSpell(spell.TargetType()) then
-                self.TempSettings.GroupDetDispelSpellIDs[spell.ID()] = true
+                groupDetDispelSpellIDs[spell.ID()] = true
             end
         end
     end
+
+    self.TempSettings.CureClickiesPresent = clickiesPresent
+    self.TempSettings.CureAbilities = cureAbilities
+    self.TempSettings.CuresPeerCapable = peerCapable
+    self.TempSettings.GroupDetDispelSpellIDs = groupDetDispelSpellIDs
 end
 
 function Module:GetCureAbilities()
@@ -2092,11 +2391,11 @@ function Module:ActiveCureList(base)
     return Config:GetSetting('UseSharedCureLists') and (base .. "Shared") or base
 end
 
--- build a name->true set from the current zone's entries in the given cure list, for exact-name membership tests
+-- build a lowercased name->true set from the current zone's entries in the given cure list, for exact-name membership tests in any case
 function Module:ActiveCureNameSet(base)
     local set = {}
     for _, name in ipairs(Config:GetZoneList(self:ActiveCureList(base))) do
-        set[name] = true
+        set[name:lower()] = true
     end
     return set
 end
@@ -2108,8 +2407,9 @@ function Module:RunCure(targetSpawn, cureEffects, mezzed, denySet, allowSet)
     local allowedEffect = nil
     local effectByType  = {}
     for _, effect in ipairs(cureEffects or {}) do
-        if not denySet[effect.name] then
-            if allowSet[effect.name] then
+        local effectKey = (effect.name or ""):lower()
+        if not denySet[effectKey] then
+            if allowSet[effectKey] then
                 allowedEffect = allowedEffect or effect.name
             elseif effect.cureType then
                 effectByType[effect.cureType] = effectByType[effect.cureType] or effect.name
@@ -2161,9 +2461,9 @@ function Module:RebuildDispelAbilities()
         self.TempSettings.DispelAbilities = nil
         return
     end
-    local entries = Entries.FilterLoaded(dispel or {}, self)
-    self.TempSettings.DispelAbilities = Tables.ConcatTables(entries, dispelClickies)
-    Rotation.ApplyEntryOrder(self.TempSettings.DispelAbilities, (Config:GetSetting('RotationEntryOrder') or {})['DispelAbilities'])
+    local dispelAbilities = Tables.ConcatTables(Entries.FilterLoaded(dispel or {}, self), dispelClickies)
+    Rotation.ApplyEntryOrder(dispelAbilities, (Config:GetSetting('RotationEntryOrder') or {})['DispelAbilities'])
+    self.TempSettings.DispelAbilities = dispelAbilities
 end
 
 function Module:GetDispelAbilities()
@@ -2468,25 +2768,27 @@ end
 -- rebuild the load_cond-filtered rez lists per phase on rescan, so a load-gated entry drops from both the cast logic and the UI
 function Module:RebuildRezAbilities()
     local rez = self.ClassConfig and self.ClassConfig.Rez
-    self.TempSettings.RezClickiesPresent = false
+    local clickiesPresent = false
     local rezClickies = {}
     for _, phase in ipairs({ "Combat", "Downtime", }) do
         rezClickies[phase] = Modules:ExecModule("Clickies", "GetClickiesForAction", "As a Rez Action", phase) or {}
-        if #rezClickies[phase] > 0 then self.TempSettings.RezClickiesPresent = true end
+        if #rezClickies[phase] > 0 then clickiesPresent = true end
     end
-    if not rez and not self.TempSettings.RezClickiesPresent then
+    self.TempSettings.RezClickiesPresent = clickiesPresent
+    if not rez and not clickiesPresent then
         self.TempSettings.RezAbilities = nil
         return
     end
-    self.TempSettings.RezAbilities = {}
+    local rezAbilities = {}
     local order = Config:GetSetting('RotationEntryOrder') or {}
     for _, phase in ipairs({ "Combat", "Downtime", }) do
         if (rez and rez[phase]) or #rezClickies[phase] > 0 then
             local entries = Entries.FilterLoaded(rez and rez[phase] or {}, self)
-            self.TempSettings.RezAbilities[phase] = Tables.ConcatTables(entries, rezClickies[phase])
-            Rotation.ApplyEntryOrder(self.TempSettings.RezAbilities[phase], order["Rez" .. phase])
+            rezAbilities[phase] = Tables.ConcatTables(entries, rezClickies[phase])
+            Rotation.ApplyEntryOrder(rezAbilities[phase], order["Rez" .. phase])
         end
     end
+    self.TempSettings.RezAbilities = rezAbilities
 end
 
 function Module:GetRezAbilities()
@@ -2608,6 +2910,34 @@ function Module:CheckAndRez(combat_state)
     end
 end
 
+--- Runs a pending loadout rescan if it can apply now: before the first one, in settled downtime, or when it changes no memorized gems.
+---@param combatState string? "Combat" or "Downtime"; omitted from the paused main loop, where only a rescan that changes no gems applies.
+function Module:ApplyPendingRescan(combatState)
+    if not self.ClassConfig or not self.ModuleLoaded then return end
+    if not self.TempSettings.NewCombatMode and self.TempSettings.CombatModeSet then return end
+
+    local canApply = (not self.TempSettings.CombatModeSet)
+        or (combatState == "Downtime" and Combat.CombatSettled(1000))
+        or self:ComputedLoadoutMatchesCurrent()
+    if not canApply then return end
+
+    Logger.log_debug("New Combat Mode Requested: %s", self.ClassConfig.Modes[Config:GetSetting('Mode')])
+
+    self.TempSettings.NewCombatMode = false
+    self:SetCombatMode(self.ClassConfig.Modes[Config:GetSetting('Mode')])
+    self:GetRotations()
+    self:RebuildRezAbilities()
+    self:RebuildCureAbilities()
+    self:RebuildDispelAbilities()
+    self:SetRotationActions()
+    if not self.TempSettings.NewCombatMode then
+        self.TempSettings.CombatModeSet = true
+    end
+    self.TempSettings.CombatModeChangeTime = Globals.GetTimeSeconds()
+
+    Config:BroadcastConfigs()
+end
+
 function Module:GiveTime()
     local combat_state = Combat.GetCachedCombatState()
 
@@ -2615,34 +2945,14 @@ function Module:GiveTime()
     self:MaintainSwapGem()
     local enabledRotations = Config:GetSetting('EnabledRotations') or {}
 
-    local me               = mq.TLO.Me
+    self:ApplyPendingRescan(combat_state)
+
+    local me = mq.TLO.Me
     if me.Hovering() or me.Stunned() or me.Charmed() or me.Mezzed() or me.Feared() then
         Logger.log_super_verbose("Class GiveTime aborted, we aren't in control of ourselves. Hovering(%s) Stunned(%s) Charmed(%s) Feared(%s) Mezzed(%s)",
             Strings.BoolToColorString(me.Hovering()), Strings.BoolToColorString(me.Stunned()), Strings.BoolToColorString(me.Charmed() ~= nil),
             Strings.BoolToColorString(me.Mezzed() ~= nil), Strings.BoolToColorString(me.Feared() ~= nil))
         return
-    end
-
-    if self.TempSettings.NewCombatMode or not self.TempSettings.CombatModeSet then
-        local canApply = (not self.TempSettings.CombatModeSet)
-            or (combat_state == "Downtime" and Combat.CombatSettled(1000))
-            or self:ComputedLoadoutMatchesCurrent()
-
-        if canApply then
-            Logger.log_debug("New Combat Mode Requested: %s", self.ClassConfig.Modes[Config:GetSetting('Mode')])
-
-            self:SetCombatMode(self.ClassConfig.Modes[Config:GetSetting('Mode')])
-            self:GetRotations()
-            self:RebuildRezAbilities()
-            self:RebuildCureAbilities()
-            self:RebuildDispelAbilities()
-            self:SetRotationActions()
-            self.TempSettings.NewCombatMode = false
-            self.TempSettings.CombatModeSet = true
-            self.TempSettings.CombatModeChangeTime = Globals.GetTimeSeconds()
-
-            Config:BroadcastConfigs()
-        end
     end
 
     self:ReconcileLoadout()
@@ -2829,7 +3139,7 @@ function Module:DoGetState()
 
     local rotationStates = "Current Rotation States\n-=-=-=-=-=-=-=-\n"
     for idx, r in ipairs(self.TempSettings.RotationStates) do
-        local actionEntry = self.TempSettings.RotationTable[r.name][r.state or 1]
+        local actionEntry = (self.TempSettings.RotationTable[r.name] or {})[r.state or 1]
         if actionEntry then
             rotationStates = rotationStates ..
                 string.format("[%d] %s :: %d :: Type: %s Action: %s\n", idx, r.name, r.state or 0, actionEntry.type,

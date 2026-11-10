@@ -25,9 +25,7 @@ Module.CommandHandlers                  = {
         usage = "/rgl enablemezentry \"<Name>\"",
         about = "Enables a mez ability entry by name.",
         handler = function(self, name)
-            local enabled = Config:GetSetting('EnabledMezEntries') or {}
-            enabled[name] = true
-            Config:SetSetting('EnabledMezEntries', enabled)
+            self:SetMezEntryEnabled(name, true)
             return true
         end,
     },
@@ -35,9 +33,7 @@ Module.CommandHandlers                  = {
         usage = "/rgl disablemezentry \"<Name>\"",
         about = "Disables a mez ability entry by name.",
         handler = function(self, name)
-            local enabled = Config:GetSetting('EnabledMezEntries') or {}
-            enabled[name] = false
-            Config:SetSetting('EnabledMezEntries', enabled)
+            self:SetMezEntryEnabled(name, false)
             return true
         end,
     },
@@ -543,6 +539,20 @@ end
 function Module:GetMezAbilities()
     if not self.TempSettings.MezAbilities then self:RebuildMezAbilities() end -- lazy build covers first-load ordering
     return self.TempSettings.MezAbilities
+end
+
+-- turn the mez entry named entryName (any case) on or off
+function Module:SetMezEntryEnabled(entryName, enabled)
+    local classConfig = Modules:ExecModule("Class", "GetClassConfig")
+    local foundName = Entries.FindEntryName(entryName, classConfig and classConfig.Mez, self:GetMezAbilities())
+    if not foundName then
+        Logger.log_error("\arNo mez entry is named \at%s\ar.", tostring(entryName))
+        return
+    end
+
+    local enabledMezEntries = Config:GetSetting('EnabledMezEntries') or {}
+    enabledMezEntries[foundName] = enabled
+    Config:SetSetting('EnabledMezEntries', enabledMezEntries)
 end
 
 -- the Class module fires this on every rescan/mode change (ExecAll); rebuild our filtered list in lockstep with rotations
