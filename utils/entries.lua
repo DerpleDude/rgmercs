@@ -54,4 +54,15 @@ function Entries.FilterLoaded(list, caller)
     return out
 end
 
+-- the entry's own name for entryName matched in any case across the given entry lists, or nil when none holds it
+function Entries.FindEntryName(entryName, ...)
+    if not entryName then return nil end
+    for i = 1, select('#', ...) do
+        for _, entry in ipairs(select(i, ...) or {}) do
+            if entry.name and entry.name:lower() == entryName:lower() then return entry.name end
+        end
+    end
+    return nil
+end
+
 return Entries

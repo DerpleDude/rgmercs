@@ -529,7 +529,8 @@ return {
                 name = "Legendary Armband of Muada",
                 type = "Item",
                 load_cond = function(self)
-                    return not Casting.CanUseAA("Sha's Reprisal") and mq.TLO.Me.Level() >= 68 and (Core.GetResolvedActionMapItem('SlowSpell').Level() or 99) < 70 and
+                    local slowSpell = Core.GetResolvedActionMapItem('SlowSpell')
+                    return not Casting.CanUseAA("Sha's Reprisal") and mq.TLO.Me.Level() >= 68 and (not slowSpell or (slowSpell.Level() or 99) < 70) and
                         mq.TLO.FindItem("=Legendary Armband of Muada")()
                 end,
                 cond = function(self, itemName, target)
@@ -542,7 +543,8 @@ return {
                 type = "Spell",
                 load_cond = function(self)
                     if Casting.CanUseAA("Sha's Reprisal") then return false end
-                    return mq.TLO.Me.Level() < 68 or (Core.GetResolvedActionMapItem('SlowSpell').Level() or 99) >= 70 or not mq.TLO.FindItem("=Legendary Armband of Muada")()
+                    local slowSpell = Core.GetResolvedActionMapItem('SlowSpell')
+                    return mq.TLO.Me.Level() < 68 or (slowSpell and (slowSpell.Level() or 99) >= 70) or not mq.TLO.FindItem("=Legendary Armband of Muada")()
                 end,
                 cond = function(self, spell, target)
                     return Casting.DetSpellCheck(spell) and (spell.RankName.SlowPct() or 0) > (Targeting.GetTargetSlowedPct()) and not Casting.SlowImmuneTarget(target)
@@ -960,9 +962,10 @@ return {
                 {
                     name = "SlowSpell",
                     cond = function(self)
+                        local slowSpell = Core.GetResolvedActionMapItem('SlowSpell')
                         return Config:GetSetting('DoSlow') and not Casting.CanUseAA("Sha's Reprisal") and
                             -- use this unless we don't have the armband, can't use the armband, or have a spell that casts faster than the armband
-                            (mq.TLO.Me.Level() < 68 or (Core.GetResolvedActionMapItem('SlowSpell').Level() or 99) >= 70 or not mq.TLO.FindItem("=Legendary Armband of Muada")())
+                            (mq.TLO.Me.Level() < 68 or (slowSpell and (slowSpell.Level() or 99) >= 70) or not mq.TLO.FindItem("=Legendary Armband of Muada")())
                     end,
                 },
                 { name = "Icelance1", },

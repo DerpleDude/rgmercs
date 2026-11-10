@@ -2119,13 +2119,13 @@ function Ui.RenderRotationTable(name, rotationTable, resolvedActionMap, rotation
                     entryToggles[entry.name] == nil and true or entryToggles[entry.name])
                 if changed then entryTogglesChanged = true end
             else
-                if entryToggles[entry.name] == false then
+                if entryToggles[entry.name] == false and typeLower ~= "item" and Modules:ExecModule("Class", "IsLoadoutResolved") and not Modules:ExecModule("Class", "OwnsAbilitySetEntry", entry.name) then
                     entryToggles[entry.name] = true
                     entryTogglesChanged = true
                 end
                 ImGui.BeginDisabled(true)
                 local dimGreen = Globals.Constants.Colors.Green
-                Ui.RenderFancyToggle(string.format("rot_%s_tggl_%d", name, idx), "", true, ImVec2(26, 14),
+                Ui.RenderFancyToggle(string.format("rot_%s_tggl_%d", name, idx), "", entryToggles[entry.name] ~= false, ImVec2(26, 14),
                     ImVec4(dimGreen.x, dimGreen.y, dimGreen.z, 0.35), Globals.Constants.Colors.Red, Globals.Constants.Colors.Grey, true, false, true, nil)
                 ImGui.EndDisabled()
             end

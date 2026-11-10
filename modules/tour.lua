@@ -337,6 +337,7 @@ Module.ExtraDidYouKnow = {
     "/rgl rebuff forces buff checks to run again on the next rotation instead of waiting.",
     "/rgl spellreload, or Rescan Loadout on the Class tab, rescans your spells after scribing new ones or when something looks off.",
     "Any rotation entry can be turned off on the Class tab or with /rgl disablerotationentry \"<Name>\", without changing settings.",
+    "Any ability set entry can be turned off on the Class tab or with /rgl disableabilitysetentry \"<Name>\", so the set uses its next best entry.",
     "/rgl stopcast stops the current cast and clears retries. It is useful in hotkeys before priority abilities like gate.",
     "/rgl cast, /rgl castaa and /rgl usemap queue a spell, AA or mapped ability so it fits between RGMercs' own casts.",
     "/rgl backoff stops a character from assisting or engaging until you toggle it back.",

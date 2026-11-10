@@ -62,14 +62,15 @@ end
 --- spellbook or combat ability list and has not already been resolved.
 ---@param spellList table Array of spell name strings to evaluate.
 ---@param alreadyResolvedMap table Map of already-resolved spells to skip.
+---@param entryToggles table? Map of entry name → false for entries the user has turned off in this set.
 ---@return MQSpell|nil The best usable spell, or nil if none qualify.
-function Rotation.GetBestSpell(spellList, alreadyResolvedMap)
+function Rotation.GetBestSpell(spellList, alreadyResolvedMap, entryToggles)
     local highestLevel = 0
     local selectedSpell = nil
 
     for _, spellName in ipairs(spellList or {}) do
         local spell = mq.TLO.Spell(spellName)
-        if spell() ~= nil then
+        if spell() ~= nil and (entryToggles or {})[spellName] ~= false then
             --Logger.log_debug("Found %s level(%d) rank(%s)", s, spell.Level(), spell.RankName())
             if spell.Level() <= mq.TLO.Me.Level() then
                 if mq.TLO.Me.Book(spell.RankName.Name())() or mq.TLO.Me.CombatAbility(spell.RankName.Name())() then
@@ -486,10 +487,16 @@ function Rotation.ResolveActions(itemSets, abilitySets, aaSets)
     end
     table.sort(sortedAbilitySets)
 
+    local enabledAbilitySets = Config:GetSetting('EnabledAbilitySets') or {}
+    local abilitySetEntryToggles = Config:GetSetting('AbilitySetEntryToggles') or {}
     for _, unresolvedName in pairs(sortedAbilitySets) do
-        local spellTable = abilitySets[unresolvedName]
-        Logger.log_debug("\ayFinding best spell for Set: \am%s", unresolvedName)
-        resolvedActionMap[unresolvedName] = Rotation.GetBestSpell(spellTable, resolvedActionMap)
+        if enabledAbilitySets[unresolvedName] == false then
+            Logger.log_debug("\aySkipping disabled Set: \am%s", unresolvedName)
+        else
+            local spellTable = abilitySets[unresolvedName]
+            Logger.log_debug("\ayFinding best spell for Set: \am%s", unresolvedName)
+            resolvedActionMap[unresolvedName] = Rotation.GetBestSpell(spellTable, resolvedActionMap, abilitySetEntryToggles[unresolvedName])
+        end
     end
 
     for unresolvedName, aaTable in pairs(aaSets or {}) do
@@ -765,6 +772,36 @@ function Rotation.FindAllMissingSpells(abilitySets, highestOnly)
     end
 
     return missingSpellList
+end
+
+--- Collects, per ability set, every listed spell or disc the character can use now, sorted by set name.
+---@param abilitySets table Map of set name → array of spell names.
+---@return table ownedSpellSets Array of {name, entries, resolvedMap} per set with at least one usable spell.
+function Rotation.FindAllOwnedSpells(abilitySets)
+    local ownedSpellSets = {}
+
+    for setName, spellTable in pairs(abilitySets) do
+        local entries = {}
+        local resolvedMap = {}
+        for _, spellName in ipairs(spellTable or {}) do
+            local spell = mq.TLO.Spell(spellName)
+            if spell() ~= nil and spell.Level() <= mq.TLO.Me.Level() then
+                local rankName = spell.RankName.Name()
+                local isDisc = mq.TLO.Me.CombatAbility(rankName)() and true or false
+                if isDisc or mq.TLO.Me.Book(rankName)() then
+                    table.insert(entries, { name = spellName, type = isDisc and "Disc" or "Spell", })
+                    resolvedMap[spellName] = spell
+                end
+            end
+        end
+        if #entries > 0 then
+            table.insert(ownedSpellSets, { name = setName, entries = entries, resolvedMap = resolvedMap, })
+        end
+    end
+
+    table.sort(ownedSpellSets, function(a, b) return a.name < b.name end)
+
+    return ownedSpellSets
 end
 
 --- Calls entry.pre_activate(caller, condArg) if the entry defines it,

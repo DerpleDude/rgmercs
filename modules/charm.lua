@@ -324,12 +324,7 @@ Module.CommandHandlers = {
         usage = "/rgl enablecharmentry \"<Name>\"",
         about = "Enables a charm entry (charm spell, pre-charm step, or assist) by name, in every list it appears in.",
         handler = function(self, name)
-            local enabled = Config:GetSetting('EnabledCharmEntries') or {}
-            for _, listName in ipairs({ "Abilities", "PreCharm", "Assist", }) do
-                enabled[listName] = enabled[listName] or {}
-                enabled[listName][name] = true
-            end
-            Config:SetSetting('EnabledCharmEntries', enabled)
+            self:SetCharmEntryEnabled(name, true)
             return true
         end,
     },
@@ -337,12 +332,7 @@ Module.CommandHandlers = {
         usage = "/rgl disablecharmentry \"<Name>\"",
         about = "Disables a charm entry (charm spell, pre-charm step, or assist) by name, in every list it appears in.",
         handler = function(self, name)
-            local enabled = Config:GetSetting('EnabledCharmEntries') or {}
-            for _, listName in ipairs({ "Abilities", "PreCharm", "Assist", }) do
-                enabled[listName] = enabled[listName] or {}
-                enabled[listName][name] = false
-            end
-            Config:SetSetting('EnabledCharmEntries', enabled)
+            self:SetCharmEntryEnabled(name, false)
             return true
         end,
     },
@@ -503,6 +493,30 @@ function Module:GetCharmLists()
     return self.TempSettings.CharmLists
 end
 
+-- turn the charm entry named entryName (any case) on or off in every list that holds it
+function Module:SetCharmEntryEnabled(entryName, enabled)
+    local classConfig = Modules:ExecModule("Class", "GetClassConfig")
+    local charm = classConfig and classConfig.Charm or {}
+    local charmLists = self:GetCharmLists()
+    local enabledCharmEntries = Config:GetSetting('EnabledCharmEntries') or {}
+    local matched = false
+    for _, listName in ipairs({ "Abilities", "PreCharm", "Assist", }) do
+        local foundName = Entries.FindEntryName(entryName, charm[listName], charmLists[listName])
+        if foundName then
+            matched = true
+            enabledCharmEntries[listName] = enabledCharmEntries[listName] or {}
+            enabledCharmEntries[listName][foundName] = enabled
+        end
+    end
+
+    if not matched then
+        Logger.log_error("\arNo charm entry is named \at%s\ar.", tostring(entryName))
+        return
+    end
+
+    Config:SetSetting('EnabledCharmEntries', enabledCharmEntries)
+end
+
 -- the Class module fires this on every rescan/mode change (ExecAll); rebuild our filtered lists in lockstep with rotations
 function Module:OnCombatModeChanged()
     self:RebuildCharmLists()
@@ -523,6 +537,13 @@ function Module:SetValidCharmAbilities()
         if usable then table.insert(valid, entry) end
     end
     self.TempSettings.ValidCharmAbilities = valid
+end
+
+-- rebuild the charm lists and the valid charm list now, ignoring the 10 s throttle
+function Module:RefreshValidCharmAbilities()
+    self:RebuildCharmLists()
+    self.TempSettings.LastCharmAbilityCheck = 0
+    self:SetValidCharmAbilities()
 end
 
 -- combo label for a valid-ability index: the resolved rank name for spells/songs, else the entry name (e.g. Dire Charm)
