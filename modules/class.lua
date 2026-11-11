@@ -104,7 +104,8 @@ Module.FAQ                                   = {
     {
         Question = "How do I use an older spell or discipline instead of the newest one I have?",
         Answer =
-            "  Each ability set uses the highest level spell or discipline you have from its list. An ability set entry may be disabled using the GUI or CLI, and the set will use the next best entry:\n\n" ..
+            "  Each ability set uses the highest level spell or discipline you have from its list. " ..
+            "An ability set entry may be disabled using the GUI or CLI, and the set will use the next best entry:\n\n" ..
             "    GUI: Use the toggle found in the Ability Sets list on the class tab. \n\n" ..
             "    CLI: Use the ability set entry disable command (search for 'abilityset' and check the command list).",
         Settings_Used = "",
@@ -1990,15 +1991,7 @@ end
 ---@param rotationName string? Rotation name, matched without regard to case.
 ---@param enabled boolean
 function Module:SetRotationEnabled(rotationName, enabled)
-    local matchedName = nil
-    for _, rotationOrder in ipairs({ self.ClassConfig.RotationOrder or {}, self.ClassConfig.HealRotationOrder or {}, }) do
-        for _, rotation in ipairs(rotationOrder) do
-            if rotationName and rotation.name and rotation.name:lower() == rotationName:lower() then
-                matchedName = rotation.name
-            end
-        end
-    end
-
+    local matchedName = Entries.FindEntryName(rotationName, self.ClassConfig.RotationOrder, self.ClassConfig.HealRotationOrder)
     if not matchedName then
         Logger.log_error("\arNo rotation is named \at%s\ar.", tostring(rotationName))
         return
