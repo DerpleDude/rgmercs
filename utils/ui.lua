@@ -2119,7 +2119,8 @@ function Ui.RenderRotationTable(name, rotationTable, resolvedActionMap, rotation
                     entryToggles[entry.name] == nil and true or entryToggles[entry.name])
                 if changed then entryTogglesChanged = true end
             else
-                if entryToggles[entry.name] == false and typeLower ~= "item" and Modules:ExecModule("Class", "IsLoadoutResolved") and not Modules:ExecModule("Class", "OwnsAbilitySetEntry", entry.name) then
+                if entryToggles[entry.name] == false and typeLower ~= "item" and Modules:ExecModule("Class", "IsLoadoutResolved")
+                    and not Modules:ExecModule("Class", "OwnsAbilitySetEntry", entry.name) then
                     entryToggles[entry.name] = true
                     entryTogglesChanged = true
                 end
