@@ -557,6 +557,8 @@ function UnitTests.RunAll()
             assertEq(string.format("Policy %s: hunt radius setting", name), policy.radiusSetting == 'PullRadiusHunt', policy.family == 'hunt')
         end
 
+        assertEq("Policy PullToCamp: camp scan center", policies['PullToCamp'].scanCenter, 'camp')
+        assertEq("Policy ChainToCamp: camp scan center", policies['ChainToCamp'].scanCenter, 'camp')
         assertEq("Policy AreaHunt: anchor scan center", policies['AreaHunt'].scanCenter, 'anchor')
         assertEq("Policy CircuitHunt: waypoint scan center", policies['CircuitHunt'].scanCenter, 'waypoint')
         assertEq("Policy RoamingHunt: self scan center", policies['RoamingHunt'].scanCenter, 'self')

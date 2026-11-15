@@ -209,8 +209,8 @@ Module.Constants.PullModeDisplays   = {
 }
 
 Module.Constants.PullModePolicies   = {
-    ['PullToCamp']  = { family = 'camp', hasObjective = true, runsDuringCombat = false, successCheck = 'any', rescanToCloser = true, scanCenter = 'self', radiusSetting = 'PullRadius', },
-    ['ChainToCamp'] = { family = 'camp', hasObjective = true, runsDuringCombat = true, successCheck = 'chainCount', rescanToCloser = true, scanCenter = 'self', radiusSetting = 'PullRadius', },
+    ['PullToCamp']  = { family = 'camp', hasObjective = true, runsDuringCombat = false, successCheck = 'any', rescanToCloser = true, scanCenter = 'camp', radiusSetting = 'PullRadius', },
+    ['ChainToCamp'] = { family = 'camp', hasObjective = true, runsDuringCombat = true, successCheck = 'chainCount', rescanToCloser = true, scanCenter = 'camp', radiusSetting = 'PullRadius', },
     ['AreaHunt']    = { family = 'hunt', hasObjective = true, runsDuringCombat = false, successCheck = 'any', rescanToCloser = true, scanCenter = 'anchor', radiusSetting = 'PullRadiusHunt', },
     ['RoamingHunt'] = { family = 'hunt', hasObjective = false, runsDuringCombat = false, successCheck = 'any', rescanToCloser = true, scanCenter = 'self', radiusSetting = 'PullRadiusHunt', },
     ['CircuitHunt'] = { family = 'hunt', hasObjective = false, runsDuringCombat = false, successCheck = 'any', rescanToCloser = true, scanCenter = 'waypoint', radiusSetting = 'PullRadiusHunt', },
@@ -3758,6 +3758,11 @@ function Module:GetPullableSpawns()
         checkX, checkY, checkZ = wpData.x, wpData.y, wpData.z or checkZ
     elseif policy.scanCenter == 'anchor' and self.TempSettings.HuntAnchor then
         checkX, checkY, checkZ = self.TempSettings.HuntAnchor.x, self.TempSettings.HuntAnchor.y, self.TempSettings.HuntAnchor.z
+    elseif policy.scanCenter == 'camp' then
+        local campData = Modules:ExecModule("Movement", "GetCampData")
+        if campData.returnToCamp then
+            checkX, checkY, checkZ = campData.campSettings.AutoCampX, campData.campSettings.AutoCampY, campData.campSettings.AutoCampZ
+        end
     end
 
     local logSpawnNames = Logger.get_log_level() >= 5
