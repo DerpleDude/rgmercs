@@ -386,8 +386,6 @@ function Comms.UpdatePeerHeartbeat(peer, data)
     data.CureEffects                 = data.CureEffects or {}
     data.Songs                       = data.Songs or {}
     data.Blocked                     = data.Blocked or {}
-    data.PetBuffs                    = data.PetBuffs or {}
-    data.PetBlocked                  = data.PetBlocked or {}
 
     Comms.PeersHeartbeats[peer]      = { LastHeartbeat = Globals.GetTimeSeconds(), Data = data or {}, }
 

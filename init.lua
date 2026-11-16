@@ -22,16 +22,9 @@ end
 
 local Config = require('utils.config')
 Config:LoadSettings()
+Config:ApplyCoreSettings()
 
 local Logger = require("utils.logger")
-Logger.set_log_level(Config:GetSetting('LogLevel'))
-Logger.set_toast_level(Config:GetSetting('ToastLevel') - 1) -- adjust for the "None" entry.
-Logger.set_log_to_file(Config:GetSetting('LogToFile'))
-Logger.set_log_timestamps_to_console(Config:GetSetting('LogTimeStampsToConsole'))
-Logger.set_debug_tracer_enabled(Config:GetSetting('EnableLogTracer'))
-if Config:GetSetting('LogFilter') ~= "" then
-    Logger.set_log_filter(Config:GetSetting('LogFilter'))
-end
 
 local Binds = require('utils.binds')
 require('utils.event_handlers')
@@ -472,11 +465,6 @@ local function Main()
 
     if mq.TLO.MacroQuest.GameState() ~= "INGAME" then return end
 
-    if Globals.CurLoadedChar ~= mq.TLO.Me.DisplayName() then
-        Config:LoadSettings()
-        Modules:ExecAll("LoadSettings")
-    end
-
     if Globals.CurLoadedClass ~= mq.TLO.Me.Class.ShortName() then
         ClassLoader.changeLoadedClass()
     end
@@ -648,6 +636,7 @@ RGInit(...)
 while openGUI do
     Main()
     Modules:ProcessUserModuleSync()
+    Modules:ProcessLootModuleSync()
     mq.doevents()
     mq.delay(10)
 end

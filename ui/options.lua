@@ -1014,9 +1014,13 @@ function OptionsUI:RenderDBManagement()
     ImGui.SeparatorText("DB Metrics")
     ImGui.PopStyleVar(2)
     ImGui.Spacing()
-    Config.Db:renderTelemetry()
-    ImGui.Spacing()
-    Config.Db:renderTelemetryGraph()
+    if Config:GetSetting('CollectDbMetrics') then
+        Config.Db:renderTelemetry()
+        ImGui.Spacing()
+        Config.Db:renderTelemetryGraph()
+    else
+        ImGui.TextWrapped("Turn on Collect DB Metrics (General > Misc) to record DB metrics.")
+    end
 end
 
 function OptionsUI:RenderButtonMasterIntegration()

@@ -354,7 +354,7 @@ function Casting.ResolveBuffCheck(spellId, target, skipBlockCheck, skipTriggerCh
                 Logger.log_verbose("ResolveBuffCheck: Target(%s) ID(%d) is an actor peer pet, using ActorPetBuffCheck.", target.DisplayName(), targetId)
                 return Casting.ActorPetBuffCheck(spellId, target, skipBlockCheck, skipTriggerCheck, heartbeat, spell)
             end
-            if buffList and songList and (skipBlockCheck or blockedList) then
+            if not isPet and buffList and songList and (skipBlockCheck or blockedList) then
                 Logger.log_verbose("ResolveBuffCheck: Target(%s) ID(%d) is an actor peer, using ActorBuffCheck.", target.DisplayName(), targetId)
                 return Casting.ActorBuffCheck(spellId, target, skipBlockCheck, skipTriggerCheck, heartbeat, spell)
             end
@@ -1212,7 +1212,7 @@ function Casting.GetBuffableInZoneIDs()
 
                 zoneIds:add(zoneSpawn.ID())
 
-                if Config:GetSetting("DoActorPetBuffs") then
+                if Config:GetSetting("DoActorPetBuffs") and (Comms.GetPeerHeartbeat(peer).Data or {}).PetBuffs then
                     local groupMember = mq.TLO.Group.Member(peerName or "")
                     if groupMember() and groupMember.Pet.ID() > 0 then
                         if not (groupMember.Pet.CleanName() or "familiar"):lower():find("familiar") then
@@ -1293,7 +1293,7 @@ function Casting.GetBuffableRaidIDs()
             end
             raidIds:add(raidMember.ID())
 
-            if Config:GetSetting("DoActorPetBuffs") then
+            if Config:GetSetting("DoActorPetBuffs") and (Comms.GetPeerHeartbeat(peer).Data or {}).PetBuffs then
                 local groupMember = mq.TLO.Group.Member(peerName or "")
                 if groupMember() and groupMember.Pet.ID() > 0 and not groupMember.OtherZone() then
                     if not (groupMember.Pet.CleanName() or "familiar"):lower():find("familiar") then
@@ -1350,7 +1350,7 @@ function Casting.GetBuffableGroupIDs()
             end
             groupIds:add(member.ID())
             if Config:GetSetting("DoActorPetBuffs") then
-                if Comms.GetPeerHeartbeatByName(memberName).Data then
+                if (Comms.GetPeerHeartbeatByName(memberName).Data or {}).PetBuffs then
                     local petId = member() and member.Pet.ID() or 0
                     if petId > 0 then
                         if not (member.Pet.CleanName() or "familiar"):lower():find("familiar") then
