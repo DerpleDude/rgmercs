@@ -1,5 +1,4 @@
 -- Sample Performance Monitor Class Module
-local mq                  = require('mq')
 local ImPlot              = require('ImPlot')
 local Base                = require("modules.base")
 local Config              = require('utils.config')
@@ -41,9 +40,6 @@ Module.DefaultConfig = {
         Category    = "Misc",
         Tooltip     = "Enable the Performance Module for advanced testing.",
         Default     = false,
-        OnChange    = function(_, newValue)
-            Config.Db:setCollectStats(newValue)
-        end,
     },
     ['PlotFillLines']                          = {
         DisplayName = "Enable Fill Lines",
@@ -93,8 +89,12 @@ function Module:Render()
     end
 
     if ImGui.CollapsingHeader("Database Stats") then
-        Config.Db:renderTelemetryGraph()
-        Config.Db:renderTelemetry()
+        if Config:GetSetting('CollectDbMetrics') then
+            Config.Db:renderTelemetryGraph()
+            Config.Db:renderTelemetry()
+        else
+            ImGui.TextWrapped("Turn on Collect DB Metrics (General > Misc) to record DB metrics.")
+        end
     end
 
     if ImGui.CollapsingHeader("Frame Times") then

@@ -1,23 +1,22 @@
-local mq       = require('mq')
-local Set      = require("mq.Set")
-local Comms    = require("utils.comms")
-local Files    = require("utils.files")
-local Globals  = require("utils.globals")
-local Logger   = require("utils.logger")
-local Modules  = require("utils.modules")
-local Strings  = require("utils.strings")
-local Tables   = require("utils.tables")
+local mq                                                 = require('mq')
+local Set                                                = require("mq.Set")
+local Comms                                              = require("utils.comms")
+local Files                                              = require("utils.files")
+local Globals                                            = require("utils.globals")
+local Logger                                             = require("utils.logger")
+local Modules                                            = require("utils.modules")
+local Strings                                            = require("utils.strings")
+local Tables                                             = require("utils.tables")
 
-local Config   = {
+local Config                                             = {
     _version    = '2.3.2',
     _subVersion = "Shattering of Ro",
     _name       = "Config",
     _AppName    = "RGMercs Lua Edition",
     _author     = 'Lead Devs: Derple, Algar',
 }
-Config.__index = Config
-Config.Db      = require("utils.config_db").new(mq.configDir .. '/rgmercs/rgmercs_config.db')
-Config.Db:setCollectStats(true)
+Config.__index                                           = Config
+Config.Db                                                = require("utils.config_db").new(mq.configDir .. '/rgmercs/rgmercs_config.db')
 Config.moduleDefaultSettings                             = {}
 Config.moduleTempSettings                                = {}
 Config.moduleSettingCategories                           = {}
@@ -405,6 +404,18 @@ Config.DefaultConfig                                     = {
         Tooltip = "Instantly release to spawn point when you die.",
         Default = false,
         ConfigType = "Advanced",
+    },
+    ['CollectDbMetrics']           = {
+        DisplayName = "Collect DB Metrics",
+        Group = "General",
+        Header = "Misc",
+        Category = "Misc",
+        Index = 2,
+        Tooltip = "Record config database metrics for the DB Metrics display.",
+        Default = false,
+        OnChange = function(_, newValue)
+            Config.Db:setCollectStats(newValue)
+        end,
     },
 
     -- Meditation/Med Rules
@@ -1712,12 +1723,6 @@ Config.DefaultConfig                                     = {
         "Allow group pets to be targeted in PC group buff rotations.\nNote that only the pets buffs of PCs who have this setting enabled are discoverable.\nFurther note this incurs a minor performance penalty and is not advised in most situations.",
         Default = false,
         ConfigType = "Advanced",
-        OnChange = function(oldValue, newValue)
-            if newValue == false then
-                Globals.CurrentPetBuffs = nil
-                Globals.CurrentPetBlocked = nil
-            end
-        end,
     },
 
     -- Buffs/Self
@@ -2943,14 +2948,7 @@ Config.DefaultConfig                                     = {
             local oldLootModule = Globals.Constants.LootModuleTypes[oldValue]
             local newLootModule = Globals.Constants.LootModuleTypes[newValue]
             Logger.log_info("\ayLoot Module changed from %s to: \ag%s", oldLootModule or "Unknown", newLootModule or "Unknown")
-            Modules:unloadModule(oldLootModule)
-            Config:ClearModuleSettings(oldLootModule)
-            if newValue > 1 then
-                local path = string.format("modules." .. newLootModule:lower())
-                Logger.log_info("\ayLoot Module: \ag%s", newLootModule:lower() or "Unknown")
-                Modules:loadModule(newLootModule, path)
-                Config:UpdateCommandHandlers()
-            end
+            Modules:RequestLootModuleSync()
         end,
     },
 
@@ -3121,6 +3119,22 @@ function Config:LoadSettings()
     self.SettingsLoadComplete = true
 
     return true
+end
+
+--- Applies the loaded logger and DB metrics settings to this process.
+function Config:ApplyCoreSettings()
+    Logger.set_log_level(Config:GetSetting('LogLevel'))
+    Logger.set_toast_level(Config:GetSetting('ToastLevel') - 1) -- adjust for the "None" entry.
+    Logger.set_log_to_file(Config:GetSetting('LogToFile'))
+    Logger.set_log_timestamps_to_console(Config:GetSetting('LogTimeStampsToConsole'))
+    Logger.set_debug_tracer_enabled(Config:GetSetting('EnableLogTracer'))
+    if Config:GetSetting('LogFilter') == "" then
+        Logger.clear_log_filter()
+    else
+        Logger.set_log_filter(Config:GetSetting('LogFilter'))
+    end
+
+    self.Db:setCollectStats(Config:GetSetting('CollectDbMetrics'))
 end
 
 function Config:UpdateCommandHandlers()
@@ -3717,6 +3731,10 @@ function Config.ResolveDefaults(defaults, settings, module)
             changed = true
         elseif v.Type == "Combo" and settings[k] > #v.ComboOptions then
             Logger.log_warn("\aySetting value out of bounds [\am%s\ay] -- resetting to default.", k)
+            settings[k] = v.Default
+            changed = true
+        elseif v.ValidValues and not Tables.TableContains(v.ValidValues, settings[k]) then
+            Logger.log_warn("\aySetting value not valid [\am%s\ay] -- resetting to default.", k)
             settings[k] = v.Default
             changed = true
         elseif type(settings[k]) == "number" and (settings[k] < (v.Min or -1) or settings[k] > (v.Max or 99999)) then

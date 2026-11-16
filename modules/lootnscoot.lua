@@ -41,13 +41,8 @@ Module.DefaultConfig   = {
         Index = 1,
         Tooltip = "Load the integrated LootNScoot in directed mode. Turning this off will unload the looting script.",
         Default = false,
-        OnChange = function(oldValue, newValue)
-            if newValue == true and mq.TLO.Lua.Script('lootnscoot').Status() ~= 'RUNNING' then
-                Core.DoCmd("/lua run lootnscoot directed rgmercs")
-                suppressWarning = true
-            elseif newValue == false and mq.TLO.Lua.Script('lootnscoot').Status() == 'RUNNING' then
-                Core.DoCmd("/lua stop lootnscoot")
-            end
+        OnChange = function()
+            Module:SyncLootScript()
         end,
     },
     ['CombatLooting']                          = {
@@ -170,6 +165,7 @@ function Module:Init()
                 requireDelay = true
             end
             Core.DoCmd("%s/lua run lootnscoot directed rgmercs", requireDelay and "/timed 15 " or "")
+            self.TempSettings.DirectingLns = true
         end
         self.TempSettings.Looting = false
         Logger.log_debug("\ay[LOOT]: \agLoot(LNS) module Loaded.")
@@ -248,8 +244,31 @@ end
 
 function Module:Shutdown()
     Logger.log_debug("\ay[LOOT]: \axLootNScoot Integration Module Unloaded.")
-    if Config:GetSetting('DoLoot') and mq.TLO.Lua.Script('lootnscoot').Status() == 'RUNNING' then
+    if self.TempSettings.DirectingLns and mq.TLO.Lua.Script('lootnscoot').Status() == 'RUNNING' then
         Core.DoCmd("/lua stop lootnscoot")
+    end
+    self.TempSettings.DirectingLns = false
+end
+
+--- Starts LootNScoot in directed mode when DoLoot is on, restarting a copy we don't direct, or stops the copy we direct when it is off.
+function Module:SyncLootScript()
+    if not Core.OnEMU() then return end
+
+    local lnsRunning = mq.TLO.Lua.Script('lootnscoot').Status() == 'RUNNING'
+    if Config:GetSetting('DoLoot') then
+        if not self.TempSettings.DirectingLns or not lnsRunning then
+            if lnsRunning then
+                Core.DoCmd("/lua stop lootnscoot")
+            end
+            Core.DoCmd("%s/lua run lootnscoot directed rgmercs", lnsRunning and "/timed 15 " or "")
+            suppressWarning = true
+        end
+        self.TempSettings.DirectingLns = true
+    elseif self.TempSettings.DirectingLns then
+        if lnsRunning then
+            Core.DoCmd("/lua stop lootnscoot")
+        end
+        self.TempSettings.DirectingLns = false
     end
 end
 

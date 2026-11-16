@@ -8,6 +8,7 @@ local Core      = require("utils.core")
 local Events    = require("utils.events")
 local Globals   = require("utils.globals")
 local Logger    = require("utils.logger")
+local Modules   = require("utils.modules")
 local Targeting = require("utils.targeting")
 
 local Module    = { _version = '1.0', _name = "SmartLoot", _author = 'andude2, Algar', }
@@ -26,10 +27,8 @@ Module.DefaultConfig     = {
         Index = 1,
         Tooltip = "Enable SmartLoot integration for automated looting.",
         Default = false,
-        OnChange = function(self)
-            if Config:GetSetting('UseSmartLoot') and not Module.smartLootInitialized then
-                Module:InitializeSmartLoot()
-            end
+        OnChange = function()
+            Modules:RequestLootModuleSync()
         end,
     },
     ['SLMainLooter']                           = {
@@ -37,9 +36,12 @@ Module.DefaultConfig     = {
         Group = "General",
         Header = "Loot(Emu)",
         Category = "SmartLoot",
-        Index = 1,
+        Index = 2,
         Tooltip = "Set this toon as the main looter for smartloot.",
         Default = false,
+        OnChange = function()
+            Modules:RequestLootModuleSync()
+        end,
     },
     ['LootingTimeoutSL']                       = {
         DisplayName = "Looting Timeout",
@@ -214,14 +216,16 @@ function Module:InitializeSmartLoot()
 
     if not self:SLRunning() then
         Core.DoCmd('/lua run smartloot')
+        self.startedSmartLoot = true
     end
 
     if self:SLRunning() then
         Logger.log_info("\ay[LOOT]: \agSmartLoot integration enabled, please ensure you have the RGMain Looter set!")
-        if Config:GetSetting('SLMainLooter') and self:GetSLMode():lower() ~= "rgmain" then
+        if Config:GetSetting('SLMainLooter') and (self:GetSLMode() or ""):lower() ~= "rgmain" then
             mq.delay(500) -- time for command handler to load... we need something to callback preferably
             Core.DoCmd('/sl_mode rgmain')
             Logger.log_info("Loot: Setting this character as the main looter for SmartLoot.")
+            self.forcedRGMain = true
         end
         self.smartLootInitialized = true
     else
@@ -250,15 +254,20 @@ function Module:ProcessLooting()
         return
     end
 
-    local timeoutMs = Config:GetSetting('LootingTimeoutSL') * 1000
+    local timeoutSeconds = Config:GetSetting('LootingTimeoutSL')
     local startTime = self.TempSettings.LootStartTime or Globals.GetTimeSeconds()
 
     -- Hold focus in loot module while SmartLoot is working
     while self.TempSettings.Looting do
         local elapsed = Globals.GetTimeSeconds() - startTime
 
+        if Globals.Constants.LootModuleTypes[Config:GetSetting('LootModuleType')] ~= self._name then
+            self.TempSettings.Looting = false
+            break
+        end
+
         -- Check for timeout
-        if elapsed > timeoutMs then
+        if elapsed > timeoutSeconds then
             Logger.log_warn("\ay[LOOT]: \arLooting timeout reached (%d seconds) - continuing", Config:GetSetting('LootingTimeoutSL'))
             self.TempSettings.Looting = false
             break
@@ -276,7 +285,7 @@ function Module:ProcessLooting()
 
         -- Check if SL is finished
         if self:GetSLState() == "Idle" or self:GetSLState() == "WaitingForInventorySpace" then -- we dont need to check for the TLO because it will close mercs if it isn't there
-            Logger.log_verbose("\ay[LOOT]: \agSmartLoot processing complete (%.1fs elapsed)", elapsed / 1000)
+            Logger.log_verbose("\ay[LOOT]: \agSmartLoot processing complete (%.1fs elapsed)", elapsed)
             self.TempSettings.Looting = false
             break
         end
@@ -314,13 +323,48 @@ end
 function Module:Shutdown()
     Logger.log_debug("\ay[LOOT]: \axSmartLoot Integration Module Unloaded.")
 
-    if Config:GetSetting('UseSmartLoot') and self:SLRunning() then
-        Core.DoCmd('/lua stop smartloot')
+    if self:SLRunning() then
+        if self.startedSmartLoot then
+            Core.DoCmd('/lua stop smartloot')
+        elseif self.forcedRGMain then
+            Core.DoCmd('/sl_refresh_mode')
+        end
     end
 
     -- Clear any pending loot state
     self.TempSettings.Looting = false
     self.TempSettings.LootStartTime = nil
+end
+
+--- Initializes SmartLoot when UseSmartLoot is on and it isn't initialized and running, then matches its main-looter mode to SLMainLooter; when off, stops SmartLoot if we started it, or hands back a main-looter mode we forced.
+function Module:SyncLootScript()
+    if not Core.OnEMU() then return end
+
+    if Config:GetSetting('UseSmartLoot') then
+        if not self.smartLootInitialized or not self:SLRunning() then
+            self:InitializeSmartLoot()
+        elseif Config:GetSetting('SLMainLooter') then
+            if (self:GetSLMode() or ""):lower() ~= "rgmain" then
+                Core.DoCmd('/sl_mode rgmain')
+                Logger.log_info("Loot: Setting this character as the main looter for SmartLoot.")
+                self.forcedRGMain = true
+            end
+        elseif self.forcedRGMain then
+            Core.DoCmd('/sl_refresh_mode')
+            self.forcedRGMain = false
+        end
+    elseif self.smartLootInitialized then
+        if self:SLRunning() then
+            if self.startedSmartLoot then
+                Core.DoCmd('/lua stop smartloot')
+            elseif self.forcedRGMain then
+                Core.DoCmd('/sl_refresh_mode')
+            end
+        end
+        self.smartLootInitialized = false
+        self.startedSmartLoot = false
+        self.forcedRGMain = false
+    end
 end
 
 -- for algar reference, ignore for now

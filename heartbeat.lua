@@ -63,6 +63,18 @@ mq.imgui.init('HeartbeatMercsStatus', MercHeartbeatUI)
 
 Logger.log_info("heartbeat.lua: type \ag/heartbeat stop\ax to exit.")
 
+--- Returns a setting's live value from the running RGMercs, or this process's own copy when RGMercs isn't running.
+---@param setting string
+---@return any
+local function liveSetting(setting)
+    local RGMercs = mq.TLO.RGMercs
+    local value = RGMercs and RGMercs.Config(setting)()
+    if type(value) == 'boolean' or type(value) == 'number' then
+        return value
+    end
+    return Config:GetSetting(setting)
+end
+
 -- Receive handler: log inbound heartbeats into Comms.PeersHeartbeats.
 ---@diagnostic disable-next-line: unused-local
 local script_actor = Comms.Actors.register('RGMercs-Heartbeat', function(message) -- luacheck: ignore 211
@@ -78,7 +90,21 @@ end)
 while mq.TLO.MacroQuest.GameState() == 'INGAME' and not terminate do
     mq.doevents()
 
-    Core.UpdateBuffs()
+    -- RGMercs settings that control this process itself, not character state to broadcast.
+    Logger.set_log_level(liveSetting('LogLevel') or 3)
+    Logger.set_log_to_file(liveSetting('LogToFile') or false)
+    Config.Db:setCollectStats(liveSetting('CollectDbMetrics'))
+    if liveSetting('DoActorPetBuffs') then
+        Core.GetPetBuffTable()
+        Core.GetPetBlockedTable()
+    else
+        Globals.CurrentPetBuffs = nil
+        Globals.CurrentPetBlocked = nil
+    end
+
+    Core.GetBuffTable()
+    Core.GetSongTable()
+    Core.GetBlockedTable()
 
     Globals.CurZoneId = mq.TLO.Zone.ID()
     Globals.CurInstanceId = mq.TLO.Me.Instance()

@@ -55,6 +55,7 @@ Modules.UserModuleLoadErrors  = {}
 Modules.UserModuleFrameTimes  = {}
 
 Modules.UserModuleSyncPending = false
+Modules.LootModuleSyncPending = false
 
 ---@return any
 function Modules:load(lootModule)
@@ -262,6 +263,44 @@ function Modules:ProcessUserModuleSync()
 
     self.UserModuleSyncPending = false
     self:SyncUserModules()
+end
+
+--- Flags that the loaded loot module and its loot script need matching to the current settings.
+function Modules:RequestLootModuleSync()
+    self.LootModuleSyncPending = true
+end
+
+--- Runs a pending loot sync from the main loop: loads the loot module LootModuleType names, unloads any other, and syncs its loot script.
+function Modules:ProcessLootModuleSync()
+    if not self.LootModuleSyncPending then return end
+
+    self.LootModuleSyncPending = false
+
+    local Config = require("utils.config")
+    local wantedModule = Globals.Constants.LootModuleTypes[Config:GetSetting('LootModuleType')] or "None"
+    local modulesChanged = false
+
+    for _, lootModule in ipairs(Globals.Constants.LootModuleTypes) do
+        if lootModule ~= wantedModule and self.ModuleList[lootModule] then
+            self:unloadModule(lootModule)
+            Config:ClearModuleSettings(lootModule)
+            modulesChanged = true
+        end
+    end
+
+    if wantedModule ~= "None" then
+        if self.ModuleList[wantedModule] then
+            self:ExecModule(wantedModule, "SyncLootScript")
+        else
+            self:loadModule(wantedModule, "modules." .. wantedModule:lower())
+            modulesChanged = true
+        end
+    end
+
+    if modulesChanged then
+        Config:UpdateCommandHandlers()
+        Config:BroadcastInvalidatePeerConfigs()
+    end
 end
 
 --- Rescans the user modules folder and brings the loaded user modules in line

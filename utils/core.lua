@@ -642,17 +642,6 @@ function Core.GetChaseTarget()
     return Modules:ExecModule("Movement", "GetChaseTarget")
 end
 
---- Refreshes buff/song/blocked/pet-buff tables in Globals by re-reading every slot from TLO.
-function Core.UpdateBuffs()
-    Core.GetBuffTable()
-    Core.GetSongTable()
-    Core.GetBlockedTable()
-    if Config:GetSetting('DoActorPetBuffs') then
-        Core.GetPetBuffTable()
-        Core.GetPetBlockedTable()
-    end
-end
-
 --- Rebuilds Globals.CurrentBuffs, Globals.CurrentBuffCount, and Globals.CurrentCureEffects from all
 --- active buff slots, excluding empty or zero-ID entries.
 function Core.GetBuffTable()

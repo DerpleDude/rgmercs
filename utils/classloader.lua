@@ -156,9 +156,13 @@ function ClassLoader.reloadConfig()
     Config:BroadcastInvalidatePeerConfigs()
     Config:ClearAllModuleSettings()
     Config:LoadSettings()
+    Config:ApplyCoreSettings()
     Core.ScanConfigDirs()
     Modules:ExecAll("LoadSettings")
+    Modules:ExecModule("Spawns", "InvalidateSpawnList")
+    Modules:ExecModule("Pull", "OnPullModeChanged")
     Modules:RequestUserModuleSync()
+    Modules:RequestLootModuleSync()
     Config:UpdateCommandHandlers()
 end
 
