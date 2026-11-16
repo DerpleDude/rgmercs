@@ -532,9 +532,8 @@ local _ClassConfig = {
     },
     -- Really the meat of this class.
     ['Helpers']       = {
-        -- Resolves the currently-active element based on ElementMode.
-        -- Auto: prefers Fire, then Magic, skipping either if the auto-target is immune
-        -- (per the Spawn List) or toggled off via Skip<X>Spells.
+        --- Picks the nuke element, letting Auto fall back from Fire to Magic for targets immune or set to skip.
+        ---@return string "Fire" or "Magic".
         PickElement = function()
             local mode = Config:GetSetting('ElementMode') or 1
             if mode == 2 then return "Fire" end
@@ -544,6 +543,8 @@ local _ClassConfig = {
             if not Casting.ShouldSkipElement("Magic", autoId) then return "Magic" end
             return "Fire" -- both skipped; default so downstream logic still resolves
         end,
+        --- Destroys the Orb of Mastery once it has summoned our pet or run out of charges.
+        ---@return boolean True if the orb is gone.
         DeleteEpicOrb = function(self)
             if mq.TLO.Cursor() and mq.TLO.Cursor.ID() > 0 then
                 Core.DoCmd("/autoinventory")
@@ -567,10 +568,11 @@ local _ClassConfig = {
             Logger.log_warning("Warning: Mage pet orb not destroyed! An error or conflict has occured.")
             return false
         end,
-        HandleItemSummon = function(self, itemSource, scope) --scope: "personal" or "group" summons
-            if not itemSource and itemSource() then return false end
-            if not scope then return false end
-
+        --- Clears the cursor after a summon by putting the item in our bags, or the group's for a group summon.
+        ---@param itemSource MQSpell|string The summon spell or AA.
+        ---@param scope string "personal" or "group".
+        ---@return boolean|nil False if nothing was on the cursor.
+        HandleItemSummon = function(self, itemSource, scope)
             mq.delay("2s", function() return mq.TLO.Cursor() ~= nil and mq.TLO.Cursor.ID() == mq.TLO.Spell(itemSource).RankName.Base(1)() end)
 
             if not mq.TLO.Cursor() then
@@ -585,9 +587,6 @@ local _ClassConfig = {
                 ItemManager.BroadcastQueueAutoInv(itemId)
             elseif scope == "personal" then
                 ItemManager.QueueAutoInv(itemId)
-            else
-                Logger.log_debug("Invalid scope sent: (%s). Item handling aborted.", scope)
-                return false
             end
         end,
     },

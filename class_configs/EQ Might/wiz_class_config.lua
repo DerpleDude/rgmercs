@@ -352,28 +352,31 @@ return {
         },
     },
     ['Helpers']       = {
-        RainCheck = function(target) -- I made a funny
+        --- Holds rain until the target is far enough away that the AE won't hit us, and skips targets about to die.
+        ---@param target MQSpawn The rain target.
+        ---@return boolean True if rain should be cast.
+        RainCheck = function(target)
             if not (Config:GetSetting('DoRain') and Config:GetSetting('DoAEDamage')) then return false end
             return Targeting.GetTargetDistance() >= Config:GetSetting('RainDistance') and Targeting.MobNotLowHP(target)
         end,
 
-        --- Don't start a slow-casting nuke when the target is low hp (lvl 72 nukes are faster).
+        --- Keeps slow pre-72 big nukes off targets about to die.
         ---@param spell MQSpell The resolved big nuke.
         ---@param target MQSpawn The nuke target.
-        ---@return boolean
+        ---@return boolean True if the big nuke should be cast.
         BigNukeCheck = function(spell, target)
             return (spell.Level() or 0) >= 72 or Targeting.MobNotLowHP(target)
         end,
 
-        --- Returns true once all three level 71+ magic nuke sets resolve.
-        ---@return boolean
+        --- Checks for all three level 71+ magic nuke sets, which retire our older magic nukes and lead the Auto element order.
+        ---@return boolean True if we have all three.
         HasMagicNukes = function()
             return Core.GetResolvedActionMapItem('BurstNuke') ~= nil and Core.GetResolvedActionMapItem('MidMagicNuke') ~= nil and
                 Core.GetResolvedActionMapItem('QuickMagicNuke') ~= nil
         end,
 
-        --- Returns the Auto mode element order, strongest first for the nukes in your book.
-        ---@return string[]
+        --- Orders the elements for Auto mode by the nukes in our book, strongest first.
+        ---@return string[] The elements in order.
         AutoElementOrder = function(self)
             local bigFire = Core.GetResolvedActionMapItem('BigFireNuke')
             local bigCold = Core.GetResolvedActionMapItem('BigColdNuke')
@@ -385,9 +388,8 @@ return {
             return { "Fire", "Magic", "Cold", }
         end,
 
-        -- Resolves the currently-active element based on ElementMode.
-        -- Auto: tries elements in AutoElementOrder, skipping any element the auto-target is
-        -- immune to (per the Spawn List) or one toggled off via Skip<X>Spells.
+        --- Picks the nuke element, letting Auto fall through our element order past targets immune or set to skip.
+        ---@return string "Fire", "Cold" or "Magic".
         PickElement = function(self)
             local mode = Config:GetSetting('ElementMode') or 1
             if mode == 2 then return "Fire" end
@@ -400,7 +402,8 @@ return {
             return "Fire" -- all skipped; default so Fury/Familiar still resolve
         end,
 
-        -- Familiar element pick: explicit element if set, Fire fallback in Auto. See FAQ.
+        --- Picks the familiar element from Element Mode, using Fire in Auto.
+        ---@return string "Fire", "Cold" or "Magic".
         PickFamiliarElement = function(self)
             local mode = Config:GetSetting('ElementMode') or 1
             if mode == 2 then return "Fire" end
@@ -409,6 +412,8 @@ return {
             return "Fire"
         end,
 
+        --- Names the familiar AA to cast for our element, the first we can use in Auto.
+        ---@return string The familiar AA name.
         CurrentFamiliarName = function(self)
             local familiars = { Fire = "Ro's Flaming Familiar", Cold = "E'ci's Icy Familiar", Magic = "Druzzil's Mystical Familiar", }
             if (Config:GetSetting('ElementMode') or 1) == 1 then

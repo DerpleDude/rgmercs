@@ -410,12 +410,15 @@ local _ClassConfig = {
         },
     },
     ['Helpers']           = {
-        -- Artifact of Aegis is Aegis of Vie Rk. I
+        --- Picks between our single Vie spell and the Artifact of Aegis, which casts Aegis of Vie Rk. I.
+        ---@return boolean|nil True if the spell should be used.
         PreferAegisSpell = function(self)
             if mq.TLO.Me.Level() < 69 or not mq.TLO.FindItem("=Artifact of Aegis")() then return true end
             local vieBuff = self.ResolvedActionMap['SingleVieBuff']
             return vieBuff and vieBuff() and vieBuff.Name() == "Aegis of Vie" and (vieBuff.RankName.Rank() or 0) >= 2
         end,
+        --- Picks between our group symbol spell and the symbol armband we hold.
+        ---@return boolean True if the spell should be used.
         PreferSymbolSpell = function(self)
             local elusharBand = mq.TLO.FindItem("=Mythical Armband of Elushar")()
             local mithanielBand = mq.TLO.FindItem("=Legendary Armband of Mithaniel")()
@@ -424,11 +427,17 @@ local _ClassConfig = {
             if not (symbolSpell and symbolSpell()) or symbolSpell.Name() ~= "Elushar's Mark" then return false end
             return not elusharBand or (symbolSpell.RankName.Rank() or 0) >= 2
         end,
+        --- Picks single Vie when we lack group Vie, or for targets outside our group with Out-of-Group Vie on.
+        ---@param target MQSpawn? The buff target.
+        ---@return boolean True if single Vie should be used.
         UseSingleVie = function(self, target)
             if not Core.GetResolvedActionMapItem('GroupVieBuff') then return true end
             if not Config:GetSetting('OutOfGroupVie') then return false end
             return not target or not Targeting.GroupedWithTarget(target)
         end,
+        --- Lets our level 64+ group heal handle this cure when Use Group Heal to Cure is on and the cure spell isn't kept memmed.
+        ---@param keepSetting string The Mem Cure setting for this cure.
+        ---@return boolean True if the group heal should cure.
         UseGroupHealCure = function(self, keepSetting)
             local ghealSpell = Core.GetResolvedActionMapItem('GroupHeal')
             return Config:GetSetting('GroupHealAsCure') and not Config:GetSetting(keepSetting) and (ghealSpell and ghealSpell.Level() or 0) >= 64

@@ -299,7 +299,9 @@ local _ClassConfig = {
         },
     },
     ['Helpers']       = {
-        --function to determine if we have enough mobs in range to use a defensive disc
+        --- Uses defensive discs preemptively once Def. Disc. Count haters are around us.
+        ---@param printDebug boolean? Logs each hater counted.
+        ---@return boolean True if at least Def. Disc. Count haters are within 30 feet.
         DefensiveDiscCheck = function(printDebug)
             local occupiedCount = mq.TLO.Me.XTarget() or 0
             if occupiedCount < Config:GetSetting('DiscCount') then return false end
@@ -317,11 +319,15 @@ local _ClassConfig = {
             end
             return false
         end,
+        --- Lets a disc replace our defense AC disc, but no other running disc.
+        ---@return boolean True if a disc can be used.
         DiscOverwriteCheck = function(self)
             local defenseBuff = Core.GetResolvedActionMapItem('DefenseACBuff')
             if mq.TLO.Me.ActiveDisc.ID() and mq.TLO.Me.ActiveDisc.Name() ~= (defenseBuff and defenseBuff.RankName() or "None") then return false end
             return true
         end,
+        --- Keeps our burn discs from overwriting one another, and holds them when we are low on HP.
+        ---@return boolean True if a burn disc can be used.
         BurnDiscCheck = function(self)
             if Core.AtEmergencyHP() then return false end
             local burnDisc = { "Fortitude", "Onslaught", "MightyStrike", "ChargeDisc", "OffensiveDisc", }
@@ -331,6 +337,8 @@ local _ClassConfig = {
             end
             return true
         end,
+        --- Decides when to swap from dual wield to a shield: low HP, or tanking a named with Shield on Named.
+        ---@return boolean True if the shield should be equipped.
         shieldNeeded = function()
             -- check for exactly 100% to help ensure the mob is targeting us, over 100% can indicate another is still targeted
             return (mq.TLO.Me.PctHPs() <= Config:GetSetting('EquipShield')) or

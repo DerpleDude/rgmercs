@@ -481,6 +481,8 @@ return {
         },
     },
     ['Helpers']       = {
+        --- Opens with our sneak attack disc while we are still hidden, before we start melee.
+        ---@param target MQTarget The target we are engaging.
         PreEngage = function(target)
             if not target or not target() then return end
             local openerAbility = Core.GetResolvedActionMapItem('SneakAttack')

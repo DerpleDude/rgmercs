@@ -787,15 +787,20 @@ local _ClassConfig = {
         },
     },
     ['Helpers']           = {
+        --- Lets our splash heal handle cures when Use Splash Heal to Cure is on.
+        ---@return any The splash heal spell when it should cure.
         UseSplashHealCure = function(self)
             return Config:GetSetting('SplashHealAsCure') and Core.GetResolvedActionMapItem('SplashHeal')
         end,
-        --determine whether we should overwrite DPU buffs with better single buffs
+        --- Holds single buffs that Divine Protector's Unity already covers, unless Overwrite DPU Buffs is on.
+        ---@return boolean True if single buffs should be cast.
         SingleBuffCheck = function(self)
             if Casting.CanUseAA("Divine Protector's Unity") and not Config:GetSetting('OverwriteDPUBuffs') then return false end
             return true
         end,
-        --function to determine if we have enough mobs in range to use a defensive disc
+        --- Uses defensive discs preemptively once Def. Disc. Count haters are around us.
+        ---@param printDebug boolean? Logs each hater counted.
+        ---@return boolean True if at least Def. Disc. Count haters are within 30 feet.
         DefensiveDiscCheck = function(printDebug)
             local occupiedCount = mq.TLO.Me.XTarget() or 0
             if occupiedCount < Config:GetSetting('DiscCount') then return false end
@@ -813,6 +818,8 @@ local _ClassConfig = {
             end
             return false
         end,
+        --- Delays heals, cures and rezzes under Priority Tanking until we have full aggro.
+        ---@return boolean True if other actions should wait.
         PriorityTankingHold = function()
             if not Config:GetSetting('PriorityTanking') or Globals.BackOffFlag then return false end
             if not Core.IsTanking() or Core.AtCriticalHP() then return false end
@@ -828,6 +835,8 @@ local _ClassConfig = {
             if (Globals.AutoTargetID or 0) == 0 or Globals.NoHateTargetIDs:contains(Globals.AutoTargetID) then return false end
             return Targeting.GetAutoTargetAggroPct() < 100
         end,
+        --- Decides when to swap from our two-hander to a shield: low HP, Deflection Discipline, Shield Flash, or tanking a named with Shield on Named.
+        ---@return boolean True if the shield should be equipped.
         shieldNeeded = function()
             -- check for exactly 100% to help ensure the mob is targeting us, over 100% can indicate another is still targeted
             return (mq.TLO.Me.PctHPs() <= Config:GetSetting('EquipShield')) or mq.TLO.Me.ActiveDisc.Name() == "Deflection Discipline" or

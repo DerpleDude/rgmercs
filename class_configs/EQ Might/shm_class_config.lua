@@ -491,17 +491,19 @@ local _ClassConfig = {
         },
     },
     ['Helpers']           = {
-        --- Returns true when the unresistable ST malo line is selected (alone or with the resistable line) and available.
-        ---@return boolean
+        --- Uses the unresistable malo line when ST Malo selects it and we have it.
+        ---@return boolean True if the unresistable malo should be used.
         UseUnresistMalo = function()
             return Config:GetSetting('STMaloChoice') >= 3 and Core.GetResolvedActionMapItem('UnresistMaloSpell') ~= nil
         end,
-        --- Returns true when the resistable ST malo line is selected, or stands in for an unresistable line we don't have yet.
-        ---@return boolean
+        --- Uses the resistable malo line when ST Malo selects it, or in place of an unresistable line we lack.
+        ---@return boolean True if the resistable malo should be used.
         UseResistMalo = function()
             local maloChoice = Config:GetSetting('STMaloChoice')
             return maloChoice == 2 or maloChoice == 4 or (maloChoice == 3 and not Core.GetResolvedActionMapItem('UnresistMaloSpell'))
         end,
+        --- Picks our melee proc buff source between the spell and the Panther, Leopard and Jaguar items.
+        ---@return string "PantherItem", "LeopardItem", "JaguarItem" or "ProcSpell".
         ProcBuffChoice = function()
             local buffSpell = Core.GetResolvedActionMapItem('MeleeProcBuff')
             local buffLevel = buffSpell and buffSpell.Level() or 0
@@ -514,10 +516,14 @@ local _ClassConfig = {
             end
             return "ProcSpell"
         end,
+        --- Picks the Ultrafabled chestplate's slow proc over our spell once we are 69 and hold it.
+        ---@return string "Chestplate" or "Spell".
         SlowProcChoice = function()
-            local useChest = mq.TLO.Me.Level() >= 69 and mq.TLO.FindItem("=Ultrafabled Rune Etched Chestplate")
+            local useChest = mq.TLO.Me.Level() >= 69 and mq.TLO.FindItem("=Ultrafabled Rune Etched Chestplate")()
             return useChest and "Chestplate" or "Spell"
         end,
+        --- Uses the snare HoT under Use Snare HoT, keeping its lower versions out while our single HoT is in use.
+        ---@return boolean True if the snare HoT should be used.
         UseSnareHot = function()
             if not Config:GetSetting('DoSnareHot') then return false end
             local snareHot = Core.GetResolvedActionMapItem('SnareHot')

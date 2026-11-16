@@ -437,12 +437,15 @@ return {
         },
     },
     ['Helpers']           = {
-        DmgModActive = function(self) --Song active by name will check both Bestial Alignments (Self and Group)
+        --- Keeps our damage mods from overlapping by reporting when one is already running.
+        ---@return boolean True if a damage mod is active.
+        DmgModActive = function(self)
             local disc = self.ResolvedActionMap['DmgModDisc']
             return Casting.IHaveBuff("Bestial Alignment") or (disc and disc() and Casting.IHaveBuff(disc.Name()))
                 or Casting.IHaveBuff("Ferociousness")
         end,
-        -- Irionu artifact is only Rk. 1
+        --- Picks between our attack buff spell and the Artifact of Irionu, which casts Rk. 1.
+        ---@return boolean|nil True if the spell should be used.
         PreferAtkBuffSpell = function(self)
             if mq.TLO.Me.Level() < 67 or not mq.TLO.FindItem("=Artifact of Irionu")() then return true end
             local atkBuff = self.ResolvedActionMap['AtkBuff']

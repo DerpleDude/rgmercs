@@ -1027,7 +1027,9 @@ local _ClassConfig    = {
             end,
         },
     },
-    ['Helpers']       = { --used to autoinventory our azure crystal after summon
+    ['Helpers']       = {
+        --- Puts the crystal Azure Mind Crystal just summoned into our bags so the cursor is free.
+        ---@return boolean|nil False if no crystal was on the cursor.
         StashCrystal = function()
             mq.delay("2s", function() return mq.TLO.Cursor.ID() == mq.TLO.Me.AltAbility("Azure Mind Crystal").Spell.Base(1)() end)
 
@@ -1039,7 +1041,8 @@ local _ClassConfig    = {
             Logger.log_debug("Sending the %s to our bags.", mq.TLO.Cursor())
             ItemManager.QueueAutoInv(mq.TLO.Cursor.ID())
         end,
-        AuraCheck = function() -- remove undesired auras to stop spam conditions... this will only be triggered if we have already identified we are missing a desired aura
+        --- Frees an aura slot before an aura cast, keeping Twincast Aura when Auroria Mastery gives us two slots.
+        AuraCheck = function()
             if Casting.CanUseAA("Auroria Mastery") then
                 -- If we can use two auras we will keep twincast and get rid of the other (including old versions of the spellproc aura line)
                 -- Make sure we don't get rid of the first aura if the second aura is already free for whatever reason (fallback)

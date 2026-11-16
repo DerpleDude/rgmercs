@@ -1091,10 +1091,16 @@ local _ClassConfig = {
         },
     },
     ['Helpers']           = {
-        RainCheck = function(target) -- I made a funny
+        --- Holds rain until the target is far enough away that the AE won't hit us.
+        ---@param target MQSpawn The rain target.
+        ---@return boolean True if rain should be cast.
+        RainCheck = function(target)
             if not Config:GetSetting('DoRain') or not Config:GetSetting('DoAEDamage') then return false end
             return Targeting.GetTargetDistance() >= Config:GetSetting('RainDistance')
         end,
+        --- Lets our level 70+ group heal handle this cure when Use Group Heal to Cure is on and the cure spell isn't kept memmed.
+        ---@param keepSetting string? The Mem Cure setting for this cure.
+        ---@return boolean True if the group heal should cure.
         UseGroupHealCure = function(self, keepSetting)
             local ghealSpell = Core.GetResolvedActionMapItem('GroupHeal')
             return Config:GetSetting('GroupHealAsCure') and (not keepSetting or not Config:GetSetting(keepSetting)) and (ghealSpell and ghealSpell.Level() or 0) >= 70

@@ -624,13 +624,16 @@ local _ClassConfig    = {
             cond = function(self, target) return (mq.TLO.Me.Pet.PctHPs() or 100) < Config:GetSetting('PetHealPct') end,
         },
     },
-    ['Helpers']       = { --used to autoinventory our crystals after summon. Crystal is a group-wide spell on Laz.
-        -- Rod clicks Echo of Tashan Rk. I; the spell casts faster
+    ['Helpers']       = {
+        --- Picks the tash rod over our tash spell, until the spell is Echo of Tashan and casts faster than the rod.
+        ---@return boolean True if the rod should be used.
         PreferTashItem = function(self)
             if not Core.GetResolvedActionMapItem('TashRod') then return false end
             local tashSpell = self.ResolvedActionMap['TashSpell']
             return not (tashSpell and tashSpell() and tashSpell.Name() == "Echo of Tashan")
         end,
+        --- Picks our mana regen buff source between the spell, the Timeless Belt and the Clairvoyance artifact.
+        ---@return string "ManaSpell", "BeltItem" or "ArtifactItem".
         ManaBuffChoice = function(self)
             local manaSpell = self.ResolvedActionMap['ManaRegen']
             if manaSpell and manaSpell() and manaSpell.Name() == "Voice of Intuition" and (manaSpell.RankName.Rank() or 0) >= 2 then return "ManaSpell" end
@@ -641,6 +644,9 @@ local _ClassConfig    = {
             end
             return "ManaSpell"
         end,
+        --- Puts the crystal the given AA just summoned into our bags so the cursor is free.
+        ---@param aaName string The crystal AA.
+        ---@return boolean|nil False if no crystal was on the cursor.
         StashCrystal = function(aaName)
             mq.delay("2s", function() return mq.TLO.Cursor.ID() == mq.TLO.Me.AltAbility(aaName).Spell.Base(1)() end)
 
@@ -652,6 +658,9 @@ local _ClassConfig    = {
             Logger.log_debug("Sending the %s to our bags.", mq.TLO.Cursor())
             ItemManager.QueueAutoInv(mq.TLO.Cursor.ID())
         end,
+        --- Returns true when our aura is active, matching its name with or without apostrophes.
+        ---@param name string The aura name.
+        ---@return boolean True if the aura is active.
         AuraActive = function(name)
             if not name then return false end
             local stripName = string.gsub(name, "'", "")
@@ -661,6 +670,7 @@ local _ClassConfig    = {
             end
             return false
         end,
+        --- Frees aura slots before an aura cast, keeping only the twincast and spell proc picks our Auroria Mastery rank has room for.
         AuraCheck = function(self)
             local twincast = self.ResolvedActionMap['TwincastAura']
             local spellproc = self.ResolvedActionMap['SpellProcAura']
@@ -759,7 +769,7 @@ local _ClassConfig    = {
                 end,
                 post_activate = function(self, aaName, success)
                     if success then
-                        Core.SafeCallFunc("Autoinventory", self.Helpers.StashCrystal(aaName))
+                        Core.SafeCallFunc("Autoinventory", self.Helpers.StashCrystal, aaName)
                     end
                 end,
             },
@@ -775,7 +785,7 @@ local _ClassConfig    = {
                 end,
                 post_activate = function(self, aaName, success)
                     if success then
-                        Core.SafeCallFunc("Autoinventory", self.Helpers.StashCrystal(aaName))
+                        Core.SafeCallFunc("Autoinventory", self.Helpers.StashCrystal, aaName)
                     end
                 end,
             },

@@ -761,6 +761,8 @@ local _ClassConfig = {
         },
     },                       -- end AbilitySets
     ['Helpers']           = {
+        --- Lets our level 70+ group heal handle cures when Mem Cure is set to it.
+        ---@return boolean True if the group heal should cure.
         UseGroupHealCure = function(self)
             local ghealSpell = Core.GetResolvedActionMapItem('GroupHealCure')
             return Config:GetSetting('KeepCureMemmed') == 3 and (ghealSpell and ghealSpell.Level() or 0) >= 70

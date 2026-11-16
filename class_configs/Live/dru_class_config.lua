@@ -1629,6 +1629,8 @@ local _ClassConfig = {
         },
     },
     ['Helpers']           = {
+        --- Mems the group cure for our poison, disease and curse cure settings, unless the single cure is memmed for corruption.
+        ---@return boolean True if the group cure should be memmed.
         MemGroupCure = function(self)
             if Config:GetSetting('MemCorruptCure') and self:GetResolvedActionMapItem('SingleCure') then return false end
             if not self:GetResolvedActionMapItem('GroupCure') then return false end

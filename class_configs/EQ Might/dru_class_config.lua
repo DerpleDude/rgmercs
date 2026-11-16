@@ -805,7 +805,7 @@ local _ClassConfig = {
             {
                 name = "Artifact of Nature Spirit",
                 type = "Item",
-                load_cond = function(self) return Config:GetSetting("UseDonorPet") and mq.TLO.FindItem("=Artifact of Nature Spirit") end,
+                load_cond = function(self) return Config:GetSetting("UseDonorPet") and mq.TLO.FindItem("=Artifact of Nature Spirit")() end,
                 cond = function(self, _) return mq.TLO.Me.Pet.ID() == 0 end,
                 post_activate = function(self, spell, success)
                     if success and mq.TLO.Me.Pet.ID() > 0 then
@@ -1202,10 +1202,16 @@ local _ClassConfig = {
         },
     },
     ['Helpers']           = {
-        RainCheck = function(target) -- I made a funny
+        --- Holds rain until the target is far enough away that the AE won't hit us.
+        ---@param target MQSpawn The rain target.
+        ---@return boolean True if rain should be cast.
+        RainCheck = function(target)
             if not Config:GetSetting('DoRain') or not Config:GetSetting('DoAEDamage') then return false end
             return Targeting.GetTargetDistance() >= Config:GetSetting('RainDistance')
         end,
+        --- Lets our group heal handle this cure when Use Group Heal to Cure is on and the cure spell isn't kept memmed.
+        ---@param keepSetting string The Mem Cure setting for this cure.
+        ---@return any The group heal spell when it should cure.
         UseGroupHealCure = function(self, keepSetting)
             return Config:GetSetting('GroupHealAsCure') and not Config:GetSetting(keepSetting) and Core.GetResolvedActionMapItem('GroupHeal')
         end,

@@ -355,6 +355,16 @@ local _ClassConfig = {
             end,
         },
         {
+            name = 'Lich Management',
+            timer = 10,
+            state = 1,
+            steps = 1,
+            targetId = function(self) return { mq.TLO.Me.ID(), } end,
+            cond = function(self, combat_state)
+                return true
+            end,
+        },
+        {
             name = 'Pustules',
             timer = 10,
             load_cond = function() return Config:GetSetting('DoPustules') end,
@@ -465,6 +475,31 @@ local _ClassConfig = {
         },
     },
     ['Rotations']       = {
+        ['Lich Management']  = {
+            {
+                name = "LichSpell",
+                type = "Spell",
+                load_cond = function() return Config:GetSetting('DoLich') end,
+                active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
+                cond = function(self, spell)
+                    return Casting.SelfBuffCheck(spell, nil, true) and
+                        mq.TLO.Me.PctHPs() > Config:GetSetting('StopLichHP') and mq.TLO.Me.PctMana() <= Config:GetSetting('StartLichMana')
+                end,
+            },
+            {
+                name = "LichControl",
+                type = "CustomFunc",
+                cond = function(self, _)
+                    if not self.Helpers.LichBuffName(self) then return false end
+                    if not Config:GetSetting('DoLich') then return true end
+                    return mq.TLO.Me.PctHPs() <= Config:GetSetting('StopLichHP') or mq.TLO.Me.PctMana() >= Config:GetSetting('StopLichMana')
+                end,
+                custom_func = function(self)
+                    Core.SafeCallFunc("Stop Necro Lich", self.Helpers.CancelLich, self)
+                    return true
+                end,
+            },
+        },
         ['Emergency(Aggro)'] = {
             {
                 name = "Death's Effigy",
@@ -543,30 +578,6 @@ local _ClassConfig = {
                 cond = function(self, itemName)
                     if Config:GetSetting('UseEpic') == 1 then return false end
                     return (Config:GetSetting('UseEpic') == 3 or (Config:GetSetting('UseEpic') == 2 and Casting.BurnCheck()))
-                end,
-            },
-            {
-                name = "LichSpell",
-                type = "Spell",
-                load_cond = function(self) return Config:GetSetting('DoLich') end,
-                cond = function(self, spell)
-                    return Casting.SelfBuffCheck(spell, nil, true) and mq.TLO.Me.PctHPs() > Config:GetSetting('StopLichHP') and
-                        mq.TLO.Me.PctMana() <= Config:GetSetting('StartLichMana')
-                end,
-            },
-            {
-                name = "LichControl",
-                type = "CustomFunc",
-                load_cond = function(self) return Config:GetSetting('DoLich') end,
-                cond = function(self, _)
-                    local lichSpell = Core.GetResolvedActionMapItem('LichSpell')
-
-                    return lichSpell and lichSpell() and Casting.IHaveBuff(lichSpell) and
-                        (mq.TLO.Me.PctHPs() <= Config:GetSetting('StopLichHP') or mq.TLO.Me.PctMana() >= Config:GetSetting('StopLichMana'))
-                end,
-                custom_func = function(self)
-                    Core.SafeCallFunc("Stop Necro Lich", self.Helpers.CancelLich, self)
-                    return true
                 end,
             },
         },
@@ -834,31 +845,6 @@ local _ClassConfig = {
                 active_cond = function(self, aaName) return Casting.IHaveBuff(mq.TLO.AltAbility(aaName).Spell.RankName()) end,
                 cond = function(self, aaName) return not mq.TLO.Me.Song(aaName)() end,
             },
-            {
-                name = "LichSpell",
-                type = "Spell",
-                load_cond = function(self) return Config:GetSetting('DoLich') end,
-                active_cond = function(self, spell) return Casting.IHaveBuff(spell) end,
-                cond = function(self, spell)
-                    return Casting.SelfBuffCheck(spell) and mq.TLO.Me.PctHPs() > Config:GetSetting('StopLichHP') and mq.TLO.Me.PctMana() <= Config:GetSetting('StartLichMana')
-                end,
-            },
-            {
-                name = "LichControl",
-                type = "CustomFunc",
-                load_cond = function(self) return Config:GetSetting('DoLich') end,
-                active_cond = function(self, spell) return true end,
-                cond = function(self, _)
-                    local lichSpell = Core.GetResolvedActionMapItem('LichSpell')
-
-                    return lichSpell and lichSpell() and Casting.IHaveBuff(lichSpell) and
-                        (mq.TLO.Me.PctHPs() <= Config:GetSetting('StopLichHP') or mq.TLO.Me.PctMana() >= Config:GetSetting('StopLichMana'))
-                end,
-                custom_func = function(self)
-                    Core.SafeCallFunc("Stop Necro Lich", self.Helpers.CancelLich, self)
-                    return true
-                end,
-            },
         },
         ['PetSummon']        = {
             {
@@ -905,12 +891,26 @@ local _ClassConfig = {
         },
     },
     ['Helpers']         = {
-        CancelLich = function(self)
+        --- Finds our active lich buff, by its HP drain and mana gain or by our lich spell's name.
+        ---@return string|nil The buff name, or nil if none.
+        LichBuffName = function(self)
             -- detspa means detremental spell affect
             -- spa is positive spell affect
-            local lichName = mq.TLO.Me.FindBuff("detspa hp and spa mana")()
+            local lichName = mq.TLO.Me.FindBuff("detspa hp and spa mana and spa ultravision")()
+            if lichName then return lichName end
+
+            local lichSpell = Core.GetResolvedActionMapItem('LichSpell')
+            if lichSpell and lichSpell() and Casting.IHaveBuff(lichSpell) then return lichSpell.RankName() end
+
+            return nil
+        end,
+        --- Clicks off our lich buff for /rgl stoplich, when Cast Lich is off, and at Stop Lich HP or Mana.
+        CancelLich = function(self)
+            local lichName = self.Helpers.LichBuffName(self)
+            if not lichName then return end
             Core.DoCmd("/removebuff %s", lichName)
         end,
+        --- Queues our lich spell for /rgl startlich.
         StartLich = function(self)
             local lichSpell = Core.GetResolvedActionMapItem('LichSpell')
 

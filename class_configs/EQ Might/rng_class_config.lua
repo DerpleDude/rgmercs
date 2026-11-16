@@ -413,13 +413,16 @@ return {
         },
     },
     ['Helpers']           = {
-        --- Returns true when our active self buff carries stacking blocks that keep the group HP, AC and attack buffs off us.
-        ---@return boolean
+        --- Skips casting the group HP, AC and attack buffs on ourselves while our self buff blocks them.
+        ---@return boolean True if the self buff blocks them.
         SelfBuffBlocks = function()
             local selfBuff = Core.GetResolvedActionMapItem('SelfBuff')
             if not (selfBuff and selfBuff()) then return false end
             return selfBuff.HasSPA(148)() and Casting.IHaveBuff(selfBuff)
         end,
+        --- Keeps us at bow range with line of sight on the auto target, by stick or by reacting to range messages.
+        ---@param reason string? "cantsee", "toofar" or "tooclose".
+        ---@return boolean False if we are meleeing or have no auto target.
         rangedNav = function(reason)
             if Config:GetSetting('DoMelee') then return false end
             if (Globals.AutoTargetID or 0) == 0 then return false end

@@ -648,22 +648,35 @@ return {
     },
     ['Helpers']       = {
 
-        RainCheck = function(target) -- I made a funny
+        --- Holds rain until the target is far enough away that the AE won't hit us, and skips targets about to die.
+        ---@param target MQSpawn The rain target.
+        ---@return boolean True if rain should be cast.
+        RainCheck = function(target)
             if not (Config:GetSetting('DoRain') and Config:GetSetting('DoAEDamage')) then return false end
             return Targeting.GetTargetDistance() >= Config:GetSetting('RainDistance') and Targeting.MobNotLowHP(target)
         end,
+        --- Runs the Fuse rotation once we have the Fuse nuke.
+        ---@return any The Fuse nuke spell when we have it.
         ShouldUseFuseRotation = function()
             return Core.GetResolvedActionMapItem('FuseNuke')
         end,
+        --- Runs the Wild rotation once we have the Chaos and Wild nukes, until Fuse takes over.
+        ---@return any The Wild nuke spell when the Wild rotation should be used.
         ShouldUseWildRotation = function()
             return not Core.GetResolvedActionMapItem('FuseNuke') and Core.GetResolvedActionMapItem('ChaosNuke') and Core.GetResolvedActionMapItem('WildNuke')
         end,
+        --- Runs the low level rotation until the Fuse or Wild rotation is available.
+        ---@return boolean True if the low level rotation should be used.
         ShouldUseLowLevelRotation = function()
             return not Core.GetResolvedActionMapItem('FuseNuke') and not (Core.GetResolvedActionMapItem('ChaosNuke') and Core.GetResolvedActionMapItem('WildNuke'))
         end,
+        --- Mems the low level PBAE spells under Use PBAE Spells until we have the PBFlame line.
+        ---@return boolean True if the low level PBAE spells should be memmed.
         HasLowLevelPBAE = function()
             return Config:GetSetting('DoPBAE') and not Core.GetResolvedActionMapItem('PBFlame')
         end,
+        --- Swaps our nuke rotations for the low level PBAE one when enough targets are in range.
+        ---@return boolean True if the low level PBAE spells should be cast.
         ShouldUseLowLevelPBAE = function()
             return Config:GetSetting('DoPBAE') and not Core.GetResolvedActionMapItem('PBFlame') and Config:GetSetting('DoAEDamage') and Combat.AETargetCheck(true)
         end,
