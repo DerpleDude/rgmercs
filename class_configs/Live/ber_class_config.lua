@@ -864,6 +864,9 @@ return {
         },
     },
     ['Helpers']       = {
+        --- Keeps our thrown axe supply topped up to Auto Axe Count with the given summon disc.
+        ---@param axeDisc MQSpell The axe summoning disc.
+        ---@return boolean True if the disc was used.
         SummonAxe = function(axeDisc)
             if not axeDisc or not axeDisc() then return false end
             Logger.log_verbose("\aySummonAxe(): Checking if %s is ready.", axeDisc.Name())
@@ -882,6 +885,8 @@ return {
             while mq.TLO.Cursor.ID() ~= nil do Core.DoCmd("/autoinv") end
             return ret
         end,
+        --- Opens with our opener disc on the target before we start melee.
+        ---@param target MQTarget The target we are engaging.
         PreEngage = function(target)
             if not target or not target() then return end
             local openerAbility = Core.GetResolvedActionMapItem('CheapShot')

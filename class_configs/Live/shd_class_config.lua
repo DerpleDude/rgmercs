@@ -764,12 +764,15 @@ local _ClassConfig = {
         },
     },
     ['Helpers']       = {
-        --determine whether we should overwrite DLU buffs with better single buffs
+        --- Holds single buffs that Dark Lord's Unity already covers, unless Overwrite DLU Buffs is on.
+        ---@return boolean True if single buffs should be cast.
         SingleBuffCheck = function(self)
             if Casting.CanUseAA("Dark Lord's Unity (Azia)") and not Config:GetSetting('OverwriteDLUBuffs') then return false end
             return true
         end,
-        --function to determine if we have enough mobs in range to use a defensive disc
+        --- Uses defensive discs preemptively once Def. Disc. Count haters are around us.
+        ---@param printDebug boolean? Logs each hater counted.
+        ---@return boolean True if at least Def. Disc. Count haters are within 30 feet.
         DefensiveDiscCheck = function(printDebug)
             local occupiedCount = mq.TLO.Me.XTarget() or 0
             if occupiedCount < Config:GetSetting('DiscCount') then return false end
@@ -787,7 +790,8 @@ local _ClassConfig = {
             end
             return false
         end,
-        --function to space out Epic and Omens Chest with Mortal Coil old-school swarm style. Epic has an override condition to fire anyway on named.
+        --- Holds a leech effect while another, such as Mortal Coil, is already running.
+        ---@return boolean True if a leech effect can be used.
         LeechCheck = function(self)
             local LeechEffects = { "Leechcurse Discipline", "Mortal Coil", "Lich Sting Recourse", "Leeching Embrace", "Reaper Strike Recourse", "Leeching Touch", }
             for _, buffName in ipairs(LeechEffects) do
@@ -795,12 +799,16 @@ local _ClassConfig = {
             end
             return true
         end,
+        --- Decides when to swap from our two-hander to a shield: low HP, Deflection Discipline, Shield Flash, or tanking a named with Shield on Named.
+        ---@return boolean True if the shield should be equipped.
         shieldNeeded = function()
             -- check for exactly 100% to help ensure the mob is targeting us, over 100% can indicate another is still targeted
             return (mq.TLO.Me.PctHPs() <= Config:GetSetting('EquipShield')) or mq.TLO.Me.ActiveDisc.Name() == "Deflection Discipline" or
                 (mq.TLO.Me.AltAbilityTimer("Shield Flash")() or 0) >= 234000 or
                 (Config:GetSetting('NamedShieldLock') and ((Globals.AutoTargetIsNamed and Targeting.GetAutoTargetAggroPct() == 100) or Targeting.TankingXTNamed()))
         end,
+        --- Decides whether to mem Terror taunts, which Terror Taunts can retire once For Power spells are available.
+        ---@return boolean True if Terror spells should be memmed.
         ShouldMemTerror = function()
             local setting = Config:GetSetting('DoTerror')
             return setting == 3 or (setting == 2 and not (Config:GetSetting('DoForPower') and Core.GetResolvedActionMapItem('ForPower')))
@@ -1237,7 +1245,6 @@ local _ClassConfig = {
             {
                 name = "Shield Flash",
                 type = "AA",
-                tooltip = Tooltips.ShieldFlash,
                 pre_activate = function(self)
                     if Config:GetSetting('UseBandolier') and not Core.ShieldEquipped() then
                         Core.SafeCallFunc("Equip Shield", ItemManager.BandolierSwap, "Shield")
@@ -1259,12 +1266,10 @@ local _ClassConfig = {
             {
                 name = "Forceful Rejuvenation",
                 type = "AA",
-                tooltip = Tooltips.ForcefulRejuv,
             },
             {
                 name = "Armor of Experience",
                 type = "AA",
-                tooltip = Tooltips.ArmorofExperience,
                 load_cond = function(self) return Config:GetSetting('DoVetAA') end,
                 cond = function(self, aaName)
                     return Core.AtCriticalHP()
@@ -1297,7 +1302,6 @@ local _ClassConfig = {
             {
                 name = "Veil of Darkness",
                 type = "AA",
-                tooltip = Tooltips.VeilofDarkness,
             },
             {
                 name = "ForPower",
@@ -1311,7 +1315,6 @@ local _ClassConfig = {
             {
                 name = "Ageless Enmity",
                 type = "AA",
-                tooltip = Tooltips.AgelessEnmity,
                 cond = function(self, aaName, target)
                     return Targeting.GetAutoTargetPctHPs() < 90 and mq.TLO.Me.PctAggro() < 100
                 end,
@@ -1329,7 +1332,6 @@ local _ClassConfig = {
             {
                 name = "Veil of Darkness",
                 type = "AA",
-                tooltip = Tooltips.VeilofDarkness,
                 cond = function(self, aaName, target)
                     return Globals.AutoTargetIsNamed and (mq.TLO.Target.SecondaryPctAggro() or 0) > 70
                 end,
@@ -1337,7 +1339,6 @@ local _ClassConfig = {
             {
                 name = "Projection of Doom",
                 type = "AA",
-                tooltip = Tooltips.ProjectionofDoom,
                 cond = function(self, aaName, target)
                     return Globals.AutoTargetIsNamed and (mq.TLO.Target.SecondaryPctAggro() or 0) > 80
                 end,
@@ -1453,12 +1454,10 @@ local _ClassConfig = {
             {
                 name = "Spire of the Reavers",
                 type = "AA",
-                tooltip = Tooltips.SpireoftheReavers,
             },
             {
                 name = "Chattering Bones",
                 type = "AA",
-                tooltip = Tooltips.ChatteringBones,
             },
             {
                 name = "T`Vyl's Resolve",
@@ -1468,7 +1467,6 @@ local _ClassConfig = {
             {
                 name = "SpiteStrike",
                 type = "Disc",
-                tooltip = Tooltips.SpikeStrike,
                 load_cond = function(self) return not Core.IsTanking() end,
                 cond = function(self, discSpell)
                     return Casting.NoDiscActive()
@@ -1559,7 +1557,6 @@ local _ClassConfig = {
             {
                 name = "OoW_Chest",
                 type = "Item",
-                tooltip = Tooltips.OoW_BP,
             },
             {
                 name = "Coating",

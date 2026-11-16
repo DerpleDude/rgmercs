@@ -359,15 +359,22 @@ return {
         },
     },
     ['Helpers']           = {
+        --- Skips casting the group HP, AC and attack buffs on ourselves while our self ward is up.
+        ---@return boolean True if the ward is active.
         HaveSelfWard = function(self)
             local ward = Core.GetResolvedActionMapItem('SelfBuff')
             return ward and Casting.IHaveBuff(ward) or false
         end,
+        --- Keeps our defensive AAs and weapon shield disc from overlapping.
+        ---@return boolean True if a defense is up.
         AnyDefenseUp = function(self)
             local weaponShield = Core.GetResolvedActionMapItem('WeaponShield')
             return Casting.IHaveBuff(Casting.GetAASpell("Outrider's Evasion").ID()) or Casting.IHaveBuff(Casting.GetAASpell("Armor of Experience").ID()) or
                 (weaponShield and mq.TLO.Me.ActiveDisc.Name() == weaponShield.RankName()) or false
         end,
+        --- Keeps us at bow range with line of sight on the auto target, by stick or by reacting to range messages.
+        ---@param reason string? "cantsee", "toofar" or "tooclose".
+        ---@return boolean False if we are meleeing or have no auto target.
         rangedNav = function(reason)
             if Config:GetSetting('DoMelee') then return false end
             if (Globals.AutoTargetID or 0) == 0 then return false end

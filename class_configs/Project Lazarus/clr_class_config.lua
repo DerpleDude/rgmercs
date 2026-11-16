@@ -336,6 +336,9 @@ local _ClassConfig = {
         },
     },
     ['Helpers']           = {
+        --- Lets our level 64+ group heal handle this cure when Use Group Heal to Cure is on and the cure spell isn't kept memmed.
+        ---@param keepSetting string The Mem Cure setting for this cure.
+        ---@return boolean True if the group heal should cure.
         UseGroupHealCure = function(self, keepSetting)
             local ghealSpell = Core.GetResolvedActionMapItem('GroupHeal')
             return Config:GetSetting('GroupHealAsCure') and not Config:GetSetting(keepSetting) and (ghealSpell and ghealSpell.Level() or 0) >= 64

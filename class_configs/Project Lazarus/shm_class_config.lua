@@ -479,6 +479,8 @@ local _ClassConfig = {
         },
     },
     ['Helpers']           = {
+        --- Rerolls Commune with the Wild until it gives the Pet Type race.
+        ---@return boolean True if the pet was dismissed.
         RerollWildPet = function(self)
             local wildRaces = { "Lion", "Mammoth", "Scorpion", "Rhinoceros", "Raptor", "Walrus", }
             local desiredRace = wildRaces[Config:GetSetting('PetTypeChoice')] or ""
@@ -486,6 +488,9 @@ local _ClassConfig = {
             Core.DoCmd("/pet get lost")
             return true
         end,
+        --- Lets our level 70+ group heal handle this cure when Use Group Heal to Cure is on and the cure spell isn't kept memmed.
+        ---@param keepSetting string? The Mem Cure setting for this cure.
+        ---@return boolean True if the group heal should cure.
         UseGroupHealCure = function(self, keepSetting)
             local ghealSpell = Core.GetResolvedActionMapItem('GroupHeal')
             return Config:GetSetting('GroupHealAsCure') and (not keepSetting or not Config:GetSetting(keepSetting)) and (ghealSpell and ghealSpell.Level() or 0) >= 70

@@ -814,17 +814,23 @@ return {
         },
     },
     ['Helpers']           = {
+        --- Keeps our flurry effects from overlapping by reporting when the dicho spell or fury disc is running.
+        ---@return boolean|nil True if either is active.
         FlurryActive = function(self)
             local fury = self.ResolvedActionMap['FuryDisc']
             local dicho = self.ResolvedActionMap['DichoSpell']
             return (dicho and dicho() and Casting.IHaveBuff(dicho.Name()))
                 or (fury and fury() and Casting.IHaveBuff(fury.Name()))
         end,
-        DmgModActive = function(self) --Song active by name will check both Bestial Alignments (Self and Group)
+        --- Keeps our damage mods from overlapping by reporting when one is already running.
+        ---@return boolean True if a damage mod is active.
+        DmgModActive = function(self)
             local disc = self.ResolvedActionMap['DmgModDisc']
             return Casting.IHaveBuff("Bestial Alignment") or (disc and disc() and Casting.IHaveBuff(disc.Name()))
                 or Casting.IHaveBuff("Ferociousness")
         end,
+        --- Picks Feralgia over the Growl spell for our pet's growl when Do Feralgia is on and we have it.
+        ---@return any The Feralgia spell when in use.
         UsingFeralgia = function()
             return Config:GetSetting('DoFeralgia') and Core.GetResolvedActionMapItem('Feralgia')
         end,

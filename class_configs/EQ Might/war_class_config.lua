@@ -189,7 +189,9 @@ local _ClassConfig = {
         },
     },
     ['Helpers']       = {
-        --function to determine if we have enough mobs in range to use a defensive disc
+        --- Uses defensive discs preemptively once Def. Disc. Count haters are around us.
+        ---@param printDebug boolean? Logs each hater counted.
+        ---@return boolean True if at least Def. Disc. Count haters are within 30 feet.
         DefensiveDiscCheck = function(printDebug)
             local occupiedCount = mq.TLO.Me.XTarget() or 0
             if occupiedCount < Config:GetSetting('DiscCount') then return false end
@@ -207,6 +209,8 @@ local _ClassConfig = {
             end
             return false
         end,
+        --- Keeps our burn discs from overwriting one another, and holds them when we are low on HP.
+        ---@return boolean True if a burn disc can be used.
         BurnDiscCheck = function(self)
             if Core.AtEmergencyHP() then return false end
             local burnDisc = { "Fortitude", "Onslaught", "StrikeDisc", "Steelwrath", }
@@ -216,13 +220,17 @@ local _ClassConfig = {
             end
             return true
         end,
+        --- Lets a defensive disc replace our healing disc, but no other running disc.
+        ---@return boolean True if a defensive disc can be used.
         DefenseBuffCheck = function(self)
             -- Allow healing disc to be cancelled by other defensive discs
             if Casting.NoDiscActive() then return true end
             local healingDisc = Core.GetResolvedActionMapItem('HealingDisc')
             return healingDisc ~= nil and mq.TLO.Me.ActiveDisc.Name() == healingDisc.RankName()
         end,
-        MeleeMitBuffCheck = function(self) -- Make sure we spread out our MeleeMit buffs because only the highest in slot 1 takes effect
+        --- Spreads out our melee mitigation buffs, since only the highest in slot 1 takes effect.
+        ---@return boolean True if a melee mitigation buff can be used.
+        MeleeMitBuffCheck = function(self)
             local standDisc = Core.GetResolvedActionMapItem('StandDisc')
             local protective = Core.GetResolvedActionMapItem('Protective')
             local mitEffects = { (standDisc and standDisc.RankName() or ""), (protective and protective.RankName() or ""), "Guardian's Boon", "Guardian's Bravery", }
@@ -231,6 +239,8 @@ local _ClassConfig = {
             end
             return true
         end,
+        --- Decides when to swap from dual wield to a shield: low HP, or tanking a named with Shield on Named.
+        ---@return boolean True if the shield should be equipped.
         shieldNeeded = function()
             -- check for exactly 100% to help ensure the mob is targeting us, over 100% can indicate another is still targeted
             return (mq.TLO.Me.PctHPs() <= Config:GetSetting('EquipShield')) or

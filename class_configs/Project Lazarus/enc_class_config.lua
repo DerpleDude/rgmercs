@@ -506,7 +506,10 @@ local _ClassConfig = {
             end,
         },
     },
-    ['Helpers']       = { --used to autoinventory our crystals after summon. Crystal is a group-wide spell on Laz.
+    ['Helpers']       = {
+        --- Has the group put away the crystal the given AA just summoned, since it is a group-wide summon on Laz.
+        ---@param aaName string The crystal AA.
+        ---@return boolean|nil False if no crystal was on the cursor.
         StashCrystal = function(aaName)
             mq.delay("2s", function() return mq.TLO.Cursor.ID() == mq.TLO.Me.AltAbility(aaName).Spell.Base(1)() end)
 
@@ -765,7 +768,7 @@ local _ClassConfig = {
                 end,
                 post_activate = function(self, aaName, success)
                     if success then
-                        Core.SafeCallFunc("Autoinventory", self.Helpers.StashCrystal(aaName))
+                        Core.SafeCallFunc("Autoinventory", self.Helpers.StashCrystal, aaName)
                     end
                 end,
             },
@@ -780,7 +783,7 @@ local _ClassConfig = {
                 end,
                 post_activate = function(self, aaName, success)
                     if success then
-                        Core.SafeCallFunc("Autoinventory", self.Helpers.StashCrystal(aaName))
+                        Core.SafeCallFunc("Autoinventory", self.Helpers.StashCrystal, aaName)
                     end
                 end,
             },

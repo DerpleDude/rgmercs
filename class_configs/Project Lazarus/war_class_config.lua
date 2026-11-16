@@ -153,7 +153,9 @@ local _ClassConfig = {
         },
     },
     ['Helpers']       = {
-        --function to determine if we have enough mobs in range to use a defensive disc
+        --- Uses defensive discs preemptively once Def. Disc. Count haters are around us.
+        ---@param printDebug boolean? Logs each hater counted.
+        ---@return boolean True if at least Def. Disc. Count haters are within 30 feet.
         DefensiveDiscCheck = function(printDebug)
             local occupiedCount = mq.TLO.Me.XTarget() or 0
             if occupiedCount < Config:GetSetting('DiscCount') then return false end
@@ -171,6 +173,8 @@ local _ClassConfig = {
             end
             return false
         end,
+        --- Keeps our burn discs from overwriting one another, and holds them when we are low on HP.
+        ---@return boolean True if a burn disc can be used.
         BurnDiscCheck = function(self)
             if Core.AtEmergencyHP() then return false end
             local burnDisc = { "Fortitude", "Onslaught", "StrikeDisc", }
@@ -180,6 +184,8 @@ local _ClassConfig = {
             end
             return true
         end,
+        --- Spaces out our defensive layers, holding until our stand disc and Guardian's and Warlord's buffs are all down.
+        ---@return boolean True if a defensive disc can be used.
         DefenseBuffCheck = function(self)
             local standDisc = Core.GetResolvedActionMapItem('StandDisc')
             if not standDisc then return false end
@@ -190,6 +196,8 @@ local _ClassConfig = {
             end
             return true
         end,
+        --- Decides when to swap from dual wield to a shield: low HP, or tanking a named with Shield on Named.
+        ---@return boolean True if the shield should be equipped.
         shieldNeeded = function()
             -- check for exactly 100% to help ensure the mob is targeting us, over 100% can indicate another is still targeted
             return (mq.TLO.Me.PctHPs() <= Config:GetSetting('EquipShield')) or

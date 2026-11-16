@@ -698,7 +698,7 @@ return {
                             -- let's get crazy: if we are naving, quickly pause and "sneak" a hide in
                             Movement:DoNav(false, "pause")
                             mq.delay(200, function() return not mq.TLO.Me.Moving() end)
-                            mq.delay((2 * mq.TLO.EverQuest.Ping()) or 200) --addl delay to avoid "must be perfectly still..." server desync
+                            mq.delay(2 * mq.TLO.EverQuest.Ping()) --addl delay to avoid "must be perfectly still..." server desync
                             Core.DoCmd("/doability hide")
                             mq.delay(100, function() return (mq.TLO.Me.AbilityTimer("Hide")() or 0) > 0 end)
                             ---@diagnostic disable-next-line: undefined-field
@@ -711,6 +711,8 @@ return {
         },
     },
     ['Helpers']       = {
+        --- Opens with our sneak attack disc while we are still hidden, before we start melee.
+        ---@param target MQTarget The target we are engaging.
         PreEngage = function(target)
             if not target or not target() then return end
             local openerAbility = Core.GetResolvedActionMapItem('SneakAttack')
@@ -728,6 +730,8 @@ return {
                     mq.TLO.Me.AbilityTimer("Hide")(), Strings.BoolToColorString(mq.TLO.Me.Invis()))
             end
         end,
+        --- Keeps our burn discs from overwriting one another or Counterattack Discipline, and holds them when we are low on HP.
+        ---@return boolean True if a burn disc can be used.
         BurnDiscCheck = function(self)
             if mq.TLO.Me.ActiveDisc.Name() == "Counterattack Discipline" or mq.TLO.Me.PctHPs() < Config:GetSetting('EmergencyStart') then return false end
             local burnDisc = { "Frenzied", "Twisted", "Executioner", "EdgeDisc", }

@@ -696,6 +696,8 @@ local _ClassConfig = {
         },
     },
     ['Helpers']           = {
+        --- Puts the instrument for each song's skill in hand for its modifier, and our weapon back afterward.
+        ---@param type string The song's skill, or "Weapon".
         SwapInst = function(type)
             if not Config:GetSetting('SwapInstruments') then return end
             Logger.log_verbose("\ayBard SwapInst(): Swapping to Instrument Type: %s", type)
@@ -714,7 +716,10 @@ local _ClassConfig = {
             end
             ItemManager.SwapItemToSlot("offhand", Config:GetSetting('Offhand'))
         end,
-        CheckSongStateUse = function(self, config) --determine whether a song should be sung by comparing combat state to settings
+        --- Applies a song's Never, In-Combat, Always or Out-of-Combat setting to our current state.
+        ---@param config string The song's use setting.
+        ---@return boolean True if the song should be sung.
+        CheckSongStateUse = function(self, config)
             local usestate = Config:GetSetting(config)
             local inCombat = Globals.CurrentState == "Combat"
             if usestate == 1 then return false end        -- Never
@@ -723,10 +728,15 @@ local _ClassConfig = {
             if usestate == 4 then return not inCombat end -- Out-of-Combat Only
             return false
         end,
-        GetSongBuffer = function() --seconds of remaining duration at which a buff song is resung
+        --- Returns how early buff songs are resung before they expire, from Song Refresh Timer.
+        ---@return number Seconds.
+        GetSongBuffer = function()
             return Config:GetSetting('SongRefresh')
         end,
-        RefreshBuffSong = function(self, songSpell) --true once a buff song's remaining duration drops to the resing buffer (a dropped song reads 0 and resings)
+        --- Resings a buff song shortly before it expires instead of after it drops.
+        ---@param songSpell MQSpell The buff song.
+        ---@return boolean True if the song should be resung.
+        RefreshBuffSong = function(self, songSpell)
             if not songSpell or not songSpell() then return false end
             local me = mq.TLO.Me
             local remaining = songSpell.DurationWindow() == 1
@@ -735,11 +745,15 @@ local _ClassConfig = {
             if self.TempSettings.upkeepFill then return remaining > 0 end
             return remaining <= self.Helpers.GetSongBuffer()
         end,
-        MarchTimer = function(self) --minimum gap between War March resings
+        --- Times War March resings from its last cast, resinging just before it runs out.
+        ---@return boolean True if War March can be resung.
+        MarchTimer = function(self)
             local interval = (self.TempSettings.MarchDuration or 12) - self.Helpers.GetSongBuffer()
             return (Globals.GetTimeSeconds() - (self.TempSettings.LastMarchCast or 0)) >= interval
         end,
-        RefreshExpiringSong = function(self) --idle upkeep: resing the active song closest to expiring
+        --- Fills idle song time by resinging whichever melody song will expire first.
+        ---@return boolean True if a song was sung.
+        RefreshExpiringSong = function(self)
             local melody = self.TempSettings.RotationTable['Melody']
             if not melody then return false end
             local me = mq.TLO.Me
@@ -771,11 +785,17 @@ local _ClassConfig = {
             end
             return false
         end,
-        DotSongCheck = function(songSpell) --Check dot stacking, stop dotting when HP threshold is reached based on mob type, can't use utils function because we try to refresh just as the dot is ending
+        --- Keeps DoT songs on targets they stack on and that will live long enough to be worth it.
+        ---@param songSpell MQSpell The DoT song.
+        ---@return boolean True if the song should be sung.
+        DotSongCheck = function(songSpell)
             if not songSpell or not songSpell() then return false end
             return songSpell.StacksTarget() and Targeting.MobNotLowHP(Targeting.GetAutoTarget())
         end,
-        GetDetSongDuration = function(songSpell) -- Checks target for duration remaining on dot songs
+        --- Reads the time left on the DoT song on our target, so it can be resung just as it ends.
+        ---@param songSpell MQSpell The detrimental song.
+        ---@return number Seconds left, or 0 if absent.
+        GetDetSongDuration = function(songSpell)
             local duration = mq.TLO.Target.FindBuff("name " .. "\"" .. songSpell.Name() .. "\"").Duration.TotalSeconds() or 0
             Logger.log_debug("getDetSongDuration() Current duration for %s : %d", songSpell, duration)
             return duration

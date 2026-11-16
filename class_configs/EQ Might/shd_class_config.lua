@@ -419,7 +419,9 @@ local _ClassConfig = {
         },
     },
     ['Helpers']       = {
-        --function to determine if we have enough mobs in range to use a defensive disc
+        --- Uses defensive discs preemptively once Def. Disc. Count haters are around us.
+        ---@param printDebug boolean? Logs each hater counted.
+        ---@return boolean True if at least Def. Disc. Count haters are within 30 feet.
         DefensiveDiscCheck = function(printDebug)
             local occupiedCount = mq.TLO.Me.XTarget() or 0
             if occupiedCount < Config:GetSetting('DiscCount') then return false end
@@ -437,7 +439,8 @@ local _ClassConfig = {
             end
             return false
         end,
-        --function to space out Epic and Omens Chest with Mortal Coil old-school swarm style. Epic has an override condition to fire anyway on named.
+        --- Holds a leech effect while another, such as Mortal Coil, is already running.
+        ---@return boolean True if a leech effect can be used.
         LeechCheck = function(self)
             local LeechEffects = { "Leechcurse Discipline", "Mortal Coil", "Lich Sting Recourse", "Reaper Strike Recourse", "Vampiric Aura", }
             for _, buffName in ipairs(LeechEffects) do
@@ -445,6 +448,8 @@ local _ClassConfig = {
             end
             return true
         end,
+        --- Decides when to swap from our two-hander to a shield: low HP, Deflection Discipline, or tanking a named with Shield on Named.
+        ---@return boolean True if the shield should be equipped.
         shieldNeeded = function()
             -- check for exactly 100% to help ensure the mob is targeting us, over 100% can indicate another is still targeted
             return (mq.TLO.Me.PctHPs() <= Config:GetSetting('EquipShield')) or mq.TLO.Me.ActiveDisc() == "Deflection Discipline" or
@@ -775,7 +780,6 @@ local _ClassConfig = {
             {
                 name = "OoW_Chest",
                 type = "Item",
-                tooltip = Tooltips.OoW_BP,
             },
             { --Note that on named we may already have a defensive disc running already, could make this remove other discs, but we have other options.
                 name = "BlockDisc",

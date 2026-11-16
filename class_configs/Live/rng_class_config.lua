@@ -703,6 +703,8 @@ local _ClassConfig = {
         },
     },
     ['Helpers']           = {
+        --- Keeps our damage mods from overlapping by reporting when one is already running.
+        ---@return boolean True if a damage mod is active.
         DmgModActive = function(self)
             for _, aaName in ipairs({ "Guardian of the Forest", "Outrider's Accuracy", "Group Guardian of the Forest", }) do
                 local aaSpell = Casting.GetAASpell(aaName)
@@ -713,7 +715,8 @@ local _ClassConfig = {
             end
             return false
         end,
-        -- Choose between combined summernuke or individual nukes once they are better
+        --- Switches from the combined summer nuke to our individual nukes once they are better.
+        ---@return boolean True if the individual nukes should be used.
         UseIndividualNukes = function(self)
             local summer = Core.GetResolvedActionMapItem('SummerNuke')
             if not summer then return true end
@@ -721,18 +724,24 @@ local _ClassConfig = {
             local fireNuke = Core.GetResolvedActionMapItem('FireNukeT4')
             return (fireNuke and fireNuke.Level() or 0) >= 128
         end,
+        --- Holds single buffs that Wildstalker's Unity already covers, unless Overwrite Unity Buffs is on.
+        ---@return boolean True if single buffs should be cast.
         SingleBuffCheck = function(self)
             if self.Helpers.ProcBuffChoice(self) == 'JoltProcBuff' then return true end
             if Casting.CanUseAA("Wildstalker's Unity (Azia)") and not Config:GetSetting('OverwriteUnityBuffs') then return false end
             return true
         end,
-        -- Resolves the proc buff preference to the set we can actually use, falling back to damage when the pick is unavailable.
+        --- Picks our weapon proc buff from Weapon Proc Choice, falling back to the damage proc when the pick isn't available.
+        ---@return string The proc buff set.
         ProcBuffChoice = function(self)
             local choice = Config:GetSetting('ProcBuffChoice')
             if choice == 2 and Core.GetResolvedActionMapItem('HateProcBuff') then return 'HateProcBuff' end
             if choice == 3 and not Core.IsTanking() and Core.GetResolvedActionMapItem('JoltProcBuff') then return 'JoltProcBuff' end
             return 'MeleeProcBuff'
         end,
+        --- Keeps us at bow range with line of sight on the auto target, by stick or by reacting to range messages.
+        ---@param reason string? "cantsee", "toofar" or "tooclose".
+        ---@return boolean False if we are meleeing or have no auto target.
         rangedNav = function(reason)
             if Config:GetSetting('DoMelee') then return false end
             if (Globals.AutoTargetID or 0) == 0 then return false end
@@ -798,6 +807,8 @@ local _ClassConfig = {
             end
             return true
         end,
+        --- Opens with our opener shot on the target before we engage.
+        ---@param target MQTarget The target we are engaging.
         PreEngage = function(target)
             if not target or not target() then return end
             local openerAbility = Core.GetResolvedActionMapItem('Opener')
@@ -817,6 +828,8 @@ local _ClassConfig = {
                     mq.TLO.Me.PctMana() or 0, Config:GetSetting('ManaToNuke'), Strings.BoolToColorString(Casting.SpellReady(openerAbility)))
             end
         end,
+        --- Keeps our defensive AAs and weapon shield disc from overlapping.
+        ---@return boolean True if a defense is up.
         AnyDefenseUp = function(self)
             local weaponShield = Core.GetResolvedActionMapItem('WeaponShield')
             return Casting.IHaveBuff(Casting.GetAASpell("Outrider's Evasion").ID()) or Casting.IHaveBuff(Casting.GetAASpell("Armor of Experience").ID()) or

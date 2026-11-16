@@ -794,12 +794,14 @@ local _ClassConfig = {
         },
     },
     ['Helpers']           = {
-        --- Returns true if single HoTs should be memorized and used, per Use HoTs and the pre-Synergy HoT choice.
+        --- Returns true when single HoTs should be memmed and used, per Use HoTs and the pre-Synergy HoT choice.
+        ---@return boolean True if single HoTs should be used.
         ShouldUseSingleHot = function()
             if not Config:GetSetting('DoHealOverTime') or Casting.CanUseAA("Luminary's Synergy") then return false end
             return not Core.GetResolvedActionMapItem('GroupRenewalHoT') or Config:GetSetting('PreSynergyHots') ~= 3
         end,
-        --- Returns true if the group HoT should be memorized and used as a group heal, per Use HoTs and the pre-Synergy HoT choice.
+        --- Returns true when the group HoT should be memmed and used as a group heal, per Use HoTs and the pre-Synergy HoT choice.
+        ---@return boolean True if the group HoT should be used.
         ShouldUseGroupHot = function()
             if not Config:GetSetting('DoHealOverTime') then return false end
             return Casting.CanUseAA("Luminary's Synergy") or Config:GetSetting('PreSynergyHots') ~= 2

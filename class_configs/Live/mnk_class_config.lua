@@ -252,6 +252,8 @@ local _ClassConfig = {
         },
     },
     ['Helpers']       = {
+        --- Keeps our burn discs from overwriting one another, and holds them when we are low on HP.
+        ---@return boolean True if a burn disc can be used.
         BurnDiscCheck = function(self)
             if mq.TLO.Me.PctHPs() < Config:GetSetting('EmergencyStart') then return false end
             local burnDisc = { "Heel", "Speed", "FistDisc", "Palm", }

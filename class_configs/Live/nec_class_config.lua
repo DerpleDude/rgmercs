@@ -1536,8 +1536,9 @@ local _ClassConfig = {
         },
     },
     ['Helpers']         = {
-        -- Check if any group member (excluding self) is at or below a given HP%. This is used to make sure someone needs to heal before we use the group leech.
-        -- The intent is to only use the mana heavy group leech as a quasi-heal when someone actually needs the health.
+        --- Saves the mana-heavy group leech for when another group member is actually hurt.
+        ---@param pct number The HP% threshold.
+        ---@return boolean True if a member is at or below it.
         GroupMemberBelowHP = function(self, pct)
             local count = mq.TLO.Group.Members() or 0
             for i = 1, count do
@@ -1549,6 +1550,9 @@ local _ClassConfig = {
             return false
         end,
 
+        --- Uses the Unity AA only when it would land a buff we are missing, skipping its lich unless we want Lich.
+        ---@param aaName string The Unity AA.
+        ---@return boolean True if the AA should be used.
         UnityNeeded = function(self, aaName)
             if not Casting.CanUseAA(aaName) then return false end
             local wantLich = Config:GetSetting('DoLich') and mq.TLO.Me.PctMana() <= Config:GetSetting('StartLichMana')
@@ -1564,6 +1568,8 @@ local _ClassConfig = {
             return false
         end,
 
+        --- Finds our active lich buff, by its HP drain and mana gain or by our lich spell's name.
+        ---@return string|nil The buff name, or nil if none.
         LichBuffName = function(self)
             -- detspa means detremental spell affect
             -- spa is positive spell affect
@@ -1571,22 +1577,26 @@ local _ClassConfig = {
             if lichName then return lichName end
 
             local lichSpell = Core.GetResolvedActionMapItem('LichSpell')
-            if lichSpell and lichSpell() and Casting.IHaveBuff(lichSpell) then return lichSpell.RankName.Name() end
+            if lichSpell and lichSpell() and Casting.IHaveBuff(lichSpell) then return lichSpell.RankName() end
 
             return nil
         end,
 
+        --- Clicks off our lich buff for /rgl stoplich, when Cast Lich is off, and at Stop Lich HP or Mana.
         CancelLich = function(self)
             local lichName = self.Helpers.LichBuffName(self)
             if not lichName then return end
             Core.DoCmd("/removebuff %s", lichName)
         end,
 
+        --- Clicks off our flesh buff once we drop to Stop Lich HP.
         CancelFlesh = function(self)
-            local fleshName = self:GetResolvedActionMapItem('FleshBuff')
-            Core.DoCmd("/removebuff %s", fleshName)
+            local fleshSpell = self:GetResolvedActionMapItem('FleshBuff')
+            if not (fleshSpell and fleshSpell()) then return end
+            Core.DoCmd("/removebuff %s", fleshSpell.RankName())
         end,
 
+        --- Casts our lich spell for /rgl startlich.
         StartLich = function(self)
             local lichSpell = Core.GetResolvedActionMapItem('LichSpell')
 

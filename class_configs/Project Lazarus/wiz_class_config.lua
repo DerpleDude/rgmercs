@@ -315,13 +315,20 @@ return {
     },
     ['Helpers']       = {
 
-        RainCheck = function(target) -- I made a funny
+        --- Holds rain until the target is far enough away that the AE won't hit us, and skips targets about to die.
+        ---@param target MQSpawn The rain target.
+        ---@return boolean True if rain should be cast.
+        RainCheck = function(target)
             if not (Config:GetSetting('DoRain') and Config:GetSetting('DoAEDamage')) then return false end
             return Targeting.GetTargetDistance() >= Config:GetSetting('RainDistance') and Targeting.MobNotLowHP(target)
         end,
+        --- Runs the weave rotation once we have the weave nuke and the fire ethereal nuke.
+        ---@return any The fire ethereal nuke spell when we have both.
         HasWeaveRotation = function()
             return Core.GetResolvedActionMapItem('WeaveNuke') and Core.GetResolvedActionMapItem('FireEtherealNuke')
         end,
+        --- Uses the harvest spell once it is Serenity Harvest, or when we lack Harvest of Druzzil.
+        ---@return boolean True if the harvest spell should be used.
         UseHarvestSpell = function()
             local harvest = Core.GetResolvedActionMapItem('HarvestSpell')
             return (harvest and harvest.RankName.Name() == "Serenity Harvest") or not Casting.CanUseAA("Harvest of Druzzil")
