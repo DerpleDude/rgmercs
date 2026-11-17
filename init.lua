@@ -415,6 +415,7 @@ local function Main()
         end
         Modules:ExecModule("Drag", "GiveTime")
         Modules:ExecModule("Debug", "GiveTime")
+        Modules:ExecModule("Travel", "GiveTime")
         Modules:ExecModule("Clickies", "ValidateClickies")
         Modules:ExecModule("Class", "ApplyPendingRescan")
         return
