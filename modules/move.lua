@@ -243,7 +243,7 @@ Module.DefaultConfig   = {
         Header = "Following",
         Category = "Chase",
         Index = 11,
-        Tooltip = "Continue chase movement even while an XTarget hater is within Assist Range.",
+        Tooltip = "Keep chasing instead of pausing for combat.",
         Default = false,
     },
 
@@ -843,15 +843,19 @@ function Module:ShouldFollow()
     if mq.TLO.MoveTo.Moving() or (mq.TLO.Me.Casting() and not Core.MyClassIs("brd")) then return false end
 
     if not Config:GetSetting('ChaseInCombat') and not Config:GetSetting('PriorityFollow') and Config:GetSetting('DoAutoEngage')
-        and not Globals.PauseMain and not Config:GetSetting('ManualMode')
-        and Targeting.XTHaterInRange(Config:GetSetting('AssistRange')) then
-        -- Hold unless the MA's fight has moved out of our reach (they were summoned, or we were left behind).
-        local maTargetId = Globals.MATargetID
-        local separated = maTargetId > 0 and Targeting.IsSpawnXTHater(maTargetId, true)
-            and (mq.TLO.Spawn(maTargetId).Distance3D() or 9999) > Config:GetSetting('AssistRange')
-        if not separated then
+        and not Globals.PauseMain and not Config:GetSetting('ManualMode') then
+        -- The MA pauses chase for any XTarget hater within Assist Range; everyone else only while in combat with their AutoTarget targeted.
+        local inFight
+        if Core.IAmMA() then
+            inFight = Targeting.XTHaterInRange(Config:GetSetting('AssistRange'))
+        else
+            inFight = Combat.GetCachedCombatState() == "Combat" and Globals.AutoTargetID > 0
+                and (Config:GetSetting('DoAutoTarget') or (mq.TLO.Target.ID() or 0) == Globals.AutoTargetID)
+        end
+
+        if inFight then
             self.TempSettings.ChaseSuppressed = true
-            Logger.log_super_verbose("ShouldFollow(): chase paused, XTarget hater within Assist Range.")
+            Logger.log_super_verbose("ShouldFollow(): chase paused for combat.")
             return false
         end
     end
