@@ -336,7 +336,8 @@ function Module:Shutdown()
     self.TempSettings.LootStartTime = nil
 end
 
---- Initializes SmartLoot when UseSmartLoot is on and it isn't initialized and running, then matches its main-looter mode to SLMainLooter; when off, stops SmartLoot if we started it, or hands back a main-looter mode we forced.
+--- Initializes SmartLoot when UseSmartLoot is on and it isn't initialized and running, then matches its main-looter mode to SLMainLooter;
+--- when off, stops SmartLoot if we started it, or hands back a main-looter mode we forced.
 function Module:SyncLootScript()
     if not Core.OnEMU() then return end
 

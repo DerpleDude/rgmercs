@@ -8,6 +8,7 @@ local Core            = require("utils.core")
 local Events          = require("utils.events")
 local Globals         = require('utils.globals')
 local Logger          = require("utils.logger")
+local Modules         = require("utils.modules")
 local Movement        = require("utils.movement")
 local Ui              = require('utils.ui')
 
@@ -42,7 +43,7 @@ Module.DefaultConfig   = {
         Tooltip = "Load the integrated LootNScoot in directed mode. Turning this off will unload the looting script.",
         Default = false,
         OnChange = function()
-            Module:SyncLootScript()
+            Modules:RequestLootModuleSync()
         end,
     },
     ['CombatLooting']                          = {
@@ -154,19 +155,11 @@ end
 
 function Module:Init()
     Base.Init(self)
-    local requireDelay = false
     self:LootMessageHandler()
     if not Core.OnEMU() then
         Logger.log_debug("\ay[LOOT]: \agWe are not on EMU unloading module. Build: %s", Globals.BuildType)
     else
-        if Config:GetSetting('DoLoot') then
-            if mq.TLO.Lua.Script('lootnscoot').Status() == 'RUNNING' then
-                Core.DoCmd("/lua stop lootnscoot")
-                requireDelay = true
-            end
-            Core.DoCmd("%s/lua run lootnscoot directed rgmercs", requireDelay and "/timed 15 " or "")
-            self.TempSettings.DirectingLns = true
-        end
+        self:SyncLootScript()
         self.TempSettings.Looting = false
         Logger.log_debug("\ay[LOOT]: \agLoot(LNS) module Loaded.")
     end
@@ -343,7 +336,7 @@ function Module:GiveTime()
 
     if not Config:GetSetting('DoLoot') then return end
 
-    if Globals.PauseMain then return end
+    if Globals.PauseMain or Modules.LootModuleSyncPending then return end
     if mq.TLO.Lua.Script('lootnscoot').Status() ~= 'RUNNING' then
         if not suppressWarning then
             Logger.log_error("\ar[LOOT]: Looting is enabled, but LNS does not appear to be running!")
