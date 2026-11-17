@@ -65,10 +65,10 @@ function Module:New()
 end
 
 function Module:TravelerUpdate(newData)
-    if newData then
+    if newData and newData.Server == Globals.CurServer then
         Logger.log_debug("\agGot new Traveler update from: \am%s", newData.Name)
 
-        self.TransportSpells[newData.Name] = newData
+        self.TransportSpells[newData.Name] = newData.Tabs and newData or nil
 
         self:CreatePorterList()
         self:GenerateFilteredPortsList()
@@ -76,10 +76,33 @@ function Module:TravelerUpdate(newData)
 end
 
 function Module:CreatePorterList()
+    local selectedName = self.TempSettings.PorterList[self.TempSettings.SelectedPorter]
+
     self.TempSettings.PorterList = {}
     for k, v in pairs(self.TransportSpells) do
-        table.insert(self.TempSettings.PorterList, k)
+        if self:IsPorterRunning(k) then
+            table.insert(self.TempSettings.PorterList, k)
+        end
     end
+    table.sort(self.TempSettings.PorterList)
+
+    self.TempSettings.SelectedPorter = 1
+    for index, porterName in ipairs(self.TempSettings.PorterList) do
+        if porterName == selectedName then
+            self.TempSettings.SelectedPorter = index
+            break
+        end
+    end
+end
+
+--- Returns true if the porter is this character or a peer whose live heartbeat comes from a running RGMercs.
+---@param porterName string Character name the porter's entry is keyed by.
+---@return boolean
+function Module:IsPorterRunning(porterName)
+    if porterName == Globals.CurLoadedChar then return true end
+
+    local state = (Comms.GetPeerHeartbeatByName(porterName).Data or {}).State
+    return state ~= nil and state ~= "Standalone"
 end
 
 function Module:SendPorterInfo()
@@ -91,21 +114,10 @@ function Module:RequestPorterInfo()
     Comms.BroadcastMessage(self._name, "SendPorterInfo")
 end
 
-function Module:Init()
-    Logger.log_debug("Travel Module Loaded.")
-
-    local className = mq.TLO.Me.Class.ShortName():lower()
-    self:LoadSettings()
-
+--- Rebuilds this character's ports from the spellbook (WIZ/DRU only), or drops them, and tells peers.
+function Module:BuildPorterInfo()
     if Core.MyClassIs("wiz") or Core.MyClassIs("dru") then
-        self.TransportSpells                                       = {}
-        self.TransportSpells[Globals.CurLoadedChar]                = {}
-        self.TransportSpells[Globals.CurLoadedChar].Class          = className
-        self.TransportSpells[Globals.CurLoadedChar].Name           = Globals.CurLoadedChar
-        self.TransportSpells[Globals.CurLoadedChar].Tabs           = {}
-        self.TransportSpells[Globals.CurLoadedChar].SortedTabNames = {}
-
-        local tabsTable                                            = {}
+        local tabsTable = {}
 
         for i = 1, Globals.Constants.SpellBookSlots do
             local spell = mq.TLO.Me.Book(i)
@@ -128,23 +140,37 @@ function Module:Init()
             end
         end
 
-        self.TransportSpells[Globals.CurLoadedChar].Tabs = tabsTable
-
         local sortedTabNames = {}
-        for k in pairs(self.TransportSpells[Globals.CurLoadedChar].Tabs) do
+        for k in pairs(tabsTable) do
             table.insert(sortedTabNames, k)
         end
 
         table.sort(sortedTabNames)
 
-        self.TransportSpells[Globals.CurLoadedChar].SortedTabNames = sortedTabNames
+        self.TransportSpells[Globals.CurLoadedChar] = {
+            Class = mq.TLO.Me.Class.ShortName():lower(),
+            Name = Globals.CurLoadedChar,
+            Server = Globals.CurServer,
+            Tabs = tabsTable,
+            SortedTabNames = sortedTabNames,
+        }
 
         -- notify everyone else of my state...
         self:SendPorterInfo()
+    else
+        self.TransportSpells[Globals.CurLoadedChar] = nil
+        Comms.BroadcastMessage(self._name, "TravelerUpdate", { Name = Globals.CurLoadedChar, Server = Globals.CurServer, })
     end
 
     self:CreatePorterList()
     self:GenerateFilteredPortsList()
+end
+
+function Module:Init()
+    Logger.log_debug("Travel Module Loaded.")
+
+    self:LoadSettings()
+    self:BuildPorterInfo()
 
     return { self = self, defaults = self.DefaultConfig, }
 end
@@ -274,6 +300,26 @@ function Module:GiveTime()
     if self.TempSettings.ShouldRequest then
         self.TempSettings.ShouldRequest = false
         self:RequestPorterInfo()
+    end
+
+    local runningPorters = 0
+    for porterName in pairs(self.TransportSpells) do
+        if self:IsPorterRunning(porterName) then
+            runningPorters = runningPorters + 1
+        end
+    end
+
+    local listStale = runningPorters ~= #self.TempSettings.PorterList
+    for _, porterName in ipairs(self.TempSettings.PorterList) do
+        if not self:IsPorterRunning(porterName) then
+            listStale = true
+            break
+        end
+    end
+
+    if listStale then
+        self:CreatePorterList()
+        self:GenerateFilteredPortsList()
     end
 end
 
