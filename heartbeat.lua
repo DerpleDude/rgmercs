@@ -67,6 +67,7 @@ Logger.log_info("heartbeat.lua: type \ag/heartbeat stop\ax to exit.")
 ---@param setting string
 ---@return any
 local function liveSetting(setting)
+    ---@diagnostic disable-next-line: undefined-field
     local RGMercs = mq.TLO.RGMercs
     local value = RGMercs and RGMercs.Config(setting)()
     if type(value) == 'boolean' or type(value) == 'number' then
