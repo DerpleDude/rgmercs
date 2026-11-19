@@ -558,10 +558,10 @@ Module.DefaultConfig                = {
         Category = "",
         Tooltip = "",
         Type = "Custom",
-        Default = { "poknowledge", "neighborhood", "guildhall", "guildlobby", "bazaar", },
+        Default = Globals.Constants.SafeZones,
         FAQ = "How do I make it so my puller doesn't pull in certain zones?",
         Answer = "Add the zone to the Pull Safe Zones list with /rgl pullsafezone (no argument adds your current zone; remove with /rgl pullsafezonerm).\n" ..
-            "Pulling will not run in a safe zone.",
+            "Pulling will not run in a safe zone. New characters start with PoK, PoTranq, the Nexus, the Bazaar, the Guild Lobby, guild halls and Sunrise Hills on the list.",
     },
     [string.format("%s_Popped", Module._name)] = {
         DisplayName = Module._name .. " Popped",

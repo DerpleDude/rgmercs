@@ -7,6 +7,8 @@ local DanNet       = require('lib.dannet.helpers')
 local Globals      = require("utils.globals")
 local ItemManager  = require("utils.item_manager")
 local Logger       = require("utils.logger")
+local Strings      = require("utils.strings")
+local Tables       = require("utils.tables")
 local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
@@ -1051,7 +1053,7 @@ local _ClassConfig = {
             timer = 120, --this will only be checked once every 2 minutes
             state = 1,
             steps = 2,
-            load_cond = function() return Config:GetSetting('SummonModRods') and Core.GetResolvedActionMapItem("ManaRodSummon") end,
+            load_cond = function() return (Config:GetSetting('SummonModRods') or Config:GetSetting('SummonSparks')) and Core.GetResolvedActionMapItem("ManaRodSummon") end,
             targetId = function(self)
                 local groupIds = {}
                 if not Core.OnEMU() or mq.TLO.Me.Inventory("MainHand")() then
@@ -1698,6 +1700,27 @@ local _ClassConfig = {
         },
         ['Summon ModRods'] = {
             {
+                name = "Summon Modulation Spark",
+                type = "AA",
+                load_cond = function() return Config:GetSetting('SummonSparks') end,
+                cond = function(self, aaName, target)
+                    if not Casting.CanUseAA(aaName) or not Targeting.TargetIsACaster(target) then return false end
+                    local zoneName = (mq.TLO.Zone.ShortName() or ""):lower()
+                    if Tables.TableContains(Globals.Constants.SafeZones, zoneName) then return false end
+                    for _, avoidZone in ipairs(Strings.split(Config:GetSetting('SparkAvoidList'), ",")) do
+                        if Strings.TrimSpaces(avoidZone):lower() == zoneName then return false end
+                    end
+                    local modRodItem = mq.TLO.Spell(aaName).RankName.Base(1)()
+                    return modRodItem and DanNet.query(target.CleanName(), string.format("FindItemCount[%d]", modRodItem), 1000) == "0" and
+                        (mq.TLO.Cursor.ID() or 0) == 0
+                end,
+                post_activate = function(self, aaName, success)
+                    if success then
+                        Core.SafeCallFunc("Autoinventory", self.Helpers.HandleItemSummon, self, aaName, "group")
+                    end
+                end,
+            },
+            {
                 name = "Summon Modulation Shard",
                 type = "AA",
                 load_cond = function() return Config:GetSetting('SummonModRods') end,
@@ -1734,6 +1757,7 @@ local _ClassConfig = {
             {
                 name = "SelfManaRodSummon",
                 type = "Spell",
+                load_cond = function() return Config:GetSetting('SummonModRods') end,
                 cond = function(self, spell, target, combat_state)
                     if target.ID() ~= mq.TLO.Me.ID() or not spell() then return false end
                     local myId = Casting.GetUseableSpellId(spell) -- Adjust for possible unsubbed accounts
@@ -1983,6 +2007,31 @@ local _ClassConfig = {
             Min = 1,
             Max = 6,
             ConfigType = "Advanced",
+        },
+        ['SummonSparks']   = {
+            DisplayName = "Summon Modulation Sparks",
+            Group = "Items",
+            Header = "Item Summoning",
+            Category = "Item Summoning",
+            Index = 105,
+            Tooltip = "Summon Modulation Sparks for group casters in every zone except the built-in safe zones and your Spark Avoid Zones.",
+            RequiresLoadoutChange = true,
+            Default = false,
+            FAQ = "Where will my mage summon Modulation Sparks?",
+            Answer =
+                "With Summon Modulation Sparks on, everywhere except the built-in safe zones: " ..
+                "PoK, PoTranq, the Nexus, the Bazaar, the Guild Lobby, guild halls and Sunrise Hills.\n" ..
+                "Add more zones to Spark Avoid Zones by short name, comma separated.",
+        },
+        ['SparkAvoidList'] = {
+            DisplayName = "Spark Avoid Zones",
+            Group = "Items",
+            Header = "Item Summoning",
+            Category = "Item Summoning",
+            Index = 106,
+            Tooltip = "Zones to skip on top of the built-in safe zones (short names, comma separated).",
+            Default = "",
+            Hint = function() return string.format("e.g. %s (current zone)", mq.TLO.Zone.ShortName() or "") end,
         },
         ['DoSkinDS']       = {
             DisplayName = "Use Skin DS",
