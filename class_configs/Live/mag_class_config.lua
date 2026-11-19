@@ -978,15 +978,6 @@ local _ClassConfig = {
             cond = function(self, target) return (mq.TLO.Me.Pet.PctHPs() or 100) < Config:GetSetting('PetHealPct') end,
         },
         {
-            name = 'Burn',
-            state = 1,
-            steps = 4,
-            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
-            cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.BurnCheck()
-            end,
-        },
-        {
             name = 'Malo',
             state = 1,
             steps = 1,
@@ -994,6 +985,15 @@ local _ClassConfig = {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and Casting.OkayToDebuff()
+            end,
+        },
+        {
+            name = 'Burn',
+            state = 1,
+            steps = 4,
+            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
+            cond = function(self, combat_state)
+                return combat_state == "Combat" and Casting.BurnCheck()
             end,
         },
         {

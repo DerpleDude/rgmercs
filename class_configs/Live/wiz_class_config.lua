@@ -713,15 +713,6 @@ return {
                 return combat_state == "Combat" and mq.TLO.Me.PctAggro() > (Config:GetSetting('JoltAggro') or 90) and Casting.OkayToCombatEscape()
             end,
         },
-        {
-            name = 'Burn',
-            state = 1,
-            steps = 4,
-            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
-            cond = function(self, combat_state)
-                return combat_state == "Combat" and Casting.BurnCheck()
-            end,
-        },
         { --Keep things from running
             name = 'Snare',
             state = 1,
@@ -730,6 +721,15 @@ return {
             targetId = function(self) return Targeting.CheckForAutoTargetID() end,
             cond = function(self, combat_state)
                 return combat_state == "Combat" and not Globals.AutoTargetIsNamed and Targeting.HasXTHatersMax(Config:GetSetting('SnareCount'))
+            end,
+        },
+        {
+            name = 'Burn',
+            state = 1,
+            steps = 4,
+            targetId = function(self) return Targeting.CheckForAutoTargetID() end,
+            cond = function(self, combat_state)
+                return combat_state == "Combat" and Casting.BurnCheck()
             end,
         },
         { --Keep things from doing
