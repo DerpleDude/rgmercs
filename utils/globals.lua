@@ -84,7 +84,9 @@ Globals.Constants.AllClasses          = { "BER", "BRD", "BST", "CLR", "DRU", "EN
 Globals.Constants.AllClassesSet       = Set.new(Globals.Constants.AllClasses)
 Globals.Constants.RGPetClass          = Set.new({ "BST", "NEC", "MAG", "SHM", "ENC", "SHD", })
 Globals.Constants.RGNotMezzedAnims    = Set.new({ 1, 5, 6, 27, 43, 44, 45, 80, 82, 112, 134, 135, })
-Globals.Constants.ModRods             = { "Transvergence", "Modulation", "Modulating Rod", "Azure Mind Crystal", }
+Globals.Constants.ModRods             = { "Modulation Spark", "Transvergence", "Modulation", "Modulating Rod", "Azure Mind Crystal", }
+Globals.Constants.SafeZones           = { "poknowledge", "potranquility", "nexus", "bazaar", "guildlobby", "guildhall", "guildhalllrg", "guildhallsml", "guildhall3",
+    "guildhallsng", "neighborhood", }
 Globals.Constants.ModRodUse           = { "Never", "Combat", "Anytime", }
 Globals.Constants.SpellBookSlots      = 1120
 Globals.Constants.CastCompleted       = Set.new({ "CAST_SUCCESS", "CAST_IMMUNE", "CAST_TAKEHOLD", "CAST_RESISTED", })

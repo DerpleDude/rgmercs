@@ -1,7 +1,6 @@
 -- Sample Basic Class Module
 local mq        = require('mq')
 local Icons     = require('mq.ICONS')
-local Set       = require("mq.Set")
 local Base      = require("modules.base")
 local Casting   = require("utils.casting")
 local Combat    = require('utils.combat')
@@ -27,7 +26,6 @@ Module.TempSettings.DeathCampHold  = false
 Module.TempSettings.NavWasActive   = false
 
 Module.Constants                   = {}
-Module.Constants.GGHZones          = Set.new({ "poknowledge", "potranquility", "stratos", "guildlobby", "moors", "crescent", "guildhalllrg_int", "guildhall", })
 Module.Constants.CampfireNameToKit = {
     ['Regular Fellowship']           = 1,
     ['Empowered Fellowship']         = 2,
