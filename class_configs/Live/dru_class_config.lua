@@ -1282,8 +1282,7 @@ local _ClassConfig = {
                 load_cond = function(self) return Casting.CanUseAA("Vortex of Ro") end,
                 cond = function(self, aaName, target)
                     if not Targeting.HasXTHaters(Config:GetSetting('AERoCount')) then return false end
-                    local aaSpell = Casting.GetAASpell(aaName)
-                    return Casting.DetAACheck(aaName) and Casting.ReagentCheck(aaSpell and aaSpell.Trigger(1) or aaName)
+                    return Casting.DetAACheck(aaName) and Casting.ReagentCheck(Casting.GetAASpell(aaName))
                 end,
             },
             { -- Single-target Ro on few mobs (or whenever the AE version isn't available)
@@ -1291,8 +1290,7 @@ local _ClassConfig = {
                 type = "AA",
                 cond = function(self, aaName, target)
                     if Casting.CanUseAA("Vortex of Ro") and Targeting.HasXTHaters(Config:GetSetting('AERoCount')) then return false end
-                    local aaSpell = Casting.GetAASpell(aaName)
-                    return Casting.DetAACheck(aaName) and Casting.ReagentCheck(aaSpell and aaSpell.Trigger(1) or aaName)
+                    return Casting.DetAACheck(aaName) and Casting.ReagentCheck(Casting.GetAASpell(aaName))
                 end,
             },
             {
