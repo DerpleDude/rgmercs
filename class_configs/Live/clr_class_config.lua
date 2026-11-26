@@ -6,7 +6,7 @@ local Core         = require("utils.core")
 local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
-    _version              = "2.1 - Live",
+    _version              = "2.2 - Live",
     _author               = "Algar, Derple",
     ['ModeChecks']        = {
         IsHealing = function() return true end,
@@ -217,6 +217,7 @@ local _ClassConfig = {
             "Desperate Renewal",      -- Level 70
         },
         ['DichoHeal'] = {
+            "Diametric Blessing",        -- Level 126
             "Reciprocal Blessing",       -- Level 121
             "Ecliptic Blessing",         -- Level 116
             "Composite Blessing",        -- Level 111
@@ -348,6 +349,7 @@ local _ClassConfig = {
         },
         ['ReverseDS'] = {
             -- Reverse Damage Shield Proc (LVL >=85) -- Ignoring the Mark Line
+            "Erud's Retort X",   -- Level 130
             "Hazuri's Retort",   -- Level 125
             "Axoeviq's Retort",  -- Level 120
             "Jorlleag's Retort", -- Level 115
@@ -380,12 +382,22 @@ local _ClassConfig = {
         },
         ['GroupHealProcBuff'] = {
             ----Self buff casts group heal on AE spell damage
+            "Divine Response VI", -- Level 129
             "Divine Rejoinder",   -- Level 124
             "Divine Contingency", -- Level 118
             "Divine Consequence", -- Level 113
             "Divine Reaction",    -- Level 108
             "Divine Response",    -- Level 102
         },
+        -- ['WardHeal'] = {
+        --     "Anticipated Interposition VII", -- Level 128
+        --     "Anticipated Interstition",      -- Level 123
+        --     "Anticipated Interdiction",      -- Level 117
+        --     "Anticipated Intercalation",     -- Level 112
+        --     "Anticipated Intervention",      -- Level 107
+        --     "Anticipated Intercession",      -- Level 102
+        --     "Anticipated Interposition",     -- Level 97
+        -- },
         ['AegoBuff'] = {
             "Unified Hand of Aegolism XV",   -- Level 130
             "Unified Hand of Infallibility", -- Level 125
