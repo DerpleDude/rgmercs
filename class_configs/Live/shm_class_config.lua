@@ -7,7 +7,7 @@ local Globals      = require("utils.globals")
 local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
-    _version              = "2.2 - Live",
+    _version              = "2.3 - Live",
     _author               = "Algar, Derple",
     ['ModeChecks']        = {
         IsHealing = function() return true end,
@@ -270,6 +270,7 @@ local _ClassConfig = {
             "Listless Power",    -- Level 29, Definitely not worth
         },
         ['GroupHealProcBuff'] = {
+            "Responsive Spirit V", -- Level 127
             "Mindful Spirit",    -- Level 122
             "Watchful Spirit",   -- Level 117
             "Attentive Spirit",  -- Level 112
@@ -290,6 +291,7 @@ local _ClassConfig = {
             "Ward of Resurgence",     -- Level 80
         },
         ['DichoSpell'] = {
+            "Diametric Roar",   -- Level 126
             "Reciprocal Roar",  -- Level 121
             "Ecliptic Roar",    -- Level 116
             "Composite Roar",   -- Level 111
@@ -408,6 +410,7 @@ local _ClassConfig = {
         },
         ['AESpiritualHeal'] = {
             -- Pulsing AE Heal, 100+
+            "Spiritual Surge V", -- Level 128
             "Spiritual Shower", -- Level 118
             "Spiritual Squall", -- Level 110
             "Spiritual Swell",  -- Level 105
@@ -594,6 +597,7 @@ local _ClassConfig = {
             -- Long Dot(42s) LVL 104+
             -- Two resist types because it throws 2 dots
             -- Stacking: Nectar of Pain - Stacking: Blood of Saryrn
+            "Chaotic Venom VI",   -- Level 130
             "Chaotic Bloodcurse", -- Level 125
             "Chaotic Toxin",      -- Level 120
             "Chaotic Venin",      -- Level 115
@@ -604,6 +608,7 @@ local _ClassConfig = {
             -- Pandemic Dot Long Dot(84s) Level 103+
             -- Two resist types because it throws 2 dots
             -- Stacking: Kralbor's Pandemic  -    Stacking: Breath of Ultor
+            "Pustim's Pandemic",      -- Level 129
             "Hotariton Pandemic",     -- Level 124
             "Tegi Pandemic",          -- Level 119
             "Bledrek's Pandemic",     -- Level 114
