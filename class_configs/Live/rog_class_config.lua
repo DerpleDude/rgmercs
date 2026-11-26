@@ -10,7 +10,7 @@ local Strings   = require("utils.strings")
 local Targeting = require("utils.targeting")
 
 return {
-    _version          = "2.0 - Live",
+    _version          = "2.1 - Live",
     _author           = "Derple, Algar, mackal",
     ['Modes']         = {
         'DPS',
@@ -56,9 +56,14 @@ return {
     },
     ['AbilitySets']   = {
         ['Reflex'] = {
+            "Conditioned Reflexes III", -- Level 130
             "Practiced Reflexes",   -- Level 115
             "Conditioned Reflexes", -- Level 97
         },
+        -- ['SpikeTrap'] = {
+        --     "Poison Spike Trap V",   -- Level 127
+        --     "Neurotoxic Spike Trap", -- Level 112
+        -- },
         ['ThiefBuff'] = {
             "Thief's Sight",  -- Level 117
             "Thief's Vision", -- Level 96
@@ -88,6 +93,7 @@ return {
             "Kinesthetics Discipline", -- Level 57
         },
         ['Twisted'] = {
+            "Twisted Chance Discipline II", -- Level 126
             "Twisted Chance Discipline", -- Level 65
             "Deadeye Discipline",        -- Level 54
         },
@@ -163,6 +169,7 @@ return {
             "Pinpoint Vulnerability", -- Level 74
         },
         ['Puncture'] = {
+            "Disassociative Puncture VI", -- Level 129
             "Invidious Puncture",      -- Level 124
             "Disorienting Puncture",   -- Level 119
             "Vindictive Puncture",     -- Level 114
@@ -248,6 +255,7 @@ return {
             "Holdout Blade",     -- Level 99
         },
         ['Dicho'] = {
+            "Diametric Weapons",  -- Level 126
             "Reciprocal Weapons", -- Level 121
             "Ecliptic Weapons",   -- Level 116
             "Composite Weapons",  -- Level 111
@@ -255,6 +263,7 @@ return {
             "Dichotomic Weapons", -- Level 101
         },
         ['Alliance'] = {
+            "Poisonous Pact",        -- Level 128
             "Poisonous Covariance",  -- Level 123
             "Poisonous Conjunction", -- Level 118
             "Poisonous Coalition",   -- Level 113
@@ -620,6 +629,13 @@ return {
                 type = "Disc",
                 cond = function(self, discSpell)
                     return Casting.SelfBuffCheck(discSpell)
+                end,
+            },
+            {
+                name = "Reflex",
+                type = "Disc",
+                cond = function(self, discSpell)
+                    return Casting.SelfBuffCheck(discSpell, nil, true)
                 end,
             },
             {
