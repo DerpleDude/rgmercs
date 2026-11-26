@@ -7,7 +7,7 @@ local Globals   = require("utils.globals")
 local Targeting = require("utils.targeting")
 
 return {
-    _version              = "1.4 - Live",
+    _version              = "1.5 - Live",
     _author               = "Derple, Algar",
     ['Modes']             = {
         'DPS',
@@ -230,6 +230,7 @@ return {
         },
         ['DichoSpell'] = {
             -- Dicho Spell
+            "Diametric Fury",  -- Level 126
             "Reciprocal Fury", -- Level 121
             "Ecliptic Fury",   -- Level 116
             "Composite Fury",  -- Level 111
@@ -482,14 +483,15 @@ return {
             "Spiritual Radiance",           -- Level 52
             "Spiritual Light",              -- Level 41
         },
-        ['AllianceDot'] = {
-            -- Alliance Spell for Beastlords 100+
-            "Venomous Covariance",  -- Level 123
-            "Venomous Conjunction", -- Level 118
-            "Venomous Coalition",   -- Level 113
-            "Venomous Covenant",    -- Level 108
-            "Venomous Alliance",    -- Level 101
-        },
+        -- ['AllianceDot'] = {
+        --     -- Alliance Spell for Beastlords 100+
+        --     "Venomous Pact",        -- Level 128
+        --     "Venomous Covariance",  -- Level 123
+        --     "Venomous Conjunction", -- Level 118
+        --     "Venomous Coalition",   -- Level 113
+        --     "Venomous Covenant",    -- Level 108
+        --     "Venomous Alliance",    -- Level 101
+        -- },
         ['PetBlockSpell'] = {
             "Aegis of Valorforged",  -- Level 124
             "Aegis of Rumblecrush",  -- Level 119
@@ -507,15 +509,16 @@ return {
             "Guard of Calliav",      -- Level 58
             "Ward of Calliav",       -- Level 49
         },
-        ['PetBlockAuspice'] = {
-            -- Pet Block Auspice - Timer 16
-            "Auspice of Usira",      -- Level 122
-            "Auspice of Valia",      -- Level 117
-            "Auspice of Kildrukaun", -- Level 112
-            "Auspice of Esianti",    -- Level 107
-            "Auspice of Eternity",   -- Level 102
-            "Auspice of Shadows",    -- Level 96
-        },
+        -- ['PetBlockAuspice'] = {
+        --     -- Pet Block Auspice - Timer 16
+        --     "Auspice of Shadows VII", -- Level 127
+        --     "Auspice of Usira",      -- Level 122
+        --     "Auspice of Valia",      -- Level 117
+        --     "Auspice of Kildrukaun", -- Level 112
+        --     "Auspice of Esianti",    -- Level 107
+        --     "Auspice of Eternity",   -- Level 102
+        --     "Auspice of Shadows",    -- Level 96
+        -- },
         ['PetHotSpell'] = {
             "Lydora's Melioration",  -- Level 127
             "Cissela's Melioration", -- Level 117
@@ -674,12 +677,15 @@ return {
         },
         ['VinDisc'] = {
             -- Vindication Disc
+            "Al`ele's Vindication VI", -- Level 130
             "Xanathan's Vindication", -- Level 125
             "Kejaan's Vindication",   -- Level 120
             "Ikatiar's Vindication",  -- Level 115
-            "Ikatiar's Vindication",  -- Level 115
             "Venon's Vindication",    -- Level 110
             "Al`ele's Vindication",   -- Level 102
+        },
+        ['Demeanor'] = {
+            "Apostetrios' Demeanor", -- Level 129
         },
     },
     ['HealRotationOrder'] = {
@@ -1135,6 +1141,13 @@ return {
             },
         },
         ['Weaves']            = {
+            {
+                name = "Demeanor",
+                type = "Disc",
+                cond = function(self, discSpell, target)
+                    return Casting.SelfBuffCheck(discSpell, nil, true)
+                end,
+            },
             {
                 name = "Round Kick",
                 type = "Ability",
