@@ -11,7 +11,7 @@ local Targeting   = require("utils.targeting")
 
 
 local _ClassConfig = {
-    _version          = "2.3 - Live",
+    _version          = "2.4 - Live",
     _author           = "Algar, Derple",
     ['ModeChecks']    = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
@@ -98,6 +98,7 @@ local _ClassConfig = {
             "Flash of Anger", -- Level 87
         },
         ['ShieldHit'] = {
+            "Shield Topple IX", -- Level 130
             "Shield Split",    -- Level 125
             "Shield Rupture",  -- Level 120
             "Shield Splinter", -- Level 115
@@ -133,6 +134,7 @@ local _ClassConfig = {
             "Bracing Defense",    -- Level 85
         },
         ['DichoShield'] = {
+            "Diametric Shield",  -- Level 126
             "Reciprocal Shield", -- Level 121
             "Ecliptic Shield",   -- Level 116
             "Composite Shield",  -- Level 111
@@ -151,6 +153,7 @@ local _ClassConfig = {
             "Determined Reprisal", -- Level 97
         },
         ['HealHateAE'] = {
+            "Enigmatic Expanse",   -- Level 127
             "Paradoxical Expanse", -- Level 122
             "Penumbral Expanse",   -- Level 117
             "Confluent Expanse",   -- Level 112
@@ -158,6 +161,7 @@ local _ClassConfig = {
             "Harmonious Expanse",  -- Level 102
         },
         ['HealHateSingle'] = {
+            "Enigmatic Precision",   -- Level 128
             "Paradoxical Precision", -- Level 123
             "Penumbral Precision",   -- Level 118
             "Confluent Precision",   -- Level 113
