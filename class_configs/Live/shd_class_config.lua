@@ -77,7 +77,7 @@ local Tooltips     = {
 }
 
 local _ClassConfig = {
-    _version          = "3.4 - Live",
+    _version          = "3.5 - Live",
     _author           = "Algar, Derple",
     ['ModeChecks']    = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
@@ -357,6 +357,7 @@ local _ClassConfig = {
             "Remorseless Demeanor", -- Level 75
         },
         ['HealBurn'] = {
+            "Harmonious Disruption VI", -- Level 128
             "Paradoxical Disruption", -- Level 123
             "Penumbral Disruption",   -- Level 118
             "Confluent Disruption",   -- Level 113
@@ -659,6 +660,7 @@ local _ClassConfig = {
             "Steely Stance",     -- Level 84
         },
         ['Dicho'] = {
+            "Diametric Fang",  -- Level 126
             "Reciprocal Fang", -- Level 121
             "Ecliptic Fang",   -- Level 116
             "Composite Fang",  -- Level 111
@@ -740,14 +742,16 @@ local _ClassConfig = {
             "Heart Flutter",        -- Level 36
             "Disease Cloud",        -- Level 5
         },
-        ['AllianceNuke'] = {
-            "Bloodletting Covariance",  -- Level 124
-            "Bloodletting Conjunction", -- Level 119
-            "Bloodletting Coalition",   -- Level 114
-            "Bloodletting Covenant",    -- Level 109
-            "Bloodletting Alliance",    -- Level 104
-        },
+        -- ['AllianceNuke'] = {
+        --     "Bloodletting Pact",        -- Level 129
+        --     "Bloodletting Covariance",  -- Level 124
+        --     "Bloodletting Conjunction", -- Level 119
+        --     "Bloodletting Coalition",   -- Level 114
+        --     "Bloodletting Covenant",    -- Level 109
+        --     "Bloodletting Alliance",    -- Level 104
+        -- },
         ['InfluenceDisc'] = {
+            "Insolent Influence VII", -- Level 127
             "Incensive Influence",   -- Level 122
             "Ignominious Influence", -- Level 117
             "Impertinent Influence", -- Level 115
