@@ -56,7 +56,7 @@ local Tooltips     = {
 }
 
 local _ClassConfig = {
-    _version              = "2.5 - Live",
+    _version              = "2.6 - Live",
     _author               = "Algar, Derple, Grimmier, Tiddliestix, SonicZentropy",
     ['Modes']             = {
         'General',
@@ -215,6 +215,7 @@ local _ClassConfig = {
         },
         ['InsultSong'] = {     --alternating timers are necessary to always use the best when the user only opts to use one insult
             --Bard Timers alternate between 6 and 3 every expansion, with some early exception. Use nopush if available.
+            "Cutting Disdain X", -- Level 128, FoF (nopush, timer 6)
             -- "Cutting Insult X",  -- Level 127, SoR (push, timer 6)
             "Yaran's Disdain",  -- Level 123, TOB (nopush, timer 3)
             -- "Eoreg's Insult",    -- Level 122, LS (push, timer 3)
@@ -234,6 +235,7 @@ local _ClassConfig = {
         },
         ['InsultSong2'] = {
             --Keep these two sets identical so timers will always be different unless people skip spells (which is their problem)
+            "Cutting Disdain X", -- Level 128, FoF (nopush, timer 6)
             -- "Cutting Insult X",  -- Level 127, SoR (push, timer 6)
             "Yaran's Disdain",  -- Level 123, TOB (nopush, timer 3)
             -- "Eoreg's Insult",    -- Level 122, LS (push, timer 3)
@@ -261,6 +263,7 @@ local _ClassConfig = {
         },
         ['DichoSong'] = {
             -- DichoSong Level Range - 101+
+            "Diametric Psalm",  -- Level 126, FoF
             "Reciprocal Psalm", -- Level 121, ToB
             "Ecliptic Psalm",   -- Level 116, NoS
             "Composite Psalm",  -- Level 111, CoV
@@ -547,6 +550,7 @@ local _ClassConfig = {
             "Aria of Asceticism", -- Level 45, LoY (poison/disease only)
         },
         ['AllianceSong'] = {
+            "Pact of Sticks and Stones",        -- Level 130, FoF
             "Covariance of Sticks and Stones",  -- Level 125, ToB
             "Conjunction of Sticks and Stones", -- Level 120, NoS
             "Coalition of Sticks and Stones",   -- Level 115, CoV
@@ -555,17 +559,18 @@ local _ClassConfig = {
         },
         ['CharmSong'] = {
             -- Demand line has memblur chance, but costs significantly more mana
+            -- "Amalithea's Demand",      -- Level 129, FoF (up to 128, 32% memblur)
             "Voice of Keftlik",           -- Level 129, SoR (up to 128)
-            -- "Yaran's Demand",          -- Level 124, ToB (up to 123, 40% memblur)
+            -- "Yaran's Demand",          -- Level 124, ToB (up to 123, 32% memblur)
             "Voice of Suja",              -- Level 124, LS (up to 123)
-            -- "Omiyad's Demand",         -- Level 119, NoS (up to 118, 40% memblur)
+            -- "Omiyad's Demand",         -- Level 119, NoS (up to 118, 32% memblur)
             "Voice of the Diabo",         -- Level 119, ToL (up to 118)
-            -- "Desirae's Demand",        -- Level 114, . CoV (up to 113, 40% memblur)
+            -- "Desirae's Demand",        -- Level 114, . CoV (up to 113, 32% memblur)
             "Voice of Zburator",          -- Level 114, ToV (up to 113)
-            -- "Dawnbreeze's Demand",     -- Level 109, TBL (up to 108, 40% memblur)
+            -- "Dawnbreeze's Demand",     -- Level 109, TBL (up to 108, 32% memblur)
             "Voice of Jembel",            -- Level 109, RoS (up to 108)
             "Voice of Silisia",           -- Level 104, TDS (up to 103)
-            -- "Silisia's Demand",        -- Level 102, EoK (up to 103, 40% memblur)
+            -- "Silisia's Demand",        -- Level 102, EoK (up to 103, 32% memblur)
             "Voice of Motlak",            -- Level 99, RoF (up to 98)
             "Voice of Kolain",            -- Level 94, VoA (up to 94)
             "Voice of Sionachie",         -- Level 89, HoT (up to 88)
@@ -583,6 +588,26 @@ local _ClassConfig = {
             "Reflexive Rejoinder", -- Level 105
             "Reflexive Retort",    -- Level 100
         },
+        ['Demeanor'] = {
+            "Troubadour's Demeanor", -- Level 126, FoF
+        },
+        -- ['DirgeSong'] = {
+        --     "Dirge of the Dryads IX",    -- Level 127, FoF
+        --     "Dirge of Imthak",           -- Level 122
+        --     "Dirge of the Onokiwan",     -- Level 117
+        --     "Dirge of the Restless",     -- Level 112
+        --     "Dirge of Lost Horizons",    -- Level 107
+        --     "Dirge of Dreams",           -- Level 87
+        --     "Dirge of the Fallen Rathe", -- Level 82
+        --     "Dirge of the Darkvine",     -- Level 77
+        --     "Song of the Dryads",        -- Level 72
+        -- },
+        -- ['RequiemSong'] = {
+        --     "Requiem for the Lost III", -- Level 126, FoF
+        --     "Requiem for the Cursed",   -- Level 111
+        --     "Requiem for the Dead",     -- Level 104
+        --     "Requiem for the Lost",     -- Level 81
+        -- },
         ['ChordsAE'] = {
             -- ChordsAE only work if target is not moving on Live
             "Selo's Chords of Cessation", -- Level 48, Base Game
@@ -1121,6 +1146,18 @@ local _ClassConfig = {
                 cond = function(self, discSpell)
                     local pct = Config:GetSetting('GroupManaPct')
                     return (mq.TLO.Group.LowMana(pct)() or -1) >= Config:GetSetting('GroupManaCt')
+                end,
+            },
+            {
+                name = "Demeanor",
+                type = "Disc",
+                midSong = true,
+                load_cond = function(self)
+                    return Core.GetResolvedActionMapItem('Demeanor') and (Config:GetSetting('UseFireDots') or Config:GetSetting('UseIceDots') or
+                        Config:GetSetting('UsePoisonDots') or Config:GetSetting('UseDiseaseDots'))
+                end,
+                cond = function(self, discSpell)
+                    return Casting.SelfBuffCheck(discSpell, nil, true)
                 end,
             },
             {
