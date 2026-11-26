@@ -12,7 +12,7 @@ local Tables       = require("utils.tables")
 local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
-    _version              = "1.4 - Live",
+    _version              = "1.5 - Live",
     _author               = "Derple, Morisato, Algar",
     ['ModeChecks']        = {
         IsTanking = function() return Core.IsModeActive("PetTank") end,
@@ -220,12 +220,21 @@ local _ClassConfig = {
         -- },
         -- ['MagicBolt'] = {
         --     -- Magic Bolt Nukes
+        --     "Fossilized Kismet Bolt", -- Level 128
         --     "Voidstone Bolt", -- Level 123
         --     "Luclinite Bolt", -- Level 118
         --     "Komatiite Bolt", -- Level 113
         --     "Korascian Bolt", -- Level 108
         --     "Meteoric Bolt",  -- Level 103
         --     "Iron Bolt",      -- Level 98
+        -- },
+        -- ['PBFireAE'] = {
+        --     "Flame Arc XI",   -- Level 129
+        --     "Blazing Blast",  -- Level 124
+        --     "Fiery Blast",    -- Level 119
+        --     "Flaming Blast",  -- Level 114
+        --     "Burning Blast",  -- Level 109
+        --     "Flame Arc",      -- Level 39
         -- },
         ['FireDD'] = {                 --Mix of Fire Nukes and Bolts appropriate for use at lower levels.
             "Scalding Sands",          -- Level 73
@@ -441,6 +450,7 @@ local _ClassConfig = {
             "Transon's Phantasmal Protection", -- Level 58
         },
         ['AllianceBuff'] = {
+            "Firebound Pact",        -- Level 130
             "Firebound Covariance",  -- Level 125
             "Firebound Conjunction", -- Level 120
             "Firebound Coalition",   -- Level 115
@@ -534,14 +544,15 @@ local _ClassConfig = {
             "Shield of Consequence",    -- Level 102
             "Shield of Fate",           -- Level 97
         },
-        ['DichoSpell'] = {
-            -- Dicho Spell*
-            "Reciprocal Companion", -- Level 121
-            "Ecliptic Companion",   -- Level 116
-            "Composite Companion",  -- Level 111
-            "Dissident Companion",  -- Level 106
-            "Dichotomic Companion", -- Level 101
-        },
+        -- ['DichoSpell'] = {
+        --     -- Dicho Spell*
+        --     "Diametric Companion",  -- Level 126
+        --     "Reciprocal Companion", -- Level 121
+        --     "Ecliptic Companion",   -- Level 116
+        --     "Composite Companion",  -- Level 111
+        --     "Dissident Companion",  -- Level 106
+        --     "Dichotomic Companion", -- Level 101
+        -- },
         ['PetHealSpell'] = {
             -- Pet Heal*
             "Renewal of Magmath",           -- Level 128
@@ -759,27 +770,28 @@ local _ClassConfig = {
             "Elementaling: Fire",        -- Level 7
             "Elementalkin: Fire",        -- Level 3
         },
-        ['AegisBuff'] = {
-            ---Pet Aegis Shield Buff (Short Duration)*
-            "Aegis of Valorforged",  -- Level 124
-            "Auspice of Usira",      -- Level 122
-            "Aegis of Rumblecrush",  -- Level 119
-            "Auspice of Valia",      -- Level 117
-            "Aegis of Orfur",        -- Level 114
-            "Auspice of Kildrukaun", -- Level 112
-            "Aegis of Zeklor",       -- Level 109
-            "Auspice of Esianti",    -- Level 107
-            "Aegis of Japac",        -- Level 104
-            "Auspice of Eternity",   -- Level 102
-            "Aegis of Nefori",       -- Level 99
-            "Auspice of Shadows",    -- Level 96
-            "Aegis of Kildrukaun",   -- Level 79
-            "Aegis of Calliav",      -- Level 74
-            "Bulwark of Calliav",    -- Level 69
-            "Protection of Calliav", -- Level 64
-            "Guard of Calliav",      -- Level 58
-            "Ward of Calliav",       -- Level 46
-        },
+        -- ['AegisBuff'] = {
+        --     ---Pet Aegis Shield Buff (Short Duration)*
+        --     "Auspice of Shadows VII", -- Level 127
+        --     "Aegis of Valorforged",  -- Level 124
+        --     "Auspice of Usira",      -- Level 122
+        --     "Aegis of Rumblecrush",  -- Level 119
+        --     "Auspice of Valia",      -- Level 117
+        --     "Aegis of Orfur",        -- Level 114
+        --     "Auspice of Kildrukaun", -- Level 112
+        --     "Aegis of Zeklor",       -- Level 109
+        --     "Auspice of Esianti",    -- Level 107
+        --     "Aegis of Japac",        -- Level 104
+        --     "Auspice of Eternity",   -- Level 102
+        --     "Aegis of Nefori",       -- Level 99
+        --     "Auspice of Shadows",    -- Level 96
+        --     "Aegis of Kildrukaun",   -- Level 79
+        --     "Aegis of Calliav",      -- Level 74
+        --     "Bulwark of Calliav",    -- Level 69
+        --     "Protection of Calliav", -- Level 64
+        --     "Guard of Calliav",      -- Level 58
+        --     "Ward of Calliav",       -- Level 46
+        -- },
         ['PetManaNuke'] = {
             --- PetManaNuke
             "Thaumatize Pet", -- Level 83
@@ -825,6 +837,10 @@ local _ClassConfig = {
         --     "Summon Zabella's Heirlooms",  -- Level 81
         --     "Summon Nastel's Heirlooms",   -- Level 76
         -- },
+        -- ['CauldronSummon'] = {
+        --     "Summon Cauldron of Xev",               -- Level 126
+        --     "Summon Cauldron of Endless Abundance", -- Level 120
+        -- },
         ['IceOrbSummon'] = {
             "Grant Frostbound Paradox", -- Level 109
             "Grant Icebound Paradox",   -- Level 99
@@ -835,6 +851,7 @@ local _ClassConfig = {
             "Summon Wintry Paradox",    -- Level 74
         },
         ['FireOrbSummon'] = {
+            "Summon Orb of Flame XVIII",   -- Level 130
             "Summon Molten Dacite Orb",    -- Level 125
             "Summon Molten Komatiite Orb", -- Level 114
             "Summon Firebound Orb",        -- Level 102
