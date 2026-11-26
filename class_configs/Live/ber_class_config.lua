@@ -8,7 +8,7 @@ local Strings   = require("utils.strings")
 local Targeting = require("utils.targeting")
 
 return {
-    _version          = "1.4 - Live",
+    _version          = "1.5 - Live",
     -- 1.1 added Dicho to rotation -SCVOne
     -- 1.2 added Bfrenzy  timer 11 -SCVOne
     -- 1.3 seperated DPS into 3 sections to increase freq of attacks -SCVOne
@@ -80,6 +80,7 @@ return {
             "Aura of Rage",   -- Level 55
         },
         ['Dicho'] = {
+            "Diametric Rage",  -- Level 126
             "Reciprocal Rage", -- Level 121
             "Ecliptic Rage",   -- Level 116
             "Composite Rage",  -- Level 111
@@ -161,6 +162,7 @@ return {
             "Phantom Assailant", -- Level 100
         },
         ['Alliance'] = {
+            "Obliterator's Pact",       -- Level 130
             "Eviscerator's Covariance", -- Level 125
             "Conqueror's Conjunction",  -- Level 120
             "Vindicator's Coalition",   -- Level 115
@@ -178,6 +180,7 @@ return {
             "Slap in the Face",    -- Level 87
         },
         ['AESlice'] = {
+            "Arcblade VII", -- Level 129
             "Arcscale", -- Level 124
             "Arcshear", -- Level 119
             "Arcslash", -- Level 114
@@ -807,10 +810,10 @@ return {
             },
             {
                 name = "Alliance",
-                type = "Spell",
+                type = "Disc",
                 load_cond = function() return Config:GetSetting('DoAlliance') end,
-                cond = function(self, spell)
-                    return Casting.CanAlliance() and not Casting.TargetHasBuff(spell)
+                cond = function(self, discSpell)
+                    return not Casting.TargetHasBuff(discSpell.Trigger(1))
                 end,
             },
             {
