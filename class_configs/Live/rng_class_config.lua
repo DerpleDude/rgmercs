@@ -10,7 +10,7 @@ local Strings      = require("utils.strings")
 local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
-    _version              = "2.1 - Live",
+    _version              = "2.2 - Live",
     _author               = "Algar",
     ['ModeChecks']        = {
         IsTanking    = function() return Core.IsModeActive("Tank") end,
@@ -114,6 +114,7 @@ local _ClassConfig = {
             "Focused Storm of Arrows",     -- Level 85
         },
         ['AEArrowsSplash'] = {             -- Timer 5, targeted AE
+            "Storm of Arrows X",           -- Level 127
             "Arrowflight",                 -- Level 122
             "Arrowswarm",                  -- Level 117
             "Arrowstorm",                  -- Level 112
@@ -139,6 +140,7 @@ local _ClassConfig = {
             "Hail of Arrows",              -- Level 68
         },
         ['DichoSpell'] = {
+            "Diametric Fusillade",  -- Level 126
             "Reciprocal Fusillade", -- Level 121
             "Ecliptic Fusillade",   -- Level 116
             "Composite Fusillade",  -- Level 111
@@ -146,6 +148,7 @@ local _ClassConfig = {
             "Dichotomic Fusillade", -- Level 101
         },
         ['Alliance'] = {
+            "Grovestalker's Covariance",      -- Level 128
             "Fernstalker's Covariance",       -- Level 123
             "Dusksage Stalker's Conjunction", -- Level 118
             "Arbor Stalker's Coalition",      -- Level 113
@@ -289,6 +292,7 @@ local _ClassConfig = {
             "Warder's Wrath",                -- Level 69
         },
         ['FocusedBlades'] = {                -- Timer 6
+            "Focused Storm of Blades VII",   -- Level 129
             "Focused Maelstrom of Blades",   -- Level 124
             "Focused Tempest of Blades",     -- Level 119
             "Focused Blizzard of Blades",    -- Level 114
@@ -700,6 +704,9 @@ local _ClassConfig = {
             "Annul Magic",      -- Level 61
             "Nullify Magic",    -- Level 58
             "Cancel Magic",     -- Level 30
+        },
+        ['Demeanor'] = {
+            "Grovestalker's Demeanor", -- Level 130
         },
     },
     ['Helpers']           = {
@@ -1505,6 +1512,13 @@ local _ClassConfig = {
             },
         },
         ['Weaves']             = {
+            {
+                name = "Demeanor",
+                type = "Disc",
+                cond = function(self, discSpell, target)
+                    return Casting.SelfBuffCheck(discSpell, nil, true)
+                end,
+            },
             {
                 name = "Taunt",
                 type = "Ability",

@@ -13,7 +13,7 @@ local Modules   = require("utils.modules")
 local Targeting = require("utils.targeting")
 
 return {
-    _version          = "2.1 - Live",
+    _version          = "2.2 - Live",
     _author           = "Derple, Algar",
     ['Modes']         = {
         'DPS',
@@ -48,14 +48,16 @@ return {
         },
     },
     ['AbilitySets']   = {
-        ['AllianceSpell'] = {
-            "Frostbound Covariance",  -- Level 122
-            "Frostbound Conjunction", -- Level 117
-            "Frostbound Coalition",   -- Level 112
-            "Frostbound Covenant",    -- Level 107
-            "Frostbound Alliance",    -- Level 102
-        },
+        -- ['AllianceSpell'] = {
+        --     "Frostbound Pact",        -- Level 127
+        --     "Frostbound Covariance",  -- Level 122
+        --     "Frostbound Conjunction", -- Level 117
+        --     "Frostbound Coalition",   -- Level 112
+        --     "Frostbound Covenant",    -- Level 107
+        --     "Frostbound Alliance",    -- Level 102
+        -- },
         -- ['DichoSpell'] = {
+        --     "Diametric Fire",  -- Level 126
         --     "Reciprocal Fire", -- Level 121
         --     "Ecliptic Fire",   -- Level 116
         --     "Composite Fire",  -- Level 111
@@ -174,6 +176,7 @@ return {
         },
         ['VortexNuke'] = {
             -- NOTE: ${Spell[${VortexNuke}].ResistType} can be used to determine which resist type is getting debuffed
+            "Mana Vortex IX",       -- Level 128
             "Chromospheric Vortex", -- Level 123
             "Shadebright Vortex",   -- Level 118
             "Thaumaturgic Vortex",  -- Level 113
@@ -399,6 +402,7 @@ return {
             "Twincast", -- Level 85
         },
         ['GambitSpell'] = {
+            "Bucolic Gambit VII",   -- Level 130
             "Contemplative Gambit", -- Level 125
             "Anodyne Gambit",       -- Level 120
             "Idyllic Gambit",       -- Level 115

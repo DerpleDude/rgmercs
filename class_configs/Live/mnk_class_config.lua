@@ -7,7 +7,7 @@ local Globals      = require("utils.globals")
 local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
-    _version          = "2.1 - Live",
+    _version          = "2.2 - Live",
     _author           = "Algar, Derple",
     ['Modes']         = {
         'DPS',
@@ -75,6 +75,7 @@ local _ClassConfig = {
             "Disciple's Aura", -- Level 55
         },
         ['Dicho'] = {
+            "Diametric Form",  -- Level 126
             "Reciprocal Form", -- Level 121
             "Ecliptic Form",   -- Level 116
             "Composite Form",  -- Level 111
@@ -86,6 +87,7 @@ local _ClassConfig = {
         },
         ['Curse'] = {
             -- Curse Line - Alternating expansions
+            "Curse of Eighteen Desires",     -- Level 128, FoF
             "Curse of Seventeen Facets",     -- Level 123, TOB
             "Curse of Sixteen Shadows",      -- Level 118, NOS
             "Curse of Fifteen Strikes",      -- Level 113, COV
@@ -110,6 +112,7 @@ local _ClassConfig = {
             "Wheel of Fists",     -- Level 79
         },
         ['Precision1'] = {
+            "Lifewalker's Precision Strike",  -- Level 129
             "Fatewalker's Precision Strike",  -- Level 124
             "Bloodwalker's Precision Strike", -- Level 119
             "Icewalker's Precision Strike",   -- Level 114
@@ -117,6 +120,7 @@ local _ClassConfig = {
             "Doomwalker's Precision Strike",  -- Level 104
         },
         ['Precision2'] = {
+            "Lifewalker's Precision Strike",  -- Level 129
             "Fatewalker's Precision Strike",  -- Level 124
             "Bloodwalker's Precision Strike", -- Level 119
             "Icewalker's Precision Strike",   -- Level 114
@@ -124,6 +128,7 @@ local _ClassConfig = {
             "Doomwalker's Precision Strike",  -- Level 104
         },
         ['Precision3'] = {
+            "Lifewalker's Precision Strike",  -- Level 129
             "Fatewalker's Precision Strike",  -- Level 124
             "Bloodwalker's Precision Strike", -- Level 119
             "Icewalker's Precision Strike",   -- Level 114
@@ -131,6 +136,7 @@ local _ClassConfig = {
             "Doomwalker's Precision Strike",  -- Level 104
         },
         ['Precision4'] = {
+            "Lifewalker's Precision Strike",  -- Level 129
             "Fatewalker's Precision Strike",  -- Level 124
             "Bloodwalker's Precision Strike", -- Level 119
             "Icewalker's Precision Strike",   -- Level 114
@@ -138,6 +144,15 @@ local _ClassConfig = {
             "Doomwalker's Precision Strike",  -- Level 104
         },
         ['Precision5'] = {
+            "Lifewalker's Precision Strike",  -- Level 129
+            "Fatewalker's Precision Strike",  -- Level 124
+            "Bloodwalker's Precision Strike", -- Level 119
+            "Icewalker's Precision Strike",   -- Level 114
+            "Firewalker's Precision Strike",  -- Level 109
+            "Doomwalker's Precision Strike",  -- Level 104
+        },
+        ['Precision6'] = {
+            "Lifewalker's Precision Strike",  -- Level 129
             "Fatewalker's Precision Strike",  -- Level 124
             "Bloodwalker's Precision Strike", -- Level 119
             "Icewalker's Precision Strike",   -- Level 114
@@ -165,6 +180,7 @@ local _ClassConfig = {
         },
         ['Alliance'] = {
             -- Alliance line - Alternates expansions
+            "Lifewalker's Pact",         -- Level 127, FoF
             "Fatewalker's Covariance",   -- Level 122, TOB
             "Bloodwalker's Conjunction", -- Level 117, NOS
             "Icewalker's Coalition",     -- Level 112, COV
@@ -653,6 +669,10 @@ local _ClassConfig = {
             },
         },
         ['Precision']         = {
+            {
+                name = "Precision6",
+                type = "Disc",
+            },
             {
                 name = "Precision5",
                 type = "Disc",

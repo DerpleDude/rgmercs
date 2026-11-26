@@ -30,7 +30,7 @@ local auraSpellToName = {
 }
 
 local _ClassConfig    = {
-    _version          = "1.6 - Live",
+    _version          = "1.7 - Live",
     _author           = "Derple, Grimmier, Algar",
     ['ModeChecks']    = {
         CanMez       = function() return true end,
@@ -399,6 +399,7 @@ local _ClassConfig    = {
             "Shield of Fate",           -- Level 97
         },
         ['GroupAuspiceBuff'] = {
+            "Enticer's Auspice VI", -- Level 127
             "Stupefier's Auspice",  -- Level 122
             "Marvel's Auspice",     -- Level 117
             "Deviser's Auspice",    -- Level 112
@@ -421,6 +422,7 @@ local _ClassConfig    = {
             "Mana Flare",         -- Level 70
         },
         ['AllianceSpell'] = {
+            "Chromatic Pact",        -- Level 128
             "Chromatic Covariance",  -- Level 123
             "Chromatic Conjunction", -- Level 118
             "Chromatic Coalition",   -- Level 113
@@ -522,11 +524,20 @@ local _ClassConfig    = {
             "Subjugate",            -- Level 90
         },
         ['CharmDemand'] = {         -- chance to memblur on break, later spells carry a pet buff
+            "Enticer's Demand VI",  -- Level 129
             "Stupefier's Demand",   -- Level 124
             "Marvel's Demand",      -- Level 119
             "Deviser's Demand",     -- Level 114
+            "Transfixer's Demand",  -- Level 109
             "Enticer's Demand",     -- Level 104
         },
+        -- ['GravityNuke'] = {
+        --     "Gravity Flux VI", -- Level 130
+        --     "Gravity Surge",   -- Level 120
+        --     "Gravity Roil",    -- Level 111
+        --     "Gravity Twist",   -- Level 104
+        --     "Gravity Flux",    -- Level 36
+        -- },
         ['CrippleSpell'] = {
             "Splintered Consciousness", -- Level 86
             "Fragmented Consciousness", -- Level 81
@@ -593,6 +604,7 @@ local _ClassConfig    = {
             "Mana Sieve",         -- Level 30
         },
         ['DichoSpell'] = {
+            "Diametric Reinforcement",  -- Level 126
             "Reciprocal Reinforcement", -- Level 121
             "Ecliptic Reinforcement",   -- Level 116
             "Composite Reinforcement",  -- Level 111
@@ -1596,7 +1608,6 @@ local _ClassConfig    = {
                 { name = "GroupAuspiceBuff", cond = function(self) return Config:GetSetting('DoGroupAuspice') end, },
                 { name = "GroupSpellShield", cond = function(self) return Config:GetSetting('DoGroupSpellShield') end, },
                 { name = "GroupDotShield",   cond = function(self) return Config:GetSetting('DoGroupDotShield') end, },
-                { name = "AllianceSpell",    cond = function(self) return Config:GetSetting('DoAlliance') end, },
             },
         },
     },

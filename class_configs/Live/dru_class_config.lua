@@ -7,7 +7,7 @@ local Globals      = require('utils.globals')
 local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
-    _version              = "2.0 - Live",
+    _version              = "2.1 - Live",
     _author               = "Algar, Derple",
     ['ModeChecks']        = {
         CanCharm = function() return true end,
@@ -75,14 +75,25 @@ local _ClassConfig = {
     ['AbilitySets']       = {
         --[[ ['Alliance'] = {
             "Ferntender's Covariance",  -- Level 125
-            "Arboreal Atonement",       -- Level 120
             "Arbor Tender's Coalition", -- Level 115
-            "Bosquetender's Alliance,", -- Level 102
+            "Bosquetender's Alliance",  -- Level 102
         }, ]]
         --[[ ['FireAura'] = {
             "Wildspark Aura", -- Level 97
             "Wildblaze Aura", -- Level 92
             "Wildfire Aura",  -- Level 87
+        }, ]]
+        --[[ ['ArborealHeal'] = {
+            "Arboreal Absolution III", -- Level 130
+            "Arboreal Atonement",      -- Level 120
+            "Arboreal Absolution",     -- Level 90
+        }, ]]
+        --[[ ['MeleeHealProc'] = {
+            "Mysterious Ways VII", -- Level 128
+            "Otherworldly Ways",   -- Level 123
+            "Shadowy Ways",        -- Level 118
+            "Enigmatic Ways",      -- Level 113
+            "Ethereal Ways",       -- Level 108
         }, ]]
         ['IceAura'] = {
             "Frostfell Aura IX", -- Level 128
@@ -462,6 +473,7 @@ local _ClassConfig = {
             "Fury of Air",              -- Level 30
         },
         ['DichoSpell'] = {
+            "Diametric Winds",  -- Level 126
             "Reciprocal Winds", -- Level 121
             "Ecliptic Winds",   -- Level 116
             "Composite Winds",  -- Level 111

@@ -11,7 +11,7 @@ local Targeting    = require("utils.targeting")
 local Ui           = require("utils.ui")
 
 local _ClassConfig = {
-    _version              = "2.1 - Live",
+    _version              = "2.2 - Live",
     _author               = "Algar",
     ['ModeChecks']        = {
         IsTanking = function() return Core.IsModeActive("Tank") end,
@@ -204,6 +204,7 @@ local _ClassConfig = {
             "Denouncement",    -- Level 87
         },
         ['BlessingProc'] = {
+            "Harmonious Blessing VI", -- Level 128
             "Paradoxical Blessing", -- Level 123
             "Penumbral Blessing",   -- Level 118
             "Confluent Blessing",   -- Level 113
@@ -381,6 +382,7 @@ local _ClassConfig = {
             "Splash of Sanctification", -- Level 83
         },
         ['HealTaunt'] = {
+            "Valiant Deflection VII",    -- Level 129
             "Valiant Defiance",          -- Level 124
             "Valiant Disruption",        -- Level 119
             "Valiant Deterrence",        -- Level 115
@@ -601,6 +603,7 @@ local _ClassConfig = {
         },
         ['Dicho'] = {
             --- Dissident Stun
+            "Diametric Force",          -- Level 126
             "Reciprocal Force",         -- Level 121
             "Ecliptic Force",           -- Level 116
             "Composite Force",          -- Level 111
@@ -728,6 +731,7 @@ local _ClassConfig = {
         },
         ['Penitent'] = {
             -- Penitent Armor Discipline Timer 11
+            "Reverent Penitence VII", -- Level 127
             "Avowed Penitence",   -- Level 122
             "Fervent Penitence",  -- Level 117
             "Sincere Penitence",  -- Level 112

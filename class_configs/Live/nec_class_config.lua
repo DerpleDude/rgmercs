@@ -16,7 +16,7 @@ local Globals      = require("utils.globals")
 local Targeting    = require("utils.targeting")
 
 local _ClassConfig = {
-    _version            = "1.3 - Live",
+    _version            = "1.4 - Live",
     _author             = "Derple, Grimmier, Algar",
     ['Modes']           = {
         'DPS',
@@ -216,16 +216,18 @@ local _ClassConfig = {
             "Dominate Undead", -- Level 18
         },
         ---DPS
-        ['AllianceSpell'] = {
-            -- Alliance Spells
-            "Malevolent Covariance",  -- Level 122
-            "Malevolent Conjunction", -- Level 117
-            "Malevolent Coalition",   -- Level 114
-            "Malevolent Covenant",    -- Level 107
-            "Malevolent Alliance",    -- Level 102
-        },
+        -- ['AllianceSpell'] = {
+        --     -- Alliance Spells
+        --     "Malevolent Pact",        -- Level 127
+        --     "Malevolent Covariance",  -- Level 122
+        --     "Malevolent Conjunction", -- Level 117
+        --     "Malevolent Coalition",   -- Level 114
+        --     "Malevolent Covenant",    -- Level 107
+        --     "Malevolent Alliance",    -- Level 102
+        -- },
         ['DichoDot'] = {
             ---DichoSpell >= LVL101
+            "Diametric Paroxysm",  -- Level 126
             "Reciprocal Paroxysm", -- Level 121
             "Ecliptic Paroxysm",   -- Level 116
             "Composite Paroxysm",  -- Level 111
@@ -532,6 +534,7 @@ local _ClassConfig = {
             "Scourge of Fates",         -- Level 97
         },
         ['ComboDot'] = {                ---Combines GripDot and DecayDot
+            "Pustim's Grip of Decay",   -- Level 130
             "Goremand's Grip of Decay", -- Level 125
             "Fleshrot's Grip of Decay", -- Level 120
             "Danvid's Grip of Decay",   -- Level 115
@@ -860,10 +863,20 @@ local _ClassConfig = {
             "Mend Bones",           -- Level 7
         },
         ['FleshBuff'] = {
+            "Flesh to Poison IV", -- Level 129
             "Flesh to Toxin",  -- Level 119
             "Flesh to Venom",  -- Level 109
             "Flesh to Poison", -- Level 99
         },
+        -- ['RemoteSphere'] = {
+        --     "Remote Sphere of Decay X",     -- Level 128
+        --     "Remote Sphere of Dissolution", -- Level 124
+        --     "Remote Sphere of Rot",         -- Level 118
+        --     "Remote Sphere of Withering",   -- Level 113
+        --     "Remote Sphere of Blight",      -- Level 109
+        --     "Remote Sphere of Decay",       -- Level 104
+        --     "Echo of Dissolution",          -- Level 103
+        -- },
     },
     ['Mez']             = {
         { type = "Spell", name = "MezUndeadSpell", cond = function() return Config:GetSetting('DoSTMez') and Config:GetSetting('DoUndeadMez') end, },
